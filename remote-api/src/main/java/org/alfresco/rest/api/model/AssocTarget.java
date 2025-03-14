@@ -33,8 +33,7 @@ public class AssocTarget extends Assoc
     private String targetId;
 
     public AssocTarget()
-    {
-    }
+    {}
 
     public AssocTarget(String prefixAssocTypeQName)
     {

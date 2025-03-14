@@ -40,56 +40,13 @@ import org.alfresco.utility.model.TestModel;
 /**
  * Base Path {@linkplain /alfresco/api/-default-/private/alfresco/versions/1}
  * 
- * @author Meenal Bhave
- *         {
- *         "entry": {
- *         "createdAt": "2017-08-11T14:18:22.765+0000",
- *         "syncService": {
- *         "id": "0",
- *         "uri": "https://localhost:9090/alfresco",
- *         "config": {
- *         "filters": {
- *         "nodeAspects": [
- *         "rma:filePlanComponent",
- *         "sf:*",
- *         "smf:*",
- *         "cm:workingcopy"
- *         ],
- *         "smartFolderNodeAspects": [
- *         "sf:*",
- *         "smf:*"
- *         ],
- *         "nodeTypesWhitelist": [
- *         "dod:filePlan",
- *         "hwf:rejectedCloudTask",
- *         "imap:imapBody",
- *         "st:site"
- *         ],
- *         "nodeTypes": [
- *         "bpm:package",
- *         "cm:systemfolder",
- *         "cm:failedThumbnail"
- *         ]
- *         },
- *         "dsyncClientVersionMin": "1.0.1",
- *         "repoInfo": {
- *         "versionLabel": "5.2.2",
- *         "edition": "Enterprise"
- *         }
- *         }
- *         },
- *         "deviceOS": "windows",
- *         "syncServiceId": "0",
- *         "id": "089e45bd-a059-41f2-885e-c51f487956d6"
- *         }
- *         }
+ * @author Meenal Bhave { "entry": { "createdAt": "2017-08-11T14:18:22.765+0000", "syncService": { "id": "0", "uri": "https://localhost:9090/alfresco", "config": { "filters": { "nodeAspects": [ "rma:filePlanComponent", "sf:*", "smf:*", "cm:workingcopy" ], "smartFolderNodeAspects": [ "sf:*", "smf:*" ], "nodeTypesWhitelist": [ "dod:filePlan", "hwf:rejectedCloudTask", "imap:imapBody", "st:site" ], "nodeTypes": [ "bpm:package", "cm:systemfolder", "cm:failedThumbnail" ] }, "dsyncClientVersionMin": "1.0.1", "repoInfo": { "versionLabel": "5.2.2", "edition": "Enterprise" } } }, "deviceOS": "windows", "syncServiceId": "0", "id": "089e45bd-a059-41f2-885e-c51f487956d6" } }
  */
 public class RestSubscriberModel extends TestModel implements IRestModel<RestSubscriberModel>
 {
 
     public RestSubscriberModel()
-    {
-    }
+    {}
 
     public RestSubscriberModel(String deviceOS, String clientVersion)
     {

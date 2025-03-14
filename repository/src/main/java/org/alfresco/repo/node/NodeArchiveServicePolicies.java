@@ -35,15 +35,17 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Viachaslau Tsikhanovich
  */
-public interface NodeArchiveServicePolicies 
+public interface NodeArchiveServicePolicies
 {
     public interface BeforePurgeNodePolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforePurgeNode");
+
         /**
          * Called before a node is purged (deleted from archive).
          * 
-         * @param nodeRef   the node reference
+         * @param nodeRef
+         *            the node reference
          */
         public void beforePurgeNode(NodeRef nodeRef);
     }
@@ -51,10 +53,12 @@ public interface NodeArchiveServicePolicies
     interface BeforeRestoreArchivedNodePolicy extends ClassPolicy
     {
         QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRestoreArchivedNode");
+
         /**
          * Called before an archived node is restored.
          *
-         * @param nodeRef   the node reference
+         * @param nodeRef
+         *            the node reference
          */
         void beforeRestoreArchivedNode(NodeRef nodeRef);
     }
@@ -62,10 +66,12 @@ public interface NodeArchiveServicePolicies
     interface OnRestoreArchivedNodePolicy extends ClassPolicy
     {
         QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onRestoreArchivedNode");
+
         /**
          * Called after an archived node is restored.
          *
-         * @param nodeRef   the node reference
+         * @param nodeRef
+         *            the node reference
          */
         void onRestoreArchivedNode(NodeRef nodeRef);
     }

@@ -35,22 +35,22 @@ public class SimplePatch extends AbstractPatch
      * Default constructor for Spring config
      */
     public SimplePatch()
-    {
-    }
-    
+    {}
+
     /**
      * Overrides the base class version to do nothing, i.e. it does not self-register
      */
     @Override
     public void init()
-    {
-    }
-    
+    {}
+
     /**
-     * Helper constructor for some tests.  Default properties are set automatically.
+     * Helper constructor for some tests. Default properties are set automatically.
      * 
-     * @param transactionService TransactionService
-     * @param requiresTransaction true if transaction required
+     * @param transactionService
+     *            TransactionService
+     * @param requiresTransaction
+     *            true if transaction required
      */
     /* protected */ SimplePatch(TransactionService transactionService, boolean requiresTransaction)
     {
@@ -62,7 +62,7 @@ public class SimplePatch extends AbstractPatch
         setTargetSchema(1001);
         setRequiresTransaction(requiresTransaction);
     }
-    
+
     /**
      * Does nothing
      * 

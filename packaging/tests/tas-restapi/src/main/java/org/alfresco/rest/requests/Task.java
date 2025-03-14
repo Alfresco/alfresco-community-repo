@@ -28,6 +28,8 @@ package org.alfresco.rest.requests;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
@@ -42,17 +44,16 @@ import org.alfresco.rest.model.RestVariableModel;
 import org.alfresco.rest.model.RestVariableModelsCollection;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.TaskModel;
-import org.springframework.http.HttpMethod;
 
 public class Task extends ModelRequest<Task>
 {
     private TaskModel task;
-    
+
     public Task(RestWrapper restWrapper)
     {
         super(restWrapper);
     }
-    
+
     public Task(RestWrapper restWrapper, TaskModel task)
     {
         super(restWrapper);
@@ -81,7 +82,7 @@ public class Task extends ModelRequest<Task>
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "tasks/{taskId}?{parameters}", task.getId(), restWrapper.getParameters());
         return restWrapper.processModel(RestTaskModel.class, request);
     }
-    
+
     /**
      * Update task using PUT put /tasks/{taskId} call
      *
@@ -91,13 +92,14 @@ public class Task extends ModelRequest<Task>
      */
     public RestTaskModel updateTask(String newStateValue)
     {
-       return updateTask(JsonBodyGenerator.defineJSON().add("state", newStateValue).build());
+        return updateTask(JsonBodyGenerator.defineJSON().add("state", newStateValue).build());
     }
-       
+
     /**
      * Update task using PUT put /tasks/{taskId} cal
      * 
-     * @param inputJson the json used as input for PUT call
+     * @param inputJson
+     *            the json used as input for PUT call
      * @return
      */
     public RestTaskModel updateTask(JsonObject inputJson)
@@ -105,7 +107,7 @@ public class Task extends ModelRequest<Task>
         RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, inputJson.toString(), "tasks/{taskId}?{parameters}", task.getId(), restWrapper.getParameters());
         return restWrapper.processModel(RestTaskModel.class, request);
     }
-    
+
     /**
      * Retrieve the task variables using GET call on "/tasks/{taskId}/variables"
      * 
@@ -117,7 +119,7 @@ public class Task extends ModelRequest<Task>
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "tasks/{taskId}/variables?{parameters}", task.getId(), restWrapper.getParameters());
         return restWrapper.processModels(RestVariableModelsCollection.class, request);
     }
-    
+
     /**
      * Update/Add task variable using PUT put /tasks/{taskId}/variables/{variableName} call
      *
@@ -133,7 +135,7 @@ public class Task extends ModelRequest<Task>
                 variableModel.getName());
         return restWrapper.processModel(RestVariableModel.class, request);
     }
-    
+
     /**
      * Add task variable using POST /tasks/{taskId}/variables call
      *
@@ -147,7 +149,7 @@ public class Task extends ModelRequest<Task>
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "tasks/{taskId}/variables", task.getId());
         return restWrapper.processModel(RestVariableModel.class, request);
     }
-    
+
     /**
      * Add task variables using POST /tasks/{taskId}/variables call
      *
@@ -157,18 +159,18 @@ public class Task extends ModelRequest<Task>
      */
     public RestVariableModelsCollection addTaskVariables(RestVariableModel... taskVariablesModel)
     {
-        JsonArrayBuilder array = JsonBodyGenerator.defineJSONArray();        
-        for(RestVariableModel taskVariableModel: taskVariablesModel)
-        {      
+        JsonArrayBuilder array = JsonBodyGenerator.defineJSONArray();
+        for (RestVariableModel taskVariableModel : taskVariablesModel)
+        {
             array.add(JsonBodyGenerator.defineJSON().add("scope", taskVariableModel.getScope()).add("name", taskVariableModel.getName())
                     .add("type", taskVariableModel.getType()).add("value", taskVariableModel.getValue().toString()));
-        }      
-       
-        String postBody = array.build().toString();  
+        }
+
+        String postBody = array.build().toString();
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "tasks/{taskId}/variables", task.getId());
         return restWrapper.processModels(RestVariableModelsCollection.class, request);
     }
-    
+
     /**
      * Delete task variable using DELETE /tasks/{taskId}/variables/{variableName} call
      *
@@ -181,7 +183,7 @@ public class Task extends ModelRequest<Task>
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "tasks/{taskId}/variables/{variableName} ", task.getId(),
                 variableModel.getName());
-        restWrapper.processEmptyModel(request);            
+        restWrapper.processEmptyModel(request);
     }
 
     /**
@@ -197,7 +199,7 @@ public class Task extends ModelRequest<Task>
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "tasks/{taskId}/items", task.getId());
         return restWrapper.processModel(RestItemModel.class, request);
     }
-    
+
     /**
      * Add task items using POST /tasks/{taskId}/items
      *
@@ -207,18 +209,17 @@ public class Task extends ModelRequest<Task>
      */
     public RestItemModelsCollection addTaskItems(FileModel... fileModels)
     {
-        JsonArrayBuilder array = JsonBodyGenerator.defineJSONArray();        
-        for(FileModel fileModel: fileModels)
-        {                    
+        JsonArrayBuilder array = JsonBodyGenerator.defineJSONArray();
+        for (FileModel fileModel : fileModels)
+        {
             array.add(JsonBodyGenerator.defineJSON().add("id", fileModel.getNodeRef().split(";")[0]));
-        }      
-       
-        String postBody = array.build().toString();      
+        }
+
+        String postBody = array.build().toString();
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "tasks/{taskId}/items", task.getId());
         return restWrapper.processModels(RestItemModelsCollection.class, request);
     }
-    
-    
+
     /**
      * Retrieve the task items using GET call on "/tasks/{taskId}/items"
      * 
@@ -233,6 +234,7 @@ public class Task extends ModelRequest<Task>
 
     /**
      * Retrieves models of the task form type definition
+     * 
      * @param taskModel
      * @return
      */
@@ -241,7 +243,7 @@ public class Task extends ModelRequest<Task>
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "tasks/{taskId}/task-form-model?{parameters}", task.getId(), restWrapper.getParameters());
         return restWrapper.processModels(RestFormModelsCollection.class, request);
     }
-    
+
     /**
      * Delete a task item using DELETE call on tasks/{taskId}/items/{itemId}
      *
@@ -254,7 +256,7 @@ public class Task extends ModelRequest<Task>
                 itemModel.getId());
         restWrapper.processEmptyModel(request);
     }
-    
+
     /**
      * Retrieve the task candidates (users and groups) using GET call on "/tasks/{taskId}/candidates"
      * 

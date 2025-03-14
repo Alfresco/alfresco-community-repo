@@ -26,17 +26,17 @@
 
 package org.alfresco.repo.virtual.ref;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.version.VersionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Global hash store configuration.<br>
- * Used for custom global {@link HashStore}s required for {@link Reference}
- * string encoding.
+ * Used for custom global {@link HashStore}s required for {@link Reference} string encoding.
  */
 public class HashStoreConfiguration
 {
@@ -57,7 +57,7 @@ public class HashStoreConfiguration
                 else
                 {
                     HashStoreConfiguration.getInstance().getClasspathHashStore().put(pathHash[0],
-                                                                                     pathHash[1]);
+                            pathHash[1]);
                     if (logger.isDebugEnabled())
                     {
                         logger.debug("Configured classpath hash " + pathHash[0] + " -> " + pathHash[1]);
@@ -94,23 +94,23 @@ public class HashStoreConfiguration
         storeIdStore = new HashStore();
 
         storeProtocolStore.put(StoreRef.PROTOCOL_WORKSPACE,
-                               "1");
+                "1");
         storeProtocolStore.put(StoreRef.PROTOCOL_ARCHIVE,
-                               "2");
+                "2");
         storeProtocolStore.put(StoreRef.PROTOCOL_AVM,
-                               "3");
+                "3");
         storeProtocolStore.put(StoreRef.PROTOCOL_DELETED,
-                               "4");
+                "4");
         storeProtocolStore.put(StoreRef.PROTOCOL_TEST,
-                               "5");
+                "5");
         storeProtocolStore.put(VersionService.VERSION_STORE_PROTOCOL,
-                               "6");
+                "6");
         storeIdStore.put("SpacesStore",
-                         "1");
+                "1");
         storeIdStore.put(VersionModel.STORE_ID,
-                         "2");
+                "2");
         storeIdStore.put(Version2Model.STORE_ID,
-                         "3");
+                "3");
     }
 
     public HashStore getClasspathHashStore()

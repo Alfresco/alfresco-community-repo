@@ -33,6 +33,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.logging.log4j.util.Strings;
+
 import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.actions.ActionValidator;
 import org.alfresco.rest.api.model.ActionDefinition;
@@ -41,9 +45,6 @@ import org.alfresco.rest.api.model.rules.Action;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.service.Experimental;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
-import org.apache.logging.log4j.util.Strings;
 
 /**
  * This class will validate all action types against action parameters definitions (mandatory parameters, parameter constraints)
@@ -51,12 +52,10 @@ import org.apache.logging.log4j.util.Strings;
 @Experimental
 public class ActionParameterDefinitionValidator implements ActionValidator
 {
-    static final String INVALID_PARAMETER_VALUE =
-            "Action parameter: %s has invalid value (%s). Look up possible values for constraint name %s";
+    static final String INVALID_PARAMETER_VALUE = "Action parameter: %s has invalid value (%s). Look up possible values for constraint name %s";
     static final String MISSING_PARAMETER = "Missing action's mandatory parameter: %s";
     static final String MUST_NOT_CONTAIN_PARAMETER = "Action of definition id: %s must not contain parameter of name: %s";
-    static final String PARAMS_SHOULD_NOT_BE_EMPTY =
-            "Action parameters should not be null or empty for this action. See Action Definition for action of: %s";
+    static final String PARAMS_SHOULD_NOT_BE_EMPTY = "Action parameters should not be null or empty for this action. See Action Definition for action of: %s";
     static final String INVALID_ACTION_DEFINITION = "Invalid rule action definition requested %s";
     static final String EMPTY_ACTION_DEFINITION = "Empty/null rule action definition id";
 
@@ -70,7 +69,8 @@ public class ActionParameterDefinitionValidator implements ActionValidator
     /**
      * Validates action against its parameters definitions (mandatory parameters, parameter constraints)
      *
-     * @param action Action to be validated
+     * @param action
+     *            Action to be validated
      */
     @Override
     public void validate(Action action)
@@ -84,7 +84,8 @@ public class ActionParameterDefinitionValidator implements ActionValidator
         try
         {
             actionDefinition = actions.getRuleActionDefinitionById(actionDefinitionId);
-        } catch (NotFoundException e)
+        }
+        catch (NotFoundException e)
         {
             throw new InvalidArgumentException(String.format(INVALID_ACTION_DEFINITION, actionDefinitionId));
         }
@@ -136,7 +137,7 @@ public class ActionParameterDefinitionValidator implements ActionValidator
     }
 
     private void validateParameterDefinitions(final ActionDefinition.ParameterDefinition parameterDefinition,
-                                              final Map<String, Serializable> params)
+            final Map<String, Serializable> params)
     {
         final Serializable parameterValue = params.get(parameterDefinition.getName());
         if (parameterDefinition.isMandatory() && parameterValue == null)
@@ -145,8 +146,7 @@ public class ActionParameterDefinitionValidator implements ActionValidator
         }
         if (parameterDefinition.getParameterConstraintName() != null)
         {
-            final ActionParameterConstraint actionConstraint =
-                    actions.getActionConstraint(parameterDefinition.getParameterConstraintName());
+            final ActionParameterConstraint actionConstraint = actions.getActionConstraint(parameterDefinition.getParameterConstraintName());
             if (parameterValue != null && actionConstraint.getConstraintValues().stream()
                     .noneMatch(constraintData -> constraintData.getValue().equals(Objects.toString(parameterValue, null))))
             {

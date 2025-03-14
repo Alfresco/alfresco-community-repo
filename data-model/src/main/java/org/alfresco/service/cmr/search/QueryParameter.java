@@ -53,14 +53,10 @@ public class QueryParameter
     {
         return qName;
     }
-    
 
     public Serializable getValue()
     {
         return value;
     }
-    
-    
-    
-    
+
 }

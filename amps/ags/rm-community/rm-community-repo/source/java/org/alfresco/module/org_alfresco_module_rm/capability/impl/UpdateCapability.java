@@ -44,9 +44,12 @@ public class UpdateCapability extends DeclarativeCompositeCapability
     /**
      * Evaluate capability
      *
-     * @param nodeRef       node reference
-     * @param aspectQName   aspect qname
-     * @param properties    property values
+     * @param nodeRef
+     *            node reference
+     * @param aspectQName
+     *            aspect qname
+     * @param properties
+     *            property values
      * @return
      */
     public int evaluate(NodeRef nodeRef, QName aspectQName, Map<QName, Serializable> properties)

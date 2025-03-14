@@ -30,37 +30,36 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.api.AlfrescoPublicApi;  
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
+import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryException;
 
 /**
  * Support for generic conversion between types.
  * 
  * Additional conversions may be added.
  * 
- * Direct conversion and two stage conversions via Number are supported. We do
- * not support conversion by any route at the moment
+ * Direct conversion and two stage conversions via Number are supported. We do not support conversion by any route at the moment
  */
 @AlfrescoPublicApi
 public class TypeConverter
 {
 
     /**
-     * General conversion method to Object types (note it cannot support
-     * conversion to primary types due the restrictions of reflection. Use the
-     * static conversion methods to primitive types)
+     * General conversion method to Object types (note it cannot support conversion to primary types due the restrictions of reflection. Use the static conversion methods to primitive types)
      * 
-     * @param propertyType - the target property type
-     * @param value - the value to be converted
+     * @param propertyType
+     *            - the target property type
+     * @param value
+     *            - the value to be converted
      * @return - the converted value as the correct type
      */
     public final Object convert(DataTypeDefinition propertyType, Object value)
     {
         ParameterCheck.mandatory("Property type definition", propertyType);
-        
+
         // Convert property type to java class
         Class<?> javaClass = null;
         String javaClassName = propertyType.getJavaClassName();
@@ -72,24 +71,26 @@ public class TypeConverter
         {
             throw new DictionaryException("Java class " + javaClassName + " of property type " + propertyType.getName() + " is invalid", e);
         }
-        
+
         return convert(javaClass, value);
     }
 
     /**
-     * General conversion method to Object types (note it cannot support
-     * conversion to primary types due the restrictions of reflection. Use the
-     * static conversion methods to primitive types)
+     * General conversion method to Object types (note it cannot support conversion to primary types due the restrictions of reflection. Use the static conversion methods to primitive types)
      * 
-     * @param <T> The target type for the result of the conversion
-     * @param c - a class for the target type
-     * @param value - the value to be converted
+     * @param <T>
+     *            The target type for the result of the conversion
+     * @param c
+     *            - a class for the target type
+     * @param value
+     *            - the value to be converted
      * @return - the converted value as the correct type
-     * @throws TypeConversionException if the conversion cannot be performed
+     * @throws TypeConversionException
+     *             if the conversion cannot be performed
      */
     public final <T> T convert(Class<T> c, Object value)
     {
-        if(value == null)
+        if (value == null)
         {
             return null;
         }
@@ -113,54 +114,64 @@ public class TypeConverter
         {
             throw new TypeConversionException(
                     "There is no conversion registered for the value: \n" +
-                    "   value class: " + value.getClass().getName() + "\n" +
-                    "   to class: " + c.getName() + "\n" +
-                    "   value: " + value.toString());
+                            "   value class: " + value.getClass().getName() + "\n" +
+                            "   to class: " + c.getName() + "\n" +
+                            "   value: " + value.toString());
         }
-        
+
         return converter.convert(value);
     }
 
     /**
-     * General conversion method to convert collection contents to the specified
-     * type. Wrapper around the Collection version for arrays.
+     * General conversion method to convert collection contents to the specified type. Wrapper around the Collection version for arrays.
      * 
-     * @param propertyType - the target property type
-     * @param values - the value to be converted
+     * @param propertyType
+     *            - the target property type
+     * @param values
+     *            - the value to be converted
      * @return - the converted value as the correct type
-     * @throws DictionaryException if the property type's registered java class is invalid
-     * @throws TypeConversionException if the conversion cannot be performed
+     * @throws DictionaryException
+     *             if the property type's registered java class is invalid
+     * @throws TypeConversionException
+     *             if the conversion cannot be performed
      */
     public final Collection<?> convert(DataTypeDefinition propertyType, Object[] values)
     {
-       if(values == null) {
-          return convert(propertyType, (Collection<?>)null);
-       } else {
-          // Turn the array into a Collection, then convert as that
-          ArrayList<Object> c = new ArrayList<Object>();
-          c.ensureCapacity(values.length);
-          for(Object v : values) {
-             c.add(v);
-          }
-          // Convert
-          return convert(propertyType, c);
-       }
+        if (values == null)
+        {
+            return convert(propertyType, (Collection<?>) null);
+        }
+        else
+        {
+            // Turn the array into a Collection, then convert as that
+            ArrayList<Object> c = new ArrayList<Object>();
+            c.ensureCapacity(values.length);
+            for (Object v : values)
+            {
+                c.add(v);
+            }
+            // Convert
+            return convert(propertyType, c);
+        }
     }
-    
+
     /**
-     * General conversion method to convert collection contents to the specified
-     * type.
+     * General conversion method to convert collection contents to the specified type.
      * 
-     * @param propertyType - the target property type
-     * @param values - the value to be converted
+     * @param propertyType
+     *            - the target property type
+     * @param values
+     *            - the value to be converted
      * @return - the converted value as the correct type
-     * @throws DictionaryException if the property type's registered java class is invalid
-     * @throws TypeConversionException if the conversion cannot be performed
+     * @throws DictionaryException
+     *             if the property type's registered java class is invalid
+     * @throws TypeConversionException
+     *             if the conversion cannot be performed
      */
     public final Collection<?> convert(DataTypeDefinition propertyType, Collection<?> values)
     {
         ParameterCheck.mandatory("Property type definition", propertyType);
-        
+
         // Convert property type to java class
         Class<?> javaClass = null;
         String javaClassName = propertyType.getJavaClassName();
@@ -172,23 +183,26 @@ public class TypeConverter
         {
             throw new DictionaryException("Java class " + javaClassName + " of property type " + propertyType.getName() + " is invalid", e);
         }
-        
+
         return convert(javaClass, values);
     }
-    
+
     /**
-     * General conversion method to convert collection contents to the specified
-     * type.
+     * General conversion method to convert collection contents to the specified type.
      * 
-     * @param <T> The target type for the result of the conversion
-     * @param c - a class for the target type
-     * @param values - the collection to be converted
+     * @param <T>
+     *            The target type for the result of the conversion
+     * @param c
+     *            - a class for the target type
+     * @param values
+     *            - the collection to be converted
      * @return - the converted collection
-     * @throws TypeConversionException if the conversion cannot be performed
+     * @throws TypeConversionException
+     *             if the conversion cannot be performed
      */
     public final <T> Collection<T> convert(Class<T> c, Collection<?> values)
     {
-        if(values == null)
+        if (values == null)
         {
             return null;
         }
@@ -201,36 +215,36 @@ public class TypeConverter
 
         return converted;
     }
-    
+
     /**
-     * Get the boolean value for the value object
-     * May have conversion failure
+     * Get the boolean value for the value object May have conversion failure
      * 
-     * @param value Object
+     * @param value
+     *            Object
      * @return boolean
      */
     public final boolean booleanValue(Object value)
     {
         return convert(Boolean.class, value).booleanValue();
     }
-    
+
     /**
-     * Get the char value for the value object
-     * May have conversion failure
+     * Get the char value for the value object May have conversion failure
      * 
-     * @param value Object
+     * @param value
+     *            Object
      * @return char
      */
     public final char charValue(Object value)
     {
         return convert(Character.class, value).charValue();
     }
-    
+
     /**
-     * Get the byte value for the value object
-     * May have conversion failure
+     * Get the byte value for the value object May have conversion failure
      * 
-     * @param value Object
+     * @param value
+     *            Object
      * @return byte
      */
     public final byte byteValue(Object value)
@@ -243,10 +257,10 @@ public class TypeConverter
     }
 
     /**
-     * Get the short value for the value object
-     * May have conversion failure
+     * Get the short value for the value object May have conversion failure
      * 
-     * @param value Object
+     * @param value
+     *            Object
      * @return short
      */
     public final short shortValue(Object value)
@@ -257,12 +271,12 @@ public class TypeConverter
         }
         return convert(Short.class, value).shortValue();
     }
-    
+
     /**
-     * Get the int value for the value object
-     * May have conversion failure
+     * Get the int value for the value object May have conversion failure
      * 
-     * @param value Object
+     * @param value
+     *            Object
      * @return int
      */
     public final int intValue(Object value)
@@ -273,12 +287,12 @@ public class TypeConverter
         }
         return convert(Integer.class, value).intValue();
     }
-    
+
     /**
-     * Get the long value for the value object
-     * May have conversion failure
+     * Get the long value for the value object May have conversion failure
      * 
-     * @param value Object
+     * @param value
+     *            Object
      * @return long
      */
     public final long longValue(Object value)
@@ -291,10 +305,10 @@ public class TypeConverter
     }
 
     /**
-     * Get the bollean value for the value object
-     * May have conversion failure
+     * Get the bollean value for the value object May have conversion failure
      * 
-     * @param value Object
+     * @param value
+     *            Object
      * @return float
      */
     public final float floatValue(Object value)
@@ -305,12 +319,12 @@ public class TypeConverter
         }
         return convert(Float.class, value).floatValue();
     }
-    
+
     /**
-     * Get the bollean value for the value object
-     * May have conversion failure
+     * Get the bollean value for the value object May have conversion failure
      * 
-     * @param value Object
+     * @param value
+     *            Object
      * @return double
      */
     public final double doubleValue(Object value)
@@ -325,7 +339,8 @@ public class TypeConverter
     /**
      * Is the value multi valued
      * 
-     * @param value Object
+     * @param value
+     *            Object
      * @return true - if the underlyinf is a collection of values and not a singole value
      */
     public final boolean isMultiValued(Object value)
@@ -336,7 +351,8 @@ public class TypeConverter
     /**
      * Get the number of values represented
      * 
-     * @param value Object
+     * @param value
+     *            Object
      * @return 1 for normal values and the size of the collection for MVPs
      */
     public final int size(Object value)
@@ -354,7 +370,8 @@ public class TypeConverter
     /**
      * Get a collection for the passed value
      * 
-     * @param value Object
+     * @param value
+     *            Object
      * @return Collection
      */
     private final Collection<?> createCollection(Object value)
@@ -376,7 +393,8 @@ public class TypeConverter
     /**
      * Get a collection for the passed value converted to the specified type
      * 
-     * @param value Object
+     * @param value
+     *            Object
      * @return Collection
      */
     public final <T> Collection<T> getCollection(Class<T> c, Object value)
@@ -384,13 +402,13 @@ public class TypeConverter
         Collection<?> coll = createCollection(value);
         return convert(c, coll);
     }
-        
+
     /**
      * Add a converter to the list of those available
      */
     public final <F, T> void addConverter(Class<F> source, Class<T> destination, Converter<F, T> converter)
     {
-        Map<Class<?>, Converter<?,?>> map = conversions.get(source);
+        Map<Class<?>, Converter<?, ?>> map = conversions.get(source);
         if (map == null)
         {
             map = new HashMap<Class<?>, Converter<?, ?>>();
@@ -412,14 +430,13 @@ public class TypeConverter
     /**
      * Find conversion for the specified object
      * 
-     * Note: Takes into account the class of the object and any interfaces it may
-     *       also support.
+     * Note: Takes into account the class of the object and any interfaces it may also support.
      * 
      */
     @SuppressWarnings("unchecked")
     public final <T> Converter<Object, T> getConverter(Object value, Class<T> dest)
     {
-        Converter<Object, T> converter = null;    
+        Converter<Object, T> converter = null;
         if (value == null)
         {
             return null;
@@ -432,7 +449,7 @@ public class TypeConverter
         {
             return converter;
         }
-        
+
         // find via supported interfaces of value
         do
         {
@@ -446,19 +463,18 @@ public class TypeConverter
                 }
             }
             valueClass = valueClass.getSuperclass();
-        }
-        while (valueClass != null);
-        
+        } while (valueClass != null);
+
         return null;
     }
-    
+
     public Map<Class<?>, Map<Class<?>, Converter<?, ?>>> getConverters()
     {
         return conversions;
     }
 
     /**
-     * Find a conversion for a specific Class 
+     * Find a conversion for a specific Class
      * 
      * @return conversion
      */
@@ -475,7 +491,7 @@ public class TypeConverter
                 continue;
             }
             converter = (Converter<F, T>) map.get(dest);
-            
+
             if (converter == null)
             {
                 // attempt to establish converter from source to dest via Number
@@ -494,8 +510,7 @@ public class TypeConverter
                     converter = new TwoStageConverter<F, Number, T>(first, second);
                 }
             }
-        }
-        while ((converter == null) && ((clazz = clazz.getSuperclass()) != null));
+        } while ((converter == null) && ((clazz = clazz.getSuperclass()) != null));
 
         return converter;
     }
@@ -505,16 +520,17 @@ public class TypeConverter
      */
     private Map<Class<?>, Map<Class<?>, Converter<?, ?>>> conversions = new HashMap<Class<?>, Map<Class<?>, Converter<?, ?>>>();
 
-
     // Support for pluggable conversions
-    
+
     /**
      * Conversion interface
      * 
      * @author andyh
      *
-     * @param F From type
-     * @param T To type
+     * @param F
+     *            From type
+     * @param T
+     *            To type
      */
     @AlfrescoPublicApi
     public interface Converter<F, T>
@@ -527,9 +543,12 @@ public class TypeConverter
      * 
      * @author andyh
      *
-     * @param F From Type
-     * @param I Intermediate type
-     * @param T To Type
+     * @param F
+     *            From Type
+     * @param I
+     *            Intermediate type
+     * @param T
+     *            To Type
      */
     @AlfrescoPublicApi
     public static class TwoStageConverter<F, I, T> implements Converter<F, T>
@@ -549,15 +568,18 @@ public class TypeConverter
             return second.convert(first.convert(source));
         }
     }
-    
+
     /**
      * Support for chaining conversions
      * 
      * @author David Caruana
      *
-     * @param F From Type
-     * @param I Intermediate type
-     * @param T To Type
+     * @param F
+     *            From Type
+     * @param I
+     *            Intermediate type
+     * @param T
+     *            To Type
      */
     @AlfrescoPublicApi
     protected class DynamicTwoStageConverter<F, I, T> implements Converter<F, T>
@@ -565,38 +587,38 @@ public class TypeConverter
         Class<F> from;
         Class<I> intermediate;
         Class<T> to;
-        
+
         DynamicTwoStageConverter(Class<F> from, Class<I> intermediate, Class<T> to)
         {
             this.from = from;
             this.intermediate = intermediate;
             this.to = to;
         }
-        
+
         /**
-         * @return  from class
+         * @return from class
          */
         public Class<F> getFrom()
         {
             return from;
         }
-        
+
         /**
-         * @return  intermediate class
+         * @return intermediate class
          */
         public Class<I> getIntermediate()
         {
             return intermediate;
         }
-        
+
         /**
-         * @return  to class
+         * @return to class
          */
         public Class<T> getTo()
         {
             return to;
         }
-        
+
         public T convert(F source)
         {
             Converter<F, I> iConverter = TypeConverter.this.getConverter(from, intermediate);
@@ -605,10 +627,10 @@ public class TypeConverter
             {
                 throw new TypeConversionException("Cannot convert from " + from.getName() + " to " + to.getName());
             }
-            
+
             I iValue = iConverter.convert(source);
             return tConverter.convert(iValue);
         }
     }
-    
+
 }

@@ -32,6 +32,19 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.apache.commons.codec.EncoderException;
+import org.apache.commons.codec.net.URLCodec;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.admin.RepositoryState;
 import org.alfresco.repo.index.shard.Floc;
@@ -49,20 +62,10 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.codec.EncoderException;
-import org.apache.commons.codec.net.URLCodec;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.lang3.StringUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
+
 /**
  * HTTP Client that queries Solr using the sql handler.
+ * 
  * @author Michael Suzuki
  */
 public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements SolrQueryClient
@@ -78,17 +81,18 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
     private ShardRegistry shardRegistry;
     private TenantService tenantService;
     private PermissionService permissionService;
-    
+
     public static final int DEFAULT_SAVEPOST_BUFFER = 4096;
+
     @Override
     public void afterPropertiesSet() throws Exception
     {
         mappingLookup.clear();
-        for(SolrStoreMapping mapping : storeMappings)
+        for (SolrStoreMapping mapping : storeMappings)
         {
             mappingLookup.put(mapping.getStoreRef(), new ExplicitSolrStoreMappingWrapper(mapping, beanFactory));
         }
-        
+
     }
 
     @Override
@@ -96,6 +100,7 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
     {
         this.beanFactory = beanFactory;
     }
+
     public void init()
     {
         PropertyCheck.mandatory(this, "PermissionService", permissionService);
@@ -103,14 +108,14 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
         PropertyCheck.mandatory(this, "RepositoryState", repositoryState);
         PropertyCheck.mandatory(this, "TenantService", tenantService);
     }
-    
-    public ResultSet executeQuery(SearchParameters searchParameters, String language) 
+
+    public ResultSet executeQuery(SearchParameters searchParameters, String language)
     {
-        if(repositoryState.isBootstrapping())
+        if (repositoryState.isBootstrapping())
         {
             throw new AlfrescoRuntimeException("SOLR queries can not be executed while the repository is bootstrapping");
         }
-        if(StringUtils.isEmpty(searchParameters.getQuery()))
+        if (StringUtils.isEmpty(searchParameters.getQuery()))
         {
             throw new AlfrescoRuntimeException("SOLR query statement is missing");
         }
@@ -118,20 +123,20 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
         {
             StoreRef store = SolrClientUtil.extractStoreRef(searchParameters);
             SolrStoreMappingWrapper mapping = SolrClientUtil.extractMapping(store,
-                                                                            mappingLookup,
-                                                                            shardRegistry, 
-                                                                            useDynamicShardRegistration,
-                                                                            beanFactory);
-            
-            //Extract collection name from stmt.
+                    mappingLookup,
+                    shardRegistry,
+                    useDynamicShardRegistration,
+                    beanFactory);
+
+            // Extract collection name from stmt.
             Pair<HttpClient, String> httpClientAndBaseUrl = mapping.getHttpClientAndBaseUrl();
             HttpClient httpClient = httpClientAndBaseUrl.getFirst();
 
             URLCodec encoder = new URLCodec();
             StringBuilder url = new StringBuilder();
             url.append(httpClientAndBaseUrl.getSecond());
-         
-            if(!url.toString().endsWith("/"))
+
+            if (!url.toString().endsWith("/"))
             {
                 url.append("/");
             }
@@ -139,41 +144,38 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
             SearchParameters sp = (SearchParameters) searchParameters;
             url.append("&includeMetadata=" + sp.isIncludeMetadata());
             url.append("&aggregationMode=facet");
-            if(searchParameters.getTimezone() != null && !searchParameters.getTimezone().isEmpty())
+            if (searchParameters.getTimezone() != null && !searchParameters.getTimezone().isEmpty())
             {
                 url.append("&TZ=").append(encoder.encode(searchParameters.getTimezone(), "UTF-8"));
             }
             url.append("&alfresco.shards=");
-            /*
-             * When sharded we pass array of shard instances otherwise we pass the local instance url which
-             * is http://url:port/solr/collection_name
-             */
-            if(mapping.isSharded())
+            /* When sharded we pass array of shard instances otherwise we pass the local instance url which is http://url:port/solr/collection_name */
+            if (mapping.isSharded())
             {
                 url.append(mapping.getShards());
             }
             else
             {
-               String solrurl = httpClient.getHostConfiguration().getHostURL() + httpClientAndBaseUrl.getSecond();
+                String solrurl = httpClient.getHostConfiguration().getHostURL() + httpClientAndBaseUrl.getSecond();
                 url.append(solrurl);
             }
             JSONObject body = new JSONObject();
-            
+
             // Authorities go over as is - and tenant mangling and query building takes place on the SOLR side
 
             Set<String> allAuthorisations = permissionService.getAuthorisations();
             boolean includeGroups = includeGroupsForRoleAdmin ? true : !allAuthorisations.contains(PermissionService.ADMINISTRATOR_AUTHORITY);
-            
+
             JSONArray authorities = new JSONArray();
             for (String authority : allAuthorisations)
             {
-                if(includeGroups)
+                if (includeGroups)
                 {
                     authorities.put(authority);
                 }
                 else
                 {
-                    if(AuthorityType.getAuthorityType(authority) != AuthorityType.GROUP)
+                    if (AuthorityType.getAuthorityType(authority) != AuthorityType.GROUP)
                     {
                         authorities.put(authority);
                     }
@@ -181,7 +183,7 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
             }
             body.put("authorities", authorities);
             body.put("anyDenyDenies", anyDenyDenies);
-            
+
             JSONArray tenants = new JSONArray();
             tenants.put(tenantService.getCurrentUserDomain());
             body.put("tenants", tenants);
@@ -205,7 +207,7 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
             body.put("filterQueries", filterQueries);
 
             return postSolrQuery(httpClient, url.toString(), body,
-                        json -> new SolrSQLJSONResultSet(json, searchParameters));
+                    json -> new SolrSQLJSONResultSet(json, searchParameters));
         }
         catch (ConnectException ce)
         {
@@ -215,11 +217,11 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
         {
             throw new QueryParserException("Unable to parse the solr response ", e);
         }
-        
+
     }
 
     protected ResultSet postSolrQuery(HttpClient httpClient, String url, JSONObject body,
-                SolrJsonProcessor<?> jsonProcessor) throws IOException, JSONException
+            SolrJsonProcessor<?> jsonProcessor) throws IOException, JSONException
     {
         JSONObject json = postQuery(httpClient, url, body);
         SearchEngineResultMetadata results = jsonProcessor.getResult(json);
@@ -229,7 +231,6 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
         return (ResultSet) results;
     }
 
-    
     public void setStoreMappings(List<SolrStoreMapping> storeMappings)
     {
         this.storeMappings = storeMappings;
@@ -239,18 +240,21 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
     {
         this.repositoryState = repositoryState;
     }
+
     /**
-     * @param includeGroupsForRoleAdmin the includeGroupsForRoleAdmin to set
+     * @param includeGroupsForRoleAdmin
+     *            the includeGroupsForRoleAdmin to set
      */
     public void setIncludeGroupsForRoleAdmin(boolean includeGroupsForRoleAdmin)
     {
         this.includeGroupsForRoleAdmin = includeGroupsForRoleAdmin;
     }
+
     /**
-     * When set, a single DENIED ACL entry for any authority will result in
-     * access being denied as a whole. See system property {@code security.anyDenyDenies}
+     * When set, a single DENIED ACL entry for any authority will result in access being denied as a whole. See system property {@code security.anyDenyDenies}
      * 
-     * @param anyDenyDenies boolean
+     * @param anyDenyDenies
+     *            boolean
      */
     public void setAnyDenyDenies(boolean anyDenyDenies)
     {
@@ -321,30 +325,30 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
 
     public boolean isSharded()
     {
-        if((shardRegistry != null) && useDynamicShardRegistration)
+        if ((shardRegistry != null) && useDynamicShardRegistration)
         {
-            for( Floc floc : shardRegistry.getFlocs().keySet())
+            for (Floc floc : shardRegistry.getFlocs().keySet())
             {
-                if(floc.getNumberOfShards() > 1)
+                if (floc.getNumberOfShards() > 1)
                 {
                     return true;
                 }
             }
             return false;
-        
+
         }
         else
         {
-            for(SolrStoreMappingWrapper mapping : mappingLookup.values())
+            for (SolrStoreMappingWrapper mapping : mappingLookup.values())
             {
-                if(mapping.isSharded())
+                if (mapping.isSharded())
                 {
                     return true;
                 }
             }
             return false;
         }
-        
+
     }
 
     public void setTenantService(TenantService tenantService)

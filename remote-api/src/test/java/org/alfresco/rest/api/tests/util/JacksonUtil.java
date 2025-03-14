@@ -27,14 +27,16 @@
 package org.alfresco.rest.api.tests.util;
 
 import static org.junit.Assert.assertNotNull;
-import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
+import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 
 /**
  * @author Jamal Kaabi-Mofrad

@@ -56,14 +56,14 @@ public class RepoNodeEventsRouteBuilder extends RouteBuilder
         if (logger.isDebugEnabled())
         {
             logger.debug("Repo node events routes config: ");
-            logger.debug("SourceQueue is "+sourceQueue);
-            logger.debug("targetTopic is "+targetTopic);
+            logger.debug("SourceQueue is " + sourceQueue);
+            logger.debug("targetTopic is " + targetTopic);
         }
 
         from(sourceQueue)
-            .routeId("alfresco.events -> topic:alfresco.repo.events")
-            .marshal("defaultDataFormat")
-            .to(targetTopic)
-            .end();
+                .routeId("alfresco.events -> topic:alfresco.repo.events")
+                .marshal("defaultDataFormat")
+                .to(targetTopic)
+                .end();
     }
 }

@@ -34,6 +34,8 @@ package org.alfresco.repo.solr;
 public interface AclChangeSet
 {
     Long getId();
+
     Long getCommitTimeMs();
+
     int getAclCount();
 }

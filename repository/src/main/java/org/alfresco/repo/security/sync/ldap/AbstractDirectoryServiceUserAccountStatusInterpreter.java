@@ -50,9 +50,7 @@ public abstract class AbstractDirectoryServiceUserAccountStatusInterpreter
     public abstract boolean isUserAccountDisabled(Serializable userAccountStatusValue) throws IllegalArgumentException;
 
     /**
-     * Specify if the particular implementation of
-     * {@link AbstractDirectoryServiceUserAccountStatusInterpreter#isUserAccountDisabled(Serializable)}
-     * will accept null.
+     * Specify if the particular implementation of {@link AbstractDirectoryServiceUserAccountStatusInterpreter#isUserAccountDisabled(Serializable)} will accept null.
      * 
      * @return true if accepts null.
      */

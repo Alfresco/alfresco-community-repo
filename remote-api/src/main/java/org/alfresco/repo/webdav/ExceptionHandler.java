@@ -26,9 +26,6 @@
 package org.alfresco.repo.webdav;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -42,17 +39,20 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ExceptionHandler
 {
-    private static final Log logger = LogFactory.getLog(ExceptionHandler.class); 
+    private static final Log logger = LogFactory.getLog(ExceptionHandler.class);
     private Throwable e;
     private final HttpServletRequest request;
     private final HttpServletResponse response;
-    
+
     /**
      * Create an ExceptionHandler.
      * 
-     * @param e Throwable
-     * @param request HttpServletRequest
-     * @param response HttpServletResponse
+     * @param e
+     *            Throwable
+     * @param request
+     *            HttpServletRequest
+     * @param response
+     *            HttpServletResponse
      */
     public ExceptionHandler(Throwable e, HttpServletRequest request, HttpServletResponse response)
     {
@@ -60,7 +60,6 @@ public class ExceptionHandler
         this.request = request;
         this.response = response;
     }
-    
 
     public void handle() throws IOException
     {
@@ -83,7 +82,7 @@ public class ExceptionHandler
             if (logger.isDebugEnabled())
             {
                 // Show what status code the method sent back
-                
+
                 logger.debug(request.getMethod() + " is returning status code: " + error.getHttpStatusCode());
             }
 

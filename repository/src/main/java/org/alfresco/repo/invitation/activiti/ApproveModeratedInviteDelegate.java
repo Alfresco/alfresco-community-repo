@@ -28,6 +28,7 @@ package org.alfresco.repo.invitation.activiti;
 import java.util.Map;
 
 import org.activiti.engine.delegate.DelegateExecution;
+
 import org.alfresco.repo.invitation.WorkflowModelModeratedInvitation;
 
 /**

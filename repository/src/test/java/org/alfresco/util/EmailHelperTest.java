@@ -30,7 +30,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Locale;
+
 import freemarker.cache.TemplateLoader;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -42,15 +53,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.springframework.extensions.surf.util.I18NUtil;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Locale;
 
 /**
  * Unit tests for {@link EmailHelper} class.
@@ -116,7 +118,7 @@ public class EmailHelperTest
         emailHelper.setPreferenceService(preferenceServiceMock);
         emailHelper.setRepositoryHelper(repositoryHelperMock);
         emailHelper.setCompanyHomeChildName("app:company_home");
-        //test init
+        // test init
         emailHelper.init();
         // Note: set the template loader after the init method
         emailHelper.setTemplateLoader(templateLoaderMock);
@@ -133,13 +135,13 @@ public class EmailHelperTest
             final String emailTemplateXPath = "app:company_home/app:dictionary/app:email_templates/example-email.ftl";
 
             when(searchServiceMock.selectNodes(repositoryHelperMock.getRootHome(), emailTemplateXPath, null, namespaceServiceMock, false))
-                        .thenReturn(Collections.emptyList());
+                    .thenReturn(Collections.emptyList());
             result = emailHelper.getEmailTemplate(CLIENT_NAME, emailTemplateXPath, FALLBACK_TEMPLATE_PATH);
             assertEquals("Couldn't find email template with the given XPath, so the fallback template should be returned.", result,
-                        FALLBACK_TEMPLATE_PATH);
+                    FALLBACK_TEMPLATE_PATH);
 
             when(searchServiceMock.selectNodes(repositoryHelperMock.getRootHome(), emailTemplateXPath, null, namespaceServiceMock, false))
-                        .thenReturn(Collections.singletonList(dummyTemplateNodeRef));
+                    .thenReturn(Collections.singletonList(dummyTemplateNodeRef));
             result = emailHelper.getEmailTemplate(CLIENT_NAME, emailTemplateXPath, FALLBACK_TEMPLATE_PATH);
             // XPath search returned a valid result
             assertEquals(result, dummyTemplateNodeRef.toString());
@@ -151,8 +153,8 @@ public class EmailHelperTest
             assertEquals(result, dummyTemplateNodeRef.toString());
 
             when(searchServiceMock.selectNodes(repositoryHelperMock.getRootHome(), emailTemplateXPath, null, namespaceServiceMock, false))
-                        .thenReturn(Arrays.asList(dummyTemplateNodeRef, new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()),
-                                    new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate())));
+                    .thenReturn(Arrays.asList(dummyTemplateNodeRef, new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()),
+                            new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate())));
             result = emailHelper.getEmailTemplate(CLIENT_NAME, emailTemplateXPath, FALLBACK_TEMPLATE_PATH);
             // XPath search returned 3 results. But after logging an error, we just return the first element
             assertEquals(result, dummyTemplateNodeRef.toString());
@@ -163,7 +165,7 @@ public class EmailHelperTest
             when(nodeServiceMock.exists(dummyTemplateNodeRef)).thenReturn(false);
             result = emailHelper.getEmailTemplate(CLIENT_NAME, dummyTemplateNodeRef.toString(), FALLBACK_TEMPLATE_PATH);
             assertEquals("Couldn't find email template with the given NodeRef, so the fallback template should be returned.", result,
-                        FALLBACK_TEMPLATE_PATH);
+                    FALLBACK_TEMPLATE_PATH);
 
             when(nodeServiceMock.exists(dummyTemplateNodeRef)).thenReturn(true);
             result = emailHelper.getEmailTemplate(CLIENT_NAME, dummyTemplateNodeRef.toString(), FALLBACK_TEMPLATE_PATH);
@@ -177,7 +179,7 @@ public class EmailHelperTest
             when(templateLoaderMock.findTemplateSource(classPathTemplate)).thenReturn(null);
             result = emailHelper.getEmailTemplate(CLIENT_NAME, classPathTemplate, FALLBACK_TEMPLATE_PATH);
             assertEquals("Couldn't find email template with the given class path, so the fallback template should be returned.", result,
-                        FALLBACK_TEMPLATE_PATH);
+                    FALLBACK_TEMPLATE_PATH);
 
             when(templateLoaderMock.findTemplateSource(classPathTemplate)).thenReturn(new Object());
             result = emailHelper.getEmailTemplate(CLIENT_NAME, classPathTemplate, FALLBACK_TEMPLATE_PATH);
@@ -187,7 +189,7 @@ public class EmailHelperTest
             when(templateLoaderMock.findTemplateSource(classPathTemplate)).thenThrow(new IOException());
             result = emailHelper.getEmailTemplate(CLIENT_NAME, classPathTemplate, FALLBACK_TEMPLATE_PATH);
             assertEquals("Error occurred while finding the email template with the class path, so the fallback template should be returned.", result,
-                        FALLBACK_TEMPLATE_PATH);
+                    FALLBACK_TEMPLATE_PATH);
         }
 
         // test null/empty value

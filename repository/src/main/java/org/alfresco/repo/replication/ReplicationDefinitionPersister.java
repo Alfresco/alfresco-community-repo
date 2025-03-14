@@ -39,71 +39,59 @@ import org.alfresco.service.cmr.replication.ReplicationDefinition;
 public interface ReplicationDefinitionPersister
 {
     /**
-     * This method serializes the {@link ReplicationDefinition} and stores it in
-     * the repository. {@link ReplicationDefinition}s saved in this way may be
-     * retrieved using the <code>load()</code> method.
+     * This method serializes the {@link ReplicationDefinition} and stores it in the repository. {@link ReplicationDefinition}s saved in this way may be retrieved using the <code>load()</code> method.
      * 
-     * @param replicationDefinition The {@link ReplicationDefinition} to be
-     *            persisted.
+     * @param replicationDefinition
+     *            The {@link ReplicationDefinition} to be persisted.
      */
     void saveReplicationDefinition(ReplicationDefinition replicationDefinition);
 
     /**
-     * This method removes the previously serializes {@link ReplicationDefinition}
-     * from the repository. The {@link ReplicationDefinition} will then no longer
-     * be available using the load methods.
+     * This method removes the previously serializes {@link ReplicationDefinition} from the repository. The {@link ReplicationDefinition} will then no longer be available using the load methods.
      * 
-     * @param replicationDefinition The {@link ReplicationDefinition} to be
-     *            deleted.
+     * @param replicationDefinition
+     *            The {@link ReplicationDefinition} to be deleted.
      */
     void deleteReplicationDefinition(ReplicationDefinition replicationDefinition);
 
     /**
-     * This method renames a {@link ReplicationDefinition} that has been stored
-     * in the repository using the <code>save()</code> method.
-     * If no {@link ReplicationDefinition} exists in the repository with the specified
-     * replication name, then nothing happens.
+     * This method renames a {@link ReplicationDefinition} that has been stored in the repository using the <code>save()</code> method. If no {@link ReplicationDefinition} exists in the repository with the specified replication name, then nothing happens.
      * 
-     * @param oldReplicationName The unique identifier used to specify the
-     *            {@link ReplicationDefinition} to rename.
-     * @param newReplicationName The unique identifier used to specify the
-     *            new {@link ReplicationDefinition} name.
+     * @param oldReplicationName
+     *            The unique identifier used to specify the {@link ReplicationDefinition} to rename.
+     * @param newReplicationName
+     *            The unique identifier used to specify the new {@link ReplicationDefinition} name.
      */
     void renameReplicationDefinition(String oldReplicationName, String newReplicationName);
-    
+
     /**
-     * This method retrieves a {@link ReplicationDefinition} that has been stored
-     * in the repository using the <code>save()</code> method. If no
-     * {@link ReplicationDefinition} exists in the repository with the specified
-     * replication name then this method returns null.
+     * This method retrieves a {@link ReplicationDefinition} that has been stored in the repository using the <code>save()</code> method. If no {@link ReplicationDefinition} exists in the repository with the specified replication name then this method returns null.
      * 
-     * @param replicationName The unique identifier used to specify the
-     *            {@link ReplicationDefinition} to retrieve.
+     * @param replicationName
+     *            The unique identifier used to specify the {@link ReplicationDefinition} to retrieve.
      * @return The specified {@link ReplicationDefinition} or null.
      */
     ReplicationDefinition loadReplicationDefinition(String replicationName);
 
     /**
-     * This method retrieves the {@link ReplicationDefinition}s that have been
-     * stored in the repository using the <code>save()</code> method.
+     * This method retrieves the {@link ReplicationDefinition}s that have been stored in the repository using the <code>save()</code> method.
      * <P/>
-     * If there are no such {@link ReplicationDefinition}s, an empty list is
-     * returned.
+     * If there are no such {@link ReplicationDefinition}s, an empty list is returned.
      * 
      * @return The {@link ReplicationDefinition}s.
      */
     List<ReplicationDefinition> loadReplicationDefinitions();
 
     /**
-     * This method retrieves the stored {@link ReplicationDefinition}s that have
-     * been registered for the specified transfer target name.
+     * This method retrieves the stored {@link ReplicationDefinition}s that have been registered for the specified transfer target name.
      * <P/>
-     * If there are no such rendering {@link ReplicationDefinition}s, an empty
-     * list is returned.
+     * If there are no such rendering {@link ReplicationDefinition}s, an empty list is returned.
      * 
-     * @param targetName the name of a target.
+     * @param targetName
+     *            the name of a target.
      * @return The {@link ReplicationDefinition}s.
-     * @throws NullPointerException if the target is null.
+     * @throws NullPointerException
+     *             if the target is null.
      * @see #saveReplicationDefinition(ReplicationDefinition)
      */
     List<ReplicationDefinition> loadReplicationDefinitions(String targetName);

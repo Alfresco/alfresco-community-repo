@@ -27,8 +27,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm.version;
 
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel.CUSTOM_REF_VERSIONS;
 import static org.codehaus.plexus.util.StringUtils.isNotBlank;
+
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel.CUSTOM_REF_VERSIONS;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -37,6 +38,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -64,10 +70,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Recordable version service implementation
@@ -75,9 +77,9 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Roy Wetherall
  * @since 2.3
  */
-public class RecordableVersionServiceImpl extends    Version2ServiceImpl
-                                          implements RecordableVersionModel,
-                                                     RecordableVersionService
+public class RecordableVersionServiceImpl extends Version2ServiceImpl
+        implements RecordableVersionModel,
+        RecordableVersionService
 {
     /** share logger with version2ServiceImpl */
     private static Log logger = LogFactory.getLog(Version2ServiceImpl.class);
@@ -89,7 +91,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     /** version record property */
     protected static final String PROP_VERSION_RECORD = "RecordVersion";
     protected static final String PROP_RECORDED_VERSION_DESTROYED = "RecordedVersionDestroyed";
-    
+
     /** I18N */
     private static final String AUTO_VERSION_ON_RECORD_CREATION = "rm.service.enable-autoversion-on-record-creation";
 
@@ -97,20 +99,19 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     private boolean isEnableAutoVersionOnRecordCreation = false;
 
     /** version aspect property names */
-    private static final String[] VERSION_PROPERTY_NAMES = new String[]
-    {
-        Version2Model.PROP_CREATED_DATE,
-        Version2Model.PROP_VERSION_LABEL,
-        Version2Model.PROP_VERSION_DESCRIPTION,
-        
-        Version2Model.PROP_FROZEN_NODE_DBID,
-        Version2Model.PROP_FROZEN_NODE_REF,
-        
-        Version2Model.PROP_FROZEN_CREATED,
-        Version2Model.PROP_FROZEN_CREATOR,
-        Version2Model.PROP_FROZEN_MODIFIED,
-        Version2Model.PROP_FROZEN_MODIFIER,
-        Version2Model.PROP_FROZEN_ACCESSED
+    private static final String[] VERSION_PROPERTY_NAMES = new String[]{
+            Version2Model.PROP_CREATED_DATE,
+            Version2Model.PROP_VERSION_LABEL,
+            Version2Model.PROP_VERSION_DESCRIPTION,
+
+            Version2Model.PROP_FROZEN_NODE_DBID,
+            Version2Model.PROP_FROZEN_NODE_REF,
+
+            Version2Model.PROP_FROZEN_CREATED,
+            Version2Model.PROP_FROZEN_CREATOR,
+            Version2Model.PROP_FROZEN_MODIFIED,
+            Version2Model.PROP_FROZEN_MODIFIER,
+            Version2Model.PROP_FROZEN_ACCESSED
     };
 
     /** file plan service */
@@ -138,7 +139,8 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     private ExtendedSecurityService extendedSecurityService;
 
     /**
-     * @param filePlanService file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -146,7 +148,8 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     }
 
     /**
-     * @param authenticationUtil authentication util helper
+     * @param authenticationUtil
+     *            authentication util helper
      */
     public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
     {
@@ -154,7 +157,8 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     }
 
     /**
-     * @param relationshipService relationship service
+     * @param relationshipService
+     *            relationship service
      */
     public void setRelationshipService(RelationshipService relationshipService)
     {
@@ -162,7 +166,8 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     }
 
     /**
-     * @param recordService record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -170,7 +175,8 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     }
 
     /**
-     * @param modelSecurityService model security service
+     * @param modelSecurityService
+     *            model security service
      */
     public void setModelSecurityService(ModelSecurityService modelSecurityService)
     {
@@ -178,7 +184,8 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     }
 
     /**
-     * @param cmObjectType the cmObjectType to set
+     * @param cmObjectType
+     *            the cmObjectType to set
      */
     public void setCmObjectType(CmObjectType cmObjectType)
     {
@@ -186,7 +193,8 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     }
 
     /**
-     * @param extendedPermissionService extended permission service
+     * @param extendedPermissionService
+     *            extended permission service
      */
     public void setExtendedPermissionService(ExtendedPermissionService extendedPermissionService)
     {
@@ -194,7 +202,8 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     }
 
     /**
-     * @param extendedSecurityService extended security service
+     * @param extendedSecurityService
+     *            extended security service
      */
     public void setExtendedSecurityService(ExtendedSecurityService extendedSecurityService)
     {
@@ -215,8 +224,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     }
 
     /**
-     * @see org.alfresco.repo.version.Version2ServiceImpl#createVersion(org.alfresco.service.cmr.repository.NodeRef,
-     *      java.util.Map, int)
+     * @see org.alfresco.repo.version.Version2ServiceImpl#createVersion(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, int)
      */
     @Override
     protected Version createVersion(NodeRef nodeRef, Map<String, Serializable> origVersionProperties, int versionNumber) throws ReservedVersionNameException
@@ -263,7 +271,8 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     }
 
     /**
-     * @param nodeRef node reference
+     * @param nodeRef
+     *            node reference
      * @return {@link NodeRef} associated file plan, default if none
      */
     private NodeRef getFilePlan(NodeRef nodeRef)
@@ -281,8 +290,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
      */
     private NodeRef getFilePlan()
     {
-        return authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
-        {
+        return authenticationUtil.runAsSystem(new RunAsWork<NodeRef>() {
             @Override
             public NodeRef doWork() throws Exception
             {
@@ -312,8 +320,8 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
             {
                 RecordableVersionPolicy policy = RecordableVersionPolicy.valueOf(policyString.toUpperCase());
                 if (RecordableVersionPolicy.ALL.equals(policy) ||
-                    (RecordableVersionPolicy.MAJOR_ONLY.equals(policy) &&
-                     VersionType.MAJOR.equals(versionType)))
+                        (RecordableVersionPolicy.MAJOR_ONLY.equals(policy) &&
+                                VersionType.MAJOR.equals(versionType)))
                 {
                     result = true;
                 }
@@ -327,17 +335,17 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
      * @see org.alfresco.repo.version.Version2ServiceImpl#createNewVersion(org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map, int, org.alfresco.repo.policy.PolicyScope)
      */
     @Override
-    protected NodeRef createNewVersion( QName sourceTypeRef,
-                                        NodeRef versionHistoryRef,
-                                        Map<QName, Serializable> standardVersionProperties,
-                                        Map<String, Serializable> versionProperties,
-                                        int versionNumber,
-                                        PolicyScope nodeDetails)
+    protected NodeRef createNewVersion(QName sourceTypeRef,
+            NodeRef versionHistoryRef,
+            Map<QName, Serializable> standardVersionProperties,
+            Map<String, Serializable> versionProperties,
+            int versionNumber,
+            PolicyScope nodeDetails)
     {
         NodeRef version = null;
 
         if (versionProperties.containsKey(KEY_RECORDABLE_VERSION) &&
-                    ((Boolean)versionProperties.get(KEY_RECORDABLE_VERSION)).booleanValue())
+                ((Boolean) versionProperties.get(KEY_RECORDABLE_VERSION)).booleanValue())
         {
             // create a recorded version
             version = createNewRecordedVersion(sourceTypeRef, versionHistoryRef, standardVersionProperties, versionProperties, versionNumber, nodeDetails);
@@ -354,20 +362,26 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     /**
      * Creates a new recorded version
      *
-     * @param sourceTypeRef source type name
-     * @param versionHistoryRef version history reference
-     * @param standardVersionProperties standard version properties
-     * @param versionProperties version properties
-     * @param versionNumber version number
-     * @param nodeDetails policy scope
+     * @param sourceTypeRef
+     *            source type name
+     * @param versionHistoryRef
+     *            version history reference
+     * @param standardVersionProperties
+     *            standard version properties
+     * @param versionProperties
+     *            version properties
+     * @param versionNumber
+     *            version number
+     * @param nodeDetails
+     *            policy scope
      * @return {@link NodeRef} record version
      */
     protected NodeRef createNewRecordedVersion(QName sourceTypeRef,
-                                               NodeRef versionHistoryRef,
-                                               Map<QName, Serializable> standardVersionProperties,
-                                               Map<String, Serializable> versionProperties,
-                                               int versionNumber,
-                                               PolicyScope nodeDetails)
+            NodeRef versionHistoryRef,
+            Map<QName, Serializable> standardVersionProperties,
+            Map<String, Serializable> versionProperties,
+            int versionNumber,
+            PolicyScope nodeDetails)
     {
         NodeRef versionNodeRef = null;
 
@@ -414,8 +428,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
                                 QName.createQName(Version2Model.NAMESPACE_URI,
                                         Version2Model.PROP_VERSION_DESCRIPTION)));
                 // run as system as we can't be sure if the user has add aspect rights
-                authenticationUtil.runAsSystem(new RunAsWork<Void>()
-                {
+                authenticationUtil.runAsSystem(new RunAsWork<Void>() {
                     @Override
                     public Void doWork() throws Exception
                     {
@@ -486,16 +499,17 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     /**
      * Helper method to link the record to the previous version record
      *
-     * @param nodeRef noderef source node reference
-     * @param record record record node reference
+     * @param nodeRef
+     *            noderef source node reference
+     * @param record
+     *            record record node reference
      */
     private void linkToPreviousVersionRecord(final NodeRef nodeRef, final NodeRef record)
     {
         final NodeRef latestRecordVersion = getLatestVersionRecord(nodeRef);
         if (latestRecordVersion != null)
         {
-            authenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
+            authenticationUtil.runAsSystem(new RunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -510,7 +524,8 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     /**
      * Helper to get the latest version record for a given document (ie non-record)
      *
-     * @param nodeRef node reference
+     * @param nodeRef
+     *            node reference
      * @return NodeRef latest version record, null otherwise
      */
     private NodeRef getLatestVersionRecord(NodeRef nodeRef)
@@ -527,7 +542,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
                 // look for the associated record
                 final NodeRef previousRecord = (NodeRef) previousVersion.getVersionProperties().get(PROP_VERSION_RECORD);
                 if (previousRecord != null &&
-                    nodeService.exists(previousRecord))
+                        nodeService.exists(previousRecord))
                 {
                     versionRecord = previousRecord;
                     break;
@@ -602,7 +617,10 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
 
         // place information about the destruction of the version record in the properties
         Boolean destroyed = (Boolean) dbNodeService.getProperty(versionRef, PROP_DESTROYED);
-        if (destroyed == null) { destroyed = Boolean.FALSE; }
+        if (destroyed == null)
+        {
+            destroyed = Boolean.FALSE;
+        }
         version.getVersionProperties().put(PROP_RECORDED_VERSION_DESTROYED, destroyed);
 
         return version;
@@ -663,12 +681,12 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
             result = (NodeRef) dbNodeService.getProperty(versionNodeRef, RecordableVersionModel.PROP_RECORD_NODE_REF);
 
             // check that the version record exists
-            if (result != null && 
-                !dbNodeService.exists(result))
+            if (result != null &&
+                    !dbNodeService.exists(result))
             {
                 throw new AlfrescoRuntimeException("Version record node doesn't exist.  Indicates version has not been updated "
-                                                 + "when associated version record was deleted. "
-                                                 + "(nodeRef=" + result.toString() + ")");
+                        + "when associated version record was deleted. "
+                        + "(nodeRef=" + result.toString() + ")");
             }
         }
         return result;
@@ -677,7 +695,8 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     /**
      * Create Version Store Ref
      * 
-     * @param storeRef store ref
+     * @param storeRef
+     *            store ref
      * @return store ref for version store
      */
     public StoreRef convertStoreRef(StoreRef storeRef)
@@ -686,17 +705,17 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     }
 
     /**
-     * Convert the incomming node ref (with the version store protocol specified)
-     * to the internal representation with the workspace protocol.
+     * Convert the incomming node ref (with the version store protocol specified) to the internal representation with the workspace protocol.
      *
-     * @param nodeRef the incomming verison protocol node reference
+     * @param nodeRef
+     *            the incomming verison protocol node reference
      * @return the internal version node reference
      */
     public NodeRef convertNodeRef(NodeRef nodeRef)
     {
         return new NodeRef(convertStoreRef(nodeRef.getStoreRef()), nodeRef.getId());
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService#createRecordFromLatestVersion(NodeRef, NodeRef, boolean autoVersion)
      */
@@ -704,7 +723,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     public NodeRef createRecordFromLatestVersion(final NodeRef filePlan, final NodeRef nodeRef, final boolean isEnableAutoVersionOnRecordCreation)
     {
         setEnableAutoVersionOnRecordCreation(isEnableAutoVersionOnRecordCreation);
-        
+
         return createRecordFromLatestVersion(filePlan, nodeRef);
     }
 
@@ -727,11 +746,10 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
             final Version currentVersion = getCurrentVersion(nodeRef);
 
             if (currentVersion != null &&
-                !isRecordedVersion(currentVersion))
+                    !isRecordedVersion(currentVersion))
             {
                 // create the record from the current frozen state
-                record = authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
-                {
+                record = authenticationUtil.runAsSystem(new RunAsWork<NodeRef>() {
                     public NodeRef doWork() throws Exception
                     {
                         // get the documents readers and writers
@@ -751,10 +769,10 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
 
                         // create the record
                         NodeRef record = recordService.createRecordFromContent(
-                                filePlan, 
-                                (String)properties.get(ContentModel.PROP_NAME), 
-                                type, 
-                                properties, 
+                                filePlan,
+                                (String) properties.get(ContentModel.PROP_NAME),
+                                type,
+                                properties,
                                 null);
 
                         // apply aspects to record
@@ -873,10 +891,10 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     }
 
     /**
-     * Helper method to get the version number of a given version by inspecting the
-     * name of the parent association.
+     * Helper method to get the version number of a given version by inspecting the name of the parent association.
      * 
-     * @param version version
+     * @param version
+     *            version
      * @return int version number
      */
     private int getVersionNumber(Version version)
@@ -891,7 +909,8 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     /**
      * Helper method to get all the version aspect properties from an existing version
      * 
-     * @param version version
+     * @param version
+     *            version
      * @return Map<QName, Serializable> property values
      */
     private Map<QName, Serializable> getVersionAspectProperties(Version version)
@@ -926,7 +945,8 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     /**
      * Helper method to get the internal node reference of a version
      * 
-     * @param version version
+     * @param version
+     *            version
      * @return NodeRef internal node reference to version
      */
     private NodeRef getVersionNodeRef(Version version)
@@ -937,18 +957,25 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     /**
      * Check if current version of the node is modified compared with versioned version
      * 
-     * @param nodeRef internal node reference
+     * @param nodeRef
+     *            internal node reference
      * @return boolean true if nodeRef is modified, otherwise false
      */
     public boolean isCurrentVersionDirty(NodeRef nodeRef)
     {
-        if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE)) { return false; }
+        if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
+        {
+            return false;
+        }
 
         // get the latest version
         Version currentVersion = getCurrentVersion(nodeRef);
         Date modificationDate = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
 
-        if (currentVersion == null) { return true; }
+        if (currentVersion == null)
+        {
+            return true;
+        }
 
         // grab the frozen state
         NodeRef currentFrozenState = currentVersion.getFrozenStateNodeRef();

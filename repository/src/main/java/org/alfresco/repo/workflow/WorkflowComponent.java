@@ -41,7 +41,6 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTimer;
 import org.alfresco.service.namespace.QName;
 
-
 /**
  * SPI to be implemented by a BPM Engine that provides Workflow instance management.
  * 
@@ -54,22 +53,26 @@ public interface WorkflowComponent
     // Workflow Definition Support
     //
 
-    
     /**
      * Deploy a Workflow Definition
      * 
-     * @param workflowDefinition  the content object containing the definition
-     * @param mimetype (optional)  the mime type of the workflow definition
+     * @param workflowDefinition
+     *            the content object containing the definition
+     * @param mimetype
+     *            (optional) the mime type of the workflow definition
      * @return workflow deployment descriptor
      */
     public WorkflowDeployment deployDefinition(InputStream workflowDefinition, String mimetype);
-    
+
     /**
      * Deploy a Workflow Definition
      * 
-     * @param workflowDefinition  the content object containing the definition
-     * @param mimetype (optional)  the mime type of the workflow definition
-     * @param name (optional)  a name to represent the deployment
+     * @param workflowDefinition
+     *            the content object containing the definition
+     * @param mimetype
+     *            (optional) the mime type of the workflow definition
+     * @param name
+     *            (optional) a name to represent the deployment
      * @return workflow deployment descriptor
      * @since 4.0
      */
@@ -78,10 +81,14 @@ public interface WorkflowComponent
     /**
      * Deploy a Workflow Definition
      *
-     * @param workflowDefinition  the content object containing the definition
-     * @param mimetype (optional)  the mime type of the workflow definition
-     * @param name (optional)  a name to represent the deployment
-     * @param fullAccess          true if category should be defined in order to consider the deployment secure
+     * @param workflowDefinition
+     *            the content object containing the definition
+     * @param mimetype
+     *            (optional) the mime type of the workflow definition
+     * @param name
+     *            (optional) a name to represent the deployment
+     * @param fullAccess
+     *            true if category should be defined in order to consider the deployment secure
      * @return workflow deployment descriptor
      * @since 4.0
      */
@@ -90,19 +97,21 @@ public interface WorkflowComponent
     /**
      * Is the specified Workflow Definition already deployed?
      * 
-     * Note: the notion of "already deployed" may differ between bpm engines. For example,
-     *       different versions of the same process may be considered equal.
-     *       
-     * @param workflowDefinition  the definition to check
-     * @param mimetype  the mimetype of the definition
-     * @return  true => already deployed
+     * Note: the notion of "already deployed" may differ between bpm engines. For example, different versions of the same process may be considered equal.
+     * 
+     * @param workflowDefinition
+     *            the definition to check
+     * @param mimetype
+     *            the mimetype of the definition
+     * @return true => already deployed
      */
     public boolean isDefinitionDeployed(InputStream workflowDefinition, String mimetype);
 
     /**
      * Sets the deployment category if applicable to allow the workflow to have full access
      *
-     * @param workflowDefinition  the definition to check
+     * @param workflowDefinition
+     *            the definition to check
      */
     public void checkDeploymentCategory(InputStream workflowDefinition);
 
@@ -110,22 +119,23 @@ public interface WorkflowComponent
      * Undeploy an exisiting Workflow Definition
      * 
      * TODO: Determine behaviour when "in-flight" workflow instances exist
-     *  
-     * @param workflowDefinitionId  the id of the definition to undeploy
+     * 
+     * @param workflowDefinitionId
+     *            the id of the definition to undeploy
      */
     public void undeployDefinition(String workflowDefinitionId);
-    
+
     /**
      * Gets all deployed Workflow Definitions
      * 
-     * @return  the deployed workflow definitions
+     * @return the deployed workflow definitions
      */
     public List<WorkflowDefinition> getDefinitions();
-    
+
     /**
      * Gets all deployed Workflow Definitions (with all previous versions)
      * 
-     * @return  the deployed (and previous) workflow definitions
+     * @return the deployed (and previous) workflow definitions
      */
     @Auditable
     public List<WorkflowDefinition> getAllDefinitions();
@@ -133,171 +143,189 @@ public interface WorkflowComponent
     /**
      * Gets a Workflow Definition by unique Id
      * 
-     * @param workflowDefinitionId  the workflow definition id
-     * @return  the deployed workflow definition
+     * @param workflowDefinitionId
+     *            the workflow definition id
+     * @return the deployed workflow definition
      */
     public WorkflowDefinition getDefinitionById(String workflowDefinitionId);
-    
+
     /**
      * Gets a Workflow Definition by unique name
      * 
-     * @param workflowName  workflow name e.g. activiti$activitiReview
-     * @return  the deployed workflow definition
+     * @param workflowName
+     *            workflow name e.g. activiti$activitiReview
+     * @return the deployed workflow definition
      */
     public WorkflowDefinition getDefinitionByName(String workflowName);
-    
+
     /**
      * Gets all (including previous) Workflow Definitions for the given unique name
      * 
-     * @param workflowName  workflow name e.g. activiti$activitiReview
-     * @return  the deployed workflow definition (or null if not found)
+     * @param workflowName
+     *            workflow name e.g. activiti$activitiReview
+     * @return the deployed workflow definition (or null if not found)
      */
     @Auditable(parameters = {"workflowName"})
     public List<WorkflowDefinition> getAllDefinitionsByName(String workflowName);
-    
+
     /**
      * Gets a graphical view of the Workflow Definition
      * 
-     * @param workflowDefinitionId  the workflow definition id
-     * @return   graphical image of workflow definition
+     * @param workflowDefinitionId
+     *            the workflow definition id
+     * @return graphical image of workflow definition
      */
     @Auditable(parameters = {"workflowDefinitionId"})
     public byte[] getDefinitionImage(String workflowDefinitionId);
-    
+
     /**
      * Gets the Task Definitions for the given Workflow Definition
      * 
-     * @param workflowDefinitionId  the workflow definition id
+     * @param workflowDefinitionId
+     *            the workflow definition id
      * @return the deployed task definitions (or null if not found)
      */
     @Auditable(parameters = {"workflowDefinitionId"})
     public List<WorkflowTaskDefinition> getTaskDefinitions(final String workflowDefinitionId);
-    
 
     //
     // Workflow Instance Support
     //
-    
-    
+
     /**
      * Start a Workflow Instance
      * 
-     * @param workflowDefinitionId  the workflow definition id
-     * @param parameters  the initial set of parameters used to populate the "Start Task" properties
-     * @return  the initial workflow path
+     * @param workflowDefinitionId
+     *            the workflow definition id
+     * @param parameters
+     *            the initial set of parameters used to populate the "Start Task" properties
+     * @return the initial workflow path
      */
     public WorkflowPath startWorkflow(String workflowDefinitionId, Map<QName, Serializable> parameters);
-    
+
     /**
      * Gets all "in-flight" active workflow instances of the specified Workflow Definition
      * 
-     * @param workflowDefinitionId  the workflow definition id
-     * @return  the list of "in-flight" workflow instances
+     * @param workflowDefinitionId
+     *            the workflow definition id
+     * @return the list of "in-flight" workflow instances
      */
     public List<WorkflowInstance> getActiveWorkflows(String workflowDefinitionId);
-    
+
     /**
      * Gets all "in-flight" completed workflow instances of the specified Workflow Definition
      * 
-     * @param workflowDefinitionId  the workflow definition id
-     * @return  the list of "in-flight" workflow instances
+     * @param workflowDefinitionId
+     *            the workflow definition id
+     * @return the list of "in-flight" workflow instances
      */
     public List<WorkflowInstance> getCompletedWorkflows(String workflowDefinitionId);
-    
+
     /**
      * Gets all "in-flight" workflow instances (both active and completed) of the specified Workflow Definition
      * 
-     * @param workflowDefinitionId  the workflow definition id     
-     * @return  the list of "in-flight" workflow instances
+     * @param workflowDefinitionId
+     *            the workflow definition id
+     * @return the list of "in-flight" workflow instances
      */
     public List<WorkflowInstance> getWorkflows(String workflowDefinitionId);
-    
+
     /**
      * Gets all "in-flight" workflow instances according to the specified workflowInstanceQuery parameter
      * 
-     * @param workflowInstanceQuery WorkflowInstanceQuery
+     * @param workflowInstanceQuery
+     *            WorkflowInstanceQuery
      * @return the list of "in-flight" workflow instances
      */
     public List<WorkflowInstance> getWorkflows(WorkflowInstanceQuery workflowInstanceQuery);
-    
+
     /**
      * Gets maxItems "in-flight" workflow instances according to the specified workflowInstanceQuery parameter
      * 
-     * @param workflowInstanceQuery WorkflowInstanceQuery
-     * @param maxItems int
-     * @param skipCount int
+     * @param workflowInstanceQuery
+     *            WorkflowInstanceQuery
+     * @param maxItems
+     *            int
+     * @param skipCount
+     *            int
      * @return maxItems workflow instances
      */
     public List<WorkflowInstance> getWorkflows(WorkflowInstanceQuery workflowInstanceQuery, int maxItems, int skipCount);
-    
+
     /**
      * Get count of workflow instances
      * 
-     * @param workflowInstanceQuery WorkflowInstanceQuery
+     * @param workflowInstanceQuery
+     *            WorkflowInstanceQuery
      * @return count of workflow instances
      */
     public long countWorkflows(WorkflowInstanceQuery workflowInstanceQuery);
-    
+
     /**
      * Gets all "in-flight" active workflow instances.
      * 
-     * @return  the list of "in-flight" workflow instances
+     * @return the list of "in-flight" workflow instances
      * @since 4.0
      */
     public List<WorkflowInstance> getActiveWorkflows();
-    
+
     /**
      * Gets all completed workflow instances.
      * 
-     * @return  the list of "in-flight" workflow instances
+     * @return the list of "in-flight" workflow instances
      * @since 4.0
      */
     public List<WorkflowInstance> getCompletedWorkflows();
-    
+
     /**
      * Gets all workflow instances (both active and completed).
      * 
-     * @return  the list of "in-flight" workflow instances
+     * @return the list of "in-flight" workflow instances
      * @since 4.0
      */
     public List<WorkflowInstance> getWorkflows();
-    
+
     /**
      * Gets a specific workflow instances
      *
-     * @param workflowId  the id of the workflow to retrieve
-     * @return  the workflow instance 
+     * @param workflowId
+     *            the id of the workflow to retrieve
+     * @return the workflow instance
      */
     public WorkflowInstance getWorkflowById(String workflowId);
-    
+
     /**
      * Gets all Paths for the specified Workflow instance
      * 
-     * @param workflowId  workflow instance id
-     * @return  the list of workflow paths
+     * @param workflowId
+     *            workflow instance id
+     * @return the list of workflow paths
      */
     public List<WorkflowPath> getWorkflowPaths(String workflowId);
-    
+
     /**
      * Gets the properties associated with the specified path (and parent paths)
      * 
-     * @param pathId  workflow path id
-     * @return  map of path properties
+     * @param pathId
+     *            workflow path id
+     * @return map of path properties
      */
-    public Map<QName, Serializable> getPathProperties(String pathId); 
-    
+    public Map<QName, Serializable> getPathProperties(String pathId);
+
     /**
      * Cancel an "in-flight" Workflow instance
      * 
-     * @param workflowId  the workflow instance to cancel
-     * @return  an updated representation of the workflow instance
+     * @param workflowId
+     *            the workflow instance to cancel
+     * @return an updated representation of the workflow instance
      */
     public WorkflowInstance cancelWorkflow(String workflowId);
 
     /**
      * Cancel a batch of "in-flight" Workflow instances
      * 
-     * @param workflowIds  List of the workflow instances to cancel
+     * @param workflowIds
+     *            List of the workflow instances to cancel
      * @return List of updated representations of the workflow instances
      */
     public List<WorkflowInstance> cancelWorkflows(List<String> workflowIds);
@@ -305,62 +333,68 @@ public interface WorkflowComponent
     /**
      * Delete an "in-flight" Workflow instance
      * 
-     * @param workflowId  the workflow instance to cancel
-     * @return  an updated representation of the workflow instance
+     * @param workflowId
+     *            the workflow instance to cancel
+     * @return an updated representation of the workflow instance
      */
     public WorkflowInstance deleteWorkflow(String workflowId);
 
     /**
-     * Signal the transition from one Workflow Node to another within an "in-flight"
-     * process.
+     * Signal the transition from one Workflow Node to another within an "in-flight" process.
      * 
-     * @param pathId  the workflow path to signal on
-     * @param transitionId  the transition id to follow (or null, for the default transition)
-     * @return  the updated workflow path
+     * @param pathId
+     *            the workflow path to signal on
+     * @param transitionId
+     *            the transition id to follow (or null, for the default transition)
+     * @return the updated workflow path
      */
     public WorkflowPath signal(String pathId, String transitionId);
-    
+
     /**
      * Fire custom event against specified path
      * 
-     * @param pathId  the workflow path to fire event on
-     * @param event  name of event
-     * @return  workflow path (it may have been updated as a result of firing the event
+     * @param pathId
+     *            the workflow path to fire event on
+     * @param event
+     *            name of event
+     * @return workflow path (it may have been updated as a result of firing the event
      */
     public WorkflowPath fireEvent(String pathId, String event);
 
     /**
      * Gets all Tasks associated with the specified path
      * 
-     * @param pathId  the path id
-     * @return  the list of associated tasks
-     */    
+     * @param pathId
+     *            the path id
+     * @return the list of associated tasks
+     */
     public List<WorkflowTask> getTasksForWorkflowPath(String pathId);
-    
+
     /**
      * Gets all active timers for the specified workflow
      * 
-     * @return  the list of active timers
+     * @return the list of active timers
      */
     public List<WorkflowTimer> getTimers(String workflowId);
-    
+
     /**
      * Determines if a graphical view of the workflow instance exists
      * 
-     * @param workflowInstanceId  the workflow instance id
+     * @param workflowInstanceId
+     *            the workflow instance id
      * @return true if there is a workflow instance diagram available
      * @since 4.0
      */
     public boolean hasWorkflowImage(String workflowInstanceId);
-    
+
     /**
      * Gets a graphical view of the workflow instance
      * 
-     * @param workflowInstanceId  the workflow instance id
+     * @param workflowInstanceId
+     *            the workflow instance id
      * @return image view of the workflow instance as an InputStream or null if a diagram is not available
      * @since 4.0
      */
     public InputStream getWorkflowImage(String workflowInstanceId);
 
 }
-

@@ -27,12 +27,13 @@ package org.alfresco.repo.domain.query.ibatis;
 
 import java.util.List;
 
-import org.alfresco.repo.domain.query.AbstractCannedQueryDAOImpl;
-import org.alfresco.repo.domain.query.QueryException;
-import org.alfresco.util.PropertyCheck;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.RowBounds;
 import org.mybatis.spring.SqlSessionTemplate;
+
+import org.alfresco.repo.domain.query.AbstractCannedQueryDAOImpl;
+import org.alfresco.repo.domain.query.QueryException;
+import org.alfresco.util.PropertyCheck;
 
 /**
  * DAO implementation providing canned query support.
@@ -43,26 +44,26 @@ import org.mybatis.spring.SqlSessionTemplate;
 public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
 {
     private SqlSessionTemplate template;
-    
-    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
+
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate)
     {
         this.template = sqlSessionTemplate;
     }
-    
+
     @Override
     public void init()
     {
         super.init();
         PropertyCheck.mandatory(this, "template", template);
     }
-    
+
     /**
-     * @return                      the compound query name
+     * @return the compound query name
      */
     private final String makeQueryName(final String sqlNamespace, final String queryName)
     {
         return new StringBuilder(sqlNamespace.length() + queryName.length() + 1)
-            .append(sqlNamespace).append(".").append(queryName).toString();
+                .append(sqlNamespace).append(".").append(queryName).toString();
     }
 
     /**
@@ -87,9 +88,9 @@ public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
             {
                 logger.debug(
                         "Executed query: \n" +
-                        "   Query:  " + query + "\n" +
-                        "   Params: " + parameterObj + "\n" +
-                        "   Result: " + result);
+                                "   Query:  " + query + "\n" +
+                                "   Params: " + parameterObj + "\n" +
+                                "   Result: " + result);
             }
             return result;
         }
@@ -97,16 +98,16 @@ public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
         {
             throw new QueryException(
                     "Count query results must return exactly one Long value: \n" +
-                    "   Query:  " + query + "\n" +
-                    "   Params: " + parameterObj,
+                            "   Query:  " + query + "\n" +
+                            "   Params: " + parameterObj,
                     e);
         }
         catch (Throwable e)
         {
             throw new QueryException(
                     "Failed to execute query: \n" +
-                    "   Query:  " + query + "\n" +
-                    "   Params: " + parameterObj,
+                            "   Query:  " + query + "\n" +
+                            "   Params: " + parameterObj,
                     e);
         }
     }
@@ -137,12 +138,12 @@ public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
         {
             throw new IllegalArgumentException("Query result offset must be zero or greater.");
         }
-        
+
         if (limit <= 0)
         {
             throw new IllegalArgumentException("Query results limit must be greater than zero.");
         }
-        
+
         String query = makeQueryName(sqlNamespace, queryName);
         try
         {
@@ -156,16 +157,15 @@ public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
                 RowBounds bounds = new RowBounds(offset, limit);
                 result = (List<R>) template.selectList(query, parameterObj, bounds);
             }
-            
 
             // Done
             if (logger.isDebugEnabled())
             {
                 logger.debug(
                         "Executed query: \n" +
-                        "   Query:  " + query + "\n" +
-                        "   Params: " + parameterObj + "\n" +
-                        "   Result: " + result);
+                                "   Query:  " + query + "\n" +
+                                "   Params: " + parameterObj + "\n" +
+                                "   Result: " + result);
             }
             return result;
         }
@@ -177,11 +177,11 @@ public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
         {
             throw new QueryException(
                     "Failed to execute query: \n" +
-                    "   Namespace: " + sqlNamespace + "\n" +
-                    "   queryName: " + queryName + "\n" +
-                    "   Parameter: " + parameterObj + "\n" +
-                    "   Offset:    " + offset + "\n" +
-                    "   Limit:     " + limit,
+                            "   Namespace: " + sqlNamespace + "\n" +
+                            "   queryName: " + queryName + "\n" +
+                            "   Parameter: " + parameterObj + "\n" +
+                            "   Offset:    " + offset + "\n" +
+                            "   Limit:     " + limit,
                     e);
         }
     }
@@ -196,17 +196,17 @@ public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
         {
             throw new IllegalArgumentException("Query result offset must be zero or greater.");
         }
-        
+
         if (limit <= 0)
         {
             throw new IllegalArgumentException("Query results limit must be greater than zero.");
         }
-        
+
         String query = makeQueryName(sqlNamespace, queryName);
         ResultHandlerTranslator<R> resultHandler = new ResultHandlerTranslator<R>(handler);
         try
         {
-        	if ((offset == 0) && (limit == Integer.MAX_VALUE))
+            if ((offset == 0) && (limit == Integer.MAX_VALUE))
             {
                 template.select(query, parameterObj, resultHandler);
             }
@@ -224,15 +224,15 @@ public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
         {
             throw new QueryException(
                     "Failed to execute query: \n" +
-                    "   Namespace: " + sqlNamespace + "\n" +
-                    "   queryName: " + queryName + "\n" +
-                    "   Parameter: " + parameterObj + "\n" +
-                    "   Offset:    " + offset + "\n" +
-                    "   Limit:     " + limit,
+                            "   Namespace: " + sqlNamespace + "\n" +
+                            "   queryName: " + queryName + "\n" +
+                            "   Parameter: " + parameterObj + "\n" +
+                            "   Offset:    " + offset + "\n" +
+                            "   Limit:     " + limit,
                     e);
         }
     }
-    
+
     /**
      * Helper class to translate MyBatis <tt>ResultHandler</tt> to Alfresco <tt>ResultHandler</tt>.
      * 
@@ -244,19 +244,21 @@ public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
     {
         private final ResultHandler<R> target;
         boolean stopped = false;
+
         private ResultHandlerTranslator(ResultHandler<R> target)
         {
             this.target = target;
         }
+
         @SuppressWarnings("unchecked")
         @Override
         public void handleResult(ResultContext ctx)
         {
             if (stopped || ctx.isStopped())
             {
-                return;             // Fly through results without further callbacks
+                return; // Fly through results without further callbacks
             }
-            boolean more = this.target.handleResult((R)ctx.getResultObject());
+            boolean more = this.target.handleResult((R) ctx.getResultObject());
             if (!more)
             {
                 ctx.stop();

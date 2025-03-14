@@ -34,9 +34,14 @@ package org.alfresco.repo.model.filefolder;
 public interface HiddenFileInfo
 {
     public boolean cascadeHiddenAspect();
+
     public boolean cascadeIndexControlAspect();
+
     public boolean isClientControlled();
+
     public int getVisibilityMask();
+
     public String getFilter();
+
     public boolean isHidden(String path);
 }

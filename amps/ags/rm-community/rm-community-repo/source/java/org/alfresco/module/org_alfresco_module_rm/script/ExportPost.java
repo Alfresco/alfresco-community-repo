@@ -32,6 +32,16 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -43,19 +53,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.view.ExporterCrawlerParameters;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
 
 /**
- * Creates an RM specific ACP file of nodes to export then streams it back
- * to the client.
+ * Creates an RM specific ACP file of nodes to export then streams it back to the client.
  *
  * @author Gavin Cornwell
  */
@@ -78,9 +78,7 @@ public class ExportPost extends StreamACP
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
     @SuppressWarnings("deprecation")
     @Override
@@ -126,25 +124,25 @@ public class ExportPost extends StreamACP
             if (transferFormat)
             {
                 // restrict specific aspects from being returned
-                QName[] excludedAspects = new QName[] {
-                            RenditionModel.ASPECT_RENDITIONED,
-                            ContentModel.ASPECT_THUMBNAILED,
-                            RecordsManagementModel.ASPECT_DISPOSITION_LIFECYCLE,
-                            RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH,
-                            RecordsManagementModel.ASPECT_EXTENDED_SECURITY};
+                QName[] excludedAspects = new QName[]{
+                        RenditionModel.ASPECT_RENDITIONED,
+                        ContentModel.ASPECT_THUMBNAILED,
+                        RecordsManagementModel.ASPECT_DISPOSITION_LIFECYCLE,
+                        RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH,
+                        RecordsManagementModel.ASPECT_EXTENDED_SECURITY};
                 params.setExcludeAspects(excludedAspects);
             }
             else
             {
                 // restrict specific aspects from being returned
-                QName[] excludedAspects = new QName[] {RecordsManagementModel.ASPECT_EXTENDED_SECURITY};
+                QName[] excludedAspects = new QName[]{RecordsManagementModel.ASPECT_EXTENDED_SECURITY};
                 params.setExcludeAspects(excludedAspects);
             }
 
             // create an ACP of the nodes
             tempACPFile = createACP(params,
-                        transferFormat ? ZIP_EXTENSION : ACPExportPackageHandler.ACP_EXTENSION,
-                        transferFormat);
+                    transferFormat ? ZIP_EXTENSION : ACPExportPackageHandler.ACP_EXTENSION,
+                    transferFormat);
 
             // stream the ACP back to the client as an attachment (forcing save as)
             contentStreamer.streamContent(req, res, tempACPFile, null, true, tempACPFile.getName(), null);
@@ -157,9 +155,9 @@ public class ExportPost extends StreamACP
         catch (JSONException je)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
+                    "Could not parse JSON from req.", je);
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             if (logger.isDebugEnabled())
             {
@@ -172,16 +170,16 @@ public class ExportPost extends StreamACP
         }
         finally
         {
-           // try and delete the temporary file
-           if (tempACPFile != null)
-           {
-               if (logger.isDebugEnabled())
-               {
-                   logger.debug("Deleting temporary archive: " + tempACPFile.getAbsolutePath());
-               }
+            // try and delete the temporary file
+            if (tempACPFile != null)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Deleting temporary archive: " + tempACPFile.getAbsolutePath());
+                }
 
-               tempACPFile.delete();
-           }
+                tempACPFile.delete();
+            }
         }
     }
 }

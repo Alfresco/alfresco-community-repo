@@ -25,20 +25,21 @@
  */
 package org.alfresco.rest.api.tests.client.data;
 
-import org.alfresco.rest.api.model.Association;
-import org.alfresco.rest.api.model.AssociationSource;
-import org.alfresco.rest.api.model.Model;
-import org.alfresco.rest.api.model.PropertyDefinition;
-import org.alfresco.rest.api.tests.client.PublicApiClient;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
+import org.alfresco.rest.api.model.Association;
+import org.alfresco.rest.api.model.AssociationSource;
+import org.alfresco.rest.api.model.Model;
+import org.alfresco.rest.api.model.PropertyDefinition;
+import org.alfresco.rest.api.tests.client.PublicApiClient;
 
 public class Aspect extends org.alfresco.rest.api.model.Aspect implements Serializable, ExpectedComparison
 {
@@ -134,7 +135,7 @@ public class Aspect extends org.alfresco.rest.api.model.Aspect implements Serial
         String description = (String) jsonObject.get("description");
         String parentId = (String) jsonObject.get("parentId");
         List<PropertyDefinition> properties = (List<PropertyDefinition>) jsonObject.get("properties");
-        List<String> mandatoryAspects = jsonObject.get("mandatoryAspects") != null ? new ArrayList((List<String>)jsonObject.get("mandatoryAspects")) : null;
+        List<String> mandatoryAspects = jsonObject.get("mandatoryAspects") != null ? new ArrayList((List<String>) jsonObject.get("mandatoryAspects")) : null;
         Boolean isContainer = (Boolean) jsonObject.get("isContainer");
         Boolean isArchive = (Boolean) jsonObject.get("isArchive");
         Boolean includedInSupertypeQuery = (Boolean) jsonObject.get("includedInSupertypeQuery");
@@ -144,8 +145,8 @@ public class Aspect extends org.alfresco.rest.api.model.Aspect implements Serial
         if (jsonObject.get("associations") != null)
         {
             associations = new ArrayList<>();
-            JSONArray jsonArray =  (JSONArray) jsonObject.get("associations");
-            for(int i = 0; i < jsonArray.size(); i++)
+            JSONArray jsonArray = (JSONArray) jsonObject.get("associations");
+            for (int i = 0; i < jsonArray.size(); i++)
             {
                 Association association = new Association();
                 JSONObject object = (JSONObject) jsonArray.get(i);
@@ -210,16 +211,16 @@ public class Aspect extends org.alfresco.rest.api.model.Aspect implements Serial
     {
         List<Aspect> aspects = new ArrayList<Aspect>();
 
-        JSONObject jsonList = (JSONObject)jsonObject.get("list");
+        JSONObject jsonList = (JSONObject) jsonObject.get("list");
         assertNotNull(jsonList);
 
-        JSONArray jsonEntries = (JSONArray)jsonList.get("entries");
+        JSONArray jsonEntries = (JSONArray) jsonList.get("entries");
         assertNotNull(jsonEntries);
 
-        for(int i = 0; i < jsonEntries.size(); i++)
+        for (int i = 0; i < jsonEntries.size(); i++)
         {
-            JSONObject jsonEntry = (JSONObject)jsonEntries.get(i);
-            JSONObject entry = (JSONObject)jsonEntry.get("entry");
+            JSONObject jsonEntry = (JSONObject) jsonEntries.get(i);
+            JSONObject entry = (JSONObject) jsonEntry.get("entry");
             aspects.add(parseAspect(entry));
         }
 

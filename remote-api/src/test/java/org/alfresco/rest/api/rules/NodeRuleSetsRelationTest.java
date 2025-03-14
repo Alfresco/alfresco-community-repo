@@ -27,11 +27,11 @@
 package org.alfresco.rest.api.rules;
 
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
 
 import junit.framework.TestCase;
-import org.alfresco.rest.api.RuleSets;
-import org.alfresco.rest.api.model.rules.RuleSetLink;
-import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,9 +39,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.List;
-
-import static org.mockito.Mockito.when;
+import org.alfresco.rest.api.RuleSets;
+import org.alfresco.rest.api.model.rules.RuleSetLink;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NodeRuleSetsRelationTest extends TestCase
@@ -70,19 +70,18 @@ public class NodeRuleSetsRelationTest extends TestCase
 
         when(ruleSets.linkToRuleSet(FOLDER_NODE_ID, LINK_TO_NODE_ID)).thenReturn(ruleSetLink);
 
-        List<RuleSetLink> actual = nodeRuleSetLinksRelation.create(FOLDER_NODE_ID,List.of(requestBody), parameters);
+        List<RuleSetLink> actual = nodeRuleSetLinksRelation.create(FOLDER_NODE_ID, List.of(requestBody), parameters);
         Assert.assertEquals(ruleResult, actual);
     }
 
     @Test
     public void testUnlinkRuleSet()
     {
-        //when
-        ruleSets.unlinkRuleSet(FOLDER_NODE_ID,RULE_SET_NODE_ID);
+        // when
+        ruleSets.unlinkRuleSet(FOLDER_NODE_ID, RULE_SET_NODE_ID);
 
-        then(ruleSets).should().unlinkRuleSet(FOLDER_NODE_ID,RULE_SET_NODE_ID);
+        then(ruleSets).should().unlinkRuleSet(FOLDER_NODE_ID, RULE_SET_NODE_ID);
         then(ruleSets).shouldHaveNoMoreInteractions();
     }
-
 
 }

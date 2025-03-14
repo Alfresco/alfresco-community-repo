@@ -33,6 +33,10 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -46,9 +50,6 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 public class SystemTemplateLocationsConstraintTest extends VirtualizationIntegrationTest
 {
@@ -90,9 +91,9 @@ public class SystemTemplateLocationsConstraintTest extends VirtualizationIntegra
 
         List<String> rawAllowedValues = constraints.getRawAllowedValues();
         assertEquals(1,
-                     rawAllowedValues.size());
+                rawAllowedValues.size());
         assertEquals(SystemTemplateLocationsConstraint.NULL_SYSTEM_TEMPLATE,
-                     rawAllowedValues.get(0));
+                rawAllowedValues.get(0));
 
     }
 
@@ -105,17 +106,17 @@ public class SystemTemplateLocationsConstraintTest extends VirtualizationIntegra
         NodeRef templatesLocation = sysTemplatesPath.resolve(true);
 
         PagingResults<FileInfo> templates = fileAndFolderService
-                    .list(templatesLocation,
-                          Collections.singleton(VirtualContentModel.TYPE_VIRTUAL_FOLDER_TEMPLATE),
-                          null,
-                          null,
-                          new PagingRequest(1000));
+                .list(templatesLocation,
+                        Collections.singleton(VirtualContentModel.TYPE_VIRTUAL_FOLDER_TEMPLATE),
+                        null,
+                        null,
+                        new PagingRequest(1000));
 
         List<FileInfo> templatesPage = templates.getPage();
         if (!templatesPage.isEmpty())
         {
             assertEquals(templatesPage.size(),
-                         rawAllowedValues.size());
+                    rawAllowedValues.size());
 
             List<String> expectedSysPaths = new LinkedList<>();
             for (FileInfo fi : templatesPage)
@@ -142,35 +143,35 @@ public class SystemTemplateLocationsConstraintTest extends VirtualizationIntegra
 
         InputStream testTemplsteJsonIS = getClass().getResourceAsStream(TEST_TEMPLATE_1_JSON_CLASSPATH);
         ChildAssociationRef templateAssoc = createContent(templatesLocation,
-                                                          TEST_TEMPLATE_1_JSON_NAME,
-                                                          testTemplsteJsonIS,
-                                                          "application/json",
-                                                          "UTF-8",
-                                                          QName.createQName(virtualizationConfigTestBootstrap
-                                                                                        .getSystemTemplateType(),
-                                                                            serviceRegistry.getNamespaceService()));
+                TEST_TEMPLATE_1_JSON_NAME,
+                testTemplsteJsonIS,
+                "application/json",
+                "UTF-8",
+                QName.createQName(virtualizationConfigTestBootstrap
+                        .getSystemTemplateType(),
+                        serviceRegistry.getNamespaceService()));
         testTemplsteJsonIS = getClass().getResourceAsStream(TEST_TEMPLATE_1_JSON_CLASSPATH);
         createContent(templatesLocation,
-                      "non" + TEST_TEMPLATE_1_JSON_NAME,
-                      testTemplsteJsonIS,
-                      "application/json",
-                      "UTF-8",
-                      ContentModel.TYPE_CONTENT);
+                "non" + TEST_TEMPLATE_1_JSON_NAME,
+                testTemplsteJsonIS,
+                "application/json",
+                "UTF-8",
+                ContentModel.TYPE_CONTENT);
 
         List<String> rawAllowedValues = constraints.getRawAllowedValues();
 
         assertTrue(rawAllowedValues.size() >= 5);
 
         assertTrue("Invalid values " + rawAllowedValues,
-                   rawAllowedValues.contains(TEST_TEMPLATE_1_JSON_SYS_PATH));
+                rawAllowedValues.contains(TEST_TEMPLATE_1_JSON_SYS_PATH));
         assertTrue("Invalid values " + rawAllowedValues,
-                   rawAllowedValues.contains(TEST_TEMPLATE_2_JSON_SYS_PATH));
+                rawAllowedValues.contains(TEST_TEMPLATE_2_JSON_SYS_PATH));
         assertTrue("Invalid values " + rawAllowedValues,
-                   rawAllowedValues.contains(TEST_TEMPLATE_3_JSON_SYS_PATH));
+                rawAllowedValues.contains(TEST_TEMPLATE_3_JSON_SYS_PATH));
         assertTrue("Invalid values " + rawAllowedValues,
-                   rawAllowedValues.contains(TEST_TEMPLATE_4_JSON_SYS_PATH));
+                rawAllowedValues.contains(TEST_TEMPLATE_4_JSON_SYS_PATH));
 
         assertTrue("Invalid values " + rawAllowedValues,
-                   rawAllowedValues.contains("N" + templateAssoc.getChildRef()));
+                rawAllowedValues.contains("N" + templateAssoc.getChildRef()));
     }
 }

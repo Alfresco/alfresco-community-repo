@@ -28,6 +28,8 @@ package org.alfresco.rest.api.nodes;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.Comments;
 import org.alfresco.rest.api.model.Comment;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -38,44 +40,43 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  *
  * @author Gethin James
  * @author Steve Glover
  */
-@RelationshipResource(name = "comments",  entityResource = NodesEntityResource.class, title = "Document or folder comments")
-public class NodeCommentsRelation implements RelationshipResourceAction.Read<Comment>, RelationshipResourceAction.Create<Comment>, RelationshipResourceAction.Update<Comment>,  
-    RelationshipResourceAction.Delete, InitializingBean
+@RelationshipResource(name = "comments", entityResource = NodesEntityResource.class, title = "Document or folder comments")
+public class NodeCommentsRelation implements RelationshipResourceAction.Read<Comment>, RelationshipResourceAction.Create<Comment>, RelationshipResourceAction.Update<Comment>,
+        RelationshipResourceAction.Delete, InitializingBean
 {
-	private Comments comments;
+    private Comments comments;
 
-	public void setComments(Comments comments)
-	{
-		this.comments = comments;
-	}
+    public void setComments(Comments comments)
+    {
+        this.comments = comments;
+    }
 
-	@Override
+    @Override
     public void afterPropertiesSet()
     {
         ParameterCheck.mandatory("comments", this.comments);
     }
 
-	/**
-	 * Create a comment for the node given by nodeId.
-	 * 
-	 * THOR-1153: "F314: Add a comment to a folder or document"
+    /**
+     * Create a comment for the node given by nodeId.
      * 
-	 */
+     * THOR-1153: "F314: Add a comment to a folder or document"
+     * 
+     */
     @Override
-    @WebApiDescription(title="Creates comments for the node 'nodeId'.")
+    @WebApiDescription(title = "Creates comments for the node 'nodeId'.")
     public List<Comment> create(String nodeId, List<Comment> entity, Parameters parameters)
     {
         List<Comment> result = new ArrayList<Comment>(entity.size());
         for (Comment comment : entity)
         {
-           result.add(comments.createComment(nodeId, comment));
+            result.add(comments.createComment(nodeId, comment));
         }
         return result;
     }
@@ -83,11 +84,10 @@ public class NodeCommentsRelation implements RelationshipResourceAction.Read<Com
     /**
      * 
      * Returns a paged list of comments for the document/folder identified by nodeId, sorted chronologically with the newest first.
-     *  
+     * 
      * THOR-1152: “F313: For a folder or document, get the list of associated comments”
      * 
-     * If nodeId does not exist, EntityNotFoundException (status 404).
-     * If nodeId does not represent a document or folder, InvalidArgumentException (status 400).
+     * If nodeId does not exist, EntityNotFoundException (status 404). If nodeId does not represent a document or folder, InvalidArgumentException (status 400).
      */
     @Override
     @WebApiDescription(title = "Returns a paged list of comments for the document/folder identified by nodeId, sorted chronologically with the newest first.")
@@ -96,18 +96,18 @@ public class NodeCommentsRelation implements RelationshipResourceAction.Read<Com
         return comments.getComments(nodeId, parameters.getPaging(), parameters.getInclude());
     }
 
-	@Override
+    @Override
     @WebApiDescription(title = "Updates the comment with the given id.")
-	public Comment update(String nodeId, Comment entity, Parameters parameters)
-	{
-		return comments.updateComment(nodeId, entity);
-	}
+    public Comment update(String nodeId, Comment entity, Parameters parameters)
+    {
+        return comments.updateComment(nodeId, entity);
+    }
 
     @Override
     @WebApiDescription(title = "Delete the comment with the given commentNodeId.")
     @WebApiParameters({
-                @WebApiParam(name="nodeId", title="The unique id of the parent Node being addressed", description="A single node id"),
-                @WebApiParam(name="commentNodeId", title="The unique id of the comment Node being addressed", description="A single node id")})
+            @WebApiParam(name = "nodeId", title = "The unique id of the parent Node being addressed", description = "A single node id"),
+            @WebApiParam(name = "commentNodeId", title = "The unique id of the comment Node being addressed", description = "A single node id")})
     public void delete(String nodeId, String commentNodeId, Parameters parameters)
     {
         comments.deleteComment(nodeId, commentNodeId);

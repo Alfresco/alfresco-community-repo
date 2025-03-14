@@ -33,6 +33,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -43,9 +47,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.ParameterCheck;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Records management event service implementation
@@ -74,7 +75,8 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
     /**
      * Set the node service
      *
-     * @param nodeService node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -84,7 +86,8 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
     /**
      * Set the content service
      *
-     * @param contentService content service
+     * @param contentService
+     *            content service
      */
     public void setContentService(ContentService contentService)
     {
@@ -120,8 +123,11 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
      */
     public RecordsManagementEvent getEvent(String eventName)
     {
-        if (!getEventMap().containsKey(eventName)) { throw new AlfrescoRuntimeException("The event "
-                + eventName + " does not exist."); }
+        if (!getEventMap().containsKey(eventName))
+        {
+            throw new AlfrescoRuntimeException("The event "
+                    + eventName + " does not exist.");
+        }
         return getEventMap().get(eventName);
     }
 
@@ -134,16 +140,20 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
     }
 
     /**
-     * Indicates whether a particular event display label exists.  Returns true if it does, false otherwise.
+     * Indicates whether a particular event display label exists. Returns true if it does, false otherwise.
      *
-     * @param eventDisplayLabel event display label
-     * @return boolean      true if event exists, false otherwise
+     * @param eventDisplayLabel
+     *            event display label
+     * @return boolean true if event exists, false otherwise
      */
     public boolean existsEventDisplayLabel(String eventDisplayLabel)
     {
         for (RecordsManagementEvent recordsManagementEvent : getEventMap().values())
         {
-            if (recordsManagementEvent.getDisplayLabel().equalsIgnoreCase(eventDisplayLabel)) { return true; }
+            if (recordsManagementEvent.getDisplayLabel().equalsIgnoreCase(eventDisplayLabel))
+            {
+                return true;
+            }
         }
         return false;
     }
@@ -184,7 +194,7 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
      * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#canEditEvent(java.lang.String, java.lang.String, java.lang.String)
      */
     @SuppressWarnings("rawtypes")
-	public boolean canEditEvent(String eventDisplayLabel, String eventName, String eventType)
+    public boolean canEditEvent(String eventDisplayLabel, String eventName, String eventType)
     {
         ParameterCheck.mandatoryString("eventDisplayLabel", eventDisplayLabel);
         ParameterCheck.mandatoryString("eventName", eventName);
@@ -234,10 +244,10 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
         if (!eventTypes.containsKey(eventType))
         {
             throw new AlfrescoRuntimeException(
-                        "Can not add event because event " +
-                        eventName +
-                        " has an undefined eventType. ("
-                        + eventType + ")");
+                    "Can not add event because event " +
+                            eventName +
+                            " has an undefined eventType. ("
+                            + eventType + ")");
         }
 
         // Create event and add to map
@@ -263,11 +273,9 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
     }
 
     /**
-     * Helper method to get the event map. Loads initial instance from persisted
-     * configuration file.
+     * Helper method to get the event map. Loads initial instance from persisted configuration file.
      *
-     * @return Map<String, RecordsManagementEvent> map of available events by
-     *         event name
+     * @return Map<String, RecordsManagementEvent> map of available events by event name
      */
     private Map<String, RecordsManagementEvent> getEventMap()
     {
@@ -283,8 +291,7 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
      */
     private void loadEvents()
     {
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
             public Object doWork() throws Exception
             {
                 // Get the event config node
@@ -318,15 +325,14 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
                         eventDisplayLabel = translated;
                     }
 
-
                     // Check that the eventType is valid
                     if (!eventTypes.containsKey(eventType))
                     {
                         throw new AlfrescoRuntimeException(
-                                    "Can not load rm event configuration because event " +
-                                    eventName +
-                                    " has an undefined eventType. ("
-                                    + eventType + ")");
+                                "Can not load rm event configuration because event " +
+                                        eventName +
+                                        " has an undefined eventType. ("
+                                        + eventType + ")");
                     }
 
                     // Create event and add to map
@@ -344,8 +350,7 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
      */
     private void saveEvents()
     {
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
             public Object doWork() throws Exception
             {
                 // Get the event config node

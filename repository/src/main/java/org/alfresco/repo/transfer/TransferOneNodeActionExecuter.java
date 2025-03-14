@@ -44,9 +44,10 @@ public class TransferOneNodeActionExecuter extends ActionExecuterAbstractBase
 {
     public static final String NAME = "transfer-this-node";
     private TransferService transferService;
-    
+
     /**
-     * @param transferService the transferService to set
+     * @param transferService
+     *            the transferService to set
      */
     public void setTransferService(TransferService transferService)
     {
@@ -54,8 +55,8 @@ public class TransferOneNodeActionExecuter extends ActionExecuterAbstractBase
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
-     */
+     * 
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef) */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
@@ -67,6 +68,5 @@ public class TransferOneNodeActionExecuter extends ActionExecuterAbstractBase
 
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-    {
-    }
+    {}
 }

@@ -26,18 +26,19 @@
 package org.alfresco.rest.requests;
 
 import static io.restassured.RestAssured.given;
+
 import static org.alfresco.utility.report.log.Step.STEP;
+
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
+import org.springframework.http.HttpStatus;
 
 import org.alfresco.rest.core.RestProperties;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.http.HttpStatus;
-
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
-import io.restassured.specification.RequestSpecification;
 
 /**
  * Declares all Rest API under the /alfresco/service/api/tenants path
@@ -52,6 +53,7 @@ public class Tenant extends ModelRequest<Tenant>
         super(restWrapper);
         this.restProperties = restProperties;
     }
+
     /**
      * Create tenant using POST call on "http://{server}:{port}/alfresco/service/api/tenants"
      * 

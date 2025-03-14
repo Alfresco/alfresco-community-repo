@@ -25,10 +25,11 @@
  */
 package org.alfresco.rest.api.impl.directurl;
 
-import org.alfresco.repo.content.directurl.AbstractDirectUrlConfig;
-import org.alfresco.repo.content.directurl.InvalidDirectAccessUrlConfigException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.repo.content.directurl.AbstractDirectUrlConfig;
+import org.alfresco.repo.content.directurl.InvalidDirectAccessUrlConfigException;
 
 /**
  * REST API direct access URL configuration settings.

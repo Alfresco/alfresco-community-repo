@@ -42,23 +42,22 @@ public class AuditDeleteParameters
     private Long auditFromId;
     private Long auditToId;
     private List<Long> auditEntryIds;
-    
+
     public AuditDeleteParameters()
-    {
-    }
-    
+    {}
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("AuditDeleteParameters")
-          .append("[ auditApplicationId=").append(auditApplicationId)
-          .append(", auditFromTime").append(auditFromTime == null ? null : new Date(auditFromTime))
-          .append(", auditToTime").append(auditToTime == null ? null : new Date(auditToTime))
-          .append(", auditFromId").append(auditFromId)
-          .append(", auditToId").append(auditToId)
-          .append(", auditEntryIds").append(auditEntryIds == null ? null : auditEntryIds.size())
-          .append("]");
+                .append("[ auditApplicationId=").append(auditApplicationId)
+                .append(", auditFromTime").append(auditFromTime == null ? null : new Date(auditFromTime))
+                .append(", auditToTime").append(auditToTime == null ? null : new Date(auditToTime))
+                .append(", auditFromId").append(auditFromId)
+                .append(", auditToId").append(auditToId)
+                .append(", auditEntryIds").append(auditEntryIds == null ? null : auditEntryIds.size())
+                .append("]");
         return sb.toString();
     }
 
@@ -111,7 +110,7 @@ public class AuditDeleteParameters
     {
         this.auditToId = auditToId;
     }
-    
+
     public List<Long> getAuditEntryIds()
     {
         return auditEntryIds;

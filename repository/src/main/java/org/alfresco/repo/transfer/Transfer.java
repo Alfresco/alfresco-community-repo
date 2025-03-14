@@ -38,7 +38,6 @@ public class Transfer
     private String transferId;
     private TransferTarget transferTarget;
     private TransferVersion toVersion;
-    
 
     public void setTransferId(String transferId)
     {
@@ -49,10 +48,10 @@ public class Transfer
     {
         return transferId;
     }
-    
-    // may also have capabilities of the remote system here (for when we are 
+
+    // may also have capabilities of the remote system here (for when we are
     // transfering accross versions)
-    
+
     public boolean equals(Object obj)
     {
         if (obj == null)
@@ -70,14 +69,15 @@ public class Transfer
         Transfer that = (Transfer) obj;
         return (this.transferId.equals(that.getTransferId()));
     }
-    
+
     public int hashCode()
     {
         return transferId.hashCode();
     }
 
     /**
-     * @param target TransferTarget
+     * @param target
+     *            TransferTarget
      */
     public void setTransferTarget(TransferTarget target)
     {
@@ -91,10 +91,10 @@ public class Transfer
     {
         return transferTarget;
     }
-    
+
     public String toString()
     {
-        return "TransferId" + transferId + ", target:" + transferTarget ;
+        return "TransferId" + transferId + ", target:" + transferTarget;
     }
 
     public void setToVersion(TransferVersion toVersion)

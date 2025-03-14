@@ -64,8 +64,8 @@ public abstract class QNameFieldProcessor<Type extends ClassAttributeDefinition>
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.field.processor.AbstractFieldProcessor#generateTypedField(java.lang.String, java.lang.Object)
-     */
+     * 
+     * @see org.alfresco.repo.forms.field.processor.AbstractFieldProcessor#generateTypedField(java.lang.String, java.lang.Object) */
     @Override
     protected Field generateTypedField(String fieldName, FormCreationData formData, ContentModelItemData<?> typedData)
     {
@@ -82,11 +82,11 @@ public abstract class QNameFieldProcessor<Type extends ClassAttributeDefinition>
         }
         return field;
     }
-    
+
     protected QName getFullName(String name)
     {
         String[] parts = name.split(FormFieldConstants.FIELD_NAME_SEPARATOR);
-        if(parts.length == 2)
+        if (parts.length == 2)
         {
             String prefix = parts[0];
             String localName = parts[1];
@@ -99,13 +99,13 @@ public abstract class QNameFieldProcessor<Type extends ClassAttributeDefinition>
             return QName.createQName(prefix, localName, namespaceService);
         }
     }
-    
-    protected String getPrefixedName(ClassAttributeDefinition attribDef) 
+
+    protected String getPrefixedName(ClassAttributeDefinition attribDef)
     {
         return attribDef.getName().toPrefixString(namespaceService);
     }
 
-    public Field generateField(QName fullName, ContentModelItemData<?> itemData, boolean isForcedField) 
+    public Field generateField(QName fullName, ContentModelItemData<?> itemData, boolean isForcedField)
     {
         Type propDef = getTypeDefinition(fullName, itemData, isForcedField);
         Field field = null;
@@ -119,18 +119,17 @@ public abstract class QNameFieldProcessor<Type extends ClassAttributeDefinition>
     }
 
     /**
-     * Sets several properties on the {@link FieldDefinition}, including name,
-     * label, description, dataKeyName and whether the field is protected. These
-     * values are derived from the <code>attribDef</code> parameter.
+     * Sets several properties on the {@link FieldDefinition}, including name, label, description, dataKeyName and whether the field is protected. These values are derived from the <code>attribDef</code> parameter.
      * 
-     * @param attribDef Used to set the values of name, description, label,
-     *            dataKeyName and isProtected properties on the returned object.
-     * @param fieldDef A factory object used to create the FieldDefinition to be
-     *            returned.
-     * @param group Used to set the group on the returned FieldDefinition.
+     * @param attribDef
+     *            Used to set the values of name, description, label, dataKeyName and isProtected properties on the returned object.
+     * @param fieldDef
+     *            A factory object used to create the FieldDefinition to be returned.
+     * @param group
+     *            Used to set the group on the returned FieldDefinition.
      */
     protected void populateFieldDefinition(Type attribDef, FieldDefinition fieldDef,
-                FieldGroup group, String dataKeyPrefix)
+            FieldGroup group, String dataKeyPrefix)
     {
         String attribName = fieldDef.getName();
         fieldDef.setGroup(group);
@@ -144,7 +143,7 @@ public abstract class QNameFieldProcessor<Type extends ClassAttributeDefinition>
         String dataKeyName = makeDataKeyForName(attribName, dataKeyPrefix);
         fieldDef.setDataKeyName(dataKeyName);
     }
-    
+
     protected String makeDataKeyForName(String propName, String prefix)
     {
         String[] nameParts = QName.splitPrefixedQName(propName);
@@ -158,35 +157,37 @@ public abstract class QNameFieldProcessor<Type extends ClassAttributeDefinition>
         builder.append(nameParts[1]);
         return builder.toString();
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.field.processor.AbstractFieldProcessor#getExpectedDataType()
-     */
+     * 
+     * @see org.alfresco.repo.forms.field.processor.AbstractFieldProcessor#getExpectedDataType() */
     @SuppressWarnings("unchecked")
     @Override
     protected Class<ContentModelItemData<?>> getExpectedDataType()
     {
         // This is nasty but unavoidable because of generics.
         Object clazz = ContentModelItemData.class;
-        return (Class<ContentModelItemData<?>>)clazz;
+        return (Class<ContentModelItemData<?>>) clazz;
     }
-    
+
     /**
-     * @param namespaceService the namespaceService to set
+     * @param namespaceService
+     *            the namespaceService to set
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
-     * @param dictionaryService the dictionaryService to set
+     * @param dictionaryService
+     *            the dictionaryService to set
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     protected abstract Field makeField(Type typeDef, Object value, FieldGroup group);
 
     protected abstract FieldGroup getGroup(Type typeDef);

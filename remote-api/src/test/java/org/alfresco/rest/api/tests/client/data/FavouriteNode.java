@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
- 
+
 package org.alfresco.rest.api.tests.client.data;
 
 import static org.junit.Assert.assertTrue;
@@ -32,8 +32,9 @@ import java.io.Serializable;
 import java.text.ParseException;
 import java.util.Date;
 
-import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.json.simple.JSONObject;
+
+import org.alfresco.rest.api.tests.util.RestApiUtil;
 
 /**
  * Alfresco API - Favourite node representation.
@@ -57,13 +58,13 @@ public class FavouriteNode implements Serializable, ExpectedComparison
     protected PathInfo path;
 
     public FavouriteNode()
-    {
-    }
+    {}
 
     /**
      * For POSTs
      *
-     * @param guid String
+     * @param guid
+     *            String
      */
     public FavouriteNode(String guid)
     {
@@ -225,7 +226,8 @@ public class FavouriteNode implements Serializable, ExpectedComparison
         {
             if (other.nodeId != null)
                 return false;
-        } else if (!nodeId.equals(other.nodeId))
+        }
+        else if (!nodeId.equals(other.nodeId))
             return false;
         return true;
     }
@@ -252,13 +254,13 @@ public class FavouriteNode implements Serializable, ExpectedComparison
         AssertUtil.assertEquals("title", title, other.getTitle());
         AssertUtil.assertEquals("description", description, other.getDescription());
         AssertUtil.assertEquals("createdAt", createdAt, other.getCreatedAt());
-        if(modifiedAt != null)
+        if (modifiedAt != null)
         {
             assertTrue(modifiedAt.before(other.getModifiedAt()) || modifiedAt.equals(other.getModifiedAt()));
         }
         AssertUtil.assertEquals("createdBy", createdBy, other.getCreatedBy());
         AssertUtil.assertEquals("modifiedBy", modifiedBy, other.getModifiedBy());
-        if(path != null)
+        if (path != null)
         {
             path.expected(other.path);
         }
@@ -269,16 +271,16 @@ public class FavouriteNode implements Serializable, ExpectedComparison
     {
         final StringBuilder sb = new StringBuilder(250);
         sb.append("FavouriteNode [nodeId=").append(nodeId)
-                    .append(", guid=").append(guid)
-                    .append(", name=").append(name)
-                    .append(", title=").append(title)
-                    .append(", description=").append(description)
-                    .append(", createdAt=").append(createdAt)
-                    .append(", modifiedAt=").append(modifiedAt)
-                    .append(", createdBy=").append(createdBy)
-                    .append(", modifiedBy=").append(modifiedBy)
-                    .append(", path=").append(path)
-                    .append(']');
+                .append(", guid=").append(guid)
+                .append(", name=").append(name)
+                .append(", title=").append(title)
+                .append(", description=").append(description)
+                .append(", createdAt=").append(createdAt)
+                .append(", modifiedAt=").append(modifiedAt)
+                .append(", createdBy=").append(createdBy)
+                .append(", modifiedBy=").append(modifiedBy)
+                .append(", path=").append(path)
+                .append(']');
         return sb.toString();
     }
 }

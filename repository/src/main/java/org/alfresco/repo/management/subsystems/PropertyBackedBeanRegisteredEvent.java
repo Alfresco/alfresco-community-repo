@@ -43,5 +43,5 @@ public class PropertyBackedBeanRegisteredEvent extends PropertyBackedBeanEvent
     public PropertyBackedBeanRegisteredEvent(PropertyBackedBean source)
     {
         super(source);
-    }    
+    }
 }

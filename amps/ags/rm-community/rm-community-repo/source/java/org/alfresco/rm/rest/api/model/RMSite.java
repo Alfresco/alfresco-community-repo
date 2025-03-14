@@ -59,7 +59,7 @@ public class RMSite extends Site
     @Override
     public boolean wasSet(String fieldName)
     {
-        if(COMPLIANCE.equalsIgnoreCase(fieldName))
+        if (COMPLIANCE.equalsIgnoreCase(fieldName))
         {
             Boolean b = setRMFields.get(fieldName);
             return (b != null ? b : false);
@@ -94,6 +94,6 @@ public class RMSite extends Site
     {
         return "RMSite [id=" + id + ", guid=" + guid + ", title="
                 + title + ", description=" + description + ", visibility="
-                + visibility + ", role=" + role + ", compliance="+ compliance +"]";
+                + visibility + ", role=" + role + ", compliance=" + compliance + "]";
     }
 }

@@ -34,21 +34,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Webscript to get the Classdefinitions using classfilter , namespaceprefix and name
  *
  * This class makes it possible to get only RM related class definitions
+ * 
  * @see ClassesGet for the original implementation
  *
  * @author Tuna Aksoy
@@ -68,11 +70,12 @@ public class RmClassesGet extends DictionaryWebServiceBase implements RecordsMan
     private static final String REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX = "nsp";
     private static final String REQ_URL_TEMPL_VAR_NAME = "n";
 
-    /** Site service*/
+    /** Site service */
     private SiteService siteService;
 
     /**
-     * @param siteService the site service to set
+     * @param siteService
+     *            the site service to set
      */
     public void setSiteService(SiteService siteService)
     {
@@ -90,8 +93,10 @@ public class RmClassesGet extends DictionaryWebServiceBase implements RecordsMan
     /**
      * Execute custom Java logic
      *
-     * @param req  Web Script request
-     * @param isRM  indicates whether the request comes from an RM site or not
+     * @param req
+     *            Web Script request
+     * @param isRM
+     *            indicates whether the request comes from an RM site or not
      * @return custom service model
      */
     private Map<String, Object> executeImpl(WebScriptRequest req, boolean isRM)
@@ -110,28 +115,28 @@ public class RmClassesGet extends DictionaryWebServiceBase implements RecordsMan
         QName classQname = null;
         QName myModel = null;
 
-        //if classfilter is not given, then it defaults to all
+        // if classfilter is not given, then it defaults to all
         if (classFilter == null)
         {
             classFilter = "all";
         }
 
-        //validate classfilter
+        // validate classfilter
         if (!isValidClassFilter(classFilter))
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the classfilter - " + classFilter + " provided in the URL");
         }
 
-        //name alone has no meaning without namespaceprefix
+        // name alone has no meaning without namespaceprefix
         if (namespacePrefix == null && name != null)
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "Missing namespaceprefix parameter in the URL - both combination of name and namespaceprefix is needed");
         }
 
-        //validate the namespaceprefix and name parameters => if namespaceprefix is given, then name has to be validated along with it
+        // validate the namespaceprefix and name parameters => if namespaceprefix is given, then name has to be validated along with it
         if (namespacePrefix != null)
         {
-            //validate name parameter if present along with the namespaceprefix
+            // validate name parameter if present along with the namespaceprefix
             if (name != null)
             {
                 className = namespacePrefix + "_" + name;
@@ -146,30 +151,30 @@ public class RmClassesGet extends DictionaryWebServiceBase implements RecordsMan
             }
             else
             {
-                //if name is not given then the model is extracted from the namespaceprefix, there can be more than one model associated with one namespaceprefix
+                // if name is not given then the model is extracted from the namespaceprefix, there can be more than one model associated with one namespaceprefix
                 String namespaceUri = namespaceService.getNamespaceURI(namespacePrefix);
                 for (QName qnameObj : this.dictionaryservice.getAllModels())
                 {
-                     if (qnameObj.getNamespaceURI().equals(namespaceUri))
-                     {
-                         name = qnameObj.getLocalName();
-                         myModel = QName.createQName(getFullNamespaceURI(namespacePrefix + "_" + name));
+                    if (qnameObj.getNamespaceURI().equals(namespaceUri))
+                    {
+                        name = qnameObj.getLocalName();
+                        myModel = QName.createQName(getFullNamespaceURI(namespacePrefix + "_" + name));
 
-                         // check the classfilter to pull out either all or type or aspects
-                         if (classFilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE1))
-                         {
+                        // check the classfilter to pull out either all or type or aspects
+                        if (classFilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE1))
+                        {
                             qnames.addAll(this.dictionaryservice.getAspects(myModel));
                             qnames.addAll(this.dictionaryservice.getTypes(myModel));
-                         }
-                         else if (classFilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE3))
-                         {
+                        }
+                        else if (classFilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE3))
+                        {
                             qnames.addAll(this.dictionaryservice.getTypes(myModel));
-                         }
-                         else if (classFilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE2))
-                         {
+                        }
+                        else if (classFilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE2))
+                        {
                             qnames.addAll(this.dictionaryservice.getAspects(myModel));
-                         }
-                     }
+                        }
+                    }
                 }
             }
         }
@@ -215,7 +220,8 @@ public class RmClassesGet extends DictionaryWebServiceBase implements RecordsMan
     /**
      * Returns the names of the types depending on {@link isRM} parameter
      *
-     * @param isRM if true only RM related types will be retrieved
+     * @param isRM
+     *            if true only RM related types will be retrieved
      * @return The names of the types defined within the specified model or all of them depending on {@link isRM} parameter
      */
     private Collection<QName> getTypes(boolean isRM)
@@ -233,7 +239,8 @@ public class RmClassesGet extends DictionaryWebServiceBase implements RecordsMan
     /**
      * Returns the names of the aspects depending on {@link isRM} parameter
      *
-     * @param isRM if true only RM related aspects will be retrieved
+     * @param isRM
+     *            if true only RM related aspects will be retrieved
      * @return The names of the aspects defined within the specified model or all of them depending on {@link isRM} parameter
      */
     private Collection<QName> getAspects(boolean isRM)

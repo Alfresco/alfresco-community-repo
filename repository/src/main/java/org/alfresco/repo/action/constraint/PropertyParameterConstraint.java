@@ -43,14 +43,14 @@ public class PropertyParameterConstraint extends BaseParameterConstraint
 {
     /** Name constant */
     public static final String NAME = "ac-properties";
-    
+
     private DictionaryService dictionaryService;
-    
+
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-          
+
     /**
      * @see org.alfresco.service.cmr.action.ParameterConstraint#getAllowableValues()
      */

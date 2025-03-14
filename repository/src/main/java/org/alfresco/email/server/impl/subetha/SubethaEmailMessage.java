@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-
 import jakarta.mail.Address;
 import jakarta.mail.BodyPart;
 import jakarta.mail.MessagingException;
@@ -41,15 +40,16 @@ import jakarta.mail.Part;
 import jakarta.mail.Session;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMessage.RecipientType;
 import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.internet.MimeUtility;
-import jakarta.mail.internet.MimeMessage.RecipientType;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.service.cmr.email.EmailMessage;
 import org.alfresco.service.cmr.email.EmailMessageException;
 import org.alfresco.service.cmr.email.EmailMessagePart;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /* 
  * TODO There's a lot of metadata extraction going on in this class that 
@@ -72,7 +72,7 @@ public class SubethaEmailMessage implements EmailMessage
     private static final String ERR_EXTRACTING_SUBJECT = "email.server.err.extracting_subject";
     private static final String ERR_EXTRACTING_SENT_DATE = "email.server.err.extracting_sent_date";
     private static final String ERR_PARSE_MESSAGE = "email.server.err.parse_message";
-    
+
     private static final long serialVersionUID = -3735187524926395261L;
 
     private static final Log log = LogFactory.getLog(SubethaEmailMessage.class);
@@ -137,13 +137,13 @@ public class SubethaEmailMessage implements EmailMessage
             }
             if (addresses == null || addresses.length == 0)
             {
-                //throw new EmailMessageException(ERR_NO_FROM_ADDRESS);
+                // throw new EmailMessageException(ERR_NO_FROM_ADDRESS);
             }
             else
             {
-                if(addresses[0] instanceof InternetAddress)
+                if (addresses[0] instanceof InternetAddress)
                 {
-                    from = ((InternetAddress)addresses[0]).getAddress();
+                    from = ((InternetAddress) addresses[0]).getAddress();
                 }
                 else
                 {
@@ -165,13 +165,13 @@ public class SubethaEmailMessage implements EmailMessage
             }
             if (addresses == null || addresses.length == 0)
             {
-                //throw new EmailMessageException(ERR_NO_TO_ADDRESS);
+                // throw new EmailMessageException(ERR_NO_TO_ADDRESS);
             }
             else
             {
-                if(addresses[0] instanceof InternetAddress)
+                if (addresses[0] instanceof InternetAddress)
                 {
-                    to = ((InternetAddress)addresses[0]).getAddress();
+                    to = ((InternetAddress) addresses[0]).getAddress();
                 }
                 else
                 {
@@ -179,18 +179,18 @@ public class SubethaEmailMessage implements EmailMessage
                 }
             }
         }
-        
+
         if (cc == null)
         {
             try
             {
                 ArrayList<String> list = new ArrayList<String>();
-            
+
                 Address[] cca = mimeMessage.getRecipients(RecipientType.CC);
-            
-                if(cca != null)
+
+                if (cca != null)
                 {
-                    for(Address a : cca)
+                    for (Address a : cca)
                     {
                         list.add(a.toString());
                     }
@@ -203,20 +203,20 @@ public class SubethaEmailMessage implements EmailMessage
                 cc = null;
             }
         }
-            
+
         try
         {
             subject = mimeMessage.getSubject();
-            //subject = encodeSubject(mimeMessage.getSubject());
+            // subject = encodeSubject(mimeMessage.getSubject());
         }
         catch (MessagingException e)
         {
             throw new EmailMessageException(ERR_EXTRACTING_SUBJECT, e.getMessage());
         }
-        //if (subject == null)
-        //{
-        //    subject = ""; // Just anti-null stub :)
-        //}
+        // if (subject == null)
+        // {
+        // subject = ""; // Just anti-null stub :)
+        // }
 
         try
         {
@@ -289,7 +289,7 @@ public class SubethaEmailMessage implements EmailMessage
                     BodyPart bp = mp.getBodyPart(i);
                     if (bp.getContent() instanceof MimeMultipart)
                     {
-                        // It's multipart.  Recurse.
+                        // It's multipart. Recurse.
                         parseMessagePart(bp);
                     }
                     else
@@ -366,7 +366,8 @@ public class SubethaEmailMessage implements EmailMessage
     /**
      * Method adds a message part to the attachments list
      * 
-     * @param messagePart A part of message
+     * @param messagePart
+     *            A part of message
      * @throws EmailMessageException
      * @throws MessagingException
      */
@@ -383,8 +384,10 @@ public class SubethaEmailMessage implements EmailMessage
     /**
      * Method extracts file name from a message part for saving its as aa attachment. If the file name can't be extracted, it will be generated based on defaultPrefix parameter.
      * 
-     * @param defaultPrefix This prefix fill be used for generating file name.
-     * @param messagePart A part of message
+     * @param defaultPrefix
+     *            This prefix fill be used for generating file name.
+     * @param messagePart
+     *            A part of message
      * @return File name.
      * @throws MessagingException
      */
@@ -416,12 +419,12 @@ public class SubethaEmailMessage implements EmailMessage
         }
         return fileName;
     }
-    
+
     public List<String> getCC()
     {
         return cc;
     }
-    
+
     public String getFrom()
     {
         return from;

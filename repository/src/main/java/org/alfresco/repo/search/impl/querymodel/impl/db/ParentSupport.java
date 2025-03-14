@@ -43,9 +43,9 @@ public class ParentSupport implements DBQueryBuilderComponent
     Long dbid;
 
     Long[] dbids;
-    
+
     String alias;
-    
+
     DBQueryBuilderPredicatePartCommandType commandType;
 
     private boolean leftOuter;
@@ -58,9 +58,10 @@ public class ParentSupport implements DBQueryBuilderComponent
     {
         this.dbid = dbid;
     }
-    
+
     /**
-     * @param dbids the dbids to set
+     * @param dbids
+     *            the dbids to set
      */
     public void setDbids(Long[] dbids)
     {
@@ -75,43 +76,34 @@ public class ParentSupport implements DBQueryBuilderComponent
     {
         this.commandType = commandType;
     }
-    
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported() */
     @Override
     public boolean isSupported()
     {
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace
-     * .NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService,
-     * org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO, java.util.Set, java.util.Map,
-     * org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace .NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO, java.util.Set, java.util.Map, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext) */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
             Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
-      
+
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildJoins(java.util.Map,
-     * java.util.List)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildJoins(java.util.Map, java.util.List) */
     @Override
     public void buildJoins(Map<QName, DBQueryBuilderJoinCommand> singleJoins, List<DBQueryBuilderJoinCommand> multiJoins)
     {
         alias = "PARENT";
-        if(commandType == DBQueryBuilderPredicatePartCommandType.ORDER)
+        if (commandType == DBQueryBuilderPredicatePartCommandType.ORDER)
         {
             DBQueryBuilderJoinCommand join = new DBQueryBuilderJoinCommand();
             alias = "PARENT_" + multiJoins.size();
@@ -123,12 +115,9 @@ public class ParentSupport implements DBQueryBuilderComponent
 
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildPredicateCommands(java.util
-     * .List)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildPredicateCommands(java.util .List) */
     @Override
     public void buildPredicateCommands(List<DBQueryBuilderPredicatePartCommand> predicatePartCommands)
     {
@@ -144,7 +133,8 @@ public class ParentSupport implements DBQueryBuilderComponent
     }
 
     /**
-     * @param leftOuter boolean
+     * @param leftOuter
+     *            boolean
      */
     public void setLeftOuter(boolean leftOuter)
     {

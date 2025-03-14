@@ -59,15 +59,13 @@ public class Score extends BaseFunction
         super(NAME, DataTypeDefinition.FLOAT, args);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Function#getValue(java.util.Set)
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Function#getValue(java.util.Set) */
     public Serializable getValue(Map<String, Argument> args, FunctionEvaluationContext context)
     {
         Argument qualifier = args.get(ARG_QUALIFIER);
-        if(qualifier != null)
+        if (qualifier != null)
         {
             return context.getScores().get(qualifier.getValue(context));
         }

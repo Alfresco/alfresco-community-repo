@@ -31,6 +31,9 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import junit.framework.TestCase;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import org.alfresco.repo.search.EmptyResultSet;
 import org.alfresco.repo.virtual.ActualEnvironment;
@@ -45,9 +48,6 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 public class VirtualQueryImplTest extends TestCase
 {
@@ -80,12 +80,12 @@ public class VirtualQueryImplTest extends TestCase
         super.setUp();
 
         query = new VirtualQueryImpl(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.toString(),
-                                     SearchService.LANGUAGE_FTS_ALFRESCO,
-                                     QUERY_TEST_STRING_QUERY);
+                SearchService.LANGUAGE_FTS_ALFRESCO,
+                QUERY_TEST_STRING_QUERY);
 
         mockitoActualEnvironment = Mockito.mock(ActualEnvironment.class);
         Mockito.when(mockitoActualEnvironment.query(Mockito.any(SearchParameters.class)))
-                        .thenReturn(new EmptyResultSet());
+                .thenReturn(new EmptyResultSet());
 
         mockitoPrefixResolver = Mockito.mock(NamespacePrefixResolver.class);
         Mockito.when(mockitoPrefixResolver.getNamespaceURI(TST_PREFIX)).thenReturn(TEST_URI);
@@ -94,40 +94,40 @@ public class VirtualQueryImplTest extends TestCase
         Mockito.when(mockitoActualEnvironment.getNamespacePrefixResolver()).thenReturn(mockitoPrefixResolver);
 
         testQName1 = QName.createQName(TST_PREFIX,
-                                       TEST_LOCAL_NAME_1,
-                                       mockitoPrefixResolver);
+                TEST_LOCAL_NAME_1,
+                mockitoPrefixResolver);
 
         testQName2 = QName.createQName(TST_PREFIX,
-                                       TEST_LOCAL_NAME_2,
-                                       mockitoPrefixResolver);
+                TEST_LOCAL_NAME_2,
+                mockitoPrefixResolver);
 
         NodeRef n1 = new NodeRef("workspace://SpacesStore/17c8f11d-0936-4295-88a0-12b85764c76f");
         NodeRef n2 = new NodeRef("workspace://SpacesStore/27c8f11d-0936-4295-88a0-12b85764c76f");
         nodeOneReference = ((VirtualProtocol) Protocols.VIRTUAL.protocol).newReference(n1,
-                                                                                       "/1",
-                                                                                       n2);
+                "/1",
+                n2);
     }
 
     @Test
     public void testPerform_1() throws Exception
     {
         Pair<QName, Boolean> withSortDefinitions = new Pair<QName, Boolean>(testQName2,
-                                                                            true);
+                true);
 
         VirtualQueryConstraint constraint = BasicConstraint.INSTANCE;
         constraint = new FilesFoldersConstraint(constraint,
-                                                true,
-                                                true);
+                true,
+                true);
         constraint = new IgnoreConstraint(constraint,
-                                          Collections.singleton(testQName2),
-                                                 Collections.singleton(testQName1));
+                Collections.singleton(testQName2),
+                Collections.singleton(testQName1));
         constraint = new SortConstraint(constraint,
-                                        Arrays.asList(withSortDefinitions));
+                Arrays.asList(withSortDefinitions));
 
         query.perform(mockitoActualEnvironment,
-                      constraint,
-                      null,
-                      nodeOneReference);
+                constraint,
+                null,
+                nodeOneReference);
 
         assertPerform1Results(withSortDefinitions);
     }
@@ -137,16 +137,16 @@ public class VirtualQueryImplTest extends TestCase
 
         VirtualQueryConstraint constraint = BasicConstraint.INSTANCE;
         constraint = new FilesFoldersConstraint(constraint,
-                                                false,
-                                                true);
+                false,
+                true);
         constraint = new IgnoreConstraint(constraint,
-                                          Collections.singleton(testQName2),
-                                                 Collections.singleton(testQName1));
+                Collections.singleton(testQName2),
+                Collections.singleton(testQName1));
 
         query.perform(mockitoActualEnvironment,
-                      constraint,
-                      null,
-                      nodeOneReference);
+                constraint,
+                null,
+                nodeOneReference);
 
         assertPerform2Results();
     }
@@ -157,35 +157,35 @@ public class VirtualQueryImplTest extends TestCase
         Mockito.verify(mockitoActualEnvironment).query(queryCaptor.capture());
 
         assertEquals("(QUERY_TEST_STRING_QUERY) and !ASPECT:'tst:testQName1' and !TYPE:'tst:testQName2'",
-                     queryCaptor.getValue().getQuery());
+                queryCaptor.getValue().getQuery());
 
         ArrayList<SortDefinition> sortDefinitions = queryCaptor.getValue().getSortDefinitions();
 
         assertNotNull(sortDefinitions);
         assertEquals(1,
-                     sortDefinitions.size());
+                sortDefinitions.size());
         assertEquals(withSortDefinitions.getFirst().getPrefixString(),
-                     sortDefinitions.get(0).getField());
+                sortDefinitions.get(0).getField());
 
         assertEquals(withSortDefinitions.getSecond(),
-                     Boolean.valueOf(sortDefinitions.get(0).isAscending()));
+                Boolean.valueOf(sortDefinitions.get(0).isAscending()));
     }
 
     @Test
     public void testPerform_deprecated_1()
     {
         Pair<QName, Boolean> withSortDefinitions = new Pair<QName, Boolean>(testQName2,
-                                                                            true);
+                true);
         query.perform(mockitoActualEnvironment,
-                      true,
-                      true,
-                      null,
-                      Collections.<QName> emptySet(),
-                      Collections.singleton(testQName2),
-                      Collections.singleton(testQName1),
-                      Arrays.asList(withSortDefinitions),
-                      null,
-                      nodeOneReference);
+                true,
+                true,
+                null,
+                Collections.<QName> emptySet(),
+                Collections.singleton(testQName2),
+                Collections.singleton(testQName1),
+                Arrays.asList(withSortDefinitions),
+                null,
+                nodeOneReference);
 
         assertPerform1Results(withSortDefinitions);
     }
@@ -194,15 +194,15 @@ public class VirtualQueryImplTest extends TestCase
     public void testPerform_deprecated_2()
     {
         query.perform(mockitoActualEnvironment,
-                      false,
-                      true,
-                      null,
-                      Collections.<QName> emptySet(),
-                      Collections.singleton(testQName2),
-                      Collections.singleton(testQName1),
-                      Collections.<Pair<QName, Boolean>> emptyList(),
-                      null,
-                      nodeOneReference);
+                false,
+                true,
+                null,
+                Collections.<QName> emptySet(),
+                Collections.singleton(testQName2),
+                Collections.singleton(testQName1),
+                Collections.<Pair<QName, Boolean>> emptyList(),
+                null,
+                nodeOneReference);
 
         assertPerform2Results();
 
@@ -214,12 +214,12 @@ public class VirtualQueryImplTest extends TestCase
         Mockito.verify(mockitoActualEnvironment).query(queryCaptor.capture());
 
         assertEquals("((QUERY_TEST_STRING_QUERY) and TYPE:\"cm:folder\") and !ASPECT:'tst:testQName1' and !TYPE:'tst:testQName2'",
-                     queryCaptor.getValue().getQuery());
+                queryCaptor.getValue().getQuery());
 
         ArrayList<SortDefinition> sortDefinitions = queryCaptor.getValue().getSortDefinitions();
 
         assertNotNull(sortDefinitions);
         assertEquals(0,
-                     sortDefinitions.size());
+                sortDefinitions.size());
     }
 }

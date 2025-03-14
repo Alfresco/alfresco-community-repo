@@ -25,12 +25,13 @@
  */
 package org.alfresco.repo.serviceaccount;
 
-import static org.alfresco.service.cmr.security.PermissionService.ADMIN_SVC_AUTHORITY;
-import static org.alfresco.service.cmr.security.PermissionService.COLLABORATOR_SVC_AUTHORITY;
-import static org.alfresco.service.cmr.security.PermissionService.EDITOR_SVC_AUTHORITY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import static org.alfresco.service.cmr.security.PermissionService.ADMIN_SVC_AUTHORITY;
+import static org.alfresco.service.cmr.security.PermissionService.COLLABORATOR_SVC_AUTHORITY;
+import static org.alfresco.service.cmr.security.PermissionService.EDITOR_SVC_AUTHORITY;
 
 import java.util.Optional;
 import java.util.Properties;

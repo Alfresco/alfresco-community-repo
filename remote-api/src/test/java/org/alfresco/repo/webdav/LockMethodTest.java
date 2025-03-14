@@ -33,8 +33,14 @@ import static org.junit.Assert.fail;
 
 import java.io.Serializable;
 import java.util.Collections;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -52,12 +58,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TestWithUserUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.context.ApplicationContext;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * Tests for the {@link LockMethod} class.
@@ -68,13 +68,12 @@ public class LockMethodTest
 {
     private LockMethod lockMethod;
     private PropFindMethod propFindMethod;
-    
-    private ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext(new String[]
-    {
-        "classpath:alfresco/application-context.xml", "classpath:alfresco/web-scripts-application-context.xml",
-        "classpath:alfresco/remote-api-context.xml"
+
+    private ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext(new String[]{
+            "classpath:alfresco/application-context.xml", "classpath:alfresco/web-scripts-application-context.xml",
+            "classpath:alfresco/remote-api-context.xml"
     });
-    
+
     /**
      * Services used by the tests
      */
@@ -101,32 +100,31 @@ public class LockMethodTest
      */
     private NodeRef folderNodeRef;
     private NodeRef fileNodeRef;
-    
+
     /**
-     * User details 
+     * User details
      */
     private String userName;
     private static final String PWD = "password";
-    
+
     @Before
     public void setUp() throws Exception
     {
         lockMethod = new LockMethod();
         propFindMethod = new PropFindMethod();
-        
+
         this.transactionService = (TransactionService) applicationContext.getBean("TransactionService");
         this.davHelper = (WebDAVHelper) applicationContext.getBean("webDAVHelper");
-        this.authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");        
+        this.authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         this.nodeService = (NodeService) applicationContext.getBean("NodeService");
         this.authenticationService = (MutableAuthenticationService) applicationContext.getBean("authenticationService");
         this.permissionService = (PermissionService) applicationContext.getBean("permissionService");
         this.contentService = (ContentService) applicationContext.getBean("contentService");
         this.fileFolderService = (FileFolderService) applicationContext.getBean("fileFolderService");
-        
+
         this.authenticationComponent.setSystemUserAsCurrentUser();
-        
-        RetryingTransactionCallback<Void> createTestFileCallback = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> createTestFileCallback = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -154,20 +152,19 @@ public class LockMethodTest
         };
         this.transactionService.getRetryingTransactionHelper().doInTransaction(createTestFileCallback);
     }
-    
+
     @After
     public void tearDown()
     {
         lockMethod = null;
         propFindMethod = null;
-        
+
         // clear context for current user
         this.authenticationComponent.clearCurrentSecurityContext();
 
         // delete test store as system user
         this.authenticationComponent.setSystemUserAsCurrentUser();
-        RetryingTransactionCallback<Void> deleteTestFolderCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> deleteTestFolderCallback = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -180,26 +177,25 @@ public class LockMethodTest
         };
         this.transactionService.getRetryingTransactionHelper().doInTransaction(deleteTestFolderCallback);
     }
-    
+
     @Test
     public void testRefreshLock() throws Exception
     {
-        MockHttpServletRequest lockRequest = new MockHttpServletRequest(); 
+        MockHttpServletRequest lockRequest = new MockHttpServletRequest();
         lockRequest.addHeader(WebDAV.HEADER_TIMEOUT, WebDAV.SECOND + 5);
         lockRequest.setRequestURI("/" + TEST_FILE_NAME);
-        
+
         String content = "<?xml version=\"1.0\" encoding=\"utf-8\" ?><D:lockinfo xmlns:D=\"DAV:\"><D:lockscope xmlns:D=\"DAV:\">" +
-        		"<D:exclusive xmlns:D=\"DAV:\"/></D:lockscope><D:locktype xmlns:D=\"DAV:\"><D:write xmlns:D=\"DAV:\"/></D:locktype>" +
-        		"<D:owner xmlns:D=\"DAV:\">" + userName + "</D:owner></D:lockinfo>";
+                "<D:exclusive xmlns:D=\"DAV:\"/></D:lockscope><D:locktype xmlns:D=\"DAV:\"><D:write xmlns:D=\"DAV:\"/></D:locktype>" +
+                "<D:owner xmlns:D=\"DAV:\">" + userName + "</D:owner></D:lockinfo>";
 
         lockRequest.setContent(content.getBytes("UTF-8"));
 
         lockMethod.setDetails(lockRequest, new MockHttpServletResponse(), davHelper, folderNodeRef);
         lockMethod.parseRequestHeaders();
         lockMethod.parseRequestBody();
-        
-        RetryingTransactionCallback<Void> lockExecuteImplCallBack = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> lockExecuteImplCallBack = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -207,64 +203,62 @@ public class LockMethodTest
                 return null;
             }
         };
-        
+
         // lock node for 5 seconds
         this.transactionService.getRetryingTransactionHelper().doInTransaction(lockExecuteImplCallBack);
-        
-        RetryingTransactionCallback<LockInfo> getNodeLockInfoCallBack = new RetryingTransactionCallback<LockInfo>()
-        {
+
+        RetryingTransactionCallback<LockInfo> getNodeLockInfoCallBack = new RetryingTransactionCallback<LockInfo>() {
             @Override
             public LockInfo execute() throws Throwable
             {
                 return lockMethod.getNodeLockInfo(fileFolderService.getFileInfo(fileNodeRef));
             }
         };
-        
+
         // get lock info
         LockInfo lockInfo = this.transactionService.getRetryingTransactionHelper().doInTransaction(getNodeLockInfoCallBack);
-        
+
         assertNotNull(lockInfo);
-        
+
         // wait for 1 second
         Thread.sleep(1000);
-        
+
         String lockToken = fileNodeRef.getId() + WebDAV.LOCK_TOKEN_SEPERATOR + this.userName;
         String lockHeaderValue = "(<" + WebDAV.OPAQUE_LOCK_TOKEN + lockToken + ">)";
         lockRequest.addHeader(WebDAV.HEADER_IF, lockHeaderValue);
-        
+
         lockMethod.parseRequestHeaders();
-        
+
         // update lock for another 5 seconds
         this.transactionService.getRetryingTransactionHelper().doInTransaction(lockExecuteImplCallBack);
-        
+
         // get updated lock info
         LockInfo updatedLockInfo = this.transactionService.getRetryingTransactionHelper().doInTransaction(getNodeLockInfoCallBack);
-        
+
         assertNotNull(updatedLockInfo);
-        
+
         assertEquals("Lock owner should not change after lock refresh.", lockInfo.getOwner(), updatedLockInfo.getOwner());
         assertEquals("Lock token should not change after lock refresh.", lockInfo.getExclusiveLockToken(), updatedLockInfo.getExclusiveLockToken());
-        
+
         assertFalse("Expires was not updated.", lockInfo.getExpires().equals(updatedLockInfo.getExpires()));
         assertTrue("Expires was updated incorrectly.", lockInfo.getExpires().before(updatedLockInfo.getExpires()));
-        
+
         // prepare propfind method
         MockHttpServletRequest propFindRequest = new MockHttpServletRequest();
         propFindRequest.setRequestURI("/" + TEST_FILE_NAME);
         propFindRequest.addHeader(WebDAV.HEADER_DEPTH, "1");
         content = "<?xml version=\"1.0\" encoding=\"utf-8\" ?><D:propfind xmlns:D=\"DAV:\"><D:prop><D:getlastmodified/>" +
-        		"<D:getcontentlength/><D:resourcetype/><D:supportedlock/><D:lockdiscovery/></D:prop></D:propfind>";
+                "<D:getcontentlength/><D:resourcetype/><D:supportedlock/><D:lockdiscovery/></D:prop></D:propfind>";
 
         propFindRequest.setContent(content.getBytes("UTF-8"));
-        
+
         MockHttpServletResponse propfindResponse = new MockHttpServletResponse();
         propFindMethod.setDetails(propFindRequest, propfindResponse, davHelper, folderNodeRef);
-        
+
         propFindMethod.parseRequestHeaders();
         propFindMethod.parseRequestBody();
-        
-        RetryingTransactionCallback<Void> propfindExecuteImplCallBack = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> propfindExecuteImplCallBack = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -272,28 +266,28 @@ public class LockMethodTest
                 return null;
             }
         };
-        
+
         // make propfind method call for locked resource
         this.transactionService.getRetryingTransactionHelper().doInTransaction(propfindExecuteImplCallBack);
-        
+
         String response = propfindResponse.getContentAsString();
-        
+
         assertFalse("Propfind response should contain lock informarion.", response.indexOf("lockdiscovery") == -1);
-        
+
         // wait for lock expiration
         Thread.sleep(6000);
-        
+
         propfindResponse = new MockHttpServletResponse();
         propFindMethod.setDetails(propFindRequest, propfindResponse, davHelper, folderNodeRef);
-        
+
         // make another propfind call on resource with expired lock
         this.transactionService.getRetryingTransactionHelper().doInTransaction(propfindExecuteImplCallBack);
         response = propfindResponse.getContentAsString();
-        
+
         // check that lock information is not there for expired lock
         assertTrue("Propfind response should not conatain information about expired lock", response.indexOf("lockdiscovery") == -1);
     }
-    
+
     @Test
     public void testMNT_10873() throws Exception
     {
@@ -303,7 +297,7 @@ public class LockMethodTest
         lockRequest.addHeader(WebDAV.HEADER_TIMEOUT, WebDAV.SECOND + 5);
         // set request uri to point to non-existent file
         lockRequest.setRequestURI("/" + fileName);
-        
+
         String content = "<?xml version=\"1.0\" encoding=\"utf-8\" ?><D:lockinfo xmlns:D=\"DAV:\"><D:lockscope xmlns:D=\"DAV:\">" +
                 "<D:exclusive xmlns:D=\"DAV:\"/></D:lockscope><D:locktype xmlns:D=\"DAV:\"><D:write xmlns:D=\"DAV:\"/></D:locktype>" +
                 "<D:owner xmlns:D=\"DAV:\">" + userName + "</D:owner></D:lockinfo>";
@@ -313,9 +307,8 @@ public class LockMethodTest
         lockMethod.setDetails(lockRequest, lockResponse, davHelper, folderNodeRef);
         lockMethod.parseRequestHeaders();
         lockMethod.parseRequestBody();
-        
-        RetryingTransactionCallback<Void> lockExecuteImplCallBack = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> lockExecuteImplCallBack = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -323,47 +316,45 @@ public class LockMethodTest
                 return null;
             }
         };
-        
+
         // lock node for 5 seconds
         this.transactionService.getRetryingTransactionHelper().doInTransaction(lockExecuteImplCallBack);
-        
+
         assertEquals("Unexpected response status code.", HttpServletResponse.SC_CREATED, lockResponse.getStatus());
-        
-        RetryingTransactionCallback<NodeRef> getNodeRefCallback = new RetryingTransactionCallback<NodeRef>()
-        {
+
+        RetryingTransactionCallback<NodeRef> getNodeRefCallback = new RetryingTransactionCallback<NodeRef>() {
             @Override
             public NodeRef execute() throws Throwable
             {
                 return lockMethod.getNodeForPath(folderNodeRef, lockRequest.getRequestURI()).getNodeRef();
             }
         };
-        
+
         NodeRef nodeRef = this.transactionService.getRetryingTransactionHelper().doInTransaction(getNodeRefCallback);
-        
-        assertTrue("NodeRef should exists.", nodeService.exists(nodeRef));        
+
+        assertTrue("NodeRef should exists.", nodeService.exists(nodeRef));
         assertTrue("sys:webdavNoContent aspect should be applied on node.", nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WEBDAV_NO_CONTENT));
-        
+
         // sleep for 6 seconds to ensure that timer was triggered
         Thread.sleep(6000);
-        
+
         assertFalse("File should note exist in repo any more.", nodeService.exists(nodeRef));
         assertFalse("File should note exist in trashcan.", nodeService.exists(new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, nodeRef.getId())));
     }
-    
+
     @Test
     public void testMNT_11990() throws Exception
     {
-        MockHttpServletRequest lockRequest = new MockHttpServletRequest(); 
-        lockRequest.addHeader(WebDAV.HEADER_TIMEOUT, WebDAV.SECOND + 3600);        
+        MockHttpServletRequest lockRequest = new MockHttpServletRequest();
+        lockRequest.addHeader(WebDAV.HEADER_TIMEOUT, WebDAV.SECOND + 3600);
         lockRequest.addHeader(WebDAV.HEADER_IF, "(<" + WebDAV.makeLockToken(fileNodeRef, userName) + ">)");
         lockRequest.setRequestURI("/" + TEST_FILE_NAME);
 
         lockMethod.setDetails(lockRequest, new MockHttpServletResponse(), davHelper, folderNodeRef);
         lockMethod.parseRequestHeaders();
         lockMethod.parseRequestBody();
-        
-        RetryingTransactionCallback<Void> lockExecuteImplCallBack = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> lockExecuteImplCallBack = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -379,28 +370,27 @@ public class LockMethodTest
                 return null;
             }
         };
-        
-        // try to refresh lock for non-locked node        
+
+        // try to refresh lock for non-locked node
         this.transactionService.getRetryingTransactionHelper().doInTransaction(lockExecuteImplCallBack);
     }
-    
+
     @Test
     public void testMNT_12425() throws Exception
     {
         MockHttpServletRequest lockRequest = new MockHttpServletRequest();
         MockHttpServletResponse lockResponse = new MockHttpServletResponse();
-        
+
         // refresh lock set to 1 hour
         lockRequest.addHeader(WebDAV.HEADER_TIMEOUT, WebDAV.SECOND + 3600);
         lockRequest.addHeader(WebDAV.HEADER_IF, "(<" + WebDAV.makeLockToken(fileNodeRef, userName) + ">)");
         // specify path to non-existing file
         lockRequest.setRequestURI("/" + TEST_NEW_FOLDER_NAME + "/" + TEST_NEW_FILE_NAME);
-        
+
         lockMethod.setDetails(lockRequest, lockResponse, davHelper, folderNodeRef);
         lockMethod.parseRequestHeaders();
-        
-        RetryingTransactionCallback<Void> lockExecuteImplCallBack = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> lockExecuteImplCallBack = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -416,8 +406,8 @@ public class LockMethodTest
                 return null;
             }
         };
-        
-        // try to lock non-existent file        
+
+        // try to lock non-existent file
         this.transactionService.getRetryingTransactionHelper().doInTransaction(lockExecuteImplCallBack);
     }
 }

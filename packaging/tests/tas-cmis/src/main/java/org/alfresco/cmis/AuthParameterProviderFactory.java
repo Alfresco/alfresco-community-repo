@@ -1,17 +1,18 @@
 package org.alfresco.cmis;
 
-import org.alfresco.utility.data.AisToken;
-import org.alfresco.utility.data.auth.DataAIS;
-import org.alfresco.utility.model.UserModel;
-import org.apache.chemistry.opencmis.commons.SessionParameter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import static org.alfresco.utility.report.log.Step.STEP;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import static org.alfresco.utility.report.log.Step.STEP;
+import org.apache.chemistry.opencmis.commons.SessionParameter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import org.alfresco.utility.data.AisToken;
+import org.alfresco.utility.data.auth.DataAIS;
+import org.alfresco.utility.model.UserModel;
 
 @Service
 public class AuthParameterProviderFactory
@@ -26,11 +27,9 @@ public class AuthParameterProviderFactory
 
     /**
      *
-     * The default provider uses AIS if support for Alfresco Identity Service is enabled.
-     * Otherwise a provider which uses Basic authentication is returned.
+     * The default provider uses AIS if support for Alfresco Identity Service is enabled. Otherwise a provider which uses Basic authentication is returned.
      *
-     * @return Function which takes a {@link UserModel} and returns a map of
-     * authentication parameters to be used with {@link CmisWrapper#authenticateUser(UserModel, Function)}
+     * @return Function which takes a {@link UserModel} and returns a map of authentication parameters to be used with {@link CmisWrapper#authenticateUser(UserModel, Function)}
      */
     public Function<UserModel, Map<String, String>> getDefaultProvider()
     {
@@ -91,9 +90,8 @@ public class AuthParameterProviderFactory
         }
 
         /**
-         * Returns a valid access token for valid user credentials in userModel.
-         * An invalid access token is returned for invalid user credentials,
-         * which can be used for tests involving non existing or unauthorized users.
+         * Returns a valid access token for valid user credentials in userModel. An invalid access token is returned for invalid user credentials, which can be used for tests involving non existing or unauthorized users.
+         * 
          * @param userModel
          * @return
          */

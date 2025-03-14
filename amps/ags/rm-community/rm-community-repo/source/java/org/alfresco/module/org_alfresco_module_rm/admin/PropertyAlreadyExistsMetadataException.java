@@ -27,8 +27,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm.admin;
 
-import org.alfresco.api.AlfrescoPublicApi;
 import org.springframework.extensions.surf.util.I18NUtil;
+
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Custom metadata exception.

@@ -29,6 +29,8 @@ package org.alfresco.rest.api.cmm;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.CustomModels;
 import org.alfresco.rest.api.model.CustomModelDownload;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -36,7 +38,6 @@ import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * @author Jamal Kaabi-Mofrad

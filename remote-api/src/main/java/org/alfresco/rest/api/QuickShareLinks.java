@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api;
 
+import java.util.List;
+
 import org.alfresco.rest.api.model.QuickShareLink;
 import org.alfresco.rest.api.model.QuickShareLinkEmailRequest;
 import org.alfresco.rest.api.model.Rendition;
@@ -32,8 +34,6 @@ import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-
-import java.util.List;
 
 /**
  * Centralises access to quick share services and maps between representations.
@@ -58,8 +58,10 @@ public interface QuickShareLinks
      * Note: does *not* require authenticated access for (public) shared link.
      *
      * @param sharedId
-     * @param renditionId - optional
-     * @param parameters {@link Parameters}
+     * @param renditionId
+     *            - optional
+     * @param parameters
+     *            {@link Parameters}
      * @return
      * @throws EntityNotFoundException
      */
@@ -87,12 +89,12 @@ public interface QuickShareLinks
     /**
      * Delete the shared link.
      *
-     * Once deleted, the shared link will no longer exist hence get/download will no longer work (ie. return 404).
-     * If the link is later re-created then a new unique shared id will be generated.
+     * Once deleted, the shared link will no longer exist hence get/download will no longer work (ie. return 404). If the link is later re-created then a new unique shared id will be generated.
      *
      * Requires authenticated access.
      *
-     * @param sharedId String id of the quick share
+     * @param sharedId
+     *            String id of the quick share
      */
     void delete(String sharedId, Parameters parameters);
 
@@ -110,15 +112,17 @@ public interface QuickShareLinks
     /**
      * Notifies users by email that a content has been shared with them.
      *
-     * @param sharedId     The string id of the quick share
-     * @param emailRequest The email details including its template details
-     * @param parameters   The {@link Parameters} object to get the parameters passed into the request
+     * @param sharedId
+     *            The string id of the quick share
+     * @param emailRequest
+     *            The email details including its template details
+     * @param parameters
+     *            The {@link Parameters} object to get the parameters passed into the request
      */
     void emailSharedLink(String sharedId, QuickShareLinkEmailRequest emailRequest, Parameters parameters);
 
     /**
-     * Find (search) for shared links visible to current user.
-     * Optionally filter by "sharedByUser/id" (if -me- then filter by current user).
+     * Find (search) for shared links visible to current user. Optionally filter by "sharedByUser/id" (if -me- then filter by current user).
      *
      * @param parameters
      * @return

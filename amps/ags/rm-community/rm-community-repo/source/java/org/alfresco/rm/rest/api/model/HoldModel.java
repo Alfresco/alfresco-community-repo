@@ -32,5 +32,4 @@ package org.alfresco.rm.rest.api.model;
  * @author Damian Ujma
  */
 public record HoldModel(String id, String name, String description, String reason)
-{
-}
+{}

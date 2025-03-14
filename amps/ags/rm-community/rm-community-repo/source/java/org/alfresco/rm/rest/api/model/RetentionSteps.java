@@ -31,12 +31,7 @@ package org.alfresco.rm.rest.api.model;
  */
 public enum RetentionSteps
 {
-    RETAIN("retain"),
-    CUTOFF("cutoff"),
-    TRANSFER("transfer"),
-    ACCESSION("accession"),
-    DESTROY_CONTENT("destroyContent"),
-    DESTROY_NODE("destroyNode");
+    RETAIN("retain"), CUTOFF("cutoff"), TRANSFER("transfer"), ACCESSION("accession"), DESTROY_CONTENT("destroyContent"), DESTROY_NODE("destroyNode");
 
     public final String stepName;
 

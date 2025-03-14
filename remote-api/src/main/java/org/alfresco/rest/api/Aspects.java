@@ -37,6 +37,7 @@ public interface Aspects
 {
     /**
      * Lists aspects
+     * 
      * @param params
      * @return Collection of aspects
      */
@@ -44,6 +45,7 @@ public interface Aspects
 
     /**
      * Gets an aspect by id
+     * 
      * @param aspectId
      * @return an aspect
      */

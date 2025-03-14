@@ -31,46 +31,52 @@ import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
 
 /**
- * @author cmocanu 
- * Base Path
- *         {@linkplain /alfresco/api/-default-/public/alfresco/versions/1}
+ * @author cmocanu Base Path {@linkplain /alfresco/api/-default-/public/alfresco/versions/1}
  */
 
 public class RestRenditionInfoModel extends TestModel implements IRestModel<RestRenditionInfoModel>
 {
-	@JsonProperty(value = "entry")
-	RestRenditionInfoModel model;
+    @JsonProperty(value = "entry")
+    RestRenditionInfoModel model;
 
-	@Override
-	public RestRenditionInfoModel onModel() {
-		return model;
-	}
-	public String getId() {
-		return id;
-	}
+    @Override
+    public RestRenditionInfoModel onModel()
+    {
+        return model;
+    }
 
-	public void setId(String id) {
-		this.id = id;
-	}
+    public String getId()
+    {
+        return id;
+    }
 
-	public String getStatus() {
-		return status;
-	}
+    public void setId(String id)
+    {
+        this.id = id;
+    }
 
-	public void setStatus(String status) {
-		this.status = status;
-	}
+    public String getStatus()
+    {
+        return status;
+    }
 
-	public RestContentModel getContent() {
-		return content;
-	}
+    public void setStatus(String status)
+    {
+        this.status = status;
+    }
 
-	public void setContent(RestContentModel content) {
-		this.content = content;
-	}
+    public RestContentModel getContent()
+    {
+        return content;
+    }
 
-	private String id;
-	private RestContentModel content;
-	private String status;
+    public void setContent(RestContentModel content)
+    {
+        this.content = content;
+    }
+
+    private String id;
+    private RestContentModel content;
+    private String status;
 
 }

@@ -47,12 +47,21 @@ import java.util.StringTokenizer;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.URLDecoder;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -84,25 +93,13 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.URLDecoder;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptResponse;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  * ADM Remote Store service.
  * <p>
  * This implementation of the RemoteStore is tied to the current SiteService implementation.
  * <p>
- * It remaps incoming generic document path requests to the appropriate folder structure
- * in the Sites folder. Dashboard pages and component bindings are remapped to take advantage
- * of inherited permissions in the appropriate root site folder, ensuring that only valid
- * users can write to the appropriate configuration objects.
+ * It remaps incoming generic document path requests to the appropriate folder structure in the Sites folder. Dashboard pages and component bindings are remapped to take advantage of inherited permissions in the appropriate root site folder, ensuring that only valid users can write to the appropriate configuration objects.
  * 
  * @see BaseRemoteStore for the available API methods.
  * 
@@ -111,23 +108,22 @@ import org.w3c.dom.Node;
 public class ADMRemoteStore extends BaseRemoteStore
 {
     private static final Log logger = LogFactory.getLog(ADMRemoteStore.class);
-    
+
     // name of the surf config folder
     private static final String SURF_CONFIG = "surf-config";
 
     // patterns used to match site and user specific configuration locations
     private static final String PATH_COMPONENTS = "components";
-    private static final String PATH_PAGES      = "pages";
-    private static final String PATH_USER       = "user";
-    private static final String PATH_SITE       = "site";
+    private static final String PATH_PAGES = "pages";
+    private static final String PATH_USER = "user";
+    private static final String PATH_SITE = "site";
     private static final String USER_CONFIG = ".*\\." + PATH_USER + "~(.*)~.*";
     private static final String USER_CONFIG_PATTERN = USER_CONFIG.replaceAll("\\.\\*", "*").replace("\\", "");
     private static final Pattern USER_PATTERN_1 = Pattern.compile(".*/" + PATH_COMPONENTS + "/" + USER_CONFIG);
     private static final Pattern USER_PATTERN_2 = Pattern.compile(".*/" + PATH_PAGES + "/" + PATH_USER + "/(.*?)(/.*)?$");
     private static final Pattern SITE_PATTERN_1 = Pattern.compile(".*/" + PATH_COMPONENTS + "/.*\\." + PATH_SITE + "~(.*)~.*");
     private static final Pattern SITE_PATTERN_2 = Pattern.compile(".*/" + PATH_PAGES + "/" + PATH_SITE + "/(.*?)(/.*)?$");
-    
-    
+
     // service beans
     protected NodeService nodeService;
     protected NodeService unprotNodeService;
@@ -139,16 +135,16 @@ public class ADMRemoteStore extends BaseRemoteStore
     protected PermissionService permissionService;
     protected OwnableService ownableService;
     private BehaviourFilter behaviourFilter;
-    
+
     /**
      * Date format pattern used to parse HTTP date headers in RFC 1123 format.
      */
     private static final String PATTERN_RFC1123 = "EEE, dd MMM yyyy HH:mm:ss zzz";
     private static final TimeZone GMT = TimeZone.getTimeZone("GMT");
 
-
     /**
-     * @param nodeService       the NodeService to set
+     * @param nodeService
+     *            the NodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -156,7 +152,8 @@ public class ADMRemoteStore extends BaseRemoteStore
     }
 
     /**
-     * @param nodeService       the NodeService to set
+     * @param nodeService
+     *            the NodeService to set
      */
     public void setUnprotectedNodeService(NodeService nodeService)
     {
@@ -164,7 +161,8 @@ public class ADMRemoteStore extends BaseRemoteStore
     }
 
     /**
-     * @param fileFolderService the FileFolderService to set
+     * @param fileFolderService
+     *            the FileFolderService to set
      */
     public void setFileFolderService(FileFolderService fileFolderService)
     {
@@ -172,34 +170,37 @@ public class ADMRemoteStore extends BaseRemoteStore
     }
 
     /**
-     * @param namespaceService  the NamespaceService to set
+     * @param namespaceService
+     *            the NamespaceService to set
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
-     * @param siteService       the SiteService to set
+     * @param siteService
+     *            the SiteService to set
      */
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
     }
-    
+
     /**
-     * @param contentService    the ContentService to set
+     * @param contentService
+     *            the ContentService to set
      */
     public void setContentService(ContentService contentService)
     {
-        this.contentService = contentService; 
+        this.contentService = contentService;
     }
-    
+
     public void setHiddenAspect(HiddenAspect hiddenAspect)
     {
         this.hiddenAspect = hiddenAspect;
     }
-    
+
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
@@ -220,14 +221,14 @@ public class ADMRemoteStore extends BaseRemoteStore
      * <p>
      * The output will be the last modified date as a long toString().
      * 
-     * @param path  document path to an existing document
+     * @param path
+     *            document path to an existing document
      */
     @Override
     protected void lastModified(final WebScriptResponse res, final String store, final String path)
-        throws IOException
+            throws IOException
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @SuppressWarnings("synthetic-access")
             public Void doWork() throws Exception
             {
@@ -237,7 +238,7 @@ public class ADMRemoteStore extends BaseRemoteStore
                 {
                     throw new WebScriptException("Unable to locate file: " + encpath);
                 }
-                
+
                 Writer out = res.getWriter();
                 out.write(Long.toString(fileInfo.getModifiedDate().getTime()));
                 out.close();
@@ -253,13 +254,13 @@ public class ADMRemoteStore extends BaseRemoteStore
      * <p>
      * The output will be the document content stream.
      * 
-     * @param path  document path
+     * @param path
+     *            document path
      */
     @Override
     protected void getDocument(final WebScriptResponse res, final String store, final String path)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @SuppressWarnings("synthetic-access")
             public Void doWork() throws Exception
             {
@@ -270,7 +271,7 @@ public class ADMRemoteStore extends BaseRemoteStore
                     res.setStatus(Status.STATUS_NOT_FOUND);
                     return null;
                 }
-                
+
                 final ContentReader reader;
                 try
                 {
@@ -279,7 +280,7 @@ public class ADMRemoteStore extends BaseRemoteStore
                     {
                         throw new WebScriptException("No content found for file: " + encpath);
                     }
-                    
+
                     // establish mimetype
                     String mimetype = reader.getMimetype();
                     if (mimetype == null || mimetype.length() == 0)
@@ -296,7 +297,7 @@ public class ADMRemoteStore extends BaseRemoteStore
                             }
                         }
                     }
-                    
+
                     // set mimetype for the content and the character encoding + length for the stream
                     res.setContentType(mimetype);
                     res.setContentEncoding(reader.getEncoding());
@@ -304,10 +305,10 @@ public class ADMRemoteStore extends BaseRemoteStore
                     formatter.setTimeZone(GMT);
                     res.setHeader("Last-Modified", formatter.format(fileInfo.getModifiedDate()));
                     res.setHeader("Content-Length", Long.toString(reader.getSize()));
-                    
+
                     if (logger.isDebugEnabled())
                         logger.debug("getDocument: " + fileInfo.toString());
-                    
+
                     // get the content and stream directly to the response output stream
                     // assuming the repository is capable of streaming in chunks, this should allow large files
                     // to be streamed directly to the browser response stream.
@@ -328,17 +329,17 @@ public class ADMRemoteStore extends BaseRemoteStore
                     }
                     catch (Throwable err)
                     {
-                       if (err.getCause() instanceof SocketException)
-                       {
-                          if (logger.isDebugEnabled())
-                              logger.debug("Client aborted stream read:\n\tnode: " + encpath + "\n\tcontent: " + reader);
-                       }
-                       else
-                       {
-                           if (logger.isInfoEnabled())
-                               logger.info(err.getMessage());
-                           res.setStatus(Status.STATUS_INTERNAL_SERVER_ERROR);
-                       }
+                        if (err.getCause() instanceof SocketException)
+                        {
+                            if (logger.isDebugEnabled())
+                                logger.debug("Client aborted stream read:\n\tnode: " + encpath + "\n\tcontent: " + reader);
+                        }
+                        else
+                        {
+                            if (logger.isInfoEnabled())
+                                logger.info(err.getMessage());
+                            res.setStatus(Status.STATUS_INTERNAL_SERVER_ERROR);
+                        }
                     }
                 }
                 catch (AccessDeniedException ae)
@@ -355,19 +356,19 @@ public class ADMRemoteStore extends BaseRemoteStore
      * 
      * The output will be either the string "true" or the string "false".
      * 
-     * @param path  document path
+     * @param path
+     *            document path
      */
     @Override
     protected void hasDocument(final WebScriptResponse res, final String store, final String path) throws IOException
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @SuppressWarnings("synthetic-access")
             public Void doWork() throws Exception
             {
                 final String encpath = encodePath(path);
                 final FileInfo fileInfo = resolveFilePath(encpath);
-                
+
                 Writer out = res.getWriter();
                 out.write(Boolean.toString(fileInfo != null && !fileInfo.isFolder()));
                 out.close();
@@ -381,11 +382,12 @@ public class ADMRemoteStore extends BaseRemoteStore
     /**
      * Creates a document.
      * <p>
-     * Create methods are user authenticated, so the creation of site config must be
-     * allowed for the current user.
+     * Create methods are user authenticated, so the creation of site config must be allowed for the current user.
      * 
-     * @param path          document path
-     * @param content       content of the document to write
+     * @param path
+     *            document path
+     * @param content
+     *            content of the document to write
      */
     @Override
     protected void createDocument(final WebScriptResponse res, final String store, final String path, final InputStream content)
@@ -405,20 +407,23 @@ public class ADMRemoteStore extends BaseRemoteStore
             throw feeErr;
         }
     }
-    
+
     /**
-     * Creates multiple XML documents encapsulated in a single one. 
+     * Creates multiple XML documents encapsulated in a single one.
      * 
-     * @param res       WebScriptResponse
-     * @param store       String
-     * @param in       XML document containing multiple document contents to write
+     * @param res
+     *            WebScriptResponse
+     * @param store
+     *            String
+     * @param in
+     *            XML document containing multiple document contents to write
      */
     @Override
     protected void createDocuments(WebScriptResponse res, String store, InputStream in)
     {
         try
         {
-            DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder(); 
+            DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             Document document;
             document = documentBuilder.parse(in);
             Element docEl = document.getDocumentElement();
@@ -430,22 +435,22 @@ public class ADMRemoteStore extends BaseRemoteStore
                     continue;
                 }
                 final String path = ((Element) n).getAttribute("path");
-                
+
                 // Turn the first element child into a document
                 Document doc = documentBuilder.newDocument();
                 Node child;
-                for (child = n.getFirstChild(); child != null ; child=child.getNextSibling())
+                for (child = n.getFirstChild(); child != null; child = child.getNextSibling())
                 {
-                   if (child instanceof Element)
-                   {
-                       doc.appendChild(doc.importNode(child, true));
-                       break;
-                   }
+                    if (child instanceof Element)
+                    {
+                        doc.appendChild(doc.importNode(child, true));
+                        break;
+                    }
                 }
                 ByteArrayOutputStream out = new ByteArrayOutputStream(512);
                 transformer.transform(new DOMSource(doc), new StreamResult(out));
                 out.close();
-                
+
                 writeDocument(path, new ByteArrayInputStream(out.toByteArray()));
             }
         }
@@ -468,7 +473,7 @@ public class ADMRemoteStore extends BaseRemoteStore
             throw new AlfrescoRuntimeException(e.getMessage(), e);
         }
     }
-    
+
     protected void writeDocument(final String path, final InputStream content)
     {
         final String encpath = encodePath(path);
@@ -477,8 +482,7 @@ public class ADMRemoteStore extends BaseRemoteStore
         {
             // check we actually are the user we are creating a user specific path for
             final String runAsUser = getPathRunAsUser(path);
-            AuthenticationUtil.runAs(new RunAsWork<Void>()
-            {
+            AuthenticationUtil.runAs(new RunAsWork<Void>() {
                 @SuppressWarnings("synthetic-access")
                 public Void doWork() throws Exception
                 {
@@ -487,11 +491,11 @@ public class ADMRemoteStore extends BaseRemoteStore
                     {
                         throw new IllegalStateException("Unable to aquire parent folder reference for path: " + path);
                     }
-                    
+
                     // ALF-17729 / ALF-17796 - disable auditable on parent folder
                     NodeRef parentFolderRef = parentFolder.getNodeRef();
                     behaviourFilter.disableBehaviour(parentFolderRef, ContentModel.ASPECT_AUDITABLE);
-                    
+
                     try
                     {
                         final String name = encpath.substring(off + 1);
@@ -530,17 +534,18 @@ public class ADMRemoteStore extends BaseRemoteStore
                     {
                         behaviourFilter.enableBehaviour(parentFolderRef, ContentModel.ASPECT_AUDITABLE);
                     }
-                    
+
                     return null;
                 }
             }, runAsUser);
         }
     }
-    
+
     /**
      * Get the RunAs user need to execute a Write operation on the given path.
      * 
-     * @param path  Document path
+     * @param path
+     *            Document path
      * @return runas user - will be the Full Authenticated User or System as required
      */
     protected String getPathRunAsUser(final String path)
@@ -567,18 +572,18 @@ public class ADMRemoteStore extends BaseRemoteStore
     /**
      * Updates an existing document.
      * <p>
-     * Update methods are user authenticated, so the modification of site config must be
-     * allowed for the current user.
+     * Update methods are user authenticated, so the modification of site config must be allowed for the current user.
      * 
-     * @param path          document path to update
-     * @param content       content to update the document with
+     * @param path
+     *            document path to update
+     * @param content
+     *            content to update the document with
      */
     @Override
     protected void updateDocument(final WebScriptResponse res, String store, final String path, final InputStream content)
     {
         final String runAsUser = getPathRunAsUser(path);
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @SuppressWarnings("synthetic-access")
             public Void doWork() throws Exception
             {
@@ -589,7 +594,7 @@ public class ADMRemoteStore extends BaseRemoteStore
                     res.setStatus(Status.STATUS_NOT_FOUND);
                     return null;
                 }
-                
+
                 try
                 {
                     ContentWriter writer = contentService.getWriter(fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
@@ -606,14 +611,14 @@ public class ADMRemoteStore extends BaseRemoteStore
             }
         }, runAsUser);
     }
-    
+
     /**
      * Deletes an existing document.
      * <p>
-     * Delete methods are user authenticated, so the deletion of the document must be
-     * allowed for the current user.
+     * Delete methods are user authenticated, so the deletion of the document must be allowed for the current user.
      * 
-     * @param path  document path
+     * @param path
+     *            document path
      */
     @Override
     protected void deleteDocument(final WebScriptResponse res, final String store, final String path)
@@ -625,10 +630,9 @@ public class ADMRemoteStore extends BaseRemoteStore
             res.setStatus(Status.STATUS_NOT_FOUND);
             return;
         }
-        
+
         final String runAsUser = getPathRunAsUser(path);
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @SuppressWarnings("synthetic-access")
             public Void doWork() throws Exception
             {
@@ -667,25 +671,26 @@ public class ADMRemoteStore extends BaseRemoteStore
     /**
      * Lists the document paths under a given path.
      * <p>
-     * The output will be the list of relative document paths found under the path.
-     * Separated by newline characters.
+     * The output will be the list of relative document paths found under the path. Separated by newline characters.
      * 
-     * @param path      document path
-     * @param recurse   true to peform a recursive list, false for direct children only.
+     * @param path
+     *            document path
+     * @param recurse
+     *            true to peform a recursive list, false for direct children only.
      * 
-     * @throws IOException if an error occurs listing the documents
+     * @throws IOException
+     *             if an error occurs listing the documents
      */
     @Override
     protected void listDocuments(final WebScriptResponse res, final String store, final String path, final boolean recurse)
-        throws IOException
+            throws IOException
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @SuppressWarnings("synthetic-access")
             public Void doWork() throws Exception
             {
                 res.setContentType("text/plain;charset=UTF-8");
-                
+
                 final String encpath = encodePath(path);
                 final FileInfo fileInfo = resolveNodePath(encpath, false, true);
                 if (fileInfo == null || !fileInfo.isFolder())
@@ -693,7 +698,7 @@ public class ADMRemoteStore extends BaseRemoteStore
                     res.setStatus(Status.STATUS_NOT_FOUND);
                     return null;
                 }
-                
+
                 try
                 {
                     outputFileNodes(res.getWriter(), fileInfo, aquireSurfConfigRef(encpath, false), "*", recurse);
@@ -710,29 +715,30 @@ public class ADMRemoteStore extends BaseRemoteStore
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     /**
      * Lists the document paths matching a file pattern under a given path.
      * 
-     * The output will be the list of relative document paths found under the path that
-     * match the given file pattern. Separated by newline characters.
+     * The output will be the list of relative document paths found under the path that match the given file pattern. Separated by newline characters.
      * 
-     * @param path      document path
-     * @param pattern   file pattern to match - allows wildcards e.g. page.*.site.xml
+     * @param path
+     *            document path
+     * @param pattern
+     *            file pattern to match - allows wildcards e.g. page.*.site.xml
      * 
-     * @throws IOException if an error occurs listing the documents
+     * @throws IOException
+     *             if an error occurs listing the documents
      */
     @Override
     protected void listDocuments(final WebScriptResponse res, final String store, final String path, final String pattern)
-        throws IOException
+            throws IOException
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @SuppressWarnings("synthetic-access")
             public Void doWork() throws Exception
             {
                 res.setContentType("text/plain;charset=UTF-8");
-                
+
                 String filePattern;
                 if (pattern == null || pattern.length() == 0)
                 {
@@ -753,7 +759,7 @@ public class ADMRemoteStore extends BaseRemoteStore
                     // ensure the escape character is itself escaped
                     filePattern = buf.toString().replace("\\", "\\\\");
                 }
-                
+
                 // ensure we pass in the file pattern as it is used as part of the folder match - i.e.
                 // for a site component set e.g. /alfresco/site-data/components/page.*.site~xyz~dashboard.xml
                 final String encpath = encodePath(path);
@@ -763,10 +769,10 @@ public class ADMRemoteStore extends BaseRemoteStore
                     res.setStatus(Status.STATUS_NOT_FOUND);
                     return null;
                 }
-                
+
                 if (logger.isDebugEnabled())
                     logger.debug("listDocuments() pattern: " + filePattern);
-                
+
                 try
                 {
                     outputFileNodes(
@@ -788,47 +794,42 @@ public class ADMRemoteStore extends BaseRemoteStore
     }
 
     /**
-     * @param path      cm:name based root relative path
-     *                  example: /alfresco/site-data/pages/customise-user-dashboard.xml
+     * @param path
+     *            cm:name based root relative path example: /alfresco/site-data/pages/customise-user-dashboard.xml
      * 
-     * @return FileInfo representing the file/folder at the specified path location
-     *         or null if the supplied path does not exist in the store
+     * @return FileInfo representing the file/folder at the specified path location or null if the supplied path does not exist in the store
      */
     private FileInfo resolveFilePath(final String path)
     {
         return resolveNodePath(path, false, false);
     }
-    
-   /**
-     * @param path      cm:name based root relative path
-     *                  example: /alfresco/site-data/pages/customise-user-dashboard.xml
-     *                           /alfresco/site-data/components
-     * @param create    if true create the config and folder dirs for the given path returning
-     *                  the FileInfo for the last parent in the path, if false only attempt to
-     *                  resolve the folder path if it exists returning the last element.
-     * @param isFolder  True if the path is for a folder, false if it ends in a filename
+
+    /**
+     * @param path
+     *            cm:name based root relative path example: /alfresco/site-data/pages/customise-user-dashboard.xml /alfresco/site-data/components
+     * @param create
+     *            if true create the config and folder dirs for the given path returning the FileInfo for the last parent in the path, if false only attempt to resolve the folder path if it exists returning the last element.
+     * @param isFolder
+     *            True if the path is for a folder, false if it ends in a filename
      * 
-     * @return FileInfo representing the file/folder at the specified path location (see create
-     *         parameter above) or null if the supplied path does not exist in the store.
+     * @return FileInfo representing the file/folder at the specified path location (see create parameter above) or null if the supplied path does not exist in the store.
      */
     private FileInfo resolveNodePath(final String path, final boolean create, final boolean isFolder)
     {
         return resolveNodePath(path, null, create, isFolder);
     }
-    
+
     /**
-     * @param path      cm:name based root relative path
-     *                  example: /alfresco/site-data/pages/customise-user-dashboard.xml
-     *                           /alfresco/site-data/components
-     * @param pattern   optional pattern that is used as part of the match to aquire the surf-config
-     *                  folder under the appropriate sites or user location.
-     * @param create    if true create the config and folder dirs for the given path returning
-     *                  the FileInfo for the last parent in the path, if false only attempt to
-     *                  resolve the folder path if it exists returning the last element.
-     * @param isFolder  True if the path is for a folder, false if it ends in a filename
+     * @param path
+     *            cm:name based root relative path example: /alfresco/site-data/pages/customise-user-dashboard.xml /alfresco/site-data/components
+     * @param pattern
+     *            optional pattern that is used as part of the match to aquire the surf-config folder under the appropriate sites or user location.
+     * @param create
+     *            if true create the config and folder dirs for the given path returning the FileInfo for the last parent in the path, if false only attempt to resolve the folder path if it exists returning the last element.
+     * @param isFolder
+     *            True if the path is for a folder, false if it ends in a filename
      * 
-     * @return FileInfo representing the file/folder at the specified path location (see create
-     *         parameter above) or null if the supplied path does not exist in the store.
+     * @return FileInfo representing the file/folder at the specified path location (see create parameter above) or null if the supplied path does not exist in the store.
      */
     private FileInfo resolveNodePath(final String path, final String pattern, final boolean create, final boolean isFolder)
     {
@@ -846,14 +847,14 @@ public class ADMRemoteStore extends BaseRemoteStore
             // the store requires paths of the form /alfresco/site-data/<objecttype>[/<folder>]/<file>.xml
             if (t.countTokens() >= 3)
             {
-                t.nextToken();  // skip /alfresco
-                t.nextToken();  // skip /site-data
+                t.nextToken(); // skip /alfresco
+                t.nextToken(); // skip /site-data
                 // collect remaining folder path (and file)
                 while (t.hasMoreTokens())
                 {
                     pathElements.add(t.nextToken());
                 }
-                
+
                 NodeRef surfConfigRef = aquireSurfConfigRef(path + (pattern != null ? ("/" + pattern) : ""), create);
                 try
                 {
@@ -862,7 +863,7 @@ public class ADMRemoteStore extends BaseRemoteStore
                         if (create)
                         {
                             List<String> folders = isFolder ? pathElements : pathElements.subList(0, pathElements.size() - 1);
-                            
+
                             List<FileFolderUtil.PathElementDetails> folderDetails = new ArrayList<>(pathElements.size());
                             Map<QName, Serializable> prop = new HashMap<>(2);
                             prop.put(ContentModel.PROP_IS_INDEXED, false);
@@ -876,7 +877,7 @@ public class ADMRemoteStore extends BaseRemoteStore
                             // ALF-17729 / ALF-17796 - disable auditable on parent folders
                             Set<NodeRef> allCreatedFolders = new LinkedHashSet<>();
                             result = FileFolderUtil.makeFolders(
-                                    this.fileFolderService,nodeService,
+                                    this.fileFolderService, nodeService,
                                     surfConfigRef,
                                     folderDetails,
                                     ContentModel.TYPE_FOLDER,
@@ -884,7 +885,7 @@ public class ADMRemoteStore extends BaseRemoteStore
                                     new HashSet<QName>(Arrays.asList(new QName[]{ContentModel.ASPECT_AUDITABLE})), allCreatedFolders);
 
                             // MNT-16371: Revoke ownership privileges for surf-config folder, to tighten access for former SiteManagers.
-                            for(NodeRef nodeRef : allCreatedFolders)
+                            for (NodeRef nodeRef : allCreatedFolders)
                             {
                                 ownableService.setOwner(nodeRef, adminUserName);
                             }
@@ -906,13 +907,14 @@ public class ADMRemoteStore extends BaseRemoteStore
     }
 
     /**
-     * Aquire (optionally create) the NodeRef to the "surf-config" folder as appropriate
-     * for the given path.
+     * Aquire (optionally create) the NodeRef to the "surf-config" folder as appropriate for the given path.
      * <p>
      * Disassmbles the path to correct match either user, site or generic folder path.
      * 
-     * @param path String
-     * @param create boolean
+     * @param path
+     *            String
+     * @param create
+     *            boolean
      * 
      * @return NodeRef to the "surf-config" folder, or null if it does not exist yet.
      */
@@ -954,11 +956,12 @@ public class ADMRemoteStore extends BaseRemoteStore
         {
             siteName = matcher.group(1);
         }
-        
+
         NodeRef surfConfigRef = null;
         if (siteName != null)
         {
-            if (debug) logger.debug("...resolved site path id: " + siteName);
+            if (debug)
+                logger.debug("...resolved site path id: " + siteName);
             NodeRef siteRef = getSiteNodeRef(siteName);
             if (siteRef != null)
             {
@@ -982,12 +985,12 @@ public class ADMRemoteStore extends BaseRemoteStore
         }
         return surfConfigRef;
     }
-    
+
     /**
-     * Return the "surf-config" noderef under the given root. No attempt will be made
-     * to create the node if it does not exist yet.
+     * Return the "surf-config" noderef under the given root. No attempt will be made to create the node if it does not exist yet.
      * 
-     * @param rootRef   Root node reference where the "surf-config" folder should live
+     * @param rootRef
+     *            Root node reference where the "surf-config" folder should live
      * 
      * @return surf-config folder ref if found, null otherwise
      */
@@ -995,16 +998,16 @@ public class ADMRemoteStore extends BaseRemoteStore
     {
         return getSurfConfigNodeRef(rootRef, false);
     }
-    
+
     /**
-     * Return the "surf-config" noderef under the given root. Optionally create the
-     * folder if it does not exist yet. NOTE: must only be set to create if within a
-     * WRITE transaction context.
+     * Return the "surf-config" noderef under the given root. Optionally create the folder if it does not exist yet. NOTE: must only be set to create if within a WRITE transaction context.
      * <p>
      * Adds the "isIndexed = false" property to the surf-config folder node.
      * 
-     * @param rootRef   Root node reference where the "surf-config" folder should live
-     * @param create    True to create the folder if missing, false otherwise
+     * @param rootRef
+     *            Root node reference where the "surf-config" folder should live
+     * @param create
+     *            True to create the folder if missing, false otherwise
      * 
      * @return surf-config folder ref if found, null otherwise if not creating
      */
@@ -1046,13 +1049,13 @@ public class ADMRemoteStore extends BaseRemoteStore
     protected NodeRef getGlobalComponentsNodeRef()
     {
         NodeRef result = null;
-        
+
         NodeRef surfRef = getSurfConfigNodeRef(siteService.getSiteRoot());
         if (surfRef != null)
         {
             result = nodeService.getChildByName(surfRef, ContentModel.ASSOC_CONTAINS, PATH_COMPONENTS);
         }
-        
+
         return result;
     }
 
@@ -1062,7 +1065,7 @@ public class ADMRemoteStore extends BaseRemoteStore
     protected NodeRef getGlobalUserFolderNodeRef()
     {
         NodeRef result = null;
-        
+
         NodeRef surfRef = getSurfConfigNodeRef(siteService.getSiteRoot());
         if (surfRef != null)
         {
@@ -1072,14 +1075,15 @@ public class ADMRemoteStore extends BaseRemoteStore
                 result = nodeService.getChildByName(pagesRef, ContentModel.ASSOC_CONTAINS, PATH_USER);
             }
         }
-        
+
         return result;
     }
 
     /**
      * Generate the search pattern for a Surf config location for a user name.
      * 
-     * @param userName  to build pattern for
+     * @param userName
+     *            to build pattern for
      * @return the search pattern
      */
     protected String buildUserConfigSearchPattern(String userName)
@@ -1094,26 +1098,32 @@ public class ADMRemoteStore extends BaseRemoteStore
     {
         return this.siteService.getSiteRoot();
     }
-    
+
     /**
-     * @param shortName     Site shortname
+     * @param shortName
+     *            Site shortname
      * 
      * @return the given Site folder node reference
      */
     private NodeRef getSiteNodeRef(String shortName)
     {
-        SiteInfo siteInfo = this.siteService.getSite(shortName); 
+        SiteInfo siteInfo = this.siteService.getSite(shortName);
         return siteInfo != null ? siteInfo.getNodeRef() : null;
     }
-    
+
     /**
      * Output the matching file paths a node contains based on a pattern search.
      * 
-     * @param out Writer for output - relative paths separated by newline characters
-     * @param surfConfigRef Surf-Config folder
-     * @param fileInfo The FileInfo node to use as the parent
-     * @param pattern Optional pattern to match filenames against ("*" is match all)
-     * @param recurse True to recurse sub-directories
+     * @param out
+     *            Writer for output - relative paths separated by newline characters
+     * @param surfConfigRef
+     *            Surf-Config folder
+     * @param fileInfo
+     *            The FileInfo node to use as the parent
+     * @param pattern
+     *            Optional pattern to match filenames against ("*" is match all)
+     * @param recurse
+     *            True to recurse sub-directories
      * @throws IOException
      */
     private void outputFileNodes(Writer out, FileInfo fileInfo, NodeRef surfConfigRef, String pattern, boolean recurse) throws IOException
@@ -1122,7 +1132,7 @@ public class ADMRemoteStore extends BaseRemoteStore
         {
             final boolean debug = logger.isDebugEnabled();
             PagingResults<FileInfo> files = getFileNodes(fileInfo, pattern, recurse);
-            
+
             final Map<NodeRef, String> nameCache = new HashMap<NodeRef, String>();
             for (final FileInfo file : files.getPage())
             {
@@ -1142,16 +1152,17 @@ public class ADMRemoteStore extends BaseRemoteStore
                     displayPath.insert(0, name);
                     ref = unprotNodeService.getPrimaryParent(ref).getParentRef();
                 }
-                
+
                 out.write("/alfresco/site-data/");
                 out.write(URLDecoder.decode(displayPath.toString()));
                 out.write(URLDecoder.decode(file.getName()));
                 out.write('\n');
-                if (debug) logger.debug("   /alfresco/site-data/" + displayPath.toString() + file.getName());
+                if (debug)
+                    logger.debug("   /alfresco/site-data/" + displayPath.toString() + file.getName());
             }
         }
     }
-    
+
     protected PagingResults<FileInfo> getFileNodes(FileInfo fileInfo, String pattern, boolean recurse)
     {
         return fileFolderService.list(

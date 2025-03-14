@@ -34,7 +34,6 @@ import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.namespace.QName;
 
-
 /**
  * Read-only definition of a Model.
  * 
@@ -45,66 +44,68 @@ public interface ModelDefinition
 {
     public static enum XMLBindingType
     {
-    	DEFAULT
-    	{
-    		public String toString()
-    		{
-    			return "default";
-    		}
-    	}
+        DEFAULT
+        {
+            public String toString()
+            {
+                return "default";
+            }
+        }
     };
 
     /**
      * @return the model name
      */
     public QName getName();
-    
+
     /**
      * @return the model description
      */
     public String getDescription(MessageLookup messageLookup);
-    
+
     /**
      * @return the model author
      */
     public String getAuthor();
-    
+
     /**
      * @return the date when the model was published
      */
     public Date getPublishedDate();
-    
+
     /**
      * @return the model version
      */
     public String getVersion();
-    
+
     /**
-     * @return  the namespaces defined by this model
+     * @return the namespaces defined by this model
      */
     public Collection<NamespaceDefinition> getNamespaces();
 
     /**
-     * @param uri  namespace uri
-     * @return  true => model defines the uri
+     * @param uri
+     *            namespace uri
+     * @return true => model defines the uri
      */
     public boolean isNamespaceDefined(String uri);
-    
+
     /**
-     * @return  the namespaces imported by this model
+     * @return the namespaces imported by this model
      */
     public Collection<NamespaceDefinition> getImportedNamespaces();
-    
+
     /**
-     * @param uri  namespace uri
-     * @return  true => model imports the uri
+     * @param uri
+     *            namespace uri
+     * @return true => model imports the uri
      */
     public boolean isNamespaceImported(String uri);
 
     public void toXML(XMLBindingType bindingType, OutputStream xml);
 
     public long getChecksum(XMLBindingType bindingType);
-    
+
     /**
      * @return DictionaryDAO
      */

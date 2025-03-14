@@ -26,30 +26,30 @@
 package org.alfresco.repo.activities.feed;
 
 import java.io.Serializable;
-    
+
 /**
  * Job settings passed from grid task to grid job
  */
 public class JobSettings implements Serializable, Cloneable
 {
     public static final long serialVersionUID = -3896042917378679686L;
-    
+
     private int jobTaskNode;
-    private long maxSeq;      
+    private long maxSeq;
     private long minSeq;
     private RepoCtx ctx;
     private int maxItemsPerCycle;
-    
+
     public int getJobTaskNode()
     {
         return jobTaskNode;
     }
-    
+
     public void setJobTaskNode(int jobTaskNode)
     {
         this.jobTaskNode = jobTaskNode;
     }
-    
+
     public long getMaxSeq()
     {
         return maxSeq;
@@ -59,7 +59,7 @@ public class JobSettings implements Serializable, Cloneable
     {
         this.maxSeq = maxSeq;
     }
-    
+
     public long getMinSeq()
     {
         return minSeq;
@@ -70,13 +70,15 @@ public class JobSettings implements Serializable, Cloneable
         this.minSeq = minSeq;
     }
 
-	public RepoCtx getWebScriptsCtx() {
-		return ctx;
-	}
-	
-	public void setWebScriptsCtx(RepoCtx ctx) {
-		this.ctx = ctx;
-	}
+    public RepoCtx getWebScriptsCtx()
+    {
+        return ctx;
+    }
+
+    public void setWebScriptsCtx(RepoCtx ctx)
+    {
+        this.ctx = ctx;
+    }
 
     public int getMaxItemsPerCycle()
     {
@@ -87,7 +89,7 @@ public class JobSettings implements Serializable, Cloneable
     {
         this.maxItemsPerCycle = maxItemsPerCycle;
     }
-    
+
     @Override
     public JobSettings clone()
     {

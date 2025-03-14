@@ -34,19 +34,21 @@ import org.alfresco.service.cmr.tagging.TagDetails;
  */
 public class TagDetailsImpl implements TagDetails
 {
-   /** Tag name */
+    /** Tag name */
     private String tagName;
-    
+
     /** Tag count */
     private int tagCount;
-    
+
     /**
      * Constructor
      * 
-     * @param tagName   tag name
-     * @param tagCount  tag count
+     * @param tagName
+     *            tag name
+     * @param tagCount
+     *            tag count
      */
-    /*package*/ TagDetailsImpl(String tagName, int tagCount)
+    /* package */ TagDetailsImpl(String tagName, int tagCount)
     {
         this.tagName = tagName;
         this.tagCount = tagCount;
@@ -67,37 +69,37 @@ public class TagDetailsImpl implements TagDetails
     {
         return this.tagCount;
     }
-    
+
     /**
      * @see java.lang.Object#hashCode()
      */
     @Override
-    public int hashCode() 
+    public int hashCode()
     {
         return this.tagName.hashCode();
     }
-    
+
     /**
      * Increment the tag count.
      */
-    /*protected*/ void incrementCount()
+    /* protected */ void incrementCount()
     {
         this.tagCount = this.tagCount + 1;
     }
-    
+
     /**
      * Decrement the tag count
      */
-    /*protected*/ void decrementCount()
+    /* protected */ void decrementCount()
     {
         this.tagCount = tagCount - 1;
     }
-    
+
     /**
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
-    public boolean equals(Object obj) 
+    public boolean equals(Object obj)
     {
         if (this == obj)
         {
@@ -126,13 +128,13 @@ public class TagDetailsImpl implements TagDetails
         }
         else if (this.tagCount > o.getCount())
         {
-            result =  -1;
+            result = -1;
         }
         return result;
     }
-    
+
     public String toString()
     {
-       return "Tag: '" + tagName + "' @ " + tagCount + " instances";
+        return "Tag: '" + tagName + "' @ " + tagCount + " instances";
     }
 }

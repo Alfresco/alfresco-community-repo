@@ -31,20 +31,7 @@ import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
 
 /**
- * Handles single Process Definition Entry JSON response
- * "entry": {
- * "deploymentId": "1",
- * "name": "Adhoc Activiti Process",
- * "description": "Assign a new task to yourself or a colleague",
- * "id": "activitiAdhoc:1:4",
- * "startFormResourceKey": "wf:submitAdhocTask",
- * "category": "http://alfresco.org",
- * "title": "New Task",
- * "version": 1,
- * "graphicNotationDefined": true,
- * "key": "activitiAdhoc"
- * }
- * Created by Claudia Agache on 10/13/2016.
+ * Handles single Process Definition Entry JSON response "entry": { "deploymentId": "1", "name": "Adhoc Activiti Process", "description": "Assign a new task to yourself or a colleague", "id": "activitiAdhoc:1:4", "startFormResourceKey": "wf:submitAdhocTask", "category": "http://alfresco.org", "title": "New Task", "version": 1, "graphicNotationDefined": true, "key": "activitiAdhoc" } Created by Claudia Agache on 10/13/2016.
  */
 public class RestProcessDefinitionModel extends TestModel implements IRestModel<RestProcessDefinitionModel>
 {
@@ -169,4 +156,3 @@ public class RestProcessDefinitionModel extends TestModel implements IRestModel<
         this.version = version;
     }
 }
-

@@ -28,11 +28,12 @@ package org.alfresco.repo.virtual.template;
 
 import static org.junit.Assert.*;
 
+import org.junit.Test;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
 import org.alfresco.repo.virtual.ref.Reference;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.junit.Test;
 
 public class TemplateFilingRuleTest extends VirtualizationIntegrationTest
 {
@@ -40,12 +41,12 @@ public class TemplateFilingRuleTest extends VirtualizationIntegrationTest
     public void testFilingSubPath_specialCharacters() throws Exception
     {
         NodeRef vfNodeRef = createVirtualizedFolder(testRootFolder.getNodeRef(),
-                                                    "Template 6 With Spaces",
-                                                    TEST_TEMPLATE_5_JSON_SYS_PATH);
+                "Template 6 With Spaces",
+                TEST_TEMPLATE_5_JSON_SYS_PATH);
 
         NodeRef sfpNodeRef = nodeService.getChildByName(vfNodeRef,
-                                                        ContentModel.ASSOC_CONTAINS,
-                                                        "SpecialFilingPath5");
+                ContentModel.ASSOC_CONTAINS,
+                "SpecialFilingPath5");
 
         Reference sfpReference = Reference.fromNodeRef(sfpNodeRef);
         ApplyTemplateMethod applyTemplateMethod = new ApplyTemplateMethod(environment);
@@ -59,7 +60,7 @@ public class TemplateFilingRuleTest extends VirtualizationIntegrationTest
         NodeRef fn = filingRule.filingNodeRefFor(new FilingParameters(sfpReference));
         assertNull(fn);
         createFolder(vfNodeRef,
-                     "Space Sub Folder");
+                "Space Sub Folder");
         fn = filingRule.filingNodeRefFor(new FilingParameters(sfpReference));
         assertNotNull(fn);
     }
@@ -68,12 +69,12 @@ public class TemplateFilingRuleTest extends VirtualizationIntegrationTest
     public void testFilingPath_specialCharacters() throws Exception
     {
         NodeRef vfNodeRef = createVirtualizedFolder(testRootFolder.getNodeRef(),
-                                                    "Template 6 With Spaces",
-                                                    TEST_TEMPLATE_5_JSON_SYS_PATH);
+                "Template 6 With Spaces",
+                TEST_TEMPLATE_5_JSON_SYS_PATH);
 
         NodeRef sfpNodeRef = nodeService.getChildByName(vfNodeRef,
-                                                        ContentModel.ASSOC_CONTAINS,
-                                                        "SpecialFilingPath4");
+                ContentModel.ASSOC_CONTAINS,
+                "SpecialFilingPath4");
 
         Reference sfpReference = Reference.fromNodeRef(sfpNodeRef);
         ApplyTemplateMethod applyTemplateMethod = new ApplyTemplateMethod(environment);

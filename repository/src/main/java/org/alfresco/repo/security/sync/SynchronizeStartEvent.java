@@ -31,7 +31,7 @@ public class SynchronizeStartEvent extends SynchronizeEvent
     {
         super(source);
     }
-    
+
     /**
      * 
      */

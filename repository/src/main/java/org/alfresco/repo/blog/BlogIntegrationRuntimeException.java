@@ -37,9 +37,10 @@ public class BlogIntegrationRuntimeException extends AlfrescoRuntimeException
     private static final long serialVersionUID = -159901552962025003L;
 
     /**
-     * Constructor 
+     * Constructor
      * 
-     * @param msgId String
+     * @param msgId
+     *            String
      */
     public BlogIntegrationRuntimeException(String msgId)
     {
@@ -49,8 +50,10 @@ public class BlogIntegrationRuntimeException extends AlfrescoRuntimeException
     /**
      * Constructor
      * 
-     * @param msgId String
-     * @param msgParams Object[]
+     * @param msgId
+     *            String
+     * @param msgParams
+     *            Object[]
      */
     public BlogIntegrationRuntimeException(String msgId, Object[] msgParams)
     {
@@ -60,8 +63,10 @@ public class BlogIntegrationRuntimeException extends AlfrescoRuntimeException
     /**
      * Constructor
      * 
-     * @param msgId String
-     * @param cause Throwable
+     * @param msgId
+     *            String
+     * @param cause
+     *            Throwable
      */
     public BlogIntegrationRuntimeException(String msgId, Throwable cause)
     {
@@ -71,9 +76,12 @@ public class BlogIntegrationRuntimeException extends AlfrescoRuntimeException
     /**
      * Constructor
      * 
-     * @param msgId String
-     * @param msgParams Object[]
-     * @param cause Throwable
+     * @param msgId
+     *            String
+     * @param msgParams
+     *            Object[]
+     * @param cause
+     *            Throwable
      */
     public BlogIntegrationRuntimeException(String msgId, Object[] msgParams, Throwable cause)
     {

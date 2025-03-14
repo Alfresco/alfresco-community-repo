@@ -30,17 +30,13 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.AbstractTransformationSourceOptions;
 
 /**
- * Time-based content conversion options to specify an offset and duration.
- * Useful for audio and video.
+ * Time-based content conversion options to specify an offset and duration. Useful for audio and video.
  * <p>
- * If only the offset is specified transformers should attempt
- * a transform from that offset to the end if possible.
+ * If only the offset is specified transformers should attempt a transform from that offset to the end if possible.
  * <p>
- * If only a duration is specified transformers should attempt
- * a transform from the start until that duration is reached if possible.
+ * If only a duration is specified transformers should attempt a transform from the start until that duration is reached if possible.
  * 
  * @author Ray Gauss II
  *
@@ -55,22 +51,21 @@ public class TemporalSourceOptions extends AbstractTransformationSourceOptions
 
     /** The offset time code from which to start the transformation */
     private String offset;
-    
+
     /** The duration of the target video after the transformation */
     private String duration;
-    
+
     @Override
     public boolean isApplicableForMimetype(String sourceMimetype)
     {
-        return ((sourceMimetype != null && 
-                sourceMimetype.startsWith(MimetypeMap.PREFIX_VIDEO) || 
+        return ((sourceMimetype != null &&
+                sourceMimetype.startsWith(MimetypeMap.PREFIX_VIDEO) ||
                 sourceMimetype.startsWith(MimetypeMap.PREFIX_AUDIO)) ||
                 super.isApplicableForMimetype(sourceMimetype));
     }
-    
+
     /**
-     * Gets the offset time code from which to start the transformation 
-     * with a format of hh:mm:ss[.xxx]
+     * Gets the offset time code from which to start the transformation with a format of hh:mm:ss[.xxx]
      * 
      * @return the offset
      */
@@ -80,10 +75,10 @@ public class TemporalSourceOptions extends AbstractTransformationSourceOptions
     }
 
     /**
-     * Sets the offset time code from which to start the transformation 
-     * with a format of hh:mm:ss[.xxx]
+     * Sets the offset time code from which to start the transformation with a format of hh:mm:ss[.xxx]
      * 
-     * @param offset String
+     * @param offset
+     *            String
      */
     public void setOffset(String offset)
     {
@@ -92,8 +87,7 @@ public class TemporalSourceOptions extends AbstractTransformationSourceOptions
     }
 
     /**
-     * Gets the duration of the source to read 
-     * with a format of hh:mm:ss[.xxx]
+     * Gets the duration of the source to read with a format of hh:mm:ss[.xxx]
      * 
      * @return String
      */
@@ -103,21 +97,22 @@ public class TemporalSourceOptions extends AbstractTransformationSourceOptions
     }
 
     /**
-     * Sets the duration of the source to read 
-     * with a format of hh:mm:ss[.xxx]
+     * Sets the duration of the source to read with a format of hh:mm:ss[.xxx]
      * 
-     * @param duration String
+     * @param duration
+     *            String
      */
     public void setDuration(String duration)
     {
         TemporalSourceOptions.validateTimeString(duration);
         this.duration = duration;
     }
-    
+
     /**
      * Validates that the given value is of the form hh:mm:ss[.xxx]
      * 
-     * @param value String
+     * @param value
+     *            String
      */
     public static void validateTimeString(String value)
     {
@@ -146,13 +141,13 @@ public class TemporalSourceOptions extends AbstractTransformationSourceOptions
         }
         return null;
     }
-    
+
     @Override
     public TransformationSourceOptionsSerializer getSerializer()
     {
         return TemporalSourceOptions.createSerializerInstance();
     }
-    
+
     /**
      * Creates an instance of the options serializer
      * 
@@ -162,7 +157,7 @@ public class TemporalSourceOptions extends AbstractTransformationSourceOptions
     {
         return (new TemporalSourceOptions()).new TemporalSourceOptionsSerializer();
     }
-    
+
     /**
      * Serializer for temporal source options
      */
@@ -170,18 +165,18 @@ public class TemporalSourceOptions extends AbstractTransformationSourceOptions
     {
         public static final String PARAM_SOURCE_TIME_OFFSET = "source_time_offset";
         public static final String PARAM_SOURCE_TIME_DURATION = "source_time_duration";
-        
+
         @Override
         public TransformationSourceOptions deserialize(SerializedTransformationOptionsAccessor serializedOptions)
         {
             String offset = serializedOptions.getCheckedParam(PARAM_SOURCE_TIME_OFFSET, String.class);
             String duration = serializedOptions.getCheckedParam(PARAM_SOURCE_TIME_DURATION, String.class);
-            
+
             if (offset == null && duration == null)
             {
                 return null;
             }
-            
+
             TemporalSourceOptions sourceOptions = new TemporalSourceOptions();
             sourceOptions.setOffset(offset);
             sourceOptions.setDuration(duration);
@@ -189,7 +184,7 @@ public class TemporalSourceOptions extends AbstractTransformationSourceOptions
         }
 
         @Override
-        public void serialize(TransformationSourceOptions sourceOptions, 
+        public void serialize(TransformationSourceOptions sourceOptions,
                 Map<String, Serializable> parameters)
         {
             if (parameters == null || sourceOptions == null)
@@ -199,6 +194,5 @@ public class TemporalSourceOptions extends AbstractTransformationSourceOptions
             parameters.put(PARAM_SOURCE_TIME_DURATION, temporalSourceOptions.getDuration());
         }
     }
-
 
 }

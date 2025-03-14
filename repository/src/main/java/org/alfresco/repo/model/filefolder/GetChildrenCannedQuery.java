@@ -53,11 +53,9 @@ import org.alfresco.util.FileFilterMode.Client;
 /**
  * GetChidren canned query for files and folders.
  * 
- * To get paged list of files and folders of a parent folder filtered by child type.
- * Also optionally filtered and/or sorted by one or more properties (up to three).
+ * To get paged list of files and folders of a parent folder filtered by child type. Also optionally filtered and/or sorted by one or more properties (up to three).
  * 
- * This is the same as the nodes getchildren canned query, except it takes into account hidden files and folders (with respect to client visibility)
- * and other aspect(s) to ignore - eg. optionally "cm:checkedOut" in case of Share DocLib.
+ * This is the same as the nodes getchildren canned query, except it takes into account hidden files and folders (with respect to client visibility) and other aspect(s) to ignore - eg. optionally "cm:checkedOut" in case of Share DocLib.
  * 
  * @since 4.1.1
  * @author steveglover, janv
@@ -69,7 +67,7 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
     private DictionaryService dictionaryService;
     private NodeService nodeService;
     private Set<QName> ignoreAspectQNames;
-    
+
     public GetChildrenCannedQuery(
             NodeDAO nodeDAO,
             QNameDAO qnameDAO,
@@ -84,24 +82,24 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
             Set<QName> ignoreAspectQNames)
     {
         super(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, nodeService, methodSecurity, params);
-        
+
         this.hiddenAspect = hiddenAspect;
         this.dictionaryService = dictionaryService;
-        
+
         this.nodeService = nodeService;
         this.ignoreAspectQNames = ignoreAspectQNames;
     }
-    
+
     @Override
     protected UnsortedChildQueryCallback getUnsortedChildQueryCallback(final List<NodeRef> rawResult, final int requestedCount, GetChildrenCannedQueryParams paramBean)
     {
         Set<QName> inclusiveAspects = paramBean.getInclusiveAspects();
         Set<QName> exclusiveAspects = paramBean.getExclusiveAspects();
-        
+
         UnsortedChildQueryCallback callback = new FileFolderUnsortedChildQueryCallback(rawResult, requestedCount, inclusiveAspects, exclusiveAspects);
         return callback;
     }
-    
+
     @Override
     protected FilterSortChildQueryCallback getFilterSortChildQuery(final List<FilterSortNode> children, final List<FilterProp> filterProps, GetChildrenCannedQueryParams paramBean)
     {
@@ -112,27 +110,27 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
     private class FileFolderFilterSortChildQueryCallback extends DefaultFilterSortChildQueryCallback
     {
         private Map<QName, Boolean> isTypeFolderMap = new HashMap<QName, Boolean>(10);
-        
+
         public FileFolderFilterSortChildQueryCallback(List<FilterSortNode> children, List<FilterProp> filterProps)
         {
             super(children, filterProps);
         }
-        
+
         @Override
         protected boolean include(FilterSortNode node)
         {
             boolean ret = super.include(node);
             return ret && includeImpl(ret, node.getNodeRef());
         }
-        
+
         @Override
         public boolean handle(FilterSortNode node)
         {
             super.handle(node);
-            
+
             Map<QName, Serializable> propVals = node.getPropVals();
-            QName nodeTypeQName = (QName)propVals.get(GetChildrenCannedQuery.SORT_QNAME_NODE_TYPE);
-            
+            QName nodeTypeQName = (QName) propVals.get(GetChildrenCannedQuery.SORT_QNAME_NODE_TYPE);
+
             if (nodeTypeQName != null)
             {
                 // ALF-13968
@@ -142,30 +140,30 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
                     isFolder = dictionaryService.isSubClass(nodeTypeQName, ContentModel.TYPE_FOLDER);
                     isTypeFolderMap.put(nodeTypeQName, isFolder);
                 }
-                
+
                 propVals.put(GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER, isFolder);
             }
-            
+
             return true;
         }
     }
 
     private class FileFolderUnsortedChildQueryCallback extends DefaultUnsortedChildQueryCallback
     {
-        public FileFolderUnsortedChildQueryCallback(List<NodeRef> rawResult,int requestedCount, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects)
+        public FileFolderUnsortedChildQueryCallback(List<NodeRef> rawResult, int requestedCount, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects)
         {
             super(rawResult, requestedCount, inclusiveAspects, exclusiveAspects);
         }
-        
+
         @Override
         protected boolean include(NodeRef nodeRef)
         {
             boolean ret = super.include(nodeRef);
-            
+
             return ret && includeImpl(ret, nodeRef);
         }
     }
-    
+
     protected boolean includeImpl(boolean ret, NodeRef nodeRef)
     {
         // only visible files are returned, relative to the client type.
@@ -176,17 +174,17 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
                 // Node has disappeared
                 return ret;
             }
-            
+
             final Client client = FileFilterMode.getClient();
             boolean notHidden = hiddenAspect.getVisibility(client, nodeRef) != Visibility.NotVisible;
-            
+
             boolean notIgnore = true;
             if (ignoreAspectQNames != null)
             {
                 if (ignoreAspectQNames.size() > 1)
                 {
                     Set<QName> nodeAspects = nodeService.getAspects(nodeRef);
-                    notIgnore = (! nodeAspects.removeAll(ignoreAspectQNames));
+                    notIgnore = (!nodeAspects.removeAll(ignoreAspectQNames));
                 }
                 else if (ignoreAspectQNames.size() == 1)
                 {
@@ -196,7 +194,7 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
                     }
                 }
             }
-            
+
             return ret && notHidden && notIgnore;
         }
         catch (AccessDeniedException e)

@@ -31,16 +31,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.search.QueryParameterDefinition;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.namespace.NamespacePrefixResolver;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.QNamePattern;
-import org.alfresco.util.ISO9075;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jaxen.BaseXPath;
@@ -85,9 +75,19 @@ import org.jaxen.function.ext.LowerFunction;
 import org.jaxen.function.ext.UpperFunction;
 import org.jaxen.function.xslt.DocumentFunction;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.search.QueryParameterDefinition;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.QNamePattern;
+import org.alfresco.util.ISO9075;
+
 /**
- * Represents an xpath statement that resolves against a
- * <code>NodeService</code>
+ * Represents an xpath statement that resolves against a <code>NodeService</code>
  * 
  * @author Andy Hind
  */
@@ -116,17 +116,17 @@ public class NodeServiceXPath extends BaseXPath
         {
             StringBuilder sb = new StringBuilder();
             sb.append("Created XPath: \n")
-              .append("   XPath: ").append(xpath).append("\n")
-              .append("   Parameters: \n");
+                    .append("   XPath: ").append(xpath).append("\n")
+                    .append("   Parameters: \n");
             for (int i = 0; paramDefs != null && i < paramDefs.length; i++)
             {
                 sb.append("      Parameter: \n")
-                  .append("         name: ").append(paramDefs[i].getQName()).append("\n")
-                  .append("         value: ").append(paramDefs[i].getDefault()).append("\n");
+                        .append("         name: ").append(paramDefs[i].getQName()).append("\n")
+                        .append("         value: ").append(paramDefs[i].getDefault()).append("\n");
             }
             logger.debug(sb.toString());
         }
-        
+
         // Add support for parameters
         if (paramDefs != null)
         {
@@ -172,10 +172,9 @@ public class NodeServiceXPath extends BaseXPath
             addNamespace(prefix, documentNavigator.getNamespacePrefixResolver().getNamespaceURI(prefix));
         }
     }
-    
+
     /**
-     * Jaxen has some magic with its IdentitySet, which means that we can get different results
-     * depending on whether we cache {@link ChildAssociationRef } instances or not.
+     * Jaxen has some magic with its IdentitySet, which means that we can get different results depending on whether we cache {@link ChildAssociationRef } instances or not.
      * <p>
      * So, duplicates are eliminated here before the results are returned.
      */
@@ -189,15 +188,15 @@ public class NodeServiceXPath extends BaseXPath
                     "   XPath: " + this + "\n" +
                     "   starting at: " + arg0);
         }
-        
+
         List<Object> resultsWithDuplicates = super.selectNodes(arg0);
-        
+
         Set<Object> set = new HashSet<Object>(resultsWithDuplicates);
-        
+
         // return new list without duplicates
         List<Object> results = new ArrayList<>();
         results.addAll(set);
-        
+
         // done
         return results;
     }
@@ -369,11 +368,9 @@ public class NodeServiceXPath extends BaseXPath
     }
 
     /**
-     * A boolean function to determine if a node property matches a pattern
-     * and/or the node text matches the pattern.
+     * A boolean function to determine if a node property matches a pattern and/or the node text matches the pattern.
      * <p>
-     * The default is JSR170 compliant. The optional boolean allows searching
-     * only against the property value itself.
+     * The default is JSR170 compliant. The optional boolean allows searching only against the property value itself.
      * <p>
      * The search is always case-insensitive.
      * 
@@ -544,7 +541,7 @@ public class NodeServiceXPath extends BaseXPath
 
             registerFunction("", // namespace URI
                     "document", new DocumentFunction());
-            
+
             registerFunction("", // namespace URI
                     "ends-with", new EndsWithFunction());
 
@@ -672,11 +669,9 @@ public class NodeServiceXPath extends BaseXPath
             this.resolver = resolver;
         }
 
-        /*
-         * (non-Javadoc)
+        /* (non-Javadoc)
          * 
-         * @see org.alfresco.service.namespace.QNamePattern#isMatch(org.alfresco.service.namespace.QName)
-         */
+         * @see org.alfresco.service.namespace.QNamePattern#isMatch(org.alfresco.service.namespace.QName) */
         public boolean isMatch(QName qname)
         {
             String prefixedName = qname.toPrefixString(resolver);

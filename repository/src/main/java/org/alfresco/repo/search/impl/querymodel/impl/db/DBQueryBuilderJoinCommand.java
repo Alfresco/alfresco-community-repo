@@ -47,7 +47,8 @@ public class DBQueryBuilderJoinCommand
     }
 
     /**
-     * @param alias the alias to set
+     * @param alias
+     *            the alias to set
      */
     public void setAlias(String alias)
     {
@@ -63,7 +64,8 @@ public class DBQueryBuilderJoinCommand
     }
 
     /**
-     * @param type the type to set
+     * @param type
+     *            the type to set
      */
     public void setType(DBQueryBuilderJoinCommandType type)
     {
@@ -79,7 +81,8 @@ public class DBQueryBuilderJoinCommand
     }
 
     /**
-     * @param qnameId the qnameId to set
+     * @param qnameId
+     *            the qnameId to set
      */
     public void setQnameId(Long qnameId)
     {
@@ -95,12 +98,12 @@ public class DBQueryBuilderJoinCommand
     }
 
     /**
-     * @param outer the outer to set
+     * @param outer
+     *            the outer to set
      */
     public void setOuter(boolean outer)
     {
         this.outer = outer;
     }
-    
-    
+
 }

@@ -29,14 +29,14 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.util.Map;
 
-import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.QNameMap;
-
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.ObjectWrapper;
 import freemarker.template.SimpleHash;
 import freemarker.template.TemplateModel;
 import freemarker.template.TemplateModelException;
+
+import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.QNameMap;
 
 /**
  * @author Kevin Roast
@@ -44,25 +44,23 @@ import freemarker.template.TemplateModelException;
  */
 public class QNameAwareObjectWrapper implements ObjectWrapper
 {
-    private final ThreadLocal<ObjectWrapper> threadDelegates = new ThreadLocal<ObjectWrapper>()
-    {
+    private final ThreadLocal<ObjectWrapper> threadDelegates = new ThreadLocal<ObjectWrapper>() {
         /* (non-Javadoc)
-         * @see java.lang.ThreadLocal#initialValue()
-         */
+         * 
+         * @see java.lang.ThreadLocal#initialValue() */
         @Override
         protected ObjectWrapper initialValue()
         {
-            return new DefaultObjectWrapper()
-            {
+            return new DefaultObjectWrapper() {
                 /* (non-Javadoc)
-                 * @see freemarker.template.DefaultObjectWrapper#wrap(java.lang.Object)
-                 */
+                 * 
+                 * @see freemarker.template.DefaultObjectWrapper#wrap(java.lang.Object) */
                 @Override
                 public TemplateModel wrap(Object obj) throws TemplateModelException
                 {
                     if (obj instanceof QNameMap)
                     {
-                        return new QNameHash((QNameMap)obj, this);
+                        return new QNameHash((QNameMap) obj, this);
                     }
                     else
                     {
@@ -72,7 +70,7 @@ public class QNameAwareObjectWrapper implements ObjectWrapper
             };
         }
     };
-    
+
     public QNameAwareObjectWrapper()
     {
         // Force initialization/introspection of core classes in advance to avoid lock ups later
@@ -95,7 +93,7 @@ public class QNameAwareObjectWrapper implements ObjectWrapper
     {
         return threadDelegates.get().wrap(obj);
     }
-    
+
     /**
      * Inner class to support clone of QNameNodeMap
      */
@@ -111,7 +109,7 @@ public class QNameAwareObjectWrapper implements ObjectWrapper
         {
             super(map, wrapper);
         }
-        
+
         /**
          * Override to support clone of a QNameNodeMap object
          */
@@ -119,7 +117,7 @@ public class QNameAwareObjectWrapper implements ObjectWrapper
         {
             if (map instanceof QNameMap)
             {
-                return (Map)((QNameMap)map).clone();
+                return (Map) ((QNameMap) map).clone();
             }
             else
             {

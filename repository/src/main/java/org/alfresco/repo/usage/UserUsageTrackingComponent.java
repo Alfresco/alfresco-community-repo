@@ -32,6 +32,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.usage.UsageDAO;
 import org.alfresco.repo.domain.usage.UsageDAO.MapHandler;
@@ -59,40 +64,35 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * User Usage Tracking Component - to allow user usages to be collapsed or re-calculated
  * 
- * - used by UserUsageCollapseJob to collapse usage deltas.
- * - used on bootstrap to either clear all usages or (re-)calculate all missing usages.
+ * - used by UserUsageCollapseJob to collapse usage deltas. - used on bootstrap to either clear all usages or (re-)calculate all missing usages.
  */
 public class UserUsageTrackingComponent extends AbstractLifecycleBean implements NodeServicePolicies.OnCreateNodePolicy
 {
     private static Log logger = LogFactory.getLog(UserUsageTrackingComponent.class);
-    
+
     private TransactionServiceImpl transactionService;
     private ContentUsageImpl contentUsageImpl;
-    
+
     private NodeService nodeService;
     private UsageDAO usageDAO;
     private UsageService usageService;
     private TenantAdminService tenantAdminService;
     private TenantService tenantService;
     private JobLockService jobLockService;
-    
+
     private StoreRef personStoreRef;
-    
+
     private int clearBatchSize = 50;
     private int updateBatchSize = 50;
-    
+
     private boolean enabled = true;
-    private static final long LOCK_TTL = 60000L;        // 1 minute
+    private static final long LOCK_TTL = 60000L; // 1 minute
     private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "org.alfresco.repo.usage.UserUsageTrackingComponent");
-    
+
     private PolicyComponent policyComponent;
 
     /**
@@ -111,62 +111,62 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
     {
         this.policyComponent = policyComponent;
     }
-    
+
     public void setTransactionService(TransactionServiceImpl transactionService)
     {
         this.transactionService = transactionService;
     }
-    
+
     public void setContentUsageImpl(ContentUsageImpl contentUsageImpl)
     {
         this.contentUsageImpl = contentUsageImpl;
     }
-    
+
     public void setPersonStoreUrl(String storeUrl)
     {
         this.personStoreRef = new StoreRef(storeUrl);
     }
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setUsageDAO(UsageDAO usageDAO)
     {
         this.usageDAO = usageDAO;
     }
-    
+
     public void setUsageService(UsageService usageService)
     {
         this.usageService = usageService;
     }
-    
+
     public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
         this.tenantAdminService = tenantAdminService;
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-    
+
     public void setClearBatchSize(int clearBatchSize)
     {
         this.clearBatchSize = clearBatchSize;
     }
-    
+
     public void setUpdateBatchSize(int updateBatchSize)
     {
         this.updateBatchSize = updateBatchSize;
     }
-    
+
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
     }
-    
+
     public void setJobLockService(JobLockService jobLockService)
     {
         this.jobLockService = jobLockService;
@@ -215,7 +215,7 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
         {
             return;
         }
-        
+
         String lockToken = getLock(LOCK_TTL);
         if (lockToken != null)
         {
@@ -234,21 +234,19 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
             }
         }
     }
-    
-    
+
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
         // default domain
         bootstrapInternal();
-        
+
         if (tenantAdminService.isEnabled())
         {
             List<Tenant> tenants = tenantAdminService.getAllTenants();
             for (Tenant tenant : tenants)
             {
-                TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
-                {
+                TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>() {
                     public Object doWork() throws Exception
                     {
                         bootstrapInternal();
@@ -256,16 +254,16 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
                     }
                 }, tenant.getTenantDomain());
             }
-       }
+        }
     }
-    
+
     public void bootstrapInternal()
     {
         if (transactionService.isReadOnly())
         {
             return;
         }
-        
+
         String lockToken = getLock(LOCK_TTL);
         if (lockToken != null)
         {
@@ -294,7 +292,7 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
             }
         }
     }
-    
+
     @Override
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
@@ -302,128 +300,122 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
         {
             final NodeRef personRef = childAssocRef.getChildRef();
             final String userName = (String) this.nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
-            
+
             if (userName != null)
             {
-                RetryingTransactionCallback<Long> updateUserWithUsage = new RetryingTransactionCallback<Long>()
-                {
+                RetryingTransactionCallback<Long> updateUserWithUsage = new RetryingTransactionCallback<Long>() {
                     public Long execute() throws Throwable
                     {
                         List<String> stores = contentUsageImpl.getStores();
-                        
+
                         Long currentUsage = null;
-                        
+
                         for (String store : stores)
                         {
                             final StoreRef storeRef = tenantService.getName(new StoreRef(store));
-                            
+
                             Long contentSize = usageDAO.getContentSizeForStoreForUser(storeRef, userName);
-                            
+
                             if (contentSize != null)
                             {
                                 currentUsage = (currentUsage == null ? 0L : currentUsage) + contentSize;
                             }
                         }
-                        
+
                         if (currentUsage != null && currentUsage > 0L)
                         {
                             List<Pair<NodeRef, Long>> batchUserUsages = new ArrayList<Pair<NodeRef, Long>>(1);
                             batchUserUsages.add(new Pair<NodeRef, Long>(personRef, currentUsage));
-                            
+
                             updateUsages(batchUserUsages);
                         }
-                        
+
                         return null;
                     }
                 };
-                
+
                 // execute in READ-WRITE txn
                 transactionService.getRetryingTransactionHelper().doInTransaction(updateUserWithUsage, false);
             }
         }
     }
-    
+
     @Override
     protected void onShutdown(ApplicationEvent event)
-    {
-    }
-    
-    
+    {}
+
     /**
      * Clear content usage for all users that have a usage.
      */
     private void clearAllUsages()
     {
-        if (logger.isInfoEnabled()) 
+        if (logger.isInfoEnabled())
         {
             logger.info("Disabled - clear non-missing user usages ...");
         }
-        
+
         final Map<String, NodeRef> users = new HashMap<String, NodeRef>();
-        
-        RetryingTransactionCallback<Object> getUsersWithUsage = new RetryingTransactionCallback<Object>()
-        {
+
+        RetryingTransactionCallback<Object> getUsersWithUsage = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 // get people (users) with calculated usage
-                MapHandler userHandler = new MapHandler()
-                {
+                MapHandler userHandler = new MapHandler() {
                     public void handle(Map<String, Object> result)
                     {
-                        String username = (String)result.get("username");
-                        String uuid = (String)result.get("uuid");
-                        
-                        if (! username.equalsIgnoreCase(AuthenticationUtil.getSystemUserName()))
+                        String username = (String) result.get("username");
+                        String uuid = (String) result.get("uuid");
+
+                        if (!username.equalsIgnoreCase(AuthenticationUtil.getSystemUserName()))
                         {
                             users.put(username, new NodeRef(personStoreRef, uuid));
                         }
                     }
                 };
                 usageDAO.getUsersWithUsage(tenantService.getName(personStoreRef), userHandler);
-                
+
                 return null;
             }
         };
-        
+
         // execute in READ-ONLY txn
         transactionService.getRetryingTransactionHelper().doInTransaction(getUsersWithUsage, true);
-        
-        if (logger.isInfoEnabled()) 
+
+        if (logger.isInfoEnabled())
         {
             logger.info("Found " + users.size() + " users to clear");
         }
-        
+
         int clearCount = 0;
         int batchCount = 0;
         int totalCount = 0;
-        
+
         List<NodeRef> batchPersonRefs = new ArrayList<NodeRef>(clearBatchSize);
         for (NodeRef personNodeRef : users.values())
         {
             batchPersonRefs.add(personNodeRef);
             batchCount++;
             totalCount++;
-            
+
             if ((batchCount == clearBatchSize) || (totalCount == users.size()))
             {
                 int cleared = clearUsages(batchPersonRefs);
                 clearCount = clearCount + cleared;
-                
+
                 batchPersonRefs.clear();
                 batchCount = 0;
             }
         }
-        
-        if (logger.isInfoEnabled()) 
+
+        if (logger.isInfoEnabled())
         {
             logger.info("... cleared non-missing usages for " + clearCount + " users");
         }
     }
-    
+
     private int clearUsages(final List<NodeRef> personNodeRefs)
     {
-        RetryingTransactionCallback<Integer> clearPersonUsage = new RetryingTransactionCallback<Integer>()
-        {
+        RetryingTransactionCallback<Integer> clearPersonUsage = new RetryingTransactionCallback<Integer>() {
             public Integer execute() throws Throwable
             {
                 int clearCount = 0;
@@ -431,260 +423,247 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
                 {
                     nodeService.setProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT, Long.valueOf(-1L));
                     usageService.deleteDeltas(personNodeRef);
-                    
+
                     if (logger.isTraceEnabled())
                     {
-                        logger.trace("Cleared usage for person ("+ personNodeRef+")");
+                        logger.trace("Cleared usage for person (" + personNodeRef + ")");
                     }
-                    
+
                     clearCount++;
                 }
                 return clearCount;
             }
         };
-        
+
         // execute in READ-WRITE txn
         return transactionService.getRetryingTransactionHelper().doInTransaction(clearPersonUsage, false);
     }
-    
+
     /**
-     * Recalculate content usage for all users that have no usage. 
-     * Required if upgrading an existing Alfresco, for users that have not had their initial usage calculated.
+     * Recalculate content usage for all users that have no usage. Required if upgrading an existing Alfresco, for users that have not had their initial usage calculated.
      */
     private void calculateMissingUsages()
     {
-        if (logger.isInfoEnabled()) 
+        if (logger.isInfoEnabled())
         {
             logger.info("Enabled - calculate missing user usages ...");
         }
-        
+
         final Map<String, NodeRef> users = new HashMap<String, NodeRef>();
-        
-        RetryingTransactionCallback<Object> getUsersWithoutUsage = new RetryingTransactionCallback<Object>()
-        {
+
+        RetryingTransactionCallback<Object> getUsersWithoutUsage = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 // get people (users) without calculated usage
-                MapHandler userHandler = new MapHandler()
-                {
+                MapHandler userHandler = new MapHandler() {
                     public void handle(Map<String, Object> result)
                     {
-                        String username = (String)result.get("username");
-                        String uuid = (String)result.get("uuid");
-                        
-                        if (! username.equalsIgnoreCase(AuthenticationUtil.getSystemUserName()))
+                        String username = (String) result.get("username");
+                        String uuid = (String) result.get("uuid");
+
+                        if (!username.equalsIgnoreCase(AuthenticationUtil.getSystemUserName()))
                         {
                             users.put(username, new NodeRef(personStoreRef, uuid));
                         }
                     }
                 };
-                
+
                 usageDAO.getUsersWithoutUsage(tenantService.getName(personStoreRef), userHandler);
-                        
+
                 return null;
             }
         };
-        
+
         // execute in READ-ONLY txn
         transactionService.getRetryingTransactionHelper().doInTransaction(getUsersWithoutUsage, true);
-        
-        if (logger.isInfoEnabled()) 
+
+        if (logger.isInfoEnabled())
         {
             logger.info("Found " + users.size() + " users to recalculate");
         }
-        
+
         int updateCount = 0;
         if (users.size() > 0)
         {
             updateCount = recalculateUsages(users);
         }
-        
-        if (logger.isInfoEnabled()) 
+
+        if (logger.isInfoEnabled())
         {
             logger.info("... calculated missing usages for " + updateCount + " users");
         }
     }
-    
-    /*
-     * Recalculate content usage for given users. Required if upgrading an existing Alfresco, for users that
-     * have not had their initial usage calculated. In a future release, could also be called explicitly by
-     * a SysAdmin, eg. via a JMX operation.
-     */
+
+    /* Recalculate content usage for given users. Required if upgrading an existing Alfresco, for users that have not had their initial usage calculated. In a future release, could also be called explicitly by a SysAdmin, eg. via a JMX operation. */
     private int recalculateUsages(final Map<String, NodeRef> users)
     {
         final Map<String, Long> currentUserUsages = new HashMap<String, Long>(users.size());
-        
-        RetryingTransactionCallback<Long> calculateCurrentUsages = new RetryingTransactionCallback<Long>()
-        {
+
+        RetryingTransactionCallback<Long> calculateCurrentUsages = new RetryingTransactionCallback<Long>() {
             public Long execute() throws Throwable
             {
                 List<String> stores = contentUsageImpl.getStores();
-                 
+
                 for (String store : stores)
                 {
                     final StoreRef storeRef = tenantService.getName(new StoreRef(store));
-                    
+
                     if (logger.isTraceEnabled())
                     {
                         logger.trace("Recalc usages for store=" + storeRef);
                     }
-                    
+
                     // get content urls
-                    MapHandler userContentUrlHandler = new MapHandler()
-                    {
+                    MapHandler userContentUrlHandler = new MapHandler() {
                         public void handle(Map<String, Object> result)
                         {
-                            String owner = (String)result.get("owner");
-                            String creator = (String)result.get("creator");
-                            Long contentSize = (Long)result.get("contentSize"); // sum of content size (via join of new style content id)
-                            
+                            String owner = (String) result.get("owner");
+                            String creator = (String) result.get("creator");
+                            Long contentSize = (Long) result.get("contentSize"); // sum of content size (via join of new style content id)
+
                             if (contentSize == null)
                             {
                                 contentSize = 0L;
                             }
-                            
+
                             if (owner == null)
                             {
                                 owner = creator;
                             }
-                            
+
                             Long currentUsage = currentUserUsages.get(owner);
-                            
+
                             if (currentUsage == null)
                             {
                                 currentUsage = 0L;
                             }
-                            
+
                             currentUserUsages.put(owner, currentUsage + contentSize);
                         }
                     };
-                    
+
                     // Query and sum the 'new' style content properties
                     usageDAO.getUserContentSizesForStore(storeRef, userContentUrlHandler);
                 }
-                
+
                 return null;
             }
         };
-        
+
         // execute in READ-ONLY txn
         transactionService.getRetryingTransactionHelper().doInTransaction(calculateCurrentUsages, true);
-        
-        if (logger.isDebugEnabled()) 
+
+        if (logger.isDebugEnabled())
         {
             logger.debug("Usages calculated - start update");
         }
-        
+
         int updateCount = 0;
         int batchCount = 0;
         int totalCount = 0;
-        
+
         List<Pair<NodeRef, Long>> batchUserUsages = new ArrayList<Pair<NodeRef, Long>>(updateBatchSize);
-        
+
         for (Map.Entry<String, NodeRef> user : users.entrySet())
         {
             String userName = user.getKey();
             NodeRef personNodeRef = user.getValue();
-            
+
             Long currentUsage = currentUserUsages.get(userName);
             if (currentUsage == null)
             {
                 currentUsage = 0L;
             }
-            
+
             batchUserUsages.add(new Pair<NodeRef, Long>(personNodeRef, currentUsage));
             batchCount++;
             totalCount++;
-            
+
             if ((batchCount == updateBatchSize) || (totalCount == users.size()))
             {
                 int updated = updateUsages(batchUserUsages);
                 updateCount = updateCount + updated;
-                
+
                 batchUserUsages.clear();
                 batchCount = 0;
             }
         }
-        
+
         return totalCount;
     }
-    
+
     private int updateUsages(final List<Pair<NodeRef, Long>> userUsages)
     {
-        RetryingTransactionCallback<Integer> updateCurrentUsages = new RetryingTransactionCallback<Integer>()
-        {
+        RetryingTransactionCallback<Integer> updateCurrentUsages = new RetryingTransactionCallback<Integer>() {
             public Integer execute() throws Throwable
             {
                 int updateCount = 0;
-                
+
                 for (Pair<NodeRef, Long> userUsage : userUsages)
                 {
                     NodeRef personNodeRef = userUsage.getFirst();
                     Long currentUsage = userUsage.getSecond();
-                    
+
                     contentUsageImpl.setUserStoredUsage(personNodeRef, currentUsage);
                     usageService.deleteDeltas(personNodeRef);
-                    
+
                     updateCount++;
                 }
                 return updateCount;
             }
         };
-        
+
         // execute in READ-WRITE txn
         return transactionService.getRetryingTransactionHelper().doInTransaction(updateCurrentUsages, false);
     }
-    
+
     /**
      * Collapse usages - note: for MT environment, will collapse all tenants
      */
     private void collapseUsages()
     {
-        if (logger.isDebugEnabled()) 
+        if (logger.isDebugEnabled())
         {
             logger.debug("Collapse usages ...");
         }
-        
+
         // Collapse usage deltas (if a person has initial usage set)
-        RetryingTransactionCallback<Set<NodeRef>> getUsageNodeRefs = new RetryingTransactionCallback<Set<NodeRef>>()
-        {
+        RetryingTransactionCallback<Set<NodeRef>> getUsageNodeRefs = new RetryingTransactionCallback<Set<NodeRef>>() {
             public Set<NodeRef> execute() throws Throwable
             {
                 // Get distinct candidates
                 return usageService.getUsageDeltaNodes();
             }
         };
-        
+
         // execute in READ-ONLY txn
         Set<NodeRef> usageNodeRefs = transactionService.getRetryingTransactionHelper().doInTransaction(getUsageNodeRefs, true);
-        
+
         int collapseCount = 0;
         for (final NodeRef usageNodeRef : usageNodeRefs)
         {
-            Boolean collapsed = TenantUtil.runAsSystemTenant(new TenantRunAsWork<Boolean>()
-            {
+            Boolean collapsed = TenantUtil.runAsSystemTenant(new TenantRunAsWork<Boolean>() {
                 public Boolean doWork() throws Exception
                 {
                     return collapseUsage(usageNodeRef);
                 }
             }, tenantService.getDomain(usageNodeRef.getStoreRef().getIdentifier()));
-            
+
             if (collapsed)
             {
                 collapseCount++;
             }
         }
-        
-        if (logger.isDebugEnabled()) 
+
+        if (logger.isDebugEnabled())
         {
             logger.debug("... collapsed usages for " + collapseCount + " users");
         }
     }
-    
+
     private boolean collapseUsage(final NodeRef usageNodeRef)
     {
-        RetryingTransactionCallback<Boolean> collapseUsages = new RetryingTransactionCallback<Boolean>()
-        {
+        RetryingTransactionCallback<Boolean> collapseUsages = new RetryingTransactionCallback<Boolean>() {
             public Boolean execute() throws Throwable
             {
                 if (!nodeService.exists(usageNodeRef))
@@ -693,12 +672,12 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
                     return false;
                 }
                 QName nodeType = nodeService.getType(usageNodeRef);
-                
+
                 if (nodeType.equals(ContentModel.TYPE_PERSON))
                 {
                     NodeRef personNodeRef = usageNodeRef;
-                    String userName = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
-                    
+                    String userName = (String) nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
+
                     long currentUsage = contentUsageImpl.getUserStoredUsage(personNodeRef);
                     if (currentUsage != -1)
                     {
@@ -708,8 +687,8 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
                         // calculation
                         currentUsage = contentUsageImpl.getUserUsage(personNodeRef, true);
                         contentUsageImpl.setUserStoredUsage(personNodeRef, currentUsage);
-                        
-                        if (logger.isTraceEnabled()) 
+
+                        if (logger.isTraceEnabled())
                         {
                             logger.trace("Collapsed usage: username=" + userName + ", usage=" + currentUsage);
                         }
@@ -725,7 +704,7 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
                 return true;
             }
         };
-        
+
         // execute in READ-WRITE txn
         return transactionService.getRetryingTransactionHelper().doInTransaction(collapseUsages, false);
     }

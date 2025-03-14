@@ -31,6 +31,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
@@ -41,11 +47,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.transaction.annotation.Transactional;
 
 @Category(BaseSpringTestsCategory.class)
 @Transactional
@@ -380,7 +381,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperty(n1, aspectCategoriesProp));
         assertEquals(1, ((Collection) nodeService.getProperty(n1, aspectCategoriesProp)).size());
-        assertTrue( ((Collection) nodeService.getProperty(n1, aspectCategoriesProp)).iterator().next() instanceof NodeRef);
+        assertTrue(((Collection) nodeService.getProperty(n1, aspectCategoriesProp)).iterator().next() instanceof NodeRef);
         assertNotNull(nodeService.getProperty(n1, aspectNoderefsProp));
         assertEquals(1, ((Collection) nodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertTrue(((Collection) nodeService.getProperty(n1, aspectNoderefsProp)).iterator().next() instanceof NodeRef);
@@ -514,7 +515,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         properties2.put(aspectCategoriesProp, invalidNodeRef);
         properties3.put(aspectNoderefProp, invalidNodeRef);
         properties4.put(aspectNoderefsProp, invalidNodeRef);
-        
+
         assertEquals(testInvalid, invalidNodeRef);
 
         // Add aspect
@@ -694,7 +695,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         nodeService.addAspect(n1, categoriesAspect, properties2);
         nodeService.addAspect(n1, noderefAspect, properties3);
         nodeService.addAspect(n1, noderefsAspect, properties4);
-        
+
         assertEquals(1, properties4.size());
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
@@ -1820,7 +1821,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(typeCategoriesProp, values);
         properties.put(typeNoderefsProp, values);
-        
+
         nodeService.setProperties(n1, properties);
 
         assertNotNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
@@ -1864,7 +1865,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(typeCategoriesProp, values);
         properties.put(typeNoderefsProp, values);
-        
+
         nodeService.setProperties(n1, properties);
 
         assertNotNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
@@ -1910,7 +1911,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(typeCategoriesProp, values);
         properties.put(typeNoderefsProp, values);
-        
+
         nodeService.setProperties(n1, properties);
 
         assertNotNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));

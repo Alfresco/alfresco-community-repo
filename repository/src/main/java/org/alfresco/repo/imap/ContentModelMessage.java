@@ -28,7 +28,6 @@ package org.alfresco.repo.imap;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
-
 import jakarta.mail.Address;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Multipart;
@@ -40,18 +39,19 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.internet.MimeUtility;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.imap.ImapService.EmailBodyFormat;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class ContentModelMessage extends AbstractMimeMessage
 {
     private Log logger = LogFactory.getLog(ContentModelMessage.class);
-    
+
     protected static final String DEFAULT_EMAIL_FROM = "alfresco" + DEFAULT_SUFFIX;
     protected static final String DEFAULT_EMAIL_TO = DEFAULT_EMAIL_FROM;
 
@@ -137,7 +137,6 @@ public class ContentModelMessage extends AbstractMimeMessage
         return result;
     }
 
-    
     class AlfrescoMimeMultipart extends MimeMultipart
     {
         public AlfrescoMimeMultipart(String subtype, FileInfo messageFileInfo)
@@ -156,7 +155,7 @@ public class ContentModelMessage extends AbstractMimeMessage
             return s.toString();
         }
     }
-    
+
     /**
      * Generate the "to" address.
      * 
@@ -170,18 +169,17 @@ public class ContentModelMessage extends AbstractMimeMessage
     private InternetAddress[] buildRecipientToAddress() throws AddressException
     {
         InternetAddress[] result = null;
-       
-        
+
         Map<QName, Serializable> properties = messageFileInfo.getProperties();
-        
+
         /**
          * Step 1 : Get the ADDRESSEE if it exists
          */
-        if(properties.containsKey(ContentModel.PROP_ADDRESSEE))
+        if (properties.containsKey(ContentModel.PROP_ADDRESSEE))
         {
-            String addressee = (String)properties.get(ContentModel.PROP_ADDRESSEE);
+            String addressee = (String) properties.get(ContentModel.PROP_ADDRESSEE);
             try
-            { 
+            {
                 result = InternetAddress.parse(addressee);
                 return result;
             }
@@ -190,26 +188,26 @@ public class ContentModelMessage extends AbstractMimeMessage
                 // try next step
             }
         }
-        
-//      final String escapedUserName = AuthenticationUtil.getFullyAuthenticatedUser().replaceAll("[/,\\,@]", ".");
-//      final String userDomain = DEFAULT_EMAIL_TO.split("@")[1];
-//      String userName = escapedUserName + "@" + userDomain;
-//      try
-//      {
-//          result = InternetAddress.parse(userName);
-//          return result;        
-//      }
-//      catch (AddressException e)
-//      {
-//      }
-        
+
+        // final String escapedUserName = AuthenticationUtil.getFullyAuthenticatedUser().replaceAll("[/,\\,@]", ".");
+        // final String userDomain = DEFAULT_EMAIL_TO.split("@")[1];
+        // String userName = escapedUserName + "@" + userDomain;
+        // try
+        // {
+        // result = InternetAddress.parse(userName);
+        // return result;
+        // }
+        // catch (AddressException e)
+        // {
+        // }
+
         /**
          * Last Step : Get the Default address
          */
         String defaultToAddress = imapService.getDefaultToAddress();
-      
+
         try
-        { 
+        {
             result = InternetAddress.parse(defaultToAddress);
             return result;
         }
@@ -219,18 +217,17 @@ public class ContentModelMessage extends AbstractMimeMessage
         }
         result = InternetAddress.parse(DEFAULT_EMAIL_TO);
         return result;
-       
+
     }
-    
+
     /**
-     * Builds the InternetAddress for the sender (from) 
+     * Builds the InternetAddress for the sender (from)
      * 
      * Step 1: use PROP_ORIGINATOR
      * 
      * Last Step : Use the default address.
      * 
-     * Content Author name if provided. If name not specified, it takes Content Creator name. 
-     * If content creator does not exists, the default from address will be returned.
+     * Content Author name if provided. If name not specified, it takes Content Creator name. If content creator does not exists, the default from address will be returned.
      * 
      * @return Generated InternetAddress[] array.
      * @throws AddressException
@@ -241,15 +238,15 @@ public class ContentModelMessage extends AbstractMimeMessage
         InternetAddress[] result = null;
         Map<QName, Serializable> properties = messageFileInfo.getProperties();
         String defaultFromAddress = imapService.getDefaultFromAddress();
-        
+
         /**
          * Step 1 : Get the ORIGINATOR if it exists
          */
-        if(properties.containsKey(ContentModel.PROP_ORIGINATOR))
+        if (properties.containsKey(ContentModel.PROP_ORIGINATOR))
         {
-            String addressee = (String)properties.get(ContentModel.PROP_ORIGINATOR);
+            String addressee = (String) properties.get(ContentModel.PROP_ORIGINATOR);
             try
-            { 
+            {
                 result = InternetAddress.parse(addressee);
                 return result;
             }
@@ -262,50 +259,50 @@ public class ContentModelMessage extends AbstractMimeMessage
         /**
          * Go for the author property
          */
-        if(properties.containsKey(ContentModel.PROP_AUTHOR))
+        if (properties.containsKey(ContentModel.PROP_AUTHOR))
         {
             String author = (String) properties.get(ContentModel.PROP_AUTHOR);
             try
             {
 
-                if(!(author == null || author.isEmpty()))
-                {        
+                if (!(author == null || author.isEmpty()))
+                {
                     StringBuilder contentAuthor = new StringBuilder();
                     contentAuthor.append("\"").append(author).append("\" <").append(defaultFromAddress).append(">");
                     result = InternetAddress.parse(contentAuthor.toString());
                     return result;
                 }
-            
+
             }
             catch (AddressException e)
             {
                 // try next step
             }
         }
-        
-        if(properties.containsKey(ContentModel.PROP_CREATOR))
+
+        if (properties.containsKey(ContentModel.PROP_CREATOR))
         {
             String author = (String) properties.get(ContentModel.PROP_CREATOR);
             try
             {
 
-              StringBuilder contentAuthor = new StringBuilder();
-              contentAuthor.append("\"").append(author).append("\" <").append(defaultFromAddress).append(">");
-              result = InternetAddress.parse(contentAuthor.toString());
-              return result;
-            
+                StringBuilder contentAuthor = new StringBuilder();
+                contentAuthor.append("\"").append(author).append("\" <").append(defaultFromAddress).append(">");
+                result = InternetAddress.parse(contentAuthor.toString());
+                return result;
+
             }
             catch (AddressException e)
             {
                 // try next step
             }
         }
-        
+
         /**
          * Last Step : Get the Default address
          */
         try
-        { 
+        {
             result = InternetAddress.parse(defaultFromAddress);
             return result;
         }
@@ -315,6 +312,6 @@ public class ContentModelMessage extends AbstractMimeMessage
         }
         result = InternetAddress.parse(DEFAULT_EMAIL_FROM);
         return result;
-        
+
     }
 }

@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.api.audit;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.Audit;
 import org.alfresco.rest.api.model.AuditApp;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -35,7 +37,6 @@ import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAct
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * An implementation of an Entity Resource for handling audit applications

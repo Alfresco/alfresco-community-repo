@@ -25,20 +25,22 @@
  */
 package org.alfresco.repo.action.access;
 
-import org.alfresco.repo.action.ActionImpl;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.action.Action;
-import org.alfresco.util.BaseSpringTest;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertThrows;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertThrows;
+import org.junit.Before;
+import org.junit.Test;
 
-public class AdminActionAccessRestrictionTest extends BaseSpringTest {
+import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.util.BaseSpringTest;
+
+public class AdminActionAccessRestrictionTest extends BaseSpringTest
+{
 
     private static final String MAIL_ACTION = "mail";
     private static final String CONTROLLED_CONTEXT = ActionAccessRestriction.V1_ACTION_CONTEXT;
@@ -46,12 +48,14 @@ public class AdminActionAccessRestrictionTest extends BaseSpringTest {
     private ActionAccessRestriction adminActionAccessRestriction;
 
     @Before
-    public void setup() {
+    public void setup()
+    {
         adminActionAccessRestriction = applicationContext.getBean("adminActionAccessRestriction", AdminActionAccessRestriction.class);
     }
 
     @Test
-    public void adminCanExecute() {
+    public void adminCanExecute()
+    {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
         Action action = createMailAction();
@@ -59,7 +63,8 @@ public class AdminActionAccessRestrictionTest extends BaseSpringTest {
     }
 
     @Test
-    public void systemCanExecute() {
+    public void systemCanExecute()
+    {
         AuthenticationUtil.setRunAsUserSystem();
 
         Action action = createMailAction();
@@ -67,14 +72,16 @@ public class AdminActionAccessRestrictionTest extends BaseSpringTest {
     }
 
     @Test
-    public void userCantExecute() {
+    public void userCantExecute()
+    {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getGuestUserName());
 
         Action action = createMailAction();
         assertThrows(ActionAccessException.class, () -> adminActionAccessRestriction.verifyAccessRestriction(action));
     }
 
-    private Action createMailAction() {
+    private Action createMailAction()
+    {
         Map<String, Serializable> params = new HashMap<>();
         params.put("from", "admin@alfresco.com");
         params.put("to", "test@wp.pl");

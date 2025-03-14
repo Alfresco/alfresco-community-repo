@@ -41,6 +41,19 @@ import java.util.UUID;
 
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.UUIDUtil;
+import org.apache.commons.codec.binary.Base64;
+import org.joda.time.DateTime;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.RuleChain;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.repo.model.Repository;
@@ -75,18 +88,6 @@ import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.TemporaryModels;
 import org.alfresco.util.test.junitrules.TemporaryNodes;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.apache.commons.codec.binary.Base64;
-import org.joda.time.DateTime;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.RuleChain;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Quick share service tests.
@@ -98,37 +99,36 @@ import org.springframework.context.ApplicationContext;
 public class QuickShareServiceIntegrationTest
 {
     private static final ApplicationContextInit testContext = new ApplicationContextInit();
-    
-    private static final String MODEL = 
-    	"<?xml version='1.0' encoding='UTF-8'?>" +
-		"<model name='lx:lxmodel' xmlns='http://www.alfresco.org/model/dictionary/1.0'>" +
+
+    private static final String MODEL = "<?xml version='1.0' encoding='UTF-8'?>" +
+            "<model name='lx:lxmodel' xmlns='http://www.alfresco.org/model/dictionary/1.0'>" +
             "<description>LX model</description>" +
             "<author>Peter Löfgren</author>" +
             "<version>1.0</version>" +
             "<imports>" +
-	            "<import uri='http://www.alfresco.org/model/dictionary/1.0' prefix='d' />" +
-                "<import uri='http://www.alfresco.org/model/content/1.0' prefix='cm' />" +
-	        "</imports>" +
+            "<import uri='http://www.alfresco.org/model/dictionary/1.0' prefix='d' />" +
+            "<import uri='http://www.alfresco.org/model/content/1.0' prefix='cm' />" +
+            "</imports>" +
             "<namespaces>" +
-	            "<namespace uri='http://bugtestmodel' prefix='lx' />" +
+            "<namespace uri='http://bugtestmodel' prefix='lx' />" +
             "</namespaces>" +
-	        "<constraints>" +
+            "<constraints>" +
             "</constraints>" +
-	        "<types>" +
-                "<type name='lx:doc'>" +
-		            "<title>LX dokument</title>" +
-                    "<parent>cm:content</parent>" +
-		            "<mandatory-aspects>" +
-                        "<aspect>cm:generalclassifiable</aspect>" +
-		            "</mandatory-aspects>" +
-                "</type>" +
-                "<type name='lx:doc2'>" +
-		            "<title>LX dokument 2</title>" +
-                    "<parent>cm:cmobject</parent>" +
-                "</type>" +
-		    "</types>" +
-        "</model>";
-    
+            "<types>" +
+            "<type name='lx:doc'>" +
+            "<title>LX dokument</title>" +
+            "<parent>cm:content</parent>" +
+            "<mandatory-aspects>" +
+            "<aspect>cm:generalclassifiable</aspect>" +
+            "</mandatory-aspects>" +
+            "</type>" +
+            "<type name='lx:doc2'>" +
+            "<title>LX dokument 2</title>" +
+            "<parent>cm:cmobject</parent>" +
+            "</type>" +
+            "</types>" +
+            "</model>";
+
     private static CopyService copyService;
     private static NodeService nodeService;
     private static QuickShareService quickShareService;
@@ -142,33 +142,36 @@ public class QuickShareServiceIntegrationTest
     private static RetryingTransactionHelper transactionHelper;
     private static Properties globalProperties;
     private static SiteService siteService;
-    
+
     private static AlfrescoPerson user1 = new AlfrescoPerson(testContext, "UserOne");
     private static AlfrescoPerson user2 = new AlfrescoPerson(testContext, "UserTwo");
-    
-    // A rule to manage test nodes reused across all the test methods
-    @Rule public TemporaryNodes testNodes = new TemporaryNodes(testContext);
-    
-    @Rule public TemporaryModels temporaryModels = new TemporaryModels(testContext);
 
-    @ClassRule public static RuleChain classChain = RuleChain.outerRule(testContext)
-                                                         .around(user1)
-                                                         .around(user2);
+    // A rule to manage test nodes reused across all the test methods
+    @Rule
+    public TemporaryNodes testNodes = new TemporaryNodes(testContext);
+
+    @Rule
+    public TemporaryModels temporaryModels = new TemporaryModels(testContext);
+
+    @ClassRule
+    public static RuleChain classChain = RuleChain.outerRule(testContext)
+            .around(user1)
+            .around(user2);
 
     private NodeRef testNode;
 
     private NodeRef userHome;
 
-    @BeforeClass public static void beforeClass() throws Exception
+    @BeforeClass
+    public static void beforeClass() throws Exception
     {
         findServices();
-    }    
-    
+    }
 
     private static void findServices()
     {
         ApplicationContext ctx = testContext.getApplicationContext();
-        
+
         copyService = ctx.getBean("CopyService", CopyService.class);
         nodeService = ctx.getBean("NodeService", NodeService.class);
         directQuickShareService = ctx.getBean("quickShareService", QuickShareService.class);
@@ -183,24 +186,25 @@ public class QuickShareServiceIntegrationTest
         globalProperties = ctx.getBean("global-properties", Properties.class);
         siteService = (SiteService) ctx.getBean("SiteService");
     }
-    
-    @Before public void createTestData()
+
+    @Before
+    public void createTestData()
     {
         userHome = repository.getUserHome(user1.getPersonNode());
-        
+
         testNode = testNodes.createNodeWithTextContent(userHome,
-                        "Quick Share Test Node",
-                        ContentModel.TYPE_CONTENT, 
-                        user1.getUsername(),
-                        "Quick Share Test Node Content");
+                "Quick Share Test Node",
+                ContentModel.TYPE_CONTENT,
+                user1.getUsername(),
+                "Quick Share Test Node Content");
     }
-    
-    @After public void clearTestData()
+
+    @After
+    public void clearTestData()
     {
         if (testNode != null)
         {
-            AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-            {
+            AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
                 @Override
                 public NodeRef doWork() throws Exception
                 {
@@ -211,77 +215,81 @@ public class QuickShareServiceIntegrationTest
         }
     }
 
-    @Test public void getMetaDataFromNodeRefByOwner() 
+    @Test
+    public void getMetaDataFromNodeRefByOwner()
     {
-        Map<String, Object> metadata = AuthenticationUtil.runAs(new RunAsWork<Map<String,Object>>(){
+        Map<String, Object> metadata = AuthenticationUtil.runAs(new RunAsWork<Map<String, Object>>() {
 
             @Override
             public Map<String, Object> doWork() throws Exception
             {
-                return quickShareService.getMetaData(testNode);    
+                return quickShareService.getMetaData(testNode);
             }
         }, user1.getUsername());
-        
+
         assertNotNull(metadata);
         assertTrue(metadata.size() > 0);
     }
-    
-    @Test(expected=AccessDeniedException.class) 
-    public void getMetaDataFromNodeRefByNonOwner() 
+
+    @Test(expected = AccessDeniedException.class)
+    public void getMetaDataFromNodeRefByNonOwner()
     {
-        Map<String, Object> metadata = AuthenticationUtil.runAs(new RunAsWork<Map<String,Object>>(){
+        Map<String, Object> metadata = AuthenticationUtil.runAs(new RunAsWork<Map<String, Object>>() {
 
             @Override
             public Map<String, Object> doWork() throws Exception
             {
-                return quickShareService.getMetaData(testNode);    
+                return quickShareService.getMetaData(testNode);
             }
         }, user2.getUsername());
-        
+
     }
 
-    @Test public void share() 
+    @Test
+    public void share()
     {
         share(testNode, user1.getUsername());
-        
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>(){
+
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
 
             @Override
             public Void doWork() throws Exception
             {
-                assertTrue( nodeService.getAspects(testNode).contains(QuickShareModel.ASPECT_QSHARE));
+                assertTrue(nodeService.getAspects(testNode).contains(QuickShareModel.ASPECT_QSHARE));
                 assertNotNull(nodeService.getProperty(testNode, QuickShareModel.PROP_QSHARE_SHAREDID));
                 assertEquals(user1.getUsername(), nodeService.getProperty(testNode, QuickShareModel.PROP_QSHARE_SHAREDBY));
                 return null;
             }
-            
+
         });
     }
-    
-    @Test public void unshare() {
+
+    @Test
+    public void unshare()
+    {
         final QuickShareDTO dto = share(testNode, user1.getUsername());
         unshare(dto.getId(), user1.getUsername());
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>(){
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
 
             @Override
             public Void doWork() throws Exception
             {
-                assertFalse( nodeService.getAspects(testNode).contains(QuickShareModel.ASPECT_QSHARE));
+                assertFalse(nodeService.getAspects(testNode).contains(QuickShareModel.ASPECT_QSHARE));
                 assertNull(nodeService.getProperty(testNode, QuickShareModel.PROP_QSHARE_SHAREDID));
                 assertNull(nodeService.getProperty(testNode, QuickShareModel.PROP_QSHARE_SHAREDBY));
                 return null;
             }
-            
+
         });
     }
 
     // MNT-16224, RA-1093
-    @Test public void testDeleteAndRestoreSharedNode()
+    @Test
+    public void testDeleteAndRestoreSharedNode()
     {
         // Share the test node
         share(testNode, user1.getUsername());
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -291,8 +299,7 @@ public class QuickShareServiceIntegrationTest
         });
 
         // Delete and restore the shared node.
-        testNode = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-        {
+        testNode = AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
             @Override
             public NodeRef doWork() throws Exception
             {
@@ -315,8 +322,7 @@ public class QuickShareServiceIntegrationTest
         }, user1.getUsername());
 
         // Check the restored node doesn't have the 'shared' aspect.
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -327,18 +333,15 @@ public class QuickShareServiceIntegrationTest
             }
         });
 
-
         /**
-         * Tests the scenario where the shared node has been deleted and restored before the fix (MNT-16224).
-         * In this scenario the user should be able to un-share the restored node.
+         * Tests the scenario where the shared node has been deleted and restored before the fix (MNT-16224). In this scenario the user should be able to un-share the restored node.
          */
         {
             // Share the test node again
             final QuickShareDTO dto = share(testNode, user1.getUsername());
 
             // Delete only the sharedId without removing the 'shared' aspect!(The cause of MNT-16224 and RA-1093)
-            TenantUtil.runAsDefaultTenant(new TenantRunAsWork<Void>()
-            {
+            TenantUtil.runAsDefaultTenant(new TenantRunAsWork<Void>() {
                 public Void doWork() throws Exception
                 {
                     attributeService.removeAttribute(".sharedIds", dto.getId());
@@ -347,8 +350,7 @@ public class QuickShareServiceIntegrationTest
             });
 
             // Check the 'shared' aspect does exist
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -373,8 +375,7 @@ public class QuickShareServiceIntegrationTest
             unshare(dto.getId(), user1.getUsername());
 
             // Check the 'shared' aspect does not exist
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -385,10 +386,10 @@ public class QuickShareServiceIntegrationTest
         }
     }
 
-    private void unshare(final String sharedId, final String userName) {
-        
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+    private void unshare(final String sharedId, final String userName)
+    {
+
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
 
             @Override
             public Void doWork() throws Exception
@@ -409,17 +410,19 @@ public class QuickShareServiceIntegrationTest
         return AuthenticationUtil.runAs(() -> quickShareService.shareContent(nodeRef, expiryDate), username);
     }
 
-    @Test public void getMetadataFromShareId()
+    @Test
+    public void getMetadataFromShareId()
     {
         QuickShareDTO dto = share(testNode, user1.getUsername());
-        
+
         Map<String, Object> metadata = quickShareService.getMetaData(dto.getId());
-        
+
         assertNotNull(metadata);
         assertTrue(metadata.size() > 0);
     }
-    
-    @Test(expected=InvalidSharedIdException.class) public void getMetadataFromShareIdWithInvalidId()
+
+    @Test(expected = InvalidSharedIdException.class)
+    public void getMetadataFromShareIdWithInvalidId()
     {
         UUID uuid = Generators.randomBasedGenerator().generate();
         String sharedId = Base64.encodeBase64URLSafeString(UUIDUtil.asByteArray(uuid)); // => 22 chars (eg. q3bEKPeDQvmJYgt4hJxOjw)
@@ -427,36 +430,36 @@ public class QuickShareServiceIntegrationTest
         Map<String, Object> metadata = quickShareService.getMetaData(sharedId);
     }
 
-    @Test public void copyNode()
+    @Test
+    public void copyNode()
     {
         share(testNode, user1.getUsername());
-        
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
+
+        AuthenticationUtil.runAs(new RunAsWork<Object>() {
 
             @Override
             public Object doWork() throws Exception
             {
-                
+
                 Assert.assertTrue(nodeService.hasAspect(testNode, QuickShareModel.ASPECT_QSHARE));
                 Assert.assertNotNull(nodeService.getProperty(testNode, QuickShareModel.PROP_QSHARE_SHAREDBY));
                 Assert.assertNotNull(nodeService.getProperty(testNode, QuickShareModel.PROP_QSHARE_SHAREDID));
 
                 Map<QName, Serializable> originalProps = nodeService.getProperties(testNode);
-                
-                NodeRef copyNodeRef = copyService.copyAndRename(testNode, userHome, ContentModel.ASSOC_CONTAINS, 
-                            QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "copy"), true);
-                
+
+                NodeRef copyNodeRef = copyService.copyAndRename(testNode, userHome, ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "copy"), true);
+
                 Map<QName, Serializable> copyProps = nodeService.getProperties(copyNodeRef);
-                
+
                 Assert.assertFalse(nodeService.hasAspect(copyNodeRef, QuickShareModel.ASPECT_QSHARE));
                 Assert.assertNull(nodeService.getProperty(copyNodeRef, QuickShareModel.PROP_QSHARE_SHAREDBY));
                 Assert.assertNull(nodeService.getProperty(copyNodeRef, QuickShareModel.PROP_QSHARE_SHAREDID));
-                
+
                 for (QName property : originalProps.keySet())
                 {
                     if (property.equals(QuickShareModel.PROP_QSHARE_SHAREDBY) ||
-                        property.equals(QuickShareModel.PROP_QSHARE_SHAREDID))
+                            property.equals(QuickShareModel.PROP_QSHARE_SHAREDID))
                     {
                         continue;
                     }
@@ -466,103 +469,108 @@ public class QuickShareServiceIntegrationTest
             }
         }, user1.getUsername());
     }
-    
+
     /**
      * Content types that extend cm:content should be shareable.
      * 
      * See https://issues.alfresco.com/jira/browse/ALF-16274.
      */
-    @Test public void testWithCustomContentType() 
+    @Test
+    public void testWithCustomContentType()
     {
-    	ByteArrayInputStream modelStream = new ByteArrayInputStream(MODEL.getBytes());
-    	temporaryModels.loadModel(modelStream);
-        
+        ByteArrayInputStream modelStream = new ByteArrayInputStream(MODEL.getBytes());
+        temporaryModels.loadModel(modelStream);
+
         QName sharableType = QName.createQName("{http://bugtestmodel}doc");
         QName unsharableType = QName.createQName("{http://bugtestmodel}doc2");
 
-    	final NodeRef sharableNode = testNodes.createNodeWithTextContent(userHome,
-                           "Quick Share Custom Type Sharable Test Node",
-                           sharableType, 
-                           user1.getUsername(),
-                           "Quick Share Test Node Content");
-    	
-        Map<String, Object> metadata = getMetadata(sharableNode, user1);
-        
-        assertTrue((Boolean)metadata.get("sharable"));
-        
-        QuickShareDTO dto = share(sharableNode, user1.getUsername());
-        unshare(dto.getId(), user1.getUsername());        
-        
-    	final NodeRef unsharableNode = testNodes.createNodeWithTextContent(userHome,
-                "Quick Share Custom Type Unsharable Test Node",
-                unsharableType, 
+        final NodeRef sharableNode = testNodes.createNodeWithTextContent(userHome,
+                "Quick Share Custom Type Sharable Test Node",
+                sharableType,
                 user1.getUsername(),
                 "Quick Share Test Node Content");
 
-		metadata = getMetadata(unsharableNode, user1);
-        assertFalse((Boolean)metadata.get("sharable"));
+        Map<String, Object> metadata = getMetadata(sharableNode, user1);
 
-		boolean exceptionThrown = false;
-		try {
-			// Prior to fixing ALF-16274, this would throw an InvalidNodeRefException. 
-			share(unsharableNode, user1.getUsername());
-		}
-		catch(InvalidNodeRefException ex)
-		{
-			exceptionThrown = true;
-		}
-		assertTrue("InvalidNodeRefException not thrown on trying to share an unsharable content type", exceptionThrown);
+        assertTrue((Boolean) metadata.get("sharable"));
+
+        QuickShareDTO dto = share(sharableNode, user1.getUsername());
+        unshare(dto.getId(), user1.getUsername());
+
+        final NodeRef unsharableNode = testNodes.createNodeWithTextContent(userHome,
+                "Quick Share Custom Type Unsharable Test Node",
+                unsharableType,
+                user1.getUsername(),
+                "Quick Share Test Node Content");
+
+        metadata = getMetadata(unsharableNode, user1);
+        assertFalse((Boolean) metadata.get("sharable"));
+
+        boolean exceptionThrown = false;
+        try
+        {
+            // Prior to fixing ALF-16274, this would throw an InvalidNodeRefException.
+            share(unsharableNode, user1.getUsername());
+        }
+        catch (InvalidNodeRefException ex)
+        {
+            exceptionThrown = true;
+        }
+        assertTrue("InvalidNodeRefException not thrown on trying to share an unsharable content type", exceptionThrown);
     }
 
-
-	@SuppressWarnings("unchecked")
-	private Map<String, Object> getMetadata(final NodeRef nodeRef, AlfrescoPerson user) {
-		Map<String, Object> container = AuthenticationUtil.runAs(new RunAsWork<Map<String, Object>>()
-        {
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> getMetadata(final NodeRef nodeRef, AlfrescoPerson user)
+    {
+        Map<String, Object> container = AuthenticationUtil.runAs(new RunAsWork<Map<String, Object>>() {
             @Override
             public Map<String, Object> doWork() throws Exception
             {
-            	return quickShareService.getMetaData(nodeRef);
+                return quickShareService.getMetaData(nodeRef);
             }
         }, user.getUsername());
-		return (Map<String, Object>)container.get("item");
-	}
-	
-    @Test public void cloud928()
+        return (Map<String, Object>) container.get("item");
+    }
+
+    @Test
+    public void cloud928()
     {
         final NodeRef node = testNodes.createNodeWithTextContent(userHome,
                 "CLOUD-928 Test Node",
-                ContentModel.TYPE_CONTENT, 
+                ContentModel.TYPE_CONTENT,
                 user1.getUsername(),
                 "Quick Share Test Node Content");
-        
+
         QuickShareDTO dto = share(node, user1.getUsername());
 
         attributeService.removeAttribute(QuickShareServiceImpl.ATTR_KEY_SHAREDIDS_ROOT, dto.getId());
-        
-        AuthenticationUtil.runAs(new RunAsWork<Object>(){
+
+        AuthenticationUtil.runAs(new RunAsWork<Object>() {
 
             @Override
-            public Object doWork() throws Exception {
+            public Object doWork() throws Exception
+            {
                 nodeService.deleteNode(node);
                 return null;
             }
         }, user1.getUsername());
- 
+
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         final NodeRef archivedNode = nodeArchiveService.getArchivedNode(node);
         assertNotNull("Node " + node.toString() + " hasn't been archived hence the deletion was unsuccessful", archivedNode);
     }
-    
+
     /**
      * Test for MNT-11960
-     * <p> The node is created by user1 and shared by user2.
-     * <p> The modifier should not change to user2 after sharing.
+     * <p>
+     * The node is created by user1 and shared by user2.
+     * <p>
+     * The modifier should not change to user2 after sharing.
      */
     @Test
     public void testModifierAfterSharing()
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>(){
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -570,18 +578,18 @@ public class QuickShareServiceIntegrationTest
                 return null;
             }
         }, user1.getUsername());
-        
-        final Serializable modifiedDate = AuthenticationUtil.runAsSystem(new RunAsWork<Serializable>(){
+
+        final Serializable modifiedDate = AuthenticationUtil.runAsSystem(new RunAsWork<Serializable>() {
             @Override
             public Serializable doWork() throws Exception
             {
                 return nodeService.getProperty(testNode, ContentModel.PROP_MODIFIED);
             }
         });
-        
+
         share(testNode, user2.getUsername());
-        
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>(){
+
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -597,13 +605,15 @@ public class QuickShareServiceIntegrationTest
 
     /**
      * Test for MNT-15654
-     * <p> The node is created and shared by user1. Then unshared by user2
-     * <p> The modifier should not change to user2 after unsharing.
+     * <p>
+     * The node is created and shared by user1. Then unshared by user2
+     * <p>
+     * The modifier should not change to user2 after unsharing.
      */
     @Test
     public void testModifierAfterUnSharing()
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>(){
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -615,11 +625,11 @@ public class QuickShareServiceIntegrationTest
         QuickShareDTO dto = share(testNode, user1.getUsername());
         unshare(dto.getId(), user2.getUsername());
 
-        String modifier = AuthenticationUtil.runAsSystem(new RunAsWork<String>(){
+        String modifier = AuthenticationUtil.runAsSystem(new RunAsWork<String>() {
             @Override
             public String doWork() throws Exception
             {
-                return (String )nodeService.getProperty(testNode, ContentModel.PROP_MODIFIER);
+                return (String) nodeService.getProperty(testNode, ContentModel.PROP_MODIFIER);
             }
         });
 
@@ -630,7 +640,7 @@ public class QuickShareServiceIntegrationTest
      * Test the quick share link expiry date action.
      */
     @Test
-    public void testSharedLinkExpiryScheduling() throws  Exception
+    public void testSharedLinkExpiryScheduling() throws Exception
     {
         // First record the number of available schedules
         final int numOfSchedules = listSchedules();
@@ -738,7 +748,7 @@ public class QuickShareServiceIntegrationTest
      * Test date validator for the quick share link expiry date action.
      */
     @Test
-    public void testSharedLinkExpiryDateValidator() throws  Exception
+    public void testSharedLinkExpiryDateValidator() throws Exception
     {
         // Try to share with invalid time - passed time
         try
@@ -756,9 +766,7 @@ public class QuickShareServiceIntegrationTest
         // Test expiry date period enforcement
         try
         {
-            /*
-             * Set the expiry date period enforcement to Days
-             */
+            /* Set the expiry date period enforcement to Days */
             {
                 ((QuickShareServiceImpl) directQuickShareService).setExpiryDatePeriod("DAYS");
 
@@ -800,9 +808,7 @@ public class QuickShareServiceIntegrationTest
                 // Unshare
                 unshare(quickShareDTO.getId(), user1.getUsername());
             }
-            /*
-             * Set the expiry date period enforcement to Hours
-             */
+            /* Set the expiry date period enforcement to Hours */
             {
                 ((QuickShareServiceImpl) directQuickShareService).setExpiryDatePeriod("HOURS");
 
@@ -834,9 +840,7 @@ public class QuickShareServiceIntegrationTest
                 // Unshare
                 unshare(quickShareDTO.getId(), user1.getUsername());
             }
-            /*
-             * Set the expiry date period enforcement to Minutes
-             */
+            /* Set the expiry date period enforcement to Minutes */
             {
                 ((QuickShareServiceImpl) directQuickShareService).setExpiryDatePeriod("MINUTES");
 
@@ -899,7 +903,7 @@ public class QuickShareServiceIntegrationTest
 
             // Verify if the admin user "canDeleteSharedLink" on the nodes
             AuthenticationUtil.setFullyAuthenticatedUser("admin");
-            boolean canDeleteSharedLink = userCanDeleteSharedLink(nodeRefOnPrivateSite,user1.getUsername());
+            boolean canDeleteSharedLink = userCanDeleteSharedLink(nodeRefOnPrivateSite, user1.getUsername());
             assertEquals(true, canDeleteSharedLink);
             canDeleteSharedLink = userCanDeleteSharedLink(nodeRefOnUserHome, user1.getUsername());
             assertEquals(true, canDeleteSharedLink);
@@ -914,40 +918,40 @@ public class QuickShareServiceIntegrationTest
             {
                 AuthenticationUtil.setFullyAuthenticatedUser(currentUser);
             }
-            else 
-                {
+            else
+            {
                 AuthenticationUtil.clearCurrentSecurityContext();
-                }
+            }
         }
     }
 
     private QuickShareLinkExpiryAction getExpiryActionAndAttachSchedule(String sharedId)
     {
 
-            // Check that the expiry action is persisted
-            QuickShareLinkExpiryAction expiryAction = getExpiryAction(sharedId);
-            assertNotNull(expiryAction);
-            assertNotNull("Expiry action should have been persisted.", expiryAction.getNodeRef());
-            assertNull("The schedule hasn't been attached yet.", expiryAction.getSchedule());
-            ScheduledPersistedAction scheduledPersistedAction = getSchedule(expiryAction);
-            assertNotNull("Scheduled action should have been persisted.", scheduledPersistedAction);
-            //Attach the schedule
-            expiryAction.setSchedule(scheduledPersistedAction);
+        // Check that the expiry action is persisted
+        QuickShareLinkExpiryAction expiryAction = getExpiryAction(sharedId);
+        assertNotNull(expiryAction);
+        assertNotNull("Expiry action should have been persisted.", expiryAction.getNodeRef());
+        assertNull("The schedule hasn't been attached yet.", expiryAction.getSchedule());
+        ScheduledPersistedAction scheduledPersistedAction = getSchedule(expiryAction);
+        assertNotNull("Scheduled action should have been persisted.", scheduledPersistedAction);
+        // Attach the schedule
+        expiryAction.setSchedule(scheduledPersistedAction);
 
-            return expiryAction;
+        return expiryAction;
 
     }
 
     private QuickShareLinkExpiryAction getExpiryAction(final String sharedId)
     {
         return AuthenticationUtil.runAsSystem(
-                    () -> quickShareLinkExpiryActionPersister.loadQuickShareLinkExpiryAction(QuickShareLinkExpiryActionImpl.createQName(sharedId)));
+                () -> quickShareLinkExpiryActionPersister.loadQuickShareLinkExpiryAction(QuickShareLinkExpiryActionImpl.createQName(sharedId)));
     }
 
     private ScheduledPersistedAction getSchedule(final QuickShareLinkExpiryAction linkExpiryAction)
     {
         return AuthenticationUtil.runAsSystem(
-                    () -> scheduledPersistedActionService.getSchedule(linkExpiryAction));
+                () -> scheduledPersistedActionService.getSchedule(linkExpiryAction));
     }
 
     private int listSchedules()
@@ -989,7 +993,7 @@ public class QuickShareServiceIntegrationTest
     private boolean userCanDeleteSharedLink(NodeRef nodeRef, String sharedByUserId)
     {
         return transactionHelper.doInTransaction(() -> {
-        return quickShareService.canDeleteSharedLink(nodeRef, sharedByUserId);
+            return quickShareService.canDeleteSharedLink(nodeRef, sharedByUserId);
         });
     }
 }

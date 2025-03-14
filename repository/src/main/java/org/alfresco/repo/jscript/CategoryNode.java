@@ -27,13 +27,14 @@ package org.alfresco.repo.jscript;
 
 import java.util.Collection;
 
+import org.mozilla.javascript.Scriptable;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.namespace.QName;
-import org.mozilla.javascript.Scriptable;
 
 /**
  * Category Nodes from the classification helper have special support.
@@ -48,8 +49,10 @@ public class CategoryNode extends ScriptNode
     /**
      * Constructor
      * 
-     * @param nodeRef   node reference
-     * @param services  service registry
+     * @param nodeRef
+     *            node reference
+     * @param services
+     *            service registry
      */
     public CategoryNode(NodeRef nodeRef, ServiceRegistry services)
     {
@@ -59,9 +62,12 @@ public class CategoryNode extends ScriptNode
     /**
      * Constructor
      * 
-     * @param nodeRef   node reference
-     * @param services  service registry
-     * @param scope     scriptable scope
+     * @param nodeRef
+     *            node reference
+     * @param services
+     *            service registry
+     * @param scope
+     *            scriptable scope
      */
     public CategoryNode(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)
     {
@@ -75,7 +81,7 @@ public class CategoryNode extends ScriptNode
     {
         return buildNodes(services.getCategoryService().getChildren(getNodeRef(), CategoryService.Mode.MEMBERS, CategoryService.Depth.ANY));
     }
-    
+
     /**
      * @return all the subcategories of a category
      */
@@ -83,7 +89,7 @@ public class CategoryNode extends ScriptNode
     {
         return buildCategoryNodes(services.getCategoryService().getChildren(getNodeRef(), CategoryService.Mode.SUB_CATEGORIES, CategoryService.Depth.ANY));
     }
-    
+
     /**
      * @return members and subcategories of a category
      */
@@ -91,7 +97,7 @@ public class CategoryNode extends ScriptNode
     {
         return buildMixedNodes(services.getCategoryService().getChildren(getNodeRef(), CategoryService.Mode.ALL, CategoryService.Depth.ANY));
     }
-    
+
     /**
      * @return all the immediate member of a category
      */
@@ -99,7 +105,7 @@ public class CategoryNode extends ScriptNode
     {
         return buildNodes(services.getCategoryService().getChildren(getNodeRef(), CategoryService.Mode.MEMBERS, CategoryService.Depth.IMMEDIATE));
     }
-    
+
     /**
      * @return all the immediate subcategories of a category
      */
@@ -107,31 +113,33 @@ public class CategoryNode extends ScriptNode
     {
         return buildCategoryNodes(services.getCategoryService().getChildren(getNodeRef(), CategoryService.Mode.SUB_CATEGORIES, CategoryService.Depth.IMMEDIATE));
     }
-    
+
     /**
-     * @return immediate members and subcategories of a category 
+     * @return immediate members and subcategories of a category
      */
     public ScriptNode[] getImmediateMembersAndSubCategories()
     {
         return buildMixedNodes(services.getCategoryService().getChildren(getNodeRef(), CategoryService.Mode.ALL, CategoryService.Depth.IMMEDIATE));
     }
-    
+
     /**
      * Create a new subcategory
      * 
-     * @param name      Of the category to create
+     * @param name
+     *            Of the category to create
      * 
      * @return CategoryNode
      */
     public CategoryNode createSubCategory(String name)
     {
-       return  new CategoryNode(services.getCategoryService().createCategory(getNodeRef(), name), this.services, this.scope);
+        return new CategoryNode(services.getCategoryService().createCategory(getNodeRef(), name), this.services, this.scope);
     }
-    
+
     /**
      * Renames the category.
      * 
-     * @param name  new cateogory name
+     * @param name
+     *            new cateogory name
      */
     public void rename(String name)
     {
@@ -158,18 +166,19 @@ public class CategoryNode extends ScriptNode
     /**
      * Indicates whether this is a category or not.
      * 
-     * @return boolean  true if category, false otherwise
+     * @return boolean true if category, false otherwise
      */
     @Override
     public boolean getIsCategory()
     {
         return true;
     }
-    
+
     /**
      * Build category nodes from collection of association references.
      * 
-     * @param cars Collection<ChildAssociationRef>
+     * @param cars
+     *            Collection<ChildAssociationRef>
      * @return CategoryNode[]
      */
     private CategoryNode[] buildCategoryNodes(Collection<ChildAssociationRef> cars)
@@ -186,7 +195,8 @@ public class CategoryNode extends ScriptNode
     /**
      * Build script nodes from a collection of association references.
      * 
-     * @param cars Collection<ChildAssociationRef>
+     * @param cars
+     *            Collection<ChildAssociationRef>
      * @return ScriptNode[]
      */
     private ScriptNode[] buildNodes(Collection<ChildAssociationRef> cars)
@@ -203,7 +213,8 @@ public class CategoryNode extends ScriptNode
     /**
      * Build script nodes and category nodes from a mixed collection of association references.
      * 
-     * @param cars Collection<ChildAssociationRef>
+     * @param cars
+     *            Collection<ChildAssociationRef>
      * @return ScriptNode[]
      */
     private ScriptNode[] buildMixedNodes(Collection<ChildAssociationRef> cars)

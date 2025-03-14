@@ -40,9 +40,12 @@ public class TransferProcessingException extends TransferException
     private static final long serialVersionUID = 2547803698674661069L;
 
     /**
-     * @param msgId String
-     * @param msgParams Object[]
-     * @param cause Throwable
+     * @param msgId
+     *            String
+     * @param msgParams
+     *            Object[]
+     * @param cause
+     *            Throwable
      */
     public TransferProcessingException(String msgId, Object[] msgParams, Throwable cause)
     {
@@ -50,8 +53,10 @@ public class TransferProcessingException extends TransferException
     }
 
     /**
-     * @param msgId String
-     * @param msgParams Object[]
+     * @param msgId
+     *            String
+     * @param msgParams
+     *            Object[]
      */
     public TransferProcessingException(String msgId, Object[] msgParams)
     {
@@ -59,8 +64,10 @@ public class TransferProcessingException extends TransferException
     }
 
     /**
-     * @param msgId String
-     * @param cause Throwable
+     * @param msgId
+     *            String
+     * @param cause
+     *            Throwable
      */
     public TransferProcessingException(String msgId, Throwable cause)
     {
@@ -68,7 +75,8 @@ public class TransferProcessingException extends TransferException
     }
 
     /**
-     * @param msgId String
+     * @param msgId
+     *            String
      */
     public TransferProcessingException(String msgId)
     {

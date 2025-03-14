@@ -36,7 +36,7 @@ public class ContentInfoImpl implements ContentInfo
     private final String encoding;
     private final long length;
     private final Locale locale;
-    
+
     public ContentInfoImpl(String mimeType, String encoding, long length, Locale locale)
     {
         super();
@@ -45,22 +45,25 @@ public class ContentInfoImpl implements ContentInfo
         this.length = length;
         this.locale = locale;
     }
-    
+
     @Override
     public String getMimeType()
     {
         return this.mimeType;
     }
+
     @Override
     public String getEncoding()
     {
         return this.encoding;
     }
+
     @Override
     public long getLength()
     {
         return this.length;
     }
+
     @Override
     public Locale getLocale()
     {

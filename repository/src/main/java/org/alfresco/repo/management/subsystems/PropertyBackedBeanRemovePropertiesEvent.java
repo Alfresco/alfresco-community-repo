@@ -27,7 +27,6 @@ package org.alfresco.repo.management.subsystems;
 
 import java.util.Collection;
 
-
 /**
  * An event emitted before a {@link PropertyBackedBean} removes properties.
  * 
@@ -54,5 +53,5 @@ public class PropertyBackedBeanRemovePropertiesEvent extends PropertyBackedBeanE
     public Collection<String> getProperties()
     {
         return properties;
-    }    
+    }
 }

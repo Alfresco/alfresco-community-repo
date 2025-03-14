@@ -26,8 +26,15 @@
 package org.alfresco.repo.usage;
 
 import java.util.concurrent.TimeUnit;
-
 import jakarta.transaction.UserTransaction;
+
+import junit.framework.TestCase;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.FixMethodOrder;
+import org.junit.experimental.categories.Category;
+import org.junit.runners.MethodSorters;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -42,14 +49,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.FixMethodOrder;
-import org.junit.experimental.categories.Category;
-import org.junit.runners.MethodSorters;
-import org.springframework.context.ApplicationContext;
-
-import junit.framework.TestCase;
 
 /**
  * Tests {@link RepoUsageComponent}
@@ -61,16 +60,16 @@ import junit.framework.TestCase;
 @Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class RepoUsageComponentTest extends TestCase
 {
-    private  ApplicationContext ctx;
-    
+    private ApplicationContext ctx;
+
     private static final Log logger = LogFactory.getLog(RepoUsageComponentTest.class);
 
     private TransactionService transactionService;
     private RepoUsageComponent repoUsageComponent;
     private JobLockService jobLockService;
     private UserTransaction txn;
-    private RepoUsage restrictionsBefore; 
-    
+    private RepoUsage restrictionsBefore;
+
     @Override
     protected void setUp() throws Exception
     {
@@ -79,19 +78,19 @@ public class RepoUsageComponentTest extends TestCase
         {
             fail("Test started with transaction in progress");
         }
-        
+
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
         repoUsageComponent = (RepoUsageComponent) ctx.getBean("repoUsageComponent");
         jobLockService = (JobLockService) ctx.getBean("jobLockService");
-        
+
         AuthenticationUtil.setRunAsUserSystem();
-        
+
         txn = transactionService.getUserTransaction();
         txn.begin();
-        
+
         restrictionsBefore = repoUsageComponent.getRestrictions();
     }
-    
+
     @Override
     protected void tearDown() throws Exception
     {
@@ -104,7 +103,7 @@ public class RepoUsageComponentTest extends TestCase
         {
             e.printStackTrace();
         }
-        
+
         AuthenticationUtil.clearCurrentSecurityContext();
         if (txn != null)
         {
@@ -114,23 +113,26 @@ public class RepoUsageComponentTest extends TestCase
             }
             catch (Throwable e)
             {
-                try { txn.rollback(); } catch (Throwable ee) {}
+                try
+                {
+                    txn.rollback();
+                }
+                catch (Throwable ee)
+                {}
                 throw new RuntimeException("Failed to commit test transaction", e);
             }
         }
     }
-    
+
     public void test1Setup()
-    {
-    }
+    {}
 
     /**
      * Helper to wrap in a txn
      */
     private RepoUsage getUsage()
     {
-        RetryingTransactionCallback<RepoUsage> getCallback = new RetryingTransactionCallback<RepoUsage>()
-        {
+        RetryingTransactionCallback<RepoUsage> getCallback = new RetryingTransactionCallback<RepoUsage>() {
             @Override
             public RepoUsage execute() throws Throwable
             {
@@ -139,14 +141,13 @@ public class RepoUsageComponentTest extends TestCase
         };
         return transactionService.getRetryingTransactionHelper().doInTransaction(getCallback, true);
     }
-    
+
     /**
      * Helper to wrap in a txn
      */
     private boolean updateUsage(final UsageType usageType)
     {
-        RetryingTransactionCallback<Boolean> getCallback = new RetryingTransactionCallback<Boolean>()
-        {
+        RetryingTransactionCallback<Boolean> getCallback = new RetryingTransactionCallback<Boolean>() {
             @Override
             public Boolean execute() throws Throwable
             {
@@ -155,7 +156,7 @@ public class RepoUsageComponentTest extends TestCase
         };
         return transactionService.getRetryingTransactionHelper().doInTransaction(getCallback, false);
     }
-    
+
     public void test2NoTxn() throws Throwable
     {
         txn.commit();
@@ -170,24 +171,24 @@ public class RepoUsageComponentTest extends TestCase
             // Expected
         }
     }
-    
+
     public void test3GetUsage()
     {
         getUsage();
     }
-    
+
     public void test4FullUse() throws Exception
     {
         // Update usage
         updateUsage(UsageType.USAGE_ALL);
 
-    	// Set the restrictions
+        // Set the restrictions
         RepoUsage restrictions = new RepoUsage(
                 System.currentTimeMillis(),
                 getUsage().getUsers(),
                 getUsage().getDocuments(),
                 LicenseMode.TEAM,
-                System.currentTimeMillis() + 24*3600000,
+                System.currentTimeMillis() + 24 * 3600000,
                 false);
         repoUsageComponent.setRestrictions(restrictions);
         // Get the restrictions (should not need a txn for this)
@@ -198,8 +199,8 @@ public class RepoUsageComponentTest extends TestCase
         updateUsage(UsageType.USAGE_ALL);
 
         // Get the usage
-        RepoUsage usage = getUsage();        
-        
+        RepoUsage usage = getUsage();
+
         // Check
         assertNotNull("Usage is null", usage);
         assertNotNull("Invalid user count", usage.getUsers());
@@ -207,29 +208,29 @@ public class RepoUsageComponentTest extends TestCase
         assertEquals("License mode not set", restrictions.getLicenseMode(), usage.getLicenseMode());
         assertEquals("License expiry not set", restrictions.getLicenseExpiryDate(), usage.getLicenseExpiryDate());
         assertEquals("Read-only state not set", restrictions.isReadOnly(), usage.isReadOnly());
-        
+
         RepoUsageStatus status = repoUsageComponent.getUsageStatus();
         logger.debug(status);
     }
-    
+
     /**
-     * Tests license code interaction.  This interaction would be done using runAs 'System'.
+     * Tests license code interaction. This interaction would be done using runAs 'System'.
      */
     public void test5LicenseUse() throws Exception
     {
         Long licenseUserLimit = 5L;
         Long licenseDocumentLimit = 100000L;
         LicenseMode licenseMode = LicenseMode.TEAM;
-        Long licenseExpiry = System.currentTimeMillis() + 24*3600000;
-        
+        Long licenseExpiry = System.currentTimeMillis() + 24 * 3600000;
+
         // Get actual license details (incl. generating trial license)
         // Push license restrictions
         RepoUsage restrictions = new RepoUsage(
                 System.currentTimeMillis(),
-                licenseUserLimit,                   // From license
-                licenseDocumentLimit,               // From license
-                licenseMode,                        // From license
-                licenseExpiry,                      // From license
+                licenseUserLimit, // From license
+                licenseDocumentLimit, // From license
+                licenseMode, // From license
+                licenseExpiry, // From license
                 transactionService.getAllowWrite() == false);// After license validity has been verified
         repoUsageComponent.setRestrictions(restrictions);
         // Trigger a usage update
@@ -238,7 +239,7 @@ public class RepoUsageComponentTest extends TestCase
         @SuppressWarnings("unused")
         RepoUsage usage = getUsage();
     }
-    
+
     public void testLicenceHoursBeforeExpiration() throws Exception
     {
         // Update usage
@@ -253,21 +254,21 @@ public class RepoUsageComponentTest extends TestCase
                 System.currentTimeMillis() + TimeUnit.HOURS.toMillis(6),
                 false);
         repoUsageComponent.setRestrictions(restrictions);
-        
+
         // Update use
         updateUsage(UsageType.USAGE_ALL);
 
         // Get the usage
-        RepoUsage usage = getUsage();        
-        
-        // Check        
-        assertFalse("Usage is in read-only mode",usage.isReadOnly());
-        assertTrue("System is in read-only mode",transactionService.getAllowWrite());
-        
+        RepoUsage usage = getUsage();
+
+        // Check
+        assertFalse("Usage is in read-only mode", usage.isReadOnly());
+        assertTrue("System is in read-only mode", transactionService.getAllowWrite());
+
         RepoUsageStatus status = repoUsageComponent.getUsageStatus();
-        assertEquals("System is not at Warning All Level",status.getLevel(),RepoUsageLevel.WARN_ALL);
+        assertEquals("System is not at Warning All Level", status.getLevel(), RepoUsageLevel.WARN_ALL);
     }
-    
+
     public void testLicenceMinutesAfterExpiration() throws Exception
     {
         // Update usage
@@ -282,22 +283,21 @@ public class RepoUsageComponentTest extends TestCase
                 System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1),
                 false);
         repoUsageComponent.setRestrictions(restrictions);
-        
+
         // Update use
         updateUsage(UsageType.USAGE_ALL);
 
         // Get the usage
-        RepoUsage usage = getUsage();        
-        
+        RepoUsage usage = getUsage();
+
         // Check we are in read-only mode
-        assertTrue("Usage is not in read-only mode",usage.isReadOnly());
-        assertFalse("System is not in read-only mode",transactionService.getAllowWrite());
-        
+        assertTrue("Usage is not in read-only mode", usage.isReadOnly());
+        assertFalse("System is not in read-only mode", transactionService.getAllowWrite());
+
         RepoUsageStatus status = repoUsageComponent.getUsageStatus();
-        assertEquals("System is not at Locked Level",status.getLevel(),RepoUsageLevel.LOCKED_DOWN);        
+        assertEquals("System is not at Locked Level", status.getLevel(), RepoUsageLevel.LOCKED_DOWN);
     }
-    
-    
+
     public void testLicenceMonthsBeforeExpiration() throws Exception
     {
         // Update usage
@@ -312,21 +312,21 @@ public class RepoUsageComponentTest extends TestCase
                 System.currentTimeMillis() + TimeUnit.DAYS.toMillis(60),
                 false);
         repoUsageComponent.setRestrictions(restrictions);
-        
+
         // Update use
         updateUsage(UsageType.USAGE_ALL);
 
         // Get the usage
-        RepoUsage usage = getUsage();        
-        
-        // Check        
-        assertFalse("Usage is in read-only mode",usage.isReadOnly());
-        assertTrue("System is in read-only mode",transactionService.getAllowWrite());
-        
+        RepoUsage usage = getUsage();
+
+        // Check
+        assertFalse("Usage is in read-only mode", usage.isReadOnly());
+        assertTrue("System is in read-only mode", transactionService.getAllowWrite());
+
         RepoUsageStatus status = repoUsageComponent.getUsageStatus();
-        assertEquals("System is not at OK Level",status.getLevel(),RepoUsageLevel.OK);
+        assertEquals("System is not at OK Level", status.getLevel(), RepoUsageLevel.OK);
     }
-    
+
     public void testLicenceDaysAfterExpiration() throws Exception
     {
         // Update usage
@@ -341,75 +341,31 @@ public class RepoUsageComponentTest extends TestCase
                 System.currentTimeMillis() - TimeUnit.DAYS.toMillis(5),
                 false);
         repoUsageComponent.setRestrictions(restrictions);
-        
+
         // Update use
         updateUsage(UsageType.USAGE_ALL);
 
         // Get the usage
-        RepoUsage usage = getUsage();        
-        
+        RepoUsage usage = getUsage();
+
         // Check we are in read-only mode
-        assertTrue("Usage is not in read-only mode",usage.isReadOnly());
-        assertFalse("System is not in read-only mode",transactionService.getAllowWrite());
-        
+        assertTrue("Usage is not in read-only mode", usage.isReadOnly());
+        assertFalse("System is not in read-only mode", transactionService.getAllowWrite());
+
         RepoUsageStatus status = repoUsageComponent.getUsageStatus();
-        assertEquals("System is not at Locked Level",status.getLevel(),RepoUsageLevel.LOCKED_DOWN);   
+        assertEquals("System is not at Locked Level", status.getLevel(), RepoUsageLevel.LOCKED_DOWN);
     }
-    
+
     /**
      * Check that concurrent updates are prevented
      *
      * The test is disabled as the Component is not using JobLocks any more
      */
-/*
-    public void test6ConcurrentUpdates() throws Exception
-    {
-        // Firstly check that we can get an update
-        assertTrue("Failed to update all usages", updateUsage(UsageType.USAGE_ALL));
-        assertTrue("Failed to update user count", updateUsage(UsageType.USAGE_USERS));
-        assertTrue("Failed to update document count", updateUsage(UsageType.USAGE_DOCUMENTS));
-        
-        // Now take a lock of it all and see that they fail
-        String lockToken = jobLockService.getLock(RepoUsageComponent.LOCK_USAGE, RepoUsageComponent.LOCK_TTL);
-        try
-        {
-            // Check
-            assertFalse("Expected usage updates to be kicked out", updateUsage(UsageType.USAGE_ALL));
-            assertFalse("Expected usage updates to be kicked out", updateUsage(UsageType.USAGE_USERS));
-            assertFalse("Expected usage updates to be kicked out", updateUsage(UsageType.USAGE_DOCUMENTS));
-        }
-        finally
-        {
-            jobLockService.releaseLock(lockToken, RepoUsageComponent.LOCK_USAGE);
-        }
-        
-        // Lock documents updates only
-        lockToken = jobLockService.getLock(RepoUsageComponent.LOCK_USAGE_DOCUMENTS, RepoUsageComponent.LOCK_TTL);
-        try
-        {
-            // Check
-            assertFalse("Expected usage updates to be kicked out", updateUsage(UsageType.USAGE_ALL));
-            assertTrue("Failed to update user count", updateUsage(UsageType.USAGE_USERS));
-            assertFalse("Expected document usage updates to be kicked out", updateUsage(UsageType.USAGE_DOCUMENTS));
-        }
-        finally
-        {
-            jobLockService.releaseLock(lockToken, RepoUsageComponent.LOCK_USAGE_DOCUMENTS);
-        }
-        
-        // Lock user updates only
-        lockToken = jobLockService.getLock(RepoUsageComponent.LOCK_USAGE_USERS, RepoUsageComponent.LOCK_TTL);
-        try
-        {
-            // Check
-            assertFalse("Expected usage updates to be kicked out", updateUsage(UsageType.USAGE_ALL));
-            assertFalse("Expected user usage updates to be kicked out", updateUsage(UsageType.USAGE_USERS));
-            assertTrue("Failed to update document count", updateUsage(UsageType.USAGE_DOCUMENTS));
-        }
-        finally
-        {
-            jobLockService.releaseLock(lockToken, RepoUsageComponent.LOCK_USAGE_USERS);
-        }
-    }
-*/
+    /* public void test6ConcurrentUpdates() throws Exception { // Firstly check that we can get an update assertTrue("Failed to update all usages", updateUsage(UsageType.USAGE_ALL)); assertTrue("Failed to update user count", updateUsage(UsageType.USAGE_USERS)); assertTrue("Failed to update document count", updateUsage(UsageType.USAGE_DOCUMENTS));
+     * 
+     * // Now take a lock of it all and see that they fail String lockToken = jobLockService.getLock(RepoUsageComponent.LOCK_USAGE, RepoUsageComponent.LOCK_TTL); try { // Check assertFalse("Expected usage updates to be kicked out", updateUsage(UsageType.USAGE_ALL)); assertFalse("Expected usage updates to be kicked out", updateUsage(UsageType.USAGE_USERS)); assertFalse("Expected usage updates to be kicked out", updateUsage(UsageType.USAGE_DOCUMENTS)); } finally { jobLockService.releaseLock(lockToken, RepoUsageComponent.LOCK_USAGE); }
+     * 
+     * // Lock documents updates only lockToken = jobLockService.getLock(RepoUsageComponent.LOCK_USAGE_DOCUMENTS, RepoUsageComponent.LOCK_TTL); try { // Check assertFalse("Expected usage updates to be kicked out", updateUsage(UsageType.USAGE_ALL)); assertTrue("Failed to update user count", updateUsage(UsageType.USAGE_USERS)); assertFalse("Expected document usage updates to be kicked out", updateUsage(UsageType.USAGE_DOCUMENTS)); } finally { jobLockService.releaseLock(lockToken, RepoUsageComponent.LOCK_USAGE_DOCUMENTS); }
+     * 
+     * // Lock user updates only lockToken = jobLockService.getLock(RepoUsageComponent.LOCK_USAGE_USERS, RepoUsageComponent.LOCK_TTL); try { // Check assertFalse("Expected usage updates to be kicked out", updateUsage(UsageType.USAGE_ALL)); assertFalse("Expected user usage updates to be kicked out", updateUsage(UsageType.USAGE_USERS)); assertTrue("Failed to update document count", updateUsage(UsageType.USAGE_DOCUMENTS)); } finally { jobLockService.releaseLock(lockToken, RepoUsageComponent.LOCK_USAGE_USERS); } } */
 }

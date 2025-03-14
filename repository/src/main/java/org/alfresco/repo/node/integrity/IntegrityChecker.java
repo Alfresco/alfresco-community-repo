@@ -32,6 +32,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -52,31 +55,19 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.transaction.TransactionListener;
 import org.alfresco.util.transaction.TransactionSupportUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * Component that generates and processes integrity events, enforcing the dictionary
- * model's node structure.
+ * Component that generates and processes integrity events, enforcing the dictionary model's node structure.
  * <p>
- * In order to fulfill the contract of the interface, this class registers to receive notifications
- * pertinent to changes in the node structure.  These are then store away in the persistent
- * store until the request to
- * check integrity is
- * made.
+ * In order to fulfill the contract of the interface, this class registers to receive notifications pertinent to changes in the node structure. These are then store away in the persistent store until the request to check integrity is made.
  * <p>
  * In order to ensure registration of these events, the {@link #init()} method must be called.
  * <p>
  * By default, this service is enabled, but can be disabled using {@link #setEnabled(boolean)}.<br>
- * Tracing of the event stacks is, for performance reasons, disabled by default but can be enabled
- * using {@link #setTraceOn(boolean)}.<br>
- * When enabled, the integrity check can either fail with a <tt>RuntimeException</tt> or not.  In either
- * case, the integrity violations are logged as warnings or errors.  This behaviour is controleed using
- * {@link #setFailOnViolation(boolean)} and is off by default.  In other words, if not set, this service
- * will only log warnings about integrity violations.
+ * Tracing of the event stacks is, for performance reasons, disabled by default but can be enabled using {@link #setTraceOn(boolean)}.<br>
+ * When enabled, the integrity check can either fail with a <tt>RuntimeException</tt> or not. In either case, the integrity violations are logged as warnings or errors. This behaviour is controleed using {@link #setFailOnViolation(boolean)} and is off by default. In other words, if not set, this service will only log warnings about integrity violations.
  * <p>
- * Some integrity checks are not performed here as they are dealt with directly during the modification
- * operation in the {@link org.alfresco.service.cmr.repository.NodeService node service}.
+ * Some integrity checks are not performed here as they are dealt with directly during the modification operation in the {@link org.alfresco.service.cmr.repository.NodeService node service}.
  * 
  * @see #setPolicyComponent(PolicyComponent)
  * @see #setDictionaryService(DictionaryService)
@@ -85,24 +76,24 @@ import org.apache.commons.logging.LogFactory;
  * @author Derek Hulley
  */
 public class IntegrityChecker
-        implements  NodeServicePolicies.OnCreateNodePolicy,
-                    NodeServicePolicies.OnUpdatePropertiesPolicy,
-                    NodeServicePolicies.OnDeleteNodePolicy,
-                    NodeServicePolicies.OnAddAspectPolicy,
-                    NodeServicePolicies.OnRemoveAspectPolicy,
-                    NodeServicePolicies.OnCreateChildAssociationPolicy,
-                    NodeServicePolicies.OnDeleteChildAssociationPolicy,
-                    NodeServicePolicies.OnCreateAssociationPolicy,
-                    NodeServicePolicies.OnDeleteAssociationPolicy,
-                    TransactionListener
+        implements NodeServicePolicies.OnCreateNodePolicy,
+        NodeServicePolicies.OnUpdatePropertiesPolicy,
+        NodeServicePolicies.OnDeleteNodePolicy,
+        NodeServicePolicies.OnAddAspectPolicy,
+        NodeServicePolicies.OnRemoveAspectPolicy,
+        NodeServicePolicies.OnCreateChildAssociationPolicy,
+        NodeServicePolicies.OnDeleteChildAssociationPolicy,
+        NodeServicePolicies.OnCreateAssociationPolicy,
+        NodeServicePolicies.OnDeleteAssociationPolicy,
+        TransactionListener
 {
     private static Log logger = LogFactory.getLog(IntegrityChecker.class);
-    
+
     /** key against which the set of events is stored in the current transaction */
     private static final String KEY_EVENT_SET = "IntegrityChecker.EventSet";
     /** key to store the local flag to disable integrity errors, i.e. downgrade to warnings */
     private static final String KEY_WARN_IN_TRANSACTION = "IntegrityChecker.WarnInTransaction";
-    
+
     private PolicyComponent policyComponent;
     private DictionaryService dictionaryService;
     private NodeService nodeService;
@@ -112,21 +103,17 @@ public class IntegrityChecker
     private int maxErrorsPerTransaction;
     private boolean traceOn;
     private List<String> storesToIgnore = new ArrayList<String>(0);
-    
+
     /**
-     * Downgrade violations to warnings within the current transaction.  This is temporary and
-     * is <u>dependent on there being a current transaction</u> active against the
-     * current thread.  When set, this will override the global 
-     * {@link #setFailOnViolation(boolean) failure behaviour}.
+     * Downgrade violations to warnings within the current transaction. This is temporary and is <u>dependent on there being a current transaction</u> active against the current thread. When set, this will override the global {@link #setFailOnViolation(boolean) failure behaviour}.
      */
     public static void setWarnInTransaction()
     {
         TransactionSupportUtil.bindResource(KEY_WARN_IN_TRANSACTION, Boolean.TRUE);
     }
-    
+
     /**
-     * @return Returns true if the current transaction should only warn on violations.
-     *      If <code>false</code>, the global setting will take effect.
+     * @return Returns true if the current transaction should only warn on violations. If <code>false</code>, the global setting will take effect.
      * 
      * @see #setWarnInTransaction()
      */
@@ -142,7 +129,7 @@ public class IntegrityChecker
             return true;
         }
     }
-    
+
     /**
      */
     public IntegrityChecker()
@@ -154,7 +141,8 @@ public class IntegrityChecker
     }
 
     /**
-     * @param policyComponent the component to register behaviour with
+     * @param policyComponent
+     *            the component to register behaviour with
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -162,7 +150,8 @@ public class IntegrityChecker
     }
 
     /**
-     * @param dictionaryService the dictionary against which to confirm model details
+     * @param dictionaryService
+     *            the dictionary against which to confirm model details
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -170,20 +159,22 @@ public class IntegrityChecker
     }
 
     /**
-     * @param nodeService the node service to use for browsing node structures
+     * @param nodeService
+     *            the node service to use for browsing node structures
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
 
     /**
-     * @param enabled set to false to disable integrity checking completely
+     * @param enabled
+     *            set to false to disable integrity checking completely
      */
     public void setEnabled(boolean enabled)
     {
@@ -191,8 +182,8 @@ public class IntegrityChecker
     }
 
     /**
-     * @param traceOn set to <code>true</code> to enable stack traces recording
-     *      of events
+     * @param traceOn
+     *            set to <code>true</code> to enable stack traces recording of events
      */
     public void setTraceOn(boolean traceOn)
     {
@@ -200,8 +191,8 @@ public class IntegrityChecker
     }
 
     /**
-     * @param failOnViolation set to <code>true</code> to force failure by
-     *      <tt>RuntimeException</tt> when a violation occurs.
+     * @param failOnViolation
+     *            set to <code>true</code> to force failure by <tt>RuntimeException</tt> when a violation occurs.
      */
     public void setFailOnViolation(boolean failOnViolation)
     {
@@ -209,17 +200,17 @@ public class IntegrityChecker
     }
 
     /**
-     * @param maxLogNumberPerTransaction upper limit on how many violations are
-     *      logged when multiple violations have been found.
+     * @param maxLogNumberPerTransaction
+     *            upper limit on how many violations are logged when multiple violations have been found.
      */
     public void setMaxErrorsPerTransaction(int maxLogNumberPerTransaction)
     {
         this.maxErrorsPerTransaction = maxLogNumberPerTransaction;
     }
-    
+
     /**
-     * @param storesToIgnore stores (eg. workspace://version2Store) which will be 
-     *      ignored by integrity checker. Note: assumes associations are within a store.
+     * @param storesToIgnore
+     *            stores (eg. workspace://version2Store) which will be ignored by integrity checker. Note: assumes associations are within a store.
      */
     public void setStoresToIgnore(List<String> storesToIgnore)
     {
@@ -236,52 +227,53 @@ public class IntegrityChecker
         PropertyCheck.mandatory("IntegrityChecker", "nodeService", nodeService);
         PropertyCheck.mandatory("IntegrityChecker", "policyComponent", policyComponent);
 
-        if (enabled)  // only register behaviour if integrity checking is on
+        if (enabled) // only register behaviour if integrity checking is on
         {
             // register behaviour
             policyComponent.bindClassBehaviour(
                     QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
                     this,
-                    new JavaBehaviour(this, "onCreateNode"));   
+                    new JavaBehaviour(this, "onCreateNode"));
             policyComponent.bindClassBehaviour(
                     QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
                     this,
-                    new JavaBehaviour(this, "onUpdateProperties"));   
+                    new JavaBehaviour(this, "onUpdateProperties"));
             policyComponent.bindClassBehaviour(
                     QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"),
                     this,
-                    new JavaBehaviour(this, "onDeleteNode"));   
+                    new JavaBehaviour(this, "onDeleteNode"));
             policyComponent.bindClassBehaviour(
                     QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"),
                     this,
-                    new JavaBehaviour(this, "onAddAspect"));   
+                    new JavaBehaviour(this, "onAddAspect"));
             policyComponent.bindClassBehaviour(
                     QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"),
                     this,
-                    new JavaBehaviour(this, "onRemoveAspect"));   
+                    new JavaBehaviour(this, "onRemoveAspect"));
             policyComponent.bindAssociationBehaviour(
                     QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"),
                     this,
-                    new JavaBehaviour(this, "onCreateChildAssociation"));   
+                    new JavaBehaviour(this, "onCreateChildAssociation"));
             policyComponent.bindAssociationBehaviour(
                     QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteChildAssociation"),
                     this,
-                    new JavaBehaviour(this, "onDeleteChildAssociation"));   
+                    new JavaBehaviour(this, "onDeleteChildAssociation"));
             policyComponent.bindAssociationBehaviour(
                     QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateAssociation"),
                     this,
-                    new JavaBehaviour(this, "onCreateAssociation"));   
+                    new JavaBehaviour(this, "onCreateAssociation"));
             policyComponent.bindAssociationBehaviour(
                     QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteAssociation"),
                     this,
-                    new JavaBehaviour(this, "onDeleteAssociation"));   
+                    new JavaBehaviour(this, "onDeleteAssociation"));
         }
     }
-    
+
     /**
      * Ensures that this service is registered with the transaction and saves the event
      * 
-     * @param event IntegrityEvent
+     * @param event
+     *            IntegrityEvent
      */
     @SuppressWarnings("unchecked")
     private void save(IntegrityEvent event)
@@ -293,17 +285,16 @@ public class IntegrityChecker
             Throwable t = new Throwable();
             t.fillInStackTrace();
             StackTraceElement[] trace = t.getStackTrace();
-            
+
             event.addTrace(trace);
             // done
         }
-        
+
         // register this service
         AlfrescoTransactionSupport.bindIntegrityChecker(this);
-        
+
         // get the event list
-        Map<IntegrityEvent, IntegrityEvent> events =
-            (Map<IntegrityEvent, IntegrityEvent>) AlfrescoTransactionSupport.getResource(KEY_EVENT_SET);
+        Map<IntegrityEvent, IntegrityEvent> events = (Map<IntegrityEvent, IntegrityEvent>) AlfrescoTransactionSupport.getResource(KEY_EVENT_SET);
         if (events == null)
         {
             events = new HashMap<IntegrityEvent, IntegrityEvent>(113, 0.75F);
@@ -338,8 +329,8 @@ public class IntegrityChecker
      */
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
-        NodeRef childRef = childAssocRef.getChildRef(); 
-        if (! storesToIgnore.contains(tenantService.getBaseName(childRef.getStoreRef()).toString()))
+        NodeRef childRef = childAssocRef.getChildRef();
+        if (!storesToIgnore.contains(tenantService.getBaseName(childRef.getStoreRef()).toString()))
         {
             IntegrityEvent event = null;
             // check properties on child node
@@ -348,14 +339,14 @@ public class IntegrityChecker
                     dictionaryService,
                     childRef);
             save(event);
-            
+
             // check that the multiplicity and other properties of the new association are allowed
             onCreateChildAssociation(childAssocRef, false);
-            
+
             // check mandatory aspects
             event = new AspectsIntegrityEvent(nodeService, dictionaryService, childRef);
             save(event);
-            
+
             // check for associations defined on the new node (child)
             QName childNodeTypeQName = nodeService.getType(childRef);
             ClassDefinition nodeTypeDef = dictionaryService.getClass(childNodeTypeQName);
@@ -364,7 +355,7 @@ public class IntegrityChecker
                 throw new DictionaryException("The node type is not recognized: " + childNodeTypeQName);
             }
             Map<QName, AssociationDefinition> childAssocDefs = nodeTypeDef.getAssociations();
-            
+
             // check the multiplicity of each association with the node acting as a source
             for (AssociationDefinition assocDef : childAssocDefs.values())
             {
@@ -389,7 +380,7 @@ public class IntegrityChecker
             Map<QName, Serializable> before,
             Map<QName, Serializable> after)
     {
-        if (! storesToIgnore.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()))
+        if (!storesToIgnore.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()))
         {
             IntegrityEvent event = null;
             // check properties on node
@@ -402,8 +393,7 @@ public class IntegrityChecker
      * No checking performed: The association changes will be handled
      */
     public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isArchivedNode)
-    {
-    }
+    {}
 
     /**
      * @see PropertiesIntegrityEvent
@@ -411,13 +401,13 @@ public class IntegrityChecker
      */
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        if (! storesToIgnore.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()))
+        if (!storesToIgnore.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()))
         {
             IntegrityEvent event = null;
             // check properties on node
             event = new PropertiesIntegrityEvent(nodeService, dictionaryService, nodeRef);
             save(event);
-            
+
             // check for associations defined on the aspect
             AspectDefinition aspectDef = dictionaryService.getAspect(aspectTypeQName);
             if (aspectDef == null)
@@ -425,7 +415,7 @@ public class IntegrityChecker
                 throw new DictionaryException("The aspect type is not recognized: " + aspectTypeQName);
             }
             Map<QName, AssociationDefinition> assocDefs = aspectDef.getAssociations();
-            
+
             // check the multiplicity of each association with the node acting as a source
             for (AssociationDefinition assocDef : assocDefs.values())
             {
@@ -447,13 +437,13 @@ public class IntegrityChecker
      */
     public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        if (! storesToIgnore.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()))
+        if (!storesToIgnore.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()))
         {
             IntegrityEvent event = null;
             // check mandatory aspects
             event = new AspectsIntegrityEvent(nodeService, dictionaryService, nodeRef);
             save(event);
-        }  
+        }
     }
 
     /**
@@ -471,8 +461,8 @@ public class IntegrityChecker
         {
             return;
         }
-        
-        if (! storesToIgnore.contains(tenantService.getBaseName(childAssocRef.getChildRef().getStoreRef()).toString()))
+
+        if (!storesToIgnore.contains(tenantService.getBaseName(childAssocRef.getChildRef().getStoreRef()).toString()))
         {
             IntegrityEvent event = null;
             // check source type
@@ -522,7 +512,7 @@ public class IntegrityChecker
      */
     public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
-        if (! storesToIgnore.contains(tenantService.getBaseName(childAssocRef.getChildRef().getStoreRef()).toString()))
+        if (!storesToIgnore.contains(tenantService.getBaseName(childAssocRef.getChildRef().getStoreRef()).toString()))
         {
             IntegrityEvent event = null;
             // check source multiplicity
@@ -552,7 +542,7 @@ public class IntegrityChecker
      */
     public void onCreateAssociation(AssociationRef nodeAssocRef)
     {
-        if (! storesToIgnore.contains(tenantService.getBaseName(nodeAssocRef.getSourceRef().getStoreRef()).toString()))
+        if (!storesToIgnore.contains(tenantService.getBaseName(nodeAssocRef.getSourceRef().getStoreRef()).toString()))
         {
             IntegrityEvent event = null;
             // check source type
@@ -594,7 +584,7 @@ public class IntegrityChecker
      */
     public void onDeleteAssociation(AssociationRef nodeAssocRef)
     {
-        if (! storesToIgnore.contains(tenantService.getBaseName(nodeAssocRef.getSourceRef().getStoreRef()).toString()))
+        if (!storesToIgnore.contains(tenantService.getBaseName(nodeAssocRef.getSourceRef().getStoreRef()).toString()))
         {
             IntegrityEvent event = null;
             // check source multiplicity
@@ -615,13 +605,11 @@ public class IntegrityChecker
             save(event);
         }
     }
-    
+
     /**
-     * Runs several types of checks, querying specifically for events that
-     * will necessitate each type of test.
+     * Runs several types of checks, querying specifically for events that will necessitate each type of test.
      * <p>
-     * The interface contracts also requires that all events for the transaction
-     * get cleaned up.
+     * The interface contracts also requires that all events for the transaction get cleaned up.
      */
     public void checkIntegrity() throws IntegrityException
     {
@@ -629,18 +617,18 @@ public class IntegrityChecker
         {
             return;
         }
-        
+
         // process events and check for failures
         List<IntegrityRecord> failures = processAllEvents();
         // clear out all events
         AlfrescoTransactionSupport.unbindResource(KEY_EVENT_SET);
-        
+
         // drop out quickly if there are no failures
         if (failures.isEmpty())
         {
             return;
         }
-        
+
         // handle errors according to instance flags
         // firstly, log all failures
         int failureCount = failures.size();
@@ -674,16 +662,13 @@ public class IntegrityChecker
             // no exception
         }
     }
-    
+
     /**
      * Loops through all the integrity events and checks integrity.
      * <p>
-     * The events are stored in a set, so there are no duplicates.  Since each
-     * event performs a particular type of check, this ensures that we don't
-     * duplicate checks.
+     * The events are stored in a set, so there are no duplicates. Since each event performs a particular type of check, this ensures that we don't duplicate checks.
      * 
-     * @return Returns a list of integrity violations, up to the
-     *      {@link #maxErrorsPerTransaction the maximum defined}
+     * @return Returns a list of integrity violations, up to the {@link #maxErrorsPerTransaction the maximum defined}
      */
     @SuppressWarnings("unchecked")
     private List<IntegrityRecord> processAllEvents()
@@ -693,8 +678,7 @@ public class IntegrityChecker
 
         // get all the events for the transaction (or unit of work)
         // duplicates have been elimiated
-        Map<IntegrityEvent, IntegrityEvent> events =
-                (Map<IntegrityEvent, IntegrityEvent>) AlfrescoTransactionSupport.getResource(KEY_EVENT_SET);
+        Map<IntegrityEvent, IntegrityEvent> events = (Map<IntegrityEvent, IntegrityEvent>) AlfrescoTransactionSupport.getResource(KEY_EVENT_SET);
         if (events == null)
         {
             // no events were registered - nothing of significance happened
@@ -713,7 +697,7 @@ public class IntegrityChecker
             }
             catch (Throwable e)
             {
-                // This means that integrity checking itself failed.  This is serious.
+                // This means that integrity checking itself failed. This is serious.
                 // There are some exceptions that can be handled by transaction retries, so
                 // we attempt to handle these and let them get out to trigger the retry.
                 // Thanks to Carina Lansing.
@@ -722,13 +706,13 @@ public class IntegrityChecker
                 {
                     // The transaction will be retrying on this, so there's no need for the aggressive
                     // reporting that would normally happen
-                    if (e instanceof RuntimeException) 
+                    if (e instanceof RuntimeException)
                     {
-                        throw (RuntimeException) e; 
+                        throw (RuntimeException) e;
                     }
                     else
                     {
-                        throw new RuntimeException(e); 
+                        throw new RuntimeException(e);
                     }
                 }
                 e.printStackTrace();
@@ -749,12 +733,12 @@ public class IntegrityChecker
                     integrityRecord.setTraces(event.getTraces());
                 }
             }
-            
+
             // copy all the event results to the final results
             allIntegrityResults.addAll(integrityRecords);
             // clear the event results
             integrityRecords.clear();
-            
+
             if (allIntegrityResults.size() >= maxErrorsPerTransaction)
             {
                 // only so many errors wanted at a time
@@ -765,27 +749,27 @@ public class IntegrityChecker
         return allIntegrityResults;
     }
 
-	@Override
+    @Override
     public void beforeCommit(boolean readOnly)
     {
-		checkIntegrity();  
+        checkIntegrity();
     }
 
-	@Override
+    @Override
     public void beforeCompletion()
     {
-		// NO-OP
+        // NO-OP
     }
 
-	@Override
+    @Override
     public void afterCommit()
     {
-		// NO-OP
+        // NO-OP
     }
 
-	@Override
+    @Override
     public void afterRollback()
     {
-		// NO-OP
+        // NO-OP
     }
 }

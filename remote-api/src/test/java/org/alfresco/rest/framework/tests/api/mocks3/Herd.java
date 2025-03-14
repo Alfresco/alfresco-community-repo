@@ -34,7 +34,7 @@ public class Herd
 {
     String name;
     int quantity = 56;
-    
+
     public Herd(String name)
     {
         super();
@@ -50,7 +50,8 @@ public class Herd
     }
 
     /**
-     * @param name the name to set
+     * @param name
+     *            the name to set
      */
     public void setName(String name)
     {
@@ -66,11 +67,12 @@ public class Herd
     }
 
     /**
-     * @param quantity the quantity to set
+     * @param quantity
+     *            the quantity to set
      */
     public void setQuantity(int quantity)
     {
         this.quantity = quantity;
     }
-    
+
 }

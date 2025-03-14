@@ -53,10 +53,9 @@ public class GetCopiesCannedQueryFactory extends AbstractCopyCannedQueryFactory<
     {
         return new GetCopiesCannedQuery(parameters, methodSecurity);
     }
-    
+
     /**
-     * Query to find nodes copied <i>from</i> a given node, optionally filtering out
-     * based on specific values.
+     * Query to find nodes copied <i>from</i> a given node, optionally filtering out based on specific values.
      * 
      * @author Derek Hulley
      * @since 4.0
@@ -78,21 +77,21 @@ public class GetCopiesCannedQueryFactory extends AbstractCopyCannedQueryFactory<
             Pair<Long, NodeRef> originalNodePair = nodeDAO.getNodePair(detail.originalNodeRef);
             if (originalNodePair == null)
             {
-                return Collections.emptyList();         // Shortcut
+                return Collections.emptyList(); // Shortcut
             }
             queryParameters.setOriginalNodeId(originalNodePair.getFirst());
             // cm:original association type ID
             Pair<Long, QName> assocTypeQNamePair = qnameDAO.getQName(ContentModel.ASSOC_ORIGINAL);
             if (assocTypeQNamePair == null)
             {
-                return Collections.emptyList();         // Shortcut
+                return Collections.emptyList(); // Shortcut
             }
             queryParameters.setOriginalAssocTypeId(assocTypeQNamePair.getFirst());
             // cm:name property ID
             Pair<Long, QName> propQNamePair = qnameDAO.getQName(ContentModel.PROP_NAME);
             if (propQNamePair == null)
             {
-                return Collections.emptyList();         // Shortcut
+                return Collections.emptyList(); // Shortcut
             }
             queryParameters.setNamePropId(propQNamePair.getFirst());
             // Copied parent node
@@ -101,7 +100,7 @@ public class GetCopiesCannedQueryFactory extends AbstractCopyCannedQueryFactory<
                 Pair<Long, NodeRef> copyParentNodePair = nodeDAO.getNodePair(detail.copyParentNodeRef);
                 if (copyParentNodePair == null)
                 {
-                    return Collections.emptyList();         // Shortcut
+                    return Collections.emptyList(); // Shortcut
                 }
                 queryParameters.setCopyParentNodeId(copyParentNodePair.getFirst());
             }

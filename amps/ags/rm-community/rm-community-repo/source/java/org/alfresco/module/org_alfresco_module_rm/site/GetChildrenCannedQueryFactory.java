@@ -46,7 +46,7 @@ import org.alfresco.util.Pair;
  * @author Roy Wetherall
  */
 public class GetChildrenCannedQueryFactory extends org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory
-                                           implements RecordsManagementModel
+        implements RecordsManagementModel
 {
     @Override
     public CannedQuery<NodeRef> getCannedQuery(NodeRef parentRef, String pattern, Set<QName> assocTypeQNames, Set<QName> childTypeQNames, List<FilterProp> filterProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)

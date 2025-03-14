@@ -39,6 +39,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.webscripts.servlet.FormData;
+
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.activities.ActivityType;
@@ -68,8 +71,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.extensions.webscripts.servlet.FormData;
 
 /**
  * Unfiled Record folder children relation
@@ -77,13 +78,13 @@ import org.springframework.extensions.webscripts.servlet.FormData;
  * @author Ramona Popa
  * @since 2.6
  */
-@RelationshipResource(name="children", entityResource = UnfiledRecordFolderEntityResource.class, title = "Children of an unfiled record folder")
+@RelationshipResource(name = "children", entityResource = UnfiledRecordFolderEntityResource.class, title = "Children of an unfiled record folder")
 public class UnfiledRecordFolderChildrenRelation implements RelationshipResourceAction.Read<UnfiledRecordFolderChild>,
-                                                 RelationshipResourceAction.Create<UnfiledRecordFolderChild>,
-                                                 MultiPartRelationshipResourceAction.Create<UnfiledRecordFolderChild>
+        RelationshipResourceAction.Create<UnfiledRecordFolderChild>,
+        MultiPartRelationshipResourceAction.Create<UnfiledRecordFolderChild>
 {
     private final static Set<String> LIST_UNFILED_RECORD_FOLDER_CHILDREN_EQUALS_QUERY_PROPERTIES = new HashSet<>(Arrays
-            .asList(new String[] { UnfiledChild.PARAM_IS_UNFILED_RECORD_FOLDER, UnfiledChild.PARAM_IS_RECORD, RMNode.PARAM_NODE_TYPE }));
+            .asList(new String[]{UnfiledChild.PARAM_IS_UNFILED_RECORD_FOLDER, UnfiledChild.PARAM_IS_RECORD, RMNode.PARAM_NODE_TYPE}));
 
     private FilePlanComponentsApiUtils apiUtils;
     private SearchTypesFactory searchTypesFactory;
@@ -139,8 +140,7 @@ public class UnfiledRecordFolderChildrenRelation implements RelationshipResource
 
         final List<FileInfo> page = pagingResults.getPage();
         Map<String, UserInfo> mapUserInfo = new HashMap<>();
-        List<UnfiledRecordFolderChild> nodes = new AbstractList<UnfiledRecordFolderChild>()
-        {
+        List<UnfiledRecordFolderChild> nodes = new AbstractList<UnfiledRecordFolderChild>() {
             @Override
             public UnfiledRecordFolderChild get(int index)
             {
@@ -174,17 +174,16 @@ public class UnfiledRecordFolderChildrenRelation implements RelationshipResource
         mandatory("parameters", parameters);
 
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(unfiledRecordFolderId, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
-        
+
         // Create the children
-        RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>()
-        {
+        RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>() {
             public List<NodeRef> execute()
             {
                 List<NodeRef> createdNodes = new LinkedList<>();
                 for (UnfiledRecordFolderChild nodeInfo : nodeInfos)
                 {
                     NodeRef nodeParent;
-                    if(StringUtils.isNoneBlank(nodeInfo.getRelativePath()))
+                    if (StringUtils.isNoneBlank(nodeInfo.getRelativePath()))
                     {
                         nodeParent = apiUtils.lookupAndValidateRelativePath(parentNodeRef, nodeInfo.getRelativePath(), RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
                     }
@@ -200,11 +199,11 @@ public class UnfiledRecordFolderChildrenRelation implements RelationshipResource
             }
         };
         List<NodeRef> createdNodes = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
- 
+
         // Get the nodes info
         List<UnfiledRecordFolderChild> result = new LinkedList<>();
         Map<String, UserInfo> mapUserInfo = new HashMap<>();
-        for(NodeRef newNodeRef : createdNodes)
+        for (NodeRef newNodeRef : createdNodes)
         {
             FileInfo info = fileFolderService.getFileInfo(newNodeRef);
             apiUtils.postActivity(info, parentNodeRef, ActivityType.FILE_ADDED);
@@ -226,21 +225,20 @@ public class UnfiledRecordFolderChildrenRelation implements RelationshipResource
         // Retrieve the input data and resolve the parent node
         final UploadInfo uploadInfo = new UploadInfo(formData);
 
-        // Create the record  - returns pair(newNode,parentNode)
-        RetryingTransactionCallback<Pair<NodeRef,NodeRef>> callback = new RetryingTransactionCallback<Pair<NodeRef,NodeRef>>()
-        {
-            public Pair<NodeRef,NodeRef> execute()
+        // Create the record - returns pair(newNode,parentNode)
+        RetryingTransactionCallback<Pair<NodeRef, NodeRef>> callback = new RetryingTransactionCallback<Pair<NodeRef, NodeRef>>() {
+            public Pair<NodeRef, NodeRef> execute()
             {
                 final NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(unfiledRecordFolderId, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER, uploadInfo.getRelativePath());
                 NodeRef newNode = apiUtils.uploadRecord(parentNodeRef, uploadInfo, parameters);
                 return new Pair<>(newNode, parentNodeRef);
             }
         };
-        Pair<NodeRef,NodeRef> nodeAndParentInfo = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+        Pair<NodeRef, NodeRef> nodeAndParentInfo = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
         NodeRef newNode = nodeAndParentInfo.getFirst();
         NodeRef parent = nodeAndParentInfo.getSecond();
 
-         // Get file info for response
+        // Get file info for response
         FileInfo info = fileFolderService.getFileInfo(newNode);
         apiUtils.postActivity(info, parent, ActivityType.FILE_ADDED);
 

@@ -42,7 +42,7 @@ public class FileNotFoundException extends Exception
     {
         super("No file or folder found for node reference: " + nodeRef);
     }
-    
+
     public FileNotFoundException(String msg)
     {
         super(msg);

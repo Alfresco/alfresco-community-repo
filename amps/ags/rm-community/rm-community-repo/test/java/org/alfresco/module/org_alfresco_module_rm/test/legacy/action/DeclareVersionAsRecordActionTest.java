@@ -51,12 +51,11 @@ public class DeclareVersionAsRecordActionTest extends BaseRMTestCase
     private NodeRef ruleFile;
     protected static final String DESCRIPTION = "description";
 
-
     @Override
     protected void initServices()
     {
         super.initServices();
-        ruleService = (RuleService)applicationContext.getBean("RuleService");
+        ruleService = (RuleService) applicationContext.getBean("RuleService");
     }
 
     @Override
@@ -71,16 +70,12 @@ public class DeclareVersionAsRecordActionTest extends BaseRMTestCase
         return true;
     }
 
-
     /**
-     * Given a node set to auto-declare documents as records for minor and major versions
-     * When I try to upload a minor or major version
-     * Then the version record aspect is added
+     * Given a node set to auto-declare documents as records for minor and major versions When I try to upload a minor or major version Then the version record aspect is added
      */
     public void testUpdateNextDispositionAction_RM3060() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(dmContributor)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(dmContributor) {
             Map<String, Serializable> versionProperties = new HashMap<>(4);
             Version recordedVersion;
 
@@ -116,7 +111,7 @@ public class DeclareVersionAsRecordActionTest extends BaseRMTestCase
             @Override
             public void then() throws Exception
             {
-                NodeRef recordedVersionNodeRef= (NodeRef)recordedVersion.getVersionProperties().get(RecordableVersionModel.PROP_RECORD_NODE_REF.getLocalName());
+                NodeRef recordedVersionNodeRef = (NodeRef) recordedVersion.getVersionProperties().get(RecordableVersionModel.PROP_RECORD_NODE_REF.getLocalName());
                 assertNotNull("Recorded version shouldn't be null.", recordedVersionNodeRef);
                 assertTrue(nodeService.hasAspect(recordedVersionNodeRef, RecordableVersionModel.ASPECT_VERSION_RECORD));
             }

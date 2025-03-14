@@ -27,6 +27,10 @@ package org.alfresco.rest.api.people;
 
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.Sites;
 import org.alfresco.rest.api.model.FavouriteSite;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -35,9 +39,6 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * 
@@ -46,18 +47,18 @@ import org.springframework.beans.factory.InitializingBean;
  */
 @RelationshipResource(name = "favorite-sites", entityResource = PeopleEntityResource.class, title = "Person Favorite Sites")
 public class PersonFavouriteSitesRelation implements RelationshipResourceAction.Read<FavouriteSite>, RelationshipResourceAction.ReadById<FavouriteSite>,
-RelationshipResourceAction.Create<FavouriteSite>,  RelationshipResourceAction.Delete, InitializingBean
+        RelationshipResourceAction.Create<FavouriteSite>, RelationshipResourceAction.Delete, InitializingBean
 {
     private static final Log logger = LogFactory.getLog(PersonFavouriteSitesRelation.class);
 
     private Sites sites;
 
-	public void setSites(Sites sites)
-	{
-		this.sites = sites;
-	}
+    public void setSites(Sites sites)
+    {
+        this.sites = sites;
+    }
 
-	@Override
+    @Override
     public void afterPropertiesSet()
     {
         ParameterCheck.mandatory("sites", this.sites);
@@ -80,34 +81,34 @@ RelationshipResourceAction.Create<FavouriteSite>,  RelationshipResourceAction.De
      * 
      * @see org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.ReadById#readById(String, String, org.alfresco.rest.framework.resource.parameters.Parameters)
      */
-	@Override
+    @Override
     @WebApiDescription(title = "Get Person Favorite Site", description = "Get information on a person's specific favorite site")
-	public FavouriteSite readById(String personId, String siteShortName, Parameters parameters)
-	{
-		return sites.getFavouriteSite(personId, siteShortName);
-	}
+    public FavouriteSite readById(String personId, String siteShortName, Parameters parameters)
+    {
+        return sites.getFavouriteSite(personId, siteShortName);
+    }
 
-	/**
+    /**
      * Adds the given site as a favourite site for the user.
      * 
      * @see org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.Create#create(String, java.util.List, org.alfresco.rest.framework.resource.parameters.Parameters)
-	 */
-	@Override
+     */
+    @Override
     @WebApiDescription(title = "Add Person Favorite Site", description = "Favorite a site")
-	public List<FavouriteSite> create(String personId, List<FavouriteSite> entity, Parameters parameters)
-	{
+    public List<FavouriteSite> create(String personId, List<FavouriteSite> entity, Parameters parameters)
+    {
         for (FavouriteSite favSite : entity)
         {
-           sites.addFavouriteSite(personId, favSite);
+            sites.addFavouriteSite(personId, favSite);
         }
         return entity;
-	}
+    }
 
-	@Override
+    @Override
     @WebApiDescription(title = "Remove Person Favorite Site", description = "Un-favorite a site")
-	public void delete(String personId, String siteId, Parameters parameters)
-	{
-		sites.removeFavouriteSite(personId, siteId);
-	}
+    public void delete(String personId, String siteId, Parameters parameters)
+    {
+        sites.removeFavouriteSite(personId, siteId);
+    }
 
 }

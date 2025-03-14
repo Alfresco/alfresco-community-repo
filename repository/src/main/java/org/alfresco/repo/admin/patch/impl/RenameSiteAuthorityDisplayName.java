@@ -31,6 +31,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.admin.patch.PatchExecuter;
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
@@ -45,56 +49,56 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
-public class RenameSiteAuthorityDisplayName  extends AbstractPatch
+public class RenameSiteAuthorityDisplayName extends AbstractPatch
 {
     /** The title we give to the batch process in progress messages / JMX. */
     private static final String SUCCESS_MSG = "patch.renameSiteAuthorityDisplayName.result";
     private static final int BATCH_THREADS = 4;
     private static final int BATCH_SIZE = 250;
-    
+
     /** Services */
     private SiteService siteService;
     private PermissionService permissionService;
     private AuthorityService authorityService;
     private RuleService ruleService;
-    
+
     /** The progress_logger. */
     private static Log progress_logger = LogFactory.getLog(PatchExecuter.class);
-    
+
     /**
      * Set site service
      * 
-     * @param siteService   the site service
+     * @param siteService
+     *            the site service
      */
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
     }
-    
+
     /**
      * Set the permission service
      * 
-     * @param permissionService     the permission service
+     * @param permissionService
+     *            the permission service
      */
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
     }
-    
+
     /**
      * The authority service
      * 
-     * @param authorityService  the authority service
+     * @param authorityService
+     *            the authority service
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
     }
-    
+
     /**
      * Sets the rule service.
      * 
@@ -109,7 +113,7 @@ public class RenameSiteAuthorityDisplayName  extends AbstractPatch
     @Override
     protected String applyInternal() throws Exception
     {
-     // NOTE: SiteService is not currently MT-enabled (eg. getSiteRoot) so skip if applied to tenant
+        // NOTE: SiteService is not currently MT-enabled (eg. getSiteRoot) so skip if applied to tenant
         if (AuthenticationUtil.isRunAsUserTheSystemUser() || !AuthenticationUtil.isMtEnabled())
         {
             // Set all the sites in the repository
@@ -119,10 +123,7 @@ public class RenameSiteAuthorityDisplayName  extends AbstractPatch
         // Report status
         return I18NUtil.getMessage(SUCCESS_MSG);
     }
-    
-    
-    
-    
+
     /**
      * Rename display names of authorities of sites.
      * 
@@ -132,12 +133,11 @@ public class RenameSiteAuthorityDisplayName  extends AbstractPatch
     private void renameDispayNames(final List<SiteInfo> siteInfos)
     {
         final String tenantDomain = tenantAdminService.getCurrentUserDomain();
-        
+
         final Iterator<SiteInfo> pathItr = siteInfos.listIterator();
-        
-        BatchProcessWorkProvider<SiteInfo> siteWorkProvider = new BatchProcessWorkProvider<SiteInfo>()
-        {
-            
+
+        BatchProcessWorkProvider<SiteInfo> siteWorkProvider = new BatchProcessWorkProvider<SiteInfo>() {
+
             @Override
             public int getTotalEstimatedWorkSize()
             {
@@ -149,12 +149,12 @@ public class RenameSiteAuthorityDisplayName  extends AbstractPatch
             {
                 return siteInfos.size();
             }
-            
+
             @Override
             public Collection<SiteInfo> getNextWork()
             {
                 int batchCount = 0;
-                
+
                 List<SiteInfo> nodes = new ArrayList<SiteInfo>(BATCH_SIZE);
                 while (pathItr.hasNext() && batchCount++ != BATCH_SIZE)
                 {
@@ -163,8 +163,7 @@ public class RenameSiteAuthorityDisplayName  extends AbstractPatch
                 return nodes;
             }
         };
-        
-        
+
         // prepare the batch processor and worker object
         BatchProcessor<SiteInfo> siteBatchProcessor = new BatchProcessor<SiteInfo>(
                 "RenameSiteAuthorityDisplayName",
@@ -175,9 +174,8 @@ public class RenameSiteAuthorityDisplayName  extends AbstractPatch
                 this.applicationEventPublisher,
                 progress_logger,
                 BATCH_SIZE * 10);
-        
-        BatchProcessWorker<SiteInfo> worker = new BatchProcessWorker<SiteInfo>()
-        {
+
+        BatchProcessWorker<SiteInfo> worker = new BatchProcessWorker<SiteInfo>() {
 
             @Override
             public String getIdentifier(SiteInfo entry)
@@ -188,14 +186,14 @@ public class RenameSiteAuthorityDisplayName  extends AbstractPatch
             @Override
             public void beforeProcess() throws Throwable
             {
-             // Disable rules
+                // Disable rules
                 ruleService.disableRules();
                 // Authentication
                 String systemUser = AuthenticationUtil.getSystemUserName();
                 systemUser = tenantAdminService.getDomainUser(systemUser, tenantDomain);
                 AuthenticationUtil.setRunAsUser(systemUser);
             }
-            
+
             @Override
             public void afterProcess() throws Throwable
             {
@@ -204,11 +202,11 @@ public class RenameSiteAuthorityDisplayName  extends AbstractPatch
                 // Clear authentication
                 AuthenticationUtil.clearCurrentSecurityContext();
             }
-            
+
             @Override
             public void process(SiteInfo siteInfo) throws Throwable
             {
-             // Set all the permissions of site
+                // Set all the permissions of site
                 Set<AccessPermission> sitePermissions = permissionService.getAllSetPermissions(siteInfo.getNodeRef());
                 for (AccessPermission sitePermission : sitePermissions)
                 {
@@ -217,8 +215,8 @@ public class RenameSiteAuthorityDisplayName  extends AbstractPatch
                     {
                         String authorityName = sitePermission.getAuthority();
                         String currDisplayName = authorityService.getAuthorityDisplayName(authorityName);
-                        String necessaryName = ((SiteServiceImpl) siteService).getSiteRoleGroup(siteInfo.getShortName(), sitePermission.getPermission(),  false);
-                        String alternativeName = ((SiteServiceImpl) siteService).getSiteRoleGroup(siteInfo.getShortName(), sitePermission.getPermission(),  true);
+                        String necessaryName = ((SiteServiceImpl) siteService).getSiteRoleGroup(siteInfo.getShortName(), sitePermission.getPermission(), false);
+                        String alternativeName = ((SiteServiceImpl) siteService).getSiteRoleGroup(siteInfo.getShortName(), sitePermission.getPermission(), true);
                         // check for correct displayName
                         if ((!necessaryName.equalsIgnoreCase(currDisplayName)) || (!alternativeName.equalsIgnoreCase(currDisplayName)))
                         {
@@ -229,7 +227,7 @@ public class RenameSiteAuthorityDisplayName  extends AbstractPatch
                 }
             }
         };
-        
+
         siteBatchProcessor.process(worker, true);
     }
 }

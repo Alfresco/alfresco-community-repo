@@ -27,8 +27,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.aopalliance.intercept.MethodInvocation;
+
+import org.alfresco.service.cmr.repository.NodeRef;
 
 public class WriteContentPolicy extends AbstractBasePolicy
 {

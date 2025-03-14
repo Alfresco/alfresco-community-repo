@@ -27,13 +27,13 @@ package org.alfresco.util;
 
 import java.util.Collection;
 
+import org.apache.xerces.util.XMLChar;
+
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-
-import org.apache.xerces.util.XMLChar;
 
 /**
  * Support for the ISO 9075 encoding of XML element names.
@@ -43,16 +43,12 @@ import org.apache.xerces.util.XMLChar;
 @AlfrescoPublicApi
 public class ISO9075
 {
-    /*
-     * Mask for hex encoding
-     */
+    /* Mask for hex encoding */
     private static final int MASK = (1 << 4) - 1;
 
-    /*
-     * Digits used string encoding
-     */
-    private static final char[] DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e',
-            'f' };
+    /* Digits used string encoding */
+    private static final char[] DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e',
+            'f'};
 
     /**
      * Private constructor
@@ -65,15 +61,15 @@ public class ISO9075
 
     private static boolean isSQLNameStart(char c)
     {
-        if('a' <= c && c <= 'z' )
+        if ('a' <= c && c <= 'z')
         {
             return true;
         }
-        else  if('A' <= c && c <= 'Z' )
+        else if ('A' <= c && c <= 'Z')
         {
             return true;
         }
-        else if('_' == c)
+        else if ('_' == c)
         {
             return true;
         }
@@ -82,26 +78,26 @@ public class ISO9075
             return false;
         }
     }
-    
+
     private static boolean isSQLName(char c)
     {
-        if(isSQLNameStart(c))
+        if (isSQLNameStart(c))
         {
             return true;
         }
-        else  if('0' <= c && c <= '9' )
+        else if ('0' <= c && c <= '9')
         {
             return true;
         }
-        else if(':' == c)
+        else if (':' == c)
         {
             return true;
         }
-        else if('$' == c)
+        else if ('$' == c)
         {
             return true;
         }
-        else if('#' == c)
+        else if ('#' == c)
         {
             return true;
         }
@@ -110,14 +106,14 @@ public class ISO9075
             return false;
         }
     }
-    
+
     /**
      * Encodes a SQL identifier
      * 
-     * Allowed at the start:       'a'..'z' | 'A'..'Z' | '_'
-     * Allowed after:              'a'..'z' | 'A'..'Z' | '0'..'9' | '_' | ':' | '$'| '#'
+     * Allowed at the start: 'a'..'z' | 'A'..'Z' | '_' Allowed after: 'a'..'z' | 'A'..'Z' | '0'..'9' | '_' | ':' | '$'| '#'
      * 
-     * @param toEncode String
+     * @param toEncode
+     *            String
      * @return String
      */
     public static String encodeSQL(String toEncode)
@@ -178,12 +174,12 @@ public class ISO9075
         }
 
     }
-    
-    
+
     /**
      * Encode a string according to ISO 9075
      * 
-     * @param toEncode String
+     * @param toEncode
+     *            String
      * @return String
      */
     public static String encode(String toEncode)
@@ -314,14 +310,13 @@ public class ISO9075
 
     private static void encode(char c, StringBuilder builder)
     {
-        char[] buf = new char[] { '_', 'x', '0', '0', '0', '0', '_' };
+        char[] buf = new char[]{'_', 'x', '0', '0', '0', '0', '_'};
         int charPos = 6;
         do
         {
             buf[--charPos] = DIGITS[c & MASK];
             c >>>= 4;
-        }
-        while (c != 0);
+        } while (c != 0);
         builder.append(buf);
     }
 
@@ -351,26 +346,27 @@ public class ISO9075
         return "{" + qName.getNamespaceURI() + "}" + ISO9075.encode(qName.getLocalName());
 
     }
-    
+
     public static QName parseXPathName(String str)
     {
-        if(!str.startsWith("{"))
+        if (!str.startsWith("{"))
         {
             throw new IllegalArgumentException("Invalid xpath string " + str);
         }
         int idx = str.indexOf("}");
-        if(idx == -1)
+        if (idx == -1)
         {
             throw new IllegalArgumentException("Invalid xpath string " + str);
         }
         String namespaceURI = str.substring(1, idx); // skip opening brace
-        String localName = str.substring(idx+1);
+        String localName = str.substring(idx + 1);
         return QName.createQName(namespaceURI, localName);
 
     }
 
     /**
-     * @param toLowerCaseEncoded String
+     * @param toLowerCaseEncoded
+     *            String
      * @return Object
      */
     public static Object lowerCaseEncodedSQL(String toLowerCaseEncoded)
@@ -381,12 +377,12 @@ public class ISO9075
         {
             if (matchesEncodedPattern(toLowerCaseEncoded, i))
             {
-                for(int j = 0; j < 7; j++)
+                for (int j = 0; j < 7; j++)
                 {
-                    builder.append(lowerCased.charAt(i+j));
+                    builder.append(lowerCased.charAt(i + j));
                 }
                 i += 6;
-                
+
             }
             else
             {

@@ -1,12 +1,13 @@
 package org.alfresco.cmis.dsl;
 
-import org.alfresco.cmis.CmisWrapper;
-import org.alfresco.utility.Utility;
+import java.util.Map;
+
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisStorageException;
 
-import java.util.Map;
+import org.alfresco.cmis.CmisWrapper;
+import org.alfresco.utility.Utility;
 
 /**
  * DSL pertaining only to check in a {@link Document}
@@ -58,7 +59,7 @@ public class CheckIn
     {
         return checkIn(properties);
     }
-    
+
     public CmisWrapper checkIn(Map<String, ?> properties) throws Exception
     {
         ContentStream contentStream = cmisWrapper.withCMISUtil().getContentStream(content);
@@ -69,7 +70,7 @@ public class CheckIn
             Utility.waitToLoopTime(2);
             pwc.checkIn(version, properties, contentStream, comment);
         }
-        catch(CmisStorageException st)
+        catch (CmisStorageException st)
         {
             cmisWrapper.withCMISUtil().getPWCDocument().checkIn(version, properties, contentStream, comment);
         }

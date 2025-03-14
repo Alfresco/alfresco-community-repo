@@ -37,29 +37,26 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.Key;
 import java.util.function.Supplier;
-
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyGenerator;
 import javax.crypto.spec.IvParameterSpec;
 
-import org.alfresco.repo.content.ContentLimitViolationException;
-import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.repo.content.ContentLimitViolationException;
+import org.alfresco.util.TempFileProvider;
+
 /**
- * An output stream implementation that keeps the data in memory if is less then
- * the specified <b>memoryThreshold</b> otherwise it writes it to a temp file.
+ * An output stream implementation that keeps the data in memory if is less then the specified <b>memoryThreshold</b> otherwise it writes it to a temp file.
  * <p/>
  *
- * Close the stream before any call to
- * {@link TempOutputStream}.getInputStream().
+ * Close the stream before any call to {@link TempOutputStream}.getInputStream().
  * <p/>
  * 
- * If <b>deleteTempFileOnClose</b> is false then use proper try-finally patterns
- * to ensure that the temp file is destroyed after it is no longer needed.
+ * If <b>deleteTempFileOnClose</b> is false then use proper try-finally patterns to ensure that the temp file is destroyed after it is no longer needed.
  * 
  * <pre>
  *   <code>try
@@ -102,9 +99,7 @@ public class TempOutputStream extends OutputStream
      * Creates a TempOutputStream.
      * 
      * @param tempDir
-     *            the temporary directory, i.e. <code>isDir == true</code>, that
-     *            will be used as * parent directory for creating temp file backed
-     *            streams
+     *            the temporary directory, i.e. <code>isDir == true</code>, that will be used as * parent directory for creating temp file backed streams
      * @param memoryThreshold
      *            the memory threshold in B
      * @param maxContentSize
@@ -187,8 +182,7 @@ public class TempOutputStream extends OutputStream
      * Closes the stream and removes the backing file (if present).
      * <p/>
      * 
-     * If <b>deleteTempFileOnClose</b> is false then use proper try-finally patterns
-     * to ensure that the temp file is destroyed after it is no longer needed.
+     * If <b>deleteTempFileOnClose</b> is false then use proper try-finally patterns to ensure that the temp file is destroyed after it is no longer needed.
      *
      * <pre>
      *   <code>try
@@ -350,9 +344,7 @@ public class TempOutputStream extends OutputStream
      * Creates a {@link TempOutputStream} factory/supplier.
      *
      * @param tempDir
-     *            the temporary directory, i.e. <code>isDir == true</code>, that
-     *            will be used as * parent directory for creating temp file backed
-     *            streams
+     *            the temporary directory, i.e. <code>isDir == true</code>, that will be used as * parent directory for creating temp file backed streams
      * @param memoryThreshold
      *            the memory threshold in B
      * @param maxContentSize
@@ -361,7 +353,7 @@ public class TempOutputStream extends OutputStream
      *            true if temp files should be encrypted
      */
     public static Supplier<TempOutputStream> factory(final File tempDir, final int memoryThreshold,
-        final long maxContentSize, final boolean encrypt)
+            final long maxContentSize, final boolean encrypt)
     {
         return () -> new TempOutputStream(tempDir, memoryThreshold, maxContentSize, encrypt);
     }

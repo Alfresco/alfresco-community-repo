@@ -29,8 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * A service account registry that allows service accounts to be registered
- * with their corresponding roles.
+ * A service account registry that allows service accounts to be registered with their corresponding roles.
  *
  * @author Jamal Kaabi-Mofrad
  */
@@ -39,15 +38,18 @@ public interface ServiceAccountRegistry
     /**
      * Registers a service account with its corresponding role.
      *
-     * @param serviceAccountName The name of the service account to be registered.
-     * @param serviceAccountRole The role of the service account to be registered.
+     * @param serviceAccountName
+     *            The name of the service account to be registered.
+     * @param serviceAccountRole
+     *            The role of the service account to be registered.
      */
     void register(String serviceAccountName, String serviceAccountRole);
 
     /**
      * Retrieves the role of a specific service account.
      *
-     * @param serviceAccountName The name of the service account.
+     * @param serviceAccountName
+     *            The name of the service account.
      * @return An Optional containing the role of the service account if it exists, otherwise an empty Optional.
      */
     Optional<String> getServiceAccountRole(String serviceAccountName);

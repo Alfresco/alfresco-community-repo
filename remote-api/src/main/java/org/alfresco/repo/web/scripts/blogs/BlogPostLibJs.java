@@ -43,14 +43,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class BlogPostLibJs
 {
-    //FIXME It will be refactored when the other services are ported from JavaScript to Java.
-    
+    // FIXME It will be refactored when the other services are ported from JavaScript to Java.
+
     /**
-     * Checks whether a blog configuration is available
-     * This should at some point also check whether the configuration is enabled.
+     * Checks whether a blog configuration is available This should at some point also check whether the configuration is enabled.
      * 
-     * @param node the node that should be checked. Will check all parents if
-     *        the node itself doesn't contain a configuration.
+     * @param node
+     *            the node that should be checked. Will check all parents if the node itself doesn't contain a configuration.
      * @return {boolean} whether a configuration could be found.
      */
     public static boolean hasExternalBlogConfiguration(NodeRef node, ServiceRegistry services)
@@ -68,52 +67,52 @@ public class BlogPostLibJs
             return hasExternalBlogConfiguration(services.getNodeService().getPrimaryParent(node).getParentRef(), services);
         }
     }
-    
+
     public static Map<String, Object> getBlogPostData(NodeRef node, ServiceRegistry services)
     {
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("node", node);
-        String creator = (String)services.getNodeService().getProperty(node, ContentModel.PROP_CREATOR);
-        //ALF-18527
+        String creator = (String) services.getNodeService().getProperty(node, ContentModel.PROP_CREATOR);
+        // ALF-18527
         NodeRef person = services.getPersonService().getPersonOrNull(creator);
         if (person != null)
         {
             data.put("author", person);
         }
-        
+
         data.put("commentCount", CommentsLibJs.getCommentsCount(node, services));
-       
+
         // is the post published
         Serializable published = services.getNodeService().getProperty(node, ContentModel.PROP_PUBLISHED);
         boolean isPublished = published != null;
         if (isPublished)
         {
-           data.put("releasedDate", published);
+            data.put("releasedDate", published);
         }
-       
+
         // draft
         data.put("isDraft", !isPublished);
-       
+
         // set the isUpdated flag
         Date updatedDate = (Date) services.getNodeService().getProperty(node, ContentModel.PROP_UPDATED);
         boolean isUpdated = updatedDate != null;
         data.put("isUpdated", isUpdated);
         if (isUpdated)
         {
-           data.put("updatedDate", updatedDate);
+            data.put("updatedDate", updatedDate);
         }
-       
+
         // fetch standard created/modified dates
         data.put("createdDate", services.getNodeService().getProperty(node, ContentModel.PROP_CREATED));
         data.put("modifiedDate", services.getNodeService().getProperty(node, ContentModel.PROP_MODIFIED));
-       
+
         // does the external post require an update?
         Date lastUpdate = (Date) services.getNodeService().getProperty(node, BlogIntegrationModel.PROP_LAST_UPDATE);
         if (isPublished && lastUpdate != null)
         {
             // we either use the release or updated date
             Date modifiedDate = (Date) data.get("releasedDate");
-            
+
             if (isUpdated)
             {
                 modifiedDate = (Date) data.get("updatedDate");
@@ -124,9 +123,9 @@ public class BlogPostLibJs
         {
             data.put("outOfDate", false);
         }
-        
+
         data.put("tags", services.getTaggingService().getTags(node));
-       
-       return data;
+
+        return data;
     }
 }

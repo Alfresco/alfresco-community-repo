@@ -25,42 +25,15 @@
  */
 package org.alfresco.transform.registry;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static java.util.Collections.emptyMap;
 
-import org.alfresco.encryption.KeyResourceLoader;
-import org.alfresco.encryption.ssl.SSLEncryptionParameters;
-import org.alfresco.httpclient.GetRequest;
-import org.alfresco.httpclient.HttpClient4Factory;
-import org.alfresco.httpclient.HttpClientConfig;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.transform.AbstractLocalTransform;
-import org.alfresco.repo.content.transform.LocalPipelineTransform;
-import org.alfresco.repo.content.transform.LocalTransformImpl;
-import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
-import org.alfresco.repo.content.transform.TransformerDebug;
-import org.alfresco.transform.config.SupportedSourceAndTarget;
-import org.alfresco.transform.config.TransformConfig;
-import org.alfresco.transform.config.TransformOption;
-import org.alfresco.transform.config.TransformOptionGroup;
-import org.alfresco.transform.config.TransformOptionValue;
-import org.alfresco.transform.config.Transformer;
-import org.alfresco.util.ApplicationContextHelper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.quartz.CronExpression;
-import org.springframework.context.ApplicationContext;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -74,14 +47,29 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.util.Collections.emptyMap;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.quartz.CronExpression;
+
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.AbstractLocalTransform;
+import org.alfresco.repo.content.transform.LocalPipelineTransform;
+import org.alfresco.repo.content.transform.LocalTransformImpl;
+import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
+import org.alfresco.repo.content.transform.TransformerDebug;
+import org.alfresco.transform.config.SupportedSourceAndTarget;
+import org.alfresco.transform.config.TransformConfig;
+import org.alfresco.transform.config.TransformOption;
+import org.alfresco.transform.config.TransformOptionGroup;
+import org.alfresco.transform.config.TransformOptionValue;
+import org.alfresco.transform.config.Transformer;
 
 /**
  * Testing LocalTransformServiceRegistry.
@@ -105,7 +93,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
 
         public synchronized void setMockSuccessReadingConfig(boolean mockSuccessReadingConfig)
         {
-            System.out.println("\n"+getMs()+": set next mock read to "+(mockSuccessReadingConfig ? "success" : "failure"));
+            System.out.println("\n" + getMs() + ": set next mock read to " + (mockSuccessReadingConfig ? "success" : "failure"));
             this.mockSuccessReadingConfig = mockSuccessReadingConfig;
         }
 
@@ -125,10 +113,10 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
             boolean isTEngine = "t-engine".equals(name);
             tEngineCount += isTEngine ? 1 : 0;
             return baseUrl == null && resetBaseUrl && !isTEngine
-                    ? getProperty(LOCAL_TRANSFORM +name+URL, null)
+                    ? getProperty(LOCAL_TRANSFORM + name + URL, null)
                     : isTEngine && tEngineCount == 1
-                    ? HARD_CODED_VALUE
-                    : baseUrl;
+                            ? HARD_CODED_VALUE
+                            : baseUrl;
         }
 
         @Override
@@ -137,15 +125,15 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
             readConfigCount++;
             dummyData = new LocalData();
             boolean mockSuccessReadingRemoteConfig = getMockSuccessReadingConfig();
-            System.out.println(getMs() + "readConfig() success="+mockSuccessReadingRemoteConfig+" reads="+readConfigCount);
+            System.out.println(getMs() + "readConfig() success=" + mockSuccessReadingRemoteConfig + " reads=" + readConfigCount);
             return mockSuccessReadingRemoteConfig;
         }
 
         @Override
         public LocalData getData()
-         {
-             return dummyData;
-         }
+        {
+            return dummyData;
+        }
 
         @Override
         protected void logError(String msg)
@@ -163,17 +151,17 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
         public Data assertDataChanged(Data prevData, String msg)
         {
             // If the data changes, there has been a read
-            System.out.println(getMs()+msg);
+            System.out.println(getMs() + msg);
             Data data = getData();
-            assertNotEquals("The configuration data should have changed: "+msg, data, prevData);
+            assertNotEquals("The configuration data should have changed: " + msg, data, prevData);
             return data;
         }
 
         public Data assertDataUnchanged(Data data, String msg)
         {
             // If the data changes, there has been a read
-            System.out.println(getMs()+msg);
-            assertEquals("The configuration data should be the same: "+msg, getData(), data);
+            System.out.println(getMs() + msg);
+            assertEquals("The configuration data should be the same: " + msg, getData(), data);
             return getData();
         }
 
@@ -188,7 +176,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
                     return;
                 }
             }
-            fail("Did not find error message that matches "+pattern);
+            fail("Did not find error message that matches " + pattern);
         }
     }
 
@@ -212,8 +200,10 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
 
     private Properties properties = new Properties();
 
-    @Mock private TransformerDebug transformerDebug;
-    @Mock private MimetypeMap mimetypeMap;
+    @Mock
+    private TransformerDebug transformerDebug;
+    @Mock
+    private MimetypeMap mimetypeMap;
 
     private Map<String, List<String>> imagemagickSupportedTransformation;
     private Map<String, List<String>> tikaSupportedTransformation;
@@ -255,26 +245,27 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
 
     protected int getExpectedTransformsForTestJsonPipeline()
     {
-// imagemagick
-//        {"sourceMediaType": "image/png", "targetMediaType": "image/jpeg"},
-//        {"sourceMediaType": "image/png", "targetMediaType": "image/gif"},
-//        {"sourceMediaType": "image/png", "targetMediaType": "image/png"},
-//        {"sourceMediaType": "image/png", "targetMediaType": "image/tiff"}
-// pdfrendere
-//        {"sourceMediaType": "application/pdf", "targetMediaType": "image/png" }
-// libreoffice
-//         {"sourceMediaType": "application/vnd.ms-outlook", "targetMediaType": "application/pdf"}
-//         {"sourceMediaType": "application/msword",         "targetMediaType": "application/pdf" },
-// officeToImageViaPdf
-//        {"sourceMediaType": "application/msword",  "targetMediaType": "image/gif" },
-//        {"sourceMediaType": "application/msword",  "targetMediaType": "image/jpeg"},
-//        {"sourceMediaType": "application/msword",  "targetMediaType": "image/png" },
-//        {"sourceMediaType": "application/msword",  "targetMediaType": "image/tiff"}
-        return 4 + 1 + 2 + 4;   // 11
+        // imagemagick
+        // {"sourceMediaType": "image/png", "targetMediaType": "image/jpeg"},
+        // {"sourceMediaType": "image/png", "targetMediaType": "image/gif"},
+        // {"sourceMediaType": "image/png", "targetMediaType": "image/png"},
+        // {"sourceMediaType": "image/png", "targetMediaType": "image/tiff"}
+        // pdfrendere
+        // {"sourceMediaType": "application/pdf", "targetMediaType": "image/png" }
+        // libreoffice
+        // {"sourceMediaType": "application/vnd.ms-outlook", "targetMediaType": "application/pdf"}
+        // {"sourceMediaType": "application/msword", "targetMediaType": "application/pdf" },
+        // officeToImageViaPdf
+        // {"sourceMediaType": "application/msword", "targetMediaType": "image/gif" },
+        // {"sourceMediaType": "application/msword", "targetMediaType": "image/jpeg"},
+        // {"sourceMediaType": "application/msword", "targetMediaType": "image/png" },
+        // {"sourceMediaType": "application/msword", "targetMediaType": "image/tiff"}
+        return 4 + 1 + 2 + 4; // 11
     }
 
     /**
      * Loads localTransforms from the LOCAL_TRANSFORM_SERVICE_CONFIG config file.
+     * 
      * @param path
      */
     private void retrieveLocalTransformList(String path)
@@ -386,13 +377,13 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
     @Override
     protected String getBaseUrl(Transformer transformer)
     {
-        return LOCAL_TRANSFORM+transformer.getTransformerName()+".url";
+        return LOCAL_TRANSFORM + transformer.getTransformerName() + ".url";
     }
 
     private int countTopLevelOptions(Set<String> transformOptionNames)
     {
         int i = 0;
-        for (String name: transformOptionNames)
+        for (String name : transformOptionNames)
         {
             Set<TransformOption> transformOptions = mapOfTransformOptions.get(name);
             i += transformOptions.size();
@@ -404,14 +395,14 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
     {
         CombinedConfig combinedConfig = new CombinedConfig(log, registry, registry.getHttpClientConfig());
         combinedConfig.addLocalConfig(path);
-        combinedConfig.register((TransformServiceRegistryImpl)registry);
+        combinedConfig.register((TransformServiceRegistryImpl) registry);
     }
 
     // The super class uses org.junit.jupiter:junit-jupiter-engine:5.8.2
     // This cannot be used in the Alfresco repo as other tests in this class fail as they expect junit 4
     @Override
     protected void assertSupported(String sourceMimetype, long sourceSizeInBytes, String targetMimetype,
-                                   Map<String, String> actualOptions, String renditionName, String unsupportedMsg)
+            Map<String, String> actualOptions, String renditionName, String unsupportedMsg)
     {
         boolean supported = registry.isSupported(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
         if (unsupportedMsg != null && !unsupportedMsg.isEmpty())
@@ -433,14 +424,14 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
         assertEquals("The number of UNIQUE source to target mimetypes transforms has changed. Config change?",
                 64, countSupportedTransforms(true));
         assertEquals("The number of source to target mimetypes transforms has changed. " +
-                        "There may be multiple transformers for the same combination. Config change?",
+                "There may be multiple transformers for the same combination. Config change?",
                 70, countSupportedTransforms(false));
 
         // Check a supported transform for each transformer.
         assertSupported(DOC, 1234, PDF, emptyMap(), null, ""); // libreoffice
         assertSupported(DOC, 1234, PDF, emptyMap(), null, ""); // libreoffice
         assertSupported(PDF, 1234, PNG, emptyMap(), null, ""); // pdfrenderer
-        assertSupported(JPEG,1234, GIF, emptyMap(), null, ""); // imagemagick
+        assertSupported(JPEG, 1234, GIF, emptyMap(), null, ""); // imagemagick
         assertSupported(MSG, 1234, TXT, emptyMap(), null, ""); // tika
         assertSupported(MSG, 1234, GIF, emptyMap(), null, ""); // officeToImageViaPdf
 
@@ -459,12 +450,11 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
         assertEquals("The number of UNIQUE source to target mimetypes transforms has changed. Config change?",
                 expectedTransforms, countSupportedTransforms(true));
         assertEquals("The number of source to target mimetypes transforms has changed. " +
-                        "There may be multiple transformers for the same combination. Config change?",
+                "There may be multiple transformers for the same combination. Config change?",
                 expectedTransforms, countSupportedTransforms(false));
 
         // Check required and optional default correctly
-        Map<String, List<SupportedTransform>> transformsToWord =
-                registry.getData().getTransforms().get(DOC);
+        Map<String, List<SupportedTransform>> transformsToWord = registry.getData().getTransforms().get(DOC);
         List<SupportedTransform> supportedTransforms = transformsToWord.get(GIF);
         SupportedTransform supportedTransform = supportedTransforms.get(0);
 
@@ -473,15 +463,15 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
         Iterator<TransformOption> iterator = transformOptionsSet.iterator();
         assertTrue("Expected transform values", iterator.hasNext());
         // Because Set is unordered we don't know which TransformOptionGroup we retrieve
-        TransformOptionGroup transformOptions1 = (TransformOptionGroup)iterator.next();
+        TransformOptionGroup transformOptions1 = (TransformOptionGroup) iterator.next();
 
         assertTrue("Expected transform values", iterator.hasNext());
-        TransformOptionGroup transformOptions2 = (TransformOptionGroup)iterator.next();
+        TransformOptionGroup transformOptions2 = (TransformOptionGroup) iterator.next();
 
         TransformOptionGroup imagemagick;
         TransformOptionGroup pdf;
 
-        if(containsTransformOptionValueName(transformOptions1, "alphaRemove"))
+        if (containsTransformOptionValueName(transformOptions1, "alphaRemove"))
         {
             imagemagick = transformOptions1;
             pdf = transformOptions2;
@@ -492,10 +482,10 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
             pdf = transformOptions1;
         }
 
-        TransformOptionValue alphaRemove = (TransformOptionValue)retrieveTransformOptionByPropertyName(imagemagick, "alphaRemove", "TransformOptionValue");
-        TransformOptionGroup crop = (TransformOptionGroup)retrieveTransformOptionByPropertyName(imagemagick, "crop", "TransformOptionGroup");
-        TransformOptionValue cropGravity = (TransformOptionValue)retrieveTransformOptionByPropertyName(crop, "cropGravity", "TransformOptionValue");
-        TransformOptionValue cropWidth = (TransformOptionValue)retrieveTransformOptionByPropertyName(crop, "cropWidth", "TransformOptionValue");
+        TransformOptionValue alphaRemove = (TransformOptionValue) retrieveTransformOptionByPropertyName(imagemagick, "alphaRemove", "TransformOptionValue");
+        TransformOptionGroup crop = (TransformOptionGroup) retrieveTransformOptionByPropertyName(imagemagick, "crop", "TransformOptionGroup");
+        TransformOptionValue cropGravity = (TransformOptionValue) retrieveTransformOptionByPropertyName(crop, "cropGravity", "TransformOptionValue");
+        TransformOptionValue cropWidth = (TransformOptionValue) retrieveTransformOptionByPropertyName(crop, "cropWidth", "TransformOptionValue");
 
         assertTrue("The holding group should be required", supportedTransform.getTransformOptions().isRequired());
         assertFalse("imagemagick should be optional as it is not set", imagemagick.isRequired());
@@ -509,10 +499,10 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
         assertFalse("cropWidth should be optional as required is not set", cropWidth.isRequired());
 
         // Check a supported transform for each transformer.
-        assertSupported(DOC,1234, GIF,  emptyMap(), null, "");
-        assertSupported(DOC,1234, PNG,  emptyMap(), null, "");
-        assertSupported(DOC,1234, JPEG, emptyMap(), null, "");
-        assertSupported(DOC,1234, TIFF, emptyMap(), null, "");
+        assertSupported(DOC, 1234, GIF, emptyMap(), null, "");
+        assertSupported(DOC, 1234, PNG, emptyMap(), null, "");
+        assertSupported(DOC, 1234, JPEG, emptyMap(), null, "");
+        assertSupported(DOC, 1234, TIFF, emptyMap(), null, "");
 
         Map<String, String> actualOptions = new HashMap<>();
         actualOptions.put("thumbnail", "true");
@@ -520,15 +510,15 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
         actualOptions.put("resizeHeight", "100");
         actualOptions.put("allowEnlargement", "false");
         actualOptions.put("maintainAspectRatio", "true");
-        assertSupported(DOC,1234, PNG, actualOptions, null, "");
+        assertSupported(DOC, 1234, PNG, actualOptions, null, "");
     }
 
-    private TransformOption retrieveTransformOptionByPropertyName (TransformOptionGroup transformOptionGroup, String propertyName, String propertyType)
+    private TransformOption retrieveTransformOptionByPropertyName(TransformOptionGroup transformOptionGroup, String propertyName, String propertyType)
     {
         Iterator<TransformOption> iterator = transformOptionGroup.getTransformOptions().iterator();
 
         List<TransformOption> transformOptionsList = new ArrayList<>();
-        while(iterator.hasNext())
+        while (iterator.hasNext())
         {
             transformOptionsList.add(iterator.next());
         }
@@ -551,7 +541,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
             }
             else
             {
-                TransformOption result = retrieveTransformOptionByPropertyName((TransformOptionGroup)t, propertyName, propertyType);
+                TransformOption result = retrieveTransformOptionByPropertyName((TransformOptionGroup) t, propertyName, propertyType);
                 if (result != null)
                     return result;
             }
@@ -559,7 +549,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
         return null;
     }
 
-    private boolean containsTransformOptionValueName (TransformOptionGroup transformOptionGroup, String propertyName)
+    private boolean containsTransformOptionValueName(TransformOptionGroup transformOptionGroup, String propertyName)
     {
         return retrieveTransformOptionByPropertyName(transformOptionGroup, propertyName, "TransformOptionValue") != null;
     }
@@ -589,7 +579,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
         assertEquals("Unexpected number of transformers retrieved", 5, transformerList.size());
 
         // Assert proper transformers are loaded
-        List<String> listOfExpectedTransformersName= new ArrayList<>();
+        List<String> listOfExpectedTransformersName = new ArrayList<>();
         listOfExpectedTransformersName.add("imagemagick");
         listOfExpectedTransformersName.add("tika");
         listOfExpectedTransformersName.add("pdfrenderer");
@@ -603,80 +593,80 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
 
             switch (transformer.getTransformerName())
             {
-                case "imagemagick":
-                    assertEquals(transformer.getTransformerName() + " incorrect number of supported transform", 18, transformer.getSupportedSourceAndTargetList().size());
-                    assertEquals( transformer.getTransformerName() + "incorrect number of transform option names", 1, transformer.getTransformOptions().size());
-                    assertEquals( transformer.getTransformerName() + "incorrect number of transform options", 6, countTopLevelOptions(transformer.getTransformOptions()));
-                    assertEquals(transformer.getTransformerName() + " expected to not be a transformer pipeline", transformer.getTransformerPipeline().size(), 0);
-                    assertEquals(transformer.getTransformerName() + " expected to not be a failover pipeline", transformer.getTransformerFailover().size(), 0);
+            case "imagemagick":
+                assertEquals(transformer.getTransformerName() + " incorrect number of supported transform", 18, transformer.getSupportedSourceAndTargetList().size());
+                assertEquals(transformer.getTransformerName() + "incorrect number of transform option names", 1, transformer.getTransformOptions().size());
+                assertEquals(transformer.getTransformerName() + "incorrect number of transform options", 6, countTopLevelOptions(transformer.getTransformOptions()));
+                assertEquals(transformer.getTransformerName() + " expected to not be a transformer pipeline", transformer.getTransformerPipeline().size(), 0);
+                assertEquals(transformer.getTransformerName() + " expected to not be a failover pipeline", transformer.getTransformerFailover().size(), 0);
 
-                    //Test supportedSourceAndTargetList
-                    for ( SupportedSourceAndTarget ssat: transformer.getSupportedSourceAndTargetList())
-                    {
-                        assertTrue(ssat.getSourceMediaType() + " not expected to be a supported transform source.", imagemagickSupportedTransformation.containsKey(ssat.getSourceMediaType()));
-                        assertTrue(ssat.getTargetMediaType() + " not expected to be a supported transform target for " + ssat.getSourceMediaType(), imagemagickSupportedTransformation.get(ssat.getSourceMediaType()).contains(ssat.getTargetMediaType()));
-                    }
-                    break;
+                // Test supportedSourceAndTargetList
+                for (SupportedSourceAndTarget ssat : transformer.getSupportedSourceAndTargetList())
+                {
+                    assertTrue(ssat.getSourceMediaType() + " not expected to be a supported transform source.", imagemagickSupportedTransformation.containsKey(ssat.getSourceMediaType()));
+                    assertTrue(ssat.getTargetMediaType() + " not expected to be a supported transform target for " + ssat.getSourceMediaType(), imagemagickSupportedTransformation.get(ssat.getSourceMediaType()).contains(ssat.getTargetMediaType()));
+                }
+                break;
 
-                case "tika":
-                    assertEquals(transformer.getTransformerName() + " incorrect number of supported transform", 11, transformer.getSupportedSourceAndTargetList().size());
-                    assertEquals( transformer.getTransformerName() + "incorrect number of transform option names", 1, transformer.getTransformOptions().size());
-                    assertEquals( transformer.getTransformerName() + "incorrect number of transform options", 5, countTopLevelOptions(transformer.getTransformOptions()));
-                    assertEquals(transformer.getTransformerName() + " expected to not be a transformer pipeline", transformer.getTransformerPipeline().size(), 0);
-                    assertEquals(transformer.getTransformerName() + " expected to not be a failover pipeline", transformer.getTransformerFailover().size(), 0);
+            case "tika":
+                assertEquals(transformer.getTransformerName() + " incorrect number of supported transform", 11, transformer.getSupportedSourceAndTargetList().size());
+                assertEquals(transformer.getTransformerName() + "incorrect number of transform option names", 1, transformer.getTransformOptions().size());
+                assertEquals(transformer.getTransformerName() + "incorrect number of transform options", 5, countTopLevelOptions(transformer.getTransformOptions()));
+                assertEquals(transformer.getTransformerName() + " expected to not be a transformer pipeline", transformer.getTransformerPipeline().size(), 0);
+                assertEquals(transformer.getTransformerName() + " expected to not be a failover pipeline", transformer.getTransformerFailover().size(), 0);
 
-                    //Test supportedSourceAndTargetList
-                    for ( SupportedSourceAndTarget ssat: transformer.getSupportedSourceAndTargetList())
-                    {
-                        assertTrue(ssat.getSourceMediaType() + " not expected to be a supported transform source.", tikaSupportedTransformation.containsKey(ssat.getSourceMediaType()));
-                        assertTrue(ssat.getTargetMediaType() + " not expected to be a supported transform target for " + ssat.getSourceMediaType(), tikaSupportedTransformation.get(ssat.getSourceMediaType()).contains(ssat.getTargetMediaType()));
-                    }
-                    break;
+                // Test supportedSourceAndTargetList
+                for (SupportedSourceAndTarget ssat : transformer.getSupportedSourceAndTargetList())
+                {
+                    assertTrue(ssat.getSourceMediaType() + " not expected to be a supported transform source.", tikaSupportedTransformation.containsKey(ssat.getSourceMediaType()));
+                    assertTrue(ssat.getTargetMediaType() + " not expected to be a supported transform target for " + ssat.getSourceMediaType(), tikaSupportedTransformation.get(ssat.getSourceMediaType()).contains(ssat.getTargetMediaType()));
+                }
+                break;
 
-                case "pdfrenderer":
-                    assertEquals(transformer.getTransformerName() + " incorrect number of supported transform", 4, transformer.getSupportedSourceAndTargetList().size());
-                    assertEquals( transformer.getTransformerName() + "incorrect number of transform option names", 1, transformer.getTransformOptions().size());
-                    assertEquals( transformer.getTransformerName() + "incorrect number of transform options", 5, countTopLevelOptions(transformer.getTransformOptions()));
-                    assertEquals(transformer.getTransformerName() + " expected to not be a transformer pipeline", transformer.getTransformerPipeline().size(), 0);
-                    assertEquals(transformer.getTransformerName() + " expected to not be a failover pipeline", transformer.getTransformerFailover().size(), 0);
+            case "pdfrenderer":
+                assertEquals(transformer.getTransformerName() + " incorrect number of supported transform", 4, transformer.getSupportedSourceAndTargetList().size());
+                assertEquals(transformer.getTransformerName() + "incorrect number of transform option names", 1, transformer.getTransformOptions().size());
+                assertEquals(transformer.getTransformerName() + "incorrect number of transform options", 5, countTopLevelOptions(transformer.getTransformOptions()));
+                assertEquals(transformer.getTransformerName() + " expected to not be a transformer pipeline", transformer.getTransformerPipeline().size(), 0);
+                assertEquals(transformer.getTransformerName() + " expected to not be a failover pipeline", transformer.getTransformerFailover().size(), 0);
 
-                    //Test supportedSourceAndTargetList
-                    for ( SupportedSourceAndTarget ssat: transformer.getSupportedSourceAndTargetList())
-                    {
-                        assertTrue(ssat.getSourceMediaType() + " not expected to be a supported transform source.", pdfRendererSupportedTransformation.containsKey(ssat.getSourceMediaType()));
-                        assertTrue(ssat.getTargetMediaType() + " not expected to be a supported transform target for " + ssat.getSourceMediaType(), pdfRendererSupportedTransformation.get(ssat.getSourceMediaType()).contains(ssat.getTargetMediaType()));
-                    }
-                    break;
+                // Test supportedSourceAndTargetList
+                for (SupportedSourceAndTarget ssat : transformer.getSupportedSourceAndTargetList())
+                {
+                    assertTrue(ssat.getSourceMediaType() + " not expected to be a supported transform source.", pdfRendererSupportedTransformation.containsKey(ssat.getSourceMediaType()));
+                    assertTrue(ssat.getTargetMediaType() + " not expected to be a supported transform target for " + ssat.getSourceMediaType(), pdfRendererSupportedTransformation.get(ssat.getSourceMediaType()).contains(ssat.getTargetMediaType()));
+                }
+                break;
 
-                case "libreoffice":
-                    assertEquals(transformer.getTransformerName() + " incorrect number of supported transform", 9, transformer.getSupportedSourceAndTargetList().size());
-                    assertEquals( transformer.getTransformerName() + "incorrect number of transform option names", 0, transformer.getTransformOptions().size());
-                    assertEquals( transformer.getTransformerName() + "incorrect number of transform options", 0, countTopLevelOptions(transformer.getTransformOptions()));
-                    assertEquals(transformer.getTransformerName() + " expected to not be a transformer pipeline", transformer.getTransformerPipeline().size(), 0);
-                    assertEquals(transformer.getTransformerName() + " expected to not be a failover pipeline", transformer.getTransformerFailover().size(), 0);
+            case "libreoffice":
+                assertEquals(transformer.getTransformerName() + " incorrect number of supported transform", 9, transformer.getSupportedSourceAndTargetList().size());
+                assertEquals(transformer.getTransformerName() + "incorrect number of transform option names", 0, transformer.getTransformOptions().size());
+                assertEquals(transformer.getTransformerName() + "incorrect number of transform options", 0, countTopLevelOptions(transformer.getTransformOptions()));
+                assertEquals(transformer.getTransformerName() + " expected to not be a transformer pipeline", transformer.getTransformerPipeline().size(), 0);
+                assertEquals(transformer.getTransformerName() + " expected to not be a failover pipeline", transformer.getTransformerFailover().size(), 0);
 
-                    //Test supportedSourceAndTargetList
-                    for ( SupportedSourceAndTarget ssat: transformer.getSupportedSourceAndTargetList())
-                    {
-                        assertTrue(ssat.getSourceMediaType() + " not expected to be a supported transform source.", libreofficeSupportedTransformation.containsKey(ssat.getSourceMediaType()));
-                        assertTrue(ssat.getTargetMediaType() + " not expected to be a supported transform target for " + ssat.getSourceMediaType(), libreofficeSupportedTransformation.get(ssat.getSourceMediaType()).contains(ssat.getTargetMediaType()));
-                    }
-                    break;
+                // Test supportedSourceAndTargetList
+                for (SupportedSourceAndTarget ssat : transformer.getSupportedSourceAndTargetList())
+                {
+                    assertTrue(ssat.getSourceMediaType() + " not expected to be a supported transform source.", libreofficeSupportedTransformation.containsKey(ssat.getSourceMediaType()));
+                    assertTrue(ssat.getTargetMediaType() + " not expected to be a supported transform target for " + ssat.getSourceMediaType(), libreofficeSupportedTransformation.get(ssat.getSourceMediaType()).contains(ssat.getTargetMediaType()));
+                }
+                break;
 
-                case "officeToImageViaPdf":
-                    // Note we will get 35 entries in getSupportedSourceAndTargetList() if the metadata transforms are not excluded
-                    assertEquals(transformer.getTransformerName() + " incorrect number of supported transform", 28, transformer.getSupportedSourceAndTargetList().size());
-                    assertEquals( transformer.getTransformerName() + "incorrect number of transform option names", 2, transformer.getTransformOptions().size());
-                    assertEquals( transformer.getTransformerName() + "incorrect number of transform options", 11, countTopLevelOptions(transformer.getTransformOptions()));
-                    assertEquals(transformer.getTransformerName() + " expected to be a transformer pipeline", transformer.getTransformerPipeline().size(), 3);
+            case "officeToImageViaPdf":
+                // Note we will get 35 entries in getSupportedSourceAndTargetList() if the metadata transforms are not excluded
+                assertEquals(transformer.getTransformerName() + " incorrect number of supported transform", 28, transformer.getSupportedSourceAndTargetList().size());
+                assertEquals(transformer.getTransformerName() + "incorrect number of transform option names", 2, transformer.getTransformOptions().size());
+                assertEquals(transformer.getTransformerName() + "incorrect number of transform options", 11, countTopLevelOptions(transformer.getTransformOptions()));
+                assertEquals(transformer.getTransformerName() + " expected to be a transformer pipeline", transformer.getTransformerPipeline().size(), 3);
 
-                    //Test supportedSourceAndTargetList
-                    for ( SupportedSourceAndTarget ssat: transformer.getSupportedSourceAndTargetList())
-                    {
-                        assertTrue(ssat.getSourceMediaType() + " not expected to be a supported transform source.", officeToImageViaPdfSupportedTransformation.containsKey(ssat.getSourceMediaType()));
-                        assertTrue(ssat.getTargetMediaType() + " not expected to be a supported transform target for " + ssat.getSourceMediaType(), officeToImageViaPdfSupportedTransformation.get(ssat.getSourceMediaType()).contains(ssat.getTargetMediaType()));
-                    }
-                    break;
+                // Test supportedSourceAndTargetList
+                for (SupportedSourceAndTarget ssat : transformer.getSupportedSourceAndTargetList())
+                {
+                    assertTrue(ssat.getSourceMediaType() + " not expected to be a supported transform source.", officeToImageViaPdfSupportedTransformation.containsKey(ssat.getSourceMediaType()));
+                    assertTrue(ssat.getTargetMediaType() + " not expected to be a supported transform target for " + ssat.getSourceMediaType(), officeToImageViaPdfSupportedTransformation.get(ssat.getSourceMediaType()).contains(ssat.getTargetMediaType()));
+                }
+                break;
             }
         }
         assertEquals("Transformer expected but not found in config file", 0, listOfExpectedTransformersName.size());
@@ -692,7 +682,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
         {
             if (transformer.getTransformerPipeline() == null)
             {
-                assertNotNull(transformer.getTransformerName()+ " JVM property not set.", System.getProperty(LOCAL_TRANSFORM + transformer.getTransformerName() + URL));
+                assertNotNull(transformer.getTransformerName() + " JVM property not set.", System.getProperty(LOCAL_TRANSFORM + transformer.getTransformerName() + URL));
             }
         }
         assertEquals("Unexpected pdfrenderer JVM property value", "http://localhost:8090/", System.getProperty(LOCAL_TRANSFORM + "pdfrenderer" + URL));
@@ -702,9 +692,9 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
 
         for (Transformer transformer : transformerList)
         {
-            if(transformer.getTransformerPipeline() == null)
+            if (transformer.getTransformerPipeline() == null)
             {
-                assertNotNull(transformer.getTransformerName()+ " alfresco-global property not set.", properties.getProperty(LOCAL_TRANSFORM + transformer.getTransformerName() + URL));
+                assertNotNull(transformer.getTransformerName() + " alfresco-global property not set.", properties.getProperty(LOCAL_TRANSFORM + transformer.getTransformerName() + URL));
             }
         }
         assertEquals("Unexpected pdfrenderer alfresco-global property value", "http://localhost:8090/", properties.getProperty(LOCAL_TRANSFORM + "pdfrenderer" + URL));
@@ -730,7 +720,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
 
             // Sleep until a 6 second boundary, in order to make testing clearer.
             // It avoids having to work out schedule offsets and extra quick runs that can otherwise take place.
-            Thread.sleep(4000-System.currentTimeMillis()%4000);
+            Thread.sleep(4000 - System.currentTimeMillis() % 4000);
             startMs = System.currentTimeMillis();
             registry.setMockSuccessReadingConfig(false);
             registry.afterPropertiesSet();
@@ -787,9 +777,8 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
                 "autoOrient", "true",
                 "width", "100",
                 "height", "50");
-        LocalPipelineTransform officeToImageViaPdf =
-                (LocalPipelineTransform)((LocalTransformServiceRegistry)registry).getLocalTransform(
-                        "application/msword", -1, "image/gif", actualOptions, null);
+        LocalPipelineTransform officeToImageViaPdf = (LocalPipelineTransform) ((LocalTransformServiceRegistry) registry).getLocalTransform(
+                "application/msword", -1, "image/gif", actualOptions, null);
         assertEquals("Original number of options officeToImageViaPdf", 21, officeToImageViaPdf.getTransformsTransformOptionNames().size());
 
         AbstractLocalTransform libreoffice = (AbstractLocalTransform) officeToImageViaPdf.getIntermediateTransformer(0);
@@ -812,15 +801,15 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
         retrieveLocalTransformList(LOCAL_TRANSFORM_SERVICE_CONFIG);
 
         assertEquals("pdfrenderer",
-                ((AbstractLocalTransform)registry.getLocalTransform("source", -1,
+                ((AbstractLocalTransform) registry.getLocalTransform("source", -1,
                         "target1", Collections.emptyMap(), null)).getName());
 
         assertEquals("imagemagick",
-                ((AbstractLocalTransform)registry.getLocalTransform("source", -1,
+                ((AbstractLocalTransform) registry.getLocalTransform("source", -1,
                         "target2", Collections.emptyMap(), null)).getName());
 
         assertEquals("tika",
-                ((AbstractLocalTransform)registry.getLocalTransform("source", -1,
+                ((AbstractLocalTransform) registry.getLocalTransform("source", -1,
                         "target3", Collections.emptyMap(), null)).getName());
     }
 
@@ -873,29 +862,29 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
     {
         // This json file contains two transformers with the same name.
         // * The second one should override the first which has different supported source mimetypes, target mimetypes
-        //   and max sizes. It also has different transform options.
+        // and max sizes. It also has different transform options.
         // * There is special code in getBaseUrlIfTesting mocking up the baseUrl just for the first one. It should be
-        //   copied to the second one.
+        // copied to the second one.
         retrieveLocalTransformList("alfresco/local-transform-service-config-override-test.json");
 
         assertNotNull("Should still be supported",
-                ((AbstractLocalTransform)registry.getLocalTransform("text/csv", 1000,
+                ((AbstractLocalTransform) registry.getLocalTransform("text/csv", 1000,
                         "text/html", Collections.emptyMap(), null)));
 
         assertNotNull("Increased max size be supported",
-                ((AbstractLocalTransform)registry.getLocalTransform("text/csv", 2000,
+                ((AbstractLocalTransform) registry.getLocalTransform("text/csv", 2000,
                         "text/html", Collections.emptyMap(), null)));
 
         assertNull("Increased max size is now 2000",
-                ((AbstractLocalTransform)registry.getLocalTransform("text/csv", 3000,
+                ((AbstractLocalTransform) registry.getLocalTransform("text/csv", 3000,
                         "text/html", Collections.emptyMap(), null)));
 
         assertNotNull("Should have been added",
-                ((AbstractLocalTransform)registry.getLocalTransform("text/csv", -1,
+                ((AbstractLocalTransform) registry.getLocalTransform("text/csv", -1,
                         "application/pdf", Collections.emptyMap(), null)));
 
         assertNull("Should have been removed",
-                ((AbstractLocalTransform)registry.getLocalTransform("text/csv", -1,
+                ((AbstractLocalTransform) registry.getLocalTransform("text/csv", -1,
                         "text/tab-separated-values", Collections.emptyMap(), null)));
 
         assertNotNull("options1 should still exist, even if not used", mapOfTransformOptions.get("options1"));
@@ -906,18 +895,17 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
                 "width", "100",
                 "height", "50");
         assertNull("width from options1 is no longer used, so should find no transformer",
-                ((AbstractLocalTransform)registry.getLocalTransform("text/csv", -1,
+                ((AbstractLocalTransform) registry.getLocalTransform("text/csv", -1,
                         "application/pdf", actualOptions, null)));
 
         actualOptions = Map.of(
                 "page", "100",
                 "height", "50");
         assertNotNull("Both options are in options2, so should we should find the transformer",
-                ((AbstractLocalTransform)registry.getLocalTransform("text/csv", -1,
+                ((AbstractLocalTransform) registry.getLocalTransform("text/csv", -1,
                         "application/pdf", actualOptions, null)));
 
-        LocalTransformImpl localTransform = (LocalTransformImpl)
-                registry.getLocalTransform("text/csv", -1,
+        LocalTransformImpl localTransform = (LocalTransformImpl) registry.getLocalTransform("text/csv", -1,
                 "application/pdf", Collections.emptyMap(), null);
         assertEquals("Should only have 2 options", 2,
                 localTransform.getTransformsTransformOptionNames().size());
@@ -929,17 +917,17 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
     {
         // This json file contains two transformers with the same name, plus two others libreoffice and pdfrenderer
         // * The first transform which should be overridden has a baseUrl as it talks to a T-Engine and has 5
-        //   supported source to target mimetypes.
+        // supported source to target mimetypes.
         // * The second one should override the first with a pipeline of libreoffice and pdfrenderer but only has 1
-        //   supported source to target mimetype. It should not have a baseUrl as it will not talk to a T-Engine.
-        //   THIS IS WHAT IS BASICALLY DIFFERENT TO testOverrideTEngine, resulting in a LocalPipelineTransform rather
-        //   rather than a LocalTransformImpl.
+        // supported source to target mimetype. It should not have a baseUrl as it will not talk to a T-Engine.
+        // THIS IS WHAT IS BASICALLY DIFFERENT TO testOverrideTEngine, resulting in a LocalPipelineTransform rather
+        // rather than a LocalTransformImpl.
         // * There is special code in getBaseUrlIfTesting mocking up the baseUrl just for the first one. It should be
-        //   copied to the second one.
+        // copied to the second one.
         retrieveLocalTransformList("alfresco/local-transform-service-config-override-with-pipeline-test.json");
 
         LocalPipelineTransform pipelineTransform = (LocalPipelineTransform) registry.getLocalTransform("text/csv",
-                -1,"image/png", Collections.emptyMap(), null);
+                -1, "image/png", Collections.emptyMap(), null);
         assertNotNull("Should supported csv to png", pipelineTransform);
     }
 

@@ -44,14 +44,14 @@ public class SearchSQLQuery
     private boolean includeMetadata;
     private String timezone;
     private List<String> filterQueries;
-    
+
     public SearchSQLQuery(@JsonProperty("stmt") String stmt,
-                          @JsonProperty("format") String format,
-                          @JsonProperty("locales") List<String> locales,
-                          @JsonProperty("limit") Integer itemLimit,
-                          @JsonProperty("includeMetadata") boolean includeMetadata,
-                          @JsonProperty("timezone") String timezone,
-                          @JsonProperty("filterQueries") List<String> filterQueries)
+            @JsonProperty("format") String format,
+            @JsonProperty("locales") List<String> locales,
+            @JsonProperty("limit") Integer itemLimit,
+            @JsonProperty("includeMetadata") boolean includeMetadata,
+            @JsonProperty("timezone") String timezone,
+            @JsonProperty("filterQueries") List<String> filterQueries)
     {
         this.stmt = stmt;
         this.format = format != null ? format : "default";

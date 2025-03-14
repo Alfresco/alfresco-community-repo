@@ -28,21 +28,18 @@ package org.alfresco.tools;
 import java.io.IOException;
 
 /**
- * Initializes the full application context and then waits for a
- * keypress to exit.
+ * Initializes the full application context and then waits for a keypress to exit.
  * 
  * @author Derek Hulley
  */
 public class Repository extends Tool
 {
-    protected @Override
-    String getToolName()
+    protected @Override String getToolName()
     {
         return "Repository";
     }
 
-    protected @Override
-    ToolContext processArgs(String[] args) throws ToolException
+    protected @Override ToolContext processArgs(String[] args) throws ToolException
     {
         ToolContext context = new ToolContext();
         context.setLogin(true);
@@ -89,19 +86,18 @@ public class Repository extends Tool
         return context;
     }
 
-    protected @Override
-    void displayHelp()
+    protected @Override void displayHelp()
     {
         logError(
                 "usage: repository [OPTIONS] \n" +
-                "\n" +
-                "Initialize the Alfresco application context, initiating any \n" +
-                "configured server beans (e.g. FTP server, etc). \n" +
-                "\n" +
-                "Options: \n" +
-                " -h -help         Display this help \n" +
-                " -user USER       Login as USER \n" +
-                " -pwd PASSWORD    Use PASSWORD to login");        
+                        "\n" +
+                        "Initialize the Alfresco application context, initiating any \n" +
+                        "configured server beans (e.g. FTP server, etc). \n" +
+                        "\n" +
+                        "Options: \n" +
+                        " -h -help         Display this help \n" +
+                        " -user USER       Login as USER \n" +
+                        " -pwd PASSWORD    Use PASSWORD to login");
     }
 
     @Override
@@ -114,32 +110,39 @@ public class Repository extends Tool
             System.out.println("\nShutting down the repository.");
             // start the ticker
             new ShutdownNotifierThread().start();
-            try { wait(3000L); } catch (InterruptedException e) {}
+            try
+            {
+                wait(3000L);
+            }
+            catch (InterruptedException e)
+            {}
         }
         catch (IOException e)
         {
             // just ignore
         }
-        
+
         return 0;
     }
-    
+
     /**
      * Start the repository and wait for a keypress to stop
      * 
-     * @param args not used
+     * @param args
+     *            not used
      */
     public static void main(String[] args)
     {
         new Repository().start(args);
     }
-    
+
     private static class ShutdownNotifierThread extends Thread
     {
         private ShutdownNotifierThread()
         {
             this.setDaemon(true);
         }
+
         @Override
         public synchronized void run()
         {
@@ -151,8 +154,7 @@ public class Repository extends Tool
                     wait(500L);
                 }
                 catch (InterruptedException e)
-                {
-                }
+                {}
             }
         }
     }

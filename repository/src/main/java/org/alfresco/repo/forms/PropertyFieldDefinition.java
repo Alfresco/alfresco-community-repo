@@ -29,12 +29,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import org.alfresco.repo.dictionary.IndexTokenisationMode;
 
 /**
  * A property field definition.
@@ -45,30 +46,31 @@ public class PropertyFieldDefinition extends FieldDefinition
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(PropertyFieldDefinition.class);
-    
+
     protected String dataType;
     protected DataTypeParameters dataTypeParams;
     protected boolean mandatory = false;
     protected boolean repeats = false;
     protected IndexTokenisationMode indexTokenisationMode = IndexTokenisationMode.TRUE;
     protected List<FieldConstraint> constraints;
-    
+
     /**
      * Default constructor
      * 
-     * @param name              The name of the property
-     * @param dataType          The data type of the property
+     * @param name
+     *            The name of the property
+     * @param dataType
+     *            The data type of the property
      */
     public PropertyFieldDefinition(String name, String dataType)
     {
         super(name);
-        
+
         this.dataType = dataType;
     }
-    
+
     /**
-     * Returns the dataType for the property, this is a value from the 
-     * Alfresco data dictionary i.e. d:text, d:int etc.
+     * Returns the dataType for the property, this is a value from the Alfresco data dictionary i.e. d:text, d:int etc.
      * 
      * @return The field's data type
      */
@@ -76,7 +78,7 @@ public class PropertyFieldDefinition extends FieldDefinition
     {
         return this.dataType;
     }
-    
+
     /**
      * Returns the data type parameters for the field
      * 
@@ -90,7 +92,8 @@ public class PropertyFieldDefinition extends FieldDefinition
     /**
      * Sets the data type parameters for the field
      * 
-     * @param dataTypeParams The DataTypeParameters for the field
+     * @param dataTypeParams
+     *            The DataTypeParameters for the field
      */
     public void setDataTypeParameters(DataTypeParameters dataTypeParams)
     {
@@ -106,11 +109,12 @@ public class PropertyFieldDefinition extends FieldDefinition
     {
         return this.mandatory;
     }
-    
+
     /**
      * Sets whether the property is mandatory
      * 
-     * @param mandatory true if it is mandatory
+     * @param mandatory
+     *            true if it is mandatory
      */
     public void setMandatory(boolean mandatory)
     {
@@ -130,7 +134,8 @@ public class PropertyFieldDefinition extends FieldDefinition
     /**
      * Sets whether the property can contain multiple values
      * 
-     * @param repeats true if the field can contain multiple values
+     * @param repeats
+     *            true if the field can contain multiple values
      */
     public void setRepeating(boolean repeats)
     {
@@ -140,8 +145,7 @@ public class PropertyFieldDefinition extends FieldDefinition
     /**
      * Returns a list of constraints the property may have
      * 
-     * @return List of FieldContstraint objects or null if there are
-     *         no constraints for the field
+     * @return List of FieldContstraint objects or null if there are no constraints for the field
      */
     public List<FieldConstraint> getConstraints()
     {
@@ -151,7 +155,8 @@ public class PropertyFieldDefinition extends FieldDefinition
     /**
      * Sets the list of FieldConstraint objects for the property
      * 
-     * @param constraints List of FieldConstraint objects
+     * @param constraints
+     *            List of FieldConstraint objects
      */
     public void setConstraints(List<FieldConstraint> constraints)
     {
@@ -171,16 +176,15 @@ public class PropertyFieldDefinition extends FieldDefinition
     /**
      * Sets the IndexTokenisationMode objects for the property
      * 
-     * @param indexTokenisationMode objects
+     * @param indexTokenisationMode
+     *            objects
      */
     public void setIndexTokenisationMode(IndexTokenisationMode indexTokenisationMode)
     {
         this.indexTokenisationMode = indexTokenisationMode;
     }
 
-    /*
-     * @see java.lang.Object#toString()
-     */
+    /* @see java.lang.Object#toString() */
     public String toString()
     {
         StringBuilder buffer = new StringBuilder(super.toString());
@@ -201,7 +205,7 @@ public class PropertyFieldDefinition extends FieldDefinition
         buffer.append(")");
         return buffer.toString();
     }
-    
+
     /**
      * Represents a constraint on a property field
      */
@@ -209,12 +213,14 @@ public class PropertyFieldDefinition extends FieldDefinition
     {
         protected String type;
         protected Map<String, Object> params;
-        
+
         /**
          * Constructs a FieldConstraint
          * 
-         * @param type      The type of the constraint
-         * @param params    Map of parameters for the constraint
+         * @param type
+         *            The type of the constraint
+         * @param params
+         *            Map of parameters for the constraint
          */
         public FieldConstraint(String type, Map<String, Object> params)
         {
@@ -236,14 +242,13 @@ public class PropertyFieldDefinition extends FieldDefinition
         /**
          * Returns the parameters for the constraint
          * 
-         * @return Map of parameters for the constraint or null if
-         *         there are no parameters
+         * @return Map of parameters for the constraint or null if there are no parameters
          */
         public Map<String, Object> getParameters()
         {
             return this.params;
         }
-        
+
         /**
          * Returns the paramters for the constraint as a JSONObject
          * 
@@ -253,11 +258,11 @@ public class PropertyFieldDefinition extends FieldDefinition
         public JSONObject getParametersAsJSON()
         {
             JSONObject result = null;
-            
+
             if (this.params != null)
             {
                 result = new JSONObject();
-                
+
                 for (String name : this.params.keySet())
                 {
                     try
@@ -266,7 +271,7 @@ public class PropertyFieldDefinition extends FieldDefinition
                         if (value instanceof Collection)
                         {
                             // if the value is a Collection add to JSONObject as a JSONArray
-                            result.put(name, new JSONArray((Collection)value));
+                            result.put(name, new JSONArray((Collection) value));
                         }
                         else
                         {
@@ -278,11 +283,11 @@ public class PropertyFieldDefinition extends FieldDefinition
                         // just log a warning
                         if (logger.isWarnEnabled())
                             logger.warn("Failed to add constraint parameter '" + name +
-                                        "' to JSON object.", je);
+                                    "' to JSON object.", je);
                     }
                 }
             }
-            
+
             return result;
         }
     }

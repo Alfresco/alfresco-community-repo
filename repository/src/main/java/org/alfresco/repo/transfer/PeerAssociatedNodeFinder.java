@@ -42,8 +42,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
- * This class can be used to find nodes that are associated with peer associations 
- * (as opposed to child associations).
+ * This class can be used to find nodes that are associated with peer associations (as opposed to child associations).
  * 
  * @author brian
  * @since 3.3
@@ -56,8 +55,7 @@ public class PeerAssociatedNodeFinder extends AbstractNodeFinder
     private List<QName> peerAssociationTypes = new ArrayList<QName>();
 
     public PeerAssociatedNodeFinder()
-    {
-    }
+    {}
 
     public PeerAssociatedNodeFinder(Collection<QName> associationTypeNames)
     {
@@ -77,8 +75,7 @@ public class PeerAssociatedNodeFinder extends AbstractNodeFinder
 
     /**
      * @param exclude
-     *            Set to true to exclude the specified association types, and false to include only the specified
-     *            association types.
+     *            Set to true to exclude the specified association types, and false to include only the specified association types.
      */
     public void setExclude(boolean exclude)
     {
@@ -96,12 +93,9 @@ public class PeerAssociatedNodeFinder extends AbstractNodeFinder
         initialised = false;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.service.cmr.transfer.NodeFinder#findFrom(org.alfresco.service.cmr.repository.NodeRef,
-     * org.alfresco.service.ServiceRegistry)
-     */
+     * @see org.alfresco.service.cmr.transfer.NodeFinder#findFrom(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.ServiceRegistry) */
     public Set<NodeRef> findFrom(NodeRef thisNode)
     {
         if (!initialised)
@@ -119,7 +113,8 @@ public class PeerAssociatedNodeFinder extends AbstractNodeFinder
     }
 
     /**
-     * @param thisNode NodeRef
+     * @param thisNode
+     *            NodeRef
      * @return Set<NodeRef>
      */
     private Set<NodeRef> processExcludedSet(NodeRef thisNode)

@@ -25,11 +25,11 @@
  */
 package org.alfresco.rest.api.model;
 
-import org.alfresco.service.cmr.site.SiteVisibility;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.alfresco.service.cmr.site.SiteVisibility;
 
 /**
  * Class representing a site update API operation.
@@ -51,8 +51,7 @@ public class SiteUpdate implements Serializable
     public static final String VISIBILITY = "visibility";
 
     public SiteUpdate()
-    {
-    }
+    {}
 
     public SiteUpdate(String title, String description, SiteVisibility visibility)
     {
@@ -103,13 +102,17 @@ public class SiteUpdate implements Serializable
     @Override
     public boolean equals(Object o)
     {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         SiteUpdate that = (SiteUpdate) o;
 
-        if (title != null ? !title.equals(that.title) : that.title != null) return false;
-        if (description != null ? !description.equals(that.description) : that.description != null) return false;
+        if (title != null ? !title.equals(that.title) : that.title != null)
+            return false;
+        if (description != null ? !description.equals(that.description) : that.description != null)
+            return false;
         return visibility == that.visibility;
 
     }

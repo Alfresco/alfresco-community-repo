@@ -25,76 +25,79 @@
  */
 package org.alfresco.util.test.junitrules;
 
-import org.alfresco.util.ParameterCheck;
 import org.junit.rules.ExternalResource;
 import org.springframework.context.ApplicationContext;
+
+import org.alfresco.util.ParameterCheck;
 
 /**
  * Abstract junit rule, which provides access to the Spring application context.
  * 
- * An explicit ApplicationContext or an ApplicationContextInit rule can be passed at construction time. 
- * getApplicationContext will either return the instance passed in, or retrieve one from the rule.
+ * An explicit ApplicationContext or an ApplicationContextInit rule can be passed at construction time. getApplicationContext will either return the instance passed in, or retrieve one from the rule.
  *
  * @author Alex Miller
  */
-public abstract class AbstractRule extends ExternalResource 
+public abstract class AbstractRule extends ExternalResource
 {
 
-	protected final ApplicationContext appContext;
-	protected final ApplicationContextInit appContextRule;
+    protected final ApplicationContext appContext;
+    protected final ApplicationContextInit appContextRule;
 
-	/**
-	 * @param appContext for use by sub classes.
-	 */
-	protected AbstractRule(ApplicationContext appContext)
-	{
-	    ParameterCheck.mandatory("appContext", appContext);
-	    
-	    this.appContext = appContext;
-	    this.appContextRule = null;
-	}
+    /**
+     * @param appContext
+     *            for use by sub classes.
+     */
+    protected AbstractRule(ApplicationContext appContext)
+    {
+        ParameterCheck.mandatory("appContext", appContext);
 
-	/**
-	 * @param appContextRule {@link ApplicationContextInit} rule used to provide ApplicationContext to sub classes. 
-	 */
-	protected AbstractRule(ApplicationContextInit appContextRule)
-	{
-	    ParameterCheck.mandatory("appContextRule", appContextRule);
-	    
-	    this.appContext = null;
-	    this.appContextRule = appContextRule;
-	}
+        this.appContext = appContext;
+        this.appContextRule = null;
+    }
 
-	/**
-	 * This method provides the spring application context to subclasses. It either provides the explicit ApplicationContext, passed in 
-	 * at construction time, or retrieves it from the {@link ApplicationContextInit} rule, passed in the alternative constructor.  
-	 * 
-	 * @return the spring application context
-	 * @throws NullPointerException if the application context has not been initialised when requested.
-	 */
-	protected ApplicationContext getApplicationContext() {
-	    ApplicationContext result = null;
-	    
-	    // The app context is either provided explicitly:
-	    if (appContext != null)
-	    {
-	        result = appContext;
-	    }
-	    // or is implicitly accessed via another rule:
-	    else 
-	    {
-	        ApplicationContext contextFromRule = appContextRule.getApplicationContext();
-	        if (contextFromRule != null)
-	        {
-	            result = contextFromRule;
-	        }
-	        else
-	        {
-	            throw new NullPointerException("Cannot retrieve application context from provided rule.");
-	        }
-	    }
-	    
-	    return result;
-	}
+    /**
+     * @param appContextRule
+     *            {@link ApplicationContextInit} rule used to provide ApplicationContext to sub classes.
+     */
+    protected AbstractRule(ApplicationContextInit appContextRule)
+    {
+        ParameterCheck.mandatory("appContextRule", appContextRule);
+
+        this.appContext = null;
+        this.appContextRule = appContextRule;
+    }
+
+    /**
+     * This method provides the spring application context to subclasses. It either provides the explicit ApplicationContext, passed in at construction time, or retrieves it from the {@link ApplicationContextInit} rule, passed in the alternative constructor.
+     * 
+     * @return the spring application context
+     * @throws NullPointerException
+     *             if the application context has not been initialised when requested.
+     */
+    protected ApplicationContext getApplicationContext()
+    {
+        ApplicationContext result = null;
+
+        // The app context is either provided explicitly:
+        if (appContext != null)
+        {
+            result = appContext;
+        }
+        // or is implicitly accessed via another rule:
+        else
+        {
+            ApplicationContext contextFromRule = appContextRule.getApplicationContext();
+            if (contextFromRule != null)
+            {
+                result = contextFromRule;
+            }
+            else
+            {
+                throw new NullPointerException("Cannot retrieve application context from provided rule.");
+            }
+        }
+
+        return result;
+    }
 
 }

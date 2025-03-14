@@ -49,15 +49,17 @@ public class Classification extends BaseTemplateProcessorExtension
     /**
      * Sets the service registry
      * 
-     * @param services  the service registry
+     * @param services
+     *            the service registry
      */
     public void setServiceRegistry(ServiceRegistry services)
     {
         this.services = services;
     }
-    
+
     /**
-     * @param storeUrl  The store ref url to set.
+     * @param storeUrl
+     *            The store ref url to set.
      */
     public void setStoreUrl(String storeUrl)
     {
@@ -76,7 +78,7 @@ public class Classification extends BaseTemplateProcessorExtension
         return buildCategoryNodes(services.getCategoryService().getCategories(storeRef, createQName(aspect),
                 CategoryService.Depth.ANY));
     }
-    
+
     /**
      * Find all the category nodes in a given classification.
      * 
@@ -113,7 +115,6 @@ public class Classification extends BaseTemplateProcessorExtension
         return buildCategoryNodes(services.getCategoryService().getRootCategories(storeRef, createQName(aspect)));
     }
 
-    
     private List<CategoryTemplateNode> buildCategoryNodes(Collection<ChildAssociationRef> cars)
     {
         ArrayList<CategoryTemplateNode> categoryNodes = new ArrayList<CategoryTemplateNode>(cars.size());

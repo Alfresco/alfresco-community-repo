@@ -36,8 +36,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Registers and contains the behaviour specific to the
- * {@link org.alfresco.model.ContentModel#ASPECT_PENDING_DELETE 'pending delete' aspect}.
+ * Registers and contains the behaviour specific to the {@link org.alfresco.model.ContentModel#ASPECT_PENDING_DELETE 'pending delete' aspect}.
  * 
  * @author Derek Hulley
  * @since 4.1.1
@@ -47,13 +46,14 @@ public class PendingDeleteAspect implements CopyServicePolicies.OnCopyNodePolicy
     private PolicyComponent policyComponent;
 
     /**
-     * @param policyComponent the policy component to register behaviour with
+     * @param policyComponent
+     *            the policy component to register behaviour with
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
+
     /**
      * @see #getCopyCallback(QName, CopyDetails)
      */
@@ -67,7 +67,7 @@ public class PendingDeleteAspect implements CopyServicePolicies.OnCopyNodePolicy
     }
 
     /**
-     * @return          Returns {@link DoNothingCopyBehaviourCallback}
+     * @return Returns {@link DoNothingCopyBehaviourCallback}
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {

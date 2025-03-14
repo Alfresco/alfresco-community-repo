@@ -67,13 +67,12 @@ public class SortClause
     private boolean ascending;
 
     public SortClause()
-    {
-    }
+    {}
 
     @JsonCreator
     public SortClause(@JsonProperty("type") String type,
-                   @JsonProperty("field")  String field,
-                   @JsonProperty("ascending") boolean ascending)
+            @JsonProperty("field") String field,
+            @JsonProperty("ascending") boolean ascending)
     {
         this.type = type;
         this.field = field;
@@ -95,24 +94,30 @@ public class SortClause
         return ascending;
     }
 
-    public void setType(String type) {
+    public void setType(String type)
+    {
         this.type = type;
     }
 
-    public void setField(String field) {
+    public void setField(String field)
+    {
         this.field = field;
     }
 
-    public void setAscending(boolean ascending) {
+    public void setAscending(boolean ascending)
+    {
         this.ascending = ascending;
     }
 
     /**
      * Shortcut method for creating a sort clause.
      *
-     * @param type the sort type (e.g. FIELD)
-     * @param fieldname the field name.
-     * @param ascending ascending (true) or descending (false).
+     * @param type
+     *            the sort type (e.g. FIELD)
+     * @param fieldname
+     *            the field name.
+     * @param ascending
+     *            ascending (true) or descending (false).
      * @return a new {@link SortClause} instance.
      */
     public static SortClause from(String type, String fieldname, boolean ascending)

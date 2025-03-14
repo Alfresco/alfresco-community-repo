@@ -34,10 +34,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.xml.sax.SAXException;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -59,9 +62,6 @@ import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.xml.sax.SAXException;
 
 /**
  * Implementation of TransferReporter
@@ -71,42 +71,42 @@ public class TransferReporterImpl implements TransferReporter
 {
     private NodeService nodeService;
     private ContentService contentService;
-    
+
     private static Log logger = LogFactory.getLog(TransferReporterImpl.class);
-    
+
     /** Default encoding **/
     private static String DEFAULT_ENCODING = "UTF-8";
-    
+
     public void init()
     {
         PropertyCheck.mandatory(this, "nodeService", nodeService);
         PropertyCheck.mandatory(this, "contentService", contentService);
     }
-    
+
     public NodeRef createDestinationTransferReport(TransferTarget target)
     {
         return null;
-        
+
     }
-    
+
     /**
      * Write exception transfer report
      * 
      * @return NodeRef the node ref of the new transfer report
      */
     public NodeRef createTransferReport(String transferName,
-                Exception e, 
-                TransferTarget target,
-                TransferDefinition definition, 
-                List<TransferEvent> events, 
-                File snapshotFile)
+            Exception e,
+            TransferTarget target,
+            TransferDefinition definition,
+            List<TransferEvent> events,
+            File snapshotFile)
     {
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable> ();
-        
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+
         String title = transferName;
         String description = "Transfer Report - target: " + target.getName();
         String name = transferName + ".xml";
-        
+
         properties.put(ContentModel.PROP_NAME, name);
         properties.put(ContentModel.PROP_TITLE, title);
         properties.put(ContentModel.PROP_DESCRIPTION, description);
@@ -115,28 +115,28 @@ public class TransferReporterImpl implements TransferReporter
         writer.setLocale(Locale.getDefault());
         writer.setMimetype(MimetypeMap.MIMETYPE_XML);
         writer.setEncoding(DEFAULT_ENCODING);
-        
+
         XMLTransferReportWriter reportWriter = new XMLTransferReportWriter();
-        
+
         BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(writer.getContentOutputStream()));
 
         try
         {
             reportWriter.startTransferReport(DEFAULT_ENCODING, bufferedWriter);
-            
+
             reportWriter.writeTarget(target);
-            
+
             reportWriter.writeDefinition(definition);
-            
+
             reportWriter.writeException(e);
-            
+
             reportWriter.writeTransferEvents(events);
-            
+
             reportWriter.endTransferReport();
-            
+
             return ref.getChildRef();
         }
-        
+
         catch (SAXException se)
         {
             return null;
@@ -153,25 +153,25 @@ public class TransferReporterImpl implements TransferReporter
             }
         }
     }
-    
+
     /**
      * Create a new transfer report of success
      * 
      * @return NodeRef the node ref of the new transfer report
      */
     public NodeRef createTransferReport(String transferName,
-                Transfer transfer, 
-                TransferTarget target,
-                TransferDefinition definition, 
-                List<TransferEvent> events, 
-                File snapshotFile)
+            Transfer transfer,
+            TransferTarget target,
+            TransferDefinition definition,
+            List<TransferEvent> events,
+            File snapshotFile)
     {
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable> ();
-               
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+
         String title = transferName;
         String description = "Transfer Report - target: " + target.getName();
         String name = transferName + ".xml";
-        
+
         properties.put(ContentModel.PROP_NAME, name);
         properties.put(ContentModel.PROP_TITLE, title);
         properties.put(ContentModel.PROP_DESCRIPTION, description);
@@ -180,45 +180,32 @@ public class TransferReporterImpl implements TransferReporter
         writer.setLocale(Locale.getDefault());
         writer.setMimetype(MimetypeMap.MIMETYPE_XML);
         writer.setEncoding(DEFAULT_ENCODING);
-        
+
         //
         final XMLTransferReportWriter reportWriter = new XMLTransferReportWriter();
-        
+
         BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(writer.getContentOutputStream()));
 
         try
         {
             reportWriter.startTransferReport(DEFAULT_ENCODING, bufferedWriter);
-            
+
             // Header
             reportWriter.writeTarget(target);
-            
+
             // Definition of transfer
             reportWriter.writeDefinition(definition);
-            
+
             // Events of transfer
             reportWriter.writeTransferEvents(events);
-            
+
             /**
              * Write the node summary details to the transfer report
              */
-            TransferManifestProcessor processor = new TransferManifestProcessor()
-            {
-                public void processTransferManifestNode(TransferManifestNormalNode node) 
+            TransferManifestProcessor processor = new TransferManifestProcessor() {
+                public void processTransferManifestNode(TransferManifestNormalNode node)
                 {
-                    
-                    try
-                    {
-                        reportWriter.writeNodeSummary(node);
-                    }
-                    catch (SAXException error)
-                    {
-                        error.printStackTrace();
-                    }
-                }
-                
-                public void processTransferManifestNode(TransferManifestDeletedNode node)
-                { 
+
                     try
                     {
                         reportWriter.writeNodeSummary(node);
@@ -229,17 +216,34 @@ public class TransferReporterImpl implements TransferReporter
                     }
                 }
 
-                public void processTransferManifiestHeader(TransferManifestHeader header){/* NO-OP */ }
-                public void startTransferManifest(){ /* NO-OP */ }
-                public void endTransferManifest(){ /* NO-OP */ }
+                public void processTransferManifestNode(TransferManifestDeletedNode node)
+                {
+                    try
+                    {
+                        reportWriter.writeNodeSummary(node);
+                    }
+                    catch (SAXException error)
+                    {
+                        error.printStackTrace();
+                    }
+                }
+
+                public void processTransferManifiestHeader(TransferManifestHeader header)
+                {/* NO-OP */ }
+
+                public void startTransferManifest()
+                { /* NO-OP */ }
+
+                public void endTransferManifest()
+                { /* NO-OP */ }
             };
-            
+
             /**
              * Step 3: wire up the manifest reader to a manifest processor
              */
             SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
             SAXParser parser;
-            parser = saxParserFactory.newSAXParser();                   
+            parser = saxParserFactory.newSAXParser();
             XMLTransferManifestReader reader = new XMLTransferManifestReader(processor);
 
             /**
@@ -251,19 +255,19 @@ public class TransferReporterImpl implements TransferReporter
             }
             catch (IOException error)
             {
-                //TODO temp code
+                // TODO temp code
                 error.printStackTrace();
                 return null;
             }
-              
+
             reportWriter.endTransferReport();
-            
+
             return ref.getChildRef();
         }
-        
+
         catch (SAXException se)
         {
-            //TODO Temp code
+            // TODO Temp code
             return null;
         }
         catch (ParserConfigurationException error)
@@ -284,44 +288,43 @@ public class TransferReporterImpl implements TransferReporter
             }
         }
     }
-    
+
     /*
      */
     public NodeRef writeDestinationReport(String transferName,
             TransferTarget target,
             File tempFile)
     {
-       
+
         String title = transferName + "_destination";
         String description = "Transfer Destination Report - target: " + target.getName();
         String name = title + ".xml";
-        
+
         logger.debug("writing destination transfer report " + title);
         logger.debug("parent node ref " + target.getNodeRef());
-        
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable> ();
+
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_NAME, name);
         properties.put(ContentModel.PROP_TITLE, title);
         properties.put(ContentModel.PROP_DESCRIPTION, description);
-        ChildAssociationRef ref = nodeService.createNode(target.getNodeRef(), 
-                ContentModel.ASSOC_CONTAINS, 
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name), 
-                TransferModel.TYPE_TRANSFER_REPORT_DEST, 
+        ChildAssociationRef ref = nodeService.createNode(target.getNodeRef(),
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
+                TransferModel.TYPE_TRANSFER_REPORT_DEST,
                 properties);
-        
-        ContentWriter writer = contentService.getWriter(ref.getChildRef(), 
+
+        ContentWriter writer = contentService.getWriter(ref.getChildRef(),
                 ContentModel.PROP_CONTENT, true);
         writer.setLocale(Locale.getDefault());
         writer.setMimetype(MimetypeMap.MIMETYPE_XML);
         writer.setEncoding(DEFAULT_ENCODING);
         writer.putContent(tempFile);
-        
+
         logger.debug("written " + name + ", " + ref.getChildRef());
-        
+
         return ref.getChildRef();
     }
-    
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -341,6 +344,5 @@ public class TransferReporterImpl implements TransferReporter
     {
         return contentService;
     }
-
 
 }

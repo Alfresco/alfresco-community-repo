@@ -31,12 +31,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService;
-import org.alfresco.module.org_alfresco_module_rm.script.AbstractRmWebScript;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService;
+import org.alfresco.module.org_alfresco_module_rm.script.AbstractRmWebScript;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * REST API to get the recorded version config for a document
@@ -62,7 +63,8 @@ public class RecordedVersionConfigGet extends AbstractRmWebScript
     /**
      * Sets the recordable version config service
      *
-     * @param recordableVersionConfigService The recordable version config service
+     * @param recordableVersionConfigService
+     *            The recordable version config service
      */
     public void setRecordableVersionConfigService(RecordableVersionConfigService recordableVersionConfigService)
     {
@@ -70,9 +72,7 @@ public class RecordedVersionConfigGet extends AbstractRmWebScript
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *          org.springframework.extensions.webscripts.Status,
-     *          org.springframework.extensions.webscripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)

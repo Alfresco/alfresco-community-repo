@@ -27,13 +27,13 @@ package org.alfresco.repo.domain.schema.script;
 
 import java.io.File;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+
 /**
- * {@link ScriptBundleExecutor} implementation. Uses the supplied {@link ScriptExecutor}
- * to invoke multiple SQL scripts in a particular directory.
+ * {@link ScriptBundleExecutor} implementation. Uses the supplied {@link ScriptExecutor} to invoke multiple SQL scripts in a particular directory.
  * 
  * @author Matt Ward
  * @author Derek Hulley
@@ -42,7 +42,7 @@ public class ScriptBundleExecutorImpl implements ScriptBundleExecutor
 {
     private ScriptExecutor scriptExecutor;
     protected Log log = LogFactory.getLog(ScriptBundleExecutorImpl.class);
-    
+
     public ScriptBundleExecutorImpl(ScriptExecutor scriptExecutor)
     {
         this.scriptExecutor = scriptExecutor;
@@ -81,7 +81,7 @@ public class ScriptBundleExecutorImpl implements ScriptBundleExecutor
     {
         this.exec(true, dir, scripts);
     }
-    
+
     @Override
     public void execWithPostScript(String dir, String postScript, String... scripts)
     {
@@ -90,7 +90,7 @@ public class ScriptBundleExecutorImpl implements ScriptBundleExecutor
             exec(true, dir, scripts);
         }
         finally
-        {            
+        {
             // Always run the post-script.
             exec(true, dir, postScript);
         }

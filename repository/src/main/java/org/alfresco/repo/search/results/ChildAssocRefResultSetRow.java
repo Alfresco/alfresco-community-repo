@@ -35,6 +35,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Row in child assoc ref result set.
+ * 
  * @author andyh
  *
  */
@@ -42,8 +43,11 @@ public class ChildAssocRefResultSetRow extends AbstractResultSetRow
 {
     /**
      * Row in child assoc ref result set
-     * @param resultSet ChildAssocRefResultSet
-     * @param index int
+     * 
+     * @param resultSet
+     *            ChildAssocRefResultSet
+     * @param index
+     *            int
      */
     public ChildAssocRefResultSetRow(ChildAssocRefResultSet resultSet, int index)
     {
@@ -52,18 +56,18 @@ public class ChildAssocRefResultSetRow extends AbstractResultSetRow
 
     public QName getQName()
     {
-        return ((ChildAssocRefResultSet)getResultSet()).getChildAssocRef(getIndex()).getQName();
+        return ((ChildAssocRefResultSet) getResultSet()).getChildAssocRef(getIndex()).getQName();
     }
 
     @Override
     protected Map<QName, Serializable> getDirectProperties()
     {
-        return ((ChildAssocRefResultSet)getResultSet()).getNodeService().getProperties(getNodeRef());
+        return ((ChildAssocRefResultSet) getResultSet()).getNodeService().getProperties(getNodeRef());
     }
 
     public ChildAssociationRef getChildAssocRef()
     {
-        return ((ChildAssocRefResultSet)getResultSet()).getChildAssocRef(getIndex());
+        return ((ChildAssocRefResultSet) getResultSet()).getChildAssocRef(getIndex());
     }
 
     public NodeRef getNodeRef(String selectorName)

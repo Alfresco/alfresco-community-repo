@@ -32,14 +32,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.service.cmr.dictionary.AssociationDefinition;
-import org.alfresco.service.cmr.dictionary.ClassDefinition;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Webscript to get the Classdefinitions using classfilter , namespaceprefix and name
@@ -177,16 +178,20 @@ public abstract class AbstractClassesGet extends DictionaryWebServiceBase
     }
 
     /**
-     * @param namespacePrefix - namespace prefix of the class
-     * @param name - local name of the class
+     * @param namespacePrefix
+     *            - namespace prefix of the class
+     * @param name
+     *            - local name of the class
      * @return qualified name for model
      */
     protected abstract QName getQNameForModel(String namespacePrefix, String name);
 
     /**
-     * @param namespacePrefix namespace prefix
-     * @param name name
-     * @return  qualified name for class
+     * @param namespacePrefix
+     *            namespace prefix
+     * @param name
+     *            name
+     * @return qualified name for class
      */
     protected abstract QName getClassQname(String namespacePrefix, String name);
 

@@ -25,7 +25,6 @@
  */
 package org.alfresco.service;
 
-
 /**
  * Base Exception of Service Exceptions.
  * 
@@ -37,12 +36,12 @@ public class ServiceException extends RuntimeException
 
     public ServiceException(String msg)
     {
-       super(msg);
+        super(msg);
     }
-    
+
     public ServiceException(String msg, Throwable cause)
     {
-       super(msg, cause);
+        super(msg, cause);
     }
 
 }

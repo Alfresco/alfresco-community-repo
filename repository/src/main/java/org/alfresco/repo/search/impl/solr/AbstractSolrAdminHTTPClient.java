@@ -30,11 +30,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.search.QueryParserException;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
@@ -44,9 +41,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.search.QueryParserException;
+
 /**
- * HTTP Client providing GET invocations to SOLR.
- * These invocations are used for the SOLR CoreAdmin API and for the SOLR Backup API.
+ * HTTP Client providing GET invocations to SOLR. These invocations are used for the SOLR CoreAdmin API and for the SOLR Backup API.
  * 
  * @author aborroy
  * @since 6.2
@@ -54,24 +53,27 @@ import org.json.JSONTokener;
  */
 public abstract class AbstractSolrAdminHTTPClient
 {
-    
+
     /**
-     * Executes an action or a command in SOLR using REST API 
+     * Executes an action or a command in SOLR using REST API
      * 
-     * @param httpClient HTTP Client to be used for the invocation
-     * @param url Complete URL of SOLR REST API Endpoint
+     * @param httpClient
+     *            HTTP Client to be used for the invocation
+     * @param url
+     *            Complete URL of SOLR REST API Endpoint
      * @return A JSON Object including SOLR response
      * @throws UnsupportedEncodingException
      */
-    protected JSONObject getOperation(HttpClient httpClient, String url) throws UnsupportedEncodingException 
+    protected JSONObject getOperation(HttpClient httpClient, String url) throws UnsupportedEncodingException
     {
 
         GetMethod get = new GetMethod(url);
-        
-        try {
-            
+
+        try
+        {
+
             httpClient.executeMethod(get);
-            if(get.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY || get.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY)
+            if (get.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY || get.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY)
             {
                 Header locationHeader = get.getResponseHeader("location");
                 if (locationHeader != null)
@@ -89,13 +91,13 @@ public abstract class AbstractSolrAdminHTTPClient
             Reader reader = new BufferedReader(new InputStreamReader(get.getResponseBodyAsStream(), get.getResponseCharSet()));
             JSONObject json = new JSONObject(new JSONTokener(reader));
             return json;
-            
+
         }
-        catch (IOException | JSONException e) 
+        catch (IOException | JSONException e)
         {
             throw new AlfrescoRuntimeException(e.getMessage(), e);
-        } 
-        finally 
+        }
+        finally
         {
             get.releaseConnection();
         }

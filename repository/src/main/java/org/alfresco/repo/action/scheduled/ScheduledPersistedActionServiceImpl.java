@@ -32,6 +32,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.quartz.Job;
+import org.quartz.JobBuilder;
+import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.Trigger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionModel;
@@ -57,26 +73,9 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.quartz.Job;
-import org.quartz.JobBuilder;
-import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.Trigger;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
- * A service which handles the scheduling of the execution of persisted actions.
- * It handles registering them with the Quartz scheduler on repository start,
- * and handles the edit, creation and deletion of them.
+ * A service which handles the scheduling of the execution of persisted actions. It handles registering them with the Quartz scheduler on repository start, and handles the edit, creation and deletion of them.
  * 
  * @author Nick Burch
  * @since 3.4
@@ -85,11 +84,11 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
 {
     protected static final String JOB_SCHEDULE_NODEREF = "ScheduleNodeRef";
     protected static final String JOB_ACTION_NODEREF = "ActionNodeRef";
-    
+
     protected NodeRef SCHEDULED_ACTION_ROOT_NODE_REF;
 
     protected static final Set<QName> ACTION_TYPES = new HashSet<QName>(Arrays
-                .asList(new QName[] { ActionModel.TYPE_ACTION_SCHEDULE }));
+            .asList(new QName[]{ActionModel.TYPE_ACTION_SCHEDULE}));
 
     protected static final String SCHEDULER_GROUP = "PersistedActions";
 
@@ -118,8 +117,7 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
     }
 
     /**
-     * Sets the node service to use during startup, which won't do permissions
-     * check etc
+     * Sets the node service to use during startup, which won't do permissions check etc
      */
     public void setStartupNodeService(NodeService startupNodeService)
     {
@@ -131,17 +129,16 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
         this.repositoryHelper = repositoryHelper;
     }
 
-    public void setRuntimeActionService(RuntimeActionService runtimeActionService) 
+    public void setRuntimeActionService(RuntimeActionService runtimeActionService)
     {
         this.runtimeActionService = runtimeActionService;
     }
 
-
     protected void locatePersistanceFolder()
     {
         // TODO: Use SearchService.selectNodes(repositoryHelper.getCompanyHome(), "/app:dictionary/Scheduled Actions");
-        //       Log error if result not found
-        //       Log warning if multiple results found
+        // Log error if result not found
+        // Log warning if multiple results found
         List<ChildAssociationRef> dictionaryAssocs = startupNodeService.getChildAssocs(
                 repositoryHelper.getCompanyHome(),
                 ContentModel.ASSOC_CONTAINS,
@@ -152,8 +149,8 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
         }
         NodeRef dataDictionary = dictionaryAssocs.get(0).getChildRef();
         List<ChildAssociationRef> scheduledAssocs = startupNodeService.getChildAssocs(
-                dataDictionary, 
-                ContentModel.ASSOC_CONTAINS, 
+                dataDictionary,
+                ContentModel.ASSOC_CONTAINS,
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Scheduled Actions"));
         if (scheduledAssocs.size() == 0)
         {
@@ -161,11 +158,9 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
         }
         SCHEDULED_ACTION_ROOT_NODE_REF = scheduledAssocs.get(0).getChildRef();
     }
-    
+
     /**
-     * Find all our previously persisted scheduled actions, and tell the
-     * scheduler to start handling them. Called by spring when startup is
-     * complete.
+     * Find all our previously persisted scheduled actions, and tell the scheduler to start handling them. Called by spring when startup is complete.
      */
     public void schedulePreviouslyPersisted()
     {
@@ -174,9 +169,9 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
         for (ScheduledPersistedAction action : actions)
         {
             // Only schedule if the action still exists
-            if(action.getActionNodeRef() != null)
+            if (action.getActionNodeRef() != null)
             {
-               addToScheduler((ScheduledPersistedActionImpl) action);
+                addToScheduler((ScheduledPersistedActionImpl) action);
             }
         }
     }
@@ -190,16 +185,15 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
     }
 
     /**
-     * Saves the changes to the schedule to the repository, and updates the
-     * Scheduler with any changed details.
+     * Saves the changes to the schedule to the repository, and updates the Scheduler with any changed details.
      */
     public void saveSchedule(ScheduledPersistedAction schedule)
     {
-        ScheduledPersistedActionImpl scheduleImpl = (ScheduledPersistedActionImpl)schedule;
+        ScheduledPersistedActionImpl scheduleImpl = (ScheduledPersistedActionImpl) schedule;
 
         // Remove if already there
         removeFromScheduler(scheduleImpl);
-        
+
         if (scheduleImpl.getPersistedAtNodeRef() == null)
         {
             // if not already persisted, create the persistent schedule
@@ -209,15 +203,15 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
         // update the persistent schedule with schedule properties
         updatePersistentSchedule(scheduleImpl);
 
-        // Add to the scheduler again 
+        // Add to the scheduler again
         addToScheduler(scheduleImpl);
     }
 
     private void createPersistentSchedule(ScheduledPersistedActionImpl schedule)
     {
         ChildAssociationRef childAssoc = nodeService.createNode(SCHEDULED_ACTION_ROOT_NODE_REF,
-                ContentModel.ASSOC_CONTAINS, QName.createQName(GUID.generate()), 
-                ActionModel.TYPE_ACTION_SCHEDULE); 
+                ContentModel.ASSOC_CONTAINS, QName.createQName(GUID.generate()),
+                ActionModel.TYPE_ACTION_SCHEDULE);
         schedule.setPersistedAtNodeRef(childAssoc.getChildRef());
     }
 
@@ -226,19 +220,19 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
         NodeRef nodeRef = schedule.getPersistedAtNodeRef();
         if (nodeRef == null)
             throw new IllegalStateException("Must be persisted first");
-        
+
         // update schedule properties
         nodeService.setProperty(nodeRef, ActionModel.PROP_START_DATE, schedule.getScheduleStart());
         nodeService.setProperty(nodeRef, ActionModel.PROP_INTERVAL_COUNT, schedule.getScheduleIntervalCount());
         IntervalPeriod period = schedule.getScheduleIntervalPeriod();
         nodeService.setProperty(nodeRef, ActionModel.PROP_INTERVAL_PERIOD, period == null ? null : period.name());
-        
+
         // We don't save the last executed at date here, that only gets changed
-        //  from within the execution loop
-        
+        // from within the execution loop
+
         // update scheduled action (represented as an association)
         // NOTE: can only associate to a single action from a schedule (as specified by the action model)
-        
+
         // update association to reflect updated schedule
         AssociationRef actionAssoc = findActionAssociationFromSchedule(nodeRef);
         NodeRef actionNodeRef = schedule.getActionNodeRef();
@@ -273,14 +267,13 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
             behaviourFilter.enableBehaviour(ActionModel.TYPE_ACTION_SCHEDULE);
         }
     }
-    
+
     /**
-     * Removes the schedule for the action, and cancels future executions of it.
-     * The persisted action is unchanged.
+     * Removes the schedule for the action, and cancels future executions of it. The persisted action is unchanged.
      */
     public void deleteSchedule(ScheduledPersistedAction schedule)
     {
-        ScheduledPersistedActionImpl scheduleImpl = (ScheduledPersistedActionImpl)schedule;
+        ScheduledPersistedActionImpl scheduleImpl = (ScheduledPersistedActionImpl) schedule;
         // Remove from the scheduler
         removeFromScheduler(scheduleImpl);
 
@@ -296,10 +289,10 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
 
         // NOTE: this will also cascade delete action association
         nodeService.deleteNode(nodeRef);
-        
+
         schedule.setPersistedAtNodeRef(null);
     }
-    
+
     @Override
     public ScheduledPersistedAction getSchedule(Action persistedAction)
     {
@@ -345,10 +338,10 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
     private List<ScheduledPersistedAction> listSchedules(NodeService nodeService)
     {
         List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(
-                    SCHEDULED_ACTION_ROOT_NODE_REF, ACTION_TYPES);
+                SCHEDULED_ACTION_ROOT_NODE_REF, ACTION_TYPES);
 
         List<ScheduledPersistedAction> scheduledActions = new ArrayList<ScheduledPersistedAction>(
-                    childAssocs.size());
+                childAssocs.size());
         for (ChildAssociationRef actionAssoc : childAssocs)
         {
             ScheduledPersistedActionImpl scheduleImpl = loadPersistentSchedule(actionAssoc.getChildRef());
@@ -362,7 +355,7 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
     {
         if (!nodeService.exists(schedule))
             return null;
-           
+
         // create action
         Action action = null;
         AssociationRef actionAssoc = findActionAssociationFromSchedule(schedule);
@@ -370,24 +363,24 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
         {
             action = runtimeActionService.createAction(actionAssoc.getTargetRef());
         }
-        
+
         // create schedule
         ScheduledPersistedActionImpl scheduleImpl = new ScheduledPersistedActionImpl(action);
         scheduleImpl.setPersistedAtNodeRef(schedule);
-        
-        scheduleImpl.setScheduleLastExecutedAt((Date)nodeService.getProperty(schedule, ActionModel.PROP_LAST_EXECUTED_AT));
-        
-        scheduleImpl.setScheduleStart((Date)nodeService.getProperty(schedule, ActionModel.PROP_START_DATE));
-        scheduleImpl.setScheduleIntervalCount((Integer)nodeService.getProperty(schedule, ActionModel.PROP_INTERVAL_COUNT));
-        String period = (String)nodeService.getProperty(schedule, ActionModel.PROP_INTERVAL_PERIOD);
+
+        scheduleImpl.setScheduleLastExecutedAt((Date) nodeService.getProperty(schedule, ActionModel.PROP_LAST_EXECUTED_AT));
+
+        scheduleImpl.setScheduleStart((Date) nodeService.getProperty(schedule, ActionModel.PROP_START_DATE));
+        scheduleImpl.setScheduleIntervalCount((Integer) nodeService.getProperty(schedule, ActionModel.PROP_INTERVAL_COUNT));
+        String period = (String) nodeService.getProperty(schedule, ActionModel.PROP_INTERVAL_PERIOD);
         if (period != null)
         {
             scheduleImpl.setScheduleIntervalPeriod(IntervalPeriod.valueOf(period));
         }
-        
+
         return scheduleImpl;
     }
-    
+
     private AssociationRef findActionAssociationFromSchedule(NodeRef schedule)
     {
         List<AssociationRef> assocs = nodeService.getTargetAssocs(schedule, ActionModel.ASSOC_SCHEDULED_ACTION);
@@ -398,7 +391,7 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
         }
         return actionAssoc;
     }
-    
+
     /**
      * Takes an entry out of the scheduler, if it's currently there.
      */
@@ -406,9 +399,9 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
     {
         // Jobs are indexed by the persisted node ref
         // So, only try to remove if persisted
-        if(schedule.getPersistedAtNodeRef() == null) 
-           return;
-       
+        if (schedule.getPersistedAtNodeRef() == null)
+            return;
+
         // Ask to remove it
         try
         {
@@ -422,11 +415,7 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
     }
 
     /**
-     * Builds up the Quartz details, and adds it to the Quartz
-     *  scheduler when the transaction completes.
-     * We have to wait for the transaction to finish, otherwise
-     *  Quartz may end up trying and failing to load the details
-     *  of a job that hasn't been committed to the repo yet!
+     * Builds up the Quartz details, and adds it to the Quartz scheduler when the transaction completes. We have to wait for the transaction to finish, otherwise Quartz may end up trying and failing to load the details of a job that hasn't been committed to the repo yet!
      */
     protected void addToScheduler(ScheduledPersistedActionImpl schedule)
     {
@@ -436,22 +425,22 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
 
         // As soon as the transaction commits, add it
         AlfrescoTransactionSupport.bindListener(
-           new TransactionListenerAdapter() {
-               @Override
-               public void afterCommit() {
-                  // Schedule it with Quartz
-                  try
-                  {
-                      scheduler.scheduleJob(details, trigger);
-                  }
-                  catch (SchedulerException e)
-                  {
-                      // Probably means scheduler is shutting down
-                      log.warn(e);
-                  }
-               }
-           }
-        );
+                new TransactionListenerAdapter() {
+                    @Override
+                    public void afterCommit()
+                    {
+                        // Schedule it with Quartz
+                        try
+                        {
+                            scheduler.scheduleJob(details, trigger);
+                        }
+                        catch (SchedulerException e)
+                        {
+                            // Probably means scheduler is shutting down
+                            log.warn(e);
+                        }
+                    }
+                });
     }
 
     protected JobDetail buildJobDetail(ScheduledPersistedActionImpl schedule)
@@ -465,113 +454,102 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
                 .setJobData(jobDataMap)
                 .build();
     }
-    
-    
+
     /**
-     * This is used to trigger the loading of previously persisted schedules on
-     *  an application startup. It is an additional bean to make the context
-     *  files cleaner.
+     * This is used to trigger the loading of previously persisted schedules on an application startup. It is an additional bean to make the context files cleaner.
      */
     public static class ScheduledPersistedActionServiceBootstrap extends AbstractLifecycleBean
     {
-       private ScheduledPersistedActionServiceImpl service;
-       private RetryingTransactionHelper txnHelper;
-       
-       public void setScheduledPersistedActionService(ScheduledPersistedActionServiceImpl scheduledPersistedActionService)
-       {
-          this.service = scheduledPersistedActionService;
-       }
-       
-       public void setTransactionHelper(RetryingTransactionHelper txnHelper)
-       {
-           this.txnHelper = txnHelper;
-       }
+        private ScheduledPersistedActionServiceImpl service;
+        private RetryingTransactionHelper txnHelper;
 
-       public void onBootstrap(ApplicationEvent event)
-       {
-           AuthenticationUtil.runAs(new RunAsWork<Object>()
-           {
-               public Object doWork()
-               {
-                   RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
-                   {
-                       public Object execute() throws Throwable
-                       {
-                           service.locatePersistanceFolder();
-                           service.schedulePreviouslyPersisted();
-                           return null;
-                       }
-                   };
-                   return txnHelper.doInTransaction(callback);
-               }
-           }, AuthenticationUtil.getSystemUserName());
-       }
-       
-       public void onShutdown(ApplicationEvent event)
-       {
-          // We don't need to do anything here, as the scheduler shutdown
-          //  will stop running our jobs for us
-       }
+        public void setScheduledPersistedActionService(ScheduledPersistedActionServiceImpl scheduledPersistedActionService)
+        {
+            this.service = scheduledPersistedActionService;
+        }
+
+        public void setTransactionHelper(RetryingTransactionHelper txnHelper)
+        {
+            this.txnHelper = txnHelper;
+        }
+
+        public void onBootstrap(ApplicationEvent event)
+        {
+            AuthenticationUtil.runAs(new RunAsWork<Object>() {
+                public Object doWork()
+                {
+                    RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>() {
+                        public Object execute() throws Throwable
+                        {
+                            service.locatePersistanceFolder();
+                            service.schedulePreviouslyPersisted();
+                            return null;
+                        }
+                    };
+                    return txnHelper.doInTransaction(callback);
+                }
+            }, AuthenticationUtil.getSystemUserName());
+        }
+
+        public void onShutdown(ApplicationEvent event)
+        {
+            // We don't need to do anything here, as the scheduler shutdown
+            // will stop running our jobs for us
+        }
     }
-    
+
     /**
-     * The thing that Quartz runs when the schedule fires.
-     * Handles fetching the action, and having it run asynchronously
+     * The thing that Quartz runs when the schedule fires. Handles fetching the action, and having it run asynchronously
      */
     public static class ScheduledJobWrapper implements Job, ApplicationContextAware
     {
-       private ActionService actionService;
-       private NodeService nodeService;
-       private TransactionService transactionService;
-       private RuntimeActionService runtimeActionService;
-       
-       public void setApplicationContext(ApplicationContext applicationContext)
-       {
-          nodeService = (NodeService)applicationContext.getBean("NodeService");
-          actionService = (ActionService)applicationContext.getBean("ActionService");
-          transactionService = (TransactionService)applicationContext.getBean("transactionService");
-          runtimeActionService = (RuntimeActionService)applicationContext.getBean("actionService");
-       }
+        private ActionService actionService;
+        private NodeService nodeService;
+        private TransactionService transactionService;
+        private RuntimeActionService runtimeActionService;
 
-       public void execute(final JobExecutionContext jobContext)
-       {
-          // Do all this work as system
-          // TODO - See if we can pinch some bits from the existing scheduled
-          //  actions around who to run as
-          AuthenticationUtil.setRunAsUserSystem();
-          
-          transactionService.getRetryingTransactionHelper().doInTransaction(
-             new RetryingTransactionCallback<Void>() {
-               public Void execute() throws Throwable {
-                  // Update the last run time on the schedule
-                  NodeRef scheduleNodeRef = new NodeRef(
-                        jobContext.getMergedJobDataMap().getString(JOB_SCHEDULE_NODEREF)
-                  );
-                  nodeService.setProperty(
-                         scheduleNodeRef, 
-                         ActionModel.PROP_LAST_EXECUTED_AT, 
-                         new Date()
-                  );
-                  
-                  // Create the action object
-                  NodeRef actionNodeRef = new NodeRef(
-                        jobContext.getMergedJobDataMap().getString(JOB_ACTION_NODEREF)
-                  );
-                  Action action = runtimeActionService.createAction(
-                        actionNodeRef
-                  );
-                  
-                  // Have it executed asynchronously
-                  actionService.executeAction(
-                        action, (NodeRef)null,
-                        false, true
-                  );
-                  
-                  // Real work starts when the transaction completes
-                  return null;
-               }
-             }, false, true
-          );
-       }
+        public void setApplicationContext(ApplicationContext applicationContext)
+        {
+            nodeService = (NodeService) applicationContext.getBean("NodeService");
+            actionService = (ActionService) applicationContext.getBean("ActionService");
+            transactionService = (TransactionService) applicationContext.getBean("transactionService");
+            runtimeActionService = (RuntimeActionService) applicationContext.getBean("actionService");
+        }
+
+        public void execute(final JobExecutionContext jobContext)
+        {
+            // Do all this work as system
+            // TODO - See if we can pinch some bits from the existing scheduled
+            // actions around who to run as
+            AuthenticationUtil.setRunAsUserSystem();
+
+            transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<Void>() {
+                        public Void execute() throws Throwable
+                        {
+                            // Update the last run time on the schedule
+                            NodeRef scheduleNodeRef = new NodeRef(
+                                    jobContext.getMergedJobDataMap().getString(JOB_SCHEDULE_NODEREF));
+                            nodeService.setProperty(
+                                    scheduleNodeRef,
+                                    ActionModel.PROP_LAST_EXECUTED_AT,
+                                    new Date());
+
+                            // Create the action object
+                            NodeRef actionNodeRef = new NodeRef(
+                                    jobContext.getMergedJobDataMap().getString(JOB_ACTION_NODEREF));
+                            Action action = runtimeActionService.createAction(
+                                    actionNodeRef);
+
+                            // Have it executed asynchronously
+                            actionService.executeAction(
+                                    action, (NodeRef) null,
+                                    false, true);
+
+                            // Real work starts when the transaction completes
+                            return null;
+                        }
+                    }, false, true);
+        }
     }
 }

@@ -26,6 +26,7 @@
 package org.alfresco.rest.model;
 
 import org.alfresco.rest.core.RestModels;
+
 /**
  * Handle collection of <RestPersonModel>
  * 

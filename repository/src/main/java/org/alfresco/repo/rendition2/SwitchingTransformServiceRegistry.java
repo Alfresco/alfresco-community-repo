@@ -25,10 +25,10 @@
  */
 package org.alfresco.repo.rendition2;
 
+import java.util.Map;
+
 import org.alfresco.transform.config.CoreFunction;
 import org.alfresco.transform.registry.TransformServiceRegistry;
-
-import java.util.Map;
 
 /**
  * A transform service registry that falls back between different implementations if not supported.
@@ -59,12 +59,12 @@ public class SwitchingTransformServiceRegistry implements TransformServiceRegist
         {
             long secondaryMaxSize = secondary.findMaxSize(sourceMimetype, targetMimetype, options, renditionName);
             maxSize = primaryMaxSize == 0
-                ? secondaryMaxSize
-                : secondaryMaxSize == 0
-                    ? primaryMaxSize
-                    : secondaryMaxSize == -1L
-                        ? Long.valueOf(-1L)
-                        : Long.valueOf(Math.max(primaryMaxSize, secondaryMaxSize));
+                    ? secondaryMaxSize
+                    : secondaryMaxSize == 0
+                            ? primaryMaxSize
+                            : secondaryMaxSize == -1L
+                                    ? Long.valueOf(-1L)
+                                    : Long.valueOf(Math.max(primaryMaxSize, secondaryMaxSize));
         }
         return maxSize;
     }

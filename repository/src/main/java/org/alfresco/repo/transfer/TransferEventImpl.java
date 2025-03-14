@@ -30,8 +30,8 @@ import java.util.Date;
 import org.alfresco.service.cmr.transfer.TransferEvent;
 
 /**
- * An abstract implementation of TransferEvent.
- * Also implements the operations required by RangedTransferEvent.
+ * An abstract implementation of TransferEvent. Also implements the operations required by RangedTransferEvent.
+ * 
  * @see TransferEvent
  * @see org.alfresco.service.cmr.transfer.RangedTransferEvent
  */
@@ -53,7 +53,7 @@ public abstract class TransferEventImpl implements TransferEvent
     {
         return time;
     }
-    
+
     public void setMessage(String message)
     {
         this.message = message;
@@ -63,7 +63,7 @@ public abstract class TransferEventImpl implements TransferEvent
     {
         this.range = range;
     }
-    
+
     public void setPosition(long position)
     {
         this.position = position;
@@ -93,57 +93,58 @@ public abstract class TransferEventImpl implements TransferEvent
     {
         return last;
     }
-    
+
     /**
      * The position in the range
+     * 
      * @return long
      */
     public long getPosition()
     {
-       return position; 
+        return position;
     }
-    
+
     /**
      * The maximum range
+     * 
      * @return long
      */
     public long getRange()
     {
         return range;
     }
-    
+
     /**
-     * A simple human readable summary of this event, the format of this string is 
-     * not guaranteed and is liable to change.
+     * A simple human readable summary of this event, the format of this string is not guaranteed and is liable to change.
      */
     public String toString()
     {
         return this.getClass().getSimpleName() + ", " + this.getTime() + ", " + this.getTransferState();
     }
-    
+
     public boolean equals(Object obj)
     {
-        if(obj != null)
+        if (obj != null)
         {
-            if(this.getClass().equals(obj.getClass()))
+            if (this.getClass().equals(obj.getClass()))
             {
-                TransferEventImpl other = (TransferEventImpl)obj;
-                if(other.getTransferState().equals(this.getTransferState()) && 
-                   other.getPosition() == this.getPosition() &&
-                   other.getTime().equals(this.getTime()))
+                TransferEventImpl other = (TransferEventImpl) obj;
+                if (other.getTransferState().equals(this.getTransferState()) &&
+                        other.getPosition() == this.getPosition() &&
+                        other.getTime().equals(this.getTime()))
                 {
-                        return true;
+                    return true;
                 }
             }
         }
         // not a match
         return false;
     }
-    
+
     public int hashCode()
     {
         // discard any high bits
-        return (int)this.getTime().getTime();
+        return (int) this.getTime().getTime();
     }
 
 }

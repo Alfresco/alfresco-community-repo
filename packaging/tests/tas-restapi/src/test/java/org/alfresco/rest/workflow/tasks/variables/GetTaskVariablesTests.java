@@ -1,5 +1,9 @@
 package org.alfresco.rest.workflow.tasks.variables;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
@@ -14,9 +18,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class GetTaskVariablesTests extends RestTest
 {
@@ -26,7 +27,7 @@ public class GetTaskVariablesTests extends RestTest
     private TaskModel taskModel;
     private RestVariableModelsCollection variableModels;
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         userWhoStartsTask = dataUser.createRandomTestUser();
@@ -35,8 +36,8 @@ public class GetTaskVariablesTests extends RestTest
         fileModel = dataContent.usingUser(userWhoStartsTask).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.SANITY,
             description = "Verify that user that started the process gets task variables")
     public void getTaskVariablesByUserWhoStartedProcess() throws Exception
     {
@@ -49,8 +50,8 @@ public class GetTaskVariablesTests extends RestTest
         variableModels.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.SANITY,
             description = "Verify that user that is involved in the process gets task variables")
     public void getTaskVariablesByUserInvolvedInProcess() throws Exception
     {
@@ -63,8 +64,8 @@ public class GetTaskVariablesTests extends RestTest
         variableModels.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.SANITY,
             description = "Verify that user that is not involved in the process gets task variables")
     public void getTaskVariablesUsingAnyUser() throws Exception
     {
@@ -77,8 +78,8 @@ public class GetTaskVariablesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.SANITY,
             description = "Verify that admin is able to  task variables")
     public void getTaskVariablesUsingAdmin() throws Exception
     {
@@ -91,9 +92,9 @@ public class GetTaskVariablesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         variableModels.assertThat().entriesListIsNotEmpty();
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify if get task variables request returns status code 404 when invalid taskId is used")
     public void getTaskVariablesUsingInvalidTaskId() throws Exception
     {
@@ -110,8 +111,8 @@ public class GetTaskVariablesTests extends RestTest
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify if get task variables request returns status code 404 when empty taskId is used")
     public void getTaskVariablesUsingEmptyTaskId() throws Exception
     {
@@ -123,8 +124,8 @@ public class GetTaskVariablesTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify if get task variables request returns status code 200 after the task is finished.")
     public void getTaskVariablesAfterFinishingTask() throws Exception
     {
@@ -136,8 +137,8 @@ public class GetTaskVariablesTests extends RestTest
         variableModels.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify if get task variables request returns status code 200 after the process is deleted (Task state is now completed.)")
     public void getTaskVariablesAfterDeletingProcess() throws Exception
     {
@@ -151,9 +152,8 @@ public class GetTaskVariablesTests extends RestTest
         variableModels.assertThat().entriesListIsNotEmpty();
     }
 
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify user gets task variables that matches a where clause.")
     public void getTaskVariablesWithWhereClauseAsParameter() throws Exception
     {
@@ -172,9 +172,9 @@ public class GetTaskVariablesTests extends RestTest
                 .and().paginationField("totalItems").is("30");
     }
 
-    @Bug(id="MNT-17438")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Bug(id = "MNT-17438")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify user gets task with 'maxItems' parameter")
     public void getTaskVariablesWithMaxItems() throws Exception
     {
@@ -185,10 +185,10 @@ public class GetTaskVariablesTests extends RestTest
         variableModels.assertThat().entriesListIsNotEmpty()
                 .and().paginationField("count").is("2");
     }
-    
-    @Bug(id="MNT-17438")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+
+    @Bug(id = "MNT-17438")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify user gets task with 'skipCount' parameter")
     public void getTaskVariablesWithSkipCount() throws Exception
     {
@@ -199,9 +199,9 @@ public class GetTaskVariablesTests extends RestTest
         variableModels.assertThat().entriesListIsNotEmpty()
                 .and().paginationField("count").is("20");
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify user cannot get task variables with invalid where clause.")
     public void getTaskVariablesWithInvalidWhereClauseAsParameter() throws Exception
     {
@@ -209,14 +209,14 @@ public class GetTaskVariablesTests extends RestTest
         variableModels = restClient.authenticateUser(userWhoStartsTask).where("scope='fake-where'")
                 .withWorkflowAPI().usingTask(taskModel).getTaskVariables();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-            .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_WHERE_QUERY, "Invalid value for 'scope' used in query: fake-where."))
-                          .containsErrorKey(RestErrorModel.INVALID_QUERY_ERRORKEY)
-                          .stackTraceIs(RestErrorModel.STACKTRACE)
-                          .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
+                .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_WHERE_QUERY, "Invalid value for 'scope' used in query: fake-where."))
+                .containsErrorKey(RestErrorModel.INVALID_QUERY_ERRORKEY)
+                .stackTraceIs(RestErrorModel.STACKTRACE)
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify user gets tasks variables with 'properties' parameter")
     public void getTaskVariablesWithValidProperties() throws Exception
     {
@@ -226,15 +226,15 @@ public class GetTaskVariablesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         variableModels.assertThat().entriesListIsNotEmpty();
         variableModels.getOneRandomEntry().onModel().assertThat()
-            .fieldsCount().is(2).and()
-            .field("type").isNull().and()
-            .field("value").isNull().and()
-            .field("scope").isNotEmpty().and()
-            .field("name").isNotEmpty();
+                .fieldsCount().is(2).and()
+                .field("type").isNull().and()
+                .field("value").isNull().and()
+                .field("scope").isNotEmpty().and()
+                .field("name").isNotEmpty();
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify user cannot get tasks variables with invalid 'properties' parameter")
     public void getTaskVariablesWithInvalidProperties() throws Exception
     {
@@ -243,10 +243,10 @@ public class GetTaskVariablesTests extends RestTest
                 .withWorkflowAPI().usingTask(taskModel).getTaskVariables();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         variableModels.getOneRandomEntry().onModel().assertThat()
-            .fieldsCount().is(0).and()
-            .field("type").isNull().and()
-            .field("value").isNull().and()
-            .field("scope").isNull().and()
-            .field("name").isNull();
+                .fieldsCount().is(0).and()
+                .field("type").isNull().and()
+                .field("value").isNull().and()
+                .field("scope").isNull().and()
+                .field("name").isNull();
     }
 }

@@ -28,13 +28,9 @@ package org.alfresco.repo.webdav;
 
 import java.util.Date;
 import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * Interface to represent WebDAV lock info. This interface mainly exists to allow
- * decoupling of the LockStore classes from the rest of the WebDAV code base
- * therefore allowing the LockStore related classes to live in the repository
- * project without creating a dependency on the remote-api project.
+ * Interface to represent WebDAV lock info. This interface mainly exists to allow decoupling of the LockStore classes from the rest of the WebDAV code base therefore allowing the LockStore related classes to live in the repository project without creating a dependency on the remote-api project.
  * 
  * @author Matt Ward
  */
@@ -50,7 +46,8 @@ public interface LockInfo
     /**
      * Setter for exclusive lock token
      * 
-     * @param token Lock token
+     * @param token
+     *            Lock token
      */
     void setExclusiveLockToken(String token);
 
@@ -64,7 +61,8 @@ public interface LockInfo
     /**
      * Setter for lock scope.
      * 
-     * @param scope String
+     * @param scope
+     *            String
      */
     void setScope(String scope);
 
@@ -78,7 +76,8 @@ public interface LockInfo
     /**
      * Setter for lock depth
      * 
-     * @param depth lock depth
+     * @param depth
+     *            lock depth
      */
     void setDepth(String depth);
 
@@ -104,7 +103,8 @@ public interface LockInfo
     /**
      * Adds new shared lock token to sharedLockTokens list.
      * 
-     * @param token The token to add.
+     * @param token
+     *            The token to add.
      */
     void addSharedLockToken(String token);
 
@@ -121,10 +121,9 @@ public interface LockInfo
      * @return String
      */
     String toJSON();
-    
+
     /**
-     * Whether this lock has expired. If no expiry is set (i.e. expires is null)
-     * then false is always returned.
+     * Whether this lock has expired. If no expiry is set (i.e. expires is null) then false is always returned.
      * 
      * @return true if expired.
      */
@@ -147,14 +146,16 @@ public interface LockInfo
     /**
      * Set the username of who owns the lock.
      * 
-     * @param owner Owner's username
+     * @param owner
+     *            Owner's username
      */
     void setOwner(String owner);
 
     /**
      * Set the expiry date/time for this lock. Set to null for never expires.
      * 
-     * @param expires the expires to set
+     * @param expires
+     *            the expires to set
      */
     void setExpires(Date expires);
 
@@ -164,7 +165,7 @@ public interface LockInfo
      * @return the expires
      */
     Date getExpires();
-    
+
     /**
      * Retrieve the remaining time before the lock expires, in seconds
      * 
@@ -173,18 +174,18 @@ public interface LockInfo
     long getRemainingTimeoutSeconds();
 
     /**
-     * Sets the expiry date/time to lockTimeout seconds into the future. Provide
-     * a lockTimeout of WebDAV.TIMEOUT_INFINITY for never expires.
+     * Sets the expiry date/time to lockTimeout seconds into the future. Provide a lockTimeout of WebDAV.TIMEOUT_INFINITY for never expires.
      * 
-     * @param lockTimeoutSecs int
+     * @param lockTimeoutSecs
+     *            int
      */
     void setTimeoutSeconds(int lockTimeoutSecs);
-    
+
     /**
-     * Sets the expiry date/time to lockTimeout minutes into the future. Provide
-     * a lockTimeout of WebDAV.TIMEOUT_INFINITY for never expires.
+     * Sets the expiry date/time to lockTimeout minutes into the future. Provide a lockTimeout of WebDAV.TIMEOUT_INFINITY for never expires.
      * 
-     * @param lockTimeoutMins int
+     * @param lockTimeoutMins
+     *            int
      */
     void setTimeoutMinutes(int lockTimeoutMins);
 }

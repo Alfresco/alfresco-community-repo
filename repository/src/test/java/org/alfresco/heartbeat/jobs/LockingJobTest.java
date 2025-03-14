@@ -25,13 +25,19 @@
  */
 package org.alfresco.heartbeat.jobs;
 
-import org.alfresco.heartbeat.HBBaseDataCollector;
-import org.alfresco.heartbeat.datasender.HBData;
-import org.alfresco.heartbeat.datasender.HBDataSenderService;
-import org.alfresco.heartbeat.jobs.LockingJob;
-import org.alfresco.repo.lock.JobLockService;
-import org.alfresco.repo.lock.LockAcquisitionException;
-import org.alfresco.service.namespace.QName;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -41,18 +47,12 @@ import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.alfresco.heartbeat.HBBaseDataCollector;
+import org.alfresco.heartbeat.datasender.HBData;
+import org.alfresco.heartbeat.datasender.HBDataSenderService;
+import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.LockAcquisitionException;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Created by mmuller on 27/10/2017.
@@ -77,7 +77,7 @@ public class LockingJobTest
 
         public SimpleHBDataCollector(String collectorId)
         {
-            super(collectorId,"1.0","0 0 0 ? * *", mockScheduler);
+            super(collectorId, "1.0", "0 0 0 ? * *", mockScheduler);
         }
 
         public List<HBData> collectData()
@@ -105,12 +105,10 @@ public class LockingJobTest
                 .build();
         when(mockJobExecutionContext.getJobDetail()).thenReturn(jobDetail);
 
-
         // collector job is not locked from an other collector
         String lockToken = "locked";
 
-        Runnable r1 = () ->
-        {
+        Runnable r1 = () -> {
             // if a second job tries to get the lock before we finished that will raise the exception
             when(mockJobLockService.getLock(isA(QName.class), anyLong())).thenReturn(lockToken).thenThrow(new LockAcquisitionException("", ""));
             try
@@ -127,8 +125,7 @@ public class LockingJobTest
                 when(mockJobLockService.getLock(isA(QName.class), anyLong())).thenReturn(lockToken);
             }
         };
-        Runnable r2 = () ->
-        {
+        Runnable r2 = () -> {
             try
             {
                 new LockingJob().execute(mockJobExecutionContext);
@@ -158,7 +155,6 @@ public class LockingJobTest
                 JobLockService.JobLockRefreshCallback.class));
     }
 
-
     @Test
     public void testJobLocking() throws Exception
     {
@@ -181,8 +177,8 @@ public class LockingJobTest
         // Simulate job lock service
         String lockToken = "token";
         when(mockJobLockService.getLock(isA(QName.class), anyLong()))
-                .thenReturn(lockToken)                                    // first job gets the lock
-                .thenThrow(new LockAcquisitionException("", ""));         // second job doesn't get the lock
+                .thenReturn(lockToken) // first job gets the lock
+                .thenThrow(new LockAcquisitionException("", "")); // second job doesn't get the lock
 
         // Run two heart beat jobs
         new LockingJob().execute(mockJobExecutionContext);

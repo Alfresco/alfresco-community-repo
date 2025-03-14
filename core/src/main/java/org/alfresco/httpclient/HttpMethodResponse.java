@@ -37,7 +37,7 @@ public class HttpMethodResponse implements Response
     {
         this.method = method;
     }
-    
+
     public void release()
     {
         method.releaseConnection();

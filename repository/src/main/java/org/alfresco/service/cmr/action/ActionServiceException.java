@@ -32,12 +32,12 @@ import org.alfresco.error.AlfrescoRuntimeException;
  * 
  * @author Roy Wetherall
  */
-public class ActionServiceException extends AlfrescoRuntimeException 
+public class ActionServiceException extends AlfrescoRuntimeException
 {
-	/**
-	 * Serial version UID 
-	 */
-	private static final long serialVersionUID = 3257571685241467958L;
+    /**
+     * Serial version UID
+     */
+    private static final long serialVersionUID = 3257571685241467958L;
 
     public ActionServiceException(String msgId)
     {

@@ -60,5 +60,5 @@ import org.junit.runners.Suite;
         org.alfresco.util.SearchDateConversionTest.class,
         org.alfresco.util.SearchLanguageConversionTest.class
 })
-public class AllDataModelUnitTestSuite {
-}
+public class AllDataModelUnitTestSuite
+{}

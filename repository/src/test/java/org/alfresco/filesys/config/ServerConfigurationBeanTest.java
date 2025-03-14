@@ -40,7 +40,7 @@ import org.junit.Test;
 public class ServerConfigurationBeanTest
 {
     private ServerConfigurationBean serverConf;
-    
+
     @Before
     public void setUp() throws Exception
     {
@@ -58,7 +58,7 @@ public class ServerConfigurationBeanTest
         threadPoolField.setAccessible(true);
         threadPoolField.set(serverConf, null);
         assertNull("Test precondition failure - threadPool is not null", threadPoolField.get(serverConf));
-        
+
         try
         {
             serverConf.destroy();

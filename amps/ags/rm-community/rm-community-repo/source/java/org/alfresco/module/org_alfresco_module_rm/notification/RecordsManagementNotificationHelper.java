@@ -34,6 +34,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -58,14 +63,9 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * Helper bean containing methods useful when sending records
- * management notifications via the {@link NotificationService}
+ * Helper bean containing methods useful when sending records management notifications via the {@link NotificationService}
  *
  * @author Roy Wetherall
  */
@@ -101,7 +101,8 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     private NodeRef rejectedTemplate = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "record_rejected_template");
 
     /**
-     * @param notificationService   notification service
+     * @param notificationService
+     *            notification service
      */
     public void setNotificationService(NotificationService notificationService)
     {
@@ -109,7 +110,8 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -117,7 +119,8 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     }
 
     /**
-     * @param filePlanRoleService   file plan role service
+     * @param filePlanRoleService
+     *            file plan role service
      */
     public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
@@ -125,7 +128,8 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     }
 
     /**
-     * @param notificationRole  rm notification role
+     * @param notificationRole
+     *            rm notification role
      */
     public void setNotificationRole(String notificationRole)
     {
@@ -133,7 +137,8 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     }
 
     /**
-     * @param searchService search service
+     * @param searchService
+     *            search service
      */
     public void setSearchService(SearchService searchService)
     {
@@ -141,7 +146,8 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     }
 
     /**
-     * @param namespaceService  namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -149,7 +155,8 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     }
 
     /**
-     * @param siteService   site service
+     * @param siteService
+     *            site service
      */
     public void setSiteService(SiteService siteService)
     {
@@ -157,7 +164,8 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     }
 
     /**
-     * @param authorityService  authority service
+     * @param authorityService
+     *            authority service
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
@@ -165,7 +173,8 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     }
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -173,7 +182,8 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     }
 
     /**
-     * @param tenantAdminService    tenant admin service
+     * @param tenantAdminService
+     *            tenant admin service
      */
     public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
@@ -181,7 +191,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     }
 
     /**
-     * @return  superseded email template
+     * @return superseded email template
      */
     public NodeRef getSupersededTemplate()
     {
@@ -189,7 +199,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     }
 
     /**
-     * @return  rejected email template
+     * @return rejected email template
      */
     public NodeRef getRejectedTemplate()
     {
@@ -197,18 +207,17 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     }
 
     /**
-     * @return  due for review email template
+     * @return due for review email template
      */
     public NodeRef getDueForReviewTemplate()
     {
         if (dueForReviewTemplate == null)
         {
-            List<NodeRef> nodeRefs =
-                searchService.selectNodes(
-                        getRootNode(),
-                        "app:company_home/app:dictionary/cm:records_management/cm:records_management_email_templates/cm:notify-records-due-for-review-email.ftl", null,
-                        namespaceService,
-                        false);
+            List<NodeRef> nodeRefs = searchService.selectNodes(
+                    getRootNode(),
+                    "app:company_home/app:dictionary/cm:records_management/cm:records_management_email_templates/cm:notify-records-due-for-review-email.ftl", null,
+                    namespaceService,
+                    false);
             if (nodeRefs.size() == 1)
             {
                 dueForReviewTemplate = nodeRefs.get(0);
@@ -220,13 +229,12 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     /**
      * Helper method to get root node in a tenant safe way.
      *
-     * @return  NodeRef root node of spaces store
+     * @return NodeRef root node of spaces store
      */
     private NodeRef getRootNode()
     {
         String tenantDomain = tenantAdminService.getCurrentUserDomain();
-        return TenantUtil.runAsSystemTenant(new TenantRunAsWork<NodeRef>()
-        {
+        return TenantUtil.runAsSystemTenant(new TenantRunAsWork<NodeRef>() {
             public NodeRef doWork()
             {
                 return nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
@@ -237,7 +245,8 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     /**
      * Sends records due for review email notification.
      *
-     * @param records   records due for review
+     * @param records
+     *            records due for review
      */
     public void recordsDueForReviewEmailNotification(final List<NodeRef> records)
     {
@@ -274,7 +283,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
                     }
 
                     throw new AlfrescoRuntimeException(
-                                "Unable to send record due for review email notification, because notification group was empty.");
+                            "Unable to send record due for review email notification, because notification group was empty.");
                 }
             }
         }
@@ -283,7 +292,8 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     /**
      * Sends record superseded email notification.
      *
-     * @param record    superseded record
+     * @param record
+     *            superseded record
      */
     public void recordSupersededEmailNotification(final NodeRef record)
     {
@@ -321,7 +331,8 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     /**
      * Sends record rejected email notification.
      *
-     * @param record    rejected record
+     * @param record
+     *            rejected record
      */
     public void recordRejectedEmailNotification(NodeRef record, String recordId, String recordCreator)
     {
@@ -360,7 +371,8 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     /**
      * Helper method to check if the mandatory properties are set
      *
-     * @param record    rejected record
+     * @param record
+     *            rejected record
      */
     private boolean canSendRejectEmail(NodeRef record, String recordCreator)
     {
@@ -401,13 +413,13 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     /**
      * Gets the rm root given a context node.
      *
-     * @param context   context node reference
-     * @return {@link NodeRef}  rm root node reference
+     * @param context
+     *            context node reference
+     * @return {@link NodeRef} rm root node reference
      */
     private NodeRef getRMRoot(final NodeRef context)
     {
-        return AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-        {
+        return AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
             @Override
             public NodeRef doWork()
             {
@@ -421,13 +433,13 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     /**
      * Gets the group name for the notification role.
      *
-     * @param root  rm root node
-     * @return String   notification role's group name
+     * @param root
+     *            rm root node
+     * @return String notification role's group name
      */
     private String getGroupName(final NodeRef root)
     {
-        return AuthenticationUtil.runAs(new RunAsWork<String>()
-        {
+        return AuthenticationUtil.runAs(new RunAsWork<String>() {
             @Override
             public String doWork()
             {
@@ -440,8 +452,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
 
     private boolean doesGroupContainUsers(final String groupName)
     {
-        return AuthenticationUtil.runAs(new RunAsWork<Boolean>()
-        {
+        return AuthenticationUtil.runAs(new RunAsWork<Boolean>() {
             @Override
             public Boolean doWork() throws Exception
             {
@@ -454,13 +465,13 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     /**
      * Get the site name, default if none/undetermined.
      *
-     * @param root  rm root
-     * @return String   site name
+     * @param root
+     *            rm root
+     * @return String site name
      */
     private String getSiteName(final NodeRef root)
     {
-        return AuthenticationUtil.runAs(new RunAsWork<String>()
-        {
+        return AuthenticationUtil.runAs(new RunAsWork<String>() {
             @Override
             public String doWork()
             {

@@ -60,10 +60,10 @@ public class TransferContainer
 
     public TransferContainer()
     {
-        //Default constructor
+        // Default constructor
     }
 
-    @JsonProperty ("id")
+    @JsonProperty("id")
     @UniqueId
     public NodeRef getNodeRef()
     {

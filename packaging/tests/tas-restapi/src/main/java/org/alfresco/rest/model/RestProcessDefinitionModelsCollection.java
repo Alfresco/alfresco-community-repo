@@ -32,24 +32,7 @@ import java.util.List;
 import org.alfresco.rest.core.RestModels;
 
 /**
- * Handle collection of <RestProcessDefinitionModel>
- * "entries": [
- * {
- * "entry": {
- * "deploymentId": "1",
- * "name": "Adhoc Activiti Process",
- * "description": "Assign a new task to yourself or a colleague",
- * "id": "activitiAdhoc:1:4",
- * "startFormResourceKey": "wf:submitAdhocTask",
- * "category": "http://alfresco.org",
- * "title": "New Task",
- * "version": 1,
- * "graphicNotationDefined": true,
- * "key": "activitiAdhoc"
- * }
- * },
- * ]
- * Created by Claudia Agache on 10/13/2016.
+ * Handle collection of <RestProcessDefinitionModel> "entries": [ { "entry": { "deploymentId": "1", "name": "Adhoc Activiti Process", "description": "Assign a new task to yourself or a colleague", "id": "activitiAdhoc:1:4", "startFormResourceKey": "wf:submitAdhocTask", "category": "http://alfresco.org", "title": "New Task", "version": 1, "graphicNotationDefined": true, "key": "activitiAdhoc" } }, ] Created by Claudia Agache on 10/13/2016.
  */
 public class RestProcessDefinitionModelsCollection extends RestModels<RestProcessDefinitionModel, RestProcessDefinitionModelsCollection>
 {
@@ -58,7 +41,7 @@ public class RestProcessDefinitionModelsCollection extends RestModels<RestProces
         STEP(String.format("REST API: Get process definition with deploymentId '%s'", deploymentId));
         List<RestProcessDefinitionModel> processDefinitionsList = getEntries();
 
-        for (RestProcessDefinitionModel processDefinitionEntry: processDefinitionsList)
+        for (RestProcessDefinitionModel processDefinitionEntry : processDefinitionsList)
         {
             if (processDefinitionEntry.onModel().getDeploymentId().equals(deploymentId))
             {
@@ -73,7 +56,7 @@ public class RestProcessDefinitionModelsCollection extends RestModels<RestProces
         STEP(String.format("REST API: Get process definition with id '%s'", id));
         List<RestProcessDefinitionModel> processDefinitionsList = getEntries();
 
-        for (RestProcessDefinitionModel processDefinitionEntry: processDefinitionsList)
+        for (RestProcessDefinitionModel processDefinitionEntry : processDefinitionsList)
         {
             if (processDefinitionEntry.onModel().getId().equals(id))
             {
@@ -88,7 +71,7 @@ public class RestProcessDefinitionModelsCollection extends RestModels<RestProces
         STEP(String.format("REST API: Get process definition with key '%s'", key));
         List<RestProcessDefinitionModel> processDefinitionsList = getEntries();
 
-        for (RestProcessDefinitionModel processDefinitionEntry: processDefinitionsList)
+        for (RestProcessDefinitionModel processDefinitionEntry : processDefinitionsList)
         {
             if (processDefinitionEntry.onModel().getKey().equals(key))
             {
@@ -97,4 +80,4 @@ public class RestProcessDefinitionModelsCollection extends RestModels<RestProces
         }
         return null;
     }
-}    
+}

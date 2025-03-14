@@ -51,16 +51,14 @@ public class CopyToAuditEvent extends AuditEvent implements OnCopyCompletePolicy
      * @see org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy#onCopyComplete(org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, boolean, java.util.Map)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            type = "rma:filePlanComponent"
-    )
+            type = "rma:filePlanComponent")
     public void onCopyComplete(QName classRef,
-                               NodeRef sourceNodeRef,
-                               NodeRef targetNodeRef,
-                               boolean copyToNewNode,
-                               Map<NodeRef, NodeRef> copyMap)
+            NodeRef sourceNodeRef,
+            NodeRef targetNodeRef,
+            boolean copyToNewNode,
+            Map<NodeRef, NodeRef> copyMap)
     {
         if (copyToNewNode)
         {

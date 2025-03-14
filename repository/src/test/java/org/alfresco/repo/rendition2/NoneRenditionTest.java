@@ -25,17 +25,17 @@
  */
 package org.alfresco.repo.rendition2;
 
-import org.alfresco.util.testing.category.DebugTests;
+import java.util.Collections;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Collections;
+import org.alfresco.util.testing.category.DebugTests;
 
 /**
- * Repeats quick file rendition tests with local transforms disabled.
- * The Transform Service does not exist for the Community edition.
+ * Repeats quick file rendition tests with local transforms disabled. The Transform Service does not exist for the Community edition.
  *
  * @author adavis
  */

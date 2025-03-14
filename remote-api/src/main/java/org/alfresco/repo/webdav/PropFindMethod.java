@@ -32,8 +32,18 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.dom4j.DocumentHelper;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -47,16 +57,6 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter;
 import org.alfresco.service.namespace.InvalidQNameException;
 import org.alfresco.service.namespace.QName;
-import org.dom4j.DocumentHelper;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * Implements the WebDAV PROPFIND method
@@ -66,9 +66,9 @@ import org.xml.sax.helpers.AttributesImpl;
 public class PropFindMethod extends WebDAVMethod
 {
     // Request types
-	protected static final int GET_ALL_PROPS = 0;
-	protected static final int GET_NAMED_PROPS = 1;
-	protected static final int FIND_PROPS = 2;
+    protected static final int GET_ALL_PROPS = 0;
+    protected static final int GET_NAMED_PROPS = 1;
+    protected static final int FIND_PROPS = 2;
 
     // Find request type
     protected int m_mode = GET_ALL_PROPS;
@@ -107,7 +107,7 @@ public class PropFindMethod extends WebDAVMethod
         // Store the Depth header as this is used by several WebDAV methods
 
         parseDepthHeader();
-        
+
     }
 
     /**
@@ -172,14 +172,14 @@ public class PropFindMethod extends WebDAVMethod
     }
 
     /**
-     * @return          Returns <tt>true</tt> always
+     * @return Returns <tt>true</tt> always
      */
     @Override
     protected boolean isReadOnly()
     {
         return true;
     }
-    
+
     /**
      * Execute the main WebDAV request processing
      * 
@@ -188,7 +188,7 @@ public class PropFindMethod extends WebDAVMethod
     protected void executeImpl() throws WebDAVServerException, Exception
     {
         m_response.setStatus(WebDAV.WEBDAV_SC_MULTI_STATUS);
-        
+
         FileInfo pathNodeInfo = null;
         try
         {
@@ -200,12 +200,12 @@ public class PropFindMethod extends WebDAVMethod
             // The path is not valid - send a 404 error back to the client
             throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);
         }
-        
+
         // A node hidden during a 'shuffle' operation - send a 404 error back to the client, as some Mac clients need this
         // Note the null check, as root node may be null in cloud.
         if (pathNodeInfo.getNodeRef() != null && getFileFolderService().isHidden(pathNodeInfo.getNodeRef()))
         {
-            throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);            
+            throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);
         }
 
         // Set the response content type
@@ -273,13 +273,13 @@ public class PropFindMethod extends WebDAVMethod
                 {
                     // Get the list of child nodes for the current node
                     List<FileInfo> childNodeInfos = getDAVHelper().getChildren(curNodeInfo);
-                    
+
                     // can skip the current node if it doesn't have children
                     if (childNodeInfos.size() == 0)
                     {
                         continue;
                     }
-                    
+
                     // Output the child node details
                     // Generate the base path for the current parent node
 
@@ -296,7 +296,7 @@ public class PropFindMethod extends WebDAVMethod
                         {
                             pathSnippet = getDAVHelper().getPathFromNode(pathNodeInfo.getNodeRef(), curNodeInfo.getNodeRef());
                         }
-                        
+
                         baseBuild.append(pathSnippet);
                     }
                     catch (FileNotFoundException e)
@@ -310,19 +310,19 @@ public class PropFindMethod extends WebDAVMethod
                     // Output the child node details
                     for (FileInfo curChildInfo : childNodeInfos)
                     {
-	                // Build the path for the current child node
-	                baseBuild.setLength(curBaseLen);
-	
-	                baseBuild.append(curChildInfo.getName());
-	
-	                // Output the current child node details
-	                generateResponseForNode(xml, curChildInfo, baseBuild.toString());
-	
-	                // If the child is a folder add it to the list of next level nodes
-	                if (nextNodeInfos != null && curChildInfo.isFolder())
-	                {
-	                    nextNodeInfos.add(curChildInfo);
-	                }
+                        // Build the path for the current child node
+                        baseBuild.setLength(curBaseLen);
+
+                        baseBuild.append(curChildInfo.getName());
+
+                        // Output the current child node details
+                        generateResponseForNode(xml, curChildInfo, baseBuild.toString());
+
+                        // If the child is a folder add it to the list of next level nodes
+                        if (nextNodeInfos != null && curChildInfo.isFolder())
+                        {
+                            nextNodeInfos.add(curChildInfo);
+                        }
                     }
                 }
 
@@ -372,8 +372,7 @@ public class PropFindMethod extends WebDAVMethod
     }
 
     /**
-     * Retrieves the namespace name for the given namespace URI, one is
-     * generated if it doesn't exist
+     * Retrieves the namespace name for the given namespace URI, one is generated if it doesn't exist
      */
     private String getNamespaceName(String strNamespaceUri)
     {
@@ -394,14 +393,17 @@ public class PropFindMethod extends WebDAVMethod
     /**
      * Generates the required response XML for the current node
      * 
-     * @param xml XMLWriter
-     * @param nodeInfo FileInfo
-     * @param path String
+     * @param xml
+     *            XMLWriter
+     * @param nodeInfo
+     *            FileInfo
+     * @param path
+     *            String
      */
     protected void generateResponseForNode(XMLWriter xml, FileInfo nodeInfo, String path) throws Exception
     {
         boolean isFolder = nodeInfo.isFolder();
-        
+
         // Output the response block for the current node
         xml.startElement(
                 WebDAV.DAV_NS,
@@ -434,12 +436,14 @@ public class PropFindMethod extends WebDAVMethod
     }
 
     /**
-     * Generates the XML response for a PROPFIND request that asks for a
-     * specific set of properties
+     * Generates the XML response for a PROPFIND request that asks for a specific set of properties
      * 
-     * @param xml XMLWriter
-     * @param nodeInfo FileInfo
-     * @param isDir boolean
+     * @param xml
+     *            XMLWriter
+     * @param nodeInfo
+     *            FileInfo
+     * @param isDir
+     *            boolean
      */
     private void generateNamedPropertiesResponse(XMLWriter xml, FileInfo nodeInfo, boolean isDir) throws Exception
     {
@@ -604,15 +608,15 @@ public class PropFindMethod extends WebDAVMethod
                         xml.write(WebDAV.formatCreationDate(typeConv.convert(Date.class, davValue)));
                     xml.endElement(WebDAV.DAV_NS, WebDAV.XML_CREATION_DATE, WebDAV.XML_NS_CREATION_DATE);
                 }
-                else if ( propName.equals( WebDAV.XML_ALF_AUTHTICKET))
+                else if (propName.equals(WebDAV.XML_ALF_AUTHTICKET))
                 {
-                	// Get the users authentication ticket
-                	
-                    SessionUser davUser = (SessionUser) m_request.getSession().getAttribute( AuthenticationFilter.AUTHENTICATION_USER);
-                    
+                    // Get the users authentication ticket
+
+                    SessionUser davUser = (SessionUser) m_request.getSession().getAttribute(AuthenticationFilter.AUTHENTICATION_USER);
+
                     xml.startElement(WebDAV.DAV_NS, WebDAV.XML_ALF_AUTHTICKET, WebDAV.XML_NS_ALF_AUTHTICKET, nullAttr);
-                    if ( davUser != null)
-                    	xml.write( davUser.getTicket());
+                    if (davUser != null)
+                        xml.write(davUser.getTicket());
                     xml.endElement(WebDAV.DAV_NS, WebDAV.XML_ALF_AUTHTICKET, WebDAV.XML_NS_ALF_AUTHTICKET);
                 }
                 else
@@ -626,7 +630,7 @@ public class PropFindMethod extends WebDAVMethod
             {
                 // Look in the custom properties
 
-//                String qualifiedName = propNamespaceUri + WebDAV.NAMESPACE_SEPARATOR + propName;
+                // String qualifiedName = propNamespaceUri + WebDAV.NAMESPACE_SEPARATOR + propName;
 
                 String value = (String) nodeInfo.getProperties().get(property.createQName());
                 if (value == null)
@@ -709,12 +713,14 @@ public class PropFindMethod extends WebDAVMethod
     }
 
     /**
-     * Generates the XML response for a PROPFIND request that asks for all known
-     * properties
+     * Generates the XML response for a PROPFIND request that asks for all known properties
      * 
-     * @param xml XMLWriter
-     * @param nodeInfo FileInfo
-     * @param isDir boolean
+     * @param xml
+     *            XMLWriter
+     * @param nodeInfo
+     *            FileInfo
+     * @param isDir
+     *            boolean
      */
     protected void generateAllPropertiesResponse(XMLWriter xml, FileInfo nodeInfo, boolean isDir) throws Exception
     {
@@ -841,11 +847,11 @@ public class PropFindMethod extends WebDAVMethod
 
         // Print out all the custom properties
 
-        SessionUser davUser = (SessionUser) m_request.getSession().getAttribute( AuthenticationFilter.AUTHENTICATION_USER);
-        
+        SessionUser davUser = (SessionUser) m_request.getSession().getAttribute(AuthenticationFilter.AUTHENTICATION_USER);
+
         xml.startElement(WebDAV.DAV_NS, WebDAV.XML_ALF_AUTHTICKET, WebDAV.XML_NS_ALF_AUTHTICKET, nullAttr);
-        if ( davUser != null)
-        	xml.write( davUser.getTicket());
+        if (davUser != null)
+            xml.write(davUser.getTicket());
         xml.endElement(WebDAV.DAV_NS, WebDAV.XML_ALF_AUTHTICKET, WebDAV.XML_NS_ALF_AUTHTICKET);
 
         // Close off the response
@@ -860,12 +866,14 @@ public class PropFindMethod extends WebDAVMethod
     }
 
     /**
-     * Generates the XML response for a PROPFIND request that asks for a list of
-     * all known properties
+     * Generates the XML response for a PROPFIND request that asks for a list of all known properties
      * 
-     * @param xml XMLWriter
-     * @param nodeInfo FileInfo
-     * @param isDir boolean
+     * @param xml
+     *            XMLWriter
+     * @param nodeInfo
+     *            FileInfo
+     * @param isDir
+     *            boolean
      */
     protected void generateFindPropertiesResponse(XMLWriter xml, FileInfo nodeInfo, boolean isDir)
     {
@@ -918,12 +926,14 @@ public class PropFindMethod extends WebDAVMethod
     }
 
     /**
-     * Generates the XML response snippet showing the lock information for the
-     * given path
+     * Generates the XML response snippet showing the lock information for the given path
      * 
-     * @param xml XMLWriter
-     * @param nodeInfo FileInfo
-     * @param isDir boolean
+     * @param xml
+     *            XMLWriter
+     * @param nodeInfo
+     *            FileInfo
+     * @param isDir
+     *            boolean
      */
     protected void generateLockDiscoveryResponse(XMLWriter xml, FileInfo nodeInfo, boolean isDir) throws Exception
     {
@@ -938,7 +948,8 @@ public class PropFindMethod extends WebDAVMethod
     /**
      * Output the supported lock types XML element
      * 
-     * @param xml XMLWriter
+     * @param xml
+     *            XMLWriter
      */
     protected void writeLockTypes(XMLWriter xml)
     {
@@ -959,20 +970,21 @@ public class PropFindMethod extends WebDAVMethod
             throw new AlfrescoRuntimeException("XML write error", ex);
         }
     }
-    
+
     /**
      * Loads all dead properties persisted on the node
      * 
-     * @param nodeRef NodeRef
+     * @param nodeRef
+     *            NodeRef
      * @return the map of all dead properties
      */
     @SuppressWarnings("unchecked")
     protected Map<QName, String> loadDeadProperties(NodeRef nodeRef)
     {
         Map<QName, String> result;
-        
-        List<String> deadProperties = (List<String>)getNodeService().getProperty(nodeRef, ContentModel.PROP_DEAD_PROPERTIES);
-        
+
+        List<String> deadProperties = (List<String>) getNodeService().getProperty(nodeRef, ContentModel.PROP_DEAD_PROPERTIES);
+
         if (deadProperties != null)
         {
             result = new HashMap<QName, String>(deadProperties.size() * 2);
@@ -1004,32 +1016,37 @@ public class PropFindMethod extends WebDAVMethod
         {
             result = new HashMap<QName, String>(7);
         }
-        
+
         return result;
     }
-    
+
     /**
      * Persists dead properties for specified resource
      * 
-     * @param nodeRef specified resource
-     * @param deadProperties the properties to persist
+     * @param nodeRef
+     *            specified resource
+     * @param deadProperties
+     *            the properties to persist
      */
     protected void persistDeadProperties(NodeRef nodeRef, Map<QName, String> deadProperties)
     {
         List<String> listToPersist = new ArrayList<String>(deadProperties.size());
 
-        for (Map.Entry<QName, String> entry: deadProperties.entrySet())
+        for (Map.Entry<QName, String> entry : deadProperties.entrySet())
         {
             listToPersist.add(entry.getKey().toString() + ':' + entry.getValue());
         }
 
-        getNodeService().setProperty(nodeRef, ContentModel.PROP_DEAD_PROPERTIES, (Serializable)listToPersist);
+        getNodeService().setProperty(nodeRef, ContentModel.PROP_DEAD_PROPERTIES, (Serializable) listToPersist);
     }
-    
+
     /**
      * Output the lockentry element of the specified type
-     * @param xml XMLWriter
-     * @param lockType lock type containing namespace. Can be WebDAV.XML_NS_EXCLUSIVE or WebDAV.XML_NS_SHARED
+     * 
+     * @param xml
+     *            XMLWriter
+     * @param lockType
+     *            lock type containing namespace. Can be WebDAV.XML_NS_EXCLUSIVE or WebDAV.XML_NS_SHARED
      * @throws SAXException
      * @throws IOException
      */
@@ -1037,7 +1054,7 @@ public class PropFindMethod extends WebDAVMethod
     {
         AttributesImpl nullAttr = getDAVHelper().getNullAttributes();
 
-        xml.startElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_ENTRY, WebDAV.XML_NS_LOCK_ENTRY, nullAttr); 
+        xml.startElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_ENTRY, WebDAV.XML_NS_LOCK_ENTRY, nullAttr);
         xml.startElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_SCOPE, WebDAV.XML_NS_LOCK_SCOPE, nullAttr);
         xml.write(DocumentHelper.createElement(lockType));
         xml.endElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_SCOPE, WebDAV.XML_NS_LOCK_SCOPE);
@@ -1045,6 +1062,6 @@ public class PropFindMethod extends WebDAVMethod
         xml.startElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_TYPE, WebDAV.XML_NS_LOCK_TYPE, nullAttr);
         xml.write(DocumentHelper.createElement(WebDAV.XML_NS_WRITE));
         xml.endElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_TYPE, WebDAV.XML_NS_LOCK_TYPE);
-        xml.endElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_ENTRY, WebDAV.XML_NS_LOCK_ENTRY); 
+        xml.endElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_ENTRY, WebDAV.XML_NS_LOCK_ENTRY);
     }
 }

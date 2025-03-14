@@ -35,12 +35,13 @@ public class TransferContext
 {
 
     private Map<NodeRef, ManifestCategory> categoriesCache = new HashMap<NodeRef, ManifestCategory>();
+
     /**
-      * 
-      * @return Map
-      */
+     * 
+     * @return Map
+     */
     public Map<NodeRef, ManifestCategory> getManifestCategoriesCache()
     {
-      	return this.categoriesCache;
+        return this.categoriesCache;
     }
 }

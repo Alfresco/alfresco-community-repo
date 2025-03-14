@@ -47,7 +47,8 @@ public class NodeTypeUtility
     private DictionaryService dictionaryService;
 
     /**
-     * @param dictionaryService dictionary service
+     * @param dictionaryService
+     *            dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -57,9 +58,11 @@ public class NodeTypeUtility
     /**
      * Utility method to quickly determine whether one class is equal to or sub of another.
      *
-     * @param className     class name
-     * @param ofClassName   class name to check against
-     * @return boolean      true if equal to or sub, false otherwise
+     * @param className
+     *            class name
+     * @param ofClassName
+     *            class name to check against
+     * @return boolean true if equal to or sub, false otherwise
      */
     public boolean instanceOf(QName className, QName ofClassName)
     {
@@ -67,7 +70,6 @@ public class NodeTypeUtility
         ParameterCheck.mandatory("ofClassName", ofClassName);
 
         String key = className.toString() + "|" + ofClassName.toString();
-        return instanceOfCache.computeIfAbsent(key, k ->
-                (ofClassName.equals(className) || dictionaryService.isSubClass(className, ofClassName)));
+        return instanceOfCache.computeIfAbsent(key, k -> (ofClassName.equals(className) || dictionaryService.isSubClass(className, ofClassName)));
     }
 }

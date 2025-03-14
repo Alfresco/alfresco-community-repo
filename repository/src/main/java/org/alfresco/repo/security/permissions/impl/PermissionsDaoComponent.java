@@ -37,7 +37,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
  * 
  * @author andyh
  */
-public interface PermissionsDaoComponent 
+public interface PermissionsDaoComponent
 {
     /**
      * Get the permissions that have been set on a given node.
@@ -70,8 +70,7 @@ public interface PermissionsDaoComponent
     public void deletePermissions(NodeRef nodeRef, String authority);
 
     /**
-     * Delete as single permission entry, if a match is found. This deleted one permission on the node. It does not
-     * affect the persistence of any other permissions.
+     * Delete as single permission entry, if a match is found. This deleted one permission on the node. It does not affect the persistence of any other permissions.
      * 
      * @param nodeRef
      *            the node with the access control list
@@ -83,8 +82,7 @@ public interface PermissionsDaoComponent
     public void deletePermission(NodeRef nodeRef, String authority, PermissionReference permission);
 
     /**
-     * Set a permission on a node. If the node has no permissions set then a default node permission (allowing
-     * inheritance) will be created to contain the permission entry.
+     * Set a permission on a node. If the node has no permissions set then a default node permission (allowing inheritance) will be created to contain the permission entry.
      */
     public void setPermission(NodeRef nodeRef, String authority, PermissionReference perm, boolean allow);
 

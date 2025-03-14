@@ -38,15 +38,17 @@ public interface BehaviourRegistry
     /**
      * Register a behaviour against a given name.
      *
-     * @param behaviour behaviour
+     * @param behaviour
+     *            behaviour
      */
     void registerBehaviour(String name, Behaviour behaviour);
 
     /**
      * Gets the behaviour for a given name.
      *
-     * @param name                  behaviour name
-     * @return {@link Behaviour}    behaviour, null otherwise
+     * @param name
+     *            behaviour name
+     * @return {@link Behaviour} behaviour, null otherwise
      */
     Behaviour getBehaviour(String name);
 }

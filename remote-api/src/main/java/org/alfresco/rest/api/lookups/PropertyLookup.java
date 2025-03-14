@@ -26,8 +26,6 @@
 
 package org.alfresco.rest.api.lookups;
 
-
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -39,12 +37,14 @@ public interface PropertyLookup<T extends Object>
 {
     /**
      * The list of property keys that are supported by this class
+     * 
      * @return Set<String> property keys
      */
     public Set<String> supports();
 
     /**
      * Lookup the property value with a new value.
+     * 
      * @param propertyValue
      * @return a new value or null if the property value isn't found.
      */

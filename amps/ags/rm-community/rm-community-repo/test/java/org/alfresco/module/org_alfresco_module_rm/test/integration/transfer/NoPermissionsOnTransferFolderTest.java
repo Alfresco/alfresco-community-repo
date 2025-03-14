@@ -96,8 +96,7 @@ public class NoPermissionsOnTransferFolderTest extends BaseRMTestCase
 
     public void testNoPermissionsOnTransferFolder()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(testUser1)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(testUser1) {
             // Records folder
             private NodeRef recordsFolder = null;
 
@@ -110,8 +109,7 @@ public class NoPermissionsOnTransferFolderTest extends BaseRMTestCase
             @Override
             public void given()
             {
-                runAs(new RunAsWork<Void>()
-                {
+                runAs(new RunAsWork<Void>() {
                     public Void doWork()
                     {
                         // Create category
@@ -151,7 +149,7 @@ public class NoPermissionsOnTransferFolderTest extends BaseRMTestCase
             public void when()
             {
                 // FIXME: If the transfer step is executed here the test fails. See RM-3931
-                //transferFolder = (NodeRef) rmActionService.executeRecordsManagementAction(recordsFolder, TransferAction.NAME).getValue();
+                // transferFolder = (NodeRef) rmActionService.executeRecordsManagementAction(recordsFolder, TransferAction.NAME).getValue();
             }
 
             /**
@@ -169,8 +167,7 @@ public class NoPermissionsOnTransferFolderTest extends BaseRMTestCase
                 // Check if testUser1 has filing permissions on the transfer folder
                 assertEquals(ALLOWED, permissionService.hasPermission(transferFolder, FILING));
 
-                runAs(new RunAsWork<Void>()
-                {
+                runAs(new RunAsWork<Void>() {
                     public Void doWork()
                     {
                         // Check transfer folder

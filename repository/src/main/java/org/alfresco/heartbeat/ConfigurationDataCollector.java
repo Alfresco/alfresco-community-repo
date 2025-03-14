@@ -26,11 +26,17 @@
 package org.alfresco.heartbeat;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Collections;
+import javax.sql.DataSource;
+
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
@@ -51,107 +57,89 @@ import org.alfresco.service.cmr.workflow.WorkflowAdminService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.traitextender.SpringExtensionBundle;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
-import javax.sql.DataSource;
 
 /**
  * A collector of data related to repository configuration data for HeartBeat.
  * <ul>
- *  <li>Collector ID: <b>acs.repository.configuration</b></li>
- *  <li>Data:
- *      <ul>
- *          <li><b>smartFoldersEnabled:</b> Boolean - Smart folder is registered or not. {@link SpringExtensionBundle#isEnabled()}</li>
- *          <li><b>serverReadOnly:</b> Boolean - Repository server read only mode. {@link RepoUsage#isReadOnly()}</li>
- *          <li><b>serverMode:</b> String - The server mode. {@link ServerModeProvider#getServerMode()}</li>
- *          <li><b>ftpEnabled:</b> Boolean - FTP enabled state as reported by the <code>ftp.enabled</code> property
- *          of the fileServers subsystem {@link ChildApplicationContextFactory#getProperty(String)}</li>
- *          <li><b>webDAVEnabled:</b> Boolean - WebDAV enabled state. {@link WebDavService#getEnabled()}</li>
- *          <li><b>thumbnailsEnabled:</b> Boolean - Thumbnails enabled state. {@link ThumbnailService#getThumbnailsEnabled()}</li>
- *          <li><b>activitiesFeedEnabled:</b> Boolean - Activities feed enabled state as reported by the <code>activities.feed.notifier.enabled</code> property
- *          of the ActivitiesFeed subsystem {@link ChildApplicationContextFactory#getProperty(String)}</li>
- *          <li><b>activitiEngineEnabled:</b> Boolean - Activiti engine enabled state for engine id:
- *          {@link ActivitiConstants#ENGINE_ID} as reported by {@link WorkflowAdminService#isEngineEnabled(String)}</li>
- *          <li><b>inboundServerEnabled:</b> Boolean - Inbound email server enabled state.
- *          The state is calculated as logical AND of the properties <code>email.server.enabled</code> AND <code>email.inbound.enabled</code>
- *          as reported by the InboundSMTP subsystem {@link ChildApplicationContextFactory#getProperty(String)}</li>
- *          <li><b>imapEnabled:</b> Boolean - Imap enabled state as reported by the <code>imap.server.enabled</code> property
- *          of the imap subsystem {@link ChildApplicationContextFactory#getProperty(String)}</li>
- *          <li><b>replication:</b> Replication configuration.
- *              <ul>
- *                  <li>enabled: Boolean - Replication enabled state as reported by the <code>replication.enabled</code> property
- *          of the Replication subsystem {@link ChildApplicationContextFactory#getProperty(String)}</li>
- *                  <li>readOnly: Boolean - Replication transfer readonly as reported by the <code>replication.transfer.readonly</code> property
- *          of the Replication subsystem {@link ChildApplicationContextFactory#getProperty(String)}</li>
- *              </ul>
- *          </li>
- *          <li><b>db:</b> Database configuration
- *              <ul>
- *                  <li>maxConnections: int - The maximum number of active connections. {@link BasicDataSource#getMaxTotal()}</li>
- *              </ul>
- *          </li>
- *          <li><b>authentication</b>: Authentication configuration.
- *              <ul>
- *                  <li><b>chain:</b> String - The authentication chain as reported by <code>chain</code> property
- *                  {@link DefaultChildApplicationContextManager#getProperty(String)}
- *                  </li>
- *              </ul>
- *          </li>
- *          <li><b>module:</b> Module configuration.
- *              <ul>
- *                <li><b>installed:</b> Information about the installed modules {@link ModuleService#getAllModules()}
- *                    <ul>
- *                        <li><b>count</b> int - The number of installed modules.</li>
- *                        <li><b>modules:</b> - List of installed modules.
- *                            <ul>
- *                                <li> <b>{@link ModuleDetails#getId()}</b>
- *                                    <ul>
- *                                        <li><b>version</b> - module version {@link ModuleDetails#getModuleVersionNumber()}</li>
- *                                    </ul>
- *                                </li>
- *                                ...
- *                            </ul>
- *                        </li>
- *                    </ul>
- *                </li>
- *
- *                <li><b>missing:</b> Information about the missing modules, omitted if no missing modules, {@link ModuleService#getMissingModules()}
- *                    <ul>
- *                        <li><b>modules:</b> - List of missing modules.
- *                            <ul>
- *                                <li> <b>{@link ModuleDetails#getId()}</b>
- *                                    <ul>
- *                                        <li><b>version</b> String - module version {@link ModuleDetails#getModuleVersionNumber()}</li>
- *                                    </ul>
- *                                </li>
- *                                ...
- *                            </ul>
- *                        </li>
- *                    </ul>
- *                </li>
- *              </ul>
- *          </li>
- *          <li><b>audit</b>: Audit applications configuration.
- *              <ul>
- *                  <li><b>enabled</b> boolean - The audit enabled state {@link AuditService#isAuditEnabled()}</li>
- *                  <li><b>apps:</b> List of audit applications. {@link AuditService#getAuditApplications()}
- *                      <ul>
- *                          <li> <b>map keys from {@link AuditService#getAuditApplications()}</b> Note that spaces are replaces with hyphens
- *                              <ul>
- *                                  <li><b>enabled</b> - Enabled state of this audit application. {@link AuditService.AuditApplication#isEnabled()}</li>
- *                              </ul>
- *                          </li>
- *                          ...
- *                      </ul>
- *                  </li>
- *              </ul>
- *          </li>
- *      </ul>
- *  </li>
+ * <li>Collector ID: <b>acs.repository.configuration</b></li>
+ * <li>Data:
+ * <ul>
+ * <li><b>smartFoldersEnabled:</b> Boolean - Smart folder is registered or not. {@link SpringExtensionBundle#isEnabled()}</li>
+ * <li><b>serverReadOnly:</b> Boolean - Repository server read only mode. {@link RepoUsage#isReadOnly()}</li>
+ * <li><b>serverMode:</b> String - The server mode. {@link ServerModeProvider#getServerMode()}</li>
+ * <li><b>ftpEnabled:</b> Boolean - FTP enabled state as reported by the <code>ftp.enabled</code> property of the fileServers subsystem {@link ChildApplicationContextFactory#getProperty(String)}</li>
+ * <li><b>webDAVEnabled:</b> Boolean - WebDAV enabled state. {@link WebDavService#getEnabled()}</li>
+ * <li><b>thumbnailsEnabled:</b> Boolean - Thumbnails enabled state. {@link ThumbnailService#getThumbnailsEnabled()}</li>
+ * <li><b>activitiesFeedEnabled:</b> Boolean - Activities feed enabled state as reported by the <code>activities.feed.notifier.enabled</code> property of the ActivitiesFeed subsystem {@link ChildApplicationContextFactory#getProperty(String)}</li>
+ * <li><b>activitiEngineEnabled:</b> Boolean - Activiti engine enabled state for engine id: {@link ActivitiConstants#ENGINE_ID} as reported by {@link WorkflowAdminService#isEngineEnabled(String)}</li>
+ * <li><b>inboundServerEnabled:</b> Boolean - Inbound email server enabled state. The state is calculated as logical AND of the properties <code>email.server.enabled</code> AND <code>email.inbound.enabled</code> as reported by the InboundSMTP subsystem {@link ChildApplicationContextFactory#getProperty(String)}</li>
+ * <li><b>imapEnabled:</b> Boolean - Imap enabled state as reported by the <code>imap.server.enabled</code> property of the imap subsystem {@link ChildApplicationContextFactory#getProperty(String)}</li>
+ * <li><b>replication:</b> Replication configuration.
+ * <ul>
+ * <li>enabled: Boolean - Replication enabled state as reported by the <code>replication.enabled</code> property of the Replication subsystem {@link ChildApplicationContextFactory#getProperty(String)}</li>
+ * <li>readOnly: Boolean - Replication transfer readonly as reported by the <code>replication.transfer.readonly</code> property of the Replication subsystem {@link ChildApplicationContextFactory#getProperty(String)}</li>
  * </ul>
-
+ * </li>
+ * <li><b>db:</b> Database configuration
+ * <ul>
+ * <li>maxConnections: int - The maximum number of active connections. {@link BasicDataSource#getMaxTotal()}</li>
+ * </ul>
+ * </li>
+ * <li><b>authentication</b>: Authentication configuration.
+ * <ul>
+ * <li><b>chain:</b> String - The authentication chain as reported by <code>chain</code> property {@link DefaultChildApplicationContextManager#getProperty(String)}</li>
+ * </ul>
+ * </li>
+ * <li><b>module:</b> Module configuration.
+ * <ul>
+ * <li><b>installed:</b> Information about the installed modules {@link ModuleService#getAllModules()}
+ * <ul>
+ * <li><b>count</b> int - The number of installed modules.</li>
+ * <li><b>modules:</b> - List of installed modules.
+ * <ul>
+ * <li><b>{@link ModuleDetails#getId()}</b>
+ * <ul>
+ * <li><b>version</b> - module version {@link ModuleDetails#getModuleVersionNumber()}</li>
+ * </ul>
+ * </li> ...
+ * </ul>
+ * </li>
+ * </ul>
+ * </li>
+ *
+ * <li><b>missing:</b> Information about the missing modules, omitted if no missing modules, {@link ModuleService#getMissingModules()}
+ * <ul>
+ * <li><b>modules:</b> - List of missing modules.
+ * <ul>
+ * <li><b>{@link ModuleDetails#getId()}</b>
+ * <ul>
+ * <li><b>version</b> String - module version {@link ModuleDetails#getModuleVersionNumber()}</li>
+ * </ul>
+ * </li> ...
+ * </ul>
+ * </li>
+ * </ul>
+ * </li>
+ * </ul>
+ * </li>
+ * <li><b>audit</b>: Audit applications configuration.
+ * <ul>
+ * <li><b>enabled</b> boolean - The audit enabled state {@link AuditService#isAuditEnabled()}</li>
+ * <li><b>apps:</b> List of audit applications. {@link AuditService#getAuditApplications()}
+ * <ul>
+ * <li><b>map keys from {@link AuditService#getAuditApplications()}</b> Note that spaces are replaces with hyphens
+ * <ul>
+ * <li><b>enabled</b> - Enabled state of this audit application. {@link AuditService.AuditApplication#isEnabled()}</li>
+ * </ul>
+ * </li> ...
+ * </ul>
+ * </li>
+ * </ul>
+ * </li>
+ * </ul>
+ * </li>
+ * </ul>
+ * 
  * @author mpopa
  */
 public class ConfigurationDataCollector extends HBBaseDataCollector implements InitializingBean
@@ -180,7 +168,7 @@ public class ConfigurationDataCollector extends HBBaseDataCollector implements I
     private ServerModeProvider serverModeProvider;
 
     public ConfigurationDataCollector(String collectorId, String collectorVersion, String cronExpression,
-                                      HeartBeatJobScheduler hbJobScheduler)
+            HeartBeatJobScheduler hbJobScheduler)
     {
         super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
     }
@@ -224,7 +212,6 @@ public class ConfigurationDataCollector extends HBBaseDataCollector implements I
     {
         this.imapSubsystem = imapSubsystem;
     }
-
 
     public void setWorkflowAdminService(WorkflowAdminService workflowAdminService)
     {
@@ -367,10 +354,10 @@ public class ConfigurationDataCollector extends HBBaseDataCollector implements I
 
         // Audit information
         Map<String, Object> audit = new HashMap<>();
-        audit.put("enabled",auditService.isAuditEnabled());
+        audit.put("enabled", auditService.isAuditEnabled());
         Map<String, Object> auditAppList = new HashMap<>();
         Map<String, AuditService.AuditApplication> rawAppList = transactionService.getRetryingTransactionHelper()
-                .doInTransaction( () -> auditService.getAuditApplications(), true);
+                .doInTransaction(() -> auditService.getAuditApplications(), true);
 
         for (Map.Entry<String, AuditService.AuditApplication> entry : rawAppList.entrySet())
         {
@@ -378,7 +365,7 @@ public class ConfigurationDataCollector extends HBBaseDataCollector implements I
             Map<String, Object> appInfo = new HashMap<>();
             appInfo.put("enabled", app.isEnabled());
             // replace spaces with hyphens
-            String appName = entry.getKey().replace(" ","-");
+            String appName = entry.getKey().replace(" ", "-");
             auditAppList.put(appName, appInfo);
         }
         if (!auditAppList.isEmpty())
@@ -402,8 +389,7 @@ public class ConfigurationDataCollector extends HBBaseDataCollector implements I
 
     private List<ModuleDetails> getMissingModules()
     {
-        AuthenticationUtil.RunAsWork<List<ModuleDetails>> missingModulesWork = () ->
-        {
+        AuthenticationUtil.RunAsWork<List<ModuleDetails>> missingModulesWork = () -> {
             try
             {
                 return moduleService.getMissingModules();

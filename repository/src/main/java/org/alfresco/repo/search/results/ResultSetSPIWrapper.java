@@ -39,7 +39,7 @@ import org.alfresco.service.cmr.search.SpellCheckResult;
 import org.alfresco.util.Pair;
 
 /**
- * Wrap an SPI result set with the basic interface 
+ * Wrap an SPI result set with the basic interface
  * 
  * @author andyh
  *
@@ -112,7 +112,7 @@ public class ResultSetSPIWrapper<ROW extends ResultSetRow, MD extends ResultSetM
     {
         return wrapped.length();
     }
-    
+
     public Iterator<ResultSetRow> iterator()
     {
         return new WrappedIterator<ROW>(wrapped.iterator());
@@ -121,11 +121,12 @@ public class ResultSetSPIWrapper<ROW extends ResultSetRow, MD extends ResultSetM
     /**
      * Bulk fetch results in the cache
      * 
-     * @param bulkFetch boolean
+     * @param bulkFetch
+     *            boolean
      */
     public boolean setBulkFetch(boolean bulkFetch)
     {
-    	return wrapped.setBulkFetch(bulkFetch);
+        return wrapped.setBulkFetch(bulkFetch);
     }
 
     /**
@@ -141,11 +142,12 @@ public class ResultSetSPIWrapper<ROW extends ResultSetRow, MD extends ResultSetM
     /**
      * Set the bulk fetch size
      * 
-     * @param bulkFetchSize int
+     * @param bulkFetchSize
+     *            int
      */
     public int setBulkFetchSize(int bulkFetchSize)
     {
-    	return wrapped.setBulkFetchSize(bulkFetchSize);
+        return wrapped.setBulkFetchSize(bulkFetchSize);
     }
 
     /**
@@ -157,19 +159,19 @@ public class ResultSetSPIWrapper<ROW extends ResultSetRow, MD extends ResultSetM
     {
         return wrapped.getBulkFetchSize();
     }
-    
+
     @Override
     public List<Pair<String, Integer>> getFieldFacet(String field)
     {
         return wrapped.getFieldFacet(field);
     }
-    
+
     @Override
     public Map<String, Integer> getFacetQueries()
     {
         return wrapped.getFacetQueries();
     }
-    
+
     @Override
     public SpellCheckResult getSpellCheckResult()
     {
@@ -209,8 +211,8 @@ public class ResultSetSPIWrapper<ROW extends ResultSetRow, MD extends ResultSetM
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound()
-     */
+     * 
+     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound() */
     @Override
     public long getNumberFound()
     {

@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.AbstractCannedQuery;
@@ -49,14 +52,11 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * GetPeople canned query
  * 
- * To get paged list of children of a parent node filtered by child type.
- * Also optionally filtered and/or sorted by one or more properties (up to three).
+ * To get paged list of children of a parent node filtered by child type. Also optionally filtered and/or sorted by one or more properties (up to three).
  *
  * @author janv
  * @since 4.1.2
@@ -64,21 +64,21 @@ import org.apache.commons.logging.LogFactory;
 public class GetPeopleCannedQuery extends AbstractCannedQuery<NodeRef>
 {
     private Log logger = LogFactory.getLog(getClass());
-    
+
     private static final String QUERY_NAMESPACE = "alfresco.query.people";
     private static final String QUERY_SELECT_GET_PEOPLE = "select_GetPeopleCannedQuery";
-    
+
     public static final int MAX_FILTER_SORT_PROPS = 3;
-    
+
     private static final int MAX_EXPECTED_ADMINS = 5; // TODO refine non-admin paging
-    
+
     private NodeDAO nodeDAO;
     private QNameDAO qnameDAO;
     private CannedQueryDAO cannedQueryDAO;
     private TenantService tenantService;
     private NodeService nodeService;
     private AuthorityService authorityService;
-    
+
     public GetPeopleCannedQuery(
             NodeDAO nodeDAO,
             QNameDAO qnameDAO,
@@ -89,24 +89,24 @@ public class GetPeopleCannedQuery extends AbstractCannedQuery<NodeRef>
             CannedQueryParameters params)
     {
         super(params);
-        
+
         this.nodeDAO = nodeDAO;
         this.qnameDAO = qnameDAO;
         this.cannedQueryDAO = cannedQueryDAO;
         this.tenantService = tenantService;
         this.nodeService = nodeService;
         this.authorityService = authorityService;
-        
+
     }
-    
+
     @Override
     protected List<NodeRef> queryAndFilter(CannedQueryParameters parameters)
     {
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
-        
+
         // Get parameters
-        GetPeopleCannedQueryParams paramBean = (GetPeopleCannedQueryParams)parameters.getParameterBean();
-        
+        GetPeopleCannedQueryParams paramBean = (GetPeopleCannedQueryParams) parameters.getParameterBean();
+
         // Get parent node
         NodeRef parentRef = paramBean.getParentRef();
         ParameterCheck.mandatory("nodeRef", parentRef);
@@ -116,150 +116,150 @@ public class GetPeopleCannedQuery extends AbstractCannedQuery<NodeRef>
             throw new InvalidNodeRefException("Parent node does not exist: " + parentRef, parentRef);
         }
         Long parentNodeId = nodePair.getFirst();
-        
+
         // Set query params - note: currently using SortableChildEntity to hold (supplemental-) query params
         FilterSortPersonEntity params = new FilterSortPersonEntity();
-        
+
         // Set parent node id
         params.setParentNodeId(parentNodeId);
-        
+
         // Get filter details
         final List<QName> filterProps = paramBean.getFilterProps();
-        
+
         // Get sort details
         CannedQuerySortDetails sortDetails = parameters.getSortDetails();
-        @SuppressWarnings({ "unchecked", "rawtypes" })
-        final List<Pair<QName, SortOrder>> sortPairs = (List)sortDetails.getSortPairs();
-        
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        final List<Pair<QName, SortOrder>> sortPairs = (List) sortDetails.getSortPairs();
+
         String pattern = paramBean.getPattern();
         if ((pattern == null) || (pattern.equals("")))
         {
             // note: although no pattern means no filtering required, set to match all in case sort required
             pattern = "%";
         }
-        else if ((! pattern.endsWith("%")) && (! pattern.endsWith("*")))
+        else if ((!pattern.endsWith("%")) && (!pattern.endsWith("*")))
         {
             // implicit startsWith match
             pattern = pattern + "%";
         }
-        
+
         // Set filter pattern (should not be null)
         params.setPattern(pattern);
-        
+
         if (paramBean.getExclusiveAspects() != null)
         {
             Set<Long> qnamesIds = qnameDAO.convertQNamesToIds(paramBean.getExclusiveAspects(), false);
             params.setExcludeAspectIds(new ArrayList<Long>(qnamesIds));
         }
-        
+
         if (paramBean.getInclusiveAspects() != null)
         {
             Set<Long> qnamesIds = qnameDAO.convertQNamesToIds(paramBean.getInclusiveAspects(), false);
             params.setIncludeAspectIds(new ArrayList<Long>(qnamesIds));
         }
-        
+
         // Set sort / filter params
         // Note - need to keep the sort properties in their requested order
         List<QName> sortFilterProps = new ArrayList<QName>(MAX_FILTER_SORT_PROPS);
         Map<QName, Boolean> sortAsc = new HashMap<QName, Boolean>(MAX_FILTER_SORT_PROPS);
-        
+
         // add sort props first
         for (Pair<QName, SortOrder> sort : sortPairs)
         {
             QName sortQName = sort.getFirst();
-            if ((filterProps.size() > 0) && (! filterProps.contains(sortQName)))
+            if ((filterProps.size() > 0) && (!filterProps.contains(sortQName)))
             {
-                throw new AlfrescoRuntimeException("GetPeople: cannot sort by a non-filter property: "+sortQName+" (filterStringProps="+filterProps+")");
+                throw new AlfrescoRuntimeException("GetPeople: cannot sort by a non-filter property: " + sortQName + " (filterStringProps=" + filterProps + ")");
             }
-            
-            if (! sortFilterProps.contains(sortQName))
+
+            if (!sortFilterProps.contains(sortQName))
             {
-               sortFilterProps.add(sortQName);
-               sortAsc.put(sortQName, sort.getSecond().equals(SortOrder.ASCENDING));
+                sortFilterProps.add(sortQName);
+                sortAsc.put(sortQName, sort.getSecond().equals(SortOrder.ASCENDING));
             }
         }
-        
+
         // add any additional filter props (not part of sort)
         for (QName filterQName : filterProps)
         {
-            if (! sortFilterProps.contains(filterQName))
+            if (!sortFilterProps.contains(filterQName))
             {
-               sortFilterProps.add(filterQName);
-               sortAsc.put(filterQName, null);
+                sortFilterProps.add(filterQName);
+                sortAsc.put(filterQName, null);
             }
         }
-        
+
         int filterSortPropCnt = sortFilterProps.size();
-        
+
         if (filterSortPropCnt > MAX_FILTER_SORT_PROPS)
         {
-            throw new AlfrescoRuntimeException("GetPeople: exceeded maximum number filter/sort properties: (max="+MAX_FILTER_SORT_PROPS+", actual="+filterSortPropCnt);
+            throw new AlfrescoRuntimeException("GetPeople: exceeded maximum number filter/sort properties: (max=" + MAX_FILTER_SORT_PROPS + ", actual=" + filterSortPropCnt);
         }
-        
+
         filterSortPropCnt = setFilterSortParams(sortFilterProps, sortAsc, params);
-        
+
         // filtered and/or sorted - note: permissions not applicable for getPeople
         List<NodeRef> result = new ArrayList<NodeRef>(100);
         final PersonQueryCallback c = new DefaultPersonQueryCallback(result, paramBean.getIncludeAdministrators());
         PersonResultHandler resultHandler = new PersonResultHandler(c);
-        
+
         int offset = parameters.getPageDetails().getSkipResults();
         int totalResultCountMax = parameters.getTotalResultCountMax();
-        
+
         int origOffset = offset;
         int origLimit = totalResultCountMax > 0 ? totalResultCountMax : parameters.getPageDetails().getPageSize();
-        
-        long newLimit = (long)origLimit;
-        
+
+        long newLimit = (long) origLimit;
+
         // to enable hasMore flag
         newLimit++;
-        
-        boolean excludeAdmins = (! paramBean.getIncludeAdministrators());
+
+        boolean excludeAdmins = (!paramBean.getIncludeAdministrators());
         if (excludeAdmins)
         {
             // TODO refine - non-admin paging
             offset = 0;
-            newLimit = offset + (long)newLimit + MAX_EXPECTED_ADMINS;
+            newLimit = offset + (long) newLimit + MAX_EXPECTED_ADMINS;
         }
-        
+
         if (newLimit > Integer.MAX_VALUE)
         {
             newLimit = Integer.MAX_VALUE;
         }
-        
-        cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_PEOPLE, params, offset, (int)newLimit, resultHandler);
+
+        cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_PEOPLE, params, offset, (int) newLimit, resultHandler);
         resultHandler.done();
-        
+
         if (start != null)
         {
-            logger.debug("Base query: "+result.size()+" in "+(System.currentTimeMillis()-start)+" msecs");
+            logger.debug("Base query: " + result.size() + " in " + (System.currentTimeMillis() - start) + " msecs");
         }
-        
+
         if (excludeAdmins)
         {
             // TODO refine - non-admin paging
-            long max = origOffset + (long)origLimit;
+            long max = origOffset + (long) origLimit;
             if (max > result.size())
             {
                 max = result.size();
             }
-            result = result.subList(origOffset, (int)max);
+            result = result.subList(origOffset, (int) max);
         }
-        
+
         return result;
     }
-    
+
     // Set filter/sort props (between 0 and 3)
     private int setFilterSortParams(List<QName> filterSortProps, Map<QName, Boolean> sortAsc, FilterSortPersonEntity params)
     {
         int cnt = 0;
         int propCnt = 0;
-        
+
         for (QName filterSortProp : filterSortProps)
         {
             Long sortQNameId = getQNameId(filterSortProp);
             Boolean sortOrder = sortAsc.get(filterSortProp); // true = ascending, false = descending, null = unsorted
-            
+
             if (sortQNameId != null)
             {
                 if (propCnt == 0)
@@ -280,48 +280,48 @@ public class GetPeopleCannedQuery extends AbstractCannedQuery<NodeRef>
                 else
                 {
                     // belts and braces
-                    throw new AlfrescoRuntimeException("GetPeople: unexpected - cannot set sort parameter: "+cnt);
+                    throw new AlfrescoRuntimeException("GetPeople: unexpected - cannot set sort parameter: " + cnt);
                 }
-                
+
                 propCnt++;
             }
             else
             {
-                logger.warn("Skipping filter/sort param - cannot find: "+filterSortProp);
+                logger.warn("Skipping filter/sort param - cannot find: " + filterSortProp);
                 break;
             }
-            
+
             cnt++;
         }
-        
+
         return cnt;
     }
-    
+
     private Long getQNameId(QName sortPropQName)
     {
         Pair<Long, QName> qnamePair = qnameDAO.getQName(sortPropQName);
         return (qnamePair == null ? null : qnamePair.getFirst());
     }
-    
+
     @Override
     protected boolean isApplyPostQuerySorting()
     {
         // note: sorted as part of the query impl
         return false;
     }
-    
+
     @Override
     protected boolean isApplyPostQueryPermissions()
     {
         return false;
     }
-    
+
     @Override
     protected boolean isApplyPostQueryPaging()
     {
         return false;
     }
-    
+
     @Override
     protected Pair<Integer, Integer> getTotalResultCount(List<NodeRef> results)
     {
@@ -329,23 +329,23 @@ public class GetPeopleCannedQuery extends AbstractCannedQuery<NodeRef>
         Integer size = offset + results.size();
         return new Pair<Integer, Integer>(size, size);
     }
-    
+
     protected interface PersonQueryCallback
     {
         boolean handle(NodeRef personRef);
     }
-    
+
     protected class DefaultPersonQueryCallback implements PersonQueryCallback
     {
         private List<NodeRef> children;
         private boolean includeAdministrators;
-        
+
         public DefaultPersonQueryCallback(final List<NodeRef> children, boolean includeAdministrators)
         {
             this.children = children;
             this.includeAdministrators = includeAdministrators;
         }
-        
+
         @Override
         public boolean handle(NodeRef personRef)
         {
@@ -358,31 +358,30 @@ public class GetPeopleCannedQuery extends AbstractCannedQuery<NodeRef>
                     return true;
                 }
             }
-            
+
             children.add(tenantService.getBaseName(personRef));
-            
+
             // More results
             return true;
         }
     }
-    
+
     protected class PersonResultHandler implements CannedQueryDAO.ResultHandler<String>
     {
         private final PersonQueryCallback resultsCallback;
-        
+
         private PersonResultHandler(PersonQueryCallback resultsCallback)
         {
             this.resultsCallback = resultsCallback;
         }
-        
+
         public boolean handleResult(String uuid)
         {
             // Call back
             return resultsCallback.handle(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, uuid));
         }
-        
+
         public void done()
-        {
-        }
+        {}
     }
 }

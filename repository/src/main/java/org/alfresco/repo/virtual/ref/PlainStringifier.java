@@ -32,8 +32,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
- * Converts the object to a string representation according to
- * {@link Encodings#PLAIN} encoding definition.
+ * Converts the object to a string representation according to {@link Encodings#PLAIN} encoding definition.
  */
 public class PlainStringifier implements Stringifier, PlainEncoding
 {
@@ -46,7 +45,7 @@ public class PlainStringifier implements Stringifier, PlainEncoding
     public String stringify(Reference reference) throws ReferenceEncodingException
     {
         return reference.getProtocol() + DELIMITER + stringify(reference.getResource())
-                    + stringify(reference.getParameters());
+                + stringify(reference.getParameters());
     }
 
     @Override
@@ -92,7 +91,7 @@ public class PlainStringifier implements Stringifier, PlainEncoding
         StoreRef storeRef = nodeRef.getStoreRef();
 
         return NODE + DELIMITER + storeRef.getProtocol() + DELIMITER + storeRef.getIdentifier() + DELIMITER
-                    + nodeRef.getId();
+                + nodeRef.getId();
     }
 
     @Override

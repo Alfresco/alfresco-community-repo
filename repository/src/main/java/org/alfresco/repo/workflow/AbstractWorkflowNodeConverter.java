@@ -40,7 +40,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public abstract class AbstractWorkflowNodeConverter implements WorkflowNodeConverter
 {
     /**
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
     @SuppressWarnings("unchecked")
     public Object convertNodes(Object value, boolean isMany)
@@ -53,11 +53,11 @@ public abstract class AbstractWorkflowNodeConverter implements WorkflowNodeConve
         {
             return convertNodes((Collection<NodeRef>) value, isMany);
         }
-        return value; //If null or not a supported type.
+        return value; // If null or not a supported type.
     }
 
     /**
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
     public Object convertNode(NodeRef value, boolean isMany)
     {
@@ -67,9 +67,9 @@ public abstract class AbstractWorkflowNodeConverter implements WorkflowNodeConve
         }
         return convertNode(value);
     }
-    
+
     /**
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
     public Object convertNodes(Collection<NodeRef> values, boolean isMany)
     {
@@ -83,7 +83,7 @@ public abstract class AbstractWorkflowNodeConverter implements WorkflowNodeConve
         }
         return convertNode(values.iterator().next());
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -95,7 +95,7 @@ public abstract class AbstractWorkflowNodeConverter implements WorkflowNodeConve
         }
         return Collections.singletonList(convertToNode(value));
     }
-    
+
     public List<NodeRef> convertToNodes(Collection<?> toConvert)
     {
         List<NodeRef> results = new ArrayList<NodeRef>(toConvert.size());
@@ -105,19 +105,19 @@ public abstract class AbstractWorkflowNodeConverter implements WorkflowNodeConve
         }
         return results;
     }
-    
+
     public Serializable convert(Object object)
     {
         if (object instanceof Collection<?>)
         {
-            return (Serializable) convertToNodes((Collection<?>)object);
+            return (Serializable) convertToNodes((Collection<?>) object);
         }
         return convertToNode(object);
     }
 
     public abstract Object convertNode(NodeRef node);
-    
+
     public abstract List<? extends Object> convertNodes(Collection<NodeRef> values);
-    
+
     public abstract NodeRef convertToNode(Object toConvert);
 }

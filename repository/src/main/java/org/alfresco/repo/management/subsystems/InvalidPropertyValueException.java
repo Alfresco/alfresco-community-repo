@@ -38,7 +38,8 @@ public class InvalidPropertyValueException extends AlfrescoRuntimeException
 
     /**
      * Creates a new InvalidPropertyValueException with custom message ID.
-     * @param msgId 
+     * 
+     * @param msgId
      */
     public InvalidPropertyValueException(String msgId)
     {
@@ -47,8 +48,9 @@ public class InvalidPropertyValueException extends AlfrescoRuntimeException
 
     /**
      * Creates a new InvalidPropertyValueException with custom message ID and custom message parameters.
+     * 
      * @param msgId
-     * @param msgParams 
+     * @param msgParams
      */
     public InvalidPropertyValueException(String msgId, Object[] msgParams)
     {

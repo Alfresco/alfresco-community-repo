@@ -25,42 +25,46 @@
  */
 package org.alfresco.util.resource;
 
-import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 
+import org.alfresco.util.PropertyCheck;
+
 /**
- * Locate resources by using a class hierarchy to drive the search.  The well-known
- * placeholder {@link #DEFAULT_DIALECT_PLACEHOLDER} is replaced with successive class
- * names starting from the {@link #setDialectClass(String) dialect class} and
- * progressing up the hierarchy until the {@link #setDialectBaseClass(String) base class}
- * is reached.  A full resource search using Spring's {@link DefaultResourceLoader} is
- * done at each point until the resource is found or the base of the class hierarchy is
- * reached.
+ * Locate resources by using a class hierarchy to drive the search. The well-known placeholder {@link #DEFAULT_DIALECT_PLACEHOLDER} is replaced with successive class names starting from the {@link #setDialectClass(String) dialect class} and progressing up the hierarchy until the {@link #setDialectBaseClass(String) base class} is reached. A full resource search using Spring's {@link DefaultResourceLoader} is done at each point until the resource is found or the base of the class hierarchy is reached.
  * <p/>
  * For example assume classpath resources:<br/>
+ * 
  * <pre>
  *    RESOURCE 1: config/ibatis/org.hibernate.dialect.Dialect/SqlMap-DOG.xml
  *    RESOURCE 2: config/ibatis/org.hibernate.dialect.MySQLInnoDBDialect/SqlMap-DOG.xml
  *    RESOURCE 3: config/ibatis/org.hibernate.dialect.Dialect/SqlMap-CAT.xml
  *    RESOURCE 4: config/ibatis/org.hibernate.dialect.MySQLDialect/SqlMap-CAT.xml
  * </pre>
+ * 
  * and<br/>
+ * 
  * <pre>
- *    dialectBaseClass = org.hibernate.dialect.Dialect
+ * dialectBaseClass = org.hibernate.dialect.Dialect
  * </pre>
+ * 
  * For dialect <b>org.hibernate.dialect.MySQLInnoDBDialect</b> the following will be returned:<br>
+ * 
  * <pre>
  *    config/ibatis/#resource.dialect#/SqlMap-DOG.xml == RESOURCE 2
  *    config/ibatis/#resource.dialect#/SqlMap-CAT.xml == RESOURCE 4
  * </pre>
+ * 
  * For dialect<b>org.hibernate.dialect.MySQLDBDialect</b> the following will be returned:<br>
+ * 
  * <pre>
  *    config/ibatis/#resource.dialect#/SqlMap-DOG.xml == RESOURCE 1
  *    config/ibatis/#resource.dialect#/SqlMap-CAT.xml == RESOURCE 4
  * </pre>
+ * 
  * For dialect<b>org.hibernate.dialect.Dialect</b> the following will be returned:<br>
+ * 
  * <pre>
  *    config/ibatis/#resource.dialect#/SqlMap-DOG.xml == RESOURCE 1
  *    config/ibatis/#resource.dialect#/SqlMap-CAT.xml == RESOURCE 3
@@ -73,10 +77,10 @@ public class HierarchicalResourceLoader extends DefaultResourceLoader implements
 {
     public static final String DEFAULT_DIALECT_PLACEHOLDER = "#resource.dialect#";
     public static final String DEFAULT_DIALECT_REGEX = "\\#resource\\.dialect\\#";
-    
+
     private String dialectBaseClass;
     private String dialectClass;
-    
+
     /**
      * Create a new HierarchicalResourceLoader.
      */
@@ -86,16 +90,16 @@ public class HierarchicalResourceLoader extends DefaultResourceLoader implements
     }
 
     /**
-     * Set the class to be used during hierarchical dialect replacement.  Searches for the
-     * configuration location will not go further up the hierarchy than this class.
+     * Set the class to be used during hierarchical dialect replacement. Searches for the configuration location will not go further up the hierarchy than this class.
      * 
-     * @param className     the name of the class or interface
+     * @param className
+     *            the name of the class or interface
      */
     public void setDialectBaseClass(String className)
     {
         this.dialectBaseClass = className;
     }
-    
+
     public void setDialectClass(String className)
     {
         this.dialectClass = className;
@@ -106,13 +110,13 @@ public class HierarchicalResourceLoader extends DefaultResourceLoader implements
         PropertyCheck.mandatory(this, "dialectBaseClass", dialectBaseClass);
         PropertyCheck.mandatory(this, "dialectClass", dialectClass);
     }
-    
+
     /**
      * Get a resource using the defined class hierarchy as a search path.
      * 
-     * @param location          the location including a {@link #DEFAULT_DIALECT_PLACEHOLDER placeholder}
-     * @return                  a resource found by successive searches using class name replacement, or
-     *                          <tt>null</tt> if not found.
+     * @param location
+     *            the location including a {@link #DEFAULT_DIALECT_PLACEHOLDER placeholder}
+     * @return a resource found by successive searches using class name replacement, or <tt>null</tt> if not found.
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -122,7 +126,7 @@ public class HierarchicalResourceLoader extends DefaultResourceLoader implements
         {
             return super.getResource(location);
         }
-        
+
         // If a property value has not been substituted, extract the property name and load from system
         String dialectBaseClassStr = dialectBaseClass;
         if (!PropertyCheck.isValidPropertyString(dialectBaseClass))
@@ -160,22 +164,22 @@ public class HierarchicalResourceLoader extends DefaultResourceLoader implements
         {
             throw new RuntimeException(
                     "Dialect base class must be derived from java.lang.Object: " +
-                    dialectBaseClazz.getName());
+                            dialectBaseClazz.getName());
         }
         if (!Object.class.isAssignableFrom(dialectClazz))
         {
             throw new RuntimeException(
                     "Dialect class must be derived from java.lang.Object: " +
-                    dialectClazz.getName());
+                            dialectClazz.getName());
         }
         // We expect these to be in the same hierarchy
         if (!dialectBaseClazz.isAssignableFrom(dialectClazz))
         {
             throw new RuntimeException(
                     "Non-existent HierarchicalResourceLoader hierarchy: " +
-                    dialectBaseClazz.getName() + " is not a superclass of " + dialectClazz);
+                            dialectBaseClazz.getName() + " is not a superclass of " + dialectClazz);
         }
-        
+
         Class<? extends Object> clazz = dialectClazz;
         Resource resource = null;
         while (resource == null)
@@ -202,7 +206,7 @@ public class HierarchicalResourceLoader extends DefaultResourceLoader implements
             {
                 throw new RuntimeException(
                         "Non-existent HierarchicalResourceLoaderBean hierarchy: " +
-                        dialectBaseClazz.getName() + " is not a superclass of " + dialectClazz);
+                                dialectBaseClazz.getName() + " is not a superclass of " + dialectClazz);
             }
         }
         return resource;

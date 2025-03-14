@@ -38,8 +38,11 @@ public interface RenditionDefinitionRegistry2
 
     /**
      * Obtains the names of renditions that are possible from a given source mimetype.
-     * @param sourceMimetype the mimetype of the source.
-     * @param size the size of the source. May be {@code -1} if the size should be ignored.
+     * 
+     * @param sourceMimetype
+     *            the mimetype of the source.
+     * @param size
+     *            the size of the source. May be {@code -1} if the size should be ignored.
      */
     Set<String> getRenditionNamesFrom(String sourceMimetype, long size);
 

@@ -31,6 +31,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.model.Repository;
@@ -38,22 +42,14 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.transfer.NodeCrawler;
 import org.alfresco.service.cmr.transfer.NodeCrawlerFactory;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
-import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.testing.category.IntermittentlyFailingTests;
-import org.alfresco.util.testing.category.LuceneTests;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * Unit test for classes related to the {@link NodeCrawler} interface
@@ -200,14 +196,15 @@ public class NodeCrawlerTest extends BaseAlfrescoSpringTest
     }
 
     /**
-     * @param parent NodeRef
-     * @param nodeType QName
+     * @param parent
+     *            NodeRef
+     * @param nodeType
+     *            QName
      * @return
      */
     private NodeRef makeNode(NodeRef parent, QName nodeType)
     {
-        return transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-        {
+        return transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
             String uuid = GUID.generate();
             Map<QName, Serializable> props = new HashMap<QName, Serializable>();
             props.put(ContentModel.PROP_NAME, uuid);

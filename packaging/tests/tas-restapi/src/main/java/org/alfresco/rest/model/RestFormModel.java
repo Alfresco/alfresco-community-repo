@@ -31,25 +31,12 @@ import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
 
 /**
- * Handles single representation of a Start Form Model
- * * "entry": {
- * "allowedValues": [
- * "1",
- * "2",
- * "3"
- * ],
- * "qualifiedName": "{http://www.alfresco.org/model/bpm/1.0}workflowPriority",
- * "defaultValue": "2",
- * "dataType": "d:int",
- * "name": "bpm_workflowPriority",
- * "title": "Workflow Priority",
- * "required": false
- * }
- * Created by Claudia Agache on 10/18/2016.
+ * Handles single representation of a Start Form Model * "entry": { "allowedValues": [ "1", "2", "3" ], "qualifiedName": "{http://www.alfresco.org/model/bpm/1.0}workflowPriority", "defaultValue": "2", "dataType": "d:int", "name": "bpm_workflowPriority", "title": "Workflow Priority", "required": false } Created by Claudia Agache on 10/18/2016.
  */
 public class RestFormModel extends TestModel implements IRestModel<RestFormModel>
 {
-    @JsonProperty(value = "entry") RestFormModel model;
+    @JsonProperty(value = "entry")
+    RestFormModel model;
     private String qualifiedName;
     private String defaultValue;
     private String dataType;

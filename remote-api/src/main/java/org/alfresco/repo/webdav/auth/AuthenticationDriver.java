@@ -26,25 +26,22 @@
 package org.alfresco.repo.webdav.auth;
 
 import java.io.IOException;
-
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * A general interface for servlet-based authentication. Allows code to be shared by Web Client, WebDAV and Sharepoint
- * authentication classes.
+ * A general interface for servlet-based authentication. Allows code to be shared by Web Client, WebDAV and Sharepoint authentication classes.
  * 
  * @author dward
  */
 public interface AuthenticationDriver
 {
     public static final String AUTHENTICATION_USER = "_alfAuthTicket";
-    
+
     /**
-     * Authenticate user based on information in http request such as Authorization header or cached session
-     * information.
+     * Authenticate user based on information in http request such as Authorization header or cached session information.
      * 
      * @param context
      *            the context

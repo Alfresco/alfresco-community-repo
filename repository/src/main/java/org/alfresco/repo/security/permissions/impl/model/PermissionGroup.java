@@ -30,13 +30,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.dom4j.Attribute;
+import org.dom4j.Element;
+
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.impl.AbstractPermissionReference;
 import org.alfresco.repo.security.permissions.impl.PermissionReferenceImpl;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
-import org.dom4j.Attribute;
-import org.dom4j.Element;
 
 /**
  * Support to read and store the defintion of permission groups.
@@ -46,14 +47,14 @@ import org.dom4j.Element;
 public final class PermissionGroup extends AbstractPermissionReference implements XMLModelInitialisable
 {
     // XML Constants
-    
+
     /**
      * 
      */
     private static final long serialVersionUID = 7879839657714155737L;
 
     private static final String NAME = "name";
-    
+
     private static final String EXTENDS = "extends";
 
     private static final String ALLOW_FULL_CONTOL = "allowFullControl";
@@ -63,19 +64,19 @@ public final class PermissionGroup extends AbstractPermissionReference implement
     private static final String PERMISSION_GROUP = "permissionGroup";
 
     private static final String TYPE = "type";
-    
+
     private static final String EXPOSE = "expose";
-    
+
     private static final String REQUIRES_TYPE = "requiresType";
 
     private String name;
-    
+
     private QName type;
-    
+
     private boolean extendz;
 
     private boolean isExposed;
-    
+
     private boolean allowFullControl;
 
     private QName container;
@@ -86,7 +87,9 @@ public final class PermissionGroup extends AbstractPermissionReference implement
 
     /**
      * Permission group for the given type or aspect.
-     * @param container QName
+     * 
+     * @param container
+     *            QName
      */
     public PermissionGroup(QName container)
     {
@@ -108,7 +111,7 @@ public final class PermissionGroup extends AbstractPermissionReference implement
         {
             allowFullControl = false;
         }
-        
+
         att = element.attribute(REQUIRES_TYPE);
         if (att != null)
         {
@@ -118,7 +121,7 @@ public final class PermissionGroup extends AbstractPermissionReference implement
         {
             requiresType = true;
         }
-        
+
         att = element.attribute(EXTENDS);
         if (att != null)
         {
@@ -128,7 +131,7 @@ public final class PermissionGroup extends AbstractPermissionReference implement
         {
             extendz = false;
         }
-        
+
         att = element.attribute(EXPOSE);
         if (att != null)
         {
@@ -138,17 +141,17 @@ public final class PermissionGroup extends AbstractPermissionReference implement
         {
             isExposed = true;
         }
-        
+
         att = element.attribute(TYPE);
         if (att != null)
         {
-            type = QName.createQName(att.getStringValue(),nspr);
+            type = QName.createQName(att.getStringValue(), nspr);
         }
         else
         {
             type = null;
         }
-        
+
         // Include permissions defined for other permission groups
 
         for (Iterator ipgit = element.elementIterator(INCLUDE_PERMISSION_GROUP); ipgit.hasNext(); /**/)
@@ -172,6 +175,7 @@ public final class PermissionGroup extends AbstractPermissionReference implement
 
     /**
      * What permission groups are included in this one (for ease of definition)
+     * 
      * @return - the set of included permission from teh definitio
      */
     public Set<PermissionReference> getIncludedPermissionGroups()
@@ -186,6 +190,7 @@ public final class PermissionGroup extends AbstractPermissionReference implement
 
     /**
      * Does this permission group allow full control?
+     * 
      * @return true if this definition allows full control
      */
     public boolean isAllowFullControl()
@@ -200,6 +205,7 @@ public final class PermissionGroup extends AbstractPermissionReference implement
 
     /**
      * Does this definition extend another (from a base type as defined in the DD)
+     * 
      * @return true if the permission is extended from another type
      */
     public boolean isExtends()
@@ -208,7 +214,8 @@ public final class PermissionGroup extends AbstractPermissionReference implement
     }
 
     /**
-     * Get the  class
+     * Get the class
+     * 
      * @return - the class
      */
     public QName getTypeQName()
@@ -218,15 +225,17 @@ public final class PermissionGroup extends AbstractPermissionReference implement
 
     /**
      * Expose in the UI?
+     * 
      * @return exposed -> true
      */
     public boolean isExposed()
     {
         return isExposed;
     }
-    
+
     /**
      * Does a node have to have a the type for the permission to apply?
+     * 
      * @return true if a node has to have the type for the permission to apply.
      */
     public boolean isTypeRequired()

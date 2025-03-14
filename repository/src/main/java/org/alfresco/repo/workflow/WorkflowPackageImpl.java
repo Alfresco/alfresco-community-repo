@@ -30,6 +30,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.importer.ImporterBootstrap;
@@ -53,15 +55,13 @@ import org.alfresco.traitextender.ExtendedTrait;
 import org.alfresco.traitextender.Extensible;
 import org.alfresco.traitextender.Trait;
 import org.alfresco.util.GUID;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
- * Alfresco implementation of Workflow Package where the package is stored
- * within the Alfresco Repository.
+ * Alfresco implementation of Workflow Package where the package is stored within the Alfresco Repository.
  * 
  * @author davidc
  */
-public class WorkflowPackageImpl implements WorkflowPackageComponent,Extensible
+public class WorkflowPackageImpl implements WorkflowPackageComponent, Extensible
 {
     private final static String PACKAGE_FOLDER = "packages";
     private static final String ERR_PACKAGE_ALREADY_ASSOCIATED = "workflow.package.already.associated.error";
@@ -77,15 +77,15 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent,Extensible
     private MessageService messageService;
     private BehaviourFilter policyBehaviourFilter;
     private final ExtendedTrait<WorkflowPackageTrait> workflowPackageTrait;
-    
+
     public WorkflowPackageImpl()
     {
-       workflowPackageTrait=new ExtendedTrait<WorkflowPackageTrait>(AJProxyTrait.create(this, WorkflowPackageTrait.class));
+        workflowPackageTrait = new ExtendedTrait<WorkflowPackageTrait>(AJProxyTrait.create(this, WorkflowPackageTrait.class));
     }
 
     /**
-     * @param bootstrap the importer bootstrap for the store to place workflow
-     *            items into
+     * @param bootstrap
+     *            the importer bootstrap for the store to place workflow items into
      */
     public void setImporterBootstrap(ImporterBootstrap bootstrap)
     {
@@ -93,7 +93,8 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent,Extensible
     }
 
     /**
-     * @param searchService search service
+     * @param searchService
+     *            search service
      */
     public void setSearchService(SearchService searchService)
     {
@@ -101,7 +102,8 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent,Extensible
     }
 
     /**
-     * @param nodeService node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -114,7 +116,8 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent,Extensible
     }
 
     /**
-     * @param namespaceService namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -122,32 +125,36 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent,Extensible
     }
 
     /**
-     * @param tenantService tenant service
+     * @param tenantService
+     *            tenant service
      */
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-    
+
     /**
-     * @param messageService the messageService to set
+     * @param messageService
+     *            the messageService to set
      */
     public void setMessageService(MessageService messageService)
     {
         this.messageService = messageService;
     }
-    
-    /**
-     * @param policyBehaviourFilter the behaviourFilter to set
-     */
-    public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter) {
-		this.policyBehaviourFilter = policyBehaviourFilter;
-	}
 
     /**
-    * {@inheritDoc}
+     * @param policyBehaviourFilter
+     *            the behaviourFilter to set
      */
-    @Extend(traitAPI=WorkflowPackageTrait.class,extensionAPI=WorkflowPackageExtension.class)
+    public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter)
+    {
+        this.policyBehaviourFilter = policyBehaviourFilter;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Extend(traitAPI = WorkflowPackageTrait.class, extensionAPI = WorkflowPackageExtension.class)
     public NodeRef createPackage(NodeRef container)
     {
         // create a container, if one is not specified
@@ -159,7 +166,7 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent,Extensible
         }
 
         // attach workflow package
-        if (nodeService.hasAspect(container, WorkflowModel.ASPECT_WORKFLOW_PACKAGE)) 
+        if (nodeService.hasAspect(container, WorkflowModel.ASPECT_WORKFLOW_PACKAGE))
         {
             String msg = "Container '" + container + "' is already a workflow package.";
             throw new WorkflowException(msg);
@@ -176,26 +183,26 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent,Extensible
         NodeRef packages = findOrCreatePackagesFolder();
         String packageId = "pkg_" + GUID.generate();
         QName packageName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, packageId);
-        
-        try {
-        	policyBehaviourFilter.disableBehaviour(packages, ContentModel.ASPECT_AUDITABLE); 
-        	ChildAssociationRef packageAssoc = nodeService.createNode(packages, ContentModel.ASSOC_CONTAINS, packageName,
-        			WorkflowModel.TYPE_PACKAGE);
-        	NodeRef packageContainer = packageAssoc.getChildRef();
-        	// TODO: For now, grant full access to everyone
-        	permissionService.setPermission(packageContainer, PermissionService.ALL_AUTHORITIES,
-        			PermissionService.ALL_PERMISSIONS, true);
-        	return packageContainer;
+
+        try
+        {
+            policyBehaviourFilter.disableBehaviour(packages, ContentModel.ASPECT_AUDITABLE);
+            ChildAssociationRef packageAssoc = nodeService.createNode(packages, ContentModel.ASSOC_CONTAINS, packageName,
+                    WorkflowModel.TYPE_PACKAGE);
+            NodeRef packageContainer = packageAssoc.getChildRef();
+            // TODO: For now, grant full access to everyone
+            permissionService.setPermission(packageContainer, PermissionService.ALL_AUTHORITIES,
+                    PermissionService.ALL_PERMISSIONS, true);
+            return packageContainer;
         }
         finally
         {
-        	 policyBehaviourFilter.enableBehaviour(packages, ContentModel.ASPECT_AUDITABLE); 
+            policyBehaviourFilter.enableBehaviour(packages, ContentModel.ASPECT_AUDITABLE);
         }
     }
 
     /**
-     * Finds the system folder in which all packages are stored. If this folder
-     * has not been created yet then this method creates a new packages folder.
+     * Finds the system folder in which all packages are stored. If this folder has not been created yet then this method creates a new packages folder.
      * 
      * @return The system folder containing all workflow packages.
      */
@@ -207,7 +214,7 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent,Extensible
         // TODO: Consider structuring this folder, if number of children becomes
         // an issue
         List<NodeRef> packageFolders = searchService.selectNodes(system, "./" + NamespaceService.CONTENT_MODEL_PREFIX
-                    + ":" + PACKAGE_FOLDER, null, namespaceService, false);
+                + ":" + PACKAGE_FOLDER, null, namespaceService, false);
         if (packageFolders.size() > 0)
         {
             return packageFolders.get(0); // Return folder if exists.
@@ -217,22 +224,22 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent,Extensible
         {
             QName packageFolderName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, PACKAGE_FOLDER);
             ChildAssociationRef packageFolderAssoc = nodeService.createNode(system, ContentModel.ASSOC_CHILDREN,
-                        packageFolderName, ContentModel.TYPE_SYSTEM_FOLDER);
+                    packageFolderName, ContentModel.TYPE_SYSTEM_FOLDER);
             return packageFolderAssoc.getChildRef();
         }
     }
 
     /**
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
-    @Extend(traitAPI=WorkflowPackageTrait.class,extensionAPI=WorkflowPackageExtension.class)
+    @Extend(traitAPI = WorkflowPackageTrait.class, extensionAPI = WorkflowPackageExtension.class)
     public void deletePackage(NodeRef container)
     {
         if (container != null && nodeService.exists(container)
-                    && nodeService.hasAspect(container, WorkflowModel.ASPECT_WORKFLOW_PACKAGE))
+                && nodeService.hasAspect(container, WorkflowModel.ASPECT_WORKFLOW_PACKAGE))
         {
             Boolean isSystemPackage = (Boolean) nodeService
-                        .getProperty(container, WorkflowModel.PROP_IS_SYSTEM_PACKAGE);
+                    .getProperty(container, WorkflowModel.PROP_IS_SYSTEM_PACKAGE);
             if (isSystemPackage != null && isSystemPackage.booleanValue())
             {
                 nodeService.deleteNode(container);
@@ -245,9 +252,9 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent,Extensible
     }
 
     /**
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
-    @Extend(traitAPI=WorkflowPackageTrait.class,extensionAPI=WorkflowPackageExtension.class)
+    @Extend(traitAPI = WorkflowPackageTrait.class, extensionAPI = WorkflowPackageExtension.class)
     public List<String> getWorkflowIdsForContent(NodeRef packageItem)
     {
         ParameterCheck.mandatory("packageItem", packageItem);
@@ -259,10 +266,10 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent,Extensible
             {
                 NodeRef parentRef = parentAssoc.getParentRef();
                 if (nodeService.hasAspect(parentRef, WorkflowModel.ASPECT_WORKFLOW_PACKAGE)
-                            && !nodeService.hasAspect(parentRef, ContentModel.ASPECT_ARCHIVED))
+                        && !nodeService.hasAspect(parentRef, ContentModel.ASPECT_ARCHIVED))
                 {
                     String workflowInstance = (String) nodeService.getProperty(parentRef,
-                                WorkflowModel.PROP_WORKFLOW_INSTANCE_ID);
+                            WorkflowModel.PROP_WORKFLOW_INSTANCE_ID);
                     if (workflowInstance != null && workflowInstance.length() > 0)
                     {
                         workflowIds.add(workflowInstance);
@@ -286,8 +293,11 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent,Extensible
         {
             NodeRef systemContainer = findSystemContainer();
             NodeRef tenantSystemWorkflowContainer = findSystemWorkflowContainer(systemContainer);
-            if (tenantSystemWorkflowContainer == null) { throw new WorkflowException(
-                        "Unable to find system workflow folder - does not exist."); }
+            if (tenantSystemWorkflowContainer == null)
+            {
+                throw new WorkflowException(
+                        "Unable to find system workflow folder - does not exist.");
+            }
 
             return tenantSystemWorkflowContainer;
         }
@@ -297,8 +307,11 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent,Extensible
             {
                 NodeRef systemContainer = findSystemContainer();
                 systemWorkflowContainer = findSystemWorkflowContainer(systemContainer);
-                if (systemWorkflowContainer == null) { throw new WorkflowException(
-                            "Unable to find system workflow folder - does not exist."); }
+                if (systemWorkflowContainer == null)
+                {
+                    throw new WorkflowException(
+                            "Unable to find system workflow folder - does not exist.");
+                }
             }
             return systemWorkflowContainer;
         }
@@ -308,14 +321,18 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent,Extensible
     /**
      * Finds the system workflow container
      * 
-     * @param systemContainer the system container
+     * @param systemContainer
+     *            the system container
      * @return the system workflow container
      */
     private NodeRef findSystemWorkflowContainer(NodeRef systemContainer)
     {
         String path = bootstrap.getConfiguration().getProperty("system.workflow_container.childname");
-        if (path == null) { throw new WorkflowException(
-                    "Unable to locate workflow system container - path not specified"); }
+        if (path == null)
+        {
+            throw new WorkflowException(
+                    "Unable to locate workflow system container - path not specified");
+        }
         List<NodeRef> nodeRefs = searchService.selectNodes(systemContainer, path, null, namespaceService, false);
         NodeRef result = null;
         if (nodeRefs != null && nodeRefs.size() > 0)
@@ -325,7 +342,7 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent,Extensible
 
         if (tenantService.isEnabled() == false)
         {
-            if(result == null)
+            if (result == null)
             {
                 result = systemWorkflowContainer;
             }
@@ -345,11 +362,17 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent,Extensible
     private NodeRef findSystemContainer()
     {
         String path = bootstrap.getConfiguration().getProperty("system.system_container.childname");
-        if (path == null) { throw new WorkflowException("Unable to locate system container - path not specified"); }
+        if (path == null)
+        {
+            throw new WorkflowException("Unable to locate system container - path not specified");
+        }
         NodeRef root = nodeService.getRootNode(bootstrap.getStoreRef());
         List<NodeRef> nodeRefs = searchService.selectNodes(root, path, null, namespaceService, false);
-        if (nodeRefs == null || nodeRefs.size() == 0) { throw new WorkflowException(
-                    "Unable to locate system container - path not found"); }
+        if (nodeRefs == null || nodeRefs.size() == 0)
+        {
+            throw new WorkflowException(
+                    "Unable to locate system container - path not found");
+        }
         return nodeRefs.get(0);
     }
 
@@ -367,35 +390,35 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent,Extensible
             String name = bootstrap.getConfiguration().getProperty("system.workflow_container.childname");
             QName qname = QName.createQName(name, namespaceService);
             ChildAssociationRef childRef = nodeService.createNode(systemContainer, ContentModel.ASSOC_CHILDREN, qname,
-                        ContentModel.TYPE_CONTAINER);
+                    ContentModel.TYPE_CONTAINER);
             systemWfContainer = childRef.getChildRef();
         }
         return systemWfContainer;
     }
-    
+
     /**
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
-    @Extend(traitAPI=WorkflowPackageTrait.class,extensionAPI=WorkflowPackageExtension.class)
+    @Extend(traitAPI = WorkflowPackageTrait.class, extensionAPI = WorkflowPackageExtension.class)
     public boolean setWorkflowForPackage(WorkflowInstance instance)
     {
         NodeRef packageNode = instance.getWorkflowPackage();
-        if(packageNode==null)
+        if (packageNode == null)
             return false;
-        
+
         Serializable pckgInstanceId = nodeService.getProperty(packageNode, WorkflowModel.PROP_WORKFLOW_INSTANCE_ID);
-        if(pckgInstanceId != null)
+        if (pckgInstanceId != null)
         {
-            if(pckgInstanceId.equals(instance.getId()))
+            if (pckgInstanceId.equals(instance.getId()))
             {
                 return false;
             }
             String msg = messageService.getMessage(ERR_PACKAGE_ALREADY_ASSOCIATED, packageNode,
-                        instance.getId(), pckgInstanceId);
+                    instance.getId(), pckgInstanceId);
             throw new WorkflowException(msg);
         }
-        
-        if (nodeService.hasAspect(packageNode, WorkflowModel.ASPECT_WORKFLOW_PACKAGE)==false)
+
+        if (nodeService.hasAspect(packageNode, WorkflowModel.ASPECT_WORKFLOW_PACKAGE) == false)
         {
             createPackage(packageNode);
         }

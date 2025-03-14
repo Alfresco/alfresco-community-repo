@@ -30,6 +30,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CharStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.Token;
+import org.antlr.runtime.tree.CommonTree;
+import org.antlr.runtime.tree.Tree;
+
 import org.alfresco.repo.search.adaptor.AnalysisMode;
 import org.alfresco.repo.search.impl.parsers.CMIS_FTSLexer;
 import org.alfresco.repo.search.impl.parsers.CMIS_FTSParser;
@@ -47,13 +55,6 @@ import org.alfresco.repo.search.impl.querymodel.Selector;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSPhrase;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSTerm;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CharStream;
-import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.Token;
-import org.antlr.runtime.tree.CommonTree;
-import org.antlr.runtime.tree.Tree;
 
 public class CMISFTSQueryParser
 {
@@ -194,7 +195,6 @@ public class CMISFTSQueryParser
         return factory.createFunctionalConstraint(function, functionArguments);
     }
 
- 
     static class DisjunctionToken implements Token
     {
 
@@ -235,41 +235,37 @@ public class CMISFTSQueryParser
 
         public void setChannel(int arg0)
         {
-            
 
         }
 
         public void setCharPositionInLine(int arg0)
         {
-          
 
         }
 
         public void setInputStream(CharStream arg0)
         {
-        
+
         }
 
         public void setLine(int arg0)
         {
-         
 
         }
 
         public void setText(String arg0)
         {
-           
 
         }
 
         public void setTokenIndex(int arg0)
         {
-          
+
         }
 
         public void setType(int arg0)
         {
-           
+
         }
 
     }
@@ -279,7 +275,7 @@ public class CMISFTSQueryParser
 
         public int getChannel()
         {
-           
+
             return 0;
         }
 
@@ -315,37 +311,37 @@ public class CMISFTSQueryParser
 
         public void setChannel(int arg0)
         {
-           
+
         }
 
         public void setCharPositionInLine(int arg0)
         {
-           
+
         }
 
         public void setInputStream(CharStream arg0)
         {
-           
+
         }
 
         public void setLine(int arg0)
         {
-            
+
         }
 
         public void setText(String arg0)
         {
-           
+
         }
 
         public void setTokenIndex(int arg0)
         {
-            
+
         }
 
         public void setType(int arg0)
         {
-           
+
         }
 
     }

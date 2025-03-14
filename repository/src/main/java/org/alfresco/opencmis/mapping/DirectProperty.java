@@ -29,7 +29,6 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.alfresco.opencmis.CMISConnector;
-import org.alfresco.opencmis.CMISNodeInfoImpl;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -66,7 +65,7 @@ public class DirectProperty extends AbstractProperty
             // Invalid node
             return null;
         }
-        
+
         if (nodeInfo.getNodeRef() != null)
         {
             Serializable result = nodeInfo.getNodeProps().get(alfrescoName);
@@ -75,18 +74,18 @@ public class DirectProperty extends AbstractProperty
             if (result instanceof List)
             {
                 @SuppressWarnings("unchecked")
-                List<Object> resultList = (List<Object>)result;
+                List<Object> resultList = (List<Object>) result;
                 for (int index = 0; index < resultList.size(); index++)
                 {
                     Object element = resultList.get(index);
                     if (element instanceof NodeRef)
                     {
-                    	NodeRef nodeRef = (NodeRef)element;
+                        NodeRef nodeRef = (NodeRef) element;
                         resultList.set(index, nodeRef.getId());
                     }
                 }
             }
-            
+
             return result;
         }
         else if (nodeInfo.getAssociationRef() != null)

@@ -34,7 +34,7 @@ import junit.framework.TestCase;
  */
 public abstract class AbstractChainedSubsystemTest extends TestCase
 {
-    
+
     public ChildApplicationContextFactory getChildApplicationContextFactory(DefaultChildApplicationContextManager childApplicationContextManager, String id)
     {
         childApplicationContextManager.lock.readLock().lock();

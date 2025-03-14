@@ -46,49 +46,56 @@ package org.alfresco.rest.search;
 import org.alfresco.utility.model.TestModel;
 
 /**
- * Pojo to represent facet query.
- *         {"query": "content.size:[o TO 102400]", "label": "small"},
+ * Pojo to represent facet query. {"query": "content.size:[o TO 102400]", "label": "small"},
  **/
 public class FacetQuery extends TestModel
 {
-    
-    private String  query;
+
+    private String query;
     private String label;
     private String group;
-    
-    public FacetQuery() {}
-    public FacetQuery(String query,String label)
+
+    public FacetQuery()
+    {}
+
+    public FacetQuery(String query, String label)
     {
         this.query = query;
         this.label = label;
     }
-    public FacetQuery(String query,String label, String group)
+
+    public FacetQuery(String query, String label, String group)
     {
         this.query = query;
         this.label = label;
         this.group = group;
     }
-    
+
     public String getQuery()
     {
         return query;
     }
+
     public void setQuery(String query)
     {
         this.query = query;
     }
+
     public String getLabel()
     {
         return label;
     }
+
     public void setLabel(String label)
     {
         this.label = label;
     }
+
     public String getGroup()
     {
         return group;
     }
+
     public void setGroup(String group)
     {
         this.group = group;

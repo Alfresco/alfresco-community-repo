@@ -29,6 +29,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.After;
+import org.junit.Before;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.action.ActionService;
@@ -42,9 +46,6 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.junit.After;
-import org.junit.Before;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Base Alfresco test.
@@ -72,8 +73,7 @@ public abstract class BaseAlfrescoSpringTest extends BaseSpringTest
 
     /** The root node reference */
     protected NodeRef rootNodeRef;
-    
-    
+
     protected ActionService actionService;
     protected TransactionService transactionService;
 
@@ -87,14 +87,14 @@ public abstract class BaseAlfrescoSpringTest extends BaseSpringTest
         this.nodeService = (NodeService) this.applicationContext.getBean("nodeService");
         this.contentService = (ContentService) this.applicationContext.getBean("contentService");
         this.authenticationService = (MutableAuthenticationService) this.applicationContext.getBean("authenticationService");
-        this.actionService = (ActionService)this.applicationContext.getBean("actionService");
-        this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
+        this.actionService = (ActionService) this.applicationContext.getBean("actionService");
+        this.transactionService = (TransactionService) this.applicationContext.getBean("transactionComponent");
 
         // Authenticate as the system user
         authenticationComponent = (AuthenticationComponent) this.applicationContext
                 .getBean("authenticationComponent");
         authenticationComponent.setSystemUserAsCurrentUser();
-        
+
         // Create the store and get the root node
         this.storeRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         this.rootNodeRef = this.nodeService.getRootNode(this.storeRef);
@@ -113,10 +113,10 @@ public abstract class BaseAlfrescoSpringTest extends BaseSpringTest
         props.put(ContentModel.PROP_NAME, fullName);
         QName childName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, fullName);
         ChildAssociationRef childAssoc = nodeService.createNode(parentNode,
-                    ContentModel.ASSOC_CONTAINS,
-                    childName,
-                    type,
-                    props);
+                ContentModel.ASSOC_CONTAINS,
+                childName,
+                type,
+                props);
         return childAssoc.getChildRef();
     }
 
@@ -139,12 +139,12 @@ public abstract class BaseAlfrescoSpringTest extends BaseSpringTest
 
             PropertyMap ppOne = new PropertyMap(4);
             ppOne.put(ContentModel.PROP_USERNAME, userName);
-            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName"+nameSuffix);
-            ppOne.put(ContentModel.PROP_LASTNAME, "lastName"+nameSuffix);
-            ppOne.put(ContentModel.PROP_EMAIL, "email"+nameSuffix+"@email.com");
+            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName" + nameSuffix);
+            ppOne.put(ContentModel.PROP_LASTNAME, "lastName" + nameSuffix);
+            ppOne.put(ContentModel.PROP_EMAIL, "email" + nameSuffix + "@email.com");
             ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
 
-            PersonService personService = (PersonService)applicationContext.getBean("personService");
+            PersonService personService = (PersonService) applicationContext.getBean("personService");
             personService.createPerson(ppOne);
         }
     }

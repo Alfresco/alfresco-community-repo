@@ -37,7 +37,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 public class WorkflowAuthorityManager
 {
     private final AuthorityDAO authorityDAO;
-    
+
     public WorkflowAuthorityManager(AuthorityDAO authorityDAO)
     {
         this.authorityDAO = authorityDAO;
@@ -46,14 +46,15 @@ public class WorkflowAuthorityManager
     /**
      * Convert Alfresco authority to user id
      * 
-     * @param authority NodeRef
+     * @param authority
+     *            NodeRef
      * @return actor id
      */
     public String mapAuthorityToName(NodeRef authority)
     {
         return authorityDAO.getAuthorityName(authority);
     }
-    
+
     /**
      * Convert authority name to an Alfresco Authority
      * 
@@ -70,13 +71,13 @@ public class WorkflowAuthorityManager
         }
         return authority;
     }
-    
+
     public boolean isUser(String authorityName)
     {
         AuthorityType type = AuthorityType.getAuthorityType(authorityName);
         return type == AuthorityType.USER ||
-            type == AuthorityType.ADMIN ||
-            type == AuthorityType.GUEST;
+                type == AuthorityType.ADMIN ||
+                type == AuthorityType.GUEST;
     }
 
     public String getAuthorityName(NodeRef authorityRef)

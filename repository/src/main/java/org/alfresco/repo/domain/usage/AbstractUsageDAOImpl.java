@@ -29,23 +29,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.Pair;
-import org.springframework.dao.ConcurrencyFailureException;
-import org.springframework.extensions.surf.util.ParameterCheck;
-
 
 /**
  * Abstract implementation for Usage DAO.
  * <p>
- * This provides basic services such as caching, but defers to the underlying implementation
- * for CRUD operations for:
+ * This provides basic services such as caching, but defers to the underlying implementation for CRUD operations for:
  * 
- *     <b>alf_usage_delta</b>
+ * <b>alf_usage_delta</b>
  * 
  * @author janv
  * @since 3.4
@@ -53,16 +52,16 @@ import org.springframework.extensions.surf.util.ParameterCheck;
 public abstract class AbstractUsageDAOImpl implements UsageDAO
 {
     private NodeDAO nodeDAO;
-    
+
     public void setNodeDAO(NodeDAO nodeDAO)
     {
         this.nodeDAO = nodeDAO;
     }
-    
+
     private long getNodeIdNotNull(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        
+
         Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(nodeRef);
         if (nodePair == null)
         {
@@ -70,7 +69,7 @@ public abstract class AbstractUsageDAOImpl implements UsageDAO
         }
         return nodePair.getFirst();
     }
-    
+
     private NodeRef getNodeRefNotNull(long nodeId)
     {
         Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(nodeId);
@@ -80,18 +79,18 @@ public abstract class AbstractUsageDAOImpl implements UsageDAO
         }
         return nodePair.getSecond();
     }
-    
+
     public int deleteDeltas(NodeRef nodeRef)
     {
         long nodeId = getNodeIdNotNull(nodeRef);
         return deleteDeltas(nodeId);
     }
-    
+
     public int deleteDeltas(long nodeId)
     {
         return deleteUsageDeltaEntitiesByNodeId(nodeId);
     }
-    
+
     public long getTotalDeltaSize(NodeRef nodeRef, boolean removeDeltas)
     {
         long nodeId = getNodeIdNotNull(nodeRef);
@@ -109,15 +108,15 @@ public abstract class AbstractUsageDAOImpl implements UsageDAO
         }
         return (totalSize != null ? totalSize : 0L);
     }
-    
+
     public void insertDelta(NodeRef usageNodeRef, long deltaSize)
     {
         long nodeId = getNodeIdNotNull(usageNodeRef);
         UsageDeltaEntity entity = new UsageDeltaEntity(nodeId, deltaSize);
-        
+
         insertUsageDeltaEntity(entity);
     }
-    
+
     public Set<NodeRef> getUsageDeltaNodes()
     {
         // TODO move into nodeDAO to directly return set of nodeRefs
@@ -129,33 +128,40 @@ public abstract class AbstractUsageDAOImpl implements UsageDAO
         }
         return nodeRefs;
     }
-    
+
     public void getUserContentSizesForStore(StoreRef storeRef, MapHandler resultsCallback)
     {
         selectUserContentSizesForStore(storeRef, resultsCallback);
     }
-    
+
     public void getUsersWithoutUsage(StoreRef storeRef, MapHandler handler)
     {
         selectUsersWithoutUsage(storeRef, handler);
     }
-    
+
     public void getUsersWithUsage(StoreRef storeRef, MapHandler handler)
     {
         selectUsersWithUsage(storeRef, handler);
     }
-    
+
     public Long getContentSizeForStoreForUser(StoreRef storeRef, String userName)
     {
         return selectContentSizeForStoreForUser(storeRef, userName);
     }
-    
+
     protected abstract UsageDeltaEntity insertUsageDeltaEntity(UsageDeltaEntity entity);
+
     protected abstract UsageDeltaEntity selectTotalUsageDeltaSize(long nodeEntityId);
+
     protected abstract List<Long> selectUsageDeltaNodes();
+
     protected abstract void selectUsersWithoutUsage(StoreRef storeRef, MapHandler handler);
+
     protected abstract void selectUsersWithUsage(StoreRef storeRef, MapHandler handler);
+
     protected abstract void selectUserContentSizesForStore(StoreRef storeRef, MapHandler resultsCallback);
+
     protected abstract Long selectContentSizeForStoreForUser(StoreRef storeRef, String userName);
+
     protected abstract int deleteUsageDeltaEntitiesByNodeId(long nodeEntityId);
 }

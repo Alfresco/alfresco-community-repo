@@ -35,9 +35,7 @@ package org.alfresco.rest.api.model;
 public class Client
 {
     /**
-     * client app name. Used to lookup the client
-     * that is registered to send emails so that
-     * client's specific configuration could be used.
+     * client app name. Used to lookup the client that is registered to send emails so that client's specific configuration could be used.
      */
     protected String client;
 

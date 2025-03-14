@@ -25,8 +25,17 @@
  */
 package org.alfresco.heatbeat;
 
-import com.sun.management.OperatingSystemMXBean;
-import com.sun.management.UnixOperatingSystemMXBean;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.heartbeat.RenditionsDataCollector;
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
@@ -35,18 +44,6 @@ import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.descriptor.Descriptor;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-
-import java.lang.management.ManagementFactory;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Test the RenditionsDataCollector collects the correct data.
@@ -74,7 +71,7 @@ public class RenditionsDataCollectorTest
         when(mockDescriptor.getId()).thenReturn("mock_id");
         when(mockDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
 
-        renditionsDataCollector = new RenditionsDataCollector("acs.repository.renditions","1.0","0 0 0 ? * *", mockScheduler);
+        renditionsDataCollector = new RenditionsDataCollector("acs.repository.renditions", "1.0", "0 0 0 ? * *", mockScheduler);
         renditionsDataCollector.setHbDataCollectorService(mockCollectorService);
         renditionsDataCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);
     }
@@ -124,10 +121,10 @@ public class RenditionsDataCollectorTest
             Map<String, Object> values = data.getData();
             assertEquals("There should have been 4 mapped values", 4, values.size());
 
-            String rendition = (String)values.get("rendition");
-            String sourceMimetype = (String)values.get("sourceMimetype");
-            String targetMimetype = (String)values.get("targetMimetype");
-            Integer count = (Integer)values.get("count");
+            String rendition = (String) values.get("rendition");
+            String sourceMimetype = (String) values.get("sourceMimetype");
+            String targetMimetype = (String) values.get("targetMimetype");
+            Integer count = (Integer) values.get("count");
 
             assertNotNull(rendition);
             assertNotNull(sourceMimetype);
@@ -172,7 +169,7 @@ public class RenditionsDataCollectorTest
         // A batch of 0 renditions
         collectedData = renditionsDataCollector.collectData();
         assertEquals("There should have been 0 data elements", 0, collectedData.size());
-        
+
         // A batch of 1 rendition
         renditionsDataCollector.recordRenditionRequest(doclib, "xls");
         collectedData = renditionsDataCollector.collectData();
@@ -188,9 +185,9 @@ public class RenditionsDataCollectorTest
             Map<String, Object> values = data.getData();
 
             if (rendition.equals(values.get("rendition")) &&
-                sourceMimetype.equals(values.get("sourceMimetype")) &&
-                targetMimetype.equals(values.get("targetMimetype")) &&
-                 count == ((Integer)values.get("count")).intValue())
+                    sourceMimetype.equals(values.get("sourceMimetype")) &&
+                    targetMimetype.equals(values.get("targetMimetype")) &&
+                    count == ((Integer) values.get("count")).intValue())
             {
                 found = true;
                 break;

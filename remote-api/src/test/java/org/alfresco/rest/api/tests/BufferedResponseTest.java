@@ -35,13 +35,14 @@ import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.alfresco.repo.web.scripts.BufferedResponse;
-import org.alfresco.repo.web.scripts.TempOutputStream;
-import org.alfresco.util.TempFileProvider;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import org.alfresco.repo.web.scripts.BufferedResponse;
+import org.alfresco.repo.web.scripts.TempOutputStream;
+import org.alfresco.util.TempFileProvider;
 
 /**
  * Test that BufferedResponse uses a temp file instead of buffering the entire output stream in memory
@@ -75,15 +76,14 @@ public class BufferedResponseTest
     }
 
     /**
-     * Test that the output stream creates a temp file to cache its content when file size was bigger than its memory threshold ( 5 > 4 MB )
-     * MNT-19833
+     * Test that the output stream creates a temp file to cache its content when file size was bigger than its memory threshold ( 5 > 4 MB ) MNT-19833
      */
     @Test
     public void testOutputStream() throws IOException
     {
         File bufferTempDirectory = TempFileProvider.getTempDir(TEMP_DIRECTORY_NAME);
         Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory,
-            MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);
+                MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);
 
         final long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory, FILE_PREFIX);
 
@@ -113,7 +113,7 @@ public class BufferedResponseTest
     private void createRandomFileInDirectory(String path, String fileName, int size) throws IOException
     {
         String fullPath = new File(path, fileName).getPath();
-        RandomAccessFile file = new RandomAccessFile(fullPath,"rw");
+        RandomAccessFile file = new RandomAccessFile(fullPath, "rw");
         file.setLength(size);
         file.close();
     }
@@ -121,7 +121,6 @@ public class BufferedResponseTest
     private long countFilesInDirectoryWithPrefix(File directory, String filePrefix) throws IOException
     {
         Stream<File> fileStream = Arrays.stream(directory.listFiles());
-        return fileStream.filter( f -> f.getName().startsWith(filePrefix)).count();
+        return fileStream.filter(f -> f.getName().startsWith(filePrefix)).count();
     }
 }
-

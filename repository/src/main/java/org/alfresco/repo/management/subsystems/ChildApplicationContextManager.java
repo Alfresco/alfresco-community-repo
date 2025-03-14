@@ -30,9 +30,7 @@ import java.util.Collection;
 import org.springframework.context.ApplicationContext;
 
 /**
- * A <code>ChildApplicationContextManager</code> manages a 'chain' of child application contexts, perhaps corresponding
- * to the components of a chained subsystem such as authentication. A <code>ChildApplicationContextManager</code> may
- * also support the dynamic modification of its chain.
+ * A <code>ChildApplicationContextManager</code> manages a 'chain' of child application contexts, perhaps corresponding to the components of a chained subsystem such as authentication. A <code>ChildApplicationContextManager</code> may also support the dynamic modification of its chain.
  * 
  * @author dward
  */

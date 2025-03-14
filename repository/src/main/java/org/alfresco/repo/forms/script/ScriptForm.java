@@ -45,17 +45,17 @@ public class ScriptForm implements Serializable
 
     private Form form;
     private Map<String, FieldDefinition> fieldDefinitionData;
-    //TODO Consider caching
+    // TODO Consider caching
 
-    /* default */ScriptForm(Form formObject)
+    /* default */ ScriptForm(Form formObject)
     {
         this.form = formObject;
-        
+
         fieldDefinitionData = new HashMap<String, FieldDefinition>();
         List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
         if (fieldDefs != null)
         {
-            for (FieldDefinition fd : fieldDefs) 
+            for (FieldDefinition fd : fieldDefs)
             {
                 fieldDefinitionData.put(fd.getName(), fd);
             }
@@ -66,7 +66,7 @@ public class ScriptForm implements Serializable
     {
         return form.getItem().getKind();
     }
-    
+
     public String getItemId()
     {
         return form.getItem().getId();
@@ -76,12 +76,12 @@ public class ScriptForm implements Serializable
     {
         return form.getItem().getType();
     }
-    
+
     public String getItemUrl()
     {
         return form.getItem().getUrl();
     }
-    
+
     public String getSubmissionUrl()
     {
         return form.getSubmissionUrl();
@@ -101,7 +101,7 @@ public class ScriptForm implements Serializable
     {
         return new ScriptFormData(form.getFormData());
     }
-    
+
     @Override
     public String toString()
     {

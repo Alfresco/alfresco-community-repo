@@ -30,7 +30,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.alfresco.filesys.config.ServerConfigurationBean;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.config.ConfigElement;
+
 import org.alfresco.filesys.alfresco.ExtendedDiskInterface;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.core.DeviceContext;
@@ -39,7 +42,6 @@ import org.alfresco.jlan.server.core.SharedDevice;
 import org.alfresco.jlan.server.filesys.DiskDeviceContext;
 import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSizeInterface;
-import org.alfresco.jlan.server.filesys.FileAccessToken;
 import org.alfresco.jlan.server.filesys.FileInfo;
 import org.alfresco.jlan.server.filesys.FileOpenParams;
 import org.alfresco.jlan.server.filesys.FileStatus;
@@ -61,48 +63,39 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.config.ConfigElement;
 
 /**
  * Alfresco Content Disk Driver Cache
  * <p>
- * Decorates ContentDiskDriver with a performance cache of some frequently used 
- * results.   In particular for getFileInformation and fileExists
+ * Decorates ContentDiskDriver with a performance cache of some frequently used results. In particular for getFileInformation and fileExists
  */
-/*
- * MER - this class is also acting as a proxy to gather together the different interfaces 
- * and present them to JLAN.   This was not the intention and is a short term hack.   It 
- * should be possible to un-spring the buffering, however that's not possible at the moment. 
- */
-public class BufferedContentDiskDriver implements ExtendedDiskInterface, 
-    DiskInterface, 
-    DiskSizeInterface, 
-    IOCtlInterface, 
-    OpLockInterface, 
-    FileLockingInterface,
-    NodeServicePolicies.OnDeleteNodePolicy,
-    NodeServicePolicies.OnMoveNodePolicy 
+/* MER - this class is also acting as a proxy to gather together the different interfaces and present them to JLAN. This was not the intention and is a short term hack. It should be possible to un-spring the buffering, however that's not possible at the moment. */
+public class BufferedContentDiskDriver implements ExtendedDiskInterface,
+        DiskInterface,
+        DiskSizeInterface,
+        IOCtlInterface,
+        OpLockInterface,
+        FileLockingInterface,
+        NodeServicePolicies.OnDeleteNodePolicy,
+        NodeServicePolicies.OnMoveNodePolicy
 {
     // Logging
     private static final Log logger = LogFactory.getLog(BufferedContentDiskDriver.class);
-    
+
     private ExtendedDiskInterface diskInterface;
-    
+
     private DiskSizeInterface diskSizeInterface;
-    
+
     private IOCtlInterface ioctlInterface;
-    
+
     private OpLockInterface opLockInterface;
-    
-    private FileLockingInterface fileLockingInterface; 
-    
+
+    private FileLockingInterface fileLockingInterface;
+
     private PolicyComponent policyComponent;
-        
+
     public void init()
     {
         PropertyCheck.mandatory(this, "diskInterface", diskInterface);
@@ -113,267 +106,259 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
         PropertyCheck.mandatory(this, "opLockInterface", getOpLockInterface());
         PropertyCheck.mandatory(this, "fileLockingInterface", fileLockingInterface);
         PropertyCheck.mandatory(this, "policyComponent", getPolicyComponent());
-        
-        getPolicyComponent().bindClassBehaviour( NodeServicePolicies.OnDeleteNodePolicy.QNAME,
-                this, new JavaBehaviour(this, "onDeleteNode"));   
-        getPolicyComponent().bindClassBehaviour( NodeServicePolicies.OnMoveNodePolicy.QNAME,
+
+        getPolicyComponent().bindClassBehaviour(NodeServicePolicies.OnDeleteNodePolicy.QNAME,
+                this, new JavaBehaviour(this, "onDeleteNode"));
+        getPolicyComponent().bindClassBehaviour(NodeServicePolicies.OnMoveNodePolicy.QNAME,
                 this, new JavaBehaviour(this, "onMoveNode"));
     }
-    
+
     /**
      * FileInfo Cache for path to FileInfo
-     */    
+     */
     private SimpleCache<Serializable, FileInfo> fileInfoCache;
-    
+
     /**
      * Set the cache that maintains node ID-NodeRef cross referencing data
      * 
-     * @param cache                 the cache
+     * @param cache
+     *            the cache
      */
     public void setFileInfoCache(SimpleCache<Serializable, FileInfo> cache)
     {
         this.fileInfoCache = cache;
     }
-    
+
     private static class FileInfoKey implements Serializable
     {
         /**
          * 
          */
         private static final long serialVersionUID = 1L;
-        
+
         String deviceName;
         String path;
         String user;
         int hashCode;
-        
+
         public FileInfoKey(SrvSession sess, String path, TreeConnection tree)
         {
             this.path = path;
             this.user = sess.getUniqueId();
             this.deviceName = tree.getSharedDevice().getName();
-            
-//            if(deviceName == null)
-//            {
-//                throw new RuntimeException("device name is null");
-//            }
-//            if(path == null)
-//            {
-//                throw new RuntimeException("path is null");
-//            }
-//            if(user == null)
-//            {
-//                throw new RuntimeException("unique id is null");
-//            }
+
+            // if(deviceName == null)
+            // {
+            // throw new RuntimeException("device name is null");
+            // }
+            // if(path == null)
+            // {
+            // throw new RuntimeException("path is null");
+            // }
+            // if(user == null)
+            // {
+            // throw new RuntimeException("unique id is null");
+            // }
         }
-        
+
         @Override
         public boolean equals(Object other)
         {
-           if (this == other)
-           {
-               return true;
-           }
-           if (other == null || !(other instanceof FileInfoKey))
-           {
-               return false;
-           }
-              
-           FileInfoKey o = (FileInfoKey)other;
-           
-           return path.equals(o.path) && user.equals(o.user) && deviceName.equals(o.deviceName);
-        }     
-          
+            if (this == other)
+            {
+                return true;
+            }
+            if (other == null || !(other instanceof FileInfoKey))
+            {
+                return false;
+            }
+
+            FileInfoKey o = (FileInfoKey) other;
+
+            return path.equals(o.path) && user.equals(o.user) && deviceName.equals(o.deviceName);
+        }
+
         @Override
         public int hashCode()
         {
-            if(hashCode == 0)
+            if (hashCode == 0)
             {
-                hashCode = (user+path+deviceName).hashCode();
+                hashCode = (user + path + deviceName).hashCode();
             }
             return hashCode;
         }
     }
-    
+
     private FileInfo getFileInformationInternal(SrvSession sess, TreeConnection tree,
             String path) throws IOException
     {
-               
-        //String userName = AuthenticationUtil.getFullyAuthenticatedUser();
+
+        // String userName = AuthenticationUtil.getFullyAuthenticatedUser();
         SharedDevice device = tree.getSharedDevice();
         String deviceName = device.getName();
-       
-        if(logger.isDebugEnabled())
+
+        if (logger.isDebugEnabled())
         {
             logger.debug("getFileInformation session:" + sess.getUniqueId() + ", deviceName:" + deviceName + ", path:" + path);
         }
-        
-        if(path == null)
+
+        if (path == null)
         {
             throw new IllegalArgumentException("Path is null");
         }
-        
+
         FileInfoKey key = new FileInfoKey(sess, path, tree);
-        
+
         FileInfo fromCache = fileInfoCache.get(key);
-        
-        if(fromCache != null)
+
+        if (fromCache != null)
         {
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("returning FileInfo from cache");
             }
             return fromCache;
         }
-        
+
         FileInfo info = diskInterface.getFileInformation(sess, tree, path);
-        
-        if(info != null)
+
+        if (info != null)
         {
             /**
              * Don't cache directories since the modification date is important.
              */
-            if(!info.isDirectory())
+            if (!info.isDirectory())
             {
                 fileInfoCache.put(key, info);
             }
         }
-         
-        /*
-         * Dual Key the cache so it can be looked up by NodeRef or Path
-         */
-        if(info instanceof ContentFileInfo)
+
+        /* Dual Key the cache so it can be looked up by NodeRef or Path */
+        if (info instanceof ContentFileInfo)
         {
-            ContentFileInfo cinfo = (ContentFileInfo)info;
-            fileInfoCache.put(cinfo.getNodeRef(), info);    
+            ContentFileInfo cinfo = (ContentFileInfo) info;
+            fileInfoCache.put(cinfo.getNodeRef(), info);
         }
-        
+
         return info;
     }
 
-    
     @Override
     public FileInfo getFileInformation(SrvSession sess, TreeConnection tree,
             String path) throws IOException
     {
         ContentContext tctx = (ContentContext) tree.getContext();
-        
+
         FileInfo info = getFileInformationInternal(sess, tree, path);
-        
-        /*
-         *  Some information is not maintained by the repo and represents an in-progress update.
-         *  For example as a file is being written the modification and access dates change.
-         */        
-        if(tctx.hasStateCache())
+
+        /* Some information is not maintained by the repo and represents an in-progress update. For example as a file is being written the modification and access dates change. */
+        if (tctx.hasStateCache())
         {
             FileStateCache cache = tctx.getStateCache();
             FileState fstate = cache.findFileState(path, false);
-            if(fstate != null)
+            if (fstate != null)
             {
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
-                    logger.debug("state cache available - overwriting from state cache: isDirectory=" +info.isDirectory());
+                    logger.debug("state cache available - overwriting from state cache: isDirectory=" + info.isDirectory());
                 }
                 FileInfo finfo = new FileInfo();
                 finfo.copyFrom(info);
-                
+
                 /**
-                 * File state is probably stale for directories which is why we don't attempt to 
-                 * cache.
-                 */     
-                if(!info.isDirectory())
-                {                  
-                    /*
-                     * What about stale file state values here?
-                     */
-                    if(fstate.hasFileSize())
+                 * File state is probably stale for directories which is why we don't attempt to cache.
+                 */
+                if (!info.isDirectory())
+                {
+                    /* What about stale file state values here? */
+                    if (fstate.hasFileSize())
                     {
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
                             logger.debug("replace file size " + info.getSize() + " with " + fstate.getFileSize());
                         }
                         finfo.setFileSize(fstate.getFileSize());
                     }
-                    if ( fstate.hasAccessDateTime())
+                    if (fstate.hasAccessDateTime())
                     {
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
                             logger.debug("replace access date " + new Date(finfo.getAccessDateTime()) + " with " + new Date(fstate.getAccessDateTime()));
                         }
                         finfo.setAccessDateTime(fstate.getAccessDateTime());
                     }
-                    if ( fstate.hasChangeDateTime())
+                    if (fstate.hasChangeDateTime())
                     {
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
                             logger.debug("replace change date " + new Date(finfo.getChangeDateTime()) + " with " + new Date(fstate.getChangeDateTime()));
                         }
                         finfo.setChangeDateTime(fstate.getChangeDateTime());
                     }
-                    if ( fstate.hasModifyDateTime())
+                    if (fstate.hasModifyDateTime())
                     {
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
                             logger.debug("replace modified date " + new Date(finfo.getModifyDateTime()) + " with " + new Date(fstate.getModifyDateTime()));
                         }
                         finfo.setModifyDateTime(fstate.getModifyDateTime());
                     }
-                    if ( fstate.hasAllocationSize())
+                    if (fstate.hasAllocationSize())
                     {
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
                             logger.debug("replace allocation size" + finfo.getAllocationSize() + " with " + fstate.getAllocationSize());
                         }
                         finfo.setAllocationSize(fstate.getAllocationSize());
                     }
                 }
-                
-                if(logger.isDebugEnabled())
+
+                if (logger.isDebugEnabled())
                 {
-                    logger.debug("Return getFileInformation, path: " + path + 
-                            ", returning:" + finfo  + 
-                            ", readOnly:" +finfo.isReadOnly() +
-                            ", fileId:" +finfo.getFileId() +
-                            ", fileSize:" +finfo.getSize() +
-                            ", directoryId:" + finfo.getDirectoryId() + 
-                            ", createdDate: " + new Date(finfo.getCreationDateTime()) + 
+                    logger.debug("Return getFileInformation, path: " + path +
+                            ", returning:" + finfo +
+                            ", readOnly:" + finfo.isReadOnly() +
+                            ", fileId:" + finfo.getFileId() +
+                            ", fileSize:" + finfo.getSize() +
+                            ", directoryId:" + finfo.getDirectoryId() +
+                            ", createdDate: " + new Date(finfo.getCreationDateTime()) +
                             ", accessDate:" + new Date(finfo.getAccessDateTime()) +
                             ", modifiedDate:" + new Date(finfo.getModifyDateTime()) +
                             ", changeDate:" + new Date(finfo.getChangeDateTime()) +
-                            ", fileAttributes: 0x"+ Integer.toHexString(info.getFileAttributes()) +
+                            ", fileAttributes: 0x" + Integer.toHexString(info.getFileAttributes()) +
                             ", mode: 0x" + Integer.toHexString(finfo.getMode()));
                 }
-                
+
                 return finfo;
             }
         }
-        
-        if(logger.isDebugEnabled())
+
+        if (logger.isDebugEnabled())
         {
             logger.debug("getFileInformation Return:" + path + " returning" + info);
         }
 
         return info;
-        
+
     }
-    
+
     @Override
     public int fileExists(SrvSession sess, TreeConnection tree, String path)
     {
         String deviceName = tree.getSharedDevice().getName();
-        
-        if(logger.isDebugEnabled())
+
+        if (logger.isDebugEnabled())
         {
             logger.debug("fileExists session:" + sess.getUniqueId() + ", deviceName" + deviceName + ", path:" + path);
         }
-        
+
         FileInfoKey key = new FileInfoKey(sess, path, tree);
-        
+
         FileInfo fromCache = fileInfoCache.get(key);
-        
-        if(fromCache != null)
+
+        if (fromCache != null)
         {
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("fileExists found FileInfo in cache");
             }
@@ -388,11 +373,11 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
         }
         else
         {
-            try 
+            try
             {
                 FileInfo lookup = getFileInformationInternal(sess, tree, path);
-                
-                if(logger.isDebugEnabled())
+
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("fileExists obtained file information");
                 }
@@ -411,7 +396,7 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
             }
         }
     }
-  
+
     @Override
     public DeviceContext createContext(String shareName, ConfigElement args)
             throws DeviceContextException
@@ -422,7 +407,7 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
     @Override
     public void treeOpened(SrvSession sess, TreeConnection tree)
     {
-        diskInterface.treeOpened(sess, tree);        
+        diskInterface.treeOpened(sess, tree);
     }
 
     @Override
@@ -443,7 +428,7 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
     public void getDiskInformation(DiskDeviceContext ctx, SrvDiskInfo diskDev)
             throws IOException
     {
-        diskSizeInterface.getDiskInformation(ctx, diskDev);        
+        diskSizeInterface.getDiskInformation(ctx, diskDev);
     }
 
     @Override
@@ -451,11 +436,11 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
             NetworkFile param) throws IOException
     {
         diskInterface.closeFile(sess, tree, param);
-        
+
         /**
          * If the fileInfo cache may have just had some content updated.
          */
-        if(!param.isDirectory() && !param.isReadOnly())
+        if (!param.isDirectory() && !param.isReadOnly())
         {
             fileInfoCache.clear();
         }
@@ -480,7 +465,7 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
             throws IOException
     {
         fileInfoCache.remove(dir);
-        
+
         diskInterface.deleteDirectory(sess, tree, dir);
     }
 
@@ -489,15 +474,15 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
             throws IOException
     {
         fileInfoCache.remove(name);
-        
-        diskInterface.deleteFile(sess, tree, name);       
+
+        diskInterface.deleteFile(sess, tree, name);
     }
 
     @Override
     public void flushFile(SrvSession sess, TreeConnection tree, NetworkFile file)
             throws IOException
     {
-        diskInterface.flushFile(sess, tree, file);        
+        diskInterface.flushFile(sess, tree, file);
     }
 
     @Override
@@ -525,7 +510,7 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
     public void renameFile(SrvSession sess, TreeConnection tree,
             String oldName, String newName) throws IOException
     {
-        diskInterface.renameFile(sess, tree, oldName, newName);       
+        diskInterface.renameFile(sess, tree, oldName, newName);
     }
 
     @Override
@@ -568,7 +553,7 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
     public void registerContext(DeviceContext ctx)
             throws DeviceContextException
     {
-        diskInterface.registerContext(ctx);        
+        diskInterface.registerContext(ctx);
     }
 
     public void setDiskInterface(ExtendedDiskInterface diskInterface)
@@ -605,7 +590,7 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
     public void onMoveNode(ChildAssociationRef oldChildAssocRef,
             ChildAssociationRef newChildAssocRef)
     {
-        if(fileInfoCache.contains(oldChildAssocRef.getChildRef()))
+        if (fileInfoCache.contains(oldChildAssocRef.getChildRef()))
         {
             logger.debug("cached node moved - clear the cache");
             fileInfoCache.clear();
@@ -615,7 +600,7 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
     @Override
     public void onDeleteNode(ChildAssociationRef oldChildAssocRef, boolean isArchived)
     {
-        if(fileInfoCache.contains(oldChildAssocRef.getChildRef()))
+        if (fileInfoCache.contains(oldChildAssocRef.getChildRef()))
         {
             logger.debug("cached node deleted - clear the cache");
             fileInfoCache.clear();
@@ -660,16 +645,13 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
         return getFileLockingInterface().getLockManager(sess, tree);
     }
 
-
     public void setFileLockingInterface(FileLockingInterface fileLockingInterface)
     {
         this.fileLockingInterface = fileLockingInterface;
     }
-
 
     public FileLockingInterface getFileLockingInterface()
     {
         return fileLockingInterface;
     }
 }
-  

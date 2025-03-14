@@ -25,20 +25,15 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.RestModels;
+import static org.alfresco.utility.report.log.Step.STEP;
 
 import java.util.List;
 
-import static org.alfresco.utility.report.log.Step.STEP;
+import org.alfresco.rest.core.RestModels;
 
 /**
  * 
- "entries": [
-      {"entry": {
-         "name": "bpm_package",
-         "type": "bpm:workflowPackage",
-         "value": "workspace://SpacesStore/ab728441-84f4-4d61-bb04-c51822b114fe"
-      }},
+ * "entries": [ {"entry": { "name": "bpm_package", "type": "bpm:workflowPackage", "value": "workspace://SpacesStore/ab728441-84f4-4d61-bb04-c51822b114fe" }},
  *
  */
 public class RestProcessVariableCollection extends RestModels<RestProcessVariableModel, RestProcessVariableCollection>
@@ -48,7 +43,7 @@ public class RestProcessVariableCollection extends RestModels<RestProcessVariabl
         STEP(String.format("REST API: Get process variable entry with name '%s'", name));
         List<RestProcessVariableModel> processVariablesList = getEntries();
 
-        for (RestProcessVariableModel variable: processVariablesList)
+        for (RestProcessVariableModel variable : processVariablesList)
         {
             if (variable.onModel().getName().equals(name))
             {
@@ -57,4 +52,4 @@ public class RestProcessVariableCollection extends RestModels<RestProcessVariabl
         }
         return null;
     }
-}    
+}

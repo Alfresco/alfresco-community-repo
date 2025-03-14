@@ -25,16 +25,16 @@
  */
 package org.alfresco.repo.content;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-
 import jakarta.transaction.UserTransaction;
 
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.BaseApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.After;
@@ -45,14 +45,13 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.springframework.context.ApplicationContext;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.BaseApplicationContextHelper;
 
 /**
- * Abstract base class that provides a set of tests for implementations
- * of {@link ContentStore}.
+ * Abstract base class that provides a set of tests for implementations of {@link ContentStore}.
  * 
  * @see ContentStore
  * @see org.alfresco.service.cmr.repository.ContentReader
@@ -63,20 +62,21 @@ import static org.junit.Assert.fail;
  */
 public abstract class AbstractReadOnlyContentStoreTest
 {
-	protected static ApplicationContext ctx;
+    protected static ApplicationContext ctx;
 
     private static Log logger = LogFactory.getLog(AbstractReadOnlyContentStoreTest.class);
 
-	@Rule public TestName name = new TestName();
+    @Rule
+    public TestName name = new TestName();
 
-	protected String getName()
-	{
-		return name.getMethodName();
-	}
+    protected String getName()
+    {
+        return name.getMethodName();
+    }
 
     protected TransactionService transactionService;
     private UserTransaction txn;
-    
+
     public AbstractReadOnlyContentStoreTest()
     {
         super();
@@ -85,7 +85,7 @@ public abstract class AbstractReadOnlyContentStoreTest
     @BeforeClass
     public static void beforeClass() throws Exception
     {
-    	ctx = BaseApplicationContextHelper.getApplicationContext(ApplicationContextHelper.CONFIG_LOCATIONS);
+        ctx = BaseApplicationContextHelper.getApplicationContext(ApplicationContextHelper.CONFIG_LOCATIONS);
     }
 
     /**
@@ -98,27 +98,32 @@ public abstract class AbstractReadOnlyContentStoreTest
         txn = transactionService.getUserTransaction();
         txn.begin();
     }
-    
+
     /**
      * Rolls back the transaction
      */
     @After
     public void after() throws Exception
     {
-        try { txn.rollback(); } catch (Throwable e) {e.printStackTrace();}
+        try
+        {
+            txn.rollback();
+        }
+        catch (Throwable e)
+        {
+            e.printStackTrace();
+        }
     }
-    
+
     /**
-     * Fetch the store to be used during a test.  This method is invoked once per test - it is
-     * therefore safe to use <code>setUp</code> to initialise resources.
+     * Fetch the store to be used during a test. This method is invoked once per test - it is therefore safe to use <code>setUp</code> to initialise resources.
      * <p>
-     * Usually tests will construct a static instance of the store to use throughout all the
-     * tests.
+     * Usually tests will construct a static instance of the store to use throughout all the tests.
      * 
      * @return Returns the <b>same instance</b> of a store for all invocations.
      */
     protected abstract ContentStore getStore();
-    
+
     /**
      * Gets a reader for the given content URL from the store
      * 
@@ -128,7 +133,7 @@ public abstract class AbstractReadOnlyContentStoreTest
     {
         return getStore().getReader(contentUrl);
     }
-    
+
     @Test
     public void testSetUp() throws Exception
     {
@@ -139,8 +144,7 @@ public abstract class AbstractReadOnlyContentStoreTest
     }
 
     /**
-     * Helper to ensure that illegal content URLs are flagged for
-     * <b>getReader()</b> and <b>exists()</b> requests.
+     * Helper to ensure that illegal content URLs are flagged for <b>getReader()</b> and <b>exists()</b> requests.
      */
     private void checkIllegalReadContentUrl(ContentStore store, String contentUrl)
     {
@@ -164,12 +168,12 @@ public abstract class AbstractReadOnlyContentStoreTest
             // Expected
         }
     }
-    
+
     /**
      * Tests to implement this method in order to provide some content to play with
      */
     protected abstract String getExistingContentUrl();
-    
+
     /**
      * Checks that the error handling for <i>inappropriate</i> content URLs
      */
@@ -181,7 +185,7 @@ public abstract class AbstractReadOnlyContentStoreTest
         checkIllegalReadContentUrl(store, "bogus://");
         checkIllegalReadContentUrl(store, "bogus://bogus");
     }
-    
+
     /**
      * Checks that the various methods of obtaining a reader are supported.
      */
@@ -202,19 +206,19 @@ public abstract class AbstractReadOnlyContentStoreTest
         assertTrue("Reader says content doesn't exist", reader.exists());
         assertFalse("Reader should not be closed before a read", reader.isClosed());
         assertFalse("The reader channel should not be open yet", reader.isChannelOpen());
-        
+
         // Open the channel
         ReadableByteChannel readChannel = reader.getReadableChannel();
         readChannel.read(ByteBuffer.wrap(new byte[500]));
         assertFalse("Reader should not be closed during a read", reader.isClosed());
         assertTrue("The reader channel should be open during a read", reader.isChannelOpen());
-        
+
         // Close the channel
         readChannel.close();
         assertTrue("Reader should be closed after a read", reader.isClosed());
         assertFalse("The reader channel should be closed after a read", reader.isChannelOpen());
     }
-    
+
     /**
      * Tests random access reading
      * <p>
@@ -236,7 +240,7 @@ public abstract class AbstractReadOnlyContentStoreTest
 
         FileChannel fileChannel = reader.getFileChannel();
         assertNotNull("No channel given", fileChannel);
-        
+
         // check that no other content access is allowed
         try
         {
@@ -249,7 +253,7 @@ public abstract class AbstractReadOnlyContentStoreTest
         }
         fileChannel.close();
     }
-    
+
     @Test
     public void testBlockedWriteOperations() throws Exception
     {

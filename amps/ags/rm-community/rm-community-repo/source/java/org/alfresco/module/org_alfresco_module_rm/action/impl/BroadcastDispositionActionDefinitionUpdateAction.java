@@ -35,6 +35,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
@@ -47,13 +50,9 @@ import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * Action to implement the consequences of a change to the value of the DispositionActionDefinition
- * properties. When these properties are changed on a disposition schedule, then any associated
- * disposition actions may need to be updated as a consequence.
+ * Action to implement the consequences of a change to the value of the DispositionActionDefinition properties. When these properties are changed on a disposition schedule, then any associated disposition actions may need to be updated as a consequence.
  *
  * @author Neil McErlean
  */
@@ -73,8 +72,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
     }
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -85,7 +83,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
             return;
         }
 
-        List<QName> changedProps = (List<QName>)action.getParameterValue(CHANGED_PROPERTIES);
+        List<QName> changedProps = (List<QName>) action.getParameterValue(CHANGED_PROPERTIES);
 
         // Navigate up the containment hierarchy to get the record category grandparent and schedule.
         NodeRef dispositionScheduleNode = getNodeService().getPrimaryParent(actionedUponNodeRef).getParentRef();
@@ -120,7 +118,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
         // has been updated
         DispositionSchedule itemDs = getDispositionService().getDispositionSchedule(disposableItem);
         if (itemDs != null &&
-            itemDs.getNodeRef().equals(ds.getNodeRef()))
+                itemDs.getNodeRef().equals(ds.getNodeRef()))
         {
             if (getNodeService().hasAspect(disposableItem, ASPECT_DISPOSITION_LIFECYCLE))
             {
@@ -141,7 +139,8 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
     /**
      * Manually update the rolled up search properties
      *
-     * @param disposableItem    disposable item
+     * @param disposableItem
+     *            disposable item
      */
     private void rollupSearchProperties(NodeRef disposableItem)
     {
@@ -173,19 +172,21 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
             {
                 list.add(event.getEventName());
             }
-            props.put(PROP_RS_DISPOSITION_EVENTS, (Serializable)list);
+            props.put(PROP_RS_DISPOSITION_EVENTS, (Serializable) list);
 
             getNodeService().setProperties(disposableItem, props);
         }
     }
 
     /**
-     * Processes all the changes applied to the given disposition
-     * action definition node for the given record or folder node.
+     * Processes all the changes applied to the given disposition action definition node for the given record or folder node.
      *
-     * @param dispositionActionDef The disposition action definition node
-     * @param changedProps The set of properties changed on the action definition
-     * @param recordOrFolder The record or folder the changes potentially need to be applied to
+     * @param dispositionActionDef
+     *            The disposition action definition node
+     * @param changedProps
+     *            The set of properties changed on the action definition
+     * @param recordOrFolder
+     *            The record or folder the changes potentially need to be applied to
      */
     private void processActionDefinitionChanges(NodeRef dispositionActionDef, List<QName> changedProps, NodeRef recordOrFolder)
     {
@@ -209,22 +210,23 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
 
             if (changedProps.contains(PROP_DISPOSITION_ACTION_NAME))
             {
-                String action = (String)getNodeService().getProperty(dispositionActionDef, PROP_DISPOSITION_ACTION_NAME);
+                String action = (String) getNodeService().getProperty(dispositionActionDef, PROP_DISPOSITION_ACTION_NAME);
                 getNodeService().setProperty(nextAction.getNodeRef(), PROP_DISPOSITION_ACTION, action);
             }
         }
     }
 
     /**
-     * Determines whether the disposition action definition (step) being
-     * updated has any effect on the given next action
+     * Determines whether the disposition action definition (step) being updated has any effect on the given next action
      *
-     * @param dispositionActionDef The disposition action definition node
-     * @param nextAction The next disposition action
+     * @param dispositionActionDef
+     *            The disposition action definition node
+     * @param nextAction
+     *            The next disposition action
      * @return true if the step change affects the next action
      */
     private boolean doesChangedStepAffectNextAction(NodeRef dispositionActionDef,
-                DispositionAction nextAction)
+            DispositionAction nextAction)
     {
         boolean affectsNextAction = false;
 
@@ -243,11 +245,12 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
     }
 
     /**
-     * Persists any changes made to the period on the given disposition action
-     * definition on the given next action.
+     * Persists any changes made to the period on the given disposition action definition on the given next action.
      *
-     * @param dispositionActionDef The disposition action definition node
-     * @param nextAction The next disposition action
+     * @param dispositionActionDef
+     *            The disposition action definition node
+     * @param nextAction
+     *            The next disposition action
      */
     protected void persistPeriodChanges(NodeRef dispositionActionDef, DispositionAction nextAction)
     {
@@ -258,7 +261,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
         if (logger.isDebugEnabled())
         {
             logger.debug("Set disposition as of date for next action '" + nextAction.getName() +
-                        "' (" + nextAction.getNodeRef() + ") to: " + newAsOfDate);
+                    "' (" + nextAction.getNodeRef() + ") to: " + newAsOfDate);
         }
 
         getNodeService().setProperty(nextAction.getNodeRef(), PROP_DISPOSITION_AS_OF, newAsOfDate);

@@ -25,28 +25,28 @@
  */
 package org.alfresco.heartbeat.jobs;
 
-import org.alfresco.heartbeat.HBBaseDataCollector;
-import org.alfresco.heartbeat.datasender.HBData;
-import org.alfresco.heartbeat.jobs.QuartzJobScheduler;
-import org.alfresco.repo.scheduler.AlfrescoSchedulerFactory;
-import org.junit.Before;
-import org.junit.Test;
-import org.quartz.*;
-import org.springframework.scheduling.quartz.SchedulerFactoryBean;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
+import org.quartz.*;
+import org.springframework.scheduling.quartz.SchedulerFactoryBean;
+
+import org.alfresco.heartbeat.HBBaseDataCollector;
+import org.alfresco.heartbeat.datasender.HBData;
+import org.alfresco.repo.scheduler.AlfrescoSchedulerFactory;
 
 public class QuartzJobSchedulerTest
 {
 
     private Scheduler scheduler;
-    QuartzJobScheduler hbJobScheduler ;
+    QuartzJobScheduler hbJobScheduler;
 
     @Before
     public void setUp() throws Exception
@@ -118,12 +118,12 @@ public class QuartzJobSchedulerTest
         hbJobScheduler.unscheduleJob(c2);
 
         // 1 & 2 gone, 3 is still there
-        assertFalse(isJobScheduledForCollector(c1.getCollectorId(),scheduler));
-        assertFalse(isJobScheduledForCollector(c2.getCollectorId(),scheduler));
-        assertTrue(isJobScheduledForCollector(c3.getCollectorId(),scheduler));
+        assertFalse(isJobScheduledForCollector(c1.getCollectorId(), scheduler));
+        assertFalse(isJobScheduledForCollector(c2.getCollectorId(), scheduler));
+        assertTrue(isJobScheduledForCollector(c3.getCollectorId(), scheduler));
     }
 
-    @Test(expected=RuntimeException.class)
+    @Test(expected = RuntimeException.class)
     public void testInvalidCronExpression() throws Exception
     {
 
@@ -137,7 +137,7 @@ public class QuartzJobSchedulerTest
 
         public SimpleHBDataCollector(String collectorId, String cron)
         {
-            super(collectorId,"1.0",cron, hbJobScheduler);
+            super(collectorId, "1.0", cron, hbJobScheduler);
         }
 
         public List<HBData> collectData()
@@ -158,8 +158,7 @@ public class QuartzJobSchedulerTest
 
     private QuartzJobScheduler createSimpleJobScheduler()
     {
-        return new QuartzJobScheduler()
-        {
+        return new QuartzJobScheduler() {
 
             @Override
             protected JobDataMap getJobDetailMap(HBBaseDataCollector collector)

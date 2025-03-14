@@ -27,6 +27,8 @@ package org.alfresco.repo.tenant;
 
 import java.util.List;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.tenant.TenantAdminDAO;
 import org.alfresco.repo.domain.tenant.TenantEntity;
@@ -40,7 +42,6 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /*
  * MT Service implementation
@@ -414,7 +415,7 @@ public class MultiTServiceImpl implements TenantService
         int idx = name.lastIndexOf(SEPARATOR);
         if (idx != -1)
         {
-           return name.substring(0, idx);
+            return name.substring(0, idx);
         }
         else
         {
@@ -610,13 +611,9 @@ public class MultiTServiceImpl implements TenantService
     /**
      * Get the primary domain for the given user, if a tenant for that domain exists.
      * 
-     * For user names of the form "user@tenantdomain", the tenant domain the part of the string 
-     * after the @ symbol. A check is then made to see if tenant with that domain name exists.  
-     * If it does, then the identified domain is returned. If no tenant exists then null is 
-     * returned.
+     * For user names of the form "user@tenantdomain", the tenant domain the part of the string after the @ symbol. A check is then made to see if tenant with that domain name exists. If it does, then the identified domain is returned. If no tenant exists then null is returned.
      * 
-     * If the username does not end with a domain, as described above, then the default domain is 
-     * returned. 
+     * If the username does not end with a domain, as described above, then the default domain is returned.
      */
     @Override
     public String getPrimaryDomain(String username)

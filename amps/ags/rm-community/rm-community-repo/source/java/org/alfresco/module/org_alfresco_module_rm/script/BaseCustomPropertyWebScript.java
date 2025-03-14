@@ -39,8 +39,7 @@ import org.alfresco.service.namespace.QName;
 public class BaseCustomPropertyWebScript extends AbstractRmWebScript
 {
     /**
-     * Takes the element name and maps it to the QName of the customisable type.  The passed element name should be a prefixed
-     * qname string, but to support previous versions of this API a couple of hard coded checks are made first.
+     * Takes the element name and maps it to the QName of the customisable type. The passed element name should be a prefixed qname string, but to support previous versions of this API a couple of hard coded checks are made first.
      *
      * @param elementName
      * @return

@@ -32,108 +32,109 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
-import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
+import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
+
 public class SiteContainer implements Serializable, ExpectedComparison, Comparable<SiteContainer>
 {
-	private static final long serialVersionUID = 535206187221924534L;
+    private static final long serialVersionUID = 535206187221924534L;
 
-	private String siteId;
-	private String id;
-	private String folderId;
+    private String siteId;
+    private String id;
+    private String folderId;
 
-	public SiteContainer(String siteId, String folderId, String id)
-	{
-		super();
-		this.siteId = siteId;
-		this.folderId = folderId;
-		this.id = id;
-	}
-	
-	public String getSiteId()
-	{
-		return siteId;
-	}
+    public SiteContainer(String siteId, String folderId, String id)
+    {
+        super();
+        this.siteId = siteId;
+        this.folderId = folderId;
+        this.id = id;
+    }
 
-	public String getFolderId()
-	{
-		return folderId;
-	}
+    public String getSiteId()
+    {
+        return siteId;
+    }
 
-	public String getId()
-	{
-		return id;
-	}
-	
-	@Override
-	public String toString()
-	{
-		return "SiteContainer [siteId=" + siteId + ", folderId=" + folderId
-				+ ", id=" + id + "]";
-	}
+    public String getFolderId()
+    {
+        return folderId;
+    }
 
-	public static SiteContainer parseSiteContainer(String siteId, JSONObject json)
-	{
-		SiteContainer siteContainer = null;
+    public String getId()
+    {
+        return id;
+    }
 
-		if(json != null)
-		{
-			siteContainer = new SiteContainer(siteId, (String)json.get("folderId"), (String)json.get("id"));
-		}
+    @Override
+    public String toString()
+    {
+        return "SiteContainer [siteId=" + siteId + ", folderId=" + folderId
+                + ", id=" + id + "]";
+    }
 
-		return siteContainer;
-	}
+    public static SiteContainer parseSiteContainer(String siteId, JSONObject json)
+    {
+        SiteContainer siteContainer = null;
 
-	public static ListResponse<SiteContainer> parseSiteContainers(JSONObject jsonObject)
-	{
-		List<SiteContainer> siteContainers = new ArrayList<SiteContainer>();
+        if (json != null)
+        {
+            siteContainer = new SiteContainer(siteId, (String) json.get("folderId"), (String) json.get("id"));
+        }
 
-		JSONObject jsonList = (JSONObject)jsonObject.get("list");
-		assertNotNull(jsonList);
+        return siteContainer;
+    }
 
-		JSONArray jsonEntries = (JSONArray)jsonList.get("entries");
-		assertNotNull(jsonEntries);
+    public static ListResponse<SiteContainer> parseSiteContainers(JSONObject jsonObject)
+    {
+        List<SiteContainer> siteContainers = new ArrayList<SiteContainer>();
 
-		for(int i = 0; i < jsonEntries.size(); i++)
-		{
-			JSONObject jsonEntry = (JSONObject)jsonEntries.get(i);
-			JSONObject entry = (JSONObject)jsonEntry.get("entry");
-			siteContainers.add(SiteContainer.parseSiteContainer(null, entry));
-		}
+        JSONObject jsonList = (JSONObject) jsonObject.get("list");
+        assertNotNull(jsonList);
 
-		ExpectedPaging paging = ExpectedPaging.parsePagination(jsonList);
+        JSONArray jsonEntries = (JSONArray) jsonList.get("entries");
+        assertNotNull(jsonEntries);
 
-		ListResponse<SiteContainer> resp = new ListResponse<SiteContainer>(paging, siteContainers);
-		return resp;
-	}
-	
-	@SuppressWarnings("unchecked")
-	public JSONObject toJSON()
-	{
-		JSONObject siteContainerJson = new JSONObject();
-		siteContainerJson.put("id", id);
-		siteContainerJson.put("folderId", folderId);
-		return siteContainerJson;
-	}
+        for (int i = 0; i < jsonEntries.size(); i++)
+        {
+            JSONObject jsonEntry = (JSONObject) jsonEntries.get(i);
+            JSONObject entry = (JSONObject) jsonEntry.get("entry");
+            siteContainers.add(SiteContainer.parseSiteContainer(null, entry));
+        }
 
-	@Override
-	public void expected(Object o)
-	{
-		assertTrue(o instanceof SiteContainer);
-		
-		SiteContainer other = (SiteContainer)o;
+        ExpectedPaging paging = ExpectedPaging.parsePagination(jsonList);
 
-		AssertUtil.assertEquals("id", id, other.getId());
-		AssertUtil.assertEquals("folderId", folderId, other.getFolderId());
-	}
+        ListResponse<SiteContainer> resp = new ListResponse<SiteContainer>(paging, siteContainers);
+        return resp;
+    }
 
-	@Override
-	public int compareTo(SiteContainer o)
-	{
-		return folderId.compareTo(o.getFolderId());
-	}
-	
+    @SuppressWarnings("unchecked")
+    public JSONObject toJSON()
+    {
+        JSONObject siteContainerJson = new JSONObject();
+        siteContainerJson.put("id", id);
+        siteContainerJson.put("folderId", folderId);
+        return siteContainerJson;
+    }
+
+    @Override
+    public void expected(Object o)
+    {
+        assertTrue(o instanceof SiteContainer);
+
+        SiteContainer other = (SiteContainer) o;
+
+        AssertUtil.assertEquals("id", id, other.getId());
+        AssertUtil.assertEquals("folderId", folderId, other.getFolderId());
+    }
+
+    @Override
+    public int compareTo(SiteContainer o)
+    {
+        return folderId.compareTo(o.getFolderId());
+    }
+
 }

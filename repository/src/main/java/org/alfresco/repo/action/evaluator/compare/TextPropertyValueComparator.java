@@ -44,22 +44,22 @@ public class TextPropertyValueComparator implements PropertyValueComparator
      * I18N message ids
      */
     private static final String MSGID_INVALID_OPERATION = "text_property_value_comparator.invalid_operation";
-    
+
     /**
      * Special star string
      */
     private static final String STAR = "*";
-    
+
     /**
      * @see org.alfresco.repo.action.evaluator.compare.PropertyValueComparator#compare(java.io.Serializable, java.io.Serializable, org.alfresco.repo.action.evaluator.compare.ComparePropertyValueOperation)
      */
     public boolean compare(
             Serializable propertyValue,
-            Serializable compareValue, 
+            Serializable compareValue,
             ComparePropertyValueOperation operation)
     {
-        String compareText = (String)compareValue;
-        
+        String compareText = (String) compareValue;
+
         boolean result = false;
         if (operation == null)
         {
@@ -74,54 +74,56 @@ public class TextPropertyValueComparator implements PropertyValueComparator
             {
                 // Remove the star and set the operation to startsWith
                 operation = ComparePropertyValueOperation.BEGINS;
-                compareText = compareText.substring(0, (compareText.length()-1));
+                compareText = compareText.substring(0, (compareText.length() - 1));
             }
             else
             {
                 operation = ComparePropertyValueOperation.CONTAINS;
             }
         }
-            
+
         // Build the reg ex
         String regEx = buildRegEx(compareText, operation);
-        
+
         // Do the match
         if (propertyValue != null)
         {
-            result = ((String)propertyValue).toLowerCase().matches(regEx);
+            result = ((String) propertyValue).toLowerCase().matches(regEx);
         }
-        
+
         return result;
     }
-    
+
     /**
      * Builds the regular expressin that it used to make the match
      * 
-     * @param matchText     the raw text to be matched
-     * @param operation     the operation
-     * @return              the regular expression string
+     * @param matchText
+     *            the raw text to be matched
+     * @param operation
+     *            the operation
+     * @return the regular expression string
      */
-    private String buildRegEx(String matchText, ComparePropertyValueOperation operation) 
+    private String buildRegEx(String matchText, ComparePropertyValueOperation operation)
     {
         String result = escapeText(matchText.toLowerCase());
-        switch (operation) 
+        switch (operation)
         {
-            case CONTAINS:
-                result = "^.*" + result + ".*$";
-                break;
-            case BEGINS:
-                result = "^" + result + ".*$";
-                break;
-            case ENDS:
-                result = "^.*" + result + "$";
-                break;
-            case EQUALS:
-                break;
-            default:
-                // Raise an invalid operation exception
-                throw new ActionServiceException(
-                        MSGID_INVALID_OPERATION, 
-                        new Object[]{operation.toString()});
+        case CONTAINS:
+            result = "^.*" + result + ".*$";
+            break;
+        case BEGINS:
+            result = "^" + result + ".*$";
+            break;
+        case ENDS:
+            result = "^.*" + result + "$";
+            break;
+        case EQUALS:
+            break;
+        default:
+            // Raise an invalid operation exception
+            throw new ActionServiceException(
+                    MSGID_INVALID_OPERATION,
+                    new Object[]{operation.toString()});
         }
         return result;
     }
@@ -129,13 +131,14 @@ public class TextPropertyValueComparator implements PropertyValueComparator
     /**
      * Escapes the text before it is turned into a regualr expression
      * 
-     * @param matchText     the raw text
-     * @return              the escaped text
+     * @param matchText
+     *            the raw text
+     * @return the escaped text
      */
-    private String escapeText(String matchText) 
+    private String escapeText(String matchText)
     {
         StringBuilder builder = new StringBuilder(matchText.length());
-        for (char charValue : matchText.toCharArray()) 
+        for (char charValue : matchText.toCharArray())
         {
             if (charValue == '*')
             {
@@ -147,7 +150,7 @@ public class TextPropertyValueComparator implements PropertyValueComparator
             }
             builder.append(charValue);
         }
-        
+
         return builder.toString();
     }
 
@@ -155,8 +158,8 @@ public class TextPropertyValueComparator implements PropertyValueComparator
      * List of escape characters
      */
     private static List<Character> ESCAPE_CHAR_LIST = null;
-    
-    static 
+
+    static
     {
         // ([{\^$|)?*+.
         ESCAPE_CHAR_LIST = new ArrayList<Character>(4);

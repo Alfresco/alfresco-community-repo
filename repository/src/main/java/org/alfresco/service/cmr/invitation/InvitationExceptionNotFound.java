@@ -31,14 +31,14 @@ package org.alfresco.service.cmr.invitation;
 public class InvitationExceptionNotFound extends InvitationException
 {
 
-	public InvitationExceptionNotFound(String msgId, Object... args) 
-	{
-		super(msgId, args);
-	}
+    public InvitationExceptionNotFound(String msgId, Object... args)
+    {
+        super(msgId, args);
+    }
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -6112400396903083597L;
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -6112400396903083597L;
 
 }

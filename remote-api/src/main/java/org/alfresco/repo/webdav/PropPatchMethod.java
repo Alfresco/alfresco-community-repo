@@ -27,14 +27,8 @@ package org.alfresco.repo.webdav;
 
 import java.util.ArrayList;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.model.FileNotFoundException;
-import org.alfresco.service.namespace.QName;
 import org.dom4j.DocumentHelper;
 import org.dom4j.io.XMLWriter;
 import org.w3c.dom.Document;
@@ -42,6 +36,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Implements the WebDAV PROPPATCH method
@@ -55,16 +55,16 @@ public class PropPatchMethod extends PropFindMethod
     private String strHRef;
     private WebDAVProperty failedProperty;
     private String basePath;
-    
+
     /**
-     * @return          Returns <tt>false</tt> always
+     * @return Returns <tt>false</tt> always
      */
     @Override
     protected boolean isReadOnly()
     {
         return false;
     }
-    
+
     @Override
     protected void executeImpl() throws WebDAVServerException, Exception
     {
@@ -81,7 +81,7 @@ public class PropPatchMethod extends PropFindMethod
         }
 
         checkNode(pathNodeInfo);
-        
+
         // Create the path for the current location in the tree
         StringBuilder baseBuild = new StringBuilder(256);
         baseBuild.append(getPath());
@@ -90,24 +90,23 @@ public class PropPatchMethod extends PropFindMethod
             baseBuild.append(WebDAVHelper.PathSeperatorChar);
         }
         basePath = baseBuild.toString();
-        
+
         // Build the href string for the current node
         boolean isFolder = pathNodeInfo.isFolder();
         strHRef = getURLForPath(m_request, basePath, isFolder);
-        
+
         // Do the real work: patch the properties
         patchProperties(pathNodeInfo, basePath);
     }
 
-    
     @Override
     protected void generateResponseImpl() throws Exception
     {
         m_response.setStatus(WebDAV.WEBDAV_SC_MULTI_STATUS);
-        
+
         // Set the response content type
         m_response.setContentType(WebDAV.XML_CONTENT_TYPE);
-        
+
         // Create multistatus response
         XMLWriter xml = createXMLWriter();
 
@@ -119,7 +118,7 @@ public class PropPatchMethod extends PropFindMethod
                 WebDAV.XML_MULTI_STATUS + nsdec,
                 WebDAV.XML_NS_MULTI_STATUS + nsdec,
                 getDAVHelper().getNullAttributes());
-        
+
         // Output the response block for the current node
         xml.startElement(
                 WebDAV.DAV_NS,
@@ -143,10 +142,10 @@ public class PropPatchMethod extends PropFindMethod
             String statusCodeDescription = propertyAction.getStatusCodeDescription();
             generatePropertyResponse(xml, property, statusCode, statusCodeDescription);
         }
-        
+
         // Close off the response element
         xml.endElement(WebDAV.DAV_NS, WebDAV.XML_RESPONSE, WebDAV.XML_NS_RESPONSE);
-        
+
         // Close the outer XML element
         xml.endElement(WebDAV.DAV_NS, WebDAV.XML_MULTI_STATUS, WebDAV.XML_NS_MULTI_STATUS);
 
@@ -154,7 +153,6 @@ public class PropPatchMethod extends PropFindMethod
         flushXML(xml);
     }
 
-    
     /**
      * Parse the request body
      * 
@@ -206,10 +204,10 @@ public class PropPatchMethod extends PropFindMethod
                                             int action = currentNode.getNodeName().endsWith(WebDAV.XML_SET) ? PropertyAction.SET : PropertyAction.REMOVE;
                                             m_propertyActions.add(new PropertyAction(action, createProperty(propNode)));
                                             break;
+                                        }
                                     }
                                 }
-                            }
-                            break;
+                                break;
                             }
                         }
                     }
@@ -218,7 +216,7 @@ public class PropPatchMethod extends PropFindMethod
             }
 
         }
-        
+
     }
 
     /**
@@ -239,7 +237,7 @@ public class PropPatchMethod extends PropFindMethod
     protected WebDAVProperty createProperty(Node node)
     {
         WebDAVProperty property = super.createProperty(node);
-        
+
         String strValue = null;
         Node value = node.getFirstChild();
         if (value != null)
@@ -250,8 +248,7 @@ public class PropPatchMethod extends PropFindMethod
 
         return property;
     }
-    
-    
+
     protected void patchProperties(FileInfo nodeInfo, String path) throws WebDAVServerException
     {
         failedProperty = null;
@@ -274,10 +271,10 @@ public class PropPatchMethod extends PropFindMethod
             if (failedProperty == null)
             {
                 PropertyDefinition propDef = getDAVHelper().getDictionaryService().getProperty(property.createQName());
-                
-                boolean deadProperty = propDef == null || (!propDef.getContainerClass().isAspect() && !getDAVHelper().getDictionaryService().isSubClass(getNodeService().getType(nodeInfo.getNodeRef()), 
+
+                boolean deadProperty = propDef == null || (!propDef.getContainerClass().isAspect() && !getDAVHelper().getDictionaryService().isSubClass(getNodeService().getType(nodeInfo.getNodeRef()),
                         propDef.getContainerClass().getName()));
-                
+
                 if (deadProperty && deadProperties == null)
                 {
                     deadProperties = loadDeadProperties(nodeInfo.getNodeRef());
@@ -330,16 +327,18 @@ public class PropPatchMethod extends PropFindMethod
             persistDeadProperties(nodeInfo.getNodeRef(), deadProperties);
         }
     }
-    
-    
+
     /**
-     * Generates the XML response for a PROPFIND request that asks for a list of
-     * all known properties
+     * Generates the XML response for a PROPFIND request that asks for a list of all known properties
      * 
-     * @param xml XMLWriter
-     * @param property WebDAVProperty
-     * @param status int
-     * @param description String
+     * @param xml
+     *            XMLWriter
+     * @param property
+     *            WebDAVProperty
+     * @param status
+     *            int
+     * @param description
+     *            String
      */
     protected void generatePropertyResponse(XMLWriter xml, WebDAVProperty property, int status, String description)
     {
@@ -376,11 +375,11 @@ public class PropPatchMethod extends PropFindMethod
         }
     }
 
-
     /**
      * Generates the error tag
      * 
-     * @param xml XMLWriter
+     * @param xml
+     *            XMLWriter
      */
     protected void generateError(XMLWriter xml)
     {
@@ -402,7 +401,6 @@ public class PropPatchMethod extends PropFindMethod
         }
     }
 
-    
     /**
      * Stores information about PROPPATCH action(set or remove) an according property.
      * 
@@ -412,29 +410,31 @@ public class PropPatchMethod extends PropFindMethod
     {
         public static final int SET = 0;
         public static final int REMOVE = 1;
-        
+
         // Property on which action should be performed
         private WebDAVProperty property;
-        
+
         // Action
         private int action;
-        
+
         private int statusCode;
-        
+
         private String statusCodeDescription;
-        
+
         /**
          * Constructor
          * 
-         * @param action int
-         * @param property WebDAVProperty
+         * @param action
+         *            int
+         * @param property
+         *            WebDAVProperty
          */
         public PropertyAction(int action, WebDAVProperty property)
         {
             this.action = action;
             this.property = property;
         }
-        
+
         public void setResult(int statusCode, String statusCodeDescription)
         {
             this.statusCode = statusCode;
@@ -464,7 +464,7 @@ public class PropPatchMethod extends PropFindMethod
         public String toString()
         {
             StringBuilder str = new StringBuilder();
-            
+
             str.append("[");
             str.append("action=");
             str.append(getAction() == 0 ? "SET" : "REMOVE");
@@ -475,10 +475,9 @@ public class PropPatchMethod extends PropFindMethod
             str.append(",statusCodeDescription=");
             str.append(getStatusCodeDescription());
             str.append("]");
-            
+
             return str.toString();
         }
     }
-    
-    
+
 }

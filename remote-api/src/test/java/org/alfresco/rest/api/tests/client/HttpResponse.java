@@ -45,106 +45,105 @@ import org.json.simple.parser.ParseException;
 
 public class HttpResponse
 {
-	protected HttpMethod method;
-	private String user;
-	private byte[] responseBytes;
-	private Map<String,String> headers;
-	private long time;
+    protected HttpMethod method;
+    private String user;
+    private byte[] responseBytes;
+    private Map<String, String> headers;
+    private long time;
 
-	public HttpResponse(HttpMethod method, String user, byte[] responseBytes, Map<String,String> headers, long time)
-	{
-		this.method = method;
-		this.user = user;
-		this.time = time;
-		this.headers = headers;
-		this.responseBytes = responseBytes;
-	}
+    public HttpResponse(HttpMethod method, String user, byte[] responseBytes, Map<String, String> headers, long time)
+    {
+        this.method = method;
+        this.user = user;
+        this.time = time;
+        this.headers = headers;
+        this.responseBytes = responseBytes;
+    }
 
-	public int getStatusCode()
-	{
-		return method.getStatusCode();
-	}
+    public int getStatusCode()
+    {
+        return method.getStatusCode();
+    }
 
-	public String getResponse()
-	{
-		if (responseBytes != null)
-		{
-			if (method instanceof HttpMethodBase)
-			{
-				// mimic method.getResponseBodyAsString
-				return EncodingUtil.getString(responseBytes, ((HttpMethodBase)method).getResponseCharSet());
-			}
-			else
-			{
-				return new String(responseBytes);
-			}
-		}
-		else
-		{
-			return null;
-		}
-	}
+    public String getResponse()
+    {
+        if (responseBytes != null)
+        {
+            if (method instanceof HttpMethodBase)
+            {
+                // mimic method.getResponseBodyAsString
+                return EncodingUtil.getString(responseBytes, ((HttpMethodBase) method).getResponseCharSet());
+            }
+            else
+            {
+                return new String(responseBytes);
+            }
+        }
+        else
+        {
+            return null;
+        }
+    }
 
-	public byte[] getResponseAsBytes()
-	{
-		return responseBytes;
-	}
-	
-	public Map<String,String> getHeaders()
-	{
-	    return headers;
-	}
-	
-	public String toString()
-	{
-		StringBuilder sb = new StringBuilder();
+    public byte[] getResponseAsBytes()
+    {
+        return responseBytes;
+    }
 
-		String requestType = null;
+    public Map<String, String> getHeaders()
+    {
+        return headers;
+    }
+
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        String requestType = null;
         RequestEntity requestEntity = null;
 
-		if (method instanceof GetMethod)
-		{
-			requestType = "GET";
-		}
+        if (method instanceof GetMethod)
+        {
+            requestType = "GET";
+        }
         else if (method instanceof PutMethod)
         {
             requestType = "PUT";
             requestEntity = ((PutMethod) method).getRequestEntity();
         }
         else if (method instanceof PostMethod)
-		{
-			requestType = "POST";
-            requestEntity = ((PostMethod)method).getRequestEntity();
-		}
-		else if (method instanceof DeleteMethod)
-		{
-			requestType = "DELETE";
-		}
+        {
+            requestType = "POST";
+            requestEntity = ((PostMethod) method).getRequestEntity();
+        }
+        else if (method instanceof DeleteMethod)
+        {
+            requestType = "DELETE";
+        }
 
-		try
-		{
-			sb.append(requestType).append(" request ").append(method.getURI()).append("\n");
-		}
-		catch (URIException e)
-		{
-		}
+        try
+        {
+            sb.append(requestType).append(" request ").append(method.getURI()).append("\n");
+        }
+        catch (URIException e)
+        {}
 
         if (requestEntity != null)
         {
             sb.append("\nRequest body: ");
             if (requestEntity instanceof StringRequestEntity)
             {
-                sb.append(((StringRequestEntity)requestEntity).getContent());
+                sb.append(((StringRequestEntity) requestEntity).getContent());
             }
             else if (requestEntity instanceof ByteArrayRequestEntity)
             {
-                sb.append(" << ").append(((ByteArrayRequestEntity)requestEntity).getContent().length).append(" bytes >>");
+                sb.append(" << ").append(((ByteArrayRequestEntity) requestEntity).getContent().length).append(" bytes >>");
             }
             sb.append("\n");
         }
 
-		sb.append("user ").append(user).append("\n");
-		sb.append("returned ").append(method.getStatusCode()).append(" and took ").append(time).append("ms").append("\n");
+        sb.append("user ").append(user).append("\n");
+        sb.append("returned ").append(method.getStatusCode()).append(" and took ").append(time).append("ms").append("\n");
 
         String contentType = null;
         Header hdr = method.getResponseHeader("Content-Type");
@@ -162,29 +161,29 @@ public class HttpResponse
                 sb.append(getResponse());
                 sb.append("\n");
             }
-            else if(getResponseAsBytes() != null)
+            else if (getResponseAsBytes() != null)
             {
                 sb.append(" << ").append(getResponseAsBytes().length).append(" bytes >>");
                 sb.append("\n");
             }
         }
 
-		return sb.toString();
-	}
-	
-	public JSONObject getJsonResponse()
-	{
+        return sb.toString();
+    }
+
+    public JSONObject getJsonResponse()
+    {
         JSONObject result = null;
 
         try
         {
-			String response = getResponse();
+            String response = getResponse();
             if (response != null)
             {
                 Object object = new JSONParser().parse(response);
-                if(object instanceof JSONObject)
+                if (object instanceof JSONObject)
                 {
-                   return (JSONObject) object;
+                    return (JSONObject) object;
                 }
             }
         }
@@ -192,7 +191,7 @@ public class HttpResponse
         {
             // Ignore errors, returning null
         }
-       
+
         return result;
-	}
+    }
 }

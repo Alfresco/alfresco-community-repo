@@ -26,15 +26,14 @@
 
 package org.alfresco.repo.security.authentication;
 
+import java.util.List;
+
 import org.alfresco.filesys.auth.ftp.FTPAuthenticatorBase;
 import org.alfresco.jlan.ftp.FTPSrvSession;
 import org.alfresco.jlan.server.auth.ClientInfo;
 
-import java.util.List;
-
 /**
- * Base chaining FTP Authenticator class. Where appropriate, methods will 'chain' across multiple
- * {@link FTPAuthenticatorBase} instances, as returned by {@link #getUsableFtpAuthenticators()}.
+ * Base chaining FTP Authenticator class. Where appropriate, methods will 'chain' across multiple {@link FTPAuthenticatorBase} instances, as returned by {@link #getUsableFtpAuthenticators()}.
  *
  * @author alex.mukha
  * @since 4.2.1

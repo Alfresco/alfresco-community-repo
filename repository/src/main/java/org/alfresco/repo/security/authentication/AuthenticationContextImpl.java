@@ -35,14 +35,14 @@ import net.sf.acegisecurity.LockedException;
 import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import net.sf.acegisecurity.providers.dao.User;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Andy Hind
@@ -51,7 +51,7 @@ import org.apache.commons.logging.LogFactory;
 public class AuthenticationContextImpl implements AuthenticationContext
 {
     private final Log logger = LogFactory.getLog(getClass());
-    
+
     private TenantService tenantService;
     private PersonService personService;
     private AuthenticationService authenticationService;
@@ -163,9 +163,9 @@ public class AuthenticationContextImpl implements AuthenticationContext
 
     private boolean isImmutableAuthority(String authorityName)
     {
-        return AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
-        {
-            @Override public Boolean doWork() throws Exception
+        return AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>() {
+            @Override
+            public Boolean doWork() throws Exception
             {
                 MutableAuthenticationService mutableAuthenticationService = (MutableAuthenticationService) authenticationService;
                 return !mutableAuthenticationService.isAuthenticationMutable(authorityName);
@@ -209,7 +209,7 @@ public class AuthenticationContextImpl implements AuthenticationContext
     {
         return this.tenantService.getDomainUser(getGuestUserName(), tenantDomain);
     }
-    
+
     public String getGuestUserName()
     {
         return AuthenticationUtil.getGuestUserName();

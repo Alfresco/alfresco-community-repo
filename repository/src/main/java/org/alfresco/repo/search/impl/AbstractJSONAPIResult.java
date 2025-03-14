@@ -37,79 +37,80 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * JSON returned from SOLR API Parser
- * This class defines common properties and performs response header parsing.
- * An abstract method is provided for implementers to parse Core Information.
+ * JSON returned from SOLR API Parser This class defines common properties and performs response header parsing. An abstract method is provided for implementers to parse Core Information.
  *
  * @author aborroy
  * @since 6.2
  */
 public abstract class AbstractJSONAPIResult implements JSONAPIResult
 {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJSONAPIResult.class);
-    
-    protected Long status; 
+
+    protected Long status;
     protected Long queryTime;
     protected List<String> cores;
     protected Map<String, Map<String, Object>> coresInfo;
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.lucene.JSONActionResult#getQueryTime()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.lucene.JSONActionResult#getQueryTime() */
     public Long getQueryTime()
     {
         return queryTime;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.lucene.JSONActionResult#getStatus()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.lucene.JSONActionResult#getStatus() */
     public Long getStatus()
     {
         return status;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.JSONAPIResult#getCores()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.JSONAPIResult#getCores() */
     @Override
     public List<String> getCores()
     {
         return (cores == null ? null : Collections.unmodifiableList(cores));
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.JSONAPIResult#getCoresInfo()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.JSONAPIResult#getCoresInfo() */
     @Override
-    public Map<String, Map<String, Object>> getCoresInfo() 
+    public Map<String, Map<String, Object>> getCoresInfo()
     {
         return (coresInfo == null ? null : Collections.unmodifiableMap(coresInfo));
     }
-    
+
     /**
      * Parses the JSON to set this Java Object values
-     * @param json JSONObject returned by SOLR API
+     * 
+     * @param json
+     *            JSONObject returned by SOLR API
      * @throws JSONException
      */
     protected void processJson(JSONObject json) throws JSONException
     {
-        
+
         LOGGER.debug("JSON response: {}", json);
-        
+
         JSONObject responseHeader = json.getJSONObject("responseHeader");
         status = responseHeader.getLong("status");
         queryTime = responseHeader.getLong("QTime");
-        
+
         processCoresInfoJson(json);
 
     }
-    
+
     /**
-     * Creates a property-value Map from a JSON Object containing properties and values
-     * This method provides the right input for MBeans to expose the SOLR response values from the Response
-     * @param json Simple JSON Object containing only properties
+     * Creates a property-value Map from a JSON Object containing properties and values This method provides the right input for MBeans to expose the SOLR response values from the Response
+     * 
+     * @param json
+     *            Simple JSON Object containing only properties
      * @return Property-value Map
      * @throws JSONException
      */
@@ -133,10 +134,12 @@ public abstract class AbstractJSONAPIResult implements JSONAPIResult
         }
         return propertyValueMap;
     }
-    
+
     /**
      * Parses the JSON to set this Java Object values related to Core Information
-     * @param json JSONObject returned by SOLR API
+     * 
+     * @param json
+     *            JSONObject returned by SOLR API
      * @throws JSONException
      */
     protected abstract void processCoresInfoJson(JSONObject json) throws JSONException;

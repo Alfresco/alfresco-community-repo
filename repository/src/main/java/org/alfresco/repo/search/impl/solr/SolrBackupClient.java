@@ -29,6 +29,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.repo.lock.LockAcquisitionException;
@@ -36,9 +40,6 @@ import org.alfresco.repo.search.impl.JSONAPIResultFactory;
 import org.alfresco.repo.solr.SOLRAdminClient;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * @author Andy
@@ -46,27 +47,27 @@ import org.springframework.beans.factory.InitializingBean;
 public class SolrBackupClient implements InitializingBean
 {
     private static final Log logger = LogFactory.getLog(SolrBackupClient.class);
-    
+
     // Lock key
     private QName lock;
 
     private JobLockService jobLockService;
 
     private String remoteBackupLocation;
-    
+
     private int numberToKeep;
 
     private String core;
-    
+
     private boolean fixNumberToKeepOffByOneError = false;
 
     private SOLRAdminClient solrAdminClient;
-    
+
     private SolrQueryClient solrQueryHTTPClient;
-    
-    
+
     /**
-     * @param fixNumberToKeepOffByOneError the fixNumberToKeepOffByOneError to set
+     * @param fixNumberToKeepOffByOneError
+     *            the fixNumberToKeepOffByOneError to set
      */
     public void setFixNumberToKeepOffByOneError(boolean fixNumberToKeepOffByOneError)
     {
@@ -92,14 +93,15 @@ public class SolrBackupClient implements InitializingBean
     {
         this.remoteBackupLocation = remoteBackupLocation;
     }
-    
+
     public void setSolrQueryHTTPClient(SolrQueryClient solrQueryHTTPClient)
     {
         this.solrQueryHTTPClient = solrQueryHTTPClient;
     }
 
     /**
-     * @param numberToKeep the numberToKeep to set
+     * @param numberToKeep
+     *            the numberToKeep to set
      */
     public void setNumberToKeep(int numberToKeep)
     {
@@ -108,7 +110,7 @@ public class SolrBackupClient implements InitializingBean
 
     public void execute()
     {
-        if(solrQueryHTTPClient.isSharded())
+        if (solrQueryHTTPClient.isSharded())
         {
             return;
         }
@@ -120,8 +122,7 @@ public class SolrBackupClient implements InitializingBean
         }
         // Use a flag to keep track of the running job
         final AtomicBoolean running = new AtomicBoolean(true);
-        jobLockService.refreshLock(lockToken, lock, 30000, new JobLockRefreshCallback()
-        {
+        jobLockService.refreshLock(lockToken, lock, 30000, new JobLockRefreshCallback() {
             @Override
             public boolean isActive()
             {
@@ -151,18 +152,19 @@ public class SolrBackupClient implements InitializingBean
     }
 
     /**
-     * @param running AtomicBoolean
+     * @param running
+     *            AtomicBoolean
      */
     private void executeImpl(AtomicBoolean running)
     {
-        if((remoteBackupLocation == null) || (remoteBackupLocation.length() == 0))
+        if ((remoteBackupLocation == null) || (remoteBackupLocation.length() == 0))
         {
-            if(logger.isInfoEnabled())
+            if (logger.isInfoEnabled())
             {
-                logger.info("Back up of SOLR core skipped - no remote backup localtion set for: "+core);
+                logger.info("Back up of SOLR core skipped - no remote backup localtion set for: " + core);
             }
         }
-        
+
         try
         {
             // MNT-6468 fix, ensure that backup job takes at least one second to execute
@@ -174,9 +176,9 @@ public class SolrBackupClient implements InitializingBean
         }
 
         Map<String, String> parameters = new HashMap<>();
-        parameters.put("wt","json");
+        parameters.put("wt", "json");
         parameters.put("location", remoteBackupLocation);
-        if(fixNumberToKeepOffByOneError)
+        if (fixNumberToKeepOffByOneError)
         {
             parameters.put("numberToKeep", String.valueOf(numberToKeep > 1 ? (numberToKeep + 1) : numberToKeep));
         }
@@ -187,10 +189,9 @@ public class SolrBackupClient implements InitializingBean
 
         solrAdminClient.executeCommand(core, JSONAPIResultFactory.HANDLER.REPLICATION, JSONAPIResultFactory.COMMAND.BACKUP, parameters);
 
-
-        if(logger.isInfoEnabled())
+        if (logger.isInfoEnabled())
         {
-            logger.info("Back up of SOLR core completed: "+core);
+            logger.info("Back up of SOLR core completed: " + core);
         }
 
     }
@@ -208,12 +209,12 @@ public class SolrBackupClient implements InitializingBean
     }
 
     /* (non-Javadoc)
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
+     * 
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet() */
     @Override
     public void afterPropertiesSet() throws Exception
     {
-       lock  = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "SolrBackupClient-"+core);
-        
+        lock = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "SolrBackupClient-" + core);
+
     }
 }

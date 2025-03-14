@@ -28,6 +28,8 @@ package org.alfresco.rest.api.rules;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.RuleSets;
 import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
@@ -39,7 +41,6 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Folder node rule sets.
@@ -47,9 +48,9 @@ import org.springframework.beans.factory.InitializingBean;
 @Experimental
 @RelationshipResource(name = "rule-sets", entityResource = NodesEntityResource.class, title = "Folder node rule sets")
 public class NodeRuleSetsRelation implements RelationshipResourceAction.Read<RuleSet>,
-                                             RelationshipResourceAction.ReadById<RuleSet>,
-                                             RelationshipResourceAction.Update<RuleSet>,
-                                             InitializingBean
+        RelationshipResourceAction.ReadById<RuleSet>,
+        RelationshipResourceAction.Update<RuleSet>,
+        InitializingBean
 {
     private RuleSets ruleSets;
 
@@ -64,15 +65,16 @@ public class NodeRuleSetsRelation implements RelationshipResourceAction.Read<Rul
      * <p>
      * - GET /nodes/{folderNodeId}/rule-sets
      *
-     * @param folderNodeId The id of the folder node.
-     * @param parameters Contains paging information and information about which fields to include
+     * @param folderNodeId
+     *            The id of the folder node.
+     * @param parameters
+     *            Contains paging information and information about which fields to include
      * @return {@link CollectionWithPagingInfo} containing a page of rule sets
      */
-    @WebApiDescription (
+    @WebApiDescription(
             title = "Get rule sets for a folder",
             description = "Returns a paged list of rule sets for given node",
-            successStatus = HttpServletResponse.SC_OK
-    )
+            successStatus = HttpServletResponse.SC_OK)
     @Override
     public CollectionWithPagingInfo<RuleSet> readAll(String folderNodeId, Parameters parameters)
     {
@@ -84,17 +86,20 @@ public class NodeRuleSetsRelation implements RelationshipResourceAction.Read<Rul
      * <p>
      * - GET /nodes/{folderNodeId}/rule-sets/{ruleSetId}
      *
-     * @param folderNodeId - entity resource context for this relationship
-     * @param ruleSetId - rule set node ID (associated with folder node)
-     * @param parameters Contains information about which fields to include
+     * @param folderNodeId
+     *            - entity resource context for this relationship
+     * @param ruleSetId
+     *            - rule set node ID (associated with folder node)
+     * @param parameters
+     *            Contains information about which fields to include
      * @return {@link RuleSet} definition
-     * @throws RelationshipResourceNotFoundException in case resource was not found
+     * @throws RelationshipResourceNotFoundException
+     *             in case resource was not found
      */
-    @WebApiDescription (
+    @WebApiDescription(
             title = "Get rule set",
             description = "Returns a single rule set for the given node",
-            successStatus = HttpServletResponse.SC_OK
-    )
+            successStatus = HttpServletResponse.SC_OK)
     @Override
     public RuleSet readById(String folderNodeId, String ruleSetId, Parameters parameters) throws RelationshipResourceNotFoundException
     {
@@ -111,9 +116,12 @@ public class NodeRuleSetsRelation implements RelationshipResourceAction.Read<Rul
      * <p>
      * - PUT /nodes/{folderNodeId}/rule-sets/{ruleSetId}
      *
-     * @param folderNodeId The id for the folder.
-     * @param ruleSet The updated rule set.
-     * @param parameters Contains information about which fields to include in the response.
+     * @param folderNodeId
+     *            The id for the folder.
+     * @param ruleSet
+     *            The updated rule set.
+     * @param parameters
+     *            Contains information about which fields to include in the response.
      * @return The updated rule set.
      */
     @Override

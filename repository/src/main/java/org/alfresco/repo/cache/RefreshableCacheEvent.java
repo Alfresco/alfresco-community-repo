@@ -39,7 +39,7 @@ public interface RefreshableCacheEvent extends Serializable
      * Get the cache id
      */
     public String getCacheId();
-    
+
     /**
      * Get the affected tenant id
      */

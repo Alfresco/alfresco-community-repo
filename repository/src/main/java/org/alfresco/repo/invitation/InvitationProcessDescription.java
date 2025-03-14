@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.invitation;
 
-public interface InvitationProcessDescription 
+public interface InvitationProcessDescription
 {
 
 }

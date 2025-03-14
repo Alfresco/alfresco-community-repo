@@ -28,8 +28,7 @@ package org.alfresco.service.cmr.quickshare;
 import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
- * Exception thrown by the QuickShareService to indicate that content for the given quick share id 
- * could not be found.
+ * Exception thrown by the QuickShareService to indicate that content for the given quick share id could not be found.
  *
  * @author Alex Miller
  * @since Cloud/4.2

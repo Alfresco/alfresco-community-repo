@@ -43,14 +43,13 @@ public class NodePropertyEntity
     private List<Long> qnameIds;
     /** Carries data for queries */
     private List<Long> nodeIds;
-    
+
     /**
      * Required default constructor
      */
     public NodePropertyEntity()
-    {
-    }
-        
+    {}
+
     @Override
     public String toString()
     {

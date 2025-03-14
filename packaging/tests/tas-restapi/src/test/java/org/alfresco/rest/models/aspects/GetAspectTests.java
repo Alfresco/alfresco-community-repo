@@ -1,26 +1,27 @@
 package org.alfresco.rest.models.aspects;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestAspectModel;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class GetAspectTests extends RestTest
 {
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         restClient.authenticateUser(dataUser.createRandomTestUser());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL}, executionType = ExecutionType.REGRESSION,
             description = "Verify inexistent aspect and status code is Not Found (404)")
     public void getInexistentAspect() throws Exception
     {
@@ -30,8 +31,8 @@ public class GetAspectTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_WAS_NOT_FOUND, unknownAspect));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL}, executionType = ExecutionType.REGRESSION,
             description = "Verify Aspect Info and status code is OK (200)")
     public void getAspect() throws Exception
     {

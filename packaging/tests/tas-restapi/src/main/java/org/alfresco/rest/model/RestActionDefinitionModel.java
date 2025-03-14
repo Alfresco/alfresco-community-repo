@@ -34,7 +34,7 @@ import org.alfresco.utility.model.TestModel;
 
 public class RestActionDefinitionModel extends TestModel implements IRestModel<RestActionDefinitionModel>
 {
-    
+
     @JsonProperty(value = "entry")
     RestActionDefinitionModel actionDefinitionModel;
     private String id;
@@ -115,7 +115,7 @@ public class RestActionDefinitionModel extends TestModel implements IRestModel<R
     {
         this.trackStatus = trackStatus;
     }
-    
+
     public List<RestParameterDefinitionModel> getParameterDefinitions()
     {
         return parameterDefinitions;

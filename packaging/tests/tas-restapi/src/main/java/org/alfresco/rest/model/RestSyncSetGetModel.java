@@ -32,31 +32,21 @@
 
 package org.alfresco.rest.model;
 
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.utility.model.TestModel;
 
 /**
  * Base Path {@linkplain /alfresco/api/-default-/private/alfresco/versions/1}
  * 
- * @author Meenal Bhave
- * Example:
- * {
- *   "syncId": "8151",
- *   "status": "ready",
- *   "changes": [],
- *   "resets": [],
- *   "moreChanges": false,
- *   "message": "optional"
- * }
+ * @author Meenal Bhave Example: { "syncId": "8151", "status": "ready", "changes": [], "resets": [], "moreChanges": false, "message": "optional" }
  */
 
 public class RestSyncSetGetModel extends TestModel
 {
 
     public RestSyncSetGetModel()
-    {
-    }
+    {}
 
     @JsonProperty
     private String syncId;

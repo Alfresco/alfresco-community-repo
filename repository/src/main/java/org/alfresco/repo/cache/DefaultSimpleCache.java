@@ -30,10 +30,9 @@ import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.beans.factory.BeanNameAware;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * {@link SimpleCache} implementation backed by a Google {@link Cache} implementation.
@@ -41,7 +40,7 @@ import com.google.common.cache.CacheBuilder;
  * @author Matt Ward
  */
 public final class DefaultSimpleCache<K extends Serializable, V extends Object>
-    implements SimpleCache<K, V>, BeanNameAware
+        implements SimpleCache<K, V>, BeanNameAware
 {
     private static final int DEFAULT_CAPACITY = Integer.MAX_VALUE;
     private Cache<K, AbstractMap.SimpleImmutableEntry<K, V>> cache;
@@ -50,13 +49,16 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
     private final boolean useMaxItems;
     private final int ttlSecs;
     private final int maxIdleSecs;
-    
+
     /**
      * Construct a cache using the specified capacity and name.
      * 
-     * @param maxItems The cache capacity. 0 = use {@link #DEFAULT_CAPACITY}
-     * @param useMaxItems Whether the maxItems value should be applied as a size-cap for the cache.
-     * @param cacheName An arbitrary cache name.
+     * @param maxItems
+     *            The cache capacity. 0 = use {@link #DEFAULT_CAPACITY}
+     * @param useMaxItems
+     *            Whether the maxItems value should be applied as a size-cap for the cache.
+     * @param cacheName
+     *            An arbitrary cache name.
      */
     @SuppressWarnings("unchecked")
     public DefaultSimpleCache(int maxItems, boolean useMaxItems, int ttlSecs, int maxIdleSecs, String cacheName)
@@ -74,11 +76,11 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
         this.ttlSecs = ttlSecs;
         this.maxIdleSecs = maxIdleSecs;
         setBeanName(cacheName);
-        
+
         // The map will have a bounded size determined by the maxItems member variable.
         @SuppressWarnings("rawtypes")
         CacheBuilder builder = CacheBuilder.newBuilder();
-        
+
         if (useMaxItems)
         {
             builder.maximumSize(maxItems);
@@ -92,21 +94,23 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
             builder.expireAfterAccess(maxIdleSecs, TimeUnit.SECONDS);
         }
         builder.concurrencyLevel(32);
-        
+
         cache = (Cache<K, AbstractMap.SimpleImmutableEntry<K, V>>) builder.build();
     }
-    
+
     /**
      * Create a size limited, named cache with no other features enabled.
      * 
-     * @param maxItems int
-     * @param cacheName String
+     * @param maxItems
+     *            int
+     * @param cacheName
+     *            String
      */
     public DefaultSimpleCache(int maxItems, String cacheName)
     {
         this(maxItems, true, 0, 0, cacheName);
     }
-    
+
     /**
      * Default constructor. Initialises the cache with no size limit and no name.
      */
@@ -114,7 +118,7 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
     {
         this(0, false, 0, 0, null);
     }
-    
+
     @Override
     public boolean contains(K key)
     {
@@ -155,7 +159,7 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
         AbstractMap.SimpleImmutableEntry<K, V> priorKVP = cache.asMap().put(key, kvp);
         return (priorKVP != null && (!priorKVP.equals(kvp)));
     }
-    
+
     @Override
     public void remove(K key)
     {
@@ -173,7 +177,7 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
     {
         return "DefaultSimpleCache[maxItems=" + maxItems + ", useMaxItems=" + useMaxItems + ", cacheName=" + cacheName + "]";
     }
-    
+
     /**
      * Gets the maximum number of items that the cache will hold.
      * 
@@ -183,7 +187,7 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
     {
         return maxItems;
     }
-    
+
     /**
      * Is a size-cap in use?
      * 
@@ -193,7 +197,7 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
     {
         return this.useMaxItems;
     }
-    
+
     /**
      * Get the time-to-live setting in seconds.
      * 
@@ -226,11 +230,11 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
     }
 
     /**
-     * Since there are many cache instances, it is useful to be able to associate
-     * a name with each one.
+     * Since there are many cache instances, it is useful to be able to associate a name with each one.
      * 
      * @see #setBeanName(String)
-     * @param cacheName String
+     * @param cacheName
+     *            String
      */
     public void setCacheName(String cacheName)
     {
@@ -238,10 +242,10 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
     }
 
     /**
-     * Since there are many cache instances, it is useful to be able to associate
-     * a name with each one.
+     * Since there are many cache instances, it is useful to be able to associate a name with each one.
      * 
-     * @param cacheName Set automatically by Spring, but can be set manually if required.
+     * @param cacheName
+     *            Set automatically by Spring, but can be set manually if required.
      */
     @Override
     public void setBeanName(String cacheName)

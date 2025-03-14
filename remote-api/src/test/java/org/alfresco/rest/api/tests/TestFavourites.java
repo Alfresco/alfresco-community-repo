@@ -25,13 +25,14 @@
  */
 package org.alfresco.rest.api.tests;
 
-import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -47,6 +48,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
+import org.apache.commons.httpclient.HttpStatus;
+import org.json.simple.JSONObject;
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
@@ -57,7 +66,6 @@ import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
 import org.alfresco.rest.api.tests.RepoService.TestSite;
 import org.alfresco.rest.api.tests.client.HttpResponse;
-import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Favourites;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
@@ -89,14 +97,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
-import org.apache.commons.httpclient.HttpStatus;
-import org.json.simple.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Lists;
 
 /**
  * 
@@ -149,8 +149,7 @@ public class TestFavourites extends AbstractBaseApiTest
 
         final Iterator<TestNetwork> networksIt = getTestFixture().networksIterator();
 
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @SuppressWarnings("synthetic-access")
             public Void execute() throws Throwable
             {
@@ -205,8 +204,7 @@ public class TestFavourites extends AbstractBaseApiTest
         }, false, true);
 
         // Create some favourite targets, sites, files and folders
-        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-        {
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -219,11 +217,11 @@ public class TestFavourites extends AbstractBaseApiTest
                 person1PublicDocs.add(nodeRef);
                 nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder1", "Test Folder1 Title", "Test Folder1 Description");
                 person1PublicFolders.add(nodeRef);
-                nodeRef = repoService.createDocument(nodeRef, "Test Doc2",  "Test Doc2 Title", "Test Doc2 Description", "Test Content");
+                nodeRef = repoService.createDocument(nodeRef, "Test Doc2", "Test Doc2 Title", "Test Doc2 Description", "Test Content");
                 person1PublicDocs.add(nodeRef);
                 nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder2", "Test Folder2 Title", "Test Folder2 Description");
                 person1PublicFolders.add(nodeRef);
-                nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc3",  "Test Doc3 Title", "Test Doc3 Description", "Test Content");
+                nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc3", "Test Doc3 Title", "Test Doc3 Description", "Test Content");
                 person1PublicDocs.add(nodeRef);
                 nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder3", "Test Folder3 Title", "Test Folder3 Description");
                 person1PublicFolders.add(nodeRef);
@@ -242,11 +240,11 @@ public class TestFavourites extends AbstractBaseApiTest
                 person1PrivateDocs.add(nodeRef);
                 nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder1", "Test Folder1 Title", "Test Folder1 Description");
                 person1PrivateFolders.add(nodeRef);
-                nodeRef = repoService.createDocument(nodeRef, "Test Doc2",  "Test Doc2 Title", "Test Doc2 Description", "Test Content");
+                nodeRef = repoService.createDocument(nodeRef, "Test Doc2", "Test Doc2 Title", "Test Doc2 Description", "Test Content");
                 person1PrivateDocs.add(nodeRef);
                 nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder2", "Test Folder2 Title", "Test Folder2 Description");
                 person1PrivateFolders.add(nodeRef);
-                nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc3",  "Test Doc3 Title", "Test Doc3 Description", "Test Content");
+                nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc3", "Test Doc3 Title", "Test Doc3 Description", "Test Content");
                 person1PrivateDocs.add(nodeRef);
                 nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder3", "Test Folder3 Title", "Test Folder3 Description");
                 person1PrivateFolders.add(nodeRef);
@@ -255,8 +253,7 @@ public class TestFavourites extends AbstractBaseApiTest
             }
         }, person11Id, network1.getId());
 
-        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-        {
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -282,8 +279,7 @@ public class TestFavourites extends AbstractBaseApiTest
             }
         }, person10Id, network1.getId());
 
-        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-        {
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -309,41 +305,40 @@ public class TestFavourites extends AbstractBaseApiTest
 
     private void sort(List<Favourite> favourites, final List<Pair<FavouritesService.SortFields, Boolean>> sortProps)
     {
-        Comparator<Favourite> comparator = new Comparator<Favourite>()
-        {
+        Comparator<Favourite> comparator = new Comparator<Favourite>() {
             @Override
             public int compare(Favourite o1, Favourite o2)
             {
                 int ret = 0;
-                for(Pair<FavouritesService.SortFields, Boolean> sort : sortProps)
+                for (Pair<FavouritesService.SortFields, Boolean> sort : sortProps)
                 {
                     FavouritesService.SortFields field = sort.getFirst();
                     Boolean ascending = sort.getSecond();
-                    if(field.equals(FavouritesService.SortFields.username))
+                    if (field.equals(FavouritesService.SortFields.username))
                     {
-                        if(ascending)
+                        if (ascending)
                         {
-                            if(o1.getUsername() != null && o2.getUsername() != null)
+                            if (o1.getUsername() != null && o2.getUsername() != null)
                             {
                                 ret = collator.compare(o1.getUsername(), o2.getUsername());
                             }
                         }
                         else
                         {
-                            if(o1.getUsername() != null && o2.getUsername() != null)
+                            if (o1.getUsername() != null && o2.getUsername() != null)
                             {
                                 ret = o2.getUsername().compareTo(o1.getUsername());
                             }
                         }
 
-                        if(ret != 0)
+                        if (ret != 0)
                         {
                             break;
                         }
                     }
-                    else if(field.equals(FavouritesService.SortFields.type))
+                    else if (field.equals(FavouritesService.SortFields.type))
                     {
-                        if(ascending)
+                        if (ascending)
                         {
                             ret = o1.getType().compareTo(o2.getType());
                         }
@@ -352,14 +347,14 @@ public class TestFavourites extends AbstractBaseApiTest
                             ret = o2.getType().compareTo(o1.getType());
                         }
 
-                        if(ret != 0)
+                        if (ret != 0)
                         {
                             break;
                         }
                     }
-                    else if(field.equals(FavouritesService.SortFields.createdAt))
+                    else if (field.equals(FavouritesService.SortFields.createdAt))
                     {
-                        if(ascending)
+                        if (ascending)
                         {
                             ret = o1.getCreatedAt().compareTo(o2.getCreatedAt());
                         }
@@ -368,7 +363,7 @@ public class TestFavourites extends AbstractBaseApiTest
                             ret = o2.getCreatedAt().compareTo(o1.getCreatedAt());
                         }
 
-                        if(ret != 0)
+                        if (ret != 0)
                         {
                             break;
                         }
@@ -384,27 +379,28 @@ public class TestFavourites extends AbstractBaseApiTest
     /**
      * Returns a new list.
      *
-     * @param favourites List<Favourite>
-     * @param types Set<Type>
+     * @param favourites
+     *            List<Favourite>
+     * @param types
+     *            Set<Type>
      * @return ArrayList<Favourite>
      */
     private ArrayList<Favourite> filter(List<Favourite> favourites, final Set<Type> types)
     {
-        Predicate<Favourite> predicate = new Predicate<Favourite>()
-        {
+        Predicate<Favourite> predicate = new Predicate<Favourite>() {
             @Override
             public boolean apply(Favourite other)
             {
                 Type type = null;
-                if(other.getTarget() instanceof FileFavouriteTarget)
+                if (other.getTarget() instanceof FileFavouriteTarget)
                 {
                     type = Type.FILE;
                 }
-                else if(other.getTarget() instanceof FolderFavouriteTarget)
+                else if (other.getTarget() instanceof FolderFavouriteTarget)
                 {
                     type = Type.FOLDER;
                 }
-                else if(other.getTarget() instanceof SiteFavouriteTarget)
+                else if (other.getTarget() instanceof SiteFavouriteTarget)
                 {
                     type = Type.SITE;
                 }
@@ -435,7 +431,7 @@ public class TestFavourites extends AbstractBaseApiTest
 
                 fail();
             }
-            catch(PublicApiException e)
+            catch (PublicApiException e)
             {
                 assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
             }
@@ -465,7 +461,7 @@ public class TestFavourites extends AbstractBaseApiTest
             // catch 404's
             favouritesProxy.removeFavourite(personId, favourite.getTargetGuid());
         }
-        catch(PublicApiException exc)
+        catch (PublicApiException exc)
         {
             e = exc;
         }
@@ -474,9 +470,9 @@ public class TestFavourites extends AbstractBaseApiTest
         resp = getFavourites(networkId, runAsUserId, personId, 0, Integer.MAX_VALUE, null, null, type);
         favourites = resp.getList();
         boolean stillExists = false;
-        for(Favourite f : favourites)
+        for (Favourite f : favourites)
         {
-            if(f.getTargetGuid().equals(favourite.getTargetGuid()))
+            if (f.getTargetGuid().equals(favourite.getTargetGuid()))
             {
                 stillExists = true;
                 break;
@@ -484,7 +480,7 @@ public class TestFavourites extends AbstractBaseApiTest
         }
         assertFalse(stillExists);
 
-        if(e != null)
+        if (e != null)
         {
             throw e;
         }
@@ -498,7 +494,7 @@ public class TestFavourites extends AbstractBaseApiTest
         publicApiClient.setRequestContext(new RequestContext(networkId, runAsUserId));
 
         Paging paging = null;
-        if(total == null && expectedTotal == null)
+        if (total == null && expectedTotal == null)
         {
             paging = getPaging(skipCount, maxItems);
         }
@@ -507,7 +503,7 @@ public class TestFavourites extends AbstractBaseApiTest
             paging = getPaging(skipCount, maxItems, total, expectedTotal);
         }
         Map<String, String> params = null;
-        if(type != null)
+        if (type != null)
         {
             params = Collections.singletonMap("where", "(EXISTS(target/" + type + "))");
         }
@@ -553,7 +549,7 @@ public class TestFavourites extends AbstractBaseApiTest
             favourite.expected(ret);
             fail();
         }
-        catch(PublicApiException e)
+        catch (PublicApiException e)
         {
             // Note: un-authorized comes back as 404
             assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
@@ -562,7 +558,7 @@ public class TestFavourites extends AbstractBaseApiTest
         // cloud-2468
         // invalid type
         // NOTE: The test below has swapped to attempt to favorite a comment rather than a
-        //       a wiki page as the WikiService has moved to the Share Services AMP in 5.1
+        // a wiki page as the WikiService has moved to the Share Services AMP in 5.1
 
         try
         {
@@ -571,8 +567,7 @@ public class TestFavourites extends AbstractBaseApiTest
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), person10Id));
 
             final NodeRef document = personDocs.get(0);
-            final NodeRef comment = TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>()
-            {
+            final NodeRef comment = TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>() {
                 @Override
                 public NodeRef doWork() throws Exception
                 {
@@ -582,8 +577,7 @@ public class TestFavourites extends AbstractBaseApiTest
             }, person10Id, network1.getId());
 
             final String guid = comment.getId();
-            JSONAble commentJSON = new JSONAble()
-            {
+            JSONAble commentJSON = new JSONAble() {
                 @SuppressWarnings("unchecked")
                 @Override
                 public JSONObject toJSON()
@@ -600,7 +594,7 @@ public class TestFavourites extends AbstractBaseApiTest
             favouritesProxy.createFavourite(person10Id, favourite);
             fail();
         }
-        catch(PublicApiException e)
+        catch (PublicApiException e)
         {
             assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
         }
@@ -618,7 +612,7 @@ public class TestFavourites extends AbstractBaseApiTest
             favouritesProxy.createFavourite(person10Id, favourite);
             fail();
         }
-        catch(PublicApiException e)
+        catch (PublicApiException e)
         {
             assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
         }
@@ -635,7 +629,7 @@ public class TestFavourites extends AbstractBaseApiTest
             favourite.expected(ret);
             fail();
         }
-        catch(PublicApiException e)
+        catch (PublicApiException e)
         {
             assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
         }
@@ -653,7 +647,7 @@ public class TestFavourites extends AbstractBaseApiTest
 
             fail();
         }
-        catch(PublicApiException e)
+        catch (PublicApiException e)
         {
             assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
         }
@@ -670,7 +664,7 @@ public class TestFavourites extends AbstractBaseApiTest
 
             fail();
         }
-        catch(PublicApiException e)
+        catch (PublicApiException e)
         {
             assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
         }
@@ -687,7 +681,7 @@ public class TestFavourites extends AbstractBaseApiTest
 
             fail();
         }
-        catch(PublicApiException e)
+        catch (PublicApiException e)
         {
             assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
         }
@@ -707,7 +701,7 @@ public class TestFavourites extends AbstractBaseApiTest
 
                 fail();
             }
-            catch(PublicApiException e)
+            catch (PublicApiException e)
             {
                 // Note: un-authorized comes back as 404
                 assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
@@ -732,7 +726,7 @@ public class TestFavourites extends AbstractBaseApiTest
             favourite.expected(ret);
             fail();
         }
-        catch(PublicApiException e)
+        catch (PublicApiException e)
         {
             assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
         }
@@ -747,7 +741,7 @@ public class TestFavourites extends AbstractBaseApiTest
             favouritesProxy.getFavourites(person11Id, null);
             fail();
         }
-        catch(PublicApiException e)
+        catch (PublicApiException e)
         {
             // Note: un-authorized comes back as 404
             assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
@@ -762,7 +756,7 @@ public class TestFavourites extends AbstractBaseApiTest
             favouritesProxy.getFavourites(GUID.generate(), null);
             fail();
         }
-        catch(PublicApiException e)
+        catch (PublicApiException e)
         {
             assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
         }
@@ -778,12 +772,12 @@ public class TestFavourites extends AbstractBaseApiTest
 
                 SiteImpl site = new SiteImpl();
                 site.setGuid(GUID.generate());
-                Favourite favourite = makeSiteFavourite((Site)site);
+                Favourite favourite = makeSiteFavourite((Site) site);
                 favouritesProxy.createFavourite(person10Id, favourite);
 
                 fail();
             }
-            catch(PublicApiException e)
+            catch (PublicApiException e)
             {
                 assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
             }
@@ -803,7 +797,7 @@ public class TestFavourites extends AbstractBaseApiTest
 
                 fail();
             }
-            catch(PublicApiException e)
+            catch (PublicApiException e)
             {
                 assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
             }
@@ -823,7 +817,7 @@ public class TestFavourites extends AbstractBaseApiTest
 
                 fail();
             }
-            catch(PublicApiException e)
+            catch (PublicApiException e)
             {
                 assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
             }
@@ -849,7 +843,7 @@ public class TestFavourites extends AbstractBaseApiTest
 
                 fail();
             }
-            catch(PublicApiException e)
+            catch (PublicApiException e)
             {
                 assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
             }
@@ -866,7 +860,7 @@ public class TestFavourites extends AbstractBaseApiTest
 
                 fail();
             }
-            catch(PublicApiException e)
+            catch (PublicApiException e)
             {
                 assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
             }
@@ -884,7 +878,7 @@ public class TestFavourites extends AbstractBaseApiTest
 
                 fail();
             }
-            catch(PublicApiException e)
+            catch (PublicApiException e)
             {
                 assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
             }
@@ -900,7 +894,7 @@ public class TestFavourites extends AbstractBaseApiTest
 
                 fail();
             }
-            catch(PublicApiException e)
+            catch (PublicApiException e)
             {
                 assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
             }
@@ -918,7 +912,7 @@ public class TestFavourites extends AbstractBaseApiTest
 
                 fail();
             }
-            catch(PublicApiException e)
+            catch (PublicApiException e)
             {
                 assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
             }
@@ -934,7 +928,7 @@ public class TestFavourites extends AbstractBaseApiTest
 
                 fail();
             }
-            catch(PublicApiException e)
+            catch (PublicApiException e)
             {
                 assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
             }
@@ -955,7 +949,7 @@ public class TestFavourites extends AbstractBaseApiTest
                 Favourite favourite = new Favourite(null);
                 favouritesProxy.update("people", "-me-", "favorites", null, favourite.toJSON().toString(), "Unable to PUT favourites");
             }
-            catch(PublicApiException e)
+            catch (PublicApiException e)
             {
                 assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
             }
@@ -971,7 +965,7 @@ public class TestFavourites extends AbstractBaseApiTest
                 params.put("orderBy", "invalid ASC");
                 favouritesProxy.getFavourites(person10Id, createParams(null, params));
             }
-            catch(PublicApiException e)
+            catch (PublicApiException e)
             {
                 assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
             }
@@ -1100,7 +1094,7 @@ public class TestFavourites extends AbstractBaseApiTest
                         favouritesProxy.createFavourite("-me-", favourite);
                         fail();
                     }
-                    catch(PublicApiException e)
+                    catch (PublicApiException e)
                     {
                         assertEquals(HttpStatus.SC_UNAUTHORIZED, e.getHttpResponse().getStatusCode());
                     }
@@ -1113,7 +1107,7 @@ public class TestFavourites extends AbstractBaseApiTest
                         favouritesProxy.getFavourites("-me-", createParams(paging, null));
                         fail();
                     }
-                    catch(PublicApiException e)
+                    catch (PublicApiException e)
                     {
                         assertEquals(HttpStatus.SC_UNAUTHORIZED, e.getHttpResponse().getStatusCode());
                     }
@@ -1130,7 +1124,7 @@ public class TestFavourites extends AbstractBaseApiTest
                         favouritesProxy.createFavourite("-me-", favourite);
                         fail();
                     }
-                    catch(PublicApiException e)
+                    catch (PublicApiException e)
                     {
                         assertEquals(HttpStatus.SC_UNAUTHORIZED, e.getHttpResponse().getStatusCode());
                     }
@@ -1145,7 +1139,7 @@ public class TestFavourites extends AbstractBaseApiTest
                         favouritesProxy.getFavourites("-me-", createParams(paging, null));
                         fail();
                     }
-                    catch(PublicApiException e)
+                    catch (PublicApiException e)
                     {
                         assertEquals(HttpStatus.SC_UNAUTHORIZED, e.getHttpResponse().getStatusCode());
                     }
@@ -1162,7 +1156,7 @@ public class TestFavourites extends AbstractBaseApiTest
                         favouritesProxy.createFavourite("-me-", favourite);
                         fail();
                     }
-                    catch(PublicApiException e)
+                    catch (PublicApiException e)
                     {
                         assertEquals(HttpStatus.SC_UNAUTHORIZED, e.getHttpResponse().getStatusCode());
                     }
@@ -1177,7 +1171,7 @@ public class TestFavourites extends AbstractBaseApiTest
                         favouritesProxy.getFavourites("-me-", createParams(paging, null));
                         fail();
                     }
-                    catch(PublicApiException e)
+                    catch (PublicApiException e)
                     {
                         assertEquals(HttpStatus.SC_UNAUTHORIZED, e.getHttpResponse().getStatusCode());
                     }
@@ -1393,7 +1387,7 @@ public class TestFavourites extends AbstractBaseApiTest
 
             fail();
         }
-        catch(PublicApiException e)
+        catch (PublicApiException e)
         {
             assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
         }
@@ -1408,7 +1402,7 @@ public class TestFavourites extends AbstractBaseApiTest
 
             fail();
         }
-        catch(PublicApiException e)
+        catch (PublicApiException e)
         {
             assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
         }
@@ -1446,7 +1440,7 @@ public class TestFavourites extends AbstractBaseApiTest
 
             fail();
         }
-        catch(PublicApiException e)
+        catch (PublicApiException e)
         {
             assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
         }
@@ -1456,8 +1450,7 @@ public class TestFavourites extends AbstractBaseApiTest
         {
             log("cloud-2475");
 
-            NodeRef doc = TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>()
-            {
+            NodeRef doc = TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>() {
                 @Override
                 public NodeRef doWork() throws Exception
                 {
@@ -1480,7 +1473,7 @@ public class TestFavourites extends AbstractBaseApiTest
                 favouritesProxy.removeFavourite(person10Id, favouriteId);
                 fail("Should be a 404");
             }
-            catch(PublicApiException e)
+            catch (PublicApiException e)
             {
                 // expected
                 assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
@@ -1510,7 +1503,7 @@ public class TestFavourites extends AbstractBaseApiTest
 
                 fail();
             }
-            catch(PublicApiException e)
+            catch (PublicApiException e)
             {
                 assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
             }
@@ -1522,10 +1515,10 @@ public class TestFavourites extends AbstractBaseApiTest
             log("cloud-2476");
 
             // make sure there are favourites to delete
-//			publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
-//			SiteFavouriteTarget target = new SiteFavouriteTarget(person1Sites.get(0));
-//			Favourite favourite = new Favourite(target);
-//			favouritesProxy.createFavourite(personId, favourite);
+            // publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
+            // SiteFavouriteTarget target = new SiteFavouriteTarget(person1Sites.get(0));
+            // Favourite favourite = new Favourite(target);
+            // favouritesProxy.createFavourite(personId, favourite);
 
             ListResponse<Favourite> before = getFavourites(network1.getId(), person10Id, person10Id, 0, Integer.MAX_VALUE, null, null, null);
             assertTrue(before.getList().size() > 0);
@@ -1538,7 +1531,7 @@ public class TestFavourites extends AbstractBaseApiTest
 
                 fail();
             }
-            catch(PublicApiException e)
+            catch (PublicApiException e)
             {
                 assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
             }
@@ -1585,8 +1578,7 @@ public class TestFavourites extends AbstractBaseApiTest
             sort(expectedFavourites, FavouritesService.DEFAULT_SORT_PROPS);
 
             // move the folder and file to person1's private site
-            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-            {
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -1601,7 +1593,7 @@ public class TestFavourites extends AbstractBaseApiTest
             {
                 favouritesProxy.getFavourite(person12Id, folderFavourite.getTargetGuid());
             }
-            catch(PublicApiException e)
+            catch (PublicApiException e)
             {
                 assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
             }
@@ -1610,7 +1602,7 @@ public class TestFavourites extends AbstractBaseApiTest
             {
                 favouritesProxy.getFavourite(person12Id, fileFavourite.getTargetGuid());
             }
-            catch(PublicApiException e)
+            catch (PublicApiException e)
             {
                 assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
             }
@@ -1624,8 +1616,7 @@ public class TestFavourites extends AbstractBaseApiTest
             }
 
             // make the public sites private
-            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-            {
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -1648,7 +1639,7 @@ public class TestFavourites extends AbstractBaseApiTest
                 {
                     favouritesProxy.getFavourite(person12Id, siteFavourite1.getTargetGuid());
                 }
-                catch(PublicApiException e)
+                catch (PublicApiException e)
                 {
                     assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
                 }
@@ -1700,8 +1691,7 @@ public class TestFavourites extends AbstractBaseApiTest
             sort(expectedFavourites, FavouritesService.DEFAULT_SORT_PROPS);
 
             // remove the folder and file
-            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-            {
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -1722,7 +1712,7 @@ public class TestFavourites extends AbstractBaseApiTest
                 {
                     favouritesProxy.getFavourite(person14Id, folderFavourite.getTargetGuid());
                 }
-                catch(PublicApiException e)
+                catch (PublicApiException e)
                 {
                     assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
                 }
@@ -1731,7 +1721,7 @@ public class TestFavourites extends AbstractBaseApiTest
                 {
                     favouritesProxy.getFavourite(person14Id, fileFavourite.getTargetGuid());
                 }
-                catch(PublicApiException e)
+                catch (PublicApiException e)
                 {
                     assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
                 }
@@ -1747,7 +1737,9 @@ public class TestFavourites extends AbstractBaseApiTest
 
     /**
      * Tests get favourites with 'include' parameter.
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userName>/favorites?include=path}
      */
     @Test
@@ -1764,7 +1756,7 @@ public class TestFavourites extends AbstractBaseApiTest
         Favourite fileFavourite = makeFileFavourite(nodeRef.getId());
         favouritesProxy.createFavourite(person12Id, fileFavourite);
 
-        //Favourite the folder (Test Folder1)
+        // Favourite the folder (Test Folder1)
         Favourite folderFavourite = makeFolderFavourite(folderNodeRef.getId());
         favouritesProxy.createFavourite(person12Id, folderFavourite);
 
@@ -1779,32 +1771,31 @@ public class TestFavourites extends AbstractBaseApiTest
         List<Favourite> actualFavouritesList = resp.getList();
         assertEquals("Incorrect number of entries returned", 3, actualFavouritesList.size());
 
-        actualFavouritesList.forEach(fav ->
-        {
+        actualFavouritesList.forEach(fav -> {
             FavouriteNode node;
             switch (fav.getType())
             {
-                case FILE:
-                {
-                    node = ((FileFavouriteTarget) fav.getTarget()).getDocument();
-                    assertNotNull("node is null.", node);
-                    assertPathInfo(node.getPath(), "/Company Home/Sites/" + publicSite.getSiteId() + "/documentLibrary/Test Folder1", true);
-                    break;
-                }
-                case FOLDER:
-                {
-                    node = ((FolderFavouriteTarget) fav.getTarget()).getFolder();
-                    assertNotNull("node is null.", node);
-                    assertPathInfo(node.getPath(), "/Company Home/Sites/" + publicSite.getSiteId() + "/documentLibrary", true);
-                    break;
-                }
-                case SITE:
-                {
-                    JSONObject siteJsonObject = fav.getTarget().toJSON();
-                    assertNotNull("There should be a site JSON object.", siteJsonObject);
-                    assertNull("Path info should not be returned for sites.", siteJsonObject.get("path"));
-                    break;
-                }
+            case FILE:
+            {
+                node = ((FileFavouriteTarget) fav.getTarget()).getDocument();
+                assertNotNull("node is null.", node);
+                assertPathInfo(node.getPath(), "/Company Home/Sites/" + publicSite.getSiteId() + "/documentLibrary/Test Folder1", true);
+                break;
+            }
+            case FOLDER:
+            {
+                node = ((FolderFavouriteTarget) fav.getTarget()).getFolder();
+                assertNotNull("node is null.", node);
+                assertPathInfo(node.getPath(), "/Company Home/Sites/" + publicSite.getSiteId() + "/documentLibrary", true);
+                break;
+            }
+            case SITE:
+            {
+                JSONObject siteJsonObject = fav.getTarget().toJSON();
+                assertNotNull("There should be a site JSON object.", siteJsonObject);
+                assertNull("Path info should not be returned for sites.", siteJsonObject.get("path"));
+                break;
+            }
             }
         });
 
@@ -1813,32 +1804,31 @@ public class TestFavourites extends AbstractBaseApiTest
         actualFavouritesList = resp.getList();
         assertEquals("Incorrect number of entries returned", 3, actualFavouritesList.size());
 
-        actualFavouritesList.forEach(fav ->
-        {
+        actualFavouritesList.forEach(fav -> {
             FavouriteNode node;
             switch (fav.getType())
             {
-                case FILE:
-                {
-                    node = ((FileFavouriteTarget) fav.getTarget()).getDocument();
-                    assertNotNull("node is null.", node);
-                    assertNull("Path info should not be returned by default", node.getPath());
-                    break;
-                }
-                case FOLDER:
-                {
-                    node = ((FolderFavouriteTarget) fav.getTarget()).getFolder();
-                    assertNotNull("node is null.", node);
-                    assertNull("Path info should not be returned by default", node.getPath());
-                    break;
-                }
-                case SITE:
-                {
-                    JSONObject siteJsonObject = fav.getTarget().toJSON();
-                    assertNotNull("There should be a site JSON object.", siteJsonObject);
-                    assertNull("Path info should not be returned for sites.", siteJsonObject.get("path"));
-                    break;
-                }
+            case FILE:
+            {
+                node = ((FileFavouriteTarget) fav.getTarget()).getDocument();
+                assertNotNull("node is null.", node);
+                assertNull("Path info should not be returned by default", node.getPath());
+                break;
+            }
+            case FOLDER:
+            {
+                node = ((FolderFavouriteTarget) fav.getTarget()).getFolder();
+                assertNotNull("node is null.", node);
+                assertNull("Path info should not be returned by default", node.getPath());
+                break;
+            }
+            case SITE:
+            {
+                JSONObject siteJsonObject = fav.getTarget().toJSON();
+                assertNotNull("There should be a site JSON object.", siteJsonObject);
+                assertNull("Path info should not be returned for sites.", siteJsonObject.get("path"));
+                break;
+            }
             }
         });
     }
@@ -1846,17 +1836,21 @@ public class TestFavourites extends AbstractBaseApiTest
     /**
      * REPO-1147 Tests create and get favourite with 'include' parameter and properties.
      *
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userName>/favorites?include=properties}
      *
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userName>/favorites/<targetId>?include=properties}
      */
     @Test
     public void testCreateAndGetFavouriteWithIncludeProperties() throws Exception
     {
         setRequestContext(network1.getId(), person11Id, "password");
-        final NodeRef nodeRef1= person1PublicDocs.get(0); // a file in the site's document library (Test Doc1)
+        final NodeRef nodeRef1 = person1PublicDocs.get(0); // a file in the site's document library (Test Doc1)
 
         // Favourite the doc (Test Doc1) using POST
         Favourite file1Favourite = makeFileFavourite(nodeRef1.getId());
@@ -1891,10 +1885,14 @@ public class TestFavourites extends AbstractBaseApiTest
     /**
      * REPO-4772 Tests NPE thrown when getting favourites with 'include' properties parameter.
      *
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userName>/favorites?include=properties}
      *
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userName>/favorites/<targetId>?include=properties}
      */
     @Test
@@ -1903,7 +1901,7 @@ public class TestFavourites extends AbstractBaseApiTest
         setRequestContext(networkOne.getId(), networkAdmin, "admin");
         Map<String, String> include = Collections.singletonMap("include", "properties");
 
-        String f0Id = createFolder(Nodes.PATH_ROOT, "f0-testCreateEmptyFile-"+RUNID).getId();
+        String f0Id = createFolder(Nodes.PATH_ROOT, "f0-testCreateEmptyFile-" + RUNID).getId();
         String postUrl = getNodeChildrenUrl(f0Id);
         Document d1 = new Document();
         d1.setName("d1.txt");
@@ -1927,10 +1925,14 @@ public class TestFavourites extends AbstractBaseApiTest
     /**
      * Tests create and get favourite with 'include' parameter.
      *
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userName>/favorites?include=path}
      *
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userName>/favorites/<targetId>?include=path}
      */
     @Test
@@ -1942,7 +1944,7 @@ public class TestFavourites extends AbstractBaseApiTest
         setRequestContext(network1.getId(), person12Id, "password");
 
         final NodeRef folderNodeRef = person1PublicFolders.get(0); // person1's folder (Test Folder1)
-        final NodeRef nodeRef1= person1PublicDocs.get(0); // a file in the site's document library (Test Doc1)
+        final NodeRef nodeRef1 = person1PublicDocs.get(0); // a file in the site's document library (Test Doc1)
         final NodeRef nodeRef2 = person1PublicDocs.get(1); // a file (Test Doc2) in the folder (Test Folder1)
         final TestSite publicSite = person1PublicSites.get(0); // person1's public site
 
@@ -1956,14 +1958,13 @@ public class TestFavourites extends AbstractBaseApiTest
         assertEquals("Test Doc1 Title", node.getTitle());
         assertEquals("Test Doc1 Description", node.getDescription());
 
-
         // Favourite the doc (Test Doc2)
         Favourite file2Favourite = makeFileFavourite(nodeRef2.getId());
         file2Favourite = favouritesProxy.createFavourite(person12Id, file2Favourite);
         node = ((FileFavouriteTarget) file2Favourite.getTarget()).getDocument();
         assertNull("Path info should not be returned by default", node.getPath());
 
-        //Favourite the folder (Test Folder1)
+        // Favourite the folder (Test Folder1)
         Favourite folderFavourite = makeFolderFavourite(folderNodeRef.getId());
         folderFavourite = favouritesProxy.createFavourite(person12Id, folderFavourite, includePath);
         node = ((FolderFavouriteTarget) folderFavourite.getTarget()).getFolder();
@@ -1990,14 +1991,14 @@ public class TestFavourites extends AbstractBaseApiTest
         assertNotNull("There should be a site JSON object.", siteJsonObject);
         assertNull("Path info should not be returned for sites.", siteJsonObject.get("path"));
     }
-        
+
     @Test
     public void testVerifyFavorite() throws Exception
     {
         setRequestContext(network1.getId(), person12Id, "password");
 
         final NodeRef folderNodeRef = person1PublicFolders.get(0); // person1's folder (Test Folder1)
-        final NodeRef nodeRef1= person1PublicDocs.get(0); // a file in the site's document library (Test Doc1)
+        final NodeRef nodeRef1 = person1PublicDocs.get(0); // a file in the site's document library (Test Doc1)
         final NodeRef nodeRef2 = person1PublicDocs.get(1); // a file (Test Doc2) in the folder (Test Folder1)
 
         // Favourite the doc (Test Doc1)
@@ -2023,7 +2024,9 @@ public class TestFavourites extends AbstractBaseApiTest
     /**
      * Test sort favourites using 'orderBy' parameter.
      *
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userName>/favorites?orderBy}
      */
     @Test
@@ -2034,7 +2037,7 @@ public class TestFavourites extends AbstractBaseApiTest
         final NodeRef folderNodeRef1 = person1PublicFolders.get(0); // person1's folder (Test Folder1)
         final NodeRef folderNodeRef2 = person1PublicFolders.get(1); // person1's folder (Test Folder2)
         final NodeRef folderNodeRef3 = person1PublicFolders.get(2); // person1's folder (Test Folder3)
-        final NodeRef nodeRef1= person1PublicDocs.get(0); // a file (Test Doc1)
+        final NodeRef nodeRef1 = person1PublicDocs.get(0); // a file (Test Doc1)
         final NodeRef nodeRef2 = person1PublicDocs.get(1); // a file (Test Doc2)
 
         // Favourite the docs and folders
@@ -2053,7 +2056,7 @@ public class TestFavourites extends AbstractBaseApiTest
         Map<String, String> params = new HashMap<>();
         params.put("orderBy", "title ASC");
 
-        List<Favourite> favourites = favouritesProxy.getFavourites(person15Id, createParams(null,params)).getList();
+        List<Favourite> favourites = favouritesProxy.getFavourites(person15Id, createParams(null, params)).getList();
         assertTrue(favourites.size() == 5);
         assertTrue(favourites.get(0).getTargetGuid().equals(nodeRef1.getId()));
         assertTrue(favourites.get(1).getTargetGuid().equals(nodeRef2.getId()));
@@ -2065,7 +2068,7 @@ public class TestFavourites extends AbstractBaseApiTest
         params = new HashMap<>();
         params.put("orderBy", "type DESC, title DESC");
 
-        favourites = favouritesProxy.getFavourites(person15Id, createParams(null,params)).getList();
+        favourites = favouritesProxy.getFavourites(person15Id, createParams(null, params)).getList();
         assertTrue(favourites.size() == 5);
         assertTrue(favourites.get(0).getTargetGuid().equals(folderNodeRef3.getId()));
         assertTrue(favourites.get(1).getTargetGuid().equals(folderNodeRef2.getId()));
@@ -2086,7 +2089,7 @@ public class TestFavourites extends AbstractBaseApiTest
 
         AtomicInteger i = new AtomicInteger(0);
         expectedPathElements.forEach(path -> assertEquals("Incorrect path element.", path,
-                    expectedPathInfo.getElements().get(i.getAndIncrement()).getName()));
+                expectedPathInfo.getElements().get(i.getAndIncrement()).getName()));
     }
 
     @Override

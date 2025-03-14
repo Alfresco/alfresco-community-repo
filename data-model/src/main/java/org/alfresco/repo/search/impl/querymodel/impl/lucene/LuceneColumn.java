@@ -39,8 +39,10 @@ public class LuceneColumn extends BaseColumn
 {
 
     /**
-     * @param function Function
-     * @param alias String
+     * @param function
+     *            Function
+     * @param alias
+     *            String
      */
     public LuceneColumn(Function function, Map<String, Argument> functionArguments, String alias)
     {

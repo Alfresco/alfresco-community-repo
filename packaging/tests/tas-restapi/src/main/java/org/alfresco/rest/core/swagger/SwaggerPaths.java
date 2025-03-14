@@ -41,16 +41,15 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.alfresco.utility.exception.TestConfigurationException;
-import org.apache.commons.io.FilenameUtils;
-
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
+import org.apache.commons.io.FilenameUtils;
+
+import org.alfresco.utility.exception.TestConfigurationException;
 
 /**
- * Handles all
- * <code>Entry<String, io.swagger.models.Path> path : swagger.getPaths().entrySet()</code>
+ * Handles all <code>Entry<String, io.swagger.models.Path> path : swagger.getPaths().entrySet()</code>
  * 
  * @author Paul Brodner
  */
@@ -70,8 +69,7 @@ public class SwaggerPaths
     }
 
     /**
-     * Compare requests that exist in swagger yaml file vs request implemented in your code
-     * any findings are saved to a missing-request txt file.
+     * Compare requests that exist in swagger yaml file vs request implemented in your code any findings are saved to a missing-request txt file.
      *
      * @throws TestConfigurationException
      */
@@ -134,7 +132,7 @@ public class SwaggerPaths
     {
         String originalPathUrl = pathUrl;
         String httpMethod = operation.getKey().name();
-                
+
         /* update path url, removing first "/" as implemented in TAS requests. */
         if (pathUrl.startsWith("/"))
             pathUrl = pathUrl.substring(1, pathUrl.length());
@@ -142,12 +140,7 @@ public class SwaggerPaths
         if (pathUrl.contains("{"))
             pathUrl = pathUrl.replace("{", "\\{");
 
-        /*
-         * if in code we have something like: <code> "(HttpMethod.GET, "process-definitions?{parameters}" </code>
-         * our regular expression will search for text insider the 'HttpMethod.GET' concatenated with found 'pathUrl" until the optional double brackets
-         * RegExp: .*HttpMethod.%s.*\\\"%s\\\"?.*
-         * Result: .*HttpMethod.GET."process-definition".* - if this line is found we have a match
-         */
+        /* if in code we have something like: <code> "(HttpMethod.GET, "process-definitions?{parameters}" </code> our regular expression will search for text insider the 'HttpMethod.GET' concatenated with found 'pathUrl" until the optional double brackets RegExp: .*HttpMethod.%s.*\\\"%s\\\"?.* Result: .*HttpMethod.GET."process-definition".* - if this line is found we have a match */
         String patternRegEx = String.format(".*HttpMethod.%s.*\\\"%s\\\"?.*", httpMethod, pathUrl);
 
         // all request are saved under this directory, but limited to the rest/request folder
@@ -189,7 +182,7 @@ public class SwaggerPaths
             {
                 fileWithMissingRequests.write(String.format("%-10s %-60s %s", httpMethod, originalPathUrl, patternRegEx));
                 fileWithMissingRequests.newLine();
-                
+
                 SwaggerRequest swaggerReqModel = new SwaggerRequest(httpMethod, pathUrl, operation.getValue());
                 fileWithMissingRequests.write(swaggerReqModel.getRequestSample());
                 fileWithMissingRequests.flush();
@@ -201,7 +194,7 @@ public class SwaggerPaths
             ex.printStackTrace();
         }
     }
-    
+
     @Override
     public String toString()
     {

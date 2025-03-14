@@ -25,10 +25,12 @@
  */
 package org.alfresco.email.server;
 
-import java.util.Collection;
 import java.util.Map;
 
-import jakarta.mail.internet.InternetAddress;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 import org.alfresco.email.server.handler.EmailMessageHandler;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -58,14 +60,9 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.dao.ConcurrencyFailureException;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
- * Concrete email service implementation.  This is responsible for routing the
- * emails into the server.
+ * Concrete email service implementation. This is responsible for routing the emails into the server.
  * 
  * @since 2.2
  */
@@ -78,7 +75,7 @@ public class EmailServiceImpl implements EmailService
     private static final String ERR_USER_NOT_EMAIL_CONTRIBUTOR = "email.server.err.user_not_email_contributor";
     private static final String ERR_INVALID_NODE_ADDRESS = "email.server.err.invalid_node_address";
     private static final String ERR_HANDLER_NOT_FOUND = "email.server.err.handler_not_found";
-    
+
     private NamespaceService namespaceService;
     private NodeService nodeService;
     private SearchService searchService;
@@ -86,13 +83,12 @@ public class EmailServiceImpl implements EmailService
     private AuthorityService authorityService;
     private DictionaryService dictionaryService;
     private AttributeService attributeService;
-    
+
     /**
-     * The authority that needs to contain the users and groups 
-     * who are allowed to contribute email.
+     * The authority that needs to contain the users and groups who are allowed to contribute email.
      */
-    private String emailContributorsAuthority="EMAIL_CONTRIBUTORS";
-    
+    private String emailContributorsAuthority = "EMAIL_CONTRIBUTORS";
+
     private static Log logger = LogFactory.getLog(EmailServiceImpl.class);
 
     private boolean emailInboundEnabled;
@@ -100,7 +96,7 @@ public class EmailServiceImpl implements EmailService
     private String unknownUser;
     /** List of message handlers */
     private Map<String, EmailMessageHandler> emailMessageHandlerMap;
-    
+
     public void init()
     {
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
@@ -113,7 +109,8 @@ public class EmailServiceImpl implements EmailService
 
     /**
      * 
-     * @param namespaceService      the service to resolve namespace prefixes
+     * @param namespaceService
+     *            the service to resolve namespace prefixes
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -121,7 +118,8 @@ public class EmailServiceImpl implements EmailService
     }
 
     /**
-     * @param nodeService Alfresco Node Service
+     * @param nodeService
+     *            Alfresco Node Service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -129,7 +127,8 @@ public class EmailServiceImpl implements EmailService
     }
 
     /**
-     * @param searchService Alfresco Search Service
+     * @param searchService
+     *            Alfresco Search Service
      */
     public void setSearchService(SearchService searchService)
     {
@@ -137,15 +136,17 @@ public class EmailServiceImpl implements EmailService
     }
 
     /**
-     * @param retryingTransactionHelper Alfresco RetryingTransactionHelper
+     * @param retryingTransactionHelper
+     *            Alfresco RetryingTransactionHelper
      */
     public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
     {
         this.retryingTransactionHelper = retryingTransactionHelper;
     }
-            
+
     /**
-     * @param authorityService Alfresco authority service
+     * @param authorityService
+     *            Alfresco authority service
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
@@ -161,7 +162,8 @@ public class EmailServiceImpl implements EmailService
     }
 
     /**
-     * @param emailMessageHandlerMap Map of message handlers
+     * @param emailMessageHandlerMap
+     *            Map of message handlers
      */
     public void setEmailMessageHandlerMap(Map<String, EmailMessageHandler> emailMessageHandlerMap)
     {
@@ -169,7 +171,8 @@ public class EmailServiceImpl implements EmailService
     }
 
     /**
-     * @param unknownUser Login of user that should be set as unknown.
+     * @param unknownUser
+     *            Login of user that should be set as unknown.
      */
     public void setUnknownUser(String unknownUser)
     {
@@ -180,7 +183,7 @@ public class EmailServiceImpl implements EmailService
     {
         this.emailInboundEnabled = mailInboundEnabled;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -199,46 +202,50 @@ public class EmailServiceImpl implements EmailService
 
     /**
      * Process the message. Method is called after filtering by sender's address.
-     * @param delivery - who gets the message and who is it from (may be different from the contents of the message)
-     * @param nodeRef Addressed node (target node).
-     * @param message Email message
-     * @throws EmailMessageException Any exception occured inside the method will be converted and thrown as <code>EmailMessageException</code>
+     * 
+     * @param delivery
+     *            - who gets the message and who is it from (may be different from the contents of the message)
+     * @param nodeRef
+     *            Addressed node (target node).
+     * @param message
+     *            Email message
+     * @throws EmailMessageException
+     *             Any exception occured inside the method will be converted and thrown as <code>EmailMessageException</code>
      */
     private void processMessage(final EmailDelivery delivery, final NodeRef nodeRef, final EmailMessage message)
     {
-        if (!emailInboundEnabled) 
+        if (!emailInboundEnabled)
         {
             throw new EmailMessageException(ERR_INBOUND_EMAIL_DISABLED);
         }
         try
         {
             // Get the username for the process using the system account
-            final RetryingTransactionCallback<String> getUsernameCallback = new RetryingTransactionCallback<String>()
-            {
-        
+            final RetryingTransactionCallback<String> getUsernameCallback = new RetryingTransactionCallback<String>() {
+
                 public String execute() throws Throwable
                 {
                     String userName = null;
-                                        
-                    userName = getUsername(delivery.getFrom());   
-                    if(userName == null)
+
+                    userName = getUsername(delivery.getFrom());
+                    if (userName == null)
                     {
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
                             logger.debug("unable to find user for from: " + delivery.getFrom() + ",trying message.from next");
                         }
                         userName = getUsername(message.getFrom());
                     }
-                    if(logger.isDebugEnabled())
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("userName = : " + userName);
                     }
 
                     if (userName == null)
                     {
-                        if(unknownUser.isEmpty())
+                        if (unknownUser.isEmpty())
                         {
-                            if(logger.isDebugEnabled())
+                            if (logger.isDebugEnabled())
                             {
                                 logger.debug("unable to find user for from: " + message.getFrom());
                             }
@@ -246,7 +253,7 @@ public class EmailServiceImpl implements EmailService
                         }
                         else
                         {
-                            if(logger.isDebugEnabled())
+                            if (logger.isDebugEnabled())
                             {
                                 logger.debug("unable to find user for from - return anonymous: ");
                             }
@@ -259,21 +266,19 @@ public class EmailServiceImpl implements EmailService
                     {
                         throw new EmailMessageException(ERR_USER_NOT_EMAIL_CONTRIBUTOR, userName);
                     }
-                      
+
                     return userName;
                 }
             };
-            RunAsWork<String> getUsernameRunAsWork = new RunAsWork<String>()
-            {
+            RunAsWork<String> getUsernameRunAsWork = new RunAsWork<String>() {
                 public String doWork() throws Exception
                 {
                     return retryingTransactionHelper.doInTransaction(getUsernameCallback, false);
                 }
             };
-            
-             
+
             String username;
-            if(delivery.getAuth() != null)
+            if (delivery.getAuth() != null)
             {
                 // The user has authenticated.
                 username = delivery.getAuth();
@@ -284,13 +289,12 @@ public class EmailServiceImpl implements EmailService
                 // Need to faff with old message stuff.
                 username = AuthenticationUtil.runAs(getUsernameRunAsWork, AuthenticationUtil.SYSTEM_USER_NAME);
             }
-            
+
             // Process the message using the username's account
-            final RetryingTransactionCallback<Object> processMessageCallback = new RetryingTransactionCallback<Object>()
-            {
+            final RetryingTransactionCallback<Object> processMessageCallback = new RetryingTransactionCallback<Object>() {
                 public Object execute() throws Throwable
                 {
-                    //String recipient = message.getTo();
+                    // String recipient = message.getTo();
                     String recipient = delivery.getRecipient();
                     NodeRef targetNodeRef = null;
                     if (nodeRef == null)
@@ -313,8 +317,7 @@ public class EmailServiceImpl implements EmailService
                     return null;
                 }
             };
-            RunAsWork<Object> processMessageRunAsWork = new RunAsWork<Object>()
-            {
+            RunAsWork<Object> processMessageRunAsWork = new RunAsWork<Object>() {
                 public Object doWork() throws Exception
                 {
                     return retryingTransactionHelper.doInTransaction(processMessageCallback, false);
@@ -342,49 +345,51 @@ public class EmailServiceImpl implements EmailService
     }
 
     /**
-     * @param nodeRef           Target node
-     * @return                  Handler that can process message addressed to specific node (target node).
-     * @throws                  EmailMessageException is thrown if a suitable message handler isn't found.
+     * @param nodeRef
+     *            Target node
+     * @return Handler that can process message addressed to specific node (target node).
+     * @throws EmailMessageException
+     *             is thrown if a suitable message handler isn't found.
      */
     private EmailMessageHandler getMessageHandler(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        
+
         QName nodeTypeQName = nodeService.getType(nodeRef);
         String prefixedNodeTypeStr = nodeTypeQName.toPrefixString(namespaceService);
         EmailMessageHandler handler = emailMessageHandlerMap.get(prefixedNodeTypeStr);
-        
-        if( handler == null)
+
+        if (handler == null)
         {
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("did not find a handler for type:" + prefixedNodeTypeStr);
             }
-            
+
             // not a direct match on type
             // need to check the super-types (if any) of the target node
             TypeDefinition typeDef = dictionaryService.getType(nodeTypeQName);
-            while(typeDef != null)
+            while (typeDef != null)
             {
                 QName parentName = typeDef.getParentName();
-                if(parentName != null)
+                if (parentName != null)
                 {
                     String prefixedSubTypeStr = parentName.toPrefixString(namespaceService);
                     handler = emailMessageHandlerMap.get(prefixedSubTypeStr);
-                    if(handler != null)
+                    if (handler != null)
                     {
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
                             logger.debug("found a handler for a subtype:" + prefixedSubTypeStr);
                         }
                         return handler;
                     }
-               } 
-               typeDef = dictionaryService.getType(parentName); 
+                }
+                typeDef = dictionaryService.getType(parentName);
             }
-             
+
         }
-        
+
         if (handler == null)
         {
             throw new EmailMessageException(ERR_HANDLER_NOT_FOUND, prefixedNodeTypeStr);
@@ -395,9 +400,11 @@ public class EmailServiceImpl implements EmailService
     /**
      * Method determines target node by recipient e-mail address.
      * 
-     * @param recipient         An e-mail address of a recipient
-     * @return                  Reference to the target node
-     * @throws                  EmailMessageException is thrown if the target node couldn't be determined by some reasons.
+     * @param recipient
+     *            An e-mail address of a recipient
+     * @return Reference to the target node
+     * @throws EmailMessageException
+     *             is thrown if the target node couldn't be determined by some reasons.
      */
     private NodeRef getTargetNode(String recipient)
     {
@@ -414,23 +421,21 @@ public class EmailServiceImpl implements EmailService
         {
             throw new EmailMessageException(ERR_INVALID_NODE_ADDRESS, recipient);
         }
-        
+
         String alias = parts[0];
-        
-        /*
-         * First lookup via the attributes service
+
+        /* First lookup via the attributes service
          * 
          * Then lookup by search service - may be old data prior to attributes service
          * 
-         * Then see if we can find a node by dbid
-         */
-        
+         * Then see if we can find a node by dbid */
+
         // Lookup via the attributes service
-        NodeRef ref = (NodeRef)getAttributeService().getAttribute(AliasableAspect.ALIASABLE_ATTRIBUTE_KEY_1, AliasableAspect.ALIASABLE_ATTRIBUTE_KEY_2, AliasableAspect.normaliseAlias(alias));
-        
-        if(ref != null)
+        NodeRef ref = (NodeRef) getAttributeService().getAttribute(AliasableAspect.ALIASABLE_ATTRIBUTE_KEY_1, AliasableAspect.ALIASABLE_ATTRIBUTE_KEY_2, AliasableAspect.normaliseAlias(alias));
+
+        if (ref != null)
         {
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("found email alias via attribute service alias =" + alias);
             }
@@ -445,9 +450,9 @@ public class EmailServiceImpl implements EmailService
             // Get recipient by system account
             NodeRef byNodeId = AuthenticationUtil.runAsSystem(() -> nodeService.getNodeRef(nodeId));
 
-            if(byNodeId != null)
+            if (byNodeId != null)
             {
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("found email alias via node service =" + alias);
                 }
@@ -455,34 +460,34 @@ public class EmailServiceImpl implements EmailService
             }
         }
         catch (NumberFormatException ne)
-        {
-        }
-        
+        {}
+
         throw new EmailMessageException(ERR_INVALID_NODE_ADDRESS, recipient);
     }
 
     /**
      * Authenticate in Alfresco repository by sender's e-mail address.
      * 
-     * @param from Sender's email address
+     * @param from
+     *            Sender's email address
      * @return User name or null if the user does not exist.
-     * @throws EmailMessageException Exception will be thrown if authentication is failed.
+     * @throws EmailMessageException
+     *             Exception will be thrown if authentication is failed.
      */
     private String getUsername(String from)
     {
         String userName = null;
-        
-        if(from == null || from.length()==0)
+
+        if (from == null || from.length() == 0)
         {
             return null;
         }
-        
-        if(logger.isDebugEnabled())
+
+        if (logger.isDebugEnabled())
         {
             logger.debug("getUsername from: " + from);
         }
-        
-        
+
         StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
         String query = "TYPE:cm\\:person AND =@cm\\:email:\"" + from + "\"";
 
@@ -495,7 +500,7 @@ public class EmailServiceImpl implements EmailService
             }
             if (resultSet.length() > 1)
             {
-                if(logger.isWarnEnabled())
+                if (logger.isWarnEnabled())
                 {
                     logger.warn("found more as one result for email '" + from + "'. The first will be used");
                 }
@@ -507,7 +512,7 @@ public class EmailServiceImpl implements EmailService
                         String.class,
                         nodeService.getProperty(userNode, ContentModel.PROP_USERNAME));
 
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("found username: " + userName);
                 }
@@ -520,7 +525,7 @@ public class EmailServiceImpl implements EmailService
         }
         finally
         {
-            if(resultSet != null)
+            if (resultSet != null)
             {
                 resultSet.close();
             }
@@ -528,13 +533,15 @@ public class EmailServiceImpl implements EmailService
 
         return userName;
     }
-    
+
     /**
      * Check that the user is the member in <b>EMAIL_CONTRIBUTORS</b> group
      * 
-     * @param userName Alfresco user name
+     * @param userName
+     *            Alfresco user name
      * @return True if the user is member of the group
-     * @exception EmailMessageException Exception will be thrown if the <b>EMAIL_CONTRIBUTORS</b> group isn't found
+     * @exception EmailMessageException
+     *                Exception will be thrown if the <b>EMAIL_CONTRIBUTORS</b> group isn't found
      */
     private boolean isEmailContributeUser(String userName)
     {

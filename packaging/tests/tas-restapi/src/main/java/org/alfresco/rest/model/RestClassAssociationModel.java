@@ -107,5 +107,3 @@ public class RestClassAssociationModel extends TestModel
         this.target = target;
     }
 }
-
-

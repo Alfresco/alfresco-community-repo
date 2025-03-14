@@ -31,12 +31,12 @@ package org.alfresco.messaging.camel;
 public class MockExceptionProcessor
 {
     private Throwable lastError;
-    
+
     public Throwable getLastError()
     {
         return lastError;
     }
-    
+
     public void onReceive(Object body)
     {
         // Handler can only deal with Throwables

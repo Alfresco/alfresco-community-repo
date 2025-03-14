@@ -37,80 +37,84 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
-public abstract class PolicyRegistration 
+public abstract class PolicyRegistration
 {
-	/** The policy componenet **/
-	protected PolicyComponent policyComponent;
-	
-	/** The policy names **/
-	protected List<QName> policyNames;	
-	
-	/** The class name **/
-	protected QName className;
-	
-	/** The behaviour **/
-	protected Behaviour behaviour;
-	
-	/**
-	 * Set the policy component
-	 * 
-	 * @param policyComponent	the policy componenet
-	 */
-	public void setPolicyComponent(PolicyComponent policyComponent) 
-	{
-		this.policyComponent = policyComponent;
-	}
-	
-	/**
-	 * Set the policy name
-	 * 
-	 * @param policyName	the policy name
-	 */
-	public void setPolicyName(String policyName)
-	{
-		this.policyNames = new ArrayList<QName>(1);
-		this.policyNames.add(QName.createQName(policyName));
-	}
-	
-	/**
-	 * Set the policy names.  The behaviour will be added for each for the policies.
-	 * 
-	 * @param policyNames	the policy names
-	 */
-	public void setPolicyNames(List<String> policyNames)
-	{
-		this.policyNames = new ArrayList<QName>(policyNames.size());
-		for (String policyName : policyNames) 
-		{
-			this.policyNames.add(QName.createQName(policyName));
-		}
-	}
-	
-	/**
-	 * Set the class name
-	 * 
-	 * @param className		 the class name
-	 */
-	public void setClassName(String className)
-	{
-		this.className = QName.createQName(className);
-	}
-	
-	/**
-	 * Set the behaviour
-	 * 
-	 * @param behaviour	the behaviour
-	 */
-	public void setBehaviour(Behaviour behaviour) 
-	{
-		this.behaviour = behaviour;
-	}
-	
-	/**
-	 * Registers the behaviour with the policy component for the policy and type specified.  Called
-	 * as the init method of the bean.
-	 * 
-	 * TODO supoort service registration?
-	 */
-	public abstract void register();
+    /** The policy componenet **/
+    protected PolicyComponent policyComponent;
+
+    /** The policy names **/
+    protected List<QName> policyNames;
+
+    /** The class name **/
+    protected QName className;
+
+    /** The behaviour **/
+    protected Behaviour behaviour;
+
+    /**
+     * Set the policy component
+     * 
+     * @param policyComponent
+     *            the policy componenet
+     */
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+
+    /**
+     * Set the policy name
+     * 
+     * @param policyName
+     *            the policy name
+     */
+    public void setPolicyName(String policyName)
+    {
+        this.policyNames = new ArrayList<QName>(1);
+        this.policyNames.add(QName.createQName(policyName));
+    }
+
+    /**
+     * Set the policy names. The behaviour will be added for each for the policies.
+     * 
+     * @param policyNames
+     *            the policy names
+     */
+    public void setPolicyNames(List<String> policyNames)
+    {
+        this.policyNames = new ArrayList<QName>(policyNames.size());
+        for (String policyName : policyNames)
+        {
+            this.policyNames.add(QName.createQName(policyName));
+        }
+    }
+
+    /**
+     * Set the class name
+     * 
+     * @param className
+     *            the class name
+     */
+    public void setClassName(String className)
+    {
+        this.className = QName.createQName(className);
+    }
+
+    /**
+     * Set the behaviour
+     * 
+     * @param behaviour
+     *            the behaviour
+     */
+    public void setBehaviour(Behaviour behaviour)
+    {
+        this.behaviour = behaviour;
+    }
+
+    /**
+     * Registers the behaviour with the policy component for the policy and type specified. Called as the init method of the bean.
+     * 
+     * TODO supoort service registration?
+     */
+    public abstract void register();
 }

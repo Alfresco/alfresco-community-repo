@@ -29,11 +29,12 @@ import java.io.Serializable;
 import java.util.Locale;
 import java.util.Map;
 
+import org.junit.experimental.categories.Category;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.junit.experimental.categories.Category;
 
 /**
  * Multilingual document aspect test cases
@@ -51,8 +52,7 @@ public class MultilingualDocumentAspectTest extends AbstractMultilingualTestCase
         multilingualContentService.makeTranslation(original, Locale.FRENCH);
         NodeRef mlContainer = multilingualContentService.getTranslationContainer(original);
 
-        NodeRef copy =
-                fileFolderService.copy(original, nodeService.getPrimaryParent(original).getParentRef(), "COPY" + System.currentTimeMillis()).getNodeRef();
+        NodeRef copy = fileFolderService.copy(original, nodeService.getPrimaryParent(original).getParentRef(), "COPY" + System.currentTimeMillis()).getNodeRef();
 
         // Ensure that the copy removes the mlDocument aspect
         assertFalse("The copy of a mlDocument can't have the multilingual aspect", nodeService.hasAspect(copy, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT));
@@ -93,13 +93,13 @@ public class MultilingualDocumentAspectTest extends AbstractMultilingualTestCase
 
     public void testDeletePivot() throws Exception
     {
-        NodeRef pivot  = createContent();
+        NodeRef pivot = createContent();
         NodeRef trans1 = createContent();
         multilingualContentService.makeTranslation(pivot, Locale.FRENCH);
         NodeRef mlContainer = multilingualContentService.getTranslationContainer(pivot);
         multilingualContentService.addTranslation(trans1, pivot, Locale.KOREAN);
 
-        //nodeService.deleteNode(trans1);
+        // nodeService.deleteNode(trans1);
         nodeService.deleteNode(pivot);
 
         // Ensure that pivot is removed
@@ -114,7 +114,7 @@ public class MultilingualDocumentAspectTest extends AbstractMultilingualTestCase
 
     public void testDeleteLastNode() throws Exception
     {
-        NodeRef pivot  = createContent();
+        NodeRef pivot = createContent();
         multilingualContentService.makeTranslation(pivot, Locale.FRENCH);
         NodeRef mlContainer = multilingualContentService.getTranslationContainer(pivot);
 
@@ -132,7 +132,7 @@ public class MultilingualDocumentAspectTest extends AbstractMultilingualTestCase
 
     public void testUpdateLocale() throws Exception
     {
-        NodeRef pivot  = createContent();
+        NodeRef pivot = createContent();
         NodeRef trans1 = createContent();
         multilingualContentService.makeTranslation(pivot, Locale.FRENCH);
         NodeRef mlContainer = multilingualContentService.getTranslationContainer(pivot);
@@ -144,7 +144,7 @@ public class MultilingualDocumentAspectTest extends AbstractMultilingualTestCase
         nodeService.setProperties(trans1, props);
 
         // Ensure that the pivot reference is not changed for the mlContainer and the locale is changed for the translation
-        assertEquals("The locale for the pivot would be changed ",Locale.GERMAN, nodeService.getProperty(trans1, ContentModel.PROP_LOCALE));
+        assertEquals("The locale for the pivot would be changed ", Locale.GERMAN, nodeService.getProperty(trans1, ContentModel.PROP_LOCALE));
         assertEquals("The pivot reference would not be changed in the mlContainer", Locale.FRENCH, nodeService.getProperty(mlContainer, ContentModel.PROP_LOCALE));
 
         // modify the locale for the pivot
@@ -159,7 +159,7 @@ public class MultilingualDocumentAspectTest extends AbstractMultilingualTestCase
 
     public void testUpdateRedundantLocale() throws Exception
     {
-        NodeRef pivot  = createContent();
+        NodeRef pivot = createContent();
         NodeRef trans1 = createContent();
         NodeRef trans2 = createContent();
 
@@ -179,7 +179,8 @@ public class MultilingualDocumentAspectTest extends AbstractMultilingualTestCase
         {
             nodeService.setProperties(trans2, props);
             // test failed
-        } catch (Exception ignore)
+        }
+        catch (Exception ignore)
         {
             exceptionCatched = true;
         }
@@ -202,7 +203,8 @@ public class MultilingualDocumentAspectTest extends AbstractMultilingualTestCase
         {
             nodeService.setProperties(trans2, props);
 
-        } catch (Exception ignore)
+        }
+        catch (Exception ignore)
         {
             // test failed
             exceptionCatched = true;
@@ -216,4 +218,3 @@ public class MultilingualDocumentAspectTest extends AbstractMultilingualTestCase
                 (Locale) nodeService.getProperty(trans2, ContentModel.PROP_LOCALE));
     }
 }
-

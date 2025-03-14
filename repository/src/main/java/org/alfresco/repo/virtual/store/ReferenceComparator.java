@@ -33,18 +33,16 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.virtual.VirtualizationException;
 import org.alfresco.repo.virtual.ref.Reference;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.AlfrescoCollator;
 import org.alfresco.util.Pair;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * Property value based virtual nodes {@link Comparator}. Compares two
- * virtualized nodes based on an ordered collection of property names. The
- * property with the lower index in the collection of properties is the more
- * significant (with the highest-order) one in the comparison process.
+ * Property value based virtual nodes {@link Comparator}. Compares two virtualized nodes based on an ordered collection of property names. The property with the lower index in the collection of properties is the more significant (with the highest-order) one in the comparison process.
  * 
  * @author Silviu Dinuta
  */
@@ -69,8 +67,8 @@ public class ReferenceComparator implements Comparator<Reference>
         try
         {
             return compareImpl(r1,
-                               r2,
-                               sortProps);
+                    r2,
+                    sortProps);
         }
         catch (VirtualizationException e)
         {
@@ -79,7 +77,7 @@ public class ReferenceComparator implements Comparator<Reference>
     }
 
     private int compareImpl(Reference ref1In, Reference ref2In, List<Pair<QName, Boolean>> sortProps)
-                throws VirtualizationException
+            throws VirtualizationException
     {
         Object pv1 = null;
         Object pv2 = null;
@@ -109,9 +107,9 @@ public class ReferenceComparator implements Comparator<Reference>
             if (pv2 == null && sortProps.size() > 1)
             {
                 return compareImpl(ref1In,
-                                   ref2In,
-                                   sortProps.subList(1,
-                                                     sortProps.size()));
+                        ref2In,
+                        sortProps.subList(1,
+                                sortProps.size()));
             }
             else
             {
@@ -127,7 +125,7 @@ public class ReferenceComparator implements Comparator<Reference>
         {
             // TODO: use collation keys (re: performance)
             result = collator.compare((String) pv1,
-                                      (String) pv2);
+                    (String) pv2);
         }
         else if (pv1 instanceof Date)
         {
@@ -157,9 +155,9 @@ public class ReferenceComparator implements Comparator<Reference>
         if ((result == 0) && (sortProps.size() > 1))
         {
             return compareImpl(ref1In,
-                               ref2In,
-                               sortProps.subList(1,
-                                                 sortProps.size()));
+                    ref2In,
+                    sortProps.subList(1,
+                            sortProps.size()));
         }
 
         return result;

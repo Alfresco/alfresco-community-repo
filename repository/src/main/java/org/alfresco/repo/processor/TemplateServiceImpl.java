@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -40,7 +42,6 @@ import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
 import org.alfresco.service.cmr.repository.TemplateService;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Implementation of the TemplateService using Spring configured script engines.
@@ -48,29 +49,31 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Kevin Roast
  */
 public class TemplateServiceImpl implements TemplateService
-{    
+{
     /** Default Template processor engine to use */
-    private String defaultTemplateEngine;    
-    
+    private String defaultTemplateEngine;
+
     /** List of available template processors */
     private Map<String, TemplateProcessor> processors = new HashMap<String, TemplateProcessor>(5);
     private Map<String, String> processorNamesByExtension = new HashMap<String, String>(5);
-    
+
     /** The node service */
     private NodeService nodeService;
 
     /**
-     * @param defaultTemplateEngine The default Template Engine name to set.
+     * @param defaultTemplateEngine
+     *            The default Template Engine name to set.
      */
     public void setDefaultTemplateEngine(String defaultTemplateEngine)
     {
         this.defaultTemplateEngine = defaultTemplateEngine;
     }
-    
+
     /**
      * Set the node service
      * 
-     * @param nodeService   the node service
+     * @param nodeService
+     *            the node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -84,11 +87,11 @@ public class TemplateServiceImpl implements TemplateService
     {
         if (engine == null)
         {
-           engine = this.defaultTemplateEngine;
+            engine = this.defaultTemplateEngine;
         }
         return this.processors.get(engine);
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.repository.TemplateService#registerTemplateProcessor(org.alfresco.service.cmr.repository.TemplateProcessor)
      */
@@ -113,27 +116,28 @@ public class TemplateServiceImpl implements TemplateService
     {
         processTemplate(getTemplateProcessorName(template), template, model, out);
     }
-    
+
     /**
      * Gets the template processor name from the template string
      * 
-     * @param template  the template string location
-     * @return  the template processor string
+     * @param template
+     *            the template string location
+     * @return the template processor string
      */
     private String getTemplateProcessorName(String template)
     {
         String engine = null;
-        
+
         try
         {
             // Try and create the nodeRef
             NodeRef templateNodeRef = new NodeRef(template);
-            String templateName = (String)this.nodeService.getProperty(templateNodeRef, ContentModel.PROP_NAME);                
+            String templateName = (String) this.nodeService.getProperty(templateNodeRef, ContentModel.PROP_NAME);
             String extension = getFileExtension(templateName);
             if (extension != null)
             {
                 engine = this.processorNamesByExtension.get(extension);
-            }              
+            }
         }
         catch (AlfrescoRuntimeException exception)
         {
@@ -144,21 +148,22 @@ public class TemplateServiceImpl implements TemplateService
                 engine = this.processorNamesByExtension.get(extension);
             }
         }
-        
+
         // Set the default engine if none found
         if (engine == null)
         {
             engine = this.defaultTemplateEngine;
         }
-        
+
         return engine;
     }
-    
+
     /**
      * Gets the file extension of a file
      * 
-     * @param fileName  the file name
-     * @return  the file extension
+     * @param fileName
+     *            the file name
+     * @return the file extension
      */
     private String getFileExtension(String fileName)
     {
@@ -175,60 +180,59 @@ public class TemplateServiceImpl implements TemplateService
      * @see org.alfresco.service.cmr.repository.TemplateService#processTemplate(java.lang.String, java.lang.String, java.lang.Object, java.io.Writer)
      */
     public void processTemplate(String engine, String template, Object model, Writer out)
-        throws TemplateException
+            throws TemplateException
     {
         try
         {
-           // execute template processor
-           TemplateProcessor processor = getTemplateProcessor(engine);
-           processor.process(template, model, out);
+            // execute template processor
+            TemplateProcessor processor = getTemplateProcessor(engine);
+            processor.process(template, model, out);
         }
         catch (TemplateException terr)
         {
-           throw terr;
+            throw terr;
         }
         catch (Throwable err)
         {
-           throw new TemplateException(err.getMessage(), err);
+            throw new TemplateException(err.getMessage(), err);
         }
     }
 
-    
     /**
      * @see org.alfresco.service.cmr.repository.TemplateService#processTemplate(java.lang.String, java.lang.String, java.lang.Object, Locale locale)
      */
     public String processTemplate(String engine, String template, Object model, Locale locale)
-        throws TemplateException
+            throws TemplateException
     {
         Writer out = new StringWriter(1024);
         processTemplate(engine, template, model, out, locale);
         return out.toString();
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.repository.TemplateService#processTemplate(java.lang.String, java.lang.String, java.lang.Object, java.util.Locale)
      */
     private void processTemplate(String engine, String template, Object model, Writer out, Locale locale)
-        throws TemplateException
+            throws TemplateException
     {
         Locale currentLocale = I18NUtil.getLocaleOrNull();
         Locale currentContentLocale = I18NUtil.getContentLocaleOrNull();
-        
+
         try
         {
-           // set locale for cases where message method is used inside of template
-           I18NUtil.setLocale(locale);
-           // execute template processor
-           TemplateProcessor processor = getTemplateProcessor(engine);
-           processor.process(template, model, out, locale);
+            // set locale for cases where message method is used inside of template
+            I18NUtil.setLocale(locale);
+            // execute template processor
+            TemplateProcessor processor = getTemplateProcessor(engine);
+            processor.process(template, model, out, locale);
         }
         catch (TemplateException terr)
         {
-           throw terr;
+            throw terr;
         }
         catch (Throwable err)
         {
-           throw new TemplateException(err.getMessage(), err);
+            throw new TemplateException(err.getMessage(), err);
         }
         finally
         {
@@ -241,7 +245,7 @@ public class TemplateServiceImpl implements TemplateService
      * @see org.alfresco.service.cmr.repository.TemplateService#processTemplate(java.lang.String, java.lang.String, java.lang.Object)
      */
     public String processTemplate(String engine, String template, Object model)
-        throws TemplateException
+            throws TemplateException
     {
         Writer out = new StringWriter(1024);
         processTemplate(engine, template, model, out);
@@ -252,7 +256,7 @@ public class TemplateServiceImpl implements TemplateService
      * @see org.alfresco.service.cmr.repository.TemplateService#processTemplateString(java.lang.String, java.lang.String, java.lang.Object, java.io.Writer)
      */
     public void processTemplateString(String engine, String template, Object model, Writer out)
-        throws TemplateException
+            throws TemplateException
     {
         try
         {
@@ -269,12 +273,12 @@ public class TemplateServiceImpl implements TemplateService
             throw new TemplateException(err.getMessage(), err);
         }
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.repository.TemplateService#processTemplateString(java.lang.String, java.lang.String, java.lang.Object)
      */
     public String processTemplateString(String engine, String template, Object model)
-        throws TemplateException
+            throws TemplateException
     {
         Writer out = new StringWriter(1024);
         processTemplateString(engine, template, model, out);
@@ -287,13 +291,13 @@ public class TemplateServiceImpl implements TemplateService
     public Map<String, Object> buildDefaultModel(NodeRef person, NodeRef companyHome, NodeRef userHome, NodeRef template, TemplateImageResolver imageResolver)
     {
         Map<String, Object> model = new HashMap<String, Object>(16, 1.0f);
-        
+
         // Place the image resolver into the model
         if (imageResolver != null)
         {
             model.put(KEY_IMAGE_RESOLVER, imageResolver);
         }
-        
+
         // Put the common node reference into the model
         if (companyHome != null)
         {
@@ -307,16 +311,16 @@ public class TemplateServiceImpl implements TemplateService
         {
             model.put(KEY_PERSON, person);
         }
-        
+
         // add the template itself as "template" if it comes from content on a node
         if (template != null)
         {
             model.put(KEY_TEMPLATE, template);
         }
-        
+
         // current date/time is useful to have and isn't supplied by FreeMarker by default
         model.put(KEY_DATE, new Date());
-        
+
         return model;
     }
 }

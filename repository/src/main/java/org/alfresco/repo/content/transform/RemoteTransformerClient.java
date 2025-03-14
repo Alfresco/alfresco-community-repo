@@ -29,14 +29,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.StringJoiner;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.httpclient.HttpClient4Factory;
-import org.alfresco.httpclient.HttpClientConfig;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.util.Pair;
-import org.alfresco.util.exec.RuntimeExec;
-import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
 import org.apache.commons.logging.Log;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -50,10 +42,17 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.httpclient.HttpClient4Factory;
+import org.alfresco.httpclient.HttpClientConfig;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.util.Pair;
+import org.alfresco.util.exec.RuntimeExec;
+import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
+
 /**
- * Client class that transfers content (from a ContentReader) to a remote transformation agent together with
- * request parameters that will be used to transform the content. The transformed content is then returned and
- * saved in a ContentWriter. In the event of an error an Exception is thrown.
+ * Client class that transfers content (from a ContentReader) to a remote transformation agent together with request parameters that will be used to transform the content. The transformed content is then returned and saved in a ContentWriter. In the event of an error an Exception is thrown.
  *
  * @since 6.0
  */
@@ -83,7 +82,7 @@ public class RemoteTransformerClient
 
     public void setStartupRetryPeriodSeconds(int startupRetryPeriodSeconds)
     {
-        startupRetryPeriod = startupRetryPeriodSeconds*1000;
+        startupRetryPeriod = startupRetryPeriodSeconds * 1000;
     }
 
     public String getBaseUrl()
@@ -129,7 +128,7 @@ public class RemoteTransformerClient
 
         if (logger.isDebugEnabled())
         {
-            logger.debug(name+' '+sourceExtension+' '+targetExtension+' '+url+' '+args);
+            logger.debug(name + ' ' + sourceExtension + ' ' + targetExtension + ' ' + url + ' ' + args);
         }
 
         try
@@ -141,7 +140,7 @@ public class RemoteTransformerClient
                     StatusLine statusLine = response.getStatusLine();
                     if (statusLine == null)
                     {
-                        throw new AlfrescoRuntimeException(name+" returned no status " + url + ' ' + args);
+                        throw new AlfrescoRuntimeException(name + " returned no status " + url + ' ' + args);
                     }
                     HttpEntity resEntity = response.getEntity();
                     if (resEntity != null)
@@ -227,16 +226,13 @@ public class RemoteTransformerClient
     }
 
     /**
-     *  Indicates if a remote transform:
-     *  a) ready probe has ever indicated success {@code new Pair<>(true, <version string>)},
-     *  b) a ready probe has just failed {@code new Pair<>(false, <error string>)}, or
-     *  c) we are not performing a ready check as we have just done one {@code new Pair<>(null, null)}.
+     * Indicates if a remote transform: a) ready probe has ever indicated success {@code new Pair<>(true, <version string>)}, b) a ready probe has just failed {@code new Pair<>(false, <error string>)}, or c) we are not performing a ready check as we have just done one {@code new Pair<>(null, null)}.
      */
     public Pair<Boolean, String> check(Log logger)
     {
         if (!isTimeToCheckAvailability())
         {
-            logger.debug(name+' '+" too early to check availability");
+            logger.debug(name + ' ' + " too early to check availability");
             Pair<Boolean, String> result = getCheckResult();
             return result;
         }
@@ -253,7 +249,7 @@ public class RemoteTransformerClient
                     StatusLine statusLine = response.getStatusLine();
                     if (statusLine == null)
                     {
-                        throw new AlfrescoRuntimeException(name+" check returned no status " + url);
+                        throw new AlfrescoRuntimeException(name + " check returned no status " + url);
                     }
                     HttpEntity resEntity = response.getEntity();
                     if (resEntity != null)
@@ -273,8 +269,8 @@ public class RemoteTransformerClient
                                     logger.trace(name +
                                             " check returned. length=" + responseContentLength +
                                             " type=" + responseContentType +
-                                            " encoding=" + responseContentEncoding+
-                                            " content="+version);
+                                            " encoding=" + responseContentEncoding +
+                                            " content=" + version);
                                 }
 
                                 EntityUtils.consume(resEntity);
@@ -373,7 +369,7 @@ public class RemoteTransformerClient
             int j = content.indexOf("\",\"path\":", i);
             if (j != -1)
             {
-                message = content.substring(i+11, j);
+                message = content.substring(i + 11, j);
             }
         }
         return message;
@@ -388,7 +384,7 @@ public class RemoteTransformerClient
     /**
      * Helper method that returns the same result type as {@link #check(Log)} given a local checkCommand.
      */
-    public static Pair<Boolean,String> check(RuntimeExec checkCommand)
+    public static Pair<Boolean, String> check(RuntimeExec checkCommand)
     {
         ExecutionResult result = checkCommand.execute();
         Boolean success = result.getSuccess();

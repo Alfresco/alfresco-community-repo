@@ -31,16 +31,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.config.Config;
 import org.springframework.extensions.config.ConfigElement;
 import org.springframework.extensions.config.ConfigLookupContext;
 import org.springframework.extensions.config.ConfigService;
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.springframework.extensions.surf.util.I18NUtil;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.util.EqualsHelper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Provides a an implementation of the <b>Content Filter Languages Service</b>
@@ -73,7 +74,8 @@ public class ContentFilterLanguagesMap implements ContentFilterLanguagesService
     private String defaultLanguage = null;
 
     /**
-     * @param configService the config service to use to read languages
+     * @param configService
+     *            the config service to use to read languages
      */
     public void setConfigService(ConfigService configService)
     {
@@ -81,20 +83,20 @@ public class ContentFilterLanguagesMap implements ContentFilterLanguagesService
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.ml.ContentFilterLanguagesService#getFilterLanguages()
-     */
+     * 
+     * @see org.alfresco.service.cmr.ml.ContentFilterLanguagesService#getFilterLanguages() */
     public List<String> getFilterLanguages()
     {
         return orderedLangCodes;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.ml.ContentFilterLanguagesService#getMissingLanguages(java.util.List)
-     */
+     * 
+     * @see org.alfresco.service.cmr.ml.ContentFilterLanguagesService#getMissingLanguages(java.util.List) */
     public List<String> getMissingLanguages(List<String> availableLanguages)
     {
 
-        if(availableLanguages == null || availableLanguages.size() == 0)
+        if (availableLanguages == null || availableLanguages.size() == 0)
         {
             return orderedLangCodes;
         }
@@ -103,20 +105,20 @@ public class ContentFilterLanguagesMap implements ContentFilterLanguagesService
 
         int index = 0;
 
-        for(String lang : orderedLangCodes)
+        for (String lang : orderedLangCodes)
         {
-            if(!availableLanguages.contains(lang))
+            if (!availableLanguages.contains(lang))
             {
                 returnList.add(index, lang);
-                index ++;
+                index++;
             }
         }
         return returnList;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.ml.ContentFilterLanguagesService#getLabelByCode(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.service.cmr.ml.ContentFilterLanguagesService#getLabelByCode(java.lang.String) */
     public String getLabelByCode(String code)
     {
         // get the translated language label
@@ -125,13 +127,13 @@ public class ContentFilterLanguagesMap implements ContentFilterLanguagesService
         label = I18NUtil.getMessage(MESSAGE_PREFIX + code);
 
         // if not found, get the default name (found in content-filter-lang.xml)
-        if(label == null || label.length() == 0)
+        if (label == null || label.length() == 0)
         {
             label = languagesByCode.get(code);
         }
 
         // if not found, return the language code
-        if(label == null || label.length() == 0)
+        if (label == null || label.length() == 0)
         {
             label = code + " (label not found)";
         }
@@ -140,8 +142,8 @@ public class ContentFilterLanguagesMap implements ContentFilterLanguagesService
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.ml.ContentFilterLanguagesService#getOrderByCode(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.service.cmr.ml.ContentFilterLanguagesService#getOrderByCode(java.lang.String) */
     public int getOrderByCode(String code)
     {
         if (orderedLangCodes.contains(code))
@@ -156,7 +158,7 @@ public class ContentFilterLanguagesMap implements ContentFilterLanguagesService
 
     public String getDefaultLanguage()
     {
-        return this.defaultLanguage ;
+        return this.defaultLanguage;
     }
 
     /**
@@ -169,9 +171,9 @@ public class ContentFilterLanguagesMap implements ContentFilterLanguagesService
         // get which standart is defined by the user (ISO 639-1 by default)
         String standard = DEFAULT_LANGUAGE_LIST_STANDARD;
 
-        Config configStandard  = configService.getConfig(USED_STANDARD_CONFIG_CONDITION, clContext);
+        Config configStandard = configService.getConfig(USED_STANDARD_CONFIG_CONDITION, clContext);
 
-        if(configStandard != null
+        if (configStandard != null
                 && configStandard.getConfigElement(USED_STANDARD_ELEMENT) != null)
         {
             standard = configStandard.getConfigElement(USED_STANDARD_ELEMENT).getValue();
@@ -181,14 +183,13 @@ public class ContentFilterLanguagesMap implements ContentFilterLanguagesService
             logger.warn("No standard configured, use by default : " + DEFAULT_LANGUAGE_LIST_STANDARD);
         }
 
-
-        Config configConditions    = configService.getConfig(CONFIG_CONDITION, clContext);
+        Config configConditions = configService.getConfig(CONFIG_CONDITION, clContext);
         Map<String, ConfigElement> configElements = configConditions.getConfigElements();
 
         ConfigElement configLanguages = null;
 
         // get the list of languages of the matched standard
-        if(configElements.containsKey(standard))
+        if (configElements.containsKey(standard))
         {
             configLanguages = configElements.get(standard);
         }
@@ -205,21 +206,21 @@ public class ContentFilterLanguagesMap implements ContentFilterLanguagesService
         // get the size of the lists
         int listSize = languages.size();
         this.orderedLangCodes = new ArrayList<String>(listSize);
-        this.languagesByCode  = new HashMap<String, String>(listSize);
+        this.languagesByCode = new HashMap<String, String>(listSize);
 
         // construct the languages map and list
         for (ConfigElement langElem : languages)
         {
-            String code  = convertToOldISOCode(langElem.getAttribute(ATTR_CODE));
+            String code = convertToOldISOCode(langElem.getAttribute(ATTR_CODE));
             String value = langElem.getValue();
-            String def   = langElem.getAttribute(ATTR_DEFAULT);
+            String def = langElem.getAttribute(ATTR_DEFAULT);
 
             languagesByCode.put(code, value);
 
             boolean isDefault = (def != null && Boolean.parseBoolean(def));
-            if(isDefault)
+            if (isDefault)
             {
-                if(defaultLanguage != null)
+                if (defaultLanguage != null)
                 {
                     logger.warn("Content filter default language is not unique: " + code);
                 }
@@ -241,35 +242,35 @@ public class ContentFilterLanguagesMap implements ContentFilterLanguagesService
 
         // make the collections read-only
         this.orderedLangCodes = Collections.unmodifiableList(this.orderedLangCodes);
-        this.languagesByCode  = Collections.unmodifiableMap(this.languagesByCode);
+        this.languagesByCode = Collections.unmodifiableMap(this.languagesByCode);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.ml.ContentFilterLanguagesService#convertToOldISOCode(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.service.cmr.ml.ContentFilterLanguagesService#convertToOldISOCode(java.lang.String) */
     public String convertToOldISOCode(String code)
     {
-        if(code.equalsIgnoreCase("he"))
+        if (code.equalsIgnoreCase("he"))
             code = "iw";
-        else if(code.equalsIgnoreCase("id"))
+        else if (code.equalsIgnoreCase("id"))
             code = "in";
-        else if(code.equalsIgnoreCase("yi"))
+        else if (code.equalsIgnoreCase("yi"))
             code = "ji";
 
         return code;
     }
 
-
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.ml.ContentFilterLanguagesService#convertToNewISOCode(java.lang.String)
-     */
-    public String convertToNewISOCode(String code) {
+     * 
+     * @see org.alfresco.service.cmr.ml.ContentFilterLanguagesService#convertToNewISOCode(java.lang.String) */
+    public String convertToNewISOCode(String code)
+    {
 
-        if(code.equalsIgnoreCase("iw"))
+        if (code.equalsIgnoreCase("iw"))
             code = "he";
-        else if(code.equalsIgnoreCase("in"))
+        else if (code.equalsIgnoreCase("in"))
             code = "id";
-        else if(code.equalsIgnoreCase("ji"))
+        else if (code.equalsIgnoreCase("ji"))
             code = "yi";
 
         return code;

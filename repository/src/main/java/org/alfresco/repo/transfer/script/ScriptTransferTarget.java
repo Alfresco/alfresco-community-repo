@@ -35,27 +35,32 @@ import org.alfresco.service.cmr.transfer.TransferTarget;
 public class ScriptTransferTarget
 {
     TransferTarget internal;
-    
+
     public ScriptTransferTarget(TransferTarget target)
     {
         internal = target;
     }
+
     public String getName()
     {
         return internal.getName();
     }
+
     public String getDescription()
     {
         return internal.getDescription();
-    } 
+    }
+
     public String getEndpointHost()
     {
         return internal.getEndpointHost();
     }
+
     public String getEndpointProtocol()
     {
         return internal.getEndpointProtocol();
     }
+
     public int getEndpointPort()
     {
         return internal.getEndpointPort();

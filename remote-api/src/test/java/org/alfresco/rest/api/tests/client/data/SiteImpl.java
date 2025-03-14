@@ -32,11 +32,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 
 public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, ExpectedComparison
 {
@@ -56,10 +57,9 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
     protected String visibility; // one of (PUBLIC,MODERATED,PRIVATE), defaults to PUBLIC
     protected String preset;
     protected String type;
-    
+
     public SiteImpl()
-    {
-    }
+    {}
 
     public SiteImpl(String title, String visibility)
     {
@@ -112,7 +112,7 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
     }
 
     public SiteImpl(String networkId, String siteId, String guid, String title, String description,
-                    String visibility, String type, SiteRole siteRole)
+            String visibility, String type, SiteRole siteRole)
     {
         super();
         this.networkId = networkId;
@@ -200,7 +200,7 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
     {
         assertTrue(o instanceof SiteImpl);
 
-        SiteImpl site = (SiteImpl)o;
+        SiteImpl site = (SiteImpl) o;
 
         AssertUtil.assertEquals("siteId", getSiteId(), site.getSiteId());
         AssertUtil.assertEquals("guid", getGuid(), site.getGuid());
@@ -209,7 +209,6 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
         AssertUtil.assertEquals("visibility", getVisibility(), site.getVisibility());
         AssertUtil.assertEquals("role", getRole(), site.getRole());
     }
-
 
     public Boolean getCreated()
     {
@@ -313,14 +312,14 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
             return null;
         }
 
-        String id = (String)jsonObject.get("id");
-        String guid = (String)jsonObject.get("guid");
-        String title = (String)jsonObject.get("title");
-        String description = (String)jsonObject.get("description");
-        String visibility = (String)jsonObject.get("visibility");
-        String roleStr = (String)jsonObject.get("role");
+        String id = (String) jsonObject.get("id");
+        String guid = (String) jsonObject.get("guid");
+        String title = (String) jsonObject.get("title");
+        String description = (String) jsonObject.get("description");
+        String visibility = (String) jsonObject.get("visibility");
+        String roleStr = (String) jsonObject.get("role");
         SiteRole role = null;
-        if(roleStr != null)
+        if (roleStr != null)
         {
             role = SiteRole.valueOf(roleStr);
         }
@@ -332,16 +331,16 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
     {
         List<Site> sites = new ArrayList<Site>();
 
-        JSONObject jsonList = (JSONObject)jsonObject.get("list");
+        JSONObject jsonList = (JSONObject) jsonObject.get("list");
         assertNotNull(jsonList);
 
-        JSONArray jsonEntries = (JSONArray)jsonList.get("entries");
+        JSONArray jsonEntries = (JSONArray) jsonList.get("entries");
         assertNotNull(jsonEntries);
 
-        for(int i = 0; i < jsonEntries.size(); i++)
+        for (int i = 0; i < jsonEntries.size(); i++)
         {
-            JSONObject jsonEntry = (JSONObject)jsonEntries.get(i);
-            JSONObject entry = (JSONObject)jsonEntry.get("entry");
+            JSONObject jsonEntry = (JSONObject) jsonEntries.get(i);
+            JSONObject entry = (JSONObject) jsonEntry.get("entry");
             sites.add(parseSite(entry));
         }
 
@@ -433,13 +432,15 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
         {
             if (other.networkId != null)
                 return false;
-        } else if (!networkId.equals(other.networkId))
+        }
+        else if (!networkId.equals(other.networkId))
             return false;
         if (siteId == null)
         {
             if (other.siteId != null)
                 return false;
-        } else if (!siteId.equals(other.siteId))
+        }
+        else if (!siteId.equals(other.siteId))
             return false;
         return true;
     }

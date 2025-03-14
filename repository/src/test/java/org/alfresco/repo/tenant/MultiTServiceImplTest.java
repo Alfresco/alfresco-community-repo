@@ -29,6 +29,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -49,9 +53,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * A test for MultiTServiceImpl class.
@@ -152,12 +153,10 @@ public class MultiTServiceImplTest extends BaseSpringTest
     @Test
     public void testIsTenantUser()
     {
-        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
-
 
                 // Create a user with a plain user name without a domain
                 NodeRef userNodeRef = createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
@@ -165,7 +164,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
                 assertFalse("The user is not from a tenant, but was reported otherwise.", multiTServiceImpl.isTenantUser(USER1));
 
                 // Create a user with a name as an email, but not from tenant
-                userNodeRef =  createUser(USER2_WITH_DOMAIN, TenantService.DEFAULT_DOMAIN, PASS);
+                userNodeRef = createUser(USER2_WITH_DOMAIN, TenantService.DEFAULT_DOMAIN, PASS);
                 assertNotNull("The user was not created.", userNodeRef);
                 assertFalse("The user is not from a tenant, but was reported otherwise.", multiTServiceImpl.isTenantUser(USER2_WITH_DOMAIN));
 
@@ -183,8 +182,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
     @Test
     public void testGetCurrentUserDomain()
     {
-        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -194,8 +192,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
                 NodeRef userNodeRef = createUser(USER1, DOMAIN, PASS);
                 assertNotNull("The user was not created.", userNodeRef);
 
-                TenantRunAsWork<String> work = new TenantRunAsWork<String>()
-                {
+                TenantRunAsWork<String> work = new TenantRunAsWork<String>() {
                     @Override
                     public String doWork() throws Exception
                     {
@@ -210,8 +207,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
                 userNodeRef = createUser(USER2, TenantService.DEFAULT_DOMAIN, PASS);
                 assertNotNull("The user was not created.", userNodeRef);
 
-                work = new TenantRunAsWork<String>()
-                {
+                work = new TenantRunAsWork<String>() {
                     @Override
                     public String doWork() throws Exception
                     {
@@ -231,16 +227,14 @@ public class MultiTServiceImplTest extends BaseSpringTest
     @Test
     public void testGetName()
     {
-        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
 
                 NodeRef userNodeRef = createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
                 assertNotNull("The user was not created.", userNodeRef);
-                TenantRunAsWork<NodeRef> work1 = new TenantRunAsWork<NodeRef>()
-                {
+                TenantRunAsWork<NodeRef> work1 = new TenantRunAsWork<NodeRef>() {
                     @Override
                     public NodeRef doWork() throws Exception
                     {
@@ -253,8 +247,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
                 createTenant(DOMAIN);
                 userNodeRef = createUser(USER2, DOMAIN, PASS);
                 assertNotNull("The user was not created.", userNodeRef);
-                work1 = new TenantRunAsWork<NodeRef>()
-                {
+                work1 = new TenantRunAsWork<NodeRef>() {
                     @Override
                     public NodeRef doWork() throws Exception
                     {
@@ -264,8 +257,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
                 result = TenantUtil.runAsUserTenant(work1, USER2, DOMAIN);
                 assertEquals("The NodeRef should contain domain.", TENANT_NODE_REF, result);
 
-                work1 = new TenantRunAsWork<NodeRef>()
-                {
+                work1 = new TenantRunAsWork<NodeRef>() {
                     @Override
                     public NodeRef doWork() throws Exception
                     {
@@ -275,8 +267,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
                 result = TenantUtil.runAsUserTenant(work1, USER2, DOMAIN);
                 assertEquals("The NodeRef should contain domain.", TENANT_NODE_REF, result);
 
-                TenantRunAsWork<StoreRef> work2 = new TenantRunAsWork<StoreRef>()
-                {
+                TenantRunAsWork<StoreRef> work2 = new TenantRunAsWork<StoreRef>() {
                     @Override
                     public StoreRef doWork() throws Exception
                     {
@@ -286,8 +277,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
                 StoreRef result2 = TenantUtil.runAsUserTenant(work2, USER2, DOMAIN);
                 assertEquals("The StoreRef should contain domain.", TENANT_STORE_REF, result2);
 
-                TenantRunAsWork<ChildAssociationRef> work3 = new TenantRunAsWork<ChildAssociationRef>()
-                {
+                TenantRunAsWork<ChildAssociationRef> work3 = new TenantRunAsWork<ChildAssociationRef>() {
                     @Override
                     public ChildAssociationRef doWork() throws Exception
                     {
@@ -297,8 +287,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
                 ChildAssociationRef result3 = TenantUtil.runAsUserTenant(work3, USER2, DOMAIN);
                 assertEquals("The ChildAssociationRef should contain domain.", tenantChildAssocRef, result3);
 
-                TenantRunAsWork<AssociationRef> work4 = new TenantRunAsWork<AssociationRef>()
-                {
+                TenantRunAsWork<AssociationRef> work4 = new TenantRunAsWork<AssociationRef>() {
                     @Override
                     public AssociationRef doWork() throws Exception
                     {
@@ -308,8 +297,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
                 AssociationRef result4 = TenantUtil.runAsUserTenant(work4, USER2, DOMAIN);
                 assertEquals("The AssociationRef should contain domain.", tenantAssocRef, result4);
 
-                TenantRunAsWork<StoreRef> work5 = new TenantRunAsWork<StoreRef>()
-                {
+                TenantRunAsWork<StoreRef> work5 = new TenantRunAsWork<StoreRef>() {
                     @Override
                     public StoreRef doWork() throws Exception
                     {
@@ -319,8 +307,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
                 StoreRef result5 = TenantUtil.runAsUserTenant(work5, USER2, DOMAIN);
                 assertEquals("The StoreRef should contain domain.", TENANT_STORE_REF, result5);
 
-                TenantRunAsWork<QName> work6 = new TenantRunAsWork<QName>()
-                {
+                TenantRunAsWork<QName> work6 = new TenantRunAsWork<QName>() {
                     @Override
                     public QName doWork() throws Exception
                     {
@@ -330,8 +317,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
                 QName result6 = TenantUtil.runAsUserTenant(work6, USER2, DOMAIN);
                 assertEquals("The QName should contain domain.", TENANT_QNAME, result6);
 
-                TenantRunAsWork<QName> work7 = new TenantRunAsWork<QName>()
-                {
+                TenantRunAsWork<QName> work7 = new TenantRunAsWork<QName>() {
                     @Override
                     public QName doWork() throws Exception
                     {
@@ -341,8 +327,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
                 QName result7 = TenantUtil.runAsUserTenant(work7, USER2, DOMAIN);
                 assertEquals("The QName should contain domain.", TENANT_QNAME, result7);
 
-                TenantRunAsWork<String> work8 = new TenantRunAsWork<String>()
-                {
+                TenantRunAsWork<String> work8 = new TenantRunAsWork<String>() {
                     @Override
                     public String doWork() throws Exception
                     {
@@ -360,18 +345,18 @@ public class MultiTServiceImplTest extends BaseSpringTest
     @Test
     public void testGetNull()
     {
-        assertNull(tenantService.getName((NodeRef)null));
-        assertNull(tenantService.getName((String)null));
+        assertNull(tenantService.getName((NodeRef) null));
+        assertNull(tenantService.getName((String) null));
         assertNull(tenantService.getName((StoreRef) null));
         assertNull(tenantService.getName("", (StoreRef) null));
         assertNull(tenantService.getName((ChildAssociationRef) null));
         assertNull(tenantService.getName((AssociationRef) null));
-        assertNull(tenantService.getName((NodeRef)null,(NodeRef)null));
+        assertNull(tenantService.getName((NodeRef) null, (NodeRef) null));
         assertNull(tenantService.getBaseName((StoreRef) null));
         assertNull(tenantService.getBaseName((AssociationRef) null));
         assertNull(tenantService.getBaseName((ChildAssociationRef) null, false));
-        assertNull(tenantService.getBaseName((String)null, false));
-        tenantService.checkDomain((String)null);
+        assertNull(tenantService.getBaseName((String) null, false));
+        tenantService.checkDomain((String) null);
     }
 
     @Test
@@ -401,16 +386,14 @@ public class MultiTServiceImplTest extends BaseSpringTest
     @Test
     public void testGetBaseName()
     {
-        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
 
                 NodeRef userNodeRef = createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
                 assertNotNull("The user was not created.", userNodeRef);
-                TenantRunAsWork<NodeRef> work1 = new TenantRunAsWork<NodeRef>()
-                {
+                TenantRunAsWork<NodeRef> work1 = new TenantRunAsWork<NodeRef>() {
                     @Override
                     public NodeRef doWork() throws Exception
                     {
@@ -423,8 +406,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
                 createTenant(DOMAIN);
                 userNodeRef = createUser(USER2, DOMAIN, PASS);
                 assertNotNull("The user was not created.", userNodeRef);
-                work1 = new TenantRunAsWork<NodeRef>()
-                {
+                work1 = new TenantRunAsWork<NodeRef>() {
                     @Override
                     public NodeRef doWork() throws Exception
                     {
@@ -434,8 +416,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
                 result = TenantUtil.runAsUserTenant(work1, USER2, DOMAIN);
                 assertEquals("The NodeRef should not contain domain.", NODE_REF, result);
 
-                work1 = new TenantRunAsWork<NodeRef>()
-                {
+                work1 = new TenantRunAsWork<NodeRef>() {
                     @Override
                     public NodeRef doWork() throws Exception
                     {
@@ -445,8 +426,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
                 result = TenantUtil.runAsUserTenant(work1, USER1, TenantService.DEFAULT_DOMAIN);
                 assertEquals("The NodeRef should not contain domain.", NODE_REF, result);
 
-                work1 = new TenantRunAsWork<NodeRef>()
-                {
+                work1 = new TenantRunAsWork<NodeRef>() {
                     @Override
                     public NodeRef doWork() throws Exception
                     {
@@ -456,8 +436,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
                 result = TenantUtil.runAsUserTenant(work1, USER1, TenantService.DEFAULT_DOMAIN);
                 assertEquals("The NodeRef should contain domain.", TENANT_NODE_REF, result);
 
-                TenantRunAsWork<StoreRef> work2 = new TenantRunAsWork<StoreRef>()
-                {
+                TenantRunAsWork<StoreRef> work2 = new TenantRunAsWork<StoreRef>() {
                     @Override
                     public StoreRef doWork() throws Exception
                     {
@@ -467,8 +446,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
                 StoreRef result2 = TenantUtil.runAsUserTenant(work2, USER2, DOMAIN);
                 assertEquals("The StoreRef should not contain domain.", STORE_REF, result2);
 
-                TenantRunAsWork<ChildAssociationRef> work3 = new TenantRunAsWork<ChildAssociationRef>()
-                {
+                TenantRunAsWork<ChildAssociationRef> work3 = new TenantRunAsWork<ChildAssociationRef>() {
                     @Override
                     public ChildAssociationRef doWork() throws Exception
                     {
@@ -478,8 +456,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
                 ChildAssociationRef result3 = TenantUtil.runAsUserTenant(work3, USER2, DOMAIN);
                 assertEquals("The ChildAssociationRef not should contain domain.", childAssocRef, result3);
 
-                TenantRunAsWork<AssociationRef> work4 = new TenantRunAsWork<AssociationRef>()
-                {
+                TenantRunAsWork<AssociationRef> work4 = new TenantRunAsWork<AssociationRef>() {
                     @Override
                     public AssociationRef doWork() throws Exception
                     {
@@ -489,8 +466,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
                 AssociationRef result4 = TenantUtil.runAsUserTenant(work4, USER2, DOMAIN);
                 assertEquals("The AssociationRef should not contain domain.", assocRef, result4);
 
-                TenantRunAsWork<QName> work5 = new TenantRunAsWork<QName>()
-                {
+                TenantRunAsWork<QName> work5 = new TenantRunAsWork<QName>() {
                     @Override
                     public QName doWork() throws Exception
                     {
@@ -500,8 +476,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
                 QName result5 = TenantUtil.runAsUserTenant(work5, USER2, DOMAIN);
                 assertEquals("The QName should not contain domain.", QNAME, result5);
 
-                TenantRunAsWork<String> work6 = new TenantRunAsWork<String>()
-                {
+                TenantRunAsWork<String> work6 = new TenantRunAsWork<String>() {
                     @Override
                     public String doWork() throws Exception
                     {
@@ -519,8 +494,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
     @Test
     public void testCheckDomainUser()
     {
-        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -567,8 +541,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
     @Test
     public void testCheckDomain()
     {
-        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -613,8 +586,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
     @Test
     public void testGetRootNode()
     {
-        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -641,8 +613,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
     @Test
     public void testIsTenantName()
     {
-        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -661,8 +632,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
     @Test
     public void testGetPrimaryDomain()
     {
-        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -687,8 +657,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
     @Test
     public void testGetDomain() throws Exception
     {
-        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -733,8 +702,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
     @Test
     public void testGetTenant()
     {
-        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -755,8 +723,7 @@ public class MultiTServiceImplTest extends BaseSpringTest
     @Test
     public void testGetUserDomain()
     {
-        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -781,17 +748,21 @@ public class MultiTServiceImplTest extends BaseSpringTest
 
     /**
      * Runs {@link TenantService#getDomain(String)} as a specified tenant.
-     * @param user The input parameter to the {@link TenantService#getDomain(String)}
-     * @param domain String
-     * @param runAsUsername String
-     * @param checkCurrentDomain boolean
+     * 
+     * @param user
+     *            The input parameter to the {@link TenantService#getDomain(String)}
+     * @param domain
+     *            String
+     * @param runAsUsername
+     *            String
+     * @param checkCurrentDomain
+     *            boolean
      * @return domain
      * @throws Exception
      */
     private String getDomainWork(final String user, String domain, String runAsUsername, final boolean checkCurrentDomain) throws Exception
     {
-        TenantRunAsWork<String> work = new TenantRunAsWork<String>()
-        {
+        TenantRunAsWork<String> work = new TenantRunAsWork<String>() {
             @Override
             public String doWork() throws Exception
             {
@@ -803,15 +774,18 @@ public class MultiTServiceImplTest extends BaseSpringTest
 
     /**
      * Runs {@link TenantService#checkDomain(String)} as a specified tenant.
-     * @param string The input parameter to the {@link TenantService#checkDomain(String)}
-     * @param domain String
-     * @param runAsUsername String
+     * 
+     * @param string
+     *            The input parameter to the {@link TenantService#checkDomain(String)}
+     * @param domain
+     *            String
+     * @param runAsUsername
+     *            String
      * @throws Exception
      */
     private void checkDomainWork(final String string, String domain, String runAsUsername) throws Exception
     {
-        TenantRunAsWork<Void> work = new TenantRunAsWork<Void>()
-        {
+        TenantRunAsWork<Void> work = new TenantRunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -824,15 +798,18 @@ public class MultiTServiceImplTest extends BaseSpringTest
 
     /**
      * Runs {@link TenantService#checkDomainUser(String)} as a specified tenant.
-     * @param username The input parameter to the {@link TenantService#checkDomainUser(String)}
-     * @param domain String
-     * @param runAsUsername String
+     * 
+     * @param username
+     *            The input parameter to the {@link TenantService#checkDomainUser(String)}
+     * @param domain
+     *            String
+     * @param runAsUsername
+     *            String
      * @throws Exception
      */
     private void checkDomainUserWork(final String username, String domain, String runAsUsername) throws Exception
     {
-        TenantRunAsWork<Void> work = new TenantRunAsWork<Void>()
-        {
+        TenantRunAsWork<Void> work = new TenantRunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -846,12 +823,12 @@ public class MultiTServiceImplTest extends BaseSpringTest
     /**
      * Create a tenant domain, if not already created
      *
-     * @param tenantDomain String
+     * @param tenantDomain
+     *            String
      */
     private void createTenant(final String tenantDomain)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Object>() {
             public Object doWork() throws Exception
             {
                 if (!tenantAdminService.existsTenant(tenantDomain))
@@ -867,9 +844,12 @@ public class MultiTServiceImplTest extends BaseSpringTest
     /**
      * Crate a user and authentication
      *
-     * @param baseUserName String
-     * @param tenantDomain String
-     * @param password String
+     * @param baseUserName
+     *            String
+     * @param tenantDomain
+     *            String
+     * @param password
+     *            String
      * @return the new user NodeRef
      */
     private NodeRef createUser(String baseUserName, String tenantDomain, String password)
@@ -902,19 +882,17 @@ public class MultiTServiceImplTest extends BaseSpringTest
 
     private void deleteTenant(final String tenantDomain)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Object>() {
             public Object doWork() throws Exception
             {
-                RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-                {
+                RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
                     public Void execute() throws Throwable
                     {
                         // delete tenant (if it exists)
                         if (tenantAdminService.existsTenant(tenantDomain))
                         {
                             // TODO: WARNING: HACK for ALF-19155: MT deleteTenant does not work
-                            //       PersonService prevents 'guest' authorities from being deleted
+                            // PersonService prevents 'guest' authorities from being deleted
                             {
                                 BehaviourFilter behaviourFilter = (BehaviourFilter) applicationContext.getBean("policyBehaviourFilter");
                                 behaviourFilter.disableBehaviour(ContentModel.TYPE_PERSON);
@@ -933,8 +911,11 @@ public class MultiTServiceImplTest extends BaseSpringTest
 
     /**
      * Utility method to add a domain to an string id
-     * @param id String
-     * @param domain String
+     * 
+     * @param id
+     *            String
+     * @param domain
+     *            String
      * @return a string in format "@domain@id"
      */
     private static String addDomainToId(String id, String domain)

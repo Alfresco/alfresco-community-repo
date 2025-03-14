@@ -25,16 +25,16 @@
  */
 package org.alfresco.util;
 
+import static org.junit.Assert.assertNotEquals;
+
+import java.io.IOException;
+
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.quartz.CronExpression;
-
-import java.io.IOException;
-
-import static org.junit.Assert.assertNotEquals;
 
 public class ConfigSchedulerTest extends TestCase
 {
@@ -56,8 +56,7 @@ public class ConfigSchedulerTest extends TestCase
             }
         }
 
-        private ConfigScheduler<Data> configScheduler = new ConfigScheduler(this)
-        {
+        private ConfigScheduler<Data> configScheduler = new ConfigScheduler(this) {
             @Override
             public boolean readConfig() throws IOException
             {
@@ -131,18 +130,18 @@ public class ConfigSchedulerTest extends TestCase
     public TestRegistry.Data assertDataChanged(TestRegistry.Data prevData, String msg)
     {
         // If the data changes, there has been a read
-        System.out.println(getMs()+msg);
+        System.out.println(getMs() + msg);
         TestRegistry.Data data = registry.getData();
-        assertNotEquals("The configuration data should have changed: "+msg, prevData, data);
+        assertNotEquals("The configuration data should have changed: " + msg, prevData, data);
         return data;
     }
 
     public TestRegistry.Data assertDataUnchanged(TestRegistry.Data prevData, String msg)
     {
         // If the data changes, there has been a read
-        System.out.println(getMs()+msg);
+        System.out.println(getMs() + msg);
         TestRegistry.Data data = registry.getData();
-        assertEquals("The configuration data should be the same: "+msg, prevData, data);
+        assertEquals("The configuration data should be the same: " + msg, prevData, data);
         return data;
     }
 
@@ -155,7 +154,7 @@ public class ConfigSchedulerTest extends TestCase
 
         // Sleep until a 6 second boundary, in order to make testing clearer.
         // It avoids having to work out schedule offsets and extra quick runs that can otherwise take place.
-        Thread.sleep(4000-System.currentTimeMillis()%4000);
+        Thread.sleep(4000 - System.currentTimeMillis() % 4000);
         startMs = System.currentTimeMillis();
         mockSuccessReadingConfig = false;
         registry.afterPropertiesSet();

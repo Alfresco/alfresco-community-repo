@@ -26,14 +26,22 @@
 
 package org.alfresco.rest.api.impl.rules;
 
-import static org.alfresco.service.cmr.rule.RuleType.INBOUND;
-import static org.alfresco.service.cmr.rule.RuleType.OUTBOUND;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.BDDMockito.then;
+
+import static org.alfresco.service.cmr.rule.RuleType.INBOUND;
+import static org.alfresco.service.cmr.rule.RuleType.OUTBOUND;
 
 import java.util.List;
 
 import junit.framework.TestCase;
+import org.assertj.core.api.Assertions;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
 import org.alfresco.repo.action.RuntimeActionService;
@@ -45,12 +53,6 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.Rule;
-import org.assertj.core.api.Assertions;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 @Experimental
 @RunWith(MockitoJUnitRunner.class)
@@ -66,9 +68,8 @@ public class ActionPermissionValidatorTest extends TestCase
     @Test
     public void testPositiveRulePermissionValidation()
     {
-        //given
-        final CompositeActionImpl compositeAction =
-                new CompositeActionImpl(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID), "composite-id");
+        // given
+        final CompositeActionImpl compositeAction = new CompositeActionImpl(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID), "composite-id");
         final Action action1 = new ActionImpl(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID), "id-1",
                 CopyActionExecuter.NAME);
         compositeAction.addAction(action1);
@@ -79,7 +80,7 @@ public class ActionPermissionValidatorTest extends TestCase
         inputRule.setAction(compositeAction);
         inputRule.setRuleTypes(List.of(INBOUND));
 
-        //when
+        // when
         final Rule validatedRule = objectUnderTest.validateRulePermissions(inputRule);
 
         then(runtimeActionService).should().verifyActionAccessRestrictions(action1);
@@ -93,9 +94,8 @@ public class ActionPermissionValidatorTest extends TestCase
     @Test
     public void testNegativeRulePermissionValidation()
     {
-        //given
-        final CompositeActionImpl compositeAction =
-                new CompositeActionImpl(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID), "composite-id");
+        // given
+        final CompositeActionImpl compositeAction = new CompositeActionImpl(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID), "composite-id");
         final Action action1 = new ActionImpl(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID), "id-1",
                 CopyActionExecuter.NAME);
         compositeAction.addAction(action1);
@@ -106,7 +106,7 @@ public class ActionPermissionValidatorTest extends TestCase
         inputRule.setAction(compositeAction);
         inputRule.setRuleTypes(List.of(OUTBOUND));
 
-        //when
+        // when
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.validateRulePermissions(inputRule));
 
         then(runtimeActionService).should().verifyActionAccessRestrictions(action1);

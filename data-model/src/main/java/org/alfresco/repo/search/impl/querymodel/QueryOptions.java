@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
@@ -38,7 +40,6 @@ import org.alfresco.service.cmr.search.QueryConsistency;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * The options for a query
@@ -83,13 +84,13 @@ public class QueryOptions
     private Boolean useInMemorySort;
 
     private Integer maxRawResultSetSizeForInMemorySort;
-    
+
     private boolean excludeTenantFilter = false;
-    
+
     private boolean isBulkFetchEnabled = true;
 
     private QueryConsistency queryConsistency = QueryConsistency.DEFAULT;
-    
+
     private Long sinceTxId;
 
     private Map<String, String> queryTemplates = new HashMap<String, String>();
@@ -123,24 +124,21 @@ public class QueryOptions
         options.setExcludeTenantFilter(searchParameters.getExcludeTenantFilter());
         options.setQueryConsistency(searchParameters.getQueryConsistency());
         options.setSinceTxId(searchParameters.getSinceTxId());
-        for(String name : searchParameters.getQueryTemplates().keySet())
+        for (String name : searchParameters.getQueryTemplates().keySet())
         {
-        	String template = searchParameters.getQueryTemplates().get(name);
-        	options.addQueryTemplate(name, template);
+            String template = searchParameters.getQueryTemplates().get(name);
+            options.addQueryTemplate(name, template);
         }
         return options;
     }
-    
-   
-    
-	/**
-     * Create a CMISQueryOptions instance with the default options other than the query and store ref. The query will be
-     * run using the locale returned by I18NUtil.getLocale()
+
+    /**
+     * Create a CMISQueryOptions instance with the default options other than the query and store ref. The query will be run using the locale returned by I18NUtil.getLocale()
      * 
-     * @param query -
-     *            the query to run
-     * @param storeRef -
-     *            the store against which to run the query
+     * @param query
+     *            - the query to run
+     * @param storeRef
+     *            - the store against which to run the query
      */
     public QueryOptions(String query, StoreRef storeRef)
     {
@@ -150,10 +148,10 @@ public class QueryOptions
     /**
      * Create a CMISQueryOptions instance with the default options other than the query, store ref and locale.
      * 
-     * @param query -
-     *            the query to run
-     * @param storeRef -
-     *            the store against which to run the query
+     * @param query
+     *            - the query to run
+     * @param storeRef
+     *            - the store against which to run the query
      */
     public QueryOptions(String query, StoreRef storeRef, Locale locale)
     {
@@ -184,8 +182,7 @@ public class QueryOptions
     }
 
     /**
-     * Get the list of stores in which to run the query. Only one store is supported at the momentOnly one store is
-     * supported at the moment
+     * Get the list of stores in which to run the query. Only one store is supported at the momentOnly one store is supported at the moment
      * 
      * @return the stores
      */
@@ -382,8 +379,8 @@ public class QueryOptions
     }
 
     /**
-     * @param maxPermissionCheckTimeMillis -
-     *            the timeout in millis for permission checks
+     * @param maxPermissionCheckTimeMillis
+     *            - the timeout in millis for permission checks
      */
     public void setMaxPermissionCheckTimeMillis(long maxPermissionCheckTimeMillis)
     {
@@ -399,8 +396,8 @@ public class QueryOptions
     }
 
     /**
-     * @param maxPermissionChecks -
-     *            the max number of permission checks to carry out
+     * @param maxPermissionChecks
+     *            - the max number of permission checks to carry out
      */
     public void setMaxPermissionChecks(int maxPermissionChecks)
     {
@@ -414,15 +411,16 @@ public class QueryOptions
     {
         return defaultFieldName;
     }
-    
+
     /**
-     * @param defaultFieldName - the default field name to use
+     * @param defaultFieldName
+     *            - the default field name to use
      */
     public void setDefaultFieldName(String defaultFieldName)
     {
-       this.defaultFieldName = defaultFieldName;
+        this.defaultFieldName = defaultFieldName;
     }
-    
+
     /**
      * @return the useInMemorySort
      */
@@ -432,7 +430,8 @@ public class QueryOptions
     }
 
     /**
-     * @param useInMemorySort the useInMemorySort to set
+     * @param useInMemorySort
+     *            the useInMemorySort to set
      */
     public void setUseInMemorySort(Boolean useInMemorySort)
     {
@@ -448,13 +447,14 @@ public class QueryOptions
     }
 
     /**
-     * @param maxRawResultSetSizeForInMemorySort the maxRawResultSetSizeForInMemorySort to set
+     * @param maxRawResultSetSizeForInMemorySort
+     *            the maxRawResultSetSizeForInMemorySort to set
      */
     public void setMaxRawResultSetSizeForInMemorySort(Integer maxRawResultSetSizeForInMemorySort)
     {
         this.maxRawResultSetSizeForInMemorySort = maxRawResultSetSizeForInMemorySort;
     }
-    
+
     /**
      * @return true if bulk fetch is enabled
      */
@@ -464,13 +464,14 @@ public class QueryOptions
     }
 
     /**
-     * @param isBulkFetchEnabled boolean
+     * @param isBulkFetchEnabled
+     *            boolean
      */
     public void setBulkFetchEnabled(boolean isBulkFetchEnabled)
     {
         this.isBulkFetchEnabled = isBulkFetchEnabled;
-    }  
-    
+    }
+
     /**
      * @return the tenants
      */
@@ -478,15 +479,16 @@ public class QueryOptions
     {
         return excludeTenantFilter;
     }
-    
+
     /**
-     * @param excludeTenantFilter boolean
+     * @param excludeTenantFilter
+     *            boolean
      */
     public void setExcludeTenantFilter(boolean excludeTenantFilter)
     {
         this.excludeTenantFilter = excludeTenantFilter;
     }
-  
+
     /**
      * @return the queryConsistency
      */
@@ -494,14 +496,16 @@ public class QueryOptions
     {
         return queryConsistency;
     }
+
     /**
-     * @param queryConsistency the queryConsistency to set
+     * @param queryConsistency
+     *            the queryConsistency to set
      */
     public void setQueryConsistency(QueryConsistency queryConsistency)
     {
         this.queryConsistency = queryConsistency;
     }
-    
+
     /**
      * @return the sinceTxId
      */
@@ -511,13 +515,14 @@ public class QueryOptions
     }
 
     /**
-     * @param sinceTxId the sinceTxId to set
+     * @param sinceTxId
+     *            the sinceTxId to set
      */
     public void setSinceTxId(Long sinceTxId)
     {
         this.sinceTxId = sinceTxId;
     }
-    
+
     /**
      * Get the query templates
      * 
@@ -531,16 +536,16 @@ public class QueryOptions
     /**
      * Add/replace a query template Not all languages support query templates
      * 
-     * @param name String
-     * @param template String
+     * @param name
+     *            String
+     * @param template
+     *            String
      * @return any removed template or null
      */
     public String addQueryTemplate(String name, String template)
     {
         return queryTemplates.put(name, template);
     }
-    
-    
 
     /**
      * @return SearchParameters
@@ -553,7 +558,7 @@ public class QueryOptions
         searchParameters.setDefaultFTSOperator(this.getDefaultFTSConnective() == Connective.OR ? SearchParameters.Operator.OR : SearchParameters.Operator.AND);
         searchParameters.setDefaultOperator(this.getDefaultFTSConnective() == Connective.OR ? SearchParameters.Operator.OR : SearchParameters.Operator.AND);
         searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-        if(this.getMaxItems() > 0)
+        if (this.getMaxItems() > 0)
         {
             searchParameters.setLimit(this.getMaxItems());
             searchParameters.setLimitBy(LimitBy.FINAL_SIZE);
@@ -562,35 +567,35 @@ public class QueryOptions
         searchParameters.setMaxPermissionChecks(this.getMaxPermissionChecks());
         searchParameters.setMaxPermissionCheckTimeMillis(this.getMaxPermissionCheckTimeMillis());
         searchParameters.setMlAnalaysisMode(this.getMlAnalaysisMode());
-        //searchParameters.setNamespace()   TODO: Fix
-        //searchParameters.setPermissionEvaluation()
+        // searchParameters.setNamespace() TODO: Fix
+        // searchParameters.setPermissionEvaluation()
         searchParameters.setQuery(this.getQuery());
         searchParameters.setSkipCount(this.getSkipCount());
-        //searchParameters.addAllAttribute()
-        for(Locale locale : this.getLocales())
+        // searchParameters.addAllAttribute()
+        for (Locale locale : this.getLocales())
         {
             searchParameters.addLocale(locale);
         }
-        for(QueryParameterDefinition queryParameterDefinition: this.getQueryParameterDefinitions())
+        for (QueryParameterDefinition queryParameterDefinition : this.getQueryParameterDefinitions())
         {
             searchParameters.addQueryParameterDefinition(queryParameterDefinition);
         }
-        //searchParameters.addQueryTemplate(name, template)
-        //searchParameters.addSort()
-        for(StoreRef storeRef : this.getStores())
+        // searchParameters.addQueryTemplate(name, template)
+        // searchParameters.addSort()
+        for (StoreRef storeRef : this.getStores())
         {
             searchParameters.addStore(storeRef);
         }
-        //searchParameters.addTextAttribute()
+        // searchParameters.addTextAttribute()
         searchParameters.setQueryConsistency(this.getQueryConsistency());
         searchParameters.setSinceTxId(getSinceTxId());
-        for(String name : getQueryTemplates().keySet())
+        for (String name : getQueryTemplates().keySet())
         {
-        	String template = getQueryTemplates().get(name);
-        	searchParameters.addQueryTemplate(name, template);
+            String template = getQueryTemplates().get(name);
+            searchParameters.addQueryTemplate(name, template);
         }
-        
+
         return searchParameters;
     }
-    
+
 }

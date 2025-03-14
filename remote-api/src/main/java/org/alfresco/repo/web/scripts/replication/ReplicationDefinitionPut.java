@@ -28,7 +28,6 @@ package org.alfresco.repo.web.scripts.replication;
 import java.io.IOException;
 import java.util.Map;
 
-import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -37,6 +36,7 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.service.cmr.replication.ReplicationDefinition;
 
 /**
  * @author Nick Burch
@@ -44,65 +44,65 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class ReplicationDefinitionPut extends AbstractReplicationWebscript
 {
-   @Override
-   protected Map<String, Object> buildModel(ReplicationModelBuilder modelBuilder, 
-                                            WebScriptRequest req, Status status, Cache cache)
-   {
-       // Which definition did they ask for?
-       String replicationDefinitionName = 
-          req.getServiceMatch().getTemplateVars().get("replication_definition_name");
-       ReplicationDefinition replicationDefinition =
-          replicationService.loadReplicationDefinition(replicationDefinitionName);
-      
-       // Does it exist?
-       if(replicationDefinition == null) {
-          throw new WebScriptException(
-                Status.STATUS_NOT_FOUND, 
-                "No Replication Definition found with that name"
-          );
-       }
-       
-       // Grab the JSON, and prepare to update 
-       try 
-       {
-           JSONObject json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-           
-           // Are they trying to rename?
-           if(json.has("name")) {
-              String jsonName = json.getString("name");
-              if(! jsonName.equals(replicationDefinitionName)) {
-                 // Name has changed, ensure the new name is spare
-                 if(replicationService.loadReplicationDefinition(jsonName) != null) {
-                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, "The specified new name is already in use");
-                 }
+    @Override
+    protected Map<String, Object> buildModel(ReplicationModelBuilder modelBuilder,
+            WebScriptRequest req, Status status, Cache cache)
+    {
+        // Which definition did they ask for?
+        String replicationDefinitionName = req.getServiceMatch().getTemplateVars().get("replication_definition_name");
+        ReplicationDefinition replicationDefinition = replicationService.loadReplicationDefinition(replicationDefinitionName);
 
-                 // Rename it
-                 replicationService.renameReplicationDefinition(
-                       replicationDefinitionName,
-                       jsonName
-                 );
-                 
-                 // And grab the updated version post-rename
-                 replicationDefinition = replicationService.loadReplicationDefinition(jsonName);
-              }
-           }
-           
-           // Update everything else
-           updateDefinitionProperties(replicationDefinition, json);
-           
-           // Save the changes
-           replicationService.saveReplicationDefinition(replicationDefinition);
-       }
-       catch (IOException iox)
-       {
-           throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not read content from request.", iox);
-       }
-       catch (JSONException je)
-       {
-           throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse JSON from request.", je);
-       }
-      
-       // Return the new details on it
-       return modelBuilder.buildDetails(replicationDefinition);
-   }
+        // Does it exist?
+        if (replicationDefinition == null)
+        {
+            throw new WebScriptException(
+                    Status.STATUS_NOT_FOUND,
+                    "No Replication Definition found with that name");
+        }
+
+        // Grab the JSON, and prepare to update
+        try
+        {
+            JSONObject json = new JSONObject(new JSONTokener(req.getContent().getContent()));
+
+            // Are they trying to rename?
+            if (json.has("name"))
+            {
+                String jsonName = json.getString("name");
+                if (!jsonName.equals(replicationDefinitionName))
+                {
+                    // Name has changed, ensure the new name is spare
+                    if (replicationService.loadReplicationDefinition(jsonName) != null)
+                    {
+                        throw new WebScriptException(Status.STATUS_BAD_REQUEST, "The specified new name is already in use");
+                    }
+
+                    // Rename it
+                    replicationService.renameReplicationDefinition(
+                            replicationDefinitionName,
+                            jsonName);
+
+                    // And grab the updated version post-rename
+                    replicationDefinition = replicationService.loadReplicationDefinition(jsonName);
+                }
+            }
+
+            // Update everything else
+            updateDefinitionProperties(replicationDefinition, json);
+
+            // Save the changes
+            replicationService.saveReplicationDefinition(replicationDefinition);
+        }
+        catch (IOException iox)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not read content from request.", iox);
+        }
+        catch (JSONException je)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse JSON from request.", je);
+        }
+
+        // Return the new details on it
+        return modelBuilder.buildDetails(replicationDefinition);
+    }
 }

@@ -36,6 +36,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.util.PropertyModificationAllowedCheck;
@@ -50,7 +52,6 @@ import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:frozen behaviour bean
@@ -58,16 +59,14 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Roy Wetherall
  * @since 2.2
  */
-@BehaviourBean
-(
-   defaultType = "rma:frozen"
-)
-public class FrozenAspect extends    BaseBehaviourBean
-                          implements NodeServicePolicies.BeforeDeleteNodePolicy,
-                                     NodeServicePolicies.OnAddAspectPolicy,
-                                     NodeServicePolicies.OnRemoveAspectPolicy,
-                                     NodeServicePolicies.OnUpdatePropertiesPolicy,
-                                     NodeServicePolicies.BeforeMoveNodePolicy
+@BehaviourBean(
+        defaultType = "rma:frozen")
+public class FrozenAspect extends BaseBehaviourBean
+        implements NodeServicePolicies.BeforeDeleteNodePolicy,
+        NodeServicePolicies.OnAddAspectPolicy,
+        NodeServicePolicies.OnRemoveAspectPolicy,
+        NodeServicePolicies.OnUpdatePropertiesPolicy,
+        NodeServicePolicies.BeforeMoveNodePolicy
 {
     /**
      * Behaviour name for on update properties for frozen aspect
@@ -83,7 +82,8 @@ public class FrozenAspect extends    BaseBehaviourBean
     private PropertyModificationAllowedCheck propertyModificationAllowedCheck;
 
     /**
-     * @param freezeService freeze service
+     * @param freezeService
+     *            freeze service
      */
     public void setFreezeService(FreezeService freezeService)
     {
@@ -92,7 +92,9 @@ public class FrozenAspect extends    BaseBehaviourBean
 
     /**
      * Setter for property modification check utility
-     * @param propertyModificationAllowedCheck Utility class for property modification
+     * 
+     * @param propertyModificationAllowedCheck
+     *            Utility class for property modification
      */
     public void setPropertyModificationAllowedCheck(PropertyModificationAllowedCheck propertyModificationAllowedCheck)
     {
@@ -130,11 +132,9 @@ public class FrozenAspect extends    BaseBehaviourBean
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            notificationFrequency = NotificationFrequency.FIRST_EVENT
-    )
+            notificationFrequency = NotificationFrequency.FIRST_EVENT)
     public void beforeDeleteNode(final NodeRef nodeRef)
     {
         AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
@@ -151,8 +151,7 @@ public class FrozenAspect extends    BaseBehaviourBean
     }
 
     /**
-     * Checks the children for frozen nodes. Throws security error if any are
-     * found.
+     * Checks the children for frozen nodes. Throws security error if any are found.
      *
      * @param assocs
      */
@@ -175,13 +174,11 @@ public class FrozenAspect extends    BaseBehaviourBean
             }
         }
     }
-    
+
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
     public void onAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
         AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
@@ -213,11 +210,9 @@ public class FrozenAspect extends    BaseBehaviourBean
     }
 
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
     public void onRemoveAspect(final NodeRef nodeRef, QName aspectTypeQName)
     {
         AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
@@ -248,11 +243,9 @@ public class FrozenAspect extends    BaseBehaviourBean
      * Prevent frozen items being moved
      */
     @Override
-    @Behaviour
-            (
-                    kind = BehaviourKind.CLASS,
-                    notificationFrequency = NotificationFrequency.FIRST_EVENT
-            )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.FIRST_EVENT)
     public void beforeMoveNode(ChildAssociationRef oldChildAssocRef, NodeRef newParentRef)
     {
         AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
@@ -271,22 +264,20 @@ public class FrozenAspect extends    BaseBehaviourBean
      * Prevents frozen items being updated
      */
     @Override
-    @Behaviour
-            (
-                    kind = BehaviourKind.CLASS,
-                    name = ON_UPDATE_PROP_FROZEN_BEHAVIOUR_NAME,
-                    notificationFrequency = NotificationFrequency.FIRST_EVENT
-            )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            name = ON_UPDATE_PROP_FROZEN_BEHAVIOUR_NAME,
+            notificationFrequency = NotificationFrequency.FIRST_EVENT)
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
             // check to not throw exception when the aspect is being added
             if (nodeService.exists(nodeRef) && freezeService.isFrozen(nodeRef) &&
                     !transactionalResourceHelper.getSet("frozen").contains(nodeRef) &&
-                        !propertyModificationAllowedCheck.check(before, after))
-                {
-                    throw new PermissionDeniedException(I18NUtil.getMessage("rm.hold.update-frozen-node"));
-                }
+                    !propertyModificationAllowedCheck.check(before, after))
+            {
+                throw new PermissionDeniedException(I18NUtil.getMessage("rm.hold.update-frozen-node"));
+            }
             return null;
         });
     }

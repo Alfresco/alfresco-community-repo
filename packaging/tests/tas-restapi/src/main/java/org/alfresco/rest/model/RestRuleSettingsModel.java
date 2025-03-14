@@ -35,10 +35,10 @@ import org.alfresco.utility.model.TestModel;
 
 public class RestRuleSettingsModel extends TestModel implements IRestModel<RestRuleSettingsModel>
 {
-    @JsonProperty (value = "entry")
+    @JsonProperty(value = "entry")
     private RestRuleSettingsModel model;
     private String key;
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private Object value;
 
     @Override
@@ -72,9 +72,9 @@ public class RestRuleSettingsModel extends TestModel implements IRestModel<RestR
     {
         return "RuleSetting{"
                 + new StringJoiner(", ")
-                    .add("key=" + key)
-                    .add("value=" + value.toString())
-                    .toString()
+                        .add("key=" + key)
+                        .add("value=" + value.toString())
+                        .toString()
                 + "}";
     }
 

@@ -33,15 +33,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.repo.admin.patch.PatchService;
-import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
-import org.alfresco.repo.domain.dialect.Dialect;
-import org.alfresco.util.DialectUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
+
+import org.alfresco.repo.admin.patch.PatchService;
+import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
+import org.alfresco.repo.domain.dialect.Dialect;
+import org.alfresco.util.DialectUtil;
 
 public class SchemaDifferenceHelper
 {
@@ -86,8 +87,8 @@ public class SchemaDifferenceHelper
                 for (String problemPattern : problemPatterns)
                 {
                     if (problemText.matches(problemPattern))
-                    { 
-                        return patch.getId(); 
+                    {
+                        return patch.getId();
                     }
                 }
             }
@@ -103,7 +104,7 @@ public class SchemaDifferenceHelper
 
     protected Resource getDialectResource(String resourceUrl)
     {
-        if(resourceUrl == null)
+        if (resourceUrl == null)
         {
             return null;
         }
@@ -119,13 +120,13 @@ public class SchemaDifferenceHelper
 
         if (problemFile != null)
         {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(problemFile.getInputStream(), StandardCharsets.UTF_8))) 
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(problemFile.getInputStream(), StandardCharsets.UTF_8)))
             {
                 String line = reader.readLine();
                 while (line != null)
                 {
-                   optionalProblems.add(line);
-                   line = reader.readLine();
+                    optionalProblems.add(line);
+                    line = reader.readLine();
                 }
             }
             catch (Exception ex)
@@ -140,7 +141,8 @@ public class SchemaDifferenceHelper
     /**
      * Retrieves the comparison result description message in the default system language.
      *
-     * @param result The result of a differencing or validation operation.
+     * @param result
+     *            The result of a differencing or validation operation.
      * @return Comparison result description message in the default system language.
      */
     protected String describe(Result result)

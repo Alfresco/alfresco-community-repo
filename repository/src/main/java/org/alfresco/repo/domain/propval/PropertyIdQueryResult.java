@@ -37,19 +37,18 @@ public class PropertyIdQueryResult
 {
     private Long propId;
     private List<PropertyIdSearchRow> propValues;
-    
+
     public PropertyIdQueryResult()
-    {
-    }
-    
+    {}
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("PropertyLinkQueryResult")
-          .append("[ propId=").append(propId)
-          .append(", propValues=").append(propValues.size())
-          .append("]");
+                .append("[ propId=").append(propId)
+                .append(", propValues=").append(propValues.size())
+                .append("]");
         return sb.toString();
     }
 

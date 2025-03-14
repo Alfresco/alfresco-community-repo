@@ -44,33 +44,35 @@ public class UnlinkRules extends ActionExecuterAbstractBase
 {
     /** Constants */
     public static final String NAME = "unlink-rules";
-    
+
     /** Node service */
     private NodeService nodeService;
-    
+
     /** Runtime rule service */
     private RuntimeRuleService ruleService;
-    
+
     /**
      * Set rule service
      * 
-     * @param ruleService   rule service
+     * @param ruleService
+     *            rule service
      */
     public void setRuleService(RuntimeRuleService ruleService)
     {
         this.ruleService = ruleService;
     }
-    
+
     /**
      * Set node service
      * 
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -81,9 +83,9 @@ public class UnlinkRules extends ActionExecuterAbstractBase
         {
             // Check that the actioned upon node has the rules aspect applied
             if (nodeService.hasAspect(actionedUponNodeRef, RuleModel.ASPECT_RULES) == true)
-            {                 
+            {
                 // Get the rule node the actioned upon node is linked to
-                NodeRef linkedToNode = ((RuleService)ruleService).getLinkedToRuleNode(actionedUponNodeRef);
+                NodeRef linkedToNode = ((RuleService) ruleService).getLinkedToRuleNode(actionedUponNodeRef);
                 if (linkedToNode != null)
                 {
                     nodeService.removeAspect(actionedUponNodeRef, RuleModel.ASPECT_RULES);
@@ -97,6 +99,5 @@ public class UnlinkRules extends ActionExecuterAbstractBase
      */
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-    {
-    }
+    {}
 }

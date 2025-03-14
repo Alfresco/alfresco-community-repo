@@ -25,33 +25,6 @@
  */
 package org.alfresco.repo.content.metadata;
 
-import org.alfresco.api.AlfrescoPublicApi;
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.StreamAwareContentReaderProxy;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.repository.ContentIOException;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.MalformedNodeRefException;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
-import org.alfresco.service.namespace.InvalidQNameException;
-import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.springframework.beans.factory.BeanNameAware;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
-
 import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
@@ -77,35 +50,47 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
+
+import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.StreamAwareContentReaderProxy;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.repository.ContentIOException;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MalformedNodeRefException;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
+import org.alfresco.service.namespace.InvalidQNameException;
+import org.alfresco.service.namespace.QName;
+
 /**
- * Support class for metadata extracters that support dynamic and config-driven
- * mapping between extracted values and model properties.  Extraction is broken
- * up into two phases:
+ * Support class for metadata extracters that support dynamic and config-driven mapping between extracted values and model properties. Extraction is broken up into two phases:
  * <ul>
- *   <li>Extract ALL available metadata from the document.</li>
- *   <li>Translate the metadata into system properties.</li>
+ * <li>Extract ALL available metadata from the document.</li>
+ * <li>Translate the metadata into system properties.</li>
  * </ul>
  * <p>
  * Migrating an existing extracter to use this class is straightforward:
  * <ul>
- *   <li>
- *   Construct the extracter providing a default set of supported mimetypes to this
- *   implementation.  This can be overwritten with configurations.
- *   </li>
- *   <li>
- *   Implement the {@link #extract} method.  This now returns a raw map of extracted
- *   values keyed by document-specific property names.  The <b>trimPut</b> method has
- *   been replaced with an equivalent {@link #putRawValue(String, Serializable, Map)}.
- *   </li>
- *   <li>
- *   Provide the default mapping of the document-specific properties to system-specific
- *   properties as describe by the {@link #getDefaultMapping()} method.  The simplest
- *   is to provide the default mapping in a correlated <i>.properties</i> file.
- *   </li>
- *   <li>
- *   Document, in the class-level javadoc, all the available properties that are extracted
- *   along with their approximate meanings.  Add to this, the default mappings.
- *   </li>
+ * <li>Construct the extracter providing a default set of supported mimetypes to this implementation. This can be overwritten with configurations.</li>
+ * <li>Implement the {@link #extract} method. This now returns a raw map of extracted values keyed by document-specific property names. The <b>trimPut</b> method has been replaced with an equivalent {@link #putRawValue(String, Serializable, Map)}.</li>
+ * <li>Provide the default mapping of the document-specific properties to system-specific properties as describe by the {@link #getDefaultMapping()} method. The simplest is to provide the default mapping in a correlated <i>.properties</i> file.</li>
+ * <li>Document, in the class-level javadoc, all the available properties that are extracted along with their approximate meanings. Add to this, the default mappings.</li>
  * </ul>
  * 
  * @see #getDefaultMapping()
@@ -127,14 +112,14 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     public static final String PROPERTY_COMPONENT_EXTRACT = ".extract.";
     public static final String PROPERTY_COMPONENT_EMBED = ".embed.";
     public static final int MEGABYTE_SIZE = 1048576;
-    
+
     protected static Log logger = LogFactory.getLog(AbstractMappingMetadataExtracter.class);
-    
+
     private MetadataExtracterRegistry registry;
     private MimetypeService mimetypeService;
     protected DictionaryService dictionaryService;
     private boolean initialized;
-    
+
     private Set<String> supportedMimetypes;
     private Set<String> supportedEmbedMimetypes;
     private OverwritePolicy overwritePolicy;
@@ -150,27 +135,25 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     private Properties properties;
     private Map<String, MetadataExtracterLimits> mimetypeLimits;
     private ExecutorService executorService;
-    
+
     private static final AtomicInteger CONCURRENT_EXTRACTIONS_COUNT = new AtomicInteger(0);
 
     /**
-     * Default constructor.  If this is called, then {@link #isSupported(String)} should
-     * be implemented.  This is useful when the list of supported mimetypes is not known
-     * when the instance is constructed.  Alternatively, once the set becomes known, call
-     * {@link #setSupportedMimetypes(Collection)}.
+     * Default constructor. If this is called, then {@link #isSupported(String)} should be implemented. This is useful when the list of supported mimetypes is not known when the instance is constructed. Alternatively, once the set becomes known, call {@link #setSupportedMimetypes(Collection)}.
      *
      * @see #isSupported(String)
      * @see #setSupportedMimetypes(Collection)
      */
     protected AbstractMappingMetadataExtracter()
     {
-        this(Collections.<String>emptySet());
+        this(Collections.<String> emptySet());
     }
 
     /**
      * Constructor that can be used when the list of supported mimetypes is known up front.
      * 
-     * @param supportedMimetypes    the set of mimetypes supported by default
+     * @param supportedMimetypes
+     *            the set of mimetypes supported by default
      */
     protected AbstractMappingMetadataExtracter(Set<String> supportedMimetypes)
     {
@@ -178,9 +161,9 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         // Set defaults
         overwritePolicy = OverwritePolicy.PRAGMATIC;
         failOnTypeConversion = true;
-        mapping = null;                     // The default will be fetched
+        mapping = null; // The default will be fetched
         embedMapping = null;
-        inheritDefaultMapping = false;      // Any overrides are complete 
+        inheritDefaultMapping = false; // Any overrides are complete
         inheritDefaultEmbedMapping = false;
         initialized = false;
     }
@@ -188,8 +171,10 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * Constructor that can be used when the list of supported extract and embed mimetypes is known up front.
      *
-     * @param supportedMimetypes    the set of mimetypes supported for extraction by default
-     * @param supportedEmbedMimetypes    the set of mimetypes supported for embedding by default
+     * @param supportedMimetypes
+     *            the set of mimetypes supported for extraction by default
+     * @param supportedEmbedMimetypes
+     *            the set of mimetypes supported for embedding by default
      */
     protected AbstractMappingMetadataExtracter(Set<String> supportedMimetypes, Set<String> supportedEmbedMimetypes)
     {
@@ -198,11 +183,10 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Set the registry to register with.  If this is not set, then the default
-     * initialization will not auto-register the extracter for general use.  It
-     * can still be used directly.
+     * Set the registry to register with. If this is not set, then the default initialization will not auto-register the extracter for general use. It can still be used directly.
      * 
-     * @param registry a metadata extracter registry
+     * @param registry
+     *            a metadata extracter registry
      */
     public void setRegistry(MetadataExtracterRegistry registry)
     {
@@ -210,7 +194,8 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * @param mimetypeService       the mimetype service.  Set this if required.
+     * @param mimetypeService
+     *            the mimetype service. Set this if required.
      */
     public void setMimetypeService(MimetypeService mimetypeService)
     {
@@ -226,7 +211,8 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * @param dictionaryService     the dictionary service to determine which data conversions are necessary
+     * @param dictionaryService
+     *            the dictionary service to determine which data conversions are necessary
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -287,8 +273,8 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     protected boolean isEnabled(String mimetype)
     {
         return properties == null || mimetypeService == null ||
-               (getBooleanProperty(beanName+".enabled", true) &&
-                getBooleanProperty(beanName+'.'+mimetypeService.getExtension(mimetype)+".enabled", true));
+                (getBooleanProperty(beanName + ".enabled", true) &&
+                        getBooleanProperty(beanName + '.' + mimetypeService.getExtension(mimetype) + ".enabled", true));
     }
 
     private boolean getBooleanProperty(String name, boolean defaultValue)
@@ -306,11 +292,10 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Set the policy to use when existing values are encountered.  Depending on how the extractor
-     * is called, this may not be relevant, i.e an empty map of existing properties may be passed
-     * in by the client code, which may follow its own overwrite strategy.
+     * Set the policy to use when existing values are encountered. Depending on how the extractor is called, this may not be relevant, i.e an empty map of existing properties may be passed in by the client code, which may follow its own overwrite strategy.
      * 
-     * @param overwritePolicy       the policy to apply when there are existing system properties
+     * @param overwritePolicy
+     *            the policy to apply when there are existing system properties
      */
     public void setOverwritePolicy(OverwritePolicy overwritePolicy)
     {
@@ -318,14 +303,10 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Set whether the extractor should discard metadata that fails to convert to the target type
-     * defined in the data dictionary model.  This is <tt>true</tt> by default i.e. if the data
-     * extracted is not compatible with the target model then the extraction will fail.  If this is
-     * <tt>false</tt> then any extracted data that fails to convert will be discarded.
+     * Set whether the extractor should discard metadata that fails to convert to the target type defined in the data dictionary model. This is <tt>true</tt> by default i.e. if the data extracted is not compatible with the target model then the extraction will fail. If this is <tt>false</tt> then any extracted data that fails to convert will be discarded.
      * 
-     * @param failOnTypeConversion      <tt>false</tt> to discard properties that can't get converted
-     *                                  to the dictionary-defined type, or <tt>true</tt> (default)
-     *                                  to fail the extraction if the type doesn't convert
+     * @param failOnTypeConversion
+     *            <tt>false</tt> to discard properties that can't get converted to the dictionary-defined type, or <tt>true</tt> (default) to fail the extraction if the type doesn't convert
      */
     public void setFailOnTypeConversion(boolean failOnTypeConversion)
     {
@@ -333,16 +314,15 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Set the date formats, over and above the {@link ISO8601DateFormat ISO8601 format}, that will
-     * be supported for string to date conversions.  The supported syntax is described by the
-     * <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/text/SimpleDateFormat.html">SimpleDateFormat Javadocs</a>.
+     * Set the date formats, over and above the {@link ISO8601DateFormat ISO8601 format}, that will be supported for string to date conversions. The supported syntax is described by the <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/text/SimpleDateFormat.html">SimpleDateFormat Javadocs</a>.
      * 
-     * @param supportedDateFormats      a list of supported date formats.
+     * @param supportedDateFormats
+     *            a list of supported date formats.
      */
     public void setSupportedDateFormats(List<String> supportedDateFormats)
     {
         supportedDateFormatters = new HashSet<DateTimeFormatter>();
-        
+
         // Note: The previous version attempted to create a single DateTimeFormatter from
         // multiple DateTimeFormatters, but that does not work as the time zone part is lost.
         // Now have a set of them.
@@ -361,15 +341,12 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Set if the property mappings augment or override the mapping generically provided by the
-     * extracter implementation.  The default is <tt>false</tt>, i.e. any mapping set completely
-     * replaces the {@link #getDefaultMapping() default mappings}.
+     * Set if the property mappings augment or override the mapping generically provided by the extracter implementation. The default is <tt>false</tt>, i.e. any mapping set completely replaces the {@link #getDefaultMapping() default mappings}.
      * <p>
-     * Note that even when set to <tt>true</tt> an individual property mapping entry replaces the
-     * entry provided by the extracter implementation.
+     * Note that even when set to <tt>true</tt> an individual property mapping entry replaces the entry provided by the extracter implementation.
      * 
-     * @param inheritDefaultMapping <tt>true</tt> to add the configured mapping
-     *                              to the list of default mappings.
+     * @param inheritDefaultMapping
+     *            <tt>true</tt> to add the configured mapping to the list of default mappings.
      * 
      * @see #getDefaultMapping()
      * @see #setMapping(Map)
@@ -385,17 +362,17 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     {
         this.beanName = beanName;
     }
-    
+
     public String getBeanName()
     {
         return beanName;
     }
-    
+
     public void setApplicationContext(ApplicationContext applicationContext)
     {
         this.applicationContext = applicationContext;
     }
-    
+
     /**
      * The Alfresco global properties.
      */
@@ -403,13 +380,12 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     {
         this.properties = properties;
     }
-    
+
     /**
      * Whether or not to enable the pass through of simple strings to cm:taggable tags
      * 
-     * @param enableStringTagging       <tt>true</tt> find or create tags for each string 
-     *                                  mapped to cm:taggable.  <tt>false</tt> (default) 
-     *                                  ignore mapping strings to tags.
+     * @param enableStringTagging
+     *            <tt>true</tt> find or create tags for each string mapped to cm:taggable. <tt>false</tt> (default) ignore mapping strings to tags.
      */
     public void setEnableStringTagging(boolean enableStringTagging)
     {
@@ -417,15 +393,12 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Set if the embed property mappings augment or override the mapping generically provided by the
-     * extracter implementation.  The default is <tt>false</tt>, i.e. any mapping set completely
-     * replaces the {@link #getDefaultEmbedMapping() default mappings}.
+     * Set if the embed property mappings augment or override the mapping generically provided by the extracter implementation. The default is <tt>false</tt>, i.e. any mapping set completely replaces the {@link #getDefaultEmbedMapping() default mappings}.
      * <p>
-     * Note that even when set to <tt>true</tt> an individual property mapping entry replaces the
-     * entry provided by the extracter implementation.
+     * Note that even when set to <tt>true</tt> an individual property mapping entry replaces the entry provided by the extracter implementation.
      *
-     * @param inheritDefaultEmbedMapping <tt>true</tt> to add the configured embed mapping
-     *                              to the list of default embed mappings.
+     * @param inheritDefaultEmbedMapping
+     *            <tt>true</tt> to add the configured embed mapping to the list of default embed mappings.
      *
      * @see #getDefaultEmbedMapping()
      * @see #setEmbedMapping(Map)
@@ -446,12 +419,9 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Gets the <code>ExecutorService</code> to be used for timeout-aware
-     * extraction.
+     * Gets the <code>ExecutorService</code> to be used for timeout-aware extraction.
      * <p>
-     * If no <code>ExecutorService</code> has been defined a default
-     * of <code>Executors.newCachedThreadPool()</code> is used during
-     * {@link AbstractMappingMetadataExtracter#init()}.
+     * If no <code>ExecutorService</code> has been defined a default of <code>Executors.newCachedThreadPool()</code> is used during {@link AbstractMappingMetadataExtracter#init()}.
      * 
      * @return the defined or default <code>ExecutorService</code>
      */
@@ -461,10 +431,10 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Sets the <code>ExecutorService</code> to be used for timeout-aware
-     * extraction.
+     * Sets the <code>ExecutorService</code> to be used for timeout-aware extraction.
      * 
-     * @param executorService the <code>ExecutorService</code> for timeouts
+     * @param executorService
+     *            the <code>ExecutorService</code> for timeouts
      */
     public void setExecutorService(ExecutorService executorService)
     {
@@ -472,12 +442,10 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Set the mapping from document metadata to system metadata.  It is possible to direct
-     * an extracted document property to several system properties.  The conversion between
-     * the document property types and the system property types will be done by the
-     * {@link org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter default converter}.
+     * Set the mapping from document metadata to system metadata. It is possible to direct an extracted document property to several system properties. The conversion between the document property types and the system property types will be done by the {@link org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter default converter}.
      * 
-     * @param mapping       a mapping from document metadata to system metadata
+     * @param mapping
+     *            a mapping from document metadata to system metadata
      */
     public void setMapping(Map<String, Set<QName>> mapping)
     {
@@ -485,12 +453,10 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Set the embed mapping from document metadata to system metadata.  It is possible to direct
-     * an model properties to several content file metadata keys.  The conversion between
-     * the model property types and the content file metadata keys types will be done by the
-     * {@link org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter default converter}.
+     * Set the embed mapping from document metadata to system metadata. It is possible to direct an model properties to several content file metadata keys. The conversion between the model property types and the content file metadata keys types will be done by the {@link org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter default converter}.
      *
-     * @param embedMapping       an embed mapping from model properties to content file metadata keys
+     * @param embedMapping
+     *            an embed mapping from model properties to content file metadata keys
      */
     public void setEmbedMapping(Map<QName, Set<String>> embedMapping)
     {
@@ -498,11 +464,10 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Set the properties that contain the mapping from document metadata to system metadata.
-     * This is an alternative to the {@link #setMapping(Map)} method.  Any mappings already
-     * present will be cleared out.
+     * Set the properties that contain the mapping from document metadata to system metadata. This is an alternative to the {@link #setMapping(Map)} method. Any mappings already present will be cleared out.
      * 
      * The property mapping is of the form:
+     * 
      * <pre>
      * # Namespaces prefixes
      * namespace.prefix.cm=http://www.alfresco.org/model/content/1.0
@@ -514,9 +479,11 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * user1=cm:summary
      * user2=cm:description
      * </pre>
+     * 
      * The mapping can therefore be from a single document property onto several system properties.
      * 
-     * @param mappingProperties     the properties that map document properties to system properties
+     * @param mappingProperties
+     *            the properties that map document properties to system properties
      */
     public void setMappingProperties(Properties mappingProperties)
     {
@@ -524,11 +491,10 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Set the properties that contain the embed mapping from model properties to content file metadata.
-     * This is an alternative to the {@link #setEmbedMapping(Map)} method.  Any mappings already
-     * present will be cleared out.
+     * Set the properties that contain the embed mapping from model properties to content file metadata. This is an alternative to the {@link #setEmbedMapping(Map)} method. Any mappings already present will be cleared out.
      *
      * The property mapping is of the form:
+     * 
      * <pre>
      * # Namespaces prefixes
      * namespace.prefix.cm=http://www.alfresco.org/model/content/1.0
@@ -540,9 +506,11 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * cm\:summary=user1
      * cm\:description=description,user2
      * </pre>
+     * 
      * The embed mapping can therefore be from a model property onto several content file metadata properties.
      *
-     * @param embedMappingProperties     the properties that map model properties to content file metadata properties
+     * @param embedMappingProperties
+     *            the properties that map model properties to content file metadata properties
      */
     public void setEmbedMappingProperties(Properties embedMappingProperties)
     {
@@ -550,17 +518,9 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Helper method for derived classes to obtain the mappings that will be applied to raw
-     * values.  This should be called after initialization in order to guarantee the complete
-     * map is given.
+     * Helper method for derived classes to obtain the mappings that will be applied to raw values. This should be called after initialization in order to guarantee the complete map is given.
      * <p>
-     * Normally, the list of properties that can be extracted from a document is fixed and
-     * well-known - in that case, just extract everything.  But Some implementations may have
-     * an extra, indeterminate set of values available for extraction.  If the extraction of
-     * these runtime parameters is expensive, then the keys provided by the return value can
-     * be used to extract values from the documents.  The metadata extraction becomes fully
-     * configuration-driven, i.e. declaring further mappings will result in more values being
-     * extracted from the documents.
+     * Normally, the list of properties that can be extracted from a document is fixed and well-known - in that case, just extract everything. But Some implementations may have an extra, indeterminate set of values available for extraction. If the extraction of these runtime parameters is expensive, then the keys provided by the return value can be used to extract values from the documents. The metadata extraction becomes fully configuration-driven, i.e. declaring further mappings will result in more values being extracted from the documents.
      * <p>
      * Most extractors will not be using this method.
      */
@@ -574,17 +534,9 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Helper method for derived classes to obtain the embed mappings.
-     * This should be called after initialization in order to guarantee the complete
-     * map is given.
+     * Helper method for derived classes to obtain the embed mappings. This should be called after initialization in order to guarantee the complete map is given.
      * <p>
-     * Normally, the list of properties that can be embedded in a document is fixed and
-     * well-known..  But some implementations may have
-     * an extra, indeterminate set of values available for embedding.  If the embedding of
-     * these runtime parameters is expensive, then the keys provided by the return value can
-     * be used to embed values in the documents.  The metadata embedding becomes fully
-     * configuration-driven, i.e. declaring further mappings will result in more values being
-     * embedded in the documents.
+     * Normally, the list of properties that can be embedded in a document is fixed and well-known.. But some implementations may have an extra, indeterminate set of values available for embedding. If the embedding of these runtime parameters is expensive, then the keys provided by the return value can be used to embed values in the documents. The metadata embedding becomes fully configuration-driven, i.e. declaring further mappings will result in more values being embedded in the documents.
      */
     protected final Map<QName, Set<String>> getEmbedMapping()
     {
@@ -598,7 +550,8 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * A utility method to read mapping properties from a resource file and convert to the map form.
      * 
-     * @param propertiesUrl     A standard Properties file URL location
+     * @param propertiesUrl
+     *            A standard Properties file URL location
      * 
      * @see #setMappingProperties(Properties)
      */
@@ -608,12 +561,12 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         try
         {
             is = getClass().getClassLoader().getResourceAsStream(propertiesUrl);
-            if(is == null)
+            if (is == null)
             {
                 throw new AlfrescoRuntimeException(
                         "Metadata Extracter mapping properties not found: \n" +
-                        "   Extracter:  " + this + "\n" +
-                        "   Bundle:     " + propertiesUrl);
+                                "   Extracter:  " + this + "\n" +
+                                "   Bundle:     " + propertiesUrl);
             }
             Properties props = new Properties();
             props.load(is);
@@ -630,31 +583,30 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         {
             throw new AlfrescoRuntimeException(
                     "Unable to load properties file to read extracter mapping properties: \n" +
-                    "   Extracter:  " + this + "\n" +
-                    "   Bundle:     " + propertiesUrl,
+                            "   Extracter:  " + this + "\n" +
+                            "   Bundle:     " + propertiesUrl,
                     e);
         }
         finally
         {
             if (is != null)
             {
-                try { is.close(); } catch (Throwable e) {}
+                try
+                {
+                    is.close();
+                }
+                catch (Throwable e)
+                {}
             }
         }
     }
-    
+
     /**
-     * A utility method to convert global properties to the Map form for the given
-     * propertyComponent.
+     * A utility method to convert global properties to the Map form for the given propertyComponent.
      * <p>
-     * Mappings can be specified using the same method defined for
-     * normal mapping properties files but with a prefix of
-     * <code>metadata.extracter</code>, the extracter bean name, and the propertyComponent.
-     * For example:
+     * Mappings can be specified using the same method defined for normal mapping properties files but with a prefix of <code>metadata.extracter</code>, the extracter bean name, and the propertyComponent. For example:
      * 
-     *     metadata.extracter.TikaAuto.extract.namespace.prefix.my=http://DummyMappingMetadataExtracter
-     *     metadata.extracter.TikaAuto.extract.namespace.prefix.cm=http://www.alfresco.org/model/content/1.0
-     *     metadata.extracter.TikaAuto.extract.dc\:description=cm:description, my:customDescription
+     * metadata.extracter.TikaAuto.extract.namespace.prefix.my=http://DummyMappingMetadataExtracter metadata.extracter.TikaAuto.extract.namespace.prefix.cm=http://www.alfresco.org/model/content/1.0 metadata.extracter.TikaAuto.extract.dc\:description=cm:description, my:customDescription
      * 
      */
     private Map<Object, Object> getRelevantGlobalProperties(String propertyComponent)
@@ -670,8 +622,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             logger.info("Could not get global-properties");
             return null;
         }
-        Map<Object, Object> relevantGlobalPropertiesMap = 
-                new HashMap<Object, Object>();
+        Map<Object, Object> relevantGlobalPropertiesMap = new HashMap<Object, Object>();
         String propertyPrefix = PROPERTY_PREFIX_METADATA + beanName + propertyComponent;
         for (Entry<Object, Object> globalEntry : globalProperties.entrySet())
         {
@@ -684,19 +635,13 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         }
         return relevantGlobalPropertiesMap;
     }
-    
+
     /**
-     * A utility method to convert global properties to the Map form for the given
-     * propertyComponent.
+     * A utility method to convert global properties to the Map form for the given propertyComponent.
      * <p>
-     * Mappings can be specified using the same method defined for
-     * normal mapping properties files but with a prefix of
-     * <code>metadata.extracter</code>, the extracter bean name, and the extract component.
-     * For example:
+     * Mappings can be specified using the same method defined for normal mapping properties files but with a prefix of <code>metadata.extracter</code>, the extracter bean name, and the extract component. For example:
      * 
-     *     metadata.extracter.TikaAuto.extract.namespace.prefix.my=http://DummyMappingMetadataExtracter
-     *     metadata.extracter.TikaAuto.extract.namespace.prefix.cm=http://www.alfresco.org/model/content/1.0
-     *     metadata.extracter.TikaAuto.extract.dc\:description=cm:description, my:customDescription
+     * metadata.extracter.TikaAuto.extract.namespace.prefix.my=http://DummyMappingMetadataExtracter metadata.extracter.TikaAuto.extract.namespace.prefix.cm=http://www.alfresco.org/model/content/1.0 metadata.extracter.TikaAuto.extract.dc\:description=cm:description, my:customDescription
      * 
      */
     protected Map<String, Set<QName>> readGlobalExtractMappingProperties()
@@ -708,7 +653,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         }
         return readMappingProperties(relevantGlobalPropertiesMap.entrySet());
     }
-    
+
     /**
      * A utility method to convert mapping properties to the Map form.
      * 
@@ -800,7 +745,8 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * A utility method to read embed mapping properties from a resource file and convert to the map form.
      *
-     * @param propertiesUrl     A standard Properties file URL location
+     * @param propertiesUrl
+     *            A standard Properties file URL location
      *
      * @see #setEmbedMappingProperties(Properties)
      */
@@ -810,7 +756,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         try
         {
             is = getClass().getClassLoader().getResourceAsStream(propertiesUrl);
-            if(is == null)
+            if (is == null)
             {
                 return null;
             }
@@ -829,32 +775,32 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         {
             throw new AlfrescoRuntimeException(
                     "Unable to load properties file to read extracter embed mapping properties: \n" +
-                    "   Extracter:  " + this + "\n" +
-                    "   Bundle:     " + propertiesUrl,
+                            "   Extracter:  " + this + "\n" +
+                            "   Bundle:     " + propertiesUrl,
                     e);
         }
         finally
         {
             if (is != null)
             {
-                try { is.close(); } catch (Throwable e) {}
+                try
+                {
+                    is.close();
+                }
+                catch (Throwable e)
+                {}
             }
         }
     }
-    
+
     /**
      * A utility method to convert global mapping properties to the Map form.
      * <p>
-     * Different from readGlobalExtractMappingProperties in that keys are the Alfresco QNames
-     * and values are file metadata properties.
+     * Different from readGlobalExtractMappingProperties in that keys are the Alfresco QNames and values are file metadata properties.
      * <p>
-     * Mappings can be specified using the same method defined for
-     * normal embed mapping properties files but with a prefix of
-     * <code>metadata.extracter</code>, the extracter bean name, and the embed component.
-     * For example:
+     * Mappings can be specified using the same method defined for normal embed mapping properties files but with a prefix of <code>metadata.extracter</code>, the extracter bean name, and the embed component. For example:
      * 
-     *     metadata.extracter.TikaAuto.embed.namespace.prefix.cm=http://www.alfresco.org/model/content/1.0
-     *     metadata.extracter.TikaAuto.embed.cm\:description=description
+     * metadata.extracter.TikaAuto.embed.namespace.prefix.cm=http://www.alfresco.org/model/content/1.0 metadata.extracter.TikaAuto.embed.cm\:description=description
      *
      * @see #setMappingProperties(Properties)
      */
@@ -871,8 +817,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * A utility method to convert mapping properties to the Map form.
      * <p>
-     * Different from readMappingProperties in that keys are the Alfresco QNames
-     * and values are file metadata properties.
+     * Different from readMappingProperties in that keys are the Alfresco QNames and values are file metadata properties.
      *
      * @see #setMappingProperties(Properties)
      */
@@ -880,12 +825,11 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     {
         return readEmbedMappingProperties(mappingProperties.entrySet());
     }
-    
+
     /**
      * A utility method to convert mapping properties entries to the Map form.
      * <p>
-     * Different from readMappingProperties in that keys are the Alfresco QNames
-     * and values are file metadata properties.
+     * Different from readMappingProperties in that keys are the Alfresco QNames and values are file metadata properties.
      *
      * @see #setMappingProperties(Properties)
      */
@@ -915,40 +859,41 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                 continue;
             }
 
-                int index = modelProperty.indexOf(QName.NAMESPACE_PREFIX);
-                if (index > -1 && modelProperty.charAt(0) != QName.NAMESPACE_BEGIN)
-                {
-                    String prefix = modelProperty.substring(0, index);
-                    String suffix = modelProperty.substring(index + 1);
-                    // It is prefixed
-                    String uri = namespacesByPrefix.get(prefix);
-                    if (uri == null)
-                    {
-                        throw new AlfrescoRuntimeException(
-                                "No prefix mapping for embed property mapping: \n" +
-                                "   Extracter: " + this + "\n" +
-                                "   Mapping: " + entry);
-                    }
-                    modelProperty = QName.NAMESPACE_BEGIN + uri + QName.NAMESPACE_END + suffix;
-                }
-                try
-                {
-                    QName qname = QName.createQName(modelProperty);
-                    String[] metadataKeysArray = metadataKeysString.split(",");
-                    Set<String> metadataKeys = new HashSet<String>(metadataKeysArray.length);
-                    for (String metadataKey : metadataKeysArray) {
-                        metadataKeys.add(metadataKey.trim());
-                    }
-                    // Create the entry
-                    convertedMapping.put(qname, metadataKeys);
-                }
-                catch (InvalidQNameException e)
+            int index = modelProperty.indexOf(QName.NAMESPACE_PREFIX);
+            if (index > -1 && modelProperty.charAt(0) != QName.NAMESPACE_BEGIN)
+            {
+                String prefix = modelProperty.substring(0, index);
+                String suffix = modelProperty.substring(index + 1);
+                // It is prefixed
+                String uri = namespacesByPrefix.get(prefix);
+                if (uri == null)
                 {
                     throw new AlfrescoRuntimeException(
-                            "Can't create metadata embedding property mapping: \n" +
-                            "   Extracter: " + this + "\n" +
-                            "   Mapping: " + entry);
+                            "No prefix mapping for embed property mapping: \n" +
+                                    "   Extracter: " + this + "\n" +
+                                    "   Mapping: " + entry);
                 }
+                modelProperty = QName.NAMESPACE_BEGIN + uri + QName.NAMESPACE_END + suffix;
+            }
+            try
+            {
+                QName qname = QName.createQName(modelProperty);
+                String[] metadataKeysArray = metadataKeysString.split(",");
+                Set<String> metadataKeys = new HashSet<String>(metadataKeysArray.length);
+                for (String metadataKey : metadataKeysArray)
+                {
+                    metadataKeys.add(metadataKey.trim());
+                }
+                // Create the entry
+                convertedMapping.put(qname, metadataKeys);
+            }
+            catch (InvalidQNameException e)
+            {
+                throw new AlfrescoRuntimeException(
+                        "Can't create metadata embedding property mapping: \n" +
+                                "   Extracter: " + this + "\n" +
+                                "   Mapping: " + entry);
+            }
             if (logger.isTraceEnabled())
             {
                 logger.trace("Added mapping from " + modelProperty + " to " + metadataKeysString);
@@ -959,8 +904,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Registers this instance of the extracter with the registry.  This will call the
-     * {@link #init()} method and then register if the registry is available.
+     * Registers this instance of the extracter with the registry. This will call the {@link #init()} method and then register if the registry is available.
      * 
      * @see #setRegistry(MetadataExtracterRegistry)
      * @see #init()
@@ -968,19 +912,16 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     public final void register()
     {
         init();
-        
+
         // Register the extracter, if necessary
         if (registry != null)
         {
             registry.register(this);
         }
     }
-    
+
     /**
-     * Provides a hook point for implementations to perform initialization.  The base
-     * implementation must be invoked or the extracter will fail during extraction.
-     * The {@link #getDefaultMapping() default mappings} will be requested during
-     * initialization.
+     * Provides a hook point for implementations to perform initialization. The base implementation must be invoked or the extracter will fail during extraction. The {@link #getDefaultMapping() default mappings} will be requested during initialization.
      */
     protected void init()
     {
@@ -989,7 +930,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         {
             throw new AlfrescoRuntimeException("The metadata extracter must provide a default mapping: " + this);
         }
-        
+
         // Was a mapping explicitly provided
         if (mapping == null)
         {
@@ -1011,7 +952,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                 }
             }
         }
-        
+
         // Override with any extract mappings specified in global properties
         Map<String, Set<QName>> globalExtractMapping = readGlobalExtractMappingProperties();
         if (globalExtractMapping != null && globalExtractMapping.size() > 0)
@@ -1021,20 +962,20 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                 mapping.put(documentKey, globalExtractMapping.get(documentKey));
             }
         }
-        
+
         // The configured mappings are empty, but there were default mappings
         if (mapping.size() == 0 && defaultMapping.size() > 0)
         {
             logger.warn(
                     "There are no property mappings for the metadata extracter.\n" +
-                    "  Nothing will be extracted by: " + this);
+                            "  Nothing will be extracted by: " + this);
         }
 
         if (executorService == null)
         {
             executorService = Executors.newCachedThreadPool();
         }
-        
+
         if (mimetypeLimits == null)
         {
             if (properties != null)
@@ -1062,7 +1003,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             // No mapping, so use the default
             embedMapping = defaultEmbedMapping;
         }
-        
+
         else if (inheritDefaultEmbedMapping)
         {
             // Merge the default mapping into the configured mapping
@@ -1078,7 +1019,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                 }
             }
         }
-        
+
         // Override with any embed mappings specified in global properties
         Map<QName, Set<String>> globalEmbedMapping = readGlobalEmbedMappingProperties();
         if (globalEmbedMapping != null && globalEmbedMapping.size() > 0)
@@ -1095,8 +1036,10 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * Checks if the mimetype is supported.
      * 
-     * @param reader the reader to check
-     * @throws AlfrescoRuntimeException if the mimetype is not supported
+     * @param reader
+     *            the reader to check
+     * @throws AlfrescoRuntimeException
+     *             if the mimetype is not supported
      */
     protected void checkIsSupported(ContentReader reader)
     {
@@ -1105,17 +1048,19 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         {
             throw new AlfrescoRuntimeException(
                     "Metadata extracter does not support mimetype: " + mimetype + "\n" +
-                    "   reader: " + reader + "\n" +
-                    "   supported: " + supportedMimetypes + "\n" +
-                    "   extracter: " + this);
+                            "   reader: " + reader + "\n" +
+                            "   supported: " + supportedMimetypes + "\n" +
+                            "   extracter: " + this);
         }
     }
 
     /**
      * Checks if embedding for the mimetype is supported.
      *
-     * @param writer the writer to check
-     * @throws AlfrescoRuntimeException if embedding for the mimetype is not supported
+     * @param writer
+     *            the writer to check
+     * @throws AlfrescoRuntimeException
+     *             if embedding for the mimetype is not supported
      */
     protected void checkIsEmbedSupported(ContentWriter writer)
     {
@@ -1124,9 +1069,9 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         {
             throw new AlfrescoRuntimeException(
                     "Metadata extracter does not support embedding mimetype: \n" +
-                    "   writer: " + writer + "\n" +
-                    "   supported: " + supportedEmbedMimetypes + "\n" +
-                    "   extracter: " + this);
+                            "   writer: " + writer + "\n" +
+                            "   supported: " + supportedEmbedMimetypes + "\n" +
+                            "   extracter: " + this);
         }
     }
 
@@ -1196,12 +1141,12 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         {
             throw new AlfrescoRuntimeException(
                     "Metadata extracter not initialized.\n" +
-                    "  Call the 'register' method on: " + this + "\n" +
-                    "  Implementations of the 'init' method must call the base implementation.");
+                            "  Call the 'register' method on: " + this + "\n" +
+                            "  Implementations of the 'init' method must call the base implementation.");
         }
         // check the reliability
         checkIsSupported(reader);
-        
+
         Map<QName, Serializable> changedProperties = null;
         try
         {
@@ -1220,62 +1165,62 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             Map<QName, Serializable> systemProperties = mapRawToSystem(rawMetadata);
             // Convert the properties according to the dictionary types
             systemProperties = convertSystemPropertyValues(systemProperties);
-            // Last chance to filter the system properties map before applying them            
-            filterSystemProperties(systemProperties, destination);            
+            // Last chance to filter the system properties map before applying them
+            filterSystemProperties(systemProperties, destination);
             // Now use the proper overwrite policy
             changedProperties = overwritePolicy.applyProperties(systemProperties, destination);
-            
-            if(logger.isDebugEnabled())
+
+            if (logger.isDebugEnabled())
             {
-               logger.debug("Extracted Metadata from " + reader + "\n  Found: " +
-                            rawMetadata + "\n  Mapped and Accepted: " + changedProperties);
+                logger.debug("Extracted Metadata from " + reader + "\n  Found: " +
+                        rawMetadata + "\n  Mapped and Accepted: " + changedProperties);
             }
         }
         catch (LimitExceededException e)
         {
-            logger.warn("Metadata extraction rejected: \n" + 
-                    "   Extracter: " + this + "\n" + 
+            logger.warn("Metadata extraction rejected: \n" +
+                    "   Extracter: " + this + "\n" +
                     "   Reason:   " + e.getMessage());
         }
         catch (Throwable e)
         {
             // Ask Tika to detect the document, and report back on if
-            //  the current mime type is plausible
+            // the current mime type is plausible
             String typeErrorMessage = null;
             String differentType = null;
             if (mimetypeService != null)
             {
-               differentType = mimetypeService.getMimetypeIfNotMatches(reader.getReader());
+                differentType = mimetypeService.getMimetypeIfNotMatches(reader.getReader());
             }
             else
             {
-               logger.info("Unable to verify mimetype of " + reader.getReader() + 
-                           " as no MimetypeService available to " + getClass().getName());
+                logger.info("Unable to verify mimetype of " + reader.getReader() +
+                        " as no MimetypeService available to " + getClass().getName());
             }
             if (differentType != null)
             {
-               typeErrorMessage = "\n" +
-                  "   claimed mime type: " + reader.getMimetype() + "\n" +
-                  "   detected mime type: " + differentType;
+                typeErrorMessage = "\n" +
+                        "   claimed mime type: " + reader.getMimetype() + "\n" +
+                        "   detected mime type: " + differentType;
             }
-           
+
             if (logger.isDebugEnabled())
             {
                 logger.debug(
                         "Metadata extraction failed: \n" +
-                        "   Extracter: " + this + "\n" +
-                        "   Content:   " + reader +
-                        typeErrorMessage,
+                                "   Extracter: " + this + "\n" +
+                                "   Content:   " + reader +
+                                typeErrorMessage,
                         e);
             }
             else
             {
                 logger.warn(
                         "Metadata extraction failed (turn on DEBUG for full error): \n" +
-                        "   Extracter: " + this + "\n" +
-                        "   Content:   " + reader + "\n" +
-                        "   Failure:   " + e.getMessage() +
-                        typeErrorMessage);
+                                "   Extracter: " + this + "\n" +
+                                "   Content:   " + reader + "\n" +
+                                "   Failure:   " + e.getMessage() +
+                                typeErrorMessage);
             }
         }
         finally
@@ -1293,7 +1238,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                 changedProperties = new HashMap<QName, Serializable>(0);
             }
         }
-        
+
         // Done
         if (logger.isDebugEnabled())
         {
@@ -1340,8 +1285,8 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         {
             throw new AlfrescoRuntimeException(
                     "Metadata extracter not initialized.\n" +
-                    "  Call the 'register' method on: " + this + "\n" +
-                    "  Implementations of the 'init' method must call the base implementation.");
+                            "  Call the 'register' method on: " + this + "\n" +
+                            "  Implementations of the 'init' method must call the base implementation.");
         }
         // check the reliability
         checkIsEmbedSupported(writer);
@@ -1352,55 +1297,55 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             embedInternal(nodeRef, metadata, reader, writer);
             if (logger.isDebugEnabled())
             {
-               logger.debug("Embedded Metadata into " + writer);
+                logger.debug("Embedded Metadata into " + writer);
             }
         }
         catch (Throwable e)
         {
             // Ask Tika to detect the document, and report back on if
-            //  the current mime type is plausible
+            // the current mime type is plausible
             String typeErrorMessage = "";
             String differentType = null;
-            if(mimetypeService != null)
+            if (mimetypeService != null)
             {
-               try
-               {
-                   differentType = mimetypeService.getMimetypeIfNotMatches(writer.getReader());
-               }
-               catch (ContentIOException cioe)
-               {
-                   // Embedding failed and writer is empty
-               }
+                try
+                {
+                    differentType = mimetypeService.getMimetypeIfNotMatches(writer.getReader());
+                }
+                catch (ContentIOException cioe)
+                {
+                    // Embedding failed and writer is empty
+                }
             }
             else
             {
-               logger.info("Unable to verify mimetype of " + writer.getReader() +
-                           " as no MimetypeService available to " + getClass().getName());
+                logger.info("Unable to verify mimetype of " + writer.getReader() +
+                        " as no MimetypeService available to " + getClass().getName());
             }
-            if(differentType != null)
+            if (differentType != null)
             {
-               typeErrorMessage = "\n" +
-                  "   claimed mime type: " + writer.getMimetype() + "\n" +
-                  "   detected mime type: " + differentType;
+                typeErrorMessage = "\n" +
+                        "   claimed mime type: " + writer.getMimetype() + "\n" +
+                        "   detected mime type: " + differentType;
             }
 
             if (logger.isDebugEnabled())
             {
                 logger.debug(
                         "Metadata embedding failed: \n" +
-                        "   Extracter: " + this + "\n" +
-                        "   Content:   " + writer +
-                        typeErrorMessage,
+                                "   Extracter: " + this + "\n" +
+                                "   Content:   " + writer +
+                                typeErrorMessage,
                         e);
             }
             else
             {
                 logger.error(
                         "Metadata embedding failed (turn on DEBUG for full error): \n" +
-                        "   Extracter: " + this + "\n" +
-                        "   Content:   " + writer + "\n" +
-                        "   Failure:   " + e.getMessage() +
-                        typeErrorMessage);
+                                "   Extracter: " + this + "\n" +
+                                "   Content:   " + writer + "\n" +
+                                "   Failure:   " + e.getMessage() +
+                                typeErrorMessage);
             }
         }
         finally
@@ -1425,8 +1370,9 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
 
     /**
      * 
-     * @param rawMetadata   Metadata keyed by document properties
-     * @return              Returns the metadata keyed by the system properties
+     * @param rawMetadata
+     *            Metadata keyed by document properties
+     * @return Returns the metadata keyed by the system properties
      */
     private Map<QName, Serializable> mapRawToSystem(Map<String, Serializable> rawMetadata)
     {
@@ -1444,7 +1390,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             Set<QName> systemQNames = mapping.get(documentKey);
             for (QName systemQName : systemQNames)
             {
-                systemProperties.put(systemQName, documentValue);                
+                systemProperties.put(systemQName, documentValue);
             }
         }
         // Done
@@ -1452,16 +1398,17 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         {
             logger.debug(
                     "Converted extracted raw values to system values: \n" +
-                    "   Raw Properties:    " + rawMetadata + "\n" +
-                    "   System Properties: " + systemProperties);
+                            "   Raw Properties:    " + rawMetadata + "\n" +
+                            "   System Properties: " + systemProperties);
         }
         return systemProperties;
     }
 
     /**
      *
-     * @param systemMetadata   Metadata keyed by system properties
-     * @return              Returns the metadata keyed by the content file metadata properties
+     * @param systemMetadata
+     *            Metadata keyed by system properties
+     * @return Returns the metadata keyed by the content file metadata properties
      */
     protected Map<String, Serializable> mapSystemToRaw(Map<QName, Serializable> systemMetadata)
     {
@@ -1487,31 +1434,31 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         {
             logger.debug(
                     "Converted system model values to metadata values: \n" +
-                    "   System Properties:    " + systemMetadata + "\n" +
-                    "   Metadata Properties: " + metadataProperties);
+                            "   System Properties:    " + systemMetadata + "\n" +
+                            "   Metadata Properties: " + metadataProperties);
         }
         return metadataProperties;
     }
 
     /**
-     * Filters the system properties that are going to be applied.  Gives the metadata extracter an 
-     * opportunity to remove properties that may not be appropriate in a given context.
+     * Filters the system properties that are going to be applied. Gives the metadata extracter an opportunity to remove properties that may not be appropriate in a given context.
      * 
-     * @param systemProperties  map of system properties to be applied
-     * @param targetProperties  map of target properties, may be used to provide to the context requried
+     * @param systemProperties
+     *            map of system properties to be applied
+     * @param targetProperties
+     *            map of target properties, may be used to provide to the context requried
      */
     protected void filterSystemProperties(Map<QName, Serializable> systemProperties, Map<QName, Serializable> targetProperties)
     {
         // Default implementation does nothing
     }
-    
+
     /**
-     * Converts all values according to their dictionary-defined type.  This uses the
-     * {@link #setFailOnTypeConversion(boolean) failOnTypeConversion flag} to determine how failures
-     * are handled i.e. if values fail to convert, the process may discard the property.
+     * Converts all values according to their dictionary-defined type. This uses the {@link #setFailOnTypeConversion(boolean) failOnTypeConversion flag} to determine how failures are handled i.e. if values fail to convert, the process may discard the property.
      * 
-     * @param systemProperties  the values keyed to system property names
-     * @return                  Returns a modified map of properties that have been converted.
+     * @param systemProperties
+     *            the values keyed to system property names
+     * @return Returns a modified map of properties that have been converted.
      */
     @SuppressWarnings("unchecked")
     protected Map<QName, Serializable> convertSystemPropertyValues(Map<QName, Serializable> systemProperties)
@@ -1532,7 +1479,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             // It is in the DD, so attempt the conversion
             DataTypeDefinition propertyTypeDef = propertyDef.getDataType();
             Serializable convertedPropertyValue = null;
-            
+
             try
             {
                 // Attempt to make any date conversions
@@ -1544,7 +1491,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                     }
                     else if (propertyValue instanceof Long)
                     {
-                        convertedPropertyValue = new Date((Long)propertyValue);
+                        convertedPropertyValue = new Date((Long) propertyValue);
                     }
                     else if (propertyValue instanceof Collection)
                     {
@@ -1564,9 +1511,9 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                         {
                             StringBuilder mesg = new StringBuilder();
                             mesg.append("Unable to convert Date property: ").append(propertyQName)
-                                .append(", value: ").append(propertyValue).append(" (")
-                                .append(propertyValue.getClass().getSimpleName())
-                                .append("), type: ").append(propertyTypeDef.getName());
+                                    .append(", value: ").append(propertyValue).append(" (")
+                                    .append(propertyValue.getClass().getSimpleName())
+                                    .append("), type: ").append(propertyTypeDef.getName());
                             logger.warn(mesg.toString());
                         }
                     }
@@ -1581,9 +1528,9 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                     }
                     else if (propertyValue instanceof Object[])
                     {
-                       convertedPropertyValue = (Serializable) DefaultTypeConverter.INSTANCE.convert(
-                             propertyTypeDef,
-                             (Object[]) propertyValue);
+                        convertedPropertyValue = (Serializable) DefaultTypeConverter.INSTANCE.convert(
+                                propertyTypeDef,
+                                (Object[]) propertyValue);
                     }
                     else
                     {
@@ -1597,10 +1544,10 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             catch (TypeConversionException e)
             {
                 logger.warn(
-                        "Type conversion failed during metadata extraction: \n" + 
-                        "   Failure:   " + e.getMessage() + "\n" +
-                        "   Type:      " + propertyTypeDef + "\n" +
-                        "   Value:     " + propertyValue);
+                        "Type conversion failed during metadata extraction: \n" +
+                                "   Failure:   " + e.getMessage() + "\n" +
+                                "   Type:      " + propertyTypeDef + "\n" +
+                                "   Value:     " + propertyValue);
                 // Do we just absorb this or is it a problem?
                 if (failOnTypeConversion)
                 {
@@ -1639,7 +1586,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                     {
                         if (logger.isInfoEnabled())
                         {
-                            logger.info("enableStringTagging is false and could not convert " + 
+                            logger.info("enableStringTagging is false and could not convert " +
                                     propertyQName.toString() + ": " + e.getMessage());
                         }
                     }
@@ -1670,7 +1617,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         }
         return dates;
     }
-    
+
     /**
      * Convert a date <tt>String</tt> to a <tt>Date</tt> object
      */
@@ -1680,7 +1627,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         {
             return null;
         }
-        
+
         Date date = null;
         try
         {
@@ -1693,8 +1640,9 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             {
                 // Remove text such as " (PDT)" which cannot be parsed.
                 String dateStr2 = (dateStr == null || dateStr.indexOf('(') == -1)
-                        ? dateStr : dateStr.replaceAll(" \\(.*\\)", "");
-                for (DateTimeFormatter supportedDateFormatter: supportedDateFormatters)
+                        ? dateStr
+                        : dateStr.replaceAll(" \\(.*\\)", "");
+                for (DateTimeFormatter supportedDateFormatter : supportedDateFormatters)
                 {
                     // supported DateFormats were defined
                     /**
@@ -1716,11 +1664,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                     /**
                      * Date format can be locale specific - make sure English format always works
                      */
-                    /* 
-                     * TODO MER 25 May 2010 - Added this as a quick fix for IMAP date parsing which is always 
-                     * English regardless of Locale.  Some more thought and/or code is required to configure 
-                     * the relationship between properties, format and locale.
-                     */
+                    /* TODO MER 25 May 2010 - Added this as a quick fix for IMAP date parsing which is always English regardless of Locale. Some more thought and/or code is required to configure the relationship between properties, format and locale. */
                     try
                     {
                         DateTime dateTime = supportedDateFormatter.withLocale(Locale.US).parseDateTime(dateStr2);
@@ -1748,8 +1692,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                 }
             }
             catch (NumberFormatException ignore)
-            {
-            }
+            {}
 
             if (date == null)
             {
@@ -1759,23 +1702,23 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         }
         return date;
     }
-    
+
     /**
-     * Adds a value to the map, conserving null values.  Values are converted to null if:
+     * Adds a value to the map, conserving null values. Values are converted to null if:
      * <ul>
-     *   <li>it is an empty string value after trimming</li>
-     *   <li>it is an empty collection</li>
-     *   <li>it is an empty array</li>
+     * <li>it is an empty string value after trimming</li>
+     * <li>it is an empty collection</li>
+     * <li>it is an empty array</li>
      * </ul>
-     * String values are trimmed before being put into the map.
-     * Otherwise, it is up to the extracter to ensure that the value is a <tt>Serializable</tt>.
-     * It is not appropriate to implicitly convert values in order to make them <tt>Serializable</tt>
-     * - the best conversion method will depend on the value's specific meaning.
+     * String values are trimmed before being put into the map. Otherwise, it is up to the extracter to ensure that the value is a <tt>Serializable</tt>. It is not appropriate to implicitly convert values in order to make them <tt>Serializable</tt> - the best conversion method will depend on the value's specific meaning.
      * 
-     * @param key           the destination key
-     * @param value         the serializable value
-     * @param destination   the map to put values into
-     * @return              Returns <tt>true</tt> if set, otherwise <tt>false</tt>
+     * @param key
+     *            the destination key
+     * @param value
+     *            the serializable value
+     * @param destination
+     *            the map to put values into
+     * @return Returns <tt>true</tt> if set, otherwise <tt>false</tt>
      */
     protected boolean putRawValue(String key, Serializable value, Map<String, Serializable> destination)
     {
@@ -1792,7 +1735,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             }
             else
             {
-                if(valueStr.indexOf("\u0000") != -1)
+                if (valueStr.indexOf("\u0000") != -1)
                 {
                     valueStr = valueStr.replaceAll("\u0000", "");
                 }
@@ -1823,7 +1766,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * Helper method to fetch a clean map into which raw values can be dumped.
      * 
-     * @return          Returns an empty map
+     * @return Returns an empty map
      */
     protected final Map<String, Serializable> newRawMap()
     {
@@ -1831,38 +1774,25 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * This method provides a <i>best guess</i> of where to store the values extracted
-     * from the documents.  The list of properties mapped by default need <b>not</b>
-     * include all properties extracted from the document; just the obvious set of mappings
-     * need be supplied.
-     * Implementations must either provide the default mapping properties in the expected
-     * location or override the method to provide the default mapping.
+     * This method provides a <i>best guess</i> of where to store the values extracted from the documents. The list of properties mapped by default need <b>not</b> include all properties extracted from the document; just the obvious set of mappings need be supplied. Implementations must either provide the default mapping properties in the expected location or override the method to provide the default mapping.
      * <p>
-     * The default implementation looks for the default mapping file in the location
-     * given by the class name and <i>.properties</i>.  If the extracter's class is
-     * <b>x.y.z.MyExtracter</b> then the default properties will be picked up at
-     * <b>classpath:/alfresco/metadata/MyExtracter.properties</b>.
-     * The previous location of <b>classpath:/x/y/z/MyExtracter.properties</b> is
-     * still supported but may be removed in a future release.
-     * Inner classes are supported, but the '$' in the class name is replaced with '-', so
-     * default properties for <b>x.y.z.MyStuff$MyExtracter</b> will be located using
-     * <b>classpath:/alfresco/metadata/MyStuff-MyExtracter.properties</b>.
+     * The default implementation looks for the default mapping file in the location given by the class name and <i>.properties</i>. If the extracter's class is <b>x.y.z.MyExtracter</b> then the default properties will be picked up at <b>classpath:/alfresco/metadata/MyExtracter.properties</b>. The previous location of <b>classpath:/x/y/z/MyExtracter.properties</b> is still supported but may be removed in a future release. Inner classes are supported, but the '$' in the class name is replaced with '-', so default properties for <b>x.y.z.MyStuff$MyExtracter</b> will be located using <b>classpath:/alfresco/metadata/MyStuff-MyExtracter.properties</b>.
      * <p>
-     * The default mapping implementation should include thorough Javadocs so that the
-     * system administrators can accurately determine how to best enhance or override the
-     * default mapping.
+     * The default mapping implementation should include thorough Javadocs so that the system administrators can accurately determine how to best enhance or override the default mapping.
      * <p>
-     * If the default mapping is declared in a properties file other than the one named after
-     * the class, then the {@link #readMappingProperties(String)} method can be used to quickly
-     * generate the return value:
-     * <pre><code>
+     * If the default mapping is declared in a properties file other than the one named after the class, then the {@link #readMappingProperties(String)} method can be used to quickly generate the return value:
+     * 
+     * <pre>
+     * <code>
      *      {
      *          return readMappingProperties(DEFAULT_MAPPING);
      *      }
-     * </code></pre>
+     * </code>
+     * </pre>
+     * 
      * The map can also be created in code either statically or during the call.
      * 
-     * @return              Returns the default, static mapping.  It may not be null.
+     * @return Returns the default, static mapping. It may not be null.
      * 
      * @see #setInheritDefaultMapping(boolean inherit)
      */
@@ -1907,41 +1837,28 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * This method provides a <i>best guess</i> of what model properties should be embedded
-     * in content.  The list of properties mapped by default need <b>not</b>
-     * include all properties to be embedded in the document; just the obvious set of mappings
-     * need be supplied.
-     * Implementations must either provide the default mapping properties in the expected
-     * location or override the method to provide the default mapping.
+     * This method provides a <i>best guess</i> of what model properties should be embedded in content. The list of properties mapped by default need <b>not</b> include all properties to be embedded in the document; just the obvious set of mappings need be supplied. Implementations must either provide the default mapping properties in the expected location or override the method to provide the default mapping.
      * <p>
-     * The default implementation looks for the default mapping file in the location
-     * given by the class name and <i>.embed.properties</i>.  If the extracter's class is
-     * <b>x.y.z.MyExtracter</b> then the default properties will be picked up at
-     * <b>classpath:/x/y/z/MyExtracter.embed.properties</b>.
-     * Inner classes are supported, but the '$' in the class name is replaced with '-', so
-     * default properties for <b>x.y.z.MyStuff$MyExtracter</b> will be located using
-     * <b>x.y.z.MyStuff-MyExtracter.embed.properties</b>.
+     * The default implementation looks for the default mapping file in the location given by the class name and <i>.embed.properties</i>. If the extracter's class is <b>x.y.z.MyExtracter</b> then the default properties will be picked up at <b>classpath:/x/y/z/MyExtracter.embed.properties</b>. Inner classes are supported, but the '$' in the class name is replaced with '-', so default properties for <b>x.y.z.MyStuff$MyExtracter</b> will be located using <b>x.y.z.MyStuff-MyExtracter.embed.properties</b>.
      * <p>
-     * The default mapping implementation should include thorough Javadocs so that the
-     * system administrators can accurately determine how to best enhance or override the
-     * default mapping.
+     * The default mapping implementation should include thorough Javadocs so that the system administrators can accurately determine how to best enhance or override the default mapping.
      * <p>
-     * If the default mapping is declared in a properties file other than the one named after
-     * the class, then the {@link #readEmbedMappingProperties(String)} method can be used to quickly
-     * generate the return value:
-     * <pre><code>
+     * If the default mapping is declared in a properties file other than the one named after the class, then the {@link #readEmbedMappingProperties(String)} method can be used to quickly generate the return value:
+     * 
+     * <pre>
+     * <code>
      *      protected Map<<String, Set<QName>> getDefaultMapping()
      *      {
      *          return readEmbedMappingProperties(DEFAULT_MAPPING);
      *      }
-     * </code></pre>
+     * </code>
+     * </pre>
+     * 
      * The map can also be created in code either statically or during the call.
      * <p>
-     * If no embed mapping properties file is found a reverse of the extract
-     * mapping in {@link #getDefaultMapping()} will be assumed with the first QName in each
-     * value used as the key for this mapping and a last win approach for duplicates.
+     * If no embed mapping properties file is found a reverse of the extract mapping in {@link #getDefaultMapping()} will be assumed with the first QName in each value used as the key for this mapping and a last win approach for duplicates.
      *
-     * @return              Returns the default, static embed mapping.  It may not be null.
+     * @return Returns the default, static embed mapping. It may not be null.
      *
      * @see #setInheritDefaultMapping(boolean inherit)
      */
@@ -2019,11 +1936,10 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * Gets the metadata extracter limits for the given mimetype.
      * <p>
-     * A specific match for the given mimetype is tried first and
-     * if none is found a wildcard of "*" is tried, if still not found 
-     * defaults value will be used
+     * A specific match for the given mimetype is tried first and if none is found a wildcard of "*" is tried, if still not found defaults value will be used
      * 
-     * @param mimetype String
+     * @param mimetype
+     *            String
      * @return the found limits or default values
      */
     protected MetadataExtracterLimits getLimits(String mimetype)
@@ -2042,24 +1958,22 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         {
             limits = new MetadataExtracterLimits();
         }
-        
+
         return limits;
     }
 
     /**
-     * <code>Callable</code> wrapper for the 
-     * {@link AbstractMappingMetadataExtracter#extractRaw(ContentReader)} method
-     * to handle timeouts.
+     * <code>Callable</code> wrapper for the {@link AbstractMappingMetadataExtracter#extractRaw(ContentReader)} method to handle timeouts.
      */
-    private class ExtractRawCallable implements Callable<Map<String,Serializable>>
+    private class ExtractRawCallable implements Callable<Map<String, Serializable>>
     {
         private ContentReader contentReader;
-        
+
         public ExtractRawCallable(ContentReader reader)
         {
             this.contentReader = reader;
         }
-        
+
         @Override
         public Map<String, Serializable> call() throws Exception
         {
@@ -2073,50 +1987,49 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             }
         }
     }
-    
+
     /**
-     * Exception wrapper to handle any {@link Throwable} from 
-     * {@link AbstractMappingMetadataExtracter#extractRaw(ContentReader)}
+     * Exception wrapper to handle any {@link Throwable} from {@link AbstractMappingMetadataExtracter#extractRaw(ContentReader)}
      */
     private class ExtractRawCallableException extends Exception
     {
         private static final long serialVersionUID = 1813857091767321624L;
+
         public ExtractRawCallableException(Throwable cause)
         {
             super(cause);
         }
     }
-    
+
     /**
-     * Exception wrapper to handle exceeded limits imposed by {@link MetadataExtracterLimits}
-     * {@link AbstractMappingMetadataExtracter#extractRaw(NodeRef, ContentReader, MetadataExtracterLimits)}
+     * Exception wrapper to handle exceeded limits imposed by {@link MetadataExtracterLimits} {@link AbstractMappingMetadataExtracter#extractRaw(NodeRef, ContentReader, MetadataExtracterLimits)}
      */
     private class LimitExceededException extends Exception
     {
         private static final long serialVersionUID = 702554119174770130L;
+
         public LimitExceededException(String message)
         {
             super(message);
         }
     }
-    
+
     /**
-     * Calls the {@link AbstractMappingMetadataExtracter#extractRaw(ContentReader)} method
-     * using the given limits.
+     * Calls the {@link AbstractMappingMetadataExtracter#extractRaw(ContentReader)} method using the given limits.
      * <p>
-     * Currently the only limit supported by {@link MetadataExtracterLimits} is a timeout
-     * so this method uses {@link AbstractMappingMetadataExtracter#getExecutorService()}
-     * to execute a {@link FutureTask} with any timeout defined.
+     * Currently the only limit supported by {@link MetadataExtracterLimits} is a timeout so this method uses {@link AbstractMappingMetadataExtracter#getExecutorService()} to execute a {@link FutureTask} with any timeout defined.
      * <p>
-     * If no timeout limit is defined or is unlimited (-1),
-     * the <code>extractRaw</code> method is called directly.
+     * If no timeout limit is defined or is unlimited (-1), the <code>extractRaw</code> method is called directly.
      *
-     * @param nodeRef       the node being acted on.
-     * @param reader        the document to extract the values from.  This stream provided by
-     *                      the reader must be closed if accessed directly.
-     * @param limits        the limits to impose on the extraction
-     * @return              Returns a map of document property values keyed by property name.
-     * @throws Throwable    All exception conditions can be handled.
+     * @param nodeRef
+     *            the node being acted on.
+     * @param reader
+     *            the document to extract the values from. This stream provided by the reader must be closed if accessed directly.
+     * @param limits
+     *            the limits to impose on the extraction
+     * @return Returns a map of document property values keyed by property name.
+     * @throws Throwable
+     *             All exception conditions can be handled.
      */
     private Map<String, Serializable> extractRaw(NodeRef nodeRef,
             ContentReader reader, MetadataExtracterLimits limits) throws Throwable
@@ -2125,7 +2038,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         {
             throw new LimitExceededException("Max doc size exceeded " + limits.getMaxDocumentSizeMB() + " MB");
         }
-        
+
         synchronized (CONCURRENT_EXTRACTIONS_COUNT)
         {
             if (logger.isDebugEnabled())
@@ -2150,7 +2063,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     protected Map<String, Serializable> extractRawInThread(NodeRef nodeRef, ContentReader reader,
-                                                           MetadataExtracterLimits limits)
+            MetadataExtracterLimits limits)
             throws Throwable
     {
         FutureTask<Map<String, Serializable>> task = null;
@@ -2158,7 +2071,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         try
         {
             proxiedReader = new StreamAwareContentReaderProxy(reader);
-            task = new FutureTask<Map<String,Serializable>>(new ExtractRawCallable(proxiedReader));
+            task = new FutureTask<Map<String, Serializable>>(new ExtractRawCallable(proxiedReader));
             getExecutorService().execute(task);
             return task.get(limits.getTimeoutMs(), TimeUnit.MILLISECONDS);
         }
@@ -2203,22 +2116,17 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Override to provide the raw extracted metadata values.  An extracter should extract
-     * as many of the available properties as is realistically possible.  Even if the
-     * {@link #getDefaultMapping() default mapping} doesn't handle all properties, it is
-     * possible for each instance of the extracter to be configured differently and more or
-     * less of the properties may be used in different installations.
+     * Override to provide the raw extracted metadata values. An extracter should extract as many of the available properties as is realistically possible. Even if the {@link #getDefaultMapping() default mapping} doesn't handle all properties, it is possible for each instance of the extracter to be configured differently and more or less of the properties may be used in different installations.
      * <p>
-     * Raw values must not be trimmed or removed for any reason.  Null values and empty
-     * strings are 
+     * Raw values must not be trimmed or removed for any reason. Null values and empty strings are
      * <ul>
-     *    <li><b>Null:</b>              Removed</li>
-     *    <li><b>Empty String:</b>      Passed to the OverwritePolicy</li>
-     *    <li><b>Non Serializable:</b>  Converted to String or fails if that is not possible</li>
+     * <li><b>Null:</b> Removed</li>
+     * <li><b>Empty String:</b> Passed to the OverwritePolicy</li>
+     * <li><b>Non Serializable:</b> Converted to String or fails if that is not possible</li>
      * </ul>
      * <p>
-     * Properties extracted and their meanings and types should be thoroughly described in
-     * the class-level javadocs of the extracter implementation, for example:
+     * Properties extracted and their meanings and types should be thoroughly described in the class-level javadocs of the extracter implementation, for example:
+     * 
      * <pre>
      * <b>editor:</b> - the document editor        -->  cm:author
      * <b>title:</b>  - the document title         -->  cm:title
@@ -2228,10 +2136,11 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * <b>user4:</b>  -
      * </pre>
      * 
-     * @param reader        the document to extract the values from.  This stream provided by
-     *                      the reader must be closed if accessed directly.
-     * @return              Returns a map of document property values keyed by property name.
-     * @throws Throwable    All exception conditions can be handled.
+     * @param reader
+     *            the document to extract the values from. This stream provided by the reader must be closed if accessed directly.
+     * @return Returns a map of document property values keyed by property name.
+     * @throws Throwable
+     *             All exception conditions can be handled.
      * 
      * @see #getDefaultMapping()
      */
@@ -2243,18 +2152,16 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Override to embed metadata values.  An extracter should embed
-     * as many of the available properties as is realistically possible.  Even if the
-     * {@link #getDefaultEmbedMapping() default mapping} doesn't handle all properties, it is
-     * possible for each instance of the extracter to be configured differently and more or
-     * less of the properties may be used in different installations.
+     * Override to embed metadata values. An extracter should embed as many of the available properties as is realistically possible. Even if the {@link #getDefaultEmbedMapping() default mapping} doesn't handle all properties, it is possible for each instance of the extracter to be configured differently and more or less of the properties may be used in different installations.
      *
-     * @param metadata		the metadata keys and values to embed in the content file
-     * @param reader		the reader for the original document.  This stream provided by
-     *                      the reader must be closed if accessed directly.
-     * @param writer        the writer for the document to embed the values in.  This stream provided by
-     *                      the writer must be closed if accessed directly.
-     * @throws Throwable    All exception conditions can be handled.
+     * @param metadata
+     *            the metadata keys and values to embed in the content file
+     * @param reader
+     *            the reader for the original document. This stream provided by the reader must be closed if accessed directly.
+     * @param writer
+     *            the writer for the document to embed the values in. This stream provided by the writer must be closed if accessed directly.
+     * @throws Throwable
+     *             All exception conditions can be handled.
      *
      * @see #getDefaultEmbedMapping()
      */

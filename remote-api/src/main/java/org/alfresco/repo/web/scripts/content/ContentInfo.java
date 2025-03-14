@@ -29,18 +29,18 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.web.scripts.MimeTypeUtil;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
 
 /**
  * Content Info Service Get info about content from the Repository.
@@ -71,8 +71,8 @@ public class ContentInfo extends StreamContent
         streamContent(req, res, nodeRef, propertyQName, false, null, null);
     }
 
-    protected void streamContentImpl(WebScriptRequest req, WebScriptResponse res, 
-            ContentReader reader, NodeRef nodeRef, QName propertyQName, 
+    protected void streamContentImpl(WebScriptRequest req, WebScriptResponse res,
+            ContentReader reader, NodeRef nodeRef, QName propertyQName,
             boolean attach, Date modified, String eTag, String attachFileName)
             throws IOException
     {

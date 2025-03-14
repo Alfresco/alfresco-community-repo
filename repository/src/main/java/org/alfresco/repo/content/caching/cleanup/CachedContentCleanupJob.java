@@ -25,15 +25,15 @@
  */
 package org.alfresco.repo.content.caching.cleanup;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+
 /**
- * Quartz job to remove cached content files from disk once they are no longer
- * held in the in-memory cache.
+ * Quartz job to remove cached content files from disk once they are no longer held in the in-memory cache.
  * 
  * @author Matt Ward
  */
@@ -47,14 +47,13 @@ public class CachedContentCleanupJob implements Job
         cachedContentCleaner.execute("scheduled");
     }
 
-    
     private CachedContentCleaner cachedContentCleaner(JobDataMap jobData)
     {
         Object cleanerObj = jobData.get("cachedContentCleaner");
         if (cleanerObj == null || !(cleanerObj instanceof CachedContentCleaner))
         {
             throw new AlfrescoRuntimeException(
-                        "CachedContentCleanupJob requires a valid 'cachedContentCleaner' reference");
+                    "CachedContentCleanupJob requires a valid 'cachedContentCleaner' reference");
         }
         CachedContentCleaner cleaner = (CachedContentCleaner) cleanerObj;
         return cleaner;

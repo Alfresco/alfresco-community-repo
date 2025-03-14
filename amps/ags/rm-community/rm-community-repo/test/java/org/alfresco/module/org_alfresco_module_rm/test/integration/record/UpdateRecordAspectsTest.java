@@ -27,11 +27,12 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.integration.record;
 
+import org.springframework.extensions.webscripts.GUID;
+
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.webscripts.GUID;
 
 /**
  * remove aspects test
@@ -54,13 +55,11 @@ public class UpdateRecordAspectsTest extends BaseRMTestCase
     }
 
     /**
-     * RM-4926
-     * RM specific aspects can be removed only by System user
+     * RM-4926 RM specific aspects can be removed only by System user
      */
     public void testRemoveRMAspectsFromElectronicRecord() throws Exception
     {
-        final NodeRef record = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef record = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -72,8 +71,7 @@ public class UpdateRecordAspectsTest extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new FailureTest(IntegrityException.class)
-        {
+        doTestInTransaction(new FailureTest(IntegrityException.class) {
             @Override
             public void run()
             {
@@ -81,8 +79,7 @@ public class UpdateRecordAspectsTest extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new FailureTest(IntegrityException.class)
-        {
+        doTestInTransaction(new FailureTest(IntegrityException.class) {
             @Override
             public void run()
             {
@@ -90,8 +87,7 @@ public class UpdateRecordAspectsTest extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new FailureTest(IntegrityException.class)
-        {
+        doTestInTransaction(new FailureTest(IntegrityException.class) {
             @Override
             public void run()
             {
@@ -99,8 +95,7 @@ public class UpdateRecordAspectsTest extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new FailureTest(IntegrityException.class)
-        {
+        doTestInTransaction(new FailureTest(IntegrityException.class) {
             @Override
             public void run()
             {
@@ -108,8 +103,7 @@ public class UpdateRecordAspectsTest extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {

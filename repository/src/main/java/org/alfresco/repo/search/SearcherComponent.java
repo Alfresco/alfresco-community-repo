@@ -41,8 +41,7 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Component API for searching.  Delegates to the real {@link org.alfresco.service.cmr.search.SearchService searcher}
- * from the {@link #indexerAndSearcherFactory}.
+ * Component API for searching. Delegates to the real {@link org.alfresco.service.cmr.search.SearchService searcher} from the {@link #indexerAndSearcherFactory}.
  * 
  * Transactional support is free.
  * 
@@ -52,7 +51,7 @@ import org.alfresco.service.namespace.QName;
 public class SearcherComponent extends AbstractSearcherComponent
 {
     private IndexerAndSearcher indexerAndSearcherFactory;
-    
+
     public void setIndexerAndSearcherFactory(IndexerAndSearcher indexerAndSearcherFactory)
     {
         this.indexerAndSearcherFactory = indexerAndSearcherFactory;
@@ -72,10 +71,10 @@ public class SearcherComponent extends AbstractSearcherComponent
         SearchService searcher = indexerAndSearcherFactory.getSearcher(store, true);
         return searcher.query(store, language, query, queryParameterDefinitions);
     }
-    
+
     public ResultSet query(SearchParameters searchParameters)
     {
-        if(searchParameters.getStores().size() == 0)
+        if (searchParameters.getStores().size() == 0)
         {
             throw new IllegalStateException("At least one store must be defined to search");
         }
@@ -88,7 +87,7 @@ public class SearcherComponent extends AbstractSearcherComponent
     {
         return contains(nodeRef, propertyQName, googleLikePattern, SearchParameters.Operator.OR);
     }
-    
+
     public boolean contains(NodeRef nodeRef, QName propertyQName, String googleLikePattern, SearchParameters.Operator defaultOperator) throws InvalidNodeRefException
     {
         SearchService searcher = indexerAndSearcherFactory.getSearcher(nodeRef.getStoreRef(), true);

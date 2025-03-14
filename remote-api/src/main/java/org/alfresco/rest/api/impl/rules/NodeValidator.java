@@ -61,12 +61,17 @@ public class NodeValidator
     /**
      * Validates if folder node exists and the user has permission to use it.
      *
-     * @param folderNodeId - folder node ID
-     * @param requireChangePermission - Whether to require change permission or just read permission.
+     * @param folderNodeId
+     *            - folder node ID
+     * @param requireChangePermission
+     *            - Whether to require change permission or just read permission.
      * @return folder node reference
-     * @throws InvalidArgumentException if node is not of an expected type
-     * @throws PermissionDeniedException if the user doesn't have the appropriate permission for the folder.
-     * @throws EntityNotFoundException if the folder node isn't found
+     * @throws InvalidArgumentException
+     *             if node is not of an expected type
+     * @throws PermissionDeniedException
+     *             if the user doesn't have the appropriate permission for the folder.
+     * @throws EntityNotFoundException
+     *             if the folder node isn't found
      */
     public NodeRef validateFolderNode(final String folderNodeId, boolean requireChangePermission)
     {
@@ -77,7 +82,8 @@ public class NodeValidator
             verifyNodeType(nodeRef, ContentModel.TYPE_FOLDER, null);
 
             return nodeRef;
-        } catch (EntityNotFoundException e)
+        }
+        catch (EntityNotFoundException e)
         {
             throw new EntityNotFoundException("Folder with id " + folderNodeId + " was not found.", e);
         }
@@ -86,12 +92,17 @@ public class NodeValidator
     /**
      * Validates if rule set ID is default, node exists and associated folder node matches.
      *
-     * @param ruleSetId - rule set node ID
-     * @param associatedFolderNodeRef - folder node ref to check the association
+     * @param ruleSetId
+     *            - rule set node ID
+     * @param associatedFolderNodeRef
+     *            - folder node ref to check the association
      * @return rule set node reference
-     * @throws InvalidArgumentException in case of not matching associated folder node
-     * @throws RelationshipResourceNotFoundException if the folder doesn't have a -default- rule set
-     * @throws EntityNotFoundException if the rule set node isn't found
+     * @throws InvalidArgumentException
+     *             in case of not matching associated folder node
+     * @throws RelationshipResourceNotFoundException
+     *             if the folder doesn't have a -default- rule set
+     * @throws EntityNotFoundException
+     *             if the rule set node isn't found
      */
     public NodeRef validateRuleSetNode(final String ruleSetId, final NodeRef associatedFolderNodeRef)
     {
@@ -100,13 +111,14 @@ public class NodeValidator
             final NodeRef ruleSetNodeRef = ruleService.getRuleSetNode(associatedFolderNodeRef);
             if (ruleSetNodeRef == null)
             {
-                //folder doesn't have a -default- rule set
+                // folder doesn't have a -default- rule set
                 throw new RelationshipResourceNotFoundException(associatedFolderNodeRef.getId(), ruleSetId);
             }
             return ruleSetNodeRef;
         }
 
-        try {
+        try
+        {
             final NodeRef ruleSetNodeRef = validateNode(ruleSetId, ContentModel.TYPE_SYSTEM_FOLDER, RULE_SET_EXPECTED_TYPE_NAME);
 
             if (!ruleService.isRuleSetAssociatedWithFolder(ruleSetNodeRef, associatedFolderNodeRef))
@@ -115,7 +127,9 @@ public class NodeValidator
             }
             return ruleSetNodeRef;
 
-        } catch (EntityNotFoundException e) {
+        }
+        catch (EntityNotFoundException e)
+        {
             throw new EntityNotFoundException("Rule set with id " + ruleSetId + " was not found.", e);
         }
     }
@@ -129,14 +143,16 @@ public class NodeValidator
         return parentNode;
     }
 
-
     /**
      * Validates if rule node exists and associated rule set node matches.
      *
-     * @param ruleId - rule node ID
-     * @param associatedRuleSetNodeRef - rule set node ref to check the association. Can be null
+     * @param ruleId
+     *            - rule node ID
+     * @param associatedRuleSetNodeRef
+     *            - rule set node ref to check the association. Can be null
      * @return rule node reference
-     * @throws InvalidArgumentException in case of not matching associated rule set node
+     * @throws InvalidArgumentException
+     *             in case of not matching associated rule set node
      */
     public NodeRef validateRuleNode(final String ruleId, final NodeRef associatedRuleSetNodeRef)
     {
@@ -185,18 +201,22 @@ public class NodeValidator
         }
     }
 
-    public boolean isRuleSetNode(String nodeId) {
+    public boolean isRuleSetNode(String nodeId)
+    {
         try
         {
             validateNode(nodeId, ContentModel.TYPE_SYSTEM_FOLDER, RULE_SET_EXPECTED_TYPE_NAME);
             return true;
-        } catch (InvalidArgumentException e) {
+        }
+        catch (InvalidArgumentException e)
+        {
             return false;
         }
     }
 
     /**
      * Verifies if rule set node or folder node's default rule set is shared
+     * 
      * @param ruleSetNodeRef
      * @param folderNodeRef
      * @return

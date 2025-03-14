@@ -40,14 +40,14 @@ public class WorkflowTestHelper
     private final String engineId;
     private final Set<String> enabledEngines;
     private final Set<String> visibleEngines;
-    
+
     public WorkflowTestHelper(WorkflowAdminServiceImpl workflowAdminService, String engineId, boolean enableEngineOnly)
     {
         this.workflowAdminService = workflowAdminService;
         this.engineId = engineId;
         this.enabledEngines = workflowAdminService.getEnabledEngines();
         this.visibleEngines = workflowAdminService.getVisibleEngines();
-        if(enableEngineOnly)
+        if (enableEngineOnly)
         {
             enableThisEngineOnly();
         }
@@ -58,7 +58,7 @@ public class WorkflowTestHelper
         workflowAdminService.setEnabledEngines(Arrays.asList(engineId));
         workflowAdminService.setVisibleEngines(Arrays.asList(engineId));
     }
-    
+
     public void tearDown()
     {
         workflowAdminService.setEnabledEngines(enabledEngines);
@@ -69,10 +69,10 @@ public class WorkflowTestHelper
     {
         workflowAdminService.setEngineVisibility(engineId, isVisible);
     }
-    
+
     public void setEnabled(boolean isEnabled)
     {
         workflowAdminService.setEngineEnabled(engineId, isEnabled);
     }
-    
+
 }

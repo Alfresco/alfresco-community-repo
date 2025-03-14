@@ -33,11 +33,12 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for Audit complex type.
+ * <p>
+ * Java class for Audit complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType name="Audit">
@@ -58,12 +59,13 @@ import jakarta.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Audit", propOrder = {
-    "dataExtractors",
-    "dataGenerators",
-    "pathMappings",
-    "application"
+        "dataExtractors",
+        "dataGenerators",
+        "pathMappings",
+        "application"
 })
-public class Audit {
+public class Audit
+{
 
     @XmlElement(name = "DataExtractors")
     protected DataExtractors dataExtractors;
@@ -77,12 +79,11 @@ public class Audit {
     /**
      * Gets the value of the dataExtractors property.
      * 
-     * @return
-     *     possible object is
-     *     {@link DataExtractors }
-     *     
+     * @return possible object is {@link DataExtractors }
+     * 
      */
-    public DataExtractors getDataExtractors() {
+    public DataExtractors getDataExtractors()
+    {
         return dataExtractors;
     }
 
@@ -90,23 +91,22 @@ public class Audit {
      * Sets the value of the dataExtractors property.
      * 
      * @param value
-     *     allowed object is
-     *     {@link DataExtractors }
-     *     
+     *            allowed object is {@link DataExtractors }
+     * 
      */
-    public void setDataExtractors(DataExtractors value) {
+    public void setDataExtractors(DataExtractors value)
+    {
         this.dataExtractors = value;
     }
 
     /**
      * Gets the value of the dataGenerators property.
      * 
-     * @return
-     *     possible object is
-     *     {@link DataGenerators }
-     *     
+     * @return possible object is {@link DataGenerators }
+     * 
      */
-    public DataGenerators getDataGenerators() {
+    public DataGenerators getDataGenerators()
+    {
         return dataGenerators;
     }
 
@@ -114,23 +114,22 @@ public class Audit {
      * Sets the value of the dataGenerators property.
      * 
      * @param value
-     *     allowed object is
-     *     {@link DataGenerators }
-     *     
+     *            allowed object is {@link DataGenerators }
+     * 
      */
-    public void setDataGenerators(DataGenerators value) {
+    public void setDataGenerators(DataGenerators value)
+    {
         this.dataGenerators = value;
     }
 
     /**
      * Gets the value of the pathMappings property.
      * 
-     * @return
-     *     possible object is
-     *     {@link PathMappings }
-     *     
+     * @return possible object is {@link PathMappings }
+     * 
      */
-    public PathMappings getPathMappings() {
+    public PathMappings getPathMappings()
+    {
         return pathMappings;
     }
 
@@ -138,11 +137,11 @@ public class Audit {
      * Sets the value of the pathMappings property.
      * 
      * @param value
-     *     allowed object is
-     *     {@link PathMappings }
-     *     
+     *            allowed object is {@link PathMappings }
+     * 
      */
-    public void setPathMappings(PathMappings value) {
+    public void setPathMappings(PathMappings value)
+    {
         this.pathMappings = value;
     }
 
@@ -150,26 +149,25 @@ public class Audit {
      * Gets the value of the application property.
      * 
      * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the application property.
+     * This accessor method returns a reference to the live list, not a snapshot. Therefore any modification you make to the returned list will be present inside the JAXB object. This is why there is not a <CODE>set</CODE> method for the application property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
+     * 
      * <pre>
-     *    getApplication().add(newItem);
+     * getApplication().add(newItem);
      * </pre>
      * 
      * 
      * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Application }
+     * Objects of the following type(s) are allowed in the list {@link Application }
      * 
      * 
      */
-    public List<Application> getApplication() {
-        if (application == null) {
+    public List<Application> getApplication()
+    {
+        if (application == null)
+        {
             application = new ArrayList<Application>();
         }
         return this.application;

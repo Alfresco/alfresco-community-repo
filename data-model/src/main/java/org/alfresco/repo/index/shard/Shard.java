@@ -36,14 +36,14 @@ public class Shard implements Serializable
     private static final long serialVersionUID = -7255962796619754211L;
 
     private Floc floc;
-    
+
     private int instance;
 
     public Shard()
     {
-        
+
     }
-    
+
     /**
      * @return the floc
      */
@@ -53,7 +53,8 @@ public class Shard implements Serializable
     }
 
     /**
-     * @param floc the floc to set
+     * @param floc
+     *            the floc to set
      */
     public void setFloc(Floc floc)
     {
@@ -69,7 +70,8 @@ public class Shard implements Serializable
     }
 
     /**
-     * @param instance the instance to set
+     * @param instance
+     *            the instance to set
      */
     public void setInstance(int instance)
     {
@@ -77,8 +79,8 @@ public class Shard implements Serializable
     }
 
     /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
+     * 
+     * @see java.lang.Object#hashCode() */
     @Override
     public int hashCode()
     {
@@ -90,8 +92,8 @@ public class Shard implements Serializable
     }
 
     /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
+     * 
+     * @see java.lang.Object#equals(java.lang.Object) */
     @Override
     public boolean equals(Object obj)
     {
@@ -115,14 +117,12 @@ public class Shard implements Serializable
     }
 
     /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
+     * 
+     * @see java.lang.Object#toString() */
     @Override
     public String toString()
     {
         return "Shard [floc=" + floc + ", instance=" + instance + "]";
     }
-
-   
 
 }

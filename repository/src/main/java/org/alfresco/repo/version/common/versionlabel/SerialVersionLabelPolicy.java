@@ -43,30 +43,36 @@ import org.alfresco.util.VersionNumber;
 public class SerialVersionLabelPolicy implements CalculateVersionLabelPolicy
 {
     // TODO need to add support for branches into this labeling policy
-    
+
     /**
      * Get the version label value base on the data provided.
      *
-     * @param classRef      QName
-     * @param preceedingVersion  the preceeding version, null if none
-     * @param versionProperties  the version property values
-     * @return                   the version label
+     * @param classRef
+     *            QName
+     * @param preceedingVersion
+     *            the preceeding version, null if none
+     * @param versionProperties
+     *            the version property values
+     * @return the version label
      */
     public String calculateVersionLabel(
             QName classRef,
-            Version preceedingVersion, 
+            Version preceedingVersion,
             Map<String, Serializable> versionProperties)
     {
         return calculateVersionLabel(classRef, preceedingVersion, 0, versionProperties);
     }
-    
+
     /**
      * Get the version label value base on the data provided.
      * 
-     * @param preceedingVersion  the preceeding version, null if none
-     * @param versionNumber      the new version number 
-     * @param versionProperties  the version property values
-     * @return                   the version label
+     * @param preceedingVersion
+     *            the preceeding version, null if none
+     * @param versionNumber
+     *            the new version number
+     * @param versionProperties
+     *            the version property values
+     * @return the version label
      */
     public String calculateVersionLabel(
             QName classRef,
@@ -75,13 +81,13 @@ public class SerialVersionLabelPolicy implements CalculateVersionLabelPolicy
             Map<String, Serializable> versionProperties)
     {
         SerialVersionLabel serialVersionNumber = null;
-        
+
         VersionType versionType = null;
         if (versionProperties != null)
         {
-            versionType = (VersionType)versionProperties.get(VersionModel.PROP_VERSION_TYPE);
+            versionType = (VersionType) versionProperties.get(VersionModel.PROP_VERSION_TYPE);
         }
-        
+
         if (preceedingVersion != null)
         {
             // There is a preceeding version
@@ -92,7 +98,7 @@ public class SerialVersionLabelPolicy implements CalculateVersionLabelPolicy
             // This is the first version
             serialVersionNumber = new SerialVersionLabel(null);
         }
-        
+
         if (VersionType.MAJOR.equals(versionType) == true)
         {
             serialVersionNumber.majorIncrement();
@@ -101,10 +107,10 @@ public class SerialVersionLabelPolicy implements CalculateVersionLabelPolicy
         {
             serialVersionNumber.minorIncrement();
         }
-        
+
         return serialVersionNumber.toString();
     }
-    
+
     /**
      * Inner class encapsulating the notion of the serial version number.
      * 
@@ -116,21 +122,22 @@ public class SerialVersionLabelPolicy implements CalculateVersionLabelPolicy
          * The version number delimiter
          */
         private static final String DELIMITER = ".";
-        
+
         /**
          * The major revision number (default 1)
          */
         private int majorRevisionNumber;
-        
+
         /**
          * The minor revision number (default 0)
          */
-        private int minorRevisionNumber;        
-        
+        private int minorRevisionNumber;
+
         /**
          * Constructor
          * 
-         * @param versionLabel  the vesion label to take the version from
+         * @param versionLabel
+         *            the vesion label to take the version from
          */
         public SerialVersionLabel(String versionLabel)
         {
@@ -146,17 +153,16 @@ public class SerialVersionLabelPolicy implements CalculateVersionLabelPolicy
                 minorRevisionNumber = 0;
             }
         }
-        
+
         /**
-         * Increments the major revision numebr and sets the minor to 
-         * zero.
+         * Increments the major revision numebr and sets the minor to zero.
          */
         public void majorIncrement()
         {
             this.majorRevisionNumber += 1;
             this.minorRevisionNumber = 0;
         }
-        
+
         /**
          * Increments only the minor revision number
          */
@@ -164,7 +170,7 @@ public class SerialVersionLabelPolicy implements CalculateVersionLabelPolicy
         {
             this.minorRevisionNumber += 1;
         }
-        
+
         /**
          * Converts the serial version number into a string
          */

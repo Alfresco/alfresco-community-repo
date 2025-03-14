@@ -25,12 +25,12 @@
  */
 package org.alfresco.rest.api.model;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteVisibility;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Represents a site.
@@ -59,8 +59,7 @@ public class Site implements Comparable<Site>
     public static final String ROLE = "role";
 
     public Site()
-    {
-    }
+    {}
 
     public Site(SiteInfo siteInfo, String role)
     {

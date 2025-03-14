@@ -36,9 +36,9 @@ import org.alfresco.repo.search.impl.querymodel.Ordering;
 public class BaseOrdering implements Ordering
 {
     private Column column;
-    
+
     private Order order;
-    
+
     public BaseOrdering(Column column, Order order)
     {
         this.column = column;
@@ -46,21 +46,21 @@ public class BaseOrdering implements Ordering
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.Ordering#getColumn()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.Ordering#getColumn() */
     public Column getColumn()
     {
-       return column;
+        return column;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.Ordering#getOrder()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.Ordering#getOrder() */
     public Order getOrder()
     {
-       return order;
+        return order;
     }
-    
+
     public String toString()
     {
         StringBuilder builder = new StringBuilder();

@@ -29,15 +29,15 @@ public class ExceptionStackUtil
     private static final String EXCEPTION_DELIMITER = ":";
 
     /**
-     * Searches through the exception stack of the given throwable to find any instance
-     * of the possible cause.  The top-level throwable will also be tested.
+     * Searches through the exception stack of the given throwable to find any instance of the possible cause. The top-level throwable will also be tested.
      * 
-     * @param throwable         the exception condition to search
-     * @param possibleCauses    the types of the exception conditions of interest
-     * @return                  Returns the first instance that matches one of the given
-     *                          possible types, or null if there is nothing in the stack
+     * @param throwable
+     *            the exception condition to search
+     * @param possibleCauses
+     *            the types of the exception conditions of interest
+     * @return Returns the first instance that matches one of the given possible types, or null if there is nothing in the stack
      */
-    public static Throwable getCause(Throwable throwable, Class<?> ... possibleCauses)
+    public static Throwable getCause(Throwable throwable, Class<?>... possibleCauses)
     {
         while (throwable != null)
         {

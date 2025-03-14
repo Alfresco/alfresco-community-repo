@@ -42,23 +42,22 @@ public class PropertyUniqueContextEntity implements Serializable
     private Long value2PropId;
     private Long value3PropId;
     private Long propertyId;
-    
+
     public PropertyUniqueContextEntity()
-    {
-    }
-    
+    {}
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("PropertyRootEntity")
-          .append("[ ID=").append(id)
-          .append(", version=").append(version)
-          .append(", value1PropId=").append(value1PropId)
-          .append(", value2PropId=").append(value2PropId)
-          .append(", value3PropId=").append(value3PropId)
-          .append(", propertyId=").append(propertyId)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", version=").append(version)
+                .append(", value1PropId=").append(value1PropId)
+                .append(", value2PropId=").append(value2PropId)
+                .append(", value3PropId=").append(value3PropId)
+                .append(", propertyId=").append(propertyId)
+                .append("]");
         return sb.toString();
     }
 
@@ -73,7 +72,7 @@ public class PropertyUniqueContextEntity implements Serializable
             this.version++;
         }
     }
-    
+
     public Long getId()
     {
         return id;

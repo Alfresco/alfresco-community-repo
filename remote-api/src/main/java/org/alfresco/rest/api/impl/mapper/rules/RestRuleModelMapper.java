@@ -30,6 +30,10 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
 import org.alfresco.rest.api.Nodes;
@@ -44,9 +48,6 @@ import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 @Experimental
 public class RestRuleModelMapper implements RestModelMapper<Rule, org.alfresco.service.cmr.rule.Rule>
@@ -73,7 +74,8 @@ public class RestRuleModelMapper implements RestModelMapper<Rule, org.alfresco.s
     /**
      * Converts service POJO rule to REST model rule.
      *
-     * @param serviceRule - {@link org.alfresco.service.cmr.rule.Rule} service POJO
+     * @param serviceRule
+     *            - {@link org.alfresco.service.cmr.rule.Rule} service POJO
      * @return {@link Rule} REST model
      */
     @Override
@@ -115,7 +117,9 @@ public class RestRuleModelMapper implements RestModelMapper<Rule, org.alfresco.s
                         ((CompositeAction) serviceRule.getAction()).getActions().stream()
                                 .map(actionMapper::toRestModel)
                                 .collect(Collectors.toList()));
-            } else {
+            }
+            else
+            {
                 log.warn("Rule Action should be of 'CompositeAction' type but found: " + serviceRule.getAction().getClass());
             }
 
@@ -127,7 +131,8 @@ public class RestRuleModelMapper implements RestModelMapper<Rule, org.alfresco.s
     /**
      * Convert the REST model object to the equivalent service POJO.
      *
-     * @param restRuleModel {@link Rule} REST model.
+     * @param restRuleModel
+     *            {@link Rule} REST model.
      * @return The rule service POJO.
      */
     @Override
@@ -145,8 +150,7 @@ public class RestRuleModelMapper implements RestModelMapper<Rule, org.alfresco.s
         serviceRule.setAction(actionMapper.toServiceModel(restRuleModel.getActions()));
         if (restRuleModel.getErrorScript() != null)
         {
-            final org.alfresco.service.cmr.action.Action compensatingAction =
-                    new ActionImpl(null, GUID.generate(), ScriptActionExecuter.NAME);
+            final org.alfresco.service.cmr.action.Action compensatingAction = new ActionImpl(null, GUID.generate(), ScriptActionExecuter.NAME);
             final Map<String, Serializable> scriptParam = actionParameterConverter
                     .getConvertedParams(Map.of(ScriptActionExecuter.PARAM_SCRIPTREF, restRuleModel.getErrorScript()),
                             compensatingAction.getActionDefinitionName());

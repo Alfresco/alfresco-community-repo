@@ -39,17 +39,17 @@ public class LogAdapterTest
 {
     @Mock
     Log log;
-    
+
     LogAdapter adapter;
-    
+
     Throwable throwable;
 
     @Before
     public void setUp() throws Exception
     {
         MockitoAnnotations.initMocks(this);
-        
-        adapter = new LogAdapter(log) { };
+
+        adapter = new LogAdapter(log) {};
         throwable = new Exception();
     }
 
@@ -60,10 +60,10 @@ public class LogAdapterTest
         adapter.trace("", throwable);
         verify(log).trace("", null);
         verify(log).trace("", throwable);
-        
+
         when(log.isTraceEnabled()).thenReturn(true);
         assertTrue("", adapter.isTraceEnabled());
-        
+
         when(log.isTraceEnabled()).thenReturn(false);
         assertFalse("", adapter.isTraceEnabled());
     }
@@ -75,10 +75,10 @@ public class LogAdapterTest
         adapter.debug("", throwable);
         verify(log).debug("", null);
         verify(log).debug("", throwable);
-        
+
         when(log.isDebugEnabled()).thenReturn(true);
         assertTrue("", adapter.isDebugEnabled());
-        
+
         when(log.isDebugEnabled()).thenReturn(false);
         assertFalse("", adapter.isDebugEnabled());
     }
@@ -90,10 +90,10 @@ public class LogAdapterTest
         adapter.info("", throwable);
         verify(log).info("", null);
         verify(log).info("", throwable);
-        
+
         when(log.isInfoEnabled()).thenReturn(true);
         assertTrue("", adapter.isInfoEnabled());
-        
+
         when(log.isInfoEnabled()).thenReturn(false);
         assertFalse("", adapter.isInfoEnabled());
     }
@@ -105,10 +105,10 @@ public class LogAdapterTest
         adapter.warn("", throwable);
         verify(log).warn("", null);
         verify(log).warn("", throwable);
-        
+
         when(log.isWarnEnabled()).thenReturn(true);
         assertTrue("", adapter.isWarnEnabled());
-        
+
         when(log.isWarnEnabled()).thenReturn(false);
         assertFalse("", adapter.isWarnEnabled());
     }
@@ -120,10 +120,10 @@ public class LogAdapterTest
         adapter.error("", throwable);
         verify(log).error("", null);
         verify(log).error("", throwable);
-        
+
         when(log.isErrorEnabled()).thenReturn(true);
         assertTrue("", adapter.isErrorEnabled());
-        
+
         when(log.isErrorEnabled()).thenReturn(false);
         assertFalse("", adapter.isErrorEnabled());
     }
@@ -135,18 +135,18 @@ public class LogAdapterTest
         adapter.fatal("", throwable);
         verify(log).fatal("", null);
         verify(log).fatal("", throwable);
-        
+
         when(log.isFatalEnabled()).thenReturn(true);
         assertTrue("", adapter.isFatalEnabled());
-        
+
         when(log.isFatalEnabled()).thenReturn(false);
         assertFalse("", adapter.isFatalEnabled());
     }
-    
+
     @Test
     public void nullTest()
     {
-        adapter = new LogAdapter(null) { };
+        adapter = new LogAdapter(null) {};
 
         adapter.trace("");
         adapter.trace("", throwable);
@@ -172,40 +172,40 @@ public class LogAdapterTest
         verify(log, times(0)).error("", throwable);
         verify(log, times(0)).fatal("", null);
         verify(log, times(0)).fatal("", throwable);
-        
+
         when(log.isTraceEnabled()).thenReturn(true);
         assertFalse("", adapter.isTraceEnabled());
-        
+
         when(log.isTraceEnabled()).thenReturn(false);
         assertFalse("", adapter.isTraceEnabled());
-        
+
         when(log.isDebugEnabled()).thenReturn(true);
         assertFalse("", adapter.isDebugEnabled());
-        
+
         when(log.isDebugEnabled()).thenReturn(false);
         assertFalse("", adapter.isDebugEnabled());
-        
+
         when(log.isInfoEnabled()).thenReturn(true);
         assertFalse("", adapter.isInfoEnabled());
-        
+
         when(log.isInfoEnabled()).thenReturn(false);
         assertFalse("", adapter.isInfoEnabled());
-        
+
         when(log.isWarnEnabled()).thenReturn(true);
         assertFalse("", adapter.isWarnEnabled());
-        
+
         when(log.isWarnEnabled()).thenReturn(false);
         assertFalse("", adapter.isWarnEnabled());
-        
+
         when(log.isErrorEnabled()).thenReturn(true);
         assertFalse("", adapter.isErrorEnabled());
-        
+
         when(log.isErrorEnabled()).thenReturn(false);
         assertFalse("", adapter.isErrorEnabled());
-        
+
         when(log.isFatalEnabled()).thenReturn(true);
         assertFalse("", adapter.isFatalEnabled());
-        
+
         when(log.isFatalEnabled()).thenReturn(false);
         assertFalse("", adapter.isFatalEnabled());
     }

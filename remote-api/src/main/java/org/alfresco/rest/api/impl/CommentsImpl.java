@@ -25,6 +25,17 @@
  */
 package org.alfresco.rest.api.impl;
 
+import static org.alfresco.rest.api.People.PARAM_INCLUDE_ASPECTNAMES;
+import static org.alfresco.rest.api.People.PARAM_INCLUDE_PROPERTIES;
+
+import java.io.Serializable;
+import java.util.AbstractList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -47,17 +58,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TypeConstraint;
 
-import java.io.Serializable;
-import java.util.AbstractList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static org.alfresco.rest.api.People.PARAM_INCLUDE_ASPECTNAMES;
-import static org.alfresco.rest.api.People.PARAM_INCLUDE_PROPERTIES;
-
 /**
  * Centralises access to comment services and maps between representations.
  * 
@@ -66,161 +66,163 @@ import static org.alfresco.rest.api.People.PARAM_INCLUDE_PROPERTIES;
  */
 public class CommentsImpl implements Comments
 {
-	private static final List<String> INCLUDE_FULL_PERSON = Arrays.asList(
-			PARAM_INCLUDE_ASPECTNAMES,
-			PARAM_INCLUDE_PROPERTIES);
-	private Nodes nodes;
+    private static final List<String> INCLUDE_FULL_PERSON = Arrays.asList(
+            PARAM_INCLUDE_ASPECTNAMES,
+            PARAM_INCLUDE_PROPERTIES);
+    private Nodes nodes;
     private NodeService nodeService;
     private CommentService commentService;
     private ContentService contentService;
     private TypeConstraint typeConstraint;
-	private People people;
+    private People people;
 
-	public void setTypeConstraint(TypeConstraint typeConstraint)
-	{
-		this.typeConstraint = typeConstraint;
-	}
+    public void setTypeConstraint(TypeConstraint typeConstraint)
+    {
+        this.typeConstraint = typeConstraint;
+    }
 
-	public void setNodes(Nodes nodes)
-	{
-		this.nodes = nodes;
-	}
-    
-	public void setNodeService(NodeService nodeService)
+    public void setNodes(Nodes nodes)
+    {
+        this.nodes = nodes;
+    }
+
+    public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-	
-	public void setCommentService(CommentService commentService)
-	{
-		this.commentService = commentService;
-	}
 
-	public void setContentService(ContentService contentService)
-	{
-		this.contentService = contentService;
-	}
+    public void setCommentService(CommentService commentService)
+    {
+        this.commentService = commentService;
+    }
 
-	public void setPeople(People people)
-	{
-		this.people = people;
-	}
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
+    }
 
-	private Comment toComment(NodeRef nodeRef, NodeRef commentNodeRef, List<String> include)
+    public void setPeople(People people)
+    {
+        this.people = people;
+    }
+
+    private Comment toComment(NodeRef nodeRef, NodeRef commentNodeRef, List<String> include)
     {
         Map<QName, Serializable> nodeProps = nodeService.getProperties(commentNodeRef);
 
         ContentReader reader = contentService.getReader(commentNodeRef, ContentModel.PROP_CONTENT);
-        if(reader != null)
+        if (reader != null)
         {
-	        String content = reader.getContentString();
-	        nodeProps.put(Comment.PROP_COMMENT_CONTENT, content);
-	        nodeProps.remove(ContentModel.PROP_CONTENT);
+            String content = reader.getContentString();
+            nodeProps.put(Comment.PROP_COMMENT_CONTENT, content);
+            nodeProps.remove(ContentModel.PROP_CONTENT);
         }
-
 
         Map<String, Boolean> map = commentService.getCommentPermissions(nodeRef, commentNodeRef);
         boolean canEdit = map.get(CommentService.CAN_EDIT);
-        boolean canDelete =  map.get(CommentService.CAN_DELETE);
+        boolean canDelete = map.get(CommentService.CAN_DELETE);
 
-		Person createdBy;
-        try {
-			createdBy = people.getPerson((String) nodeProps.get(ContentModel.PROP_CREATOR), include);
-		} catch (EntityNotFoundException enfe){
-        	createdBy = new Person();
-        	createdBy.setUserName((String) nodeProps.get(ContentModel.PROP_CREATOR));
-		}
-		nodeProps.put(Comment.PROP_COMMENT_CREATED_BY, createdBy);
+        Person createdBy;
+        try
+        {
+            createdBy = people.getPerson((String) nodeProps.get(ContentModel.PROP_CREATOR), include);
+        }
+        catch (EntityNotFoundException enfe)
+        {
+            createdBy = new Person();
+            createdBy.setUserName((String) nodeProps.get(ContentModel.PROP_CREATOR));
+        }
+        nodeProps.put(Comment.PROP_COMMENT_CREATED_BY, createdBy);
 
-		Person modifiedBy;
-		try {
-			modifiedBy = people.getPerson((String) nodeProps.get(ContentModel.PROP_MODIFIER), include);
-		} catch (EntityNotFoundException enfe)
-		{
-			modifiedBy = new Person();
-			modifiedBy.setUserName((String) nodeProps.get(ContentModel.PROP_MODIFIER));
-		}
-		nodeProps.put(Comment.PROP_COMMENT_MODIFIED_BY, modifiedBy);
+        Person modifiedBy;
+        try
+        {
+            modifiedBy = people.getPerson((String) nodeProps.get(ContentModel.PROP_MODIFIER), include);
+        }
+        catch (EntityNotFoundException enfe)
+        {
+            modifiedBy = new Person();
+            modifiedBy.setUserName((String) nodeProps.get(ContentModel.PROP_MODIFIER));
+        }
+        nodeProps.put(Comment.PROP_COMMENT_MODIFIED_BY, modifiedBy);
 
-		Comment comment = new Comment(commentNodeRef.getId(), nodeProps, canEdit, canDelete);
+        Comment comment = new Comment(commentNodeRef.getId(), nodeProps, canEdit, canDelete);
         return comment;
     }
-    
+
     public Comment createComment(String nodeId, Comment comment)
     {
-		NodeRef nodeRef = nodes.validateNode(nodeId);
+        NodeRef nodeRef = nodes.validateNode(nodeId);
 
-		if(!typeConstraint.matches(nodeRef))
-		{
-			throw new UnsupportedResourceOperationException("Cannot comment on this node");
-		}
+        if (!typeConstraint.matches(nodeRef))
+        {
+            throw new UnsupportedResourceOperationException("Cannot comment on this node");
+        }
 
-		try
-		{
-	        NodeRef commentNode = commentService.createComment(nodeRef, comment.getTitle(), comment.getContent(), false);
-	        return toComment(nodeRef, commentNode, INCLUDE_FULL_PERSON);
-	    }
-	    catch(IllegalArgumentException e)
-	    {
-	    	throw new InvalidArgumentException(e.getMessage());
-	    }
+        try
+        {
+            NodeRef commentNode = commentService.createComment(nodeRef, comment.getTitle(), comment.getContent(), false);
+            return toComment(nodeRef, commentNode, INCLUDE_FULL_PERSON);
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new InvalidArgumentException(e.getMessage());
+        }
     }
 
     public Comment updateComment(String nodeId, Comment comment)
     {
-    	try
-    	{
-	    	NodeRef nodeRef = nodes.validateNode(nodeId);
-	    	String commentNodeId = comment.getId();
-			NodeRef commentNodeRef = nodes.validateNode(commentNodeId);
-			
-			String title = comment.getTitle();
-			String content = comment.getContent();
-			
-			if(content == null)
-			{
-				throw new InvalidArgumentException();
-			}
-            
+        try
+        {
+            NodeRef nodeRef = nodes.validateNode(nodeId);
+            String commentNodeId = comment.getId();
+            NodeRef commentNodeRef = nodes.validateNode(commentNodeId);
+
+            String title = comment.getTitle();
+            String content = comment.getContent();
+
+            if (content == null)
+            {
+                throw new InvalidArgumentException();
+            }
+
             commentService.updateComment(commentNodeRef, title, content);
-	        return toComment(nodeRef, commentNodeRef, INCLUDE_FULL_PERSON);
-		}
-		catch(IllegalArgumentException e)
-		{
-			throw new ConstraintViolatedException(e.getMessage());
-		}
+            return toComment(nodeRef, commentNodeRef, INCLUDE_FULL_PERSON);
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new ConstraintViolatedException(e.getMessage());
+        }
     }
 
     public CollectionWithPagingInfo<Comment> getComments(String nodeId, Paging paging, List<String> include)
     {
-		final NodeRef nodeRef = nodes.validateNode(nodeId);
-        
+        final NodeRef nodeRef = nodes.validateNode(nodeId);
+
         /* MNT-10536 : fix */
-        final Set<QName> contentAndFolders = 
-                new HashSet<>(Arrays.asList(ContentModel.TYPE_FOLDER, ContentModel.TYPE_CONTENT));
+        final Set<QName> contentAndFolders = new HashSet<>(Arrays.asList(ContentModel.TYPE_FOLDER, ContentModel.TYPE_CONTENT));
         if (!nodes.nodeMatches(nodeRef, contentAndFolders, null))
         {
             throw new InvalidArgumentException("NodeId of folder or content is expected");
         }
 
-    	PagingRequest pagingRequest = Util.getPagingRequest(paging);
+        PagingRequest pagingRequest = Util.getPagingRequest(paging);
         final PagingResults<NodeRef> pagingResults = commentService.listComments(nodeRef, pagingRequest);
-        
-		final List<NodeRef> page = pagingResults.getPage();
-		List<Comment> comments = new AbstractList<>()
-		{
-			@Override
-			public Comment get(int index)
-			{
-				return toComment(nodeRef, page.get(index), include);
-			}
 
-			@Override
-			public int size()
-			{
-				return page.size();
-			}
-		};
+        final List<NodeRef> page = pagingResults.getPage();
+        List<Comment> comments = new AbstractList<>() {
+            @Override
+            public Comment get(int index)
+            {
+                return toComment(nodeRef, page.get(index), include);
+            }
+
+            @Override
+            public int size()
+            {
+                return page.size();
+            }
+        };
 
         return CollectionWithPagingInfo.asPaged(paging, comments, pagingResults.hasMoreItems(), pagingResults.getTotalResultCount().getFirst());
     }
@@ -228,21 +230,21 @@ public class CommentsImpl implements Comments
     @Override
     public void deleteComment(String nodeId, String commentNodeId)
     {
-    	try
-    	{
+        try
+        {
             NodeRef nodeRef = nodes.validateNode(nodeId);
-	        NodeRef commentNodeRef = nodes.validateNode(commentNodeId);
-            
-            if (! nodeRef.equals(commentService.getDiscussableAncestor(commentNodeRef)))
+            NodeRef commentNodeRef = nodes.validateNode(commentNodeId);
+
+            if (!nodeRef.equals(commentService.getDiscussableAncestor(commentNodeRef)))
             {
-                throw new InvalidArgumentException("Unexpected "+nodeId+","+commentNodeId);
+                throw new InvalidArgumentException("Unexpected " + nodeId + "," + commentNodeId);
             }
-            
+
             commentService.deleteComment(commentNodeRef);
-		}
-		catch(IllegalArgumentException e)
-		{
-			throw new ConstraintViolatedException(e.getMessage());
-		}
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new ConstraintViolatedException(e.getMessage());
+        }
     }
 }

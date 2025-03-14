@@ -27,14 +27,15 @@ package org.alfresco.repo.management.subsystems;
 
 import java.io.IOException;
 import java.util.Arrays;
-import org.alfresco.util.PortUtil;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+import org.alfresco.util.PortUtil;
+
 /**
- * "Early" checker for Port property value (checks for "null/empty", "out-of-bounds", "unable-to-parse", "already-in-use" problems).
- * Also see the implemented interface {@link SubsystemEarlyPropertyChecker}
+ * "Early" checker for Port property value (checks for "null/empty", "out-of-bounds", "unable-to-parse", "already-in-use" problems). Also see the implemented interface {@link SubsystemEarlyPropertyChecker}
  * 
  * @author abalmus
  */
@@ -50,32 +51,41 @@ public class PortEarlyPropertyChecker implements SubsystemEarlyPropertyChecker
     private static final String UNKNOWN_OR_WRONG_HOST_MESSAGE = "system.portcheck.err.unknown_or_wrong_host";
     private static final String NETWORKING_ERROR_MESSAGE = "system.portcheck.err.networking_error";
     private static final String PORTS_WITH_NETWORKING_ERRORS_MESSAGE = "system.portcheck.err.ports_with_networking_errors";
-    
+
     private static final Log logger = LogFactory.getLog(PortEarlyPropertyChecker.class);
 
     private final String subsystemName;
     private final String requiredPairedPropertyName;
-    
+
     private final boolean hasMultiplePorts;
     private final boolean shouldCheckForBlockedPort;
 
     /**
      * Create a new {@link PortEarlyPropertyChecker} w/o a paired property name.
-     * @param subsystemName Name of the subsystem; used for custom error messages.
-     * @param hasMultiplePorts Specify if the property value that will be checked is a list of ports (they must be separated by ",").
-     * @param shouldCheckForBlockedPort Enable/disable checking for port-already-in-use (i.e.: disable this for remote ports).
+     * 
+     * @param subsystemName
+     *            Name of the subsystem; used for custom error messages.
+     * @param hasMultiplePorts
+     *            Specify if the property value that will be checked is a list of ports (they must be separated by ",").
+     * @param shouldCheckForBlockedPort
+     *            Enable/disable checking for port-already-in-use (i.e.: disable this for remote ports).
      */
     public PortEarlyPropertyChecker(String subsystemName, boolean hasMultiplePorts, boolean shouldCheckForBlockedPort)
     {
         this(subsystemName, null, hasMultiplePorts, shouldCheckForBlockedPort);
     }
-    
+
     /**
      * Create a new {@link PortEarlyPropertyChecker}.
-     * @param subsystemName Name of the subsystem; used for custom error messages.
-     * @param requiredPairedPropertyName Name of the required paired property (see {@link SubsystemEarlyPropertyChecker#getPairedPropertyName()}).
-     * @param hasMultiplePorts Specify if the property value that will be checked is a list of ports (they must be separated by ",").
-     * @param shouldCheckForBlockedPort Enable/disable checking for port-already-in-use (i.e.: disable this for remote ports).
+     * 
+     * @param subsystemName
+     *            Name of the subsystem; used for custom error messages.
+     * @param requiredPairedPropertyName
+     *            Name of the required paired property (see {@link SubsystemEarlyPropertyChecker#getPairedPropertyName()}).
+     * @param hasMultiplePorts
+     *            Specify if the property value that will be checked is a list of ports (they must be separated by ",").
+     * @param shouldCheckForBlockedPort
+     *            Enable/disable checking for port-already-in-use (i.e.: disable this for remote ports).
      */
     public PortEarlyPropertyChecker(String subsystemName, String requiredPairedPropertyName, boolean hasMultiplePorts, boolean shouldCheckForBlockedPort)
     {
@@ -87,17 +97,22 @@ public class PortEarlyPropertyChecker implements SubsystemEarlyPropertyChecker
 
     /**
      * Implementation of checkPropertyValue() method for port checking.
-     * @param propertyName Name of the property.
-     * @param propertyValue Port value; if this contains multiple ports they must be separated by ",".
-     * @param pairedPropertyValue - Value of the paired property
-     * @throws InvalidPropertyValueException Raised if any of the checks fail.
+     * 
+     * @param propertyName
+     *            Name of the property.
+     * @param propertyValue
+     *            Port value; if this contains multiple ports they must be separated by ",".
+     * @param pairedPropertyValue
+     *            - Value of the paired property
+     * @throws InvalidPropertyValueException
+     *             Raised if any of the checks fail.
      */
     @Override
     public void checkPropertyValue(String propertyName, String propertyValue, String pairedPropertyValue) throws InvalidPropertyValueException
     {
         if (propertyValue == null || propertyValue.isEmpty())
         {
-            createLogAndThrowAnInvalidPropertyValueException(PORT_CANT_BE_EMPTY_MESSAGE, new String[] { subsystemName });
+            createLogAndThrowAnInvalidPropertyValueException(PORT_CANT_BE_EMPTY_MESSAGE, new String[]{subsystemName});
         }
 
         String host = pairedPropertyValue;
@@ -110,7 +125,7 @@ public class PortEarlyPropertyChecker implements SubsystemEarlyPropertyChecker
 
                 if (portNumber < 1 || portNumber > 65535)
                 {
-                    createLogAndThrowAnInvalidPropertyValueException(PORT_OUT_OF_BOUNDS_MESSAGE, new String[] { subsystemName, "" + portNumber });
+                    createLogAndThrowAnInvalidPropertyValueException(PORT_OUT_OF_BOUNDS_MESSAGE, new String[]{subsystemName, "" + portNumber});
                 }
                 else if (shouldCheckForBlockedPort)
                 {
@@ -124,22 +139,22 @@ public class PortEarlyPropertyChecker implements SubsystemEarlyPropertyChecker
                         {
                             if (host == null || "0.0.0.0".equals(host))
                             {
-                                createLogAndThrowAnInvalidPropertyValueException(PORT_IN_USE_MESSAGE, new String[] { subsystemName, "" + portNumber });
+                                createLogAndThrowAnInvalidPropertyValueException(PORT_IN_USE_MESSAGE, new String[]{subsystemName, "" + portNumber});
                             }
                             else
                             {
-                                createLogAndThrowAnInvalidPropertyValueException(HOST_PORT_IN_USE_MESSAGE, new String[] { subsystemName, host,
-                                        "" + portNumber });
+                                createLogAndThrowAnInvalidPropertyValueException(HOST_PORT_IN_USE_MESSAGE, new String[]{subsystemName, host,
+                                        "" + portNumber});
                             }
                         }
                         else if (host != null && ioe instanceof java.net.UnknownHostException)
                         {
-                            createLogAndThrowAnInvalidPropertyValueException(UNKNOWN_OR_WRONG_HOST_MESSAGE, new String[] { subsystemName, "" + host });
+                            createLogAndThrowAnInvalidPropertyValueException(UNKNOWN_OR_WRONG_HOST_MESSAGE, new String[]{subsystemName, "" + host});
                         }
                         else
                         {
                             createLogAndThrowAnInvalidPropertyValueException(NETWORKING_ERROR_MESSAGE,
-                                    new String[] { subsystemName, ioe.getLocalizedMessage() });
+                                    new String[]{subsystemName, ioe.getLocalizedMessage()});
                         }
                     }
                 }
@@ -185,23 +200,23 @@ public class PortEarlyPropertyChecker implements SubsystemEarlyPropertyChecker
 
                 if (!portsOutOfBounds.equals(""))
                 {
-                    String portsOutOfBoundsDisplayMessage = resolveMessage(PORTS_OUT_OF_BOUNDS_MESSAGE, new String[] { subsystemName,
-                            portsOutOfBounds });
+                    String portsOutOfBoundsDisplayMessage = resolveMessage(PORTS_OUT_OF_BOUNDS_MESSAGE, new String[]{subsystemName,
+                            portsOutOfBounds});
 
                     completeErrorDisplayMessage += portsOutOfBoundsDisplayMessage;
                 }
 
                 if (!portsInUse.equals(""))
                 {
-                    String portsInUseDisplayMessage = resolveMessage(PORTS_IN_USE_MESSAGE, new String[] { subsystemName, portsInUse });
+                    String portsInUseDisplayMessage = resolveMessage(PORTS_IN_USE_MESSAGE, new String[]{subsystemName, portsInUse});
 
                     completeErrorDisplayMessage = appendToErrorString(completeErrorDisplayMessage, " | ", portsInUseDisplayMessage);
                 }
 
                 if (!portsWithNetworkingErrors.equals(""))
                 {
-                    String portsWithNetworkingErrorsDisplayMessage = resolveMessage(PORTS_WITH_NETWORKING_ERRORS_MESSAGE, new String[] {
-                            subsystemName, portsWithNetworkingErrors });
+                    String portsWithNetworkingErrorsDisplayMessage = resolveMessage(PORTS_WITH_NETWORKING_ERRORS_MESSAGE, new String[]{
+                            subsystemName, portsWithNetworkingErrors});
 
                     completeErrorDisplayMessage = appendToErrorString(completeErrorDisplayMessage, " | ", portsWithNetworkingErrorsDisplayMessage);
                 }
@@ -219,7 +234,7 @@ public class PortEarlyPropertyChecker implements SubsystemEarlyPropertyChecker
         }
         catch (NumberFormatException nfe)
         {
-            createLogAndThrowAnInvalidPropertyValueException(UNABLE_TO_PARSE_PORT_MESSAGE, new String[] { subsystemName, propertyValue });
+            createLogAndThrowAnInvalidPropertyValueException(UNABLE_TO_PARSE_PORT_MESSAGE, new String[]{subsystemName, propertyValue});
         }
     }
 

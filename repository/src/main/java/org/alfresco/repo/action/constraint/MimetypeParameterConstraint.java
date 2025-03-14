@@ -39,27 +39,27 @@ public class MimetypeParameterConstraint extends BaseParameterConstraint
 {
     /** Name constant */
     public static final String NAME = "ac-mimetypes";
-    
+
     /** Mimetype map */
     private MimetypeMap mimetypeMap;
-    
+
     /**
      * Sets the mimetype map
      * 
-     * @param mimetypeMap MimetypeMap
+     * @param mimetypeMap
+     *            MimetypeMap
      */
     public void setMimetypeMap(MimetypeMap mimetypeMap)
     {
         this.mimetypeMap = mimetypeMap;
     }
-          
+
     /**
      * @see org.alfresco.service.cmr.action.ParameterConstraint#getAllowableValues()
      */
     protected Map<String, String> getAllowableValuesImpl()
-    {                  
-        return mimetypeMap.getDisplaysByMimetype();        
-    }    
-    
-    
+    {
+        return mimetypeMap.getDisplaysByMimetype();
+    }
+
 }

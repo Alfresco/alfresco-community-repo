@@ -45,7 +45,7 @@ public class Descendant extends BaseFunction
     public final static String NAME = "Descendant";
 
     public final static String ARG_ANCESTOR = "Ancestor";
-    
+
     public final static String ARG_SELECTOR = "Selector";
 
     public static LinkedHashMap<String, ArgumentDefinition> args;
@@ -62,11 +62,9 @@ public class Descendant extends BaseFunction
         super(NAME, DataTypeDefinition.BOOLEAN, args);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Function#getValue(java.util.Set)
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Function#getValue(java.util.Set) */
     public Serializable getValue(Map<String, Argument> args, FunctionEvaluationContext context)
     {
         throw new UnsupportedOperationException();

@@ -25,6 +25,16 @@
  */
 package org.alfresco.repo.rendition2;
 
+import static org.alfresco.model.ContentModel.PROP_CONTENT;
+import static org.alfresco.transform.common.RequestParamMap.DIRECT_ACCESS_URL;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.repo.content.transform.LocalTransform;
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
 import org.alfresco.repo.content.transform.UnsupportedTransformationException;
@@ -35,15 +45,6 @@ import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.transform.config.CoreFunction;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.alfresco.model.ContentModel.PROP_CONTENT;
-import static org.alfresco.transform.common.RequestParamMap.DIRECT_ACCESS_URL;
 
 /**
  * Request synchronous transforms.
@@ -86,7 +87,7 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
 
     @Override
     public boolean isSupported(String sourceMimetype, long sourceSizeInBytes, String contentUrl, String targetMimetype,
-                               Map<String, String> actualOptions, String transformName, NodeRef sourceNodeRef)
+            Map<String, String> actualOptions, String transformName, NodeRef sourceNodeRef)
     {
         String renditionName = TransformDefinition.convertToRenditionName(transformName);
         LocalTransform transform = localTransformServiceRegistry.getLocalTransform(sourceMimetype,
@@ -102,7 +103,7 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
 
     @Override
     public void transform(ContentReader reader, ContentWriter writer, Map<String, String> actualOptions,
-                          String transformName, NodeRef sourceNodeRef)
+            String transformName, NodeRef sourceNodeRef)
     {
         String renditionName = TransformDefinition.convertToRenditionName(transformName);
         try
@@ -113,7 +114,7 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
             }
             if (!reader.exists())
             {
-                throw new IllegalArgumentException("sourceNodeRef "+sourceNodeRef+" has no content.");
+                throw new IllegalArgumentException("sourceNodeRef " + sourceNodeRef + " has no content.");
             }
 
             String sourceMimetype = reader.getMimetype();
@@ -135,7 +136,7 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
             if (transform == null)
             {
                 throw new UnsupportedTransformationException("Transformation of " + sourceMimetype +
-                        (sourceSizeInBytes > 0 ? " size "+sourceSizeInBytes : "")+ " to " + targetMimetype +
+                        (sourceSizeInBytes > 0 ? " size " + sourceSizeInBytes : "") + " to " + targetMimetype +
                         " unsupported");
             }
 
@@ -163,11 +164,11 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
     }
 
     private Map<String, String> addDirectAccessUrlToOptionsIfPossible(Map<String, String> actualOptions,
-                                                                      NodeRef sourceNodeRef, LocalTransform transform)
+            NodeRef sourceNodeRef, LocalTransform transform)
     {
         if (directAccessUrlEnabled &&
-            localTransformServiceRegistry.isSupported(CoreFunction.DIRECT_ACCESS_URL, transform) &&
-            contentService.isContentDirectUrlEnabled(sourceNodeRef, PROP_CONTENT))
+                localTransformServiceRegistry.isSupported(CoreFunction.DIRECT_ACCESS_URL, transform) &&
+                contentService.isContentDirectUrlEnabled(sourceNodeRef, PROP_CONTENT))
         {
             DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(sourceNodeRef, PROP_CONTENT, true);
             actualOptions = new HashMap<>(actualOptions);

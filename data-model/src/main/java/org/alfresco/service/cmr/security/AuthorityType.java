@@ -25,42 +25,38 @@
  */
 package org.alfresco.service.cmr.security;
 
-
-
 import org.alfresco.api.AlfrescoPublicApi;
 
-
-
 /**
-
- * The types of authority that are available.
-
- * <p>
-
- * </p>
-
- * Available types are:
-
- * <ol>
-
- * <li>USER - an authority that identifies a user
-
- * <li>GROUP - an authority that identifies a group
-
- * <li>OWNER - the special authority that applies to the owner of a node
-
- * <li>EVERYONE - the special authority that is interpreted as everyone
-
- * <li>GUEST - the special authority that applies to a GUEST (An unknown, unauthenticated user)
-
- * <li>WILDCARD - the set of all authorities (including the guest user)
-
- * </ol>
-
  * 
-
+ * The types of authority that are available.
+ * 
+ * <p>
+ * 
+ * </p>
+ * 
+ * Available types are:
+ * 
+ * <ol>
+ * 
+ * <li>USER - an authority that identifies a user
+ * 
+ * <li>GROUP - an authority that identifies a group
+ * 
+ * <li>OWNER - the special authority that applies to the owner of a node
+ * 
+ * <li>EVERYONE - the special authority that is interpreted as everyone
+ * 
+ * <li>GUEST - the special authority that applies to a GUEST (An unknown, unauthenticated user)
+ * 
+ * <li>WILDCARD - the set of all authorities (including the guest user)
+ * 
+ * </ol>
+ * 
+ * 
+ * 
  * @author Andy Hind
-
+ * 
  */
 
 @AlfrescoPublicApi
@@ -81,8 +77,6 @@ public enum AuthorityType
 
         }
 
-
-
         public String getFixedString()
 
         {
@@ -90,8 +84,6 @@ public enum AuthorityType
             return PermissionService.ADMINISTRATOR_AUTHORITY;
 
         }
-
-
 
         public boolean isPrefixed()
 
@@ -101,8 +93,6 @@ public enum AuthorityType
 
         }
 
-
-
         public String getPrefixString()
 
         {
@@ -110,8 +100,6 @@ public enum AuthorityType
             return "";
 
         }
-
-
 
         public int getOrderPosition()
 
@@ -122,8 +110,6 @@ public enum AuthorityType
         }
 
     },
-
-
 
     EVERYONE
 
@@ -137,8 +123,6 @@ public enum AuthorityType
 
         }
 
-
-
         public String getFixedString()
 
         {
@@ -146,8 +130,6 @@ public enum AuthorityType
             return PermissionService.ALL_AUTHORITIES;
 
         }
-
-
 
         public boolean isPrefixed()
 
@@ -157,8 +139,6 @@ public enum AuthorityType
 
         }
 
-
-
         public String getPrefixString()
 
         {
@@ -166,8 +146,6 @@ public enum AuthorityType
             return "";
 
         }
-
-
 
         public int getOrderPosition()
 
@@ -191,8 +169,6 @@ public enum AuthorityType
 
         }
 
-
-
         public String getFixedString()
 
         {
@@ -200,8 +176,6 @@ public enum AuthorityType
             return PermissionService.OWNER_AUTHORITY;
 
         }
-
-
 
         public boolean isPrefixed()
 
@@ -211,8 +185,6 @@ public enum AuthorityType
 
         }
 
-
-
         public String getPrefixString()
 
         {
@@ -220,8 +192,6 @@ public enum AuthorityType
             return "";
 
         }
-
-
 
         public int getOrderPosition()
 
@@ -245,8 +215,6 @@ public enum AuthorityType
 
         }
 
-
-
         public String getFixedString()
 
         {
@@ -254,8 +222,6 @@ public enum AuthorityType
             return PermissionService.GUEST_AUTHORITY;
 
         }
-
-
 
         public boolean isPrefixed()
 
@@ -265,8 +231,6 @@ public enum AuthorityType
 
         }
 
-
-
         public String getPrefixString()
 
         {
@@ -274,8 +238,6 @@ public enum AuthorityType
             return "";
 
         }
-
-
 
         public int getOrderPosition()
 
@@ -299,8 +261,6 @@ public enum AuthorityType
 
         }
 
-
-
         public String getFixedString()
 
         {
@@ -308,8 +268,6 @@ public enum AuthorityType
             return "";
 
         }
-
-
 
         public boolean isPrefixed()
 
@@ -319,8 +277,6 @@ public enum AuthorityType
 
         }
 
-
-
         public String getPrefixString()
 
         {
@@ -328,8 +284,6 @@ public enum AuthorityType
             return PermissionService.GROUP_PREFIX;
 
         }
-
-
 
         public int getOrderPosition()
 
@@ -345,8 +299,6 @@ public enum AuthorityType
 
     {
 
-
-
         public boolean isFixedString()
 
         {
@@ -354,8 +306,6 @@ public enum AuthorityType
             return false;
 
         }
-
-
 
         public String getFixedString()
 
@@ -365,8 +315,6 @@ public enum AuthorityType
 
         }
 
-
-
         public boolean isPrefixed()
 
         {
@@ -375,8 +323,6 @@ public enum AuthorityType
 
         }
 
-
-
         public String getPrefixString()
 
         {
@@ -384,8 +330,6 @@ public enum AuthorityType
             return PermissionService.ROLE_PREFIX;
 
         }
-
-
 
         public int getOrderPosition()
 
@@ -409,8 +353,6 @@ public enum AuthorityType
 
         }
 
-
-
         public String getFixedString()
 
         {
@@ -418,8 +360,6 @@ public enum AuthorityType
             return "";
 
         }
-
-
 
         public boolean isPrefixed()
 
@@ -429,8 +369,6 @@ public enum AuthorityType
 
         }
 
-
-
         public String getPrefixString()
 
         {
@@ -438,8 +376,6 @@ public enum AuthorityType
             return "";
 
         }
-
-
 
         public int getOrderPosition()
 
@@ -463,8 +399,6 @@ public enum AuthorityType
 
         }
 
-
-
         public String getFixedString()
 
         {
@@ -472,8 +406,6 @@ public enum AuthorityType
             return "";
 
         }
-
-
 
         public boolean isPrefixed()
 
@@ -483,8 +415,6 @@ public enum AuthorityType
 
         }
 
-
-
         public String getPrefixString()
 
         {
@@ -492,8 +422,6 @@ public enum AuthorityType
             return "";
 
         }
-
-
 
         public int getOrderPosition()
 
@@ -505,27 +433,15 @@ public enum AuthorityType
 
     };
 
-
-
     public abstract boolean isFixedString();
-
-
 
     public abstract String getFixedString();
 
-
-
     public abstract boolean isPrefixed();
-
-
 
     public abstract String getPrefixString();
 
-
-
     public abstract int getOrderPosition();
-
-
 
     public boolean equals(String authority)
 
@@ -535,17 +451,13 @@ public enum AuthorityType
 
     }
 
-
-
     public static AuthorityType getAuthorityType(String authority)
 
     {
 
         AuthorityType authorityType;
 
-
-
-        if(null == authority)
+        if (null == authority)
 
         {
 
@@ -615,11 +527,8 @@ public enum AuthorityType
 
         }
 
-
-
         return authorityType;
 
     }
 
 }
-

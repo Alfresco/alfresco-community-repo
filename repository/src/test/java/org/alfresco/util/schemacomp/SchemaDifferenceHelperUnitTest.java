@@ -25,11 +25,12 @@
  */
 package org.alfresco.util.schemacomp;
 
-import static org.alfresco.util.schemacomp.Difference.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import static org.alfresco.util.schemacomp.Difference.*;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -39,6 +40,14 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.admin.patch.AppliedPatch;
 import org.alfresco.repo.admin.patch.PatchService;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
@@ -47,13 +56,6 @@ import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.Index;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Table;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 public class SchemaDifferenceHelperUnitTest
 {
@@ -166,8 +168,7 @@ public class SchemaDifferenceHelperUnitTest
 
     private SchemaDifferenceHelper createHelper(List<SchemaUpgradeScriptPatch> upgradePatches)
     {
-        return new SchemaDifferenceHelper(dialect, patchService, upgradePatches)
-        {
+        return new SchemaDifferenceHelper(dialect, patchService, upgradePatches) {
             @Override
             protected Resource getDialectResource(String resourceUrl)
             {

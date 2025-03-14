@@ -25,6 +25,12 @@
  */
 package org.alfresco.heartbeat;
 
+import java.util.*;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.descriptor.DescriptorDAO;
@@ -32,23 +38,18 @@ import org.alfresco.repo.dictionary.CustomModelsInfo;
 import org.alfresco.service.cmr.dictionary.CustomModelService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
-
-import java.util.*;
 
 /**
  * A collector of data related to the data models being used.
  * <ul>
- *  <li>Collector ID: <b>acs.repository.usage.model</b></li>
- *  <li>Data:
- *      <ul>
- *          <li><b>numOfActiveModels:</b> Int - Number of active models. {@link CustomModelsInfo#getNumberOfActiveModels()}</li>
- *          <li><b>numOfActiveTypes:</b> Int - Number of active types. {@link CustomModelsInfo#getNumberOfActiveTypes()}</li>
- *          <li><b>numOfActiveAspects:</b> Int - Number of active aspects. {@link CustomModelsInfo#getNumberOfActiveAspects()}</li>
- *      </ul>
- *  </li>
+ * <li>Collector ID: <b>acs.repository.usage.model</b></li>
+ * <li>Data:
+ * <ul>
+ * <li><b>numOfActiveModels:</b> Int - Number of active models. {@link CustomModelsInfo#getNumberOfActiveModels()}</li>
+ * <li><b>numOfActiveTypes:</b> Int - Number of active types. {@link CustomModelsInfo#getNumberOfActiveTypes()}</li>
+ * <li><b>numOfActiveAspects:</b> Int - Number of active aspects. {@link CustomModelsInfo#getNumberOfActiveAspects()}</li>
+ * </ul>
+ * </li>
  * </ul>
  *
  * @author eknizat
@@ -68,7 +69,7 @@ public class ModelUsageDataCollector extends HBBaseDataCollector implements Init
     private TransactionService transactionService;
 
     public ModelUsageDataCollector(String collectorId, String collectorVersion, String cronExpression,
-                                   HeartBeatJobScheduler hbJobScheduler)
+            HeartBeatJobScheduler hbJobScheduler)
     {
         super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
     }

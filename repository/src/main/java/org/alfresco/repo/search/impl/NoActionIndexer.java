@@ -34,8 +34,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 
 /**
- * A no action indexer - the indexing is done automatically along with
- * persistence
+ * A no action indexer - the indexing is done automatically along with persistence
  * 
  * TODO: Rename to Adaptor?
  * 
@@ -78,7 +77,7 @@ public class NoActionIndexer implements Indexer
     {
         return;
     }
-    
+
     public void detectNodeChanges(NodeRef nodeRef, SearchService searcher,
             Collection<ChildAssociationRef> addedParents, Collection<ChildAssociationRef> deletedParents,
             Collection<ChildAssociationRef> createdNodes, Collection<NodeRef> updatedNodes)
@@ -87,8 +86,8 @@ public class NoActionIndexer implements Indexer
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.Indexer#deleteIndex(org.alfresco.service.cmr.repository.StoreRef)
-     */
+     * 
+     * @see org.alfresco.repo.search.Indexer#deleteIndex(org.alfresco.service.cmr.repository.StoreRef) */
     public void deleteIndex(StoreRef storeRef)
     {
         return;
@@ -97,5 +96,5 @@ public class NoActionIndexer implements Indexer
     public void flushPending()
     {
         return;
-    }    
+    }
 }

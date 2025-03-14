@@ -34,38 +34,26 @@ import org.alfresco.utility.model.TestModel;
  * 
  * Handles Site Entry in Site Membership Information response
  * 
- *      "entry": /{
-          "site": {
-            "id": "string",
-            "guid": "string",
-            "title": "string",
-            "description": "string",
-            "visibility": "PRIVATE",
-            "role": "SiteConsumer"
-          },
-          "id": "string",
-          "guid": "string",
-          "role": "SiteConsumer"
-        }
+ * "entry": /{ "site": { "id": "string", "guid": "string", "title": "string", "description": "string", "visibility": "PRIVATE", "role": "SiteConsumer" }, "id": "string", "guid": "string", "role": "SiteConsumer" }
  *
  */
 public class RestSiteEntry extends TestModel implements IRestModel<RestSiteEntry>
-{      
+{
     private String role;
     private String guid;
     private String id;
-    
+
     @JsonProperty(value = "site", required = true)
     RestSiteModel site;
-    
-    @JsonProperty(value= "entry")
+
+    @JsonProperty(value = "entry")
     RestSiteEntry model;
 
     public RestSiteModel onSite()
     {
         return site;
     }
-    
+
     public String getRole()
     {
         return role;
@@ -76,26 +64,30 @@ public class RestSiteEntry extends TestModel implements IRestModel<RestSiteEntry
         this.role = role;
     }
 
-    public String getGuid() {
-      return guid;
+    public String getGuid()
+    {
+        return guid;
     }
 
-    public void setGuid(String guid) {
-      this.guid = guid;
+    public void setGuid(String guid)
+    {
+        this.guid = guid;
     }
 
-    public String getId() {
-      return id;
+    public String getId()
+    {
+        return id;
     }
 
-    public void setId(String id) {
-      this.id = id;
+    public void setId(String id)
+    {
+        this.id = id;
     }
 
     @Override
-    public RestSiteEntry onModel() 
+    public RestSiteEntry onModel()
     {
-      return model;
+        return model;
     }
-    
-}    
+
+}

@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
@@ -58,7 +60,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * File plan service implementation.
@@ -67,15 +68,15 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @since 2.1
  */
 public class FilePlanServiceImpl extends ServiceBaseImpl
-                                 implements FilePlanService,
-                                            RecordsManagementModel
+        implements FilePlanService,
+        RecordsManagementModel
 {
-	/** I18N */
+    /** I18N */
     private static final String MSG_DUP_ROOT = "rm.service.dup-root";
     private static final String MSG_ROOT_TYPE = "rm.service.root-type";
     private static final String MSG_PATH_NODE = "rm.service.path-node";
     private static final String MSG_NO_ROOT = "rm.service.no-root";
-    private static final String MSG_CONTAINER_PARENT_TYPE= "rm.service.container-parent-type";
+    private static final String MSG_CONTAINER_PARENT_TYPE = "rm.service.container-parent-type";
     private static final String MSG_CONTAINER_TYPE = "rm.service.container-type";
     private static final String MSG_CONTAINER_EXPECTED = "rm.service.container-expected";
 
@@ -171,15 +172,17 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @param rootContainerCache	root container cache
+     * @param rootContainerCache
+     *            root container cache
      */
     public void setRootContainerCache(SimpleCache<Pair<NodeRef, String>, NodeRef> rootContainerCache)
     {
-		this.rootContainerCache = rootContainerCache;
-	}
+        this.rootContainerCache = rootContainerCache;
+    }
 
     /**
-     * @param rmContainerCacheManager        RM container cache manager
+     * @param rmContainerCacheManager
+     *            RM container cache manager
      *
      */
     public void setRmContainerCacheManager(RMContainerCacheManager rmContainerCacheManager)
@@ -201,8 +204,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
 
         if (!rmContainerCacheManager.isCached(storeRef))
         {
-            getNodeDAO().getNodesWithAspects(aspects, Long.MIN_VALUE, Long.MAX_VALUE, new NodeDAO.NodeRefQueryCallback()
-            {
+            getNodeDAO().getNodesWithAspects(aspects, Long.MIN_VALUE, Long.MAX_VALUE, new NodeDAO.NodeRefQueryCallback() {
                 @Override
                 public boolean handle(Pair<Long, NodeRef> nodePair)
                 {
@@ -285,16 +287,18 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     /**
      * Get the file root container for the given type.
      *
-     * @param filePlan			file plan
-     * @param containerName		container type
-     * @return {@link NodeRef}	file plan container
+     * @param filePlan
+     *            file plan
+     * @param containerName
+     *            container type
+     * @return {@link NodeRef} file plan container
      */
     private NodeRef getFilePlanRootContainer(NodeRef filePlan, String containerName)
     {
         ParameterCheck.mandatory("filePlan", filePlan);
         if (!isFilePlan(filePlan))
         {
-            throw new AlfrescoRuntimeException("Unable to get the container " + containerName  + ", because passed node is not a file plan.");
+            throw new AlfrescoRuntimeException("Unable to get the container " + containerName + ", because passed node is not a file plan.");
         }
 
         NodeRef result = null;
@@ -302,21 +306,21 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
 
         if (!rootContainerCache.contains(key))
         {
-	        // try and get the unfiled record container
-	        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ContentModel.ASSOC_CONTAINS, QName.createQName(RM_URI, containerName));
-	        if (assocs.size() > 1)
-	        {
-	            throw new AlfrescoRuntimeException("Unable to get unfiled conatiner " + containerName  + ".");
-	        }
-	        else if (assocs.size() == 1)
-	        {
-	            result = assocs.get(0).getChildRef();
-	            rootContainerCache.put(key, result);
-	        }
+            // try and get the unfiled record container
+            List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ContentModel.ASSOC_CONTAINS, QName.createQName(RM_URI, containerName));
+            if (assocs.size() > 1)
+            {
+                throw new AlfrescoRuntimeException("Unable to get unfiled conatiner " + containerName + ".");
+            }
+            else if (assocs.size() == 1)
+            {
+                result = assocs.get(0).getChildRef();
+                rootContainerCache.put(key, result);
+            }
         }
         else
         {
-        	result = rootContainerCache.get(key);
+            result = rootContainerCache.get(key);
         }
 
         return result;
@@ -372,16 +376,16 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
 
         // create the unfiled container
         NodeRef container = nodeService.createNode(
-                        filePlan,
-                        ContentModel.ASSOC_CONTAINS,
-                        QName.createQName(RM_URI, containerName),
-                        containerType,
-                        properties).getChildRef();
+                filePlan,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(RM_URI, containerName),
+                containerType,
+                properties).getChildRef();
 
         // set inheritance to false
         getPermissionService().setInheritParentPermissions(container, false);
         getPermissionService().setPermission(container, allRoles, RMPermissionModel.READ_RECORDS, true);
-        
+
         // prevent inheritance of rules
         nodeService.addAspect(container, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
 
@@ -406,7 +410,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
 
         // Check that the passed type is a sub-type of rma:filePlan
         if (!TYPE_FILE_PLAN.equals(type) &&
-            !dictionaryService.isSubClass(type, TYPE_FILE_PLAN))
+                !dictionaryService.isSubClass(type, TYPE_FILE_PLAN))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ROOT_TYPE, type.toString()));
         }
@@ -511,14 +515,14 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         // Check that the parent is a container
         QName parentType = nodeService.getType(parent);
         if (!TYPE_RECORDS_MANAGEMENT_CONTAINER.equals(parentType) &&
-            !dictionaryService.isSubClass(parentType, TYPE_RECORDS_MANAGEMENT_CONTAINER))
+                !dictionaryService.isSubClass(parentType, TYPE_RECORDS_MANAGEMENT_CONTAINER))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CONTAINER_PARENT_TYPE, parentType.toString()));
         }
 
         // Check that the the provided type is a sub-type of rm:recordCategory
         if (!TYPE_RECORD_CATEGORY.equals(type) &&
-            !dictionaryService.isSubClass(type, TYPE_RECORD_CATEGORY))
+                !dictionaryService.isSubClass(type, TYPE_RECORD_CATEGORY))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CONTAINER_TYPE, type.toString()));
         }
@@ -582,10 +586,12 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * Get contained nodes of a particular type.  If null return all.
+     * Get contained nodes of a particular type. If null return all.
      *
-     * @param container container node reference
-     * @param typeFilter type filter, null if none
+     * @param container
+     *            container node reference
+     * @param typeFilter
+     *            type filter, null if none
      * @return {@link List}<{@link NodeRef> list of contained node references
      */
     private List<NodeRef> getContained(NodeRef container, QName typeFilter, boolean deep)
@@ -606,16 +612,16 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
             NodeRef child = assoc.getChildRef();
             QName childType = nodeService.getType(child);
             if (typeFilter == null ||
-                typeFilter.equals(childType) ||
-                dictionaryService.isSubClass(childType, typeFilter))
+                    typeFilter.equals(childType) ||
+                    dictionaryService.isSubClass(childType, typeFilter))
             {
                 result.add(child);
             }
 
             // Inspect the containers and add children if deep
             if (deep &&
-                (TYPE_RECORD_CATEGORY.equals(childType) ||
-                 dictionaryService.isSubClass(childType, TYPE_RECORD_CATEGORY)))
+                    (TYPE_RECORD_CATEGORY.equals(childType) ||
+                            dictionaryService.isSubClass(childType, TYPE_RECORD_CATEGORY)))
             {
                 result.addAll(getContained(child, typeFilter, deep));
             }

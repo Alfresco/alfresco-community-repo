@@ -29,8 +29,8 @@ import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
-import org.alfresco.repo.search.impl.NoActionIndexer;
 import org.alfresco.repo.search.impl.AbstractIndexerAndSearcher;
+import org.alfresco.repo.search.impl.NoActionIndexer;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -48,7 +48,7 @@ public class SolrIndexerAndSearcherFactory extends AbstractIndexerAndSearcher
     private NamespacePrefixResolver namespacePrefixResolver;
     private NodeService nodeService;
     private QueryRegisterComponent queryRegister;
-    
+
     public DictionaryService getDictionaryService()
     {
         return dictionaryService;
@@ -89,10 +89,9 @@ public class SolrIndexerAndSearcherFactory extends AbstractIndexerAndSearcher
         this.queryRegister = queryRegister;
     }
 
-
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.IndexerAndSearcher#getIndexer(org.alfresco.service.cmr.repository.StoreRef)
-     */
+     * 
+     * @see org.alfresco.repo.search.IndexerAndSearcher#getIndexer(org.alfresco.service.cmr.repository.StoreRef) */
     @Override
     public Indexer getIndexer(StoreRef storeRef) throws IndexerException
     {
@@ -100,23 +99,23 @@ public class SolrIndexerAndSearcherFactory extends AbstractIndexerAndSearcher
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.IndexerAndSearcher#getSearcher(org.alfresco.service.cmr.repository.StoreRef, boolean)
-     */
+     * 
+     * @see org.alfresco.repo.search.IndexerAndSearcher#getSearcher(org.alfresco.service.cmr.repository.StoreRef, boolean) */
     @Override
     public SearchService getSearcher(StoreRef storeRef, boolean searchDelta) throws SearcherException
     {
-         SolrSearchService searchService = new SolrSearchService();
-         searchService.setDictionaryService(dictionaryService);
-         searchService.setNamespacePrefixResolver(namespacePrefixResolver);
-         searchService.setNodeService(nodeService);
-         searchService.setQueryLanguages(getQueryLanguages());
-         searchService.setQueryRegister(queryRegister);
-         return searchService;
+        SolrSearchService searchService = new SolrSearchService();
+        searchService.setDictionaryService(dictionaryService);
+        searchService.setNamespacePrefixResolver(namespacePrefixResolver);
+        searchService.setNodeService(nodeService);
+        searchService.setQueryLanguages(getQueryLanguages());
+        searchService.setQueryRegister(queryRegister);
+        return searchService;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.IndexerAndSearcher#flush()
-     */
+     * 
+     * @see org.alfresco.repo.search.IndexerAndSearcher#flush() */
     @Override
     public void flush()
     {

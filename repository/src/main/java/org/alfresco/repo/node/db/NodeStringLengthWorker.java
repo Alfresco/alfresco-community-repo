@@ -32,6 +32,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.quartz.Job;
+import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
 import org.alfresco.repo.batch.BatchProcessor;
@@ -51,33 +61,19 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.quartz.Job;
-import org.quartz.JobDataMap;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * <h1>Max String Length Worker</h1>
  * 
- * <h2>What it is</h2>
- * A worker for a scheduled job that checks and adjusts string storage for persisted strings in the system.
+ * <h2>What it is</h2> A worker for a scheduled job that checks and adjusts string storage for persisted strings in the system.
  * <p>
  * <h2>Settings that control the behaviour</h2>
  * <ul>
- *  <li><b>${system.maximumStringLength}</b> - the maximum length of a string that can be persisted in the *alf_node_properties.string_value* column.</li>
- *  <li><b>${system.maximumStringLength.jobQueryRange}</b> - the node ID range to query for.
- *         The process will repeat from the first to the last node, querying for up to this many nodes.
- *         Only reduce the value if the NodeDAO query takes a long time.</li>
- *  <li><b>${system.maximumStringLength.jobThreadCount}</b> - the number of threads that will handle persistence checks and changes.
- *         Increase or decrease this to allow for free CPU capacity on the machine executing the job.</li>
+ * <li><b>${system.maximumStringLength}</b> - the maximum length of a string that can be persisted in the *alf_node_properties.string_value* column.</li>
+ * <li><b>${system.maximumStringLength.jobQueryRange}</b> - the node ID range to query for. The process will repeat from the first to the last node, querying for up to this many nodes. Only reduce the value if the NodeDAO query takes a long time.</li>
+ * <li><b>${system.maximumStringLength.jobThreadCount}</b> - the number of threads that will handle persistence checks and changes. Increase or decrease this to allow for free CPU capacity on the machine executing the job.</li>
  * </ul>
- * <h2>How to use it</h2>
- * sdfsf
+ * <h2>How to use it</h2> sdfsf
  * 
  * @author Derek Hulley
  * @since 4.1.9.2
@@ -86,20 +82,20 @@ public class NodeStringLengthWorker implements ApplicationContextAware
 {
     private static final QName LOCK = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "NodeStringLengthWorker");
     private static final long LOCK_TTL = 60000L;
-    
+
     private static Log logger = LogFactory.getLog(NodeStringLengthWorker.class);
-    
+
     private final NodeDAO nodeDAO;
     private final JobLockService jobLockService;
     private final TransactionService transactionService;
     private final QNameDAO qnameDAO;
     private final BehaviourFilter behaviourFilter;
     private ApplicationContext ctx;
-    
+
     private final int queryRange;
     private final int threadCount;
     private final int batchSize;
-    
+
     public NodeStringLengthWorker(
             NodeDAO nodeDAO, JobLockService jobLockService, TransactionService transactionService, QNameDAO qnameDAO,
             BehaviourFilter behaviourFilter,
@@ -110,7 +106,7 @@ public class NodeStringLengthWorker implements ApplicationContextAware
         this.transactionService = transactionService;
         this.qnameDAO = qnameDAO;
         this.behaviourFilter = behaviourFilter;
-        
+
         this.queryRange = queryRange;
         this.threadCount = threadCount;
         this.batchSize = 100;
@@ -132,21 +128,20 @@ public class NodeStringLengthWorker implements ApplicationContextAware
     {
         // Build refresh callback
         final NodeStringLengthWorkResult progress = new NodeStringLengthWorkResult();
-        JobLockRefreshCallback lockCallback = new JobLockRefreshCallback()
-        {
+        JobLockRefreshCallback lockCallback = new JobLockRefreshCallback() {
             @Override
             public void lockReleased()
             {
                 progress.inProgress.set(false);
             }
-            
+
             @Override
             public boolean isActive()
             {
                 return progress.inProgress.get();
             }
         };
-        
+
         String lockToken = null;
         try
         {
@@ -161,7 +156,7 @@ public class NodeStringLengthWorker implements ApplicationContextAware
             {
                 logger.info("NodeStringLengthWorker: Starting");
             }
-            
+
             // Do the work
             doWork(progress);
             // Done
@@ -189,14 +184,15 @@ public class NodeStringLengthWorker implements ApplicationContextAware
             {
                 jobLockService.releaseLock(lockToken, LOCK);
             }
-            progress.inProgress.set(false);                // The background 
+            progress.inProgress.set(false); // The background
         }
         // Done
         return progress;
     }
-    
+
     /**
-     * @param progress          the thread-safe progress
+     * @param progress
+     *            the thread-safe progress
      */
     private synchronized void doWork(NodeStringLengthWorkResult progress) throws Exception
     {
@@ -205,7 +201,7 @@ public class NodeStringLengthWorker implements ApplicationContextAware
         BatchProcessWorker<NodePropertyEntity> worker = new NodeStringLengthBatch(progress);
         RetryingTransactionHelper retryingTransactionHelper = transactionService.getRetryingTransactionHelper();
         retryingTransactionHelper.setForceWritable(true);
-        
+
         BatchProcessor<NodePropertyEntity> batchProcessor = new BatchProcessor<NodePropertyEntity>(
                 "NodeStringLengthWorker",
                 retryingTransactionHelper,
@@ -217,9 +213,10 @@ public class NodeStringLengthWorker implements ApplicationContextAware
                 1000);
         batchProcessor.process(worker, true);
     }
-    
+
     /**
      * Work provider for batch job providing string properties to process
+     * 
      * @author Derek Hulley
      * @since 4.1.9.2
      */
@@ -227,13 +224,13 @@ public class NodeStringLengthWorker implements ApplicationContextAware
     {
         private final long maxNodeId;
         private final NodeStringLengthWorkResult progress;
-        
+
         private NodeStringLengthWorkProvider(NodeStringLengthWorkResult progress)
         {
             this.progress = progress;
             this.maxNodeId = nodeDAO.getMaxNodeId();
         }
-        
+
         @Override
         public int getTotalEstimatedWorkSize()
         {
@@ -255,7 +252,7 @@ public class NodeStringLengthWorker implements ApplicationContextAware
                 logger.warn("Node string length work terminating; too many errors.");
                 return Collections.emptyList();
             }
-            
+
             // Keep shifting the query window up until we get results or we hit the original max node ID
             List<NodePropertyEntity> ret = Collections.emptyList();
             while (ret.isEmpty() && progress.currentMinNodeId.get() < maxNodeId)
@@ -272,11 +269,11 @@ public class NodeStringLengthWorker implements ApplicationContextAware
                     minNodeId = progress.currentMinNodeId.addAndGet(queryRange);
                 }
                 long maxNodeId = minNodeId + queryRange;
-                
+
                 // Query for the properties
                 ret = nodeDAO.selectNodePropertiesByDataType(DataTypeDefinition.TEXT, minNodeId, maxNodeId);
             }
-            
+
             // Done
             if (logger.isDebugEnabled())
             {
@@ -285,9 +282,10 @@ public class NodeStringLengthWorker implements ApplicationContextAware
             return ret;
         }
     }
-    
+
     /**
      * Class that does the actual node manipulation to change the string storage
+     * 
      * @author Derek Hulley
      * @since 4.1.9.2
      */
@@ -296,7 +294,7 @@ public class NodeStringLengthWorker implements ApplicationContextAware
         private final int typeOrdinalText = NodePropertyValue.convertToTypeOrdinal(DataTypeDefinition.TEXT);
         private final int typeOrdinalAny = NodePropertyValue.convertToTypeOrdinal(DataTypeDefinition.ANY);
         private final NodeStringLengthWorkResult progress;
-        
+
         private NodeStringLengthBatch(NodeStringLengthWorkResult progress)
         {
             this.progress = progress;
@@ -306,14 +304,14 @@ public class NodeStringLengthWorker implements ApplicationContextAware
         public void process(NodePropertyEntity entry) throws Throwable
         {
             progress.propertiesProcessed.incrementAndGet();
-            
+
             try
             {
                 Long nodeId = entry.getNodeId();
                 NodePropertyValue prop = entry.getValue();
                 // Get the current string value
                 String text = (String) prop.getValue(DataTypeDefinition.TEXT);
-                
+
                 // Decide if the string needs changing or not
                 boolean repersist = false;
                 int persistedTypeOrdinal = prop.getPersistedType().intValue();
@@ -333,13 +331,13 @@ public class NodeStringLengthWorker implements ApplicationContextAware
                         repersist = true;
                     }
                 }
-                
+
                 // Only do any work if we need to
                 if (repersist)
                 {
                     // We do not want any behaviours associated with our transactions
                     behaviourFilter.disableBehaviour();
-                    
+
                     progress.propertiesChanged.incrementAndGet();
                     if (logger.isTraceEnabled())
                     {
@@ -375,6 +373,7 @@ public class NodeStringLengthWorker implements ApplicationContextAware
 
     /**
      * Thread-safe helper class to carry the job progress information
+     * 
      * @author Derek Hulley
      * @since 4.1.9.2
      */
@@ -385,6 +384,7 @@ public class NodeStringLengthWorker implements ApplicationContextAware
         private final AtomicInteger propertiesChanged = new AtomicInteger(0);
         private final AtomicInteger errors = new AtomicInteger(0);
         private final AtomicLong currentMinNodeId = new AtomicLong(0L);
+
         @Override
         public String toString()
         {
@@ -393,29 +393,29 @@ public class NodeStringLengthWorker implements ApplicationContextAware
             String part3 = String.format("[%2d Errors]", errors.get());
             return part1 + part2 + part3;
         }
-        
+
         public int getPropertiesProcessed()
         {
             return propertiesProcessed.get();
         }
-        
+
         public int getPropertiesChanged()
         {
             return propertiesChanged.get();
         }
-        
+
         public int getErrors()
         {
             return errors.get();
         }
     }
-    
+
     /**
      * A scheduled job that checks and adjusts string storage for persisted strings in the system.
      * <p>
-     * Job data: 
+     * Job data:
      * <ul>
-     *  <li><b>nodeStringLengthWorker</b> - The worker that performs the actual processing.</li>
+     * <li><b>nodeStringLengthWorker</b> - The worker that performs the actual processing.</li>
      * </ul>
      * 
      * @author Derek Hulley
@@ -425,7 +425,7 @@ public class NodeStringLengthWorker implements ApplicationContextAware
     public static class NodeStringLengthJob implements Job
     {
         public static final String JOB_DATA_NODE_WORKER = "nodeStringLengthWorker";
-        
+
         public void execute(JobExecutionContext context) throws JobExecutionException
         {
             JobDataMap jobData = context.getJobDetail().getJobDataMap();

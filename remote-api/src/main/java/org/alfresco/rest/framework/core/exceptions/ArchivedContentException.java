@@ -26,44 +26,43 @@
 package org.alfresco.rest.framework.core.exceptions;
 
 /**
- * Thrown when the content is archived and not readily accessible.
- * Status is <i>Precondition Failed</i> client error = 412.
+ * Thrown when the content is archived and not readily accessible. Status is <i>Precondition Failed</i> client error = 412.
  *
  * @author David Edwards
  */
-public class ArchivedContentException  extends  ApiException
+public class ArchivedContentException extends ApiException
 {
 
     public static String DEFAULT_MESSAGE_ID = "framework.exception.ArchivedContent";
 
-    public ArchivedContentException() 
+    public ArchivedContentException()
     {
         super(DEFAULT_MESSAGE_ID);
     }
 
-    public ArchivedContentException(String message) 
+    public ArchivedContentException(String message)
     {
         this(DEFAULT_MESSAGE_ID, message);
     }
 
-    private ArchivedContentException(String msgId, String message) 
+    private ArchivedContentException(String msgId, String message)
     {
         super(msgId, message);
     }
 
-    public ArchivedContentException(Throwable cause) 
+    public ArchivedContentException(Throwable cause)
     {
         this(DEFAULT_MESSAGE_ID, cause.getLocalizedMessage(), cause);
     }
-    
-    public ArchivedContentException(String message, Throwable cause) 
+
+    public ArchivedContentException(String message, Throwable cause)
     {
         this(DEFAULT_MESSAGE_ID, message, cause);
     }
-    
-    private ArchivedContentException(String msgId, String message, Throwable cause) 
+
+    private ArchivedContentException(String msgId, String message, Throwable cause)
     {
         super(msgId, message, cause);
     }
-    
+
 }

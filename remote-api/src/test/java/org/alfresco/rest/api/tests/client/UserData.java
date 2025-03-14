@@ -36,7 +36,7 @@ import java.io.Serializable;
 public class UserData implements Serializable
 {
     private static final long serialVersionUID = -4741893659787720414L;
-    
+
     public static final String FIELD_ID = "id";
     public static final String FIELD_USERNAME = "userName";
     public static final String FIELD_PASSWORD = "password";
@@ -48,17 +48,16 @@ public class UserData implements Serializable
     private String domain;
     private String password;
     private String ticket;
-    
+
     public UserData()
-    {
-    }
+    {}
 
     public String getDomain()
     {
-		return domain;
-	}
+        return domain;
+    }
 
-	public String getUserName()
+    public String getUserName()
     {
         return this.userName;
     }
@@ -67,9 +66,9 @@ public class UserData implements Serializable
     {
         this.userName = userName;
         int idx = userName.indexOf("@");
-        if(idx != -1)
+        if (idx != -1)
         {
-        	this.domain = userName.substring(idx + 1);
+            this.domain = userName.substring(idx + 1);
         }
     }
 
@@ -92,12 +91,12 @@ public class UserData implements Serializable
     {
         this.ticket = ticket;
     }
-    
+
     public String getId()
     {
         return this.id;
     }
-    
+
     public void setId(String id)
     {
         this.id = id;

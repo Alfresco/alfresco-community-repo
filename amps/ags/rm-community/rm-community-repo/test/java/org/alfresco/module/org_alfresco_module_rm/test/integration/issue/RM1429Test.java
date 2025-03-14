@@ -44,32 +44,30 @@ public class RM1429Test extends DeleteHoldTest
 {
     public void testDeleteHoldWithoutPermissionsOnChildren()
     {
-        final NodeRef hold = doTestInTransaction(new Test<NodeRef>()
-        {
-           @Override
-           public NodeRef run()
-           {
-               // Create the test hold
-               NodeRef hold = createAndCheckHold();
-               
-               // Add the user to the RM Manager role
-               filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, userName);
+        final NodeRef hold = doTestInTransaction(new Test<NodeRef>() {
+            @Override
+            public NodeRef run()
+            {
+                // Create the test hold
+                NodeRef hold = createAndCheckHold();
 
-               // Give the user filing permissions on the hold
-               permissionService.setPermission(hold, userName, RMPermissionModel.FILING, true);
+                // Add the user to the RM Manager role
+                filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, userName);
 
-               // Give the user read permissions on the record folder
-               permissionService.setPermission(rmFolder, userName, RMPermissionModel.READ_RECORDS, true);
+                // Give the user filing permissions on the hold
+                permissionService.setPermission(hold, userName, RMPermissionModel.FILING, true);
 
-               // Add record folder to the hold
-               holdService.addToHold(hold, rmFolder);
+                // Give the user read permissions on the record folder
+                permissionService.setPermission(rmFolder, userName, RMPermissionModel.READ_RECORDS, true);
 
-               return hold;
-           }
+                // Add record folder to the hold
+                holdService.addToHold(hold, rmFolder);
+
+                return hold;
+            }
         });
 
-        doTestInTransaction(new FailureTest(AlfrescoRuntimeException.class)
-        {
+        doTestInTransaction(new FailureTest(AlfrescoRuntimeException.class) {
             @Override
             public void run()
             {

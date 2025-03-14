@@ -34,8 +34,7 @@ import org.alfresco.module.org_alfresco_module_rm.capability.declarative.Capabil
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Composite capability condition implementation that required at least one of the
- * capability conditions to be true.
+ * Composite capability condition implementation that required at least one of the capability conditions to be true.
  *
  * @author Roy Wetherall
  */
@@ -45,13 +44,14 @@ public class AtLeastOneCondition extends AbstractCapabilityCondition
     private List<CapabilityCondition> conditions;
 
     /**
-     * @param conditions    capability conditions
+     * @param conditions
+     *            capability conditions
      */
     public void setConditions(List<CapabilityCondition> conditions)
     {
         this.conditions = conditions;
     }
-    
+
     /**
      * Don't use the transaction cache for the composite condition
      * 

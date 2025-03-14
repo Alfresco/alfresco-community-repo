@@ -40,25 +40,12 @@ import org.alfresco.repo.virtual.ref.VirtualProtocol;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Base implementation for virtualization rules defined using template located
- * in the content repository or in a system path. <br>
- * System paths are custom string references of a resource that can be located
- * either in the repository or in the java classpath - <b>system paths are
- * deprecated and they will be replaced by {@link Encodings#PLAIN} encoded
- * {@link Reference} strings</b>.<br>
- * Templates are programmatic or declarative definitions of the rules
- * implemented by this virtualization method.<br>
- * Supported template formats include <b>JavaScript defined templates</b> and
- * <b>JSON defined templates</b> (JSON templates are also referred as <b>vanilla
- * templates</b>). The extension present in the name of the template is used to
- * determine the nature of the template (*.js for JavaScript and *.json for
- * JSON). <br>
- * JSON templates processing is done using a configurable JavaScriot processor
- * script (actually a JavaScript template that gets an extra parameter
- * containing the JSON template) that resides in the Java class path. <br>
- * Templates are processed in order to virtualize {@link NodeRef}s using
- * {@link NewVirtualReferenceMethod} protocol reference constructor visitor.
- * <br>
+ * Base implementation for virtualization rules defined using template located in the content repository or in a system path. <br>
+ * System paths are custom string references of a resource that can be located either in the repository or in the java classpath - <b>system paths are deprecated and they will be replaced by {@link Encodings#PLAIN} encoded {@link Reference} strings</b>.<br>
+ * Templates are programmatic or declarative definitions of the rules implemented by this virtualization method.<br>
+ * Supported template formats include <b>JavaScript defined templates</b> and <b>JSON defined templates</b> (JSON templates are also referred as <b>vanilla templates</b>). The extension present in the name of the template is used to determine the nature of the template (*.js for JavaScript and *.json for JSON). <br>
+ * JSON templates processing is done using a configurable JavaScriot processor script (actually a JavaScript template that gets an extra parameter containing the JSON template) that resides in the Java class path. <br>
+ * Templates are processed in order to virtualize {@link NodeRef}s using {@link NewVirtualReferenceMethod} protocol reference constructor visitor. <br>
  * 
  * @author Bogdan Horje
  */
@@ -79,19 +66,18 @@ public abstract class TemplateVirtualizationMethod implements VirtualizationMeth
     }
 
     /**
-     * @param env the environment in which the virtualization takes place
-     * @param actualNodeRef the node that is virtualized using the given
-     *            template
-     * @param templateSystemPath system path string of the template used in
-     *            virtualizing the given NodeRef
-     * @return a {@link Reference} correspondent of the given {@link NodeRef}
-     *         according to the rules defined by the given template
+     * @param env
+     *            the environment in which the virtualization takes place
+     * @param actualNodeRef
+     *            the node that is virtualized using the given template
+     * @param templateSystemPath
+     *            system path string of the template used in virtualizing the given NodeRef
+     * @return a {@link Reference} correspondent of the given {@link NodeRef} according to the rules defined by the given template
      * @throws VirtualizationException
-     * @deprecated all template system path functionality should be replaced by
-     *             plain encoded references
+     * @deprecated all template system path functionality should be replaced by plain encoded references
      */
     protected Reference newVirtualReference(ActualEnvironment env, NodeRef actualNodeRef, String templateSystemPath)
-                throws VirtualizationException
+            throws VirtualizationException
     {
 
         final char systemToken = templateSystemPath.charAt(0);
@@ -99,52 +85,52 @@ public abstract class TemplateVirtualizationMethod implements VirtualizationMeth
         {
             // create node based reference
             return newVirtualReference(env,
-                                       actualNodeRef,
-                                       new NodeRef(templateSystemPath.substring(1)));
+                    actualNodeRef,
+                    new NodeRef(templateSystemPath.substring(1)));
         }
 
         String templateName = retrieveTemplateContentName(env,
-                                                          templateSystemPath);
+                templateSystemPath);
         if (!templateName.isEmpty())
         {
             Protocol protocol = protocolFormName(templateName);
 
             return protocol.dispatch(new NewVirtualReferenceMethod(templateSystemPath,
-                                                                   PATH_SEPARATOR,
-                                                                   actualNodeRef,
-                                                                   vanillaProcessorClasspath),
-                                     null);
+                    PATH_SEPARATOR,
+                    actualNodeRef,
+                    vanillaProcessorClasspath),
+                    null);
         }
         else
         {
             // default branch - invalid virtual node
             throw new VirtualizationException("Invalid virtualization : missing template name for "
-                        + templateSystemPath);
+                    + templateSystemPath);
         }
     }
 
     /**
-     * @param env the environment in which the virtualization takes place
-     * @param actualNodeRef the node that is virtualized using the given
-     *            template
-     * @param templateRef {@link NodeRef} of the template used in virtualizing
-     *            the given NodeRef
-     * @return a {@link Reference} correspondent of the given {@link NodeRef}
-     *         according to the rules defined by the given template
+     * @param env
+     *            the environment in which the virtualization takes place
+     * @param actualNodeRef
+     *            the node that is virtualized using the given template
+     * @param templateRef
+     *            {@link NodeRef} of the template used in virtualizing the given NodeRef
+     * @return a {@link Reference} correspondent of the given {@link NodeRef} according to the rules defined by the given template
      * @throws VirtualizationException
      */
     protected Reference newVirtualReference(ActualEnvironment env, NodeRef actualNodeRef, NodeRef templateRef)
-                throws VirtualizationException
+            throws VirtualizationException
     {
         String templateName = retrieveTemplateContentName(env,
-                                                          templateRef);
+                templateRef);
         if (templateName != null)
         {
             Protocol protocol = protocolFormName(templateName);
 
             return newVirtualReference(protocol,
-                                       templateRef,
-                                       actualNodeRef);
+                    templateRef,
+                    actualNodeRef);
         }
         else
         {
@@ -154,24 +140,23 @@ public abstract class TemplateVirtualizationMethod implements VirtualizationMeth
     }
 
     /**
-     * @param protocol {@link Protocol} to be used in virtualizing the given
-     *            <code>actulalNodeRef</code>
-     * @param templateRef {@link NodeRef} of the template used in virtualizing
-     *            the given NodeRef
-     * @param actualNodeRef the node that is virtualized using the given
-     *            template
-     * @return a {@link Reference} correspondent of the given {@link NodeRef}
-     *         according to the rules defined by the given template
+     * @param protocol
+     *            {@link Protocol} to be used in virtualizing the given <code>actulalNodeRef</code>
+     * @param templateRef
+     *            {@link NodeRef} of the template used in virtualizing the given NodeRef
+     * @param actualNodeRef
+     *            the node that is virtualized using the given template
+     * @return a {@link Reference} correspondent of the given {@link NodeRef} according to the rules defined by the given template
      * @throws ProtocolMethodException
      */
     protected Reference newVirtualReference(Protocol protocol, NodeRef templateRef, NodeRef actualNodeRef)
-                throws ProtocolMethodException
+            throws ProtocolMethodException
     {
         return protocol.dispatch(new NewVirtualReferenceMethod(templateRef,
-                                                               PATH_SEPARATOR,
-                                                               actualNodeRef,
-                                                               vanillaProcessorClasspath),
-                                 null);
+                PATH_SEPARATOR,
+                actualNodeRef,
+                vanillaProcessorClasspath),
+                null);
     }
 
     /**
@@ -179,8 +164,7 @@ public abstract class TemplateVirtualizationMethod implements VirtualizationMeth
      * @param sysPath
      * @return template name for the given system path
      * @throws ActualEnvironmentException
-     * @deprecated all template system path functionality should be replaced by
-     *             plain encoded references
+     * @deprecated all template system path functionality should be replaced by plain encoded references
      */
     private String retrieveTemplateContentName(ActualEnvironment env, String sysPath) throws ActualEnvironmentException
     {
@@ -193,10 +177,10 @@ public abstract class TemplateVirtualizationMethod implements VirtualizationMeth
     }
 
     private String retrieveTemplateContentName(ActualEnvironment env, NodeRef templateRef)
-                throws ActualEnvironmentException
+            throws ActualEnvironmentException
     {
         String templateName = (String) env.getProperty(templateRef,
-                                                       ContentModel.PROP_NAME);
+                ContentModel.PROP_NAME);
         return templateName;
     }
 

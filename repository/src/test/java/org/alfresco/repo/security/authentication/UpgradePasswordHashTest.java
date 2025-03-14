@@ -30,11 +30,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -48,10 +48,7 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 @SuppressWarnings("unchecked")
 public class UpgradePasswordHashTest extends TestCase
@@ -66,6 +63,7 @@ public class UpgradePasswordHashTest extends TestCase
     private UpgradePasswordHashWorker upgradePasswordHashWorker;
     private List<String> testUserNames;
     private List<NodeRef> testUsers;
+
     public UpgradePasswordHashTest()
     {
         super();
@@ -82,10 +80,10 @@ public class UpgradePasswordHashTest extends TestCase
         {
             throw new AlfrescoRuntimeException(
                     "A previous tests did not clean up transaction: " +
-                    AlfrescoTransactionSupport.getTransactionId());
+                            AlfrescoTransactionSupport.getTransactionId());
         }
-        
-        serviceRegistry = (ServiceRegistry)ctx.getBean("ServiceRegistry");
+
+        serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
 
         SimpleCache<String, RepositoryAuthenticationDao.CacheEntry> authenticationCache = (SimpleCache<String, RepositoryAuthenticationDao.CacheEntry>) ctx.getBean("authenticationCache");
         SimpleCache<String, NodeRef> immutableSingletonCache = (SimpleCache<String, NodeRef>) ctx.getBean("immutableSingletonCache");
@@ -104,23 +102,23 @@ public class UpgradePasswordHashTest extends TestCase
         repositoryAuthenticationDao.setAuthenticationCache(authenticationCache);
         repositoryAuthenticationDao.setSingletonCache(immutableSingletonCache);
 
-        upgradePasswordHashWorker = (UpgradePasswordHashWorker)ctx.getBean("upgradePasswordHashWorker");
+        upgradePasswordHashWorker = (UpgradePasswordHashWorker) ctx.getBean("upgradePasswordHashWorker");
         nodeService = serviceRegistry.getNodeService();
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
     }
-    
+
     protected void createTestUsers(String encoding) throws Exception
     {
         userTransaction = serviceRegistry.getTransactionService().getUserTransaction();
         userTransaction.begin();
 
         testUsers = new ArrayList<NodeRef>(5);
-        testUsers.add(createUser("king"+encoding, "king".toCharArray(), encoding));
-        testUsers.add(createUser("kin" +encoding, "Kong".toCharArray(), encoding));
-        testUsers.add(createUser("ding"+encoding, "dong".toCharArray(), encoding));
-        testUsers.add(createUser("ping"+encoding, "pong".toCharArray(),encoding));
-        testUsers.add(createUser("pin" +encoding, "pop".toCharArray(), encoding));
+        testUsers.add(createUser("king" + encoding, "king".toCharArray(), encoding));
+        testUsers.add(createUser("kin" + encoding, "Kong".toCharArray(), encoding));
+        testUsers.add(createUser("ding" + encoding, "dong".toCharArray(), encoding));
+        testUsers.add(createUser("ping" + encoding, "pong".toCharArray(), encoding));
+        testUsers.add(createUser("pin" + encoding, "pop".toCharArray(), encoding));
 
         userTransaction.commit();
     }
@@ -129,10 +127,14 @@ public class UpgradePasswordHashTest extends TestCase
     {
         try
         {
-            repositoryAuthenticationDao.createUser(caseSensitiveUserName,password);
-        } catch (AuthenticationException e)
+            repositoryAuthenticationDao.createUser(caseSensitiveUserName, password);
+        }
+        catch (AuthenticationException e)
         {
-           if (!e.getMessage().contains("User already exists")) { throw e; }
+            if (!e.getMessage().contains("User already exists"))
+            {
+                throw e;
+            }
         }
 
         NodeRef userNodeRef = repositoryAuthenticationDao.getUserOrNull(caseSensitiveUserName);
@@ -145,8 +147,8 @@ public class UpgradePasswordHashTest extends TestCase
         properties.remove(ContentModel.PROP_HASH_INDICATOR);
         properties.remove(ContentModel.PROP_PASSWORD);
         properties.remove(ContentModel.PROP_PASSWORD_SHA256);
-        String encoded =  compositePasswordEncoder.encode(encoding,new String(password), null);
-        properties.put("sha256".equals(encoding)?ContentModel.PROP_PASSWORD_SHA256:ContentModel.PROP_PASSWORD, encoded);
+        String encoded = compositePasswordEncoder.encode(encoding, new String(password), null);
+        properties.put("sha256".equals(encoding) ? ContentModel.PROP_PASSWORD_SHA256 : ContentModel.PROP_PASSWORD, encoded);
 
         nodeService.setProperties(userNodeRef, properties);
         return userNodeRef;
@@ -162,7 +164,7 @@ public class UpgradePasswordHashTest extends TestCase
             }
             catch (InvalidNodeRefException e)
             {
-                //Just ignore it.
+                // Just ignore it.
             }
         }
         testUsers.clear();
@@ -179,17 +181,17 @@ public class UpgradePasswordHashTest extends TestCase
         {
             userTransaction.rollback();
         }
-        
+
         AuthenticationUtil.clearCurrentSecurityContext();
         super.tearDown();
     }
-    
+
     public void testWorkerWithDefaultConfiguration() throws Exception
     {
         List<String> doubleHashed = Arrays.asList("md4", "bcrypt10");
         createTestUsers("md4");
         runWorker(doubleHashed);
-        //users deleted in the teardown
+        // users deleted in the teardown
     }
 
     public void testWorkerWithCloudDefaultConfiguration() throws Exception
@@ -197,15 +199,15 @@ public class UpgradePasswordHashTest extends TestCase
         List<String> doubleHashed = Arrays.asList("sha256", "bcrypt10");
         createTestUsers("sha256");
         runWorker(doubleHashed);
-        //users deleted in the teardown
+        // users deleted in the teardown
     }
-    
+
     public void testWorkerWithLegacyConfiguration() throws Exception
     {
         List<String> legacy = Arrays.asList("md4");
         createTestUsers("md4");
         runWorker(legacy);
-        //users deleted in the teardown
+        // users deleted in the teardown
     }
 
     public void testWorkerWithLegacy256Configuration() throws Exception
@@ -213,13 +215,13 @@ public class UpgradePasswordHashTest extends TestCase
         List<String> legacy = Arrays.asList("sha256");
         createTestUsers("sha256");
         runWorker(legacy);
-        //users deleted in the teardown
+        // users deleted in the teardown
     }
 
     private void runWorker(List<String> expectedEncoding) throws Exception
     {
-        //set preferred
-        compositePasswordEncoder.setPreferredEncoding(expectedEncoding.get(expectedEncoding.size()-1));
+        // set preferred
+        compositePasswordEncoder.setPreferredEncoding(expectedEncoding.get(expectedEncoding.size() - 1));
         this.upgradePasswordHashWorker.setCompositePasswordEncoder(compositePasswordEncoder);
 
         userTransaction = serviceRegistry.getTransactionService().getUserTransaction();
@@ -227,8 +229,8 @@ public class UpgradePasswordHashTest extends TestCase
 
         for (NodeRef testUser : testUsers)
         {
-            assertNull("The hash indicator should not be set",nodeService.getProperty(testUser, ContentModel.PROP_HASH_INDICATOR));
-            assertNull("The password hash should not be set",nodeService.getProperty(testUser, ContentModel.PROP_PASSWORD_HASH));
+            assertNull("The hash indicator should not be set", nodeService.getProperty(testUser, ContentModel.PROP_HASH_INDICATOR));
+            assertNull("The password hash should not be set", nodeService.getProperty(testUser, ContentModel.PROP_PASSWORD_HASH));
         }
         // execute the worker to upgrade all users
         this.upgradePasswordHashWorker.execute();
@@ -240,10 +242,10 @@ public class UpgradePasswordHashTest extends TestCase
         // ensure all the test users have been upgraded to use the preferred encoding
         for (NodeRef testUser : testUsers)
         {
-            assertNotNull("The password hash should be set",  nodeService.getProperty(testUser, ContentModel.PROP_PASSWORD_HASH));
-            assertEquals(expectedEncoding,nodeService.getProperty(testUser, ContentModel.PROP_HASH_INDICATOR));
-            assertNull("The md4 password should not be set",  nodeService.getProperty(testUser, ContentModel.PROP_PASSWORD));
-            assertNull("The sh256 password should not be set",nodeService.getProperty(testUser, ContentModel.PROP_PASSWORD_SHA256));
+            assertNotNull("The password hash should be set", nodeService.getProperty(testUser, ContentModel.PROP_PASSWORD_HASH));
+            assertEquals(expectedEncoding, nodeService.getProperty(testUser, ContentModel.PROP_HASH_INDICATOR));
+            assertNull("The md4 password should not be set", nodeService.getProperty(testUser, ContentModel.PROP_PASSWORD));
+            assertNull("The sh256 password should not be set", nodeService.getProperty(testUser, ContentModel.PROP_PASSWORD_SHA256));
         }
     }
 }

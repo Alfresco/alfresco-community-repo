@@ -29,6 +29,9 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Before;
+import org.junit.experimental.categories.Category;
+
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
@@ -39,8 +42,6 @@ import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.testing.category.NeverRunsTests;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
 
 /**
  * Transition simple workflow action executer unit test
@@ -49,27 +50,27 @@ import org.junit.experimental.categories.Category;
  */
 @Category({BaseSpringTestsCategory.class, NeverRunsTests.class})
 public class TransitionSimpleWorkflowActionExecuterTest extends BaseAlfrescoSpringTest
-{    
+{
     private FileFolderService fileFolderService;
-    
+
     /**
      * The test node reference
      */
     private NodeRef sourceFolder;
     private NodeRef destinationFolder;
     private NodeRef node;
-    
+
     /**
      * The action executer
      */
     private TransitionSimpleWorkflowActionExecuter acceptExecuter;
     private TransitionSimpleWorkflowActionExecuter rejectExecuter;
-    
+
     /**
      * Id used to identify the test action created
      */
     private final static String ID = GUID.generate();
-    
+
     /**
      * Called at the begining of all tests
      */
@@ -78,94 +79,94 @@ public class TransitionSimpleWorkflowActionExecuterTest extends BaseAlfrescoSpri
     public void before() throws Exception
     {
         super.before();
-        
-        fileFolderService = (FileFolderService)this.applicationContext.getBean("fileFolderService");
-        
+
+        fileFolderService = (FileFolderService) this.applicationContext.getBean("fileFolderService");
+
         // Create the node used for tests
         NodeRef container = this.nodeService.createNode(
                 this.rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}testnode"),
                 ContentModel.TYPE_CONTENT).getChildRef();
-        
+
         sourceFolder = fileFolderService.create(container, "my source folder", ContentModel.TYPE_FOLDER).getNodeRef();
         destinationFolder = fileFolderService.create(container, "my destination folder", ContentModel.TYPE_FOLDER).getNodeRef();
         node = fileFolderService.create(sourceFolder, "my node.txt", ContentModel.TYPE_CONTENT).getNodeRef();
-        
-        // Get the executer instance 
-        this.acceptExecuter = (TransitionSimpleWorkflowActionExecuter)this.applicationContext.getBean("accept-simpleworkflow");
-        this.rejectExecuter = (TransitionSimpleWorkflowActionExecuter)this.applicationContext.getBean("reject-simpleworkflow");       
+
+        // Get the executer instance
+        this.acceptExecuter = (TransitionSimpleWorkflowActionExecuter) this.applicationContext.getBean("accept-simpleworkflow");
+        this.rejectExecuter = (TransitionSimpleWorkflowActionExecuter) this.applicationContext.getBean("reject-simpleworkflow");
     }
 
     public void testExecutionApprove()
     {
         addWorkflowAspect(node, destinationFolder, Boolean.TRUE, Boolean.FALSE);
-        
+
         assertTrue(nodeService.hasAspect(node, ApplicationModel.ASPECT_SIMPLE_WORKFLOW));
         NodeRef pParent = nodeService.getPrimaryParent(node).getParentRef();
         assertEquals(sourceFolder, pParent);
-        
+
         ActionImpl action = new ActionImpl(null, ID, "accept-simpleworkflow", null);
         acceptExecuter.execute(action, node);
-        
+
         assertFalse(nodeService.hasAspect(node, ApplicationModel.ASPECT_SIMPLE_WORKFLOW));
         pParent = nodeService.getPrimaryParent(node).getParentRef();
         assertEquals(destinationFolder, pParent);
     }
-    
+
     public void testExecutionReject()
     {
         addWorkflowAspect(node, destinationFolder, Boolean.TRUE, Boolean.FALSE);
-        
+
         assertTrue(nodeService.hasAspect(node, ApplicationModel.ASPECT_SIMPLE_WORKFLOW));
         NodeRef pParent = nodeService.getPrimaryParent(node).getParentRef();
         assertEquals(sourceFolder, pParent);
         assertEquals(0, nodeService.getChildAssocs(destinationFolder).size());
-        
+
         ActionImpl action = new ActionImpl(null, ID, "reject-simpleworkflow", null);
         rejectExecuter.execute(action, node);
-        
+
         assertFalse(nodeService.hasAspect(node, ApplicationModel.ASPECT_SIMPLE_WORKFLOW));
         pParent = nodeService.getPrimaryParent(node).getParentRef();
-        assertEquals(sourceFolder, pParent);        
+        assertEquals(sourceFolder, pParent);
         assertEquals(1, nodeService.getChildAssocs(destinationFolder).size());
     }
-    
-    /** Test for MNT-14730*/
+
+    /** Test for MNT-14730 */
     public void testExecutionApproveWhenDestinationSameAsSource()
     {
         addWorkflowAspect(node, sourceFolder, Boolean.FALSE, Boolean.FALSE);
-        
+
         assertTrue(nodeService.hasAspect(node, ApplicationModel.ASPECT_SIMPLE_WORKFLOW));
         NodeRef pParent = nodeService.getPrimaryParent(node).getParentRef();
         assertEquals(sourceFolder, pParent);
-        
+
         ActionImpl action = new ActionImpl(null, ID, "accept-simpleworkflow", null);
         acceptExecuter.execute(action, node);
-        
+
         String copyName = QName.createValidLocalName("Copy of my node.txt");
         NodeRef nodeRef = nodeService.getChildByName(sourceFolder, ContentModel.ASSOC_CONTAINS, copyName);
         assertNotNull(nodeRef);
     }
-    
-    /** Test for MNT-14730*/
+
+    /** Test for MNT-14730 */
     public void testExecutionRejectWhenDestinationSameAsSource()
     {
         addWorkflowAspect(node, sourceFolder, Boolean.FALSE, Boolean.FALSE);
-        
+
         assertTrue(nodeService.hasAspect(node, ApplicationModel.ASPECT_SIMPLE_WORKFLOW));
         NodeRef pParent = nodeService.getPrimaryParent(node).getParentRef();
         assertEquals(sourceFolder, pParent);
         assertEquals(0, nodeService.getChildAssocs(destinationFolder).size());
-        
+
         ActionImpl action = new ActionImpl(null, ID, "reject-simpleworkflow", null);
         rejectExecuter.execute(action, node);
-        
+
         assertFalse(nodeService.hasAspect(node, ApplicationModel.ASPECT_SIMPLE_WORKFLOW));
         pParent = nodeService.getPrimaryParent(node).getParentRef();
-        assertEquals(sourceFolder, pParent);        
+        assertEquals(sourceFolder, pParent);
         assertEquals(0, nodeService.getChildAssocs(destinationFolder).size());
-        
+
         String copyName = QName.createValidLocalName("Copy of my node.txt");
         NodeRef nodeRef = nodeService.getChildByName(sourceFolder, ContentModel.ASSOC_CONTAINS, copyName);
         assertNotNull(nodeRef);

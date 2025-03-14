@@ -43,47 +43,52 @@ public class TransactionInvocationHandlerFactory
 {
     /** Transaction Key for Behaviour Execution state */
     private final static String EXECUTED_KEY = TransactionHandler.class.getName() + ".executed";
-    
+
     /** Transaction behaviour Queue */
     private TransactionBehaviourQueue queue;
-    
+
     /**
      * Construct
      * 
-     * @param queue  behaviour queue
+     * @param queue
+     *            behaviour queue
      */
     public TransactionInvocationHandlerFactory(TransactionBehaviourQueue queue)
     {
         this.queue = queue;
     }
-    
 
     /**
      * Create Invocation Handler
      *
-     * @param <P> P extends Policy
-     * @param behaviour Behaviour
-     * @param definition PolicyDefinition<P>
-     * @param policyInterface P
-     * @return  invocation handler
+     * @param <P>
+     *            P extends Policy
+     * @param behaviour
+     *            Behaviour
+     * @param definition
+     *            PolicyDefinition
+     *            <P>
+     * @param policyInterface
+     *            P
+     * @return invocation handler
      */
     public <P extends Policy> InvocationHandler createHandler(Behaviour behaviour, PolicyDefinition<P> definition, P policyInterface)
     {
         return new TransactionHandler<P>(behaviour, definition, policyInterface);
     }
-    
 
     /**
      * Transaction Invocation Handler.
      *
-     * @param <P>  policy interface
+     * @param <P>
+     *            policy interface
      */
     private class TransactionHandler<P extends Policy> implements InvocationHandler
     {
         private Behaviour behaviour;
         private PolicyDefinition<P> definition;
         private P policyInterface;
-       
+
         /**
          * Construct
          */
@@ -93,10 +98,10 @@ public class TransactionInvocationHandlerFactory
             this.definition = definition;
             this.policyInterface = policyInterface;
         }
-        
+
         /* (non-Javadoc)
-         * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
-         */
+         * 
+         * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[]) */
         @SuppressWarnings("unchecked")
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
         {
@@ -118,15 +123,15 @@ public class TransactionInvocationHandlerFactory
             Object result = null;
             if (behaviour.getNotificationFrequency().equals(NotificationFrequency.FIRST_EVENT))
             {
-                Map<ExecutionInstanceKey, Object> executedBehaviours = (Map<ExecutionInstanceKey, Object>)AlfrescoTransactionSupport.getResource(EXECUTED_KEY);
+                Map<ExecutionInstanceKey, Object> executedBehaviours = (Map<ExecutionInstanceKey, Object>) AlfrescoTransactionSupport.getResource(EXECUTED_KEY);
                 if (executedBehaviours == null)
                 {
                     executedBehaviours = new HashMap<ExecutionInstanceKey, Object>();
                     AlfrescoTransactionSupport.bindResource(EXECUTED_KEY, executedBehaviours);
                 }
-                                
-                ExecutionInstanceKey key = new  ExecutionInstanceKey(behaviour, definition.getArguments(), args);
-                
+
+                ExecutionInstanceKey key = new ExecutionInstanceKey(behaviour, definition.getArguments(), args);
+
                 if (executedBehaviours.containsKey(key) == false)
                 {
                     // Invoke behavior for first time and mark as executed
@@ -156,11 +161,11 @@ public class TransactionInvocationHandlerFactory
                 // Note: shouldn't get here
                 throw new PolicyException("Invalid Notification frequency " + behaviour.getNotificationFrequency());
             }
-            
+
             return result;
-        }        
+        }
     }
-    
+
     /**
      * Execution Instance Key - to uniquely identify an ExecutionContext
      */
@@ -169,7 +174,7 @@ public class TransactionInvocationHandlerFactory
         public ExecutionInstanceKey(Behaviour behaviour, Arg[] argDefs, Object[] args)
         {
             this.behaviour = behaviour;
-            
+
             for (int i = 0; i < argDefs.length; i++)
             {
                 if (argDefs[i].equals(Arg.KEY))
@@ -178,16 +183,16 @@ public class TransactionInvocationHandlerFactory
                 }
             }
         }
-        
+
         Behaviour behaviour;
         ArrayList<Object> keys = new ArrayList<Object>();
-        
+
         /**
          * @see java.lang.Object#hashCode()
          */
         @Override
         public int hashCode()
-        {   
+        {
             int key = behaviour.hashCode();
             for (int i = 0; i < keys.size(); i++)
             {
@@ -195,7 +200,7 @@ public class TransactionInvocationHandlerFactory
             }
             return key;
         }
-        
+
         /**
          * @see java.lang.Object#equals(java.lang.Object)
          */
@@ -209,14 +214,14 @@ public class TransactionInvocationHandlerFactory
             if (obj instanceof ExecutionInstanceKey)
             {
                 ExecutionInstanceKey that = (ExecutionInstanceKey) obj;
-                if(this.behaviour.equals(that.behaviour))
+                if (this.behaviour.equals(that.behaviour))
                 {
-                    if(keys.size() != that.keys.size())
+                    if (keys.size() != that.keys.size())
                     {
                         // different number of keys
                         return false;
                     }
-                    if(keys.containsAll(that.keys))
+                    if (keys.containsAll(that.keys))
                     {
                         // yes keys are equal
                         return true;
@@ -233,6 +238,5 @@ public class TransactionInvocationHandlerFactory
             }
         } // equals
     } // ExecutionInstanceKey
-
 
 }

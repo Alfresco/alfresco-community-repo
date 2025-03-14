@@ -26,7 +26,6 @@
 
 package org.alfresco.repo.action.constraint;
 
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -44,14 +43,14 @@ public class TypeParameterConstraint extends BaseParameterConstraint
 {
     /** Name constant */
     public static final String NAME = "ac-types";
-    
+
     private DictionaryService dictionaryService;
-    
+
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-          
+
     /**
      * @see org.alfresco.service.cmr.action.ParameterConstraint#getAllowableValues()
      */

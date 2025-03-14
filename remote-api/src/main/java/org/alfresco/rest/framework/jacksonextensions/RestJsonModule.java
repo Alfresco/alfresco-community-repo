@@ -25,6 +25,10 @@
  */
 package org.alfresco.rest.framework.jacksonextensions;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -33,43 +37,37 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 /**
- * This is the main Jackson configuration, it configures the Rest Json settings.
- * It is possible to add custom serializers and deserializers using
- * the Spring bean config.
+ * This is the main Jackson configuration, it configures the Rest Json settings. It is possible to add custom serializers and deserializers using the Spring bean config.
  *
  * @author Gethin James
  */
 public class RestJsonModule extends SimpleModule implements InitializingBean
 {
-    private static Log logger = LogFactory.getLog(RestJsonModule.class);  
+    private static Log logger = LogFactory.getLog(RestJsonModule.class);
     private final static String NAME = "AlfrescoRestJsonModule";
-     
+
     @SuppressWarnings("rawtypes")
     private List<JsonSerializer> jsonSerializers;
     @SuppressWarnings("rawtypes")
-    private Map<String,JsonDeserializer> jsonDeserializers;
-    
+    private Map<String, JsonDeserializer> jsonDeserializers;
+
     public RestJsonModule()
     {
         super(NAME, new Version(1, 0, 0, null));
     }
-    
+
     @Override
     public void setupModule(SetupContext context)
     {
         super.setupModule(context);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        if (jsonSerializers != null) 
+        if (jsonSerializers != null)
         {
             if (logger.isDebugEnabled())
             {
@@ -80,7 +78,7 @@ public class RestJsonModule extends SimpleModule implements InitializingBean
                 addSerializer(aSerializer);
             }
         }
-        if (jsonDeserializers != null) 
+        if (jsonDeserializers != null)
         {
             if (logger.isDebugEnabled())
             {

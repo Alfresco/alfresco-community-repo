@@ -28,15 +28,15 @@ package org.alfresco.util.schemacomp.model;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.verify;
 
-import org.alfresco.test_category.BaseSpringTestsCategory;
-import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.alfresco.util.schemacomp.DbProperty;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import org.alfresco.test_category.BaseSpringTestsCategory;
+import org.alfresco.util.schemacomp.DbProperty;
 
 /**
  * Tests for the Schema class.
@@ -49,14 +49,14 @@ public class SchemaTest extends DbObjectTestBase<Schema>
 {
     private Schema left;
     private Schema right;
-    
+
     @Before
     public void setUp()
     {
         left = new Schema("left_schema");
         right = new Schema("right_schema");
     }
-    
+
     @Override
     protected Schema getThisObject()
     {
@@ -75,33 +75,33 @@ public class SchemaTest extends DbObjectTestBase<Schema>
         // We need to be warned if comparing, for example a version 500 schema with a
         // version 501 schema.
         inOrder.verify(comparisonUtils).compareSimple(
-                    new DbProperty(left, "version"),
-                    new DbProperty(right, "version"),
-                    ctx);
-        
+                new DbProperty(left, "version"),
+                new DbProperty(right, "version"),
+                ctx);
+
         // In addition to the base class functionality, Schema.diff() compares
         // the DbObjects held in the other schema with its own DbObjects.
         inOrder.verify(comparisonUtils).compareCollections(left.objects, right.objects, ctx);
     }
-    
+
     @Test
     public void acceptVisitor()
     {
-       DbObject dbo1 = Mockito.mock(DbObject.class);
-       left.add(dbo1);
-       DbObject dbo2 = Mockito.mock(DbObject.class);
-       left.add(dbo2);
-       DbObject dbo3 = Mockito.mock(DbObject.class);
-       left.add(dbo3);
-       
-       left.accept(visitor);
-       
-       verify(dbo1).accept(visitor);
-       verify(dbo2).accept(visitor);
-       verify(dbo3).accept(visitor);
-       verify(visitor).visit(left);
+        DbObject dbo1 = Mockito.mock(DbObject.class);
+        left.add(dbo1);
+        DbObject dbo2 = Mockito.mock(DbObject.class);
+        left.add(dbo2);
+        DbObject dbo3 = Mockito.mock(DbObject.class);
+        left.add(dbo3);
+
+        left.accept(visitor);
+
+        verify(dbo1).accept(visitor);
+        verify(dbo2).accept(visitor);
+        verify(dbo3).accept(visitor);
+        verify(visitor).visit(left);
     }
-    
+
     @Test
     public void sameAs()
     {
@@ -113,7 +113,7 @@ public class SchemaTest extends DbObjectTestBase<Schema>
 
         // Things are always the same as themselves.
         assertTrue("Schemas are the same physical object", left.sameAs(left));
-        
+
         assertFalse("A table is not the same as a schema", left.sameAs(new Table("left_schema")));
         assertFalse("null is not the same as a schema", left.sameAs(null));
     }

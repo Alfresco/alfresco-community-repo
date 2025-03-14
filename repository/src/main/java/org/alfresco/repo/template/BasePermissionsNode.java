@@ -43,14 +43,12 @@ public abstract class BasePermissionsNode extends BaseContentNode implements Tem
     private List<String> permissions = null;
     private List<String> directPermissions = null;
     private List<String> fullPermissions = null;
-    
+
     // ------------------------------------------------------------------------------
-    // Security API 
-    
+    // Security API
+
     /**
-     * @return List of permissions applied to this Node, including inherited.
-     *         Strings returned are of the format [ALLOWED|DENIED];[USERNAME|GROUPNAME];PERMISSION for example
-     *         ALLOWED;kevinr;Consumer so can be easily tokenized on the ';' character.
+     * @return List of permissions applied to this Node, including inherited. Strings returned are of the format [ALLOWED|DENIED];[USERNAME|GROUPNAME];PERMISSION for example ALLOWED;kevinr;Consumer so can be easily tokenized on the ';' character.
      */
     public List<String> getPermissions()
     {
@@ -62,9 +60,7 @@ public abstract class BasePermissionsNode extends BaseContentNode implements Tem
     }
 
     /**
-     * @return List of permissions applied to this Node (does not include inherited).
-     *         Strings returned are of the format [ALLOWED|DENIED];[USERNAME|GROUPNAME];PERMISSION for example
-     *         ALLOWED;kevinr;Consumer so can be easily tokenized on the ';' character.
+     * @return List of permissions applied to this Node (does not include inherited). Strings returned are of the format [ALLOWED|DENIED];[USERNAME|GROUPNAME];PERMISSION for example ALLOWED;kevinr;Consumer so can be easily tokenized on the ';' character.
      */
     public List<String> getDirectPermissions()
     {
@@ -76,9 +72,7 @@ public abstract class BasePermissionsNode extends BaseContentNode implements Tem
     }
 
     /**
-     * @return List of permissions applied to this Node, including inherited.
-     *         Strings returned are of the format [ALLOWED|DENIED];[USERNAME|GROUPNAME];PERMISSION;[INHERITED|DIRECT] for example
-     *         ALLOWED;kevinr;Consumer so can be easily tokenized on the ';' character.
+     * @return List of permissions applied to this Node, including inherited. Strings returned are of the format [ALLOWED|DENIED];[USERNAME|GROUPNAME];PERMISSION;[INHERITED|DIRECT] for example ALLOWED;kevinr;Consumer so can be easily tokenized on the ';' character.
      */
     public List<String> getFullPermissions()
     {
@@ -92,9 +86,10 @@ public abstract class BasePermissionsNode extends BaseContentNode implements Tem
     /**
      * Helper to construct the response object for the various getPermissions() calls.
      * 
-     * @param direct    True to only retrieve direct permissions, false to get inherited also
-     * @param full      True to retrieve full data string with [INHERITED|DIRECT] element
-     *                  This exists to maintain backward compatibility with existing permission APIs.
+     * @param direct
+     *            True to only retrieve direct permissions, false to get inherited also
+     * @param full
+     *            True to retrieve full data string with [INHERITED|DIRECT] element This exists to maintain backward compatibility with existing permission APIs.
      * 
      * @return List<String> of permissions.
      */
@@ -111,10 +106,10 @@ public abstract class BasePermissionsNode extends BaseContentNode implements Tem
                 {
                     StringBuilder buf = new StringBuilder(64);
                     buf.append(permission.getAccessStatus())
-                        .append(';')
-                        .append(permission.getAuthority())
-                        .append(';')
-                        .append(permission.getPermission());
+                            .append(';')
+                            .append(permission.getAuthority())
+                            .append(';')
+                            .append(permission.getPermission());
                     if (full)
                     {
                         buf.append(';').append(permission.isSetDirectly() ? "DIRECT" : "INHERITED");
@@ -125,7 +120,7 @@ public abstract class BasePermissionsNode extends BaseContentNode implements Tem
         }
         return permissions;
     }
-    
+
     /**
      * @return true if this node inherits permissions from its parent node, false otherwise.
      */
@@ -133,9 +128,10 @@ public abstract class BasePermissionsNode extends BaseContentNode implements Tem
     {
         return this.services.getPermissionService().getInheritParentPermissions(getNodeRef());
     }
-    
+
     /**
-     * @param permission        Permission name to test
+     * @param permission
+     *            Permission name to test
      * 
      * @return true if the current user is granted the specified permission on the node
      */

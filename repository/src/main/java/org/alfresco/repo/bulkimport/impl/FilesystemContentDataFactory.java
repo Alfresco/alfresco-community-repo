@@ -34,6 +34,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.bulkimport.ContentDataFactory;
@@ -43,43 +47,40 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * 
- * Factory that creates {@link ContentData} out of : 
+ * Factory that creates {@link ContentData} out of :
  * <ul>
- *   <li> a {@link ContentStore}
- *   <li> a {@link File} located within that store's root
- * </ul><br>
+ * <li>a {@link ContentStore}
+ * <li>a {@link File} located within that store's root
+ * </ul>
+ * <br>
  * 
- * The mimetype will be guessed from the file extension, or fall back to binary.
- * The encoding will be guessed from the file itself, or fall back to {@link #defaultEncoding}.
+ * The mimetype will be guessed from the file extension, or fall back to binary. The encoding will be guessed from the file itself, or fall back to {@link #defaultEncoding}.
  * 
  * @since 4.0
  */
 public class FilesystemContentDataFactory implements ContentDataFactory, InitializingBean
 {
-    private static final Log logger   = LogFactory.getLog(FilesystemContentDataFactory.class);
-    
+    private static final Log logger = LogFactory.getLog(FilesystemContentDataFactory.class);
+
     private static final String PROTOCOL_DELIMITER = ContentStore.PROTOCOL_DELIMITER;
-    
+
     private MimetypeService mimetypeService;
     private String defaultEncoding;
     private String storeProtocol;
-    
+
     public void setMimetypeService(MimetypeService mimetypeService)
     {
         this.mimetypeService = mimetypeService;
     }
-    
+
     public void setDefaultEncoding(String defaultEncoding)
     {
         this.defaultEncoding = defaultEncoding;
     }
-    
+
     public void setStoreProtocol(String storeProtocol)
     {
         this.storeProtocol = storeProtocol;
@@ -89,16 +90,16 @@ public class FilesystemContentDataFactory implements ContentDataFactory, Initial
     {
         PropertyCheck.mandatory(this, "mimetypeService", mimetypeService);
         PropertyCheck.mandatory(this, "defaultEncoding", defaultEncoding);
-        PropertyCheck.mandatory(this, "storeProtocol",   storeProtocol);
+        PropertyCheck.mandatory(this, "storeProtocol", storeProtocol);
     }
-    
+
     /**
-     * Create a {@link ContentData} by combining the given {@link ContentStore}'s root location and the {@link File}'s path within that store.
-     * The given file must therefore be accessible within the content store's configured root location.
-     * The encoding and mimetype will be guessed from the given file. 
+     * Create a {@link ContentData} by combining the given {@link ContentStore}'s root location and the {@link File}'s path within that store. The given file must therefore be accessible within the content store's configured root location. The encoding and mimetype will be guessed from the given file.
      * 
-     * @param store            The {@link ContentStore} in which the file should be
-     * @param contentFile    The {@link File} to check
+     * @param store
+     *            The {@link ContentStore} in which the file should be
+     * @param contentFile
+     *            The {@link File} to check
      * @return the constructed {@link ContentData}
      */
     public ContentData createContentData(ContentStore store, File contentFile)
@@ -134,40 +135,47 @@ public class FilesystemContentDataFactory implements ContentDataFactory, Initial
             throw new AlfrescoRuntimeException(e.getMessage(), e);
         }
     }
-    
+
     /**
      * Attempt to guess file encoding. fall back to {@link #defaultEncoding} otherwise.
      * 
-     * @param file        the {@link java.io.File} to test
-     * @param mimetype    the file mimetype. used to first distinguish between binary and text files
+     * @param file
+     *            the {@link java.io.File} to test
+     * @param mimetype
+     *            the file mimetype. used to first distinguish between binary and text files
      * @return the encoding as a {@link String}
      */
-    private String guessEncoding(File file,String mimetype)
+    private String guessEncoding(File file, String mimetype)
     {
         String encoding = defaultEncoding; // fallback default
-        if(file.isDirectory())
+        if (file.isDirectory())
             return defaultEncoding; // not necessary to guess folder encoding
         InputStream is = null;
         ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
 
         try
         {
-           is = new BufferedInputStream(new FileInputStream(file));
-           encoding = charsetFinder.getCharset(is, mimetype).name();
+            is = new BufferedInputStream(new FileInputStream(file));
+            encoding = charsetFinder.getCharset(is, mimetype).name();
         }
         catch (Throwable e)
         {
-            if(logger.isWarnEnabled())
+            if (logger.isWarnEnabled())
                 logger.warn("Failed to guess character encoding of file: '" + file.getName() + "'. Falling back to configured default encoding (" + defaultEncoding + ")");
         }
         finally
         {
-           if (is != null)
-           {
-              try { is.close(); } catch (Throwable e) {}
-           }
+            if (is != null)
+            {
+                try
+                {
+                    is.close();
+                }
+                catch (Throwable e)
+                {}
+            }
         }
-        
+
         return encoding;
     }
 

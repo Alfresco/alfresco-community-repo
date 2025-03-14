@@ -28,6 +28,8 @@ package org.alfresco.opencmis.search;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.chemistry.opencmis.commons.enums.PropertyType;
+
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.dictionary.PropertyDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
@@ -44,7 +46,6 @@ import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetType;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.QName;
-import org.apache.chemistry.opencmis.commons.enums.PropertyType;
 
 /**
  * @author andyh
@@ -91,7 +92,8 @@ public class CMISResultSetMetaData implements ResultSetMetaData
                 if (alfPropDef == null)
                 {
                     alfrescoPropertyQName = null;
-                } else
+                }
+                else
                 {
                     alfrescoDataTypeQName = alfPropDef.getDataType().getName();
                 }
@@ -112,74 +114,57 @@ public class CMISResultSetMetaData implements ResultSetMetaData
         }
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSetMetaData#getColumnNames()
-     */
+     * @see org.alfresco.cmis.search.CMISResultSetMetaData#getColumnNames() */
     public String[] getColumnNames()
     {
         return columnMetaData.keySet().toArray(new String[0]);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSetMetaData#getColumns()
-     */
+     * @see org.alfresco.cmis.search.CMISResultSetMetaData#getColumns() */
     public CMISResultSetColumn[] getColumns()
     {
         return columnMetaData.values().toArray(new CMISResultSetColumn[0]);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see
-     * org.alfresco.cmis.search.CMISResultSetMetaData#getCoumn(java.lang.String)
-     */
+     * @see org.alfresco.cmis.search.CMISResultSetMetaData#getCoumn(java.lang.String) */
     public CMISResultSetColumn getColumn(String name)
     {
         return columnMetaData.get(name);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSetMetaData#getQueryOptions()
-     */
+     * @see org.alfresco.cmis.search.CMISResultSetMetaData#getQueryOptions() */
     public CMISQueryOptions getQueryOptions()
     {
         return options;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see
-     * org.alfresco.cmis.search.CMISResultSetMetaData#getSelector(java.lang.
-     * String)
-     */
+     * @see org.alfresco.cmis.search.CMISResultSetMetaData#getSelector(java.lang. String) */
     public CMISResultSetSelector getSelector(String name)
     {
         return selectorMetaData.get(name);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSetMetaData#getSelectorNames()
-     */
+     * @see org.alfresco.cmis.search.CMISResultSetMetaData#getSelectorNames() */
     public String[] getSelectorNames()
     {
         return selectorMetaData.keySet().toArray(new String[0]);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSetMetaData#getSelectors()
-     */
+     * @see org.alfresco.cmis.search.CMISResultSetMetaData#getSelectors() */
     public CMISResultSetSelector[] getSelectors()
     {
         return selectorMetaData.values().toArray(new CMISResultSetSelector[0]);

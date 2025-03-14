@@ -50,9 +50,10 @@ public interface Downloads
      * @return status info about a download:download node
      */
     Download getDownloadStatus(String downloadNodeId);
-    
+
     /**
      * Stop the zip creation if still in progress
+     * 
      * @param downloadNodeId
      */
     void cancel(String downloadNodeId);

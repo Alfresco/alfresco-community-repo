@@ -32,15 +32,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.model.Repository;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.AbstractWebScript;
@@ -52,9 +43,18 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.WebScriptStatus;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.Repository;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.QName;
+
 /**
- * Web script 'type' that can be used when the binary data of a content property needs to be streamed back to the client
- * as the result of executing the web script.
+ * Web script 'type' that can be used when the binary data of a content property needs to be streamed back to the client as the result of executing the web script.
  * 
  * Many of these methods have been moved into the ContentStreamer class so they can be reused by other webscripts.
  * 
@@ -64,53 +64,59 @@ public class StreamContent extends AbstractWebScript
 {
     // Logger
     private static final Log logger = LogFactory.getLog(StreamContent.class);
-    
+
     /** Services */
     protected PermissionService permissionService;
     protected NodeService nodeService;
     protected MimetypeService mimetypeService;
     protected ContentStreamer delegate;
     protected Repository repository;
-    
+
     /**
-     * @param mimetypeService MimetypeService
+     * @param mimetypeService
+     *            MimetypeService
      */
     public void setMimetypeService(MimetypeService mimetypeService)
     {
-        this.mimetypeService = mimetypeService; 
-    }
-      /**
-     * @param permissionService PermissionService
-     */
-    public void setPermissionService(PermissionService permissionService)
-    {
-        this.permissionService = permissionService; 
+        this.mimetypeService = mimetypeService;
     }
 
     /**
-     * @param nodeService NodeService
+     * @param permissionService
+     *            PermissionService
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+
+    /**
+     * @param nodeService
+     *            NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
-        this.nodeService = nodeService; 
+        this.nodeService = nodeService;
     }
-    
+
     /**
-     * @param delegate ContentStreamer
+     * @param delegate
+     *            ContentStreamer
      */
     public void setDelegate(ContentStreamer delegate)
     {
         this.delegate = delegate;
     }
-    
+
     /**
-     * @param repository Repository
+     * @param repository
+     *            Repository
      */
     public void setRepository(Repository repository)
     {
         this.repository = repository;
     }
-    
+
     /**
      * @see org.springframework.extensions.webscripts.WebScript#execute(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.WebScriptResponse)
      */
@@ -131,14 +137,14 @@ public class StreamContent extends AbstractWebScript
             }
             model.put("status", status);
             model.put("cache", cache);
-            
+
             // execute script if it exists
             ScriptDetails executeScript = getExecuteScript(req.getContentType());
             if (executeScript != null)
             {
                 if (logger.isDebugEnabled())
                     logger.debug("Executing script " + executeScript.getContent().getPathDescription());
-                
+
                 Map<String, Object> scriptModel = createScriptParameters(req, res, executeScript, model);
                 // add return model allowing script to add items to template model
                 Map<String, Object> returnModel = new HashMap<String, Object>(8, 1.0f);
@@ -146,7 +152,7 @@ public class StreamContent extends AbstractWebScript
                 executeScript(executeScript.getContent(), scriptModel);
                 mergeScriptModelIntoTemplateModel(executeScript.getContent().getPath(), returnModel, model);
             }
-            
+
             // is a redirect to a status specific template required?
             if (status.getRedirect())
             {
@@ -155,28 +161,28 @@ public class StreamContent extends AbstractWebScript
                 sendStatus(req, res, status, cache, format, templateModel);
             }
             else
-            {         
-                // Get the attachement property value    
-                Boolean attachBoolean = (Boolean)model.get("attach");
+            {
+                // Get the attachement property value
+                Boolean attachBoolean = (Boolean) model.get("attach");
                 boolean attach = false;
                 if (attachBoolean != null)
                 {
                     attach = attachBoolean.booleanValue();
                 }
-                
-                String contentPath = (String)model.get("contentPath");
+
+                String contentPath = (String) model.get("contentPath");
                 if (contentPath == null)
                 {
                     // Get the content parameters from the model
-                    NodeRef nodeRef = (NodeRef)model.get("contentNode");
+                    NodeRef nodeRef = (NodeRef) model.get("contentNode");
                     if (nodeRef == null)
                     {
                         throw new WebScriptException(
                                 "The content node was not specified so the content cannot be streamed to the client: " +
-                                executeScript.getContent().getPathDescription());
+                                        executeScript.getContent().getPathDescription());
                     }
                     QName propertyQName = null;
-                    String contentProperty = (String)model.get("contentProperty");
+                    String contentProperty = (String) model.get("contentProperty");
                     if (contentProperty == null)
                     {
                         // default to the standard content property
@@ -186,7 +192,7 @@ public class StreamContent extends AbstractWebScript
                     {
                         propertyQName = QName.createQName(contentProperty);
                     }
-                
+
                     // Stream the content
                     delegate.streamContent(req, res, nodeRef, propertyQName, attach, null, model);
                 }
@@ -197,121 +203,149 @@ public class StreamContent extends AbstractWebScript
                 }
             }
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             throw createStatusException(e, req, res);
         }
     }
-    
+
     /**
      * Set attachment header
      * 
-     * @param res WebScriptResponse
-     * @param attach boolean
-     * @param attachFileName String
+     * @param res
+     *            WebScriptResponse
+     * @param attach
+     *            boolean
+     * @param attachFileName
+     *            String
      */
     protected void setAttachment(WebScriptResponse res, boolean attach, String attachFileName)
     {
         delegate.setAttachment(null, res, attach, attachFileName);
     }
-    
+
     /**
-     * Streams content back to client from a given File. The Last-Modified header will reflect the
-     * given file's modification timestamp.
+     * Streams content back to client from a given File. The Last-Modified header will reflect the given file's modification timestamp.
      * 
-     * @param req               The request
-     * @param res               The response
-     * @param file              The file whose content is to be streamed.
+     * @param req
+     *            The request
+     * @param res
+     *            The response
+     * @param file
+     *            The file whose content is to be streamed.
      * @throws IOException
      */
-    protected void streamContent(WebScriptRequest req, WebScriptResponse res, File file) throws IOException {
+    protected void streamContent(WebScriptRequest req, WebScriptResponse res, File file) throws IOException
+    {
         streamContent(req, res, file, false, null, null);
     }
-    
+
     /**
-     * Streams content back to client from a given File. The Last-Modified header will reflect the
-     * given file's modification timestamp.
+     * Streams content back to client from a given File. The Last-Modified header will reflect the given file's modification timestamp.
      * 
-     * @param req               The request
-     * @param res               The response
-     * @param file              The file whose content is to be streamed.
-     * @param attach            Indicates whether the content should be streamed as an attachment or not
-     * @param attachFileName    Optional file name to use when attach is <code>true</code>
+     * @param req
+     *            The request
+     * @param res
+     *            The response
+     * @param file
+     *            The file whose content is to be streamed.
+     * @param attach
+     *            Indicates whether the content should be streamed as an attachment or not
+     * @param attachFileName
+     *            Optional file name to use when attach is <code>true</code>
      * @throws IOException
      */
     protected void streamContent(WebScriptRequest req,
-                                 WebScriptResponse res, 
-                                 File file, 
-                                 boolean attach,
-                                 String attachFileName,
-                                 Map<String, Object> model) throws IOException
+            WebScriptResponse res,
+            File file,
+            boolean attach,
+            String attachFileName,
+            Map<String, Object> model) throws IOException
     {
         delegate.streamContent(req, res, file, null, attach, attachFileName, model);
     }
-    
+
     /**
      * Streams the content on a given node's content property to the response of the web script.
      * 
-     * @param req               Request
-     * @param res               Response
-     * @param nodeRef           The node reference
-     * @param propertyQName     The content property name
-     * @param attach            Indicates whether the content should be streamed as an attachment or not
-     * @param attachFileName    Optional file name to use when attach is <code>true</code>
-     * @throws IOException 
+     * @param req
+     *            Request
+     * @param res
+     *            Response
+     * @param nodeRef
+     *            The node reference
+     * @param propertyQName
+     *            The content property name
+     * @param attach
+     *            Indicates whether the content should be streamed as an attachment or not
+     * @param attachFileName
+     *            Optional file name to use when attach is <code>true</code>
+     * @throws IOException
      */
-    protected void streamContent(WebScriptRequest req, 
-                                 WebScriptResponse res, 
-                                 NodeRef nodeRef, 
-                                 QName propertyQName,
-                                 boolean attach, 
-                                 String attachFileName,
-                                 Map<String, Object> model) throws IOException
-     {
+    protected void streamContent(WebScriptRequest req,
+            WebScriptResponse res,
+            NodeRef nodeRef,
+            QName propertyQName,
+            boolean attach,
+            String attachFileName,
+            Map<String, Object> model) throws IOException
+    {
         delegate.streamContent(req, res, nodeRef, propertyQName, attach, attachFileName, model);
-     }
-    
+    }
+
     /**
      * Stream content implementation
      * 
-     * @param req               The request
-     * @param res               The response
-     * @param reader            The reader
-     * @param nodeRef           The content nodeRef if applicable
-     * @param propertyQName     The content property if applicable
-     * @param attach            Indicates whether the content should be streamed as an attachment or not
-     * @param modified          Modified date of content
-     * @param eTag              ETag to use
-     * @param attachFileName    Optional file name to use when attach is <code>true</code>
+     * @param req
+     *            The request
+     * @param res
+     *            The response
+     * @param reader
+     *            The reader
+     * @param nodeRef
+     *            The content nodeRef if applicable
+     * @param propertyQName
+     *            The content property if applicable
+     * @param attach
+     *            Indicates whether the content should be streamed as an attachment or not
+     * @param modified
+     *            Modified date of content
+     * @param eTag
+     *            ETag to use
+     * @param attachFileName
+     *            Optional file name to use when attach is <code>true</code>
      * @throws IOException
      */
-    protected void streamContentImpl(WebScriptRequest req, 
-                                    WebScriptResponse res, 
-                                    ContentReader reader, 
-                                    NodeRef nodeRef,
-                                    QName propertyQName,
-                                    boolean attach,
-                                    Date modified, 
-                                    String eTag, 
-                                    String attachFileName, 
-                                    Map<String, Object> model) throws IOException
+    protected void streamContentImpl(WebScriptRequest req,
+            WebScriptResponse res,
+            ContentReader reader,
+            NodeRef nodeRef,
+            QName propertyQName,
+            boolean attach,
+            Date modified,
+            String eTag,
+            String attachFileName,
+            Map<String, Object> model) throws IOException
     {
         delegate.streamContentImpl(req, res, reader, nodeRef, propertyQName, attach, modified, eTag, attachFileName, model);
     }
-    
+
     /**
      * Merge script generated model into template-ready model
      *
-     * @param scriptPath   path to script
-     * @param scriptModel  script model
-     * @param templateModel  template model
+     * @param scriptPath
+     *            path to script
+     * @param scriptModel
+     *            script model
+     * @param templateModel
+     *            template model
      */
     final private void mergeScriptModelIntoTemplateModel(String scriptPath, Map<String, Object> scriptModel, Map<String, Object> templateModel)
     {
         int i = scriptPath.lastIndexOf(".");
         if (i != -1)
         {
-            String extension = scriptPath.substring(i+1);
+            String extension = scriptPath.substring(i + 1);
             ScriptProcessor processor = getContainer().getScriptProcessorRegistry().getScriptProcessorByExtension(extension);
             if (processor != null)
             {
@@ -329,9 +363,11 @@ public class StreamContent extends AbstractWebScript
     /**
      * Execute custom Java logic
      * 
-     * @param req  Web Script request
-     * @param status Web Script status
-     * @return  custom service model
+     * @param req
+     *            Web Script request
+     * @param status
+     *            Web Script status
+     * @return custom service model
      * @deprecated
      */
     protected Map<String, Object> executeImpl(WebScriptRequest req, WebScriptStatus status)
@@ -342,9 +378,11 @@ public class StreamContent extends AbstractWebScript
     /**
      * Execute custom Java logic
      * 
-     * @param req  Web Script request
-     * @param status Web Script status
-     * @return  custom service model
+     * @param req
+     *            Web Script request
+     * @param status
+     *            Web Script status
+     * @return custom service model
      * @deprecated
      */
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
@@ -355,23 +393,29 @@ public class StreamContent extends AbstractWebScript
     /**
      * Execute custom Java logic
      * 
-     * @param  req  Web Script request
-     * @param  status Web Script status
-     * @param  cache  Web Script cache
-     * @return  custom service model
+     * @param req
+     *            Web Script request
+     * @param status
+     *            Web Script status
+     * @param cache
+     *            Web Script cache
+     * @return custom service model
      */
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         // NOTE: Redirect to those web scripts implemented before cache support and v2.9
         return executeImpl(req, status);
     }
-    
+
     /**
      * Render a template (of given format) to the Web Script Response
      * 
-     * @param format  template format (null, default format)  
-     * @param model  data model to render
-     * @param writer  where to output
+     * @param format
+     *            template format (null, default format)
+     * @param model
+     *            data model to render
+     * @param writer
+     *            where to output
      */
     final protected void renderFormatTemplate(String format, Map<String, Object> model, Writer writer)
     {
@@ -391,7 +435,7 @@ public class StreamContent extends AbstractWebScript
         {
             return new ObjectReference(objectId);
         }
-        
+
         StoreRef storeRef = null;
         String store_type = templateArgs.get("store_type");
         String store_id = templateArgs.get("store_id");
@@ -399,13 +443,13 @@ public class StreamContent extends AbstractWebScript
         {
             storeRef = new StoreRef(store_type, store_id);
         }
-        
+
         String id = templateArgs.get("id");
         if (storeRef != null && id != null)
         {
             return new ObjectReference(storeRef, id);
         }
-        
+
         String nodepath = templateArgs.get("nodepath");
         if (nodepath == null)
         {
@@ -415,15 +459,14 @@ public class StreamContent extends AbstractWebScript
         {
             return new ObjectReference(storeRef, nodepath.split("/"));
         }
-        
+
         return null;
     }
-    
-    
+
     class ObjectReference
     {
         private NodeRef ref;
-        
+
         ObjectReference(String nodeRef)
         {
             this.ref = new NodeRef(nodeRef);
@@ -453,7 +496,7 @@ public class StreamContent extends AbstractWebScript
                 this.ref = repository.findNodeRef("node", reference);
             }
         }
-        
+
         ObjectReference(StoreRef ref, String[] path)
         {
             String[] reference = new String[path.length + 2];
@@ -462,12 +505,12 @@ public class StreamContent extends AbstractWebScript
             System.arraycopy(path, 0, reference, 2, path.length);
             this.ref = repository.findNodeRef("path", reference);
         }
-        
+
         public NodeRef getNodeRef()
         {
             return this.ref;
         }
-        
+
         @Override
         public String toString()
         {

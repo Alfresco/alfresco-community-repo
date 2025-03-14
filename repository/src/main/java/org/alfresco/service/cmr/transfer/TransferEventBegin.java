@@ -30,12 +30,12 @@ import org.alfresco.repo.transfer.TransferEventImpl;
 /**
  * TransferEventBegin is produced when a transfer has started.
  */
-public class TransferEventBegin extends TransferEventImpl  
+public class TransferEventBegin extends TransferEventImpl
 {
     private String transferId;
-    
+
     public String toString()
-    {   
+    {
         return "TransferEventBegin: " + transferId;
     }
 

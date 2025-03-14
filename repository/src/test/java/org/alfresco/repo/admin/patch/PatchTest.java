@@ -29,6 +29,8 @@ import java.util.Date;
 import java.util.List;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
@@ -40,8 +42,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
  * @see org.alfresco.repo.admin.patch.Patch
@@ -54,7 +54,7 @@ import org.springframework.context.ApplicationContext;
 public class PatchTest extends TestCase
 {
     private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-    
+
     private TransactionService transactionService;
     private NamespaceService namespaceService;
     private NodeService nodeService;
@@ -62,12 +62,12 @@ public class PatchTest extends TestCase
     private AuthenticationContext authenticationContext;
     private TenantAdminService tenantAdminService;
     private PatchService patchService;
-    
+
     public PatchTest(String name)
     {
         super(name);
     }
-    
+
     public void setUp() throws Exception
     {
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
@@ -76,21 +76,21 @@ public class PatchTest extends TestCase
         searchService = (SearchService) ctx.getBean("searchService");
         authenticationContext = (AuthenticationContext) ctx.getBean("authenticationContext");
         tenantAdminService = (TenantAdminService) ctx.getBean("tenantAdminService");
-        
+
         patchService = (PatchService) ctx.getBean("PatchService");
-        
+
         // get the patches to play with
-        patchService.registerPatch((Patch)ctx.getBean("patch.sample.02"));
-        patchService.registerPatch((Patch)ctx.getBean("patch.sample.01"));
-        patchService.registerPatch((Patch)ctx.getBean("patch.sample.03"));
+        patchService.registerPatch((Patch) ctx.getBean("patch.sample.02"));
+        patchService.registerPatch((Patch) ctx.getBean("patch.sample.01"));
+        patchService.registerPatch((Patch) ctx.getBean("patch.sample.03"));
     }
-    
+
     public void testSetup() throws Exception
     {
         assertNotNull(transactionService);
         assertNotNull(patchService);
     }
-    
+
     private SamplePatch constructSamplePatch(boolean mustFail)
     {
         SamplePatch patch = new SamplePatch(mustFail, transactionService);
@@ -104,19 +104,19 @@ public class PatchTest extends TestCase
         return patch;
     }
 
-//    private SimplePatch constructSimplePatch(boolean requiresTransaction)
-//    {
-//    	SimplePatch patch = new SimplePatch(transactionService, requiresTransaction);
-//        patch.setNamespaceService(namespaceService);
-//        patch.setNodeService(nodeService);
-//        patch.setSearchService(searchService);
-//        patch.setAuthenticationContext(authenticationContext);
-//        patch.setTenantAdminService(tenantAdminService);
-//        patch.setApplicationEventPublisher(ctx);
-//        // done
-//        return patch;
-//    }
-    
+    // private SimplePatch constructSimplePatch(boolean requiresTransaction)
+    // {
+    // SimplePatch patch = new SimplePatch(transactionService, requiresTransaction);
+    // patch.setNamespaceService(namespaceService);
+    // patch.setNodeService(nodeService);
+    // patch.setSearchService(searchService);
+    // patch.setAuthenticationContext(authenticationContext);
+    // patch.setTenantAdminService(tenantAdminService);
+    // patch.setApplicationEventPublisher(ctx);
+    // // done
+    // return patch;
+    // }
+
     public void testSimplePatchSuccess() throws Exception
     {
         Patch patch = constructSamplePatch(false);
@@ -124,7 +124,7 @@ public class PatchTest extends TestCase
         // check that the report was generated
         assertEquals("Patch report incorrect", SamplePatch.MSG_SUCCESS, report);
     }
-    
+
     public void testPatchReapplication()
     {
         // successfully apply a patch
@@ -140,7 +140,7 @@ public class PatchTest extends TestCase
         {
             // expected
         }
-        
+
         // apply an unsuccessful patch
         patch = constructSamplePatch(true);
         try
@@ -163,7 +163,7 @@ public class PatchTest extends TestCase
             // expected
         }
     }
-    
+
     public void testApplyOutstandingPatches() throws Exception
     {
         // apply outstanding patches
@@ -197,21 +197,21 @@ public class PatchTest extends TestCase
         assertTrue("Sample 02 not in list of applied patches", found02);
         assertTrue("Sample 03 not in list of applied patches", found03);
     }
-    
+
     public void testApplyOutstandingPatch() throws Exception
     {
-        Patch testPatch = (Patch)ctx.getBean("patch.sample.02");
+        Patch testPatch = (Patch) ctx.getBean("patch.sample.02");
         // apply outstanding patches
         boolean success = patchService.applyOutstandingPatch(testPatch);
         assertTrue(success);
         // get the applied patch
         AppliedPatch appliedPatch = patchService.getPatch(testPatch.getId());
         assertNotNull("patch.sample.02 patch hasn't been applied", appliedPatch);
-        
+
         // check that the patch application was recorded
         assertTrue("Patch info didn't indicate success: " + appliedPatch, appliedPatch.getSucceeded());
     }
-    
+
     public void testGetPatchesByDate() throws Exception
     {
         // ensure that there are some applied patches
@@ -219,12 +219,12 @@ public class PatchTest extends TestCase
         // get the number of applied patches
         List<AppliedPatch> appliedPatches = patchService.getPatches(null, null);
         assertTrue("Expected at least 2 applied patches", appliedPatches.size() >= 2);
-        
+
         // now requery using null dates
         List<AppliedPatch> appliedPatchesAllDates = patchService.getPatches(null, null);
         assertEquals("Applied patches by all dates doesn't match all applied patches",
                 appliedPatches.size(), appliedPatchesAllDates.size());
-        
+
         // perform another query with dates that should return no results
         List<AppliedPatch> appliedPatchesFutureDates = patchService.getPatches(new Date(), new Date());
         assertEquals("Query returned results for dates when no patches should exist", 0, appliedPatchesFutureDates.size());

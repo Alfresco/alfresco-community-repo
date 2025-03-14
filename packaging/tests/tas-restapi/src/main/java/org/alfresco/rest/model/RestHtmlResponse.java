@@ -29,8 +29,9 @@ import static org.alfresco.utility.report.log.Step.STEP;
 
 import io.restassured.http.Headers;
 import io.restassured.response.ResponseBody;
-import org.alfresco.utility.Utility;
 import org.testng.Assert;
+
+import org.alfresco.utility.Utility;
 
 /**
  * Created by Claudia Agache on 10/13/2016.
@@ -69,8 +70,10 @@ public class RestHtmlResponse
     /**
      * Assetion that a html element with specific html path has the specified value
      * 
-     * @param elementHtmlPath the HTML path of the HTML element
-     * @param value value of the field 
+     * @param elementHtmlPath
+     *            the HTML path of the HTML element
+     * @param value
+     *            value of the field
      */
     public void assertPathInHtmlBodyEquals(String elementHtmlPath, String value)
     {

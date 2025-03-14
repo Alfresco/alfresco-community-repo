@@ -41,12 +41,12 @@ public class ScriptModeratedInvitation extends ScriptInvitation<ModeratedInvitat
     private final String inviteeEmail;
     private final String inviteeFirstName;
     private final String inviteeLastName;
-    
+
     public ScriptModeratedInvitation(ModeratedInvitation invitation,
-                InvitationService invitationService,
-                String inviteeEmail,
-                String inviteeFirstName,
-                String inviteeLastName)
+            InvitationService invitationService,
+            String inviteeEmail,
+            String inviteeFirstName,
+            String inviteeLastName)
     {
         super(invitation, invitationService);
         this.inviteeEmail = inviteeEmail;
@@ -61,6 +61,7 @@ public class ScriptModeratedInvitation extends ScriptInvitation<ModeratedInvitat
 
     /**
      * The invitee comments - why does the invitee want access ?
+     * 
      * @return invitee comments
      */
     public String getInviteeComments()
@@ -69,8 +70,8 @@ public class ScriptModeratedInvitation extends ScriptInvitation<ModeratedInvitat
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.invitation.script.ScriptInvitation#getInviteeEmail()
-     */
+     * 
+     * @see org.alfresco.repo.invitation.script.ScriptInvitation#getInviteeEmail() */
     @Override
     public String getInviteeEmail()
     {
@@ -78,8 +79,8 @@ public class ScriptModeratedInvitation extends ScriptInvitation<ModeratedInvitat
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.invitation.script.ScriptInvitation#getInviteeFirstName()
-     */
+     * 
+     * @see org.alfresco.repo.invitation.script.ScriptInvitation#getInviteeFirstName() */
     @Override
     public String getInviteeFirstName()
     {
@@ -87,8 +88,8 @@ public class ScriptModeratedInvitation extends ScriptInvitation<ModeratedInvitat
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.invitation.script.ScriptInvitation#getInviteeLastName()
-     */
+     * 
+     * @see org.alfresco.repo.invitation.script.ScriptInvitation#getInviteeLastName() */
     @Override
     public String getInviteeLastName()
     {

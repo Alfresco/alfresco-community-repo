@@ -31,24 +31,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 import junit.framework.TestCase;
-
-import org.alfresco.repo.search.impl.querymodel.Column;
-import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
-import org.alfresco.repo.search.impl.querymodel.QueryModelFactory;
-import org.alfresco.repo.search.impl.querymodel.Selector;
-import org.alfresco.repo.search.impl.querymodel.QueryOptions.Connective;
-import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryModelFactory;
-import org.alfresco.service.namespace.NamespaceService;
 import org.antlr.gunit.GrammarInfo;
 import org.antlr.gunit.gUnitLexer;
 import org.antlr.gunit.gUnitParser;
 import org.antlr.runtime.ANTLRInputStream;
-import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
+
+import org.alfresco.repo.search.impl.querymodel.Column;
+import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
+import org.alfresco.repo.search.impl.querymodel.QueryModelFactory;
+import org.alfresco.repo.search.impl.querymodel.QueryOptions.Connective;
+import org.alfresco.repo.search.impl.querymodel.Selector;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryModelFactory;
+import org.alfresco.service.namespace.NamespaceService;
 
 public class FTSTest extends TestCase
 {
@@ -146,7 +145,7 @@ public class FTSTest extends TestCase
                     }
                 }
             }
-            
+
             @Override
             protected CommonTree build(CommonTree fieldReferenceNode, CommonTree argNode, QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext,
                     Selector selector, Map<String, Column> columnMap, Map<String, CommonTree> templateTrees, String defaultField)

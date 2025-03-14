@@ -44,16 +44,16 @@ public class BaseDisjunction extends BaseConstraint implements Disjunction
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.Disjunction#getConstraints()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.Disjunction#getConstraints() */
     public List<Constraint> getConstraints()
     {
         return constraints;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.Constraint#evaluate()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.Constraint#evaluate() */
     public boolean evaluate()
     {
         throw new UnsupportedOperationException();

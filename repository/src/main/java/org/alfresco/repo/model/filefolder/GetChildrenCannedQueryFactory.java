@@ -38,7 +38,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
 /**
- * GetChidren canned query factory for files and folders. 
+ * GetChidren canned query factory for files and folders.
  * 
  * @since 4.1.1
  * @author steveglover, janv
@@ -48,24 +48,24 @@ public class GetChildrenCannedQueryFactory extends org.alfresco.repo.node.getchi
 {
     private HiddenAspect hiddenAspect;
     private Set<QName> ignoreAspectQNames;
-    
+
     public void setHiddenAspect(HiddenAspect hiddenAspect)
     {
         this.hiddenAspect = hiddenAspect;
     }
-    
+
     public CannedQuery<NodeRef> getCannedQuery(NodeRef parentRef, String pattern, Set<QName> assocTypeQNames, Set<QName> childTypeQNames, Set<QName> ignoreAspectQNames, List<FilterProp> filterProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         this.ignoreAspectQNames = ignoreAspectQNames;
-        
+
         return super.getCannedQuery(parentRef, pattern, assocTypeQNames, childTypeQNames, filterProps, sortProps, pagingRequest);
     }
-    
+
     @Override
     public CannedQuery<NodeRef> getCannedQuery(CannedQueryParameters parameters)
     {
         NodePropertyHelper nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO);
-        
+
         return (CannedQuery<NodeRef>) new GetChildrenCannedQuery(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, nodeService, methodSecurity, parameters, hiddenAspect, dictionaryService, ignoreAspectQNames);
     }
 }

@@ -33,33 +33,12 @@ import org.alfresco.rest.core.RestModels;
 import org.alfresco.utility.model.SiteModel;
 
 /**
- * Handle collection of <SiteModel>
- * Example:
-{
-        "list": {
-                "pagination": {
-                        "count": 100,
-                        "hasMoreItems": true,
-                        "totalItems": 269,
-                        "skipCount": 0,
-                        "maxItems": 100
-                },
-                "entries": [{
-                        "entry": {
-                                "visibility": "PUBLIC",
-                                "guid": "79e140e1-5039-4efa-acaf-c22b5ba7c947",
-                                "description": "Description1470255221170",
-                                "id": "0-C2291-1470255221170",
-                                "title": "0-C2291-1470255221170"
-                        }
-                },
-                ]
-}
+ * Handle collection of <SiteModel> Example: { "list": { "pagination": { "count": 100, "hasMoreItems": true, "totalItems": 269, "skipCount": 0, "maxItems": 100 }, "entries": [{ "entry": { "visibility": "PUBLIC", "guid": "79e140e1-5039-4efa-acaf-c22b5ba7c947", "description": "Description1470255221170", "id": "0-C2291-1470255221170", "title": "0-C2291-1470255221170" } }, ] }
  *
  */
 public class RestSiteModelsCollection extends RestModels<RestSiteModel, RestSiteModelsCollection>
 {
-    
+
     /**
      * Get site from sites list
      * 
@@ -81,7 +60,7 @@ public class RestSiteModelsCollection extends RestModels<RestSiteModel, RestSite
 
         return null;
     }
-    
+
     /**
      * Get site from sites list
      * 
@@ -89,7 +68,7 @@ public class RestSiteModelsCollection extends RestModels<RestSiteModel, RestSite
      * @return
      */
     public RestSiteModel getSite(SiteModel siteModel)
-    {    	
-    	return getSite(siteModel.getId());
+    {
+        return getSite(siteModel.getId());
     }
 }

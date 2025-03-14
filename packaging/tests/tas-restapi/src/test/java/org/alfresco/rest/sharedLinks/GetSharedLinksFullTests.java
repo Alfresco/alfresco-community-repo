@@ -3,6 +3,10 @@ package org.alfresco.rest.sharedLinks;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestNodeModel;
@@ -15,16 +19,13 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class GetSharedLinksFullTests extends RestTest
 {
     private SiteModel privateSite;
     private UserModel adminUser, userModel;
     protected FileModel file;
-    
+
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws DataPreparationException
     {
@@ -33,18 +34,15 @@ public class GetSharedLinksFullTests extends RestTest
         privateSite = dataSite.usingUser(adminUser).createPrivateRandomSite();
     }
 
-    @Bug(id="REPO-2365")
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.SHAREDLINKS }, executionType = ExecutionType.REGRESSION, description = "Verify that a user with permission can get allowableOperations on sharedLinks")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.REGRESSION })
+    @Bug(id = "REPO-2365")
+    @TestRail(section = {TestGroup.REST_API,
+            TestGroup.SHAREDLINKS}, executionType = ExecutionType.REGRESSION, description = "Verify that a user with permission can get allowableOperations on sharedLinks")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.REGRESSION})
     public void getSharedLinksWithAllowableOperations() throws Exception
     {
         file = dataContent.usingUser(adminUser).usingSite(privateSite).createContent(DocumentType.TEXT_PLAIN);
-        
-        /*
-         * { "permissions": { "isInheritanceEnabled": true, "locallySet": { "authorityId": "userModel.getUsername()",
-         * "name": "SiteConsumer", "accessStatus":"ALLOWED" } } }
-         */
+
+        /* { "permissions": { "isInheritanceEnabled": true, "locallySet": { "authorityId": "userModel.getUsername()", "name": "SiteConsumer", "accessStatus":"ALLOWED" } } } */
         JsonObject userPermission = Json.createObjectBuilder().add("permissions",
                 Json.createObjectBuilder().add("isInheritanceEnabled", true).add("locallySet", Json.createObjectBuilder()
                         .add("authorityId", userModel.getUsername()).add("name", "SiteConsumer").add("accessStatus", "ALLOWED")))

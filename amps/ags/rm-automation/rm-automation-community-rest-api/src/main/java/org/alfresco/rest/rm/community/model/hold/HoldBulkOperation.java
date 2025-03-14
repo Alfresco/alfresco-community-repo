@@ -27,11 +27,11 @@
 package org.alfresco.rest.rm.community.model.hold;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.utility.model.TestModel;
 

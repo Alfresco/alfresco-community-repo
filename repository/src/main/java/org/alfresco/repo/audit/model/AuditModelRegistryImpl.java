@@ -35,15 +35,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.ValidationEvent;
 import jakarta.xml.bind.ValidationEventHandler;
 import jakarta.xml.bind.ValidationEventLocator;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.util.ResourceUtils;
+import org.xml.sax.SAXParseException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.ExceptionStackUtil;
@@ -65,19 +70,12 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PathMapper;
+import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.ResourceFinder;
 import org.alfresco.util.registry.NamedObjectRegistry;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.core.io.Resource;
-import org.alfresco.util.PropertyCheck;
-import org.springframework.util.ResourceUtils;
-import org.xml.sax.SAXParseException;
 
 /**
- * Component used to store audit model definitions. It ensures that duplicate application and converter definitions are
- * detected and provides a single lookup for code using the Audit model. It is factored as a subsystem and exposes a
- * global enablement property plus enablement properties for each individual audit application.
+ * Component used to store audit model definitions. It ensures that duplicate application and converter definitions are detected and provides a single lookup for code using the Audit model. It is factored as a subsystem and exposes a global enablement property plus enablement properties for each individual audit application.
  * 
  * @author Derek Hulley
  * @author dward
@@ -91,24 +89,24 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     public static final String PROPERTY_AUDIT_CONFIG_STRICT = "audit.config.strict";
     /** The XSD classpath location. */
     private static final String AUDIT_SCHEMA_LOCATION = "classpath:alfresco/audit/alfresco-audit-3.2.xsd";
-    
+
     private static final Log logger = LogFactory.getLog(AuditModelRegistryImpl.class);
-    
+
     private String[] searchPath;
     private TransactionService transactionService;
     private AuditDAO auditDAO;
     private NamedObjectRegistry<DataExtractor> dataExtractors;
     private NamedObjectRegistry<DataGenerator> dataGenerators;
     private final ObjectFactory objectFactory;
-    
+
     /**
      * Default constructor.
      */
     public AuditModelRegistryImpl()
-    {        
-        objectFactory = new ObjectFactory();        
+    {
+        objectFactory = new ObjectFactory();
     }
-    
+
     /**
      * Sets the search path for config files.
      */
@@ -154,12 +152,12 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
      */
     @Override
     public void afterPropertiesSet() throws Exception
-    {    
+    {
         PropertyCheck.mandatory(this, "searchPath", searchPath);
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "auditDAO", auditDAO);
         PropertyCheck.mandatory(this, "dataExtractors", dataExtractors);
-        PropertyCheck.mandatory(this, "dataGenerators", dataGenerators);        
+        PropertyCheck.mandatory(this, "dataGenerators", dataGenerators);
         super.afterPropertiesSet();
     }
 
@@ -240,7 +238,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
         stop();
         start();
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -252,10 +250,10 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     }
 
     /**
-     * Enables audit and registers an audit model at a given URL. Does not register across the cluster and should only
-     * be used for unit test purposes.
+     * Enables audit and registers an audit model at a given URL. Does not register across the cluster and should only be used for unit test purposes.
      * 
-     * @param auditModelUrl             the source of the model
+     * @param auditModelUrl
+     *            the source of the model
      */
     public void registerModel(URL auditModelUrl)
     {
@@ -269,14 +267,14 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
         finally
         {
             this.lock.writeLock().unlock();
-        }        
+        }
     }
-        
+
     /**
      * A class encapsulating the disposable/resettable state of the audit model registry.
      */
     public class AuditModelRegistryState implements PropertyBackedBeanState
-    {        
+    {
         /** The audit models. */
         private final Map<URL, Audit> auditModels;
         /** Used to lookup path translations. */
@@ -287,7 +285,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
         private Map<String, AuditApplication> auditApplicationsByName;
         /** The exposed configuration properties. */
         private final Map<String, Boolean> properties;
-        
+
         /**
          * Instantiates a new audit model registry state.
          */
@@ -295,7 +293,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
         {
             auditModels = new LinkedHashMap<URL, Audit>(7);
             properties = new HashMap<String, Boolean>(7);
-            
+
             // Default value for global enabled property
             properties.put(AUDIT_PROPERTY_AUDIT_ENABLED, false);
 
@@ -312,13 +310,14 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
             catch (IOException e)
             {
                 throw new AlfrescoRuntimeException("Failed to find audit resources", e);
-            }                    
+            }
         }
 
         /**
          * Register an audit model at a given URL.
          * 
-         * @param auditModelUrl         the source of the model
+         * @param auditModelUrl
+         *            the source of the model
          */
         public void registerModel(URL auditModelUrl)
         {
@@ -349,22 +348,21 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
         /**
          * Helper method to convert an application key into a <b>enabled-disabled</b> property.
          * 
-         * @param key                   an application key e.g. for "My App" the key might be "myapp",
-         *                              but is defined in the audit model config.
-         * @return                      the property name of the for "audit.myapp.enabled"
+         * @param key
+         *            an application key e.g. for "My App" the key might be "myapp", but is defined in the audit model config.
+         * @return the property name of the for "audit.myapp.enabled"
          */
         private String getEnabledProperty(String key)
         {
             return "audit." + key.toLowerCase() + ".enabled";
         }
-        
+
         /**
-         * Checks if an application key is enabled.  Each application has a name and a root key
-         * value.  It is the key (which will be used as the root of all logged paths) that is
-         * used here.
+         * Checks if an application key is enabled. Each application has a name and a root key value. It is the key (which will be used as the root of all logged paths) that is used here.
          * 
-         * @param key                   the application key
-         * @return                      <tt>true</tt> if the application key is enabled
+         * @param key
+         *            the application key
+         * @return <tt>true</tt> if the application key is enabled
          */
         private boolean isApplicationEnabled(String key)
         {
@@ -415,8 +413,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
             Boolean enabled = properties.get(AUDIT_PROPERTY_AUDIT_ENABLED);
             if (enabled != null && enabled)
             {
-                final RetryingTransactionCallback<Void> loadModelsCallback = new RetryingTransactionCallback<Void>()
-                {
+                final RetryingTransactionCallback<Void> loadModelsCallback = new RetryingTransactionCallback<Void>() {
                     public Void execute() throws Throwable
                     {
                         // Load models from the URLs
@@ -453,8 +450,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
                 };
 
                 // Run as system user to avoid cyclical dependency in bootstrap read-only checking (and we are anyway!)
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         transactionService.getRetryingTransactionHelper().doInTransaction(
@@ -476,45 +472,48 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
         {
             auditPathMapper = null;
         }
-        
+
         /**
          * Gets all audit applications keyed by name.
+         * 
          * @see org.alfresco.repo.audit.model.AuditModelRegistry#getAuditApplications()
          */
         public Map<String, AuditApplication> getAuditApplications()
         {
             return auditApplicationsByName;
         }
-        
+
         /**
          * Gets an audit application by key.
+         * 
          * @see org.alfresco.repo.audit.model.AuditModelRegistry#getAuditApplicationByKey(java.lang.String)
          */
         public AuditApplication getAuditApplicationByKey(String key)
         {
             return auditApplicationsByKey.get(key);
         }
-        
+
         /**
          * Gets an audit application by name.
+         * 
          * @see org.alfresco.repo.audit.model.AuditModelRegistry#getAuditApplicationByName(java.lang.String)
          */
         public AuditApplication getAuditApplicationByName(String applicationName)
         {
             return auditApplicationsByName.get(applicationName);
         }
-        
+
         /**
          * Gets the audit path mapper.
          * 
-         * @return                      the audit path mapper
+         * @return the audit path mapper
          * @see org.alfresco.repo.audit.model.AuditModelRegistry#getAuditPathMapper()
          */
         public PathMapper getAuditPathMapper()
         {
             return auditPathMapper;
         }
-        
+
         /**
          * Caches audit elements from a model.
          */
@@ -646,14 +645,14 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
                     throw new AuditModelException(
                             "Audit application key '" + key + "' is used by: " + auditApplicationsByKey.get(key));
                 }
-                
+
                 String name = application.getName();
                 if (auditApplicationsByName.containsKey(name))
                 {
                     throw new AuditModelException(
                             "Audit application '" + name + "' is used by: " + auditApplicationsByName.get(name));
                 }
-                
+
                 // Get the ID of the application
                 AuditApplicationInfo appInfo = auditDAO.getAuditApplication(name);
                 if (appInfo == null)
@@ -665,7 +664,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
                     // Update it with the new model ID
                     auditDAO.updateAuditApplicationModel(appInfo.getId(), auditModelId);
                 }
-                
+
                 AuditApplication wrapperApp = new AuditApplication(
                         dataExtractorsByName,
                         dataGeneratorsByName,
@@ -675,11 +674,11 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
                 auditApplicationsByName.put(name, wrapperApp);
                 auditApplicationsByKey.put(key, wrapperApp);
             }
-            
+
             // Pull out all the audit path maps
-            buildAuditPathMap(audit);            
+            buildAuditPathMap(audit);
         }
-        
+
         /**
          * Construct the reverse lookup maps for quick conversion of data to target maps.
          */
@@ -721,9 +720,11 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     /**
      * Unmarshalls the Audit model from the URL.
      * 
-     * @param configUrl                     the config url
-     * @return                              the audit model
-     * @throws AlfrescoRuntimeException     if an IOException occurs
+     * @param configUrl
+     *            the config url
+     * @return the audit model
+     * @throws AlfrescoRuntimeException
+     *             if an IOException occurs
      */
     public static Audit unmarshallModel(URL configUrl)
     {
@@ -754,8 +755,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
             jaxbCtx = JAXBContext.newInstance("org.alfresco.repo.audit.model._3");
             jaxbUnmarshaller = jaxbCtx.createUnmarshaller();
             jaxbUnmarshaller.setSchema(schema);
-            jaxbUnmarshaller.setEventHandler(new ValidationEventHandler()
-            {
+            jaxbUnmarshaller.setEventHandler(new ValidationEventHandler() {
                 public boolean handleEvent(ValidationEvent ve)
                 {
                     if (ve.getSeverity() == ValidationEvent.FATAL_ERROR || ve.getSeverity() == ValidationEvent.ERROR)
@@ -795,12 +795,17 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
             }
             throw new AuditModelException(
                     "Failed to read Audit model XML: \n" +
-                    "   Source: " + source + "\n" +
-                    "   Error:  " + e.getMessage());
+                            "   Source: " + source + "\n" +
+                            "   Error:  " + e.getMessage());
         }
         finally
         {
-            try { is.close(); } catch (IOException e) {}
+            try
+            {
+                is.close();
+            }
+            catch (IOException e)
+            {}
         }
-    }    
+    }
 }

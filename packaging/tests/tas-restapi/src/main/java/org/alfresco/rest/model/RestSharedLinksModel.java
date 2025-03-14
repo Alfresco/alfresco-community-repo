@@ -33,8 +33,7 @@ import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
 
 /**
- * Generated from 'Alfresco Core REST API' swagger file
- * Base Path {@linkplain /alfresco/api/-default-/public/alfresco/versions/1}
+ * Generated from 'Alfresco Core REST API' swagger file Base Path {@linkplain /alfresco/api/-default-/public/alfresco/versions/1}
  * 
  * @author Meenal Bhave
  */
@@ -42,8 +41,7 @@ public class RestSharedLinksModel extends TestModel implements IRestModel<RestSh
 {
 
     public RestSharedLinksModel()
-    {
-    }
+    {}
 
     public RestSharedLinksModel(String fileGuid)
     {
@@ -188,7 +186,7 @@ public class RestSharedLinksModel extends TestModel implements IRestModel<RestSh
     {
         this.path = path;
     }
-    
+
     public String getExpiresAt()
     {
         return expiresAt;

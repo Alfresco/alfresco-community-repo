@@ -25,16 +25,14 @@
  */
 package org.alfresco.rest.api.model;
 
-import org.alfresco.repo.module.ModuleVersionNumber;
+import java.util.Date;
+
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleInstallState;
-import org.alfresco.util.VersionNumber;
-import org.apache.maven.artifact.versioning.ArtifactVersion;
-
-import java.util.Date;
 
 /**
  * POJO representation of Module Details for Serialization as JSON.
+ * 
  * @author Gethin James.
  */
 public class ModulePackage
@@ -49,8 +47,7 @@ public class ModulePackage
     private String versionMax;
 
     public ModulePackage()
-    {
-    }
+    {}
 
     private ModulePackage(ModuleDetails moduleDetails)
     {
@@ -72,9 +69,9 @@ public class ModulePackage
         }
         catch (NullPointerException npe)
         {
-            //Something went wrong with the definition of the Module.
-            //These are just POJO properties, I am unable to represent
-            //the data so will return null
+            // Something went wrong with the definition of the Module.
+            // These are just POJO properties, I am unable to represent
+            // the data so will return null
             return null;
         }
     }
@@ -135,5 +132,3 @@ public class ModulePackage
         return sb.toString();
     }
 }
-
-

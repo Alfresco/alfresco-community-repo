@@ -50,20 +50,22 @@ public abstract class CapabilityPatch extends AbstractModulePatch
 
     /** authority service */
     private AuthorityService authorityService;
-    
+
     /** permission service */
     private PermissionService permissionService;
-    
+
     /**
-     * @param authorityService authority service
+     * @param authorityService
+     *            authority service
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
     }
-    
+
     /**
-     * @param permissionService permission service
+     * @param permissionService
+     *            permission service
      */
     public void setPermissionService(PermissionService permissionService)
     {
@@ -71,7 +73,8 @@ public abstract class CapabilityPatch extends AbstractModulePatch
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -91,11 +94,14 @@ public abstract class CapabilityPatch extends AbstractModulePatch
     /**
      * Adds a new capability to the specified roles.
      *
-     * @param filePlan          file plan
-     * @param capabilityName    capability name
-     * @param roles             roles
+     * @param filePlan
+     *            file plan
+     * @param capabilityName
+     *            capability name
+     * @param roles
+     *            roles
      */
-    protected void addCapability(NodeRef filePlan, String capabilityName, String ... roles)
+    protected void addCapability(NodeRef filePlan, String capabilityName, String... roles)
     {
         for (String role : roles)
         {
@@ -131,12 +137,12 @@ public abstract class CapabilityPatch extends AbstractModulePatch
             {
                 LOGGER.debug("  ... updating file plan " + filePlan.toString());
             }
-            
+
             // apply the capability patch to each file plan
             applyCapabilityPatch(filePlan);
         }
     }
-    
+
     @Override
     public void apply()
     {
@@ -144,6 +150,6 @@ public abstract class CapabilityPatch extends AbstractModulePatch
         setTxnRequiresNew(true);
         super.apply();
     }
-    
+
     protected abstract void applyCapabilityPatch(NodeRef filePlan);
 }

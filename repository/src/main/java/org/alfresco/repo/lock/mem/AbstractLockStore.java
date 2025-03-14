@@ -29,11 +29,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
+import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.dao.ConcurrencyFailureException;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * Base class for LockStore implementations that use a ConcurrentMap as storage.
@@ -43,7 +44,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 public abstract class AbstractLockStore<T extends ConcurrentMap<NodeRef, LockState>> implements LockStore
 {
     protected T map;
-    
+
     public AbstractLockStore(T map)
     {
         this.map = map;
@@ -97,10 +98,10 @@ public abstract class AbstractLockStore<T extends ConcurrentMap<NodeRef, LockSta
             // to set new state.
             previousLockState = get(nodeRef);
         }
-        
+
         // Has the lock been succesfully placed into the lock store?
         boolean updated = false;
-        
+
         if (previousLockState != null)
         {
             // Use ConcurrentMap.replace(key, old, new) so that we can ensure we don't encounter a
@@ -114,11 +115,11 @@ public abstract class AbstractLockStore<T extends ConcurrentMap<NodeRef, LockSta
                 updated = true;
             }
         }
-        
+
         if (!updated)
         {
             String msg = String.format("Attempt to update lock state failed, old=%s, new=%s, noderef=%s",
-                        previousLockState, lockState, nodeRef);
+                    previousLockState, lockState, nodeRef);
             throw new ConcurrencyFailureException(msg);
         }
         else
@@ -130,7 +131,6 @@ public abstract class AbstractLockStore<T extends ConcurrentMap<NodeRef, LockSta
             }
         }
     }
-
 
     @Override
     public void clear()
@@ -144,8 +144,7 @@ public abstract class AbstractLockStore<T extends ConcurrentMap<NodeRef, LockSta
     }
 
     /**
-     * Returns a transactionally scoped Map that is used to provide repeatable lock store queries
-     * for a given NodeRef. If no transaction is present, then null is returned.
+     * Returns a transactionally scoped Map that is used to provide repeatable lock store queries for a given NodeRef. If no transaction is present, then null is returned.
      * 
      * @return Transactional Map or null if not available.
      */
@@ -155,10 +154,10 @@ public abstract class AbstractLockStore<T extends ConcurrentMap<NodeRef, LockSta
         {
             return null;
         }
-        Map<NodeRef, LockState> map = TransactionalResourceHelper.getMap(getClass().getName()+".repeatableReadMap");
+        Map<NodeRef, LockState> map = TransactionalResourceHelper.getMap(getClass().getName() + ".repeatableReadMap");
         return map;
     }
-    
+
     @Override
     public Set<NodeRef> getNodes()
     {

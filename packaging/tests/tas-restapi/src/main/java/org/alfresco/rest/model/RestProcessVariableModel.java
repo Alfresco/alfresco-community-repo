@@ -32,20 +32,19 @@ import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.TestModel;
 
 public class RestProcessVariableModel extends TestModel implements IRestModel<RestProcessVariableModel>
-{  
+{
     private String name;
-    
+
     private String value;
-    
+
     private String type;
-    
+
     @JsonProperty(value = "entry")
     RestProcessVariableModel model;
 
     public RestProcessVariableModel()
-    {
-    }
-    
+    {}
+
     public RestProcessVariableModel(String name, String value, String type)
     {
         this.name = name;
@@ -58,7 +57,7 @@ public class RestProcessVariableModel extends TestModel implements IRestModel<Re
     {
         return model;
     }
-    
+
     public String getName()
     {
         return name;
@@ -89,7 +88,8 @@ public class RestProcessVariableModel extends TestModel implements IRestModel<Re
         this.type = type;
     }
 
-    public static RestProcessVariableModel getRandomProcessVariableModel(String variableType){
-        return new RestProcessVariableModel(RandomData.getRandomName("name"), RandomData.getRandomName("value"), variableType);    
+    public static RestProcessVariableModel getRandomProcessVariableModel(String variableType)
+    {
+        return new RestProcessVariableModel(RandomData.getRandomName("name"), RandomData.getRandomName("value"), variableType);
     }
 }

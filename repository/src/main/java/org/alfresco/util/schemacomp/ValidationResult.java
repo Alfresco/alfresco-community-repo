@@ -39,14 +39,12 @@ public class ValidationResult extends Result
     private DbProperty dbProperty;
     private String message;
 
-    
     public ValidationResult(DbProperty dbProperty, String message)
     {
         this.dbProperty = dbProperty;
         this.message = message;
     }
 
-    
     /**
      * @return the dbProperty that was rejected.
      */
@@ -56,14 +54,14 @@ public class ValidationResult extends Result
     }
 
     /**
-     * @param dbProperty the dbProperty to set
+     * @param dbProperty
+     *            the dbProperty to set
      */
     public void setDbProperty(DbProperty dbProperty)
     {
         this.dbProperty = dbProperty;
     }
 
-    
     @Override
     public String describe()
     {
@@ -79,12 +77,12 @@ public class ValidationResult extends Result
     private String doDescribe(Locale locale)
     {
         return I18NUtil.getMessage(
-                    "system.schema_comp.validation",
-                    locale,
-                    getDbProperty().getDbObject().getTypeName(),
-                    getDbProperty().getPath(),
-                    getValue(),
-                    message);
+                "system.schema_comp.validation",
+                locale,
+                getDbProperty().getDbObject().getTypeName(),
+                getDbProperty().getPath(),
+                getValue(),
+                message);
     }
 
     /**

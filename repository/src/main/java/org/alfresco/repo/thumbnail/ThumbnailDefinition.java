@@ -25,12 +25,12 @@
  */
 package org.alfresco.repo.thumbnail;
 
+import java.util.Objects;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.service.cmr.repository.TransformationOptions;
-
-import java.util.Objects;
 
 /**
  * This class provides the thumbnail details to the thumbnail service.
@@ -47,68 +47,76 @@ public class ThumbnailDefinition
 
     /** Name of the thumbnail */
     private String name;
-    
+
     /** The destination mimetype */
     private String mimetype;
-    
+
     /** Transformation options */
-    private TransformationOptions options;    
-    
+    private TransformationOptions options;
+
     /** Failure options */
     private FailureHandlingOptions failureOptions;
-    
-    /** Path to placeholder thumbnail
+
+    /**
+     * Path to placeholder thumbnail
      */
     private String placeHolderResourcePath;
-    
-    /** Path to mime aware placeholder thumbnail
-     * */
+
+    /**
+     * Path to mime aware placeholder thumbnail
+     */
     private String mimeAwarePlaceHolderResourcePath;
-    
+
     /** Username to run the thumbnailrendition as */
     private String runAs;
-    
+
     /** The thumbnail registry */
     private ThumbnailRegistry thumbnailRegistry;
-    
+
     /**
      * Default constructor
      */
     public ThumbnailDefinition()
-    {
-    }
-    
+    {}
+
     /**
      * Constructor
      * 
-     * @param destinationMimetype String
-     * @param options TransformationOptions
+     * @param destinationMimetype
+     *            String
+     * @param options
+     *            TransformationOptions
      */
     public ThumbnailDefinition(String destinationMimetype, TransformationOptions options)
-    {       
+    {
         this.mimetype = destinationMimetype;
         this.options = options;
-    }    
-    
+    }
+
     /**
-     * Constructor.  Specify the name of the thumbnail.
+     * Constructor. Specify the name of the thumbnail.
      * 
-     * @param thumbnailName the name of the thumbnail, can be null
+     * @param thumbnailName
+     *            the name of the thumbnail, can be null
      */
     public ThumbnailDefinition(String mimetype, TransformationOptions options, String thumbnailName)
     {
         this(mimetype, options);
-        this.name= thumbnailName;
+        this.name = thumbnailName;
         options.setUse(thumbnailName);
     }
-    
+
     /**
-     * Constructor.  Specify the place holder thumbnail path.
+     * Constructor. Specify the place holder thumbnail path.
      * 
-     * @param mimetype String
-     * @param options TransformationOptions
-     * @param thumbnailName String
-     * @param placeHolderResourcePath String
+     * @param mimetype
+     *            String
+     * @param options
+     *            TransformationOptions
+     * @param thumbnailName
+     *            String
+     * @param placeHolderResourcePath
+     *            String
      */
     public ThumbnailDefinition(String mimetype, TransformationOptions options, String thumbnailName, String placeHolderResourcePath)
     {
@@ -116,31 +124,33 @@ public class ThumbnailDefinition
         this.placeHolderResourcePath = placeHolderResourcePath;
         options.setUse(thumbnailName);
     }
-    
+
     /**
      * Set the destination mimetype
      * 
-     * @param mimetype   the destination minetype
+     * @param mimetype
+     *            the destination minetype
      */
     public void setMimetype(String mimetype)
     {
         this.mimetype = mimetype;
     }
-    
+
     /**
      * Get the destination mimetype
      * 
-     * @return  the destination mimetype
+     * @return the destination mimetype
      */
     public String getMimetype()
     {
         return mimetype;
     }
-    
+
     /**
      * Set the transformation options
      * 
-     * @param options   the transformation options
+     * @param options
+     *            the transformation options
      */
     public void setTransformationOptions(TransformationOptions options)
     {
@@ -150,7 +160,7 @@ public class ThumbnailDefinition
     /**
      * Get the transformation options
      * 
-     * @return  the transformation options
+     * @return the transformation options
      */
     public TransformationOptions getTransformationOptions()
     {
@@ -160,14 +170,15 @@ public class ThumbnailDefinition
     /**
      * Set the {@link FailureHandlingOptions failure options}.
      * 
-     * @param failureOptions the failure options.
+     * @param failureOptions
+     *            the failure options.
      * @since 3.5.0
      */
     public void setFailureHandlingOptions(FailureHandlingOptions failureOptions)
     {
         this.failureOptions = failureOptions;
     }
-    
+
     /**
      * Get the {@link FailureHandlingOptions failure options}.
      * 
@@ -178,74 +189,77 @@ public class ThumbnailDefinition
     {
         return failureOptions;
     }
-    
+
     /**
      * Sets the name of the thumbnail
      * 
-     * @param thumbnailName     the thumbnail name
+     * @param thumbnailName
+     *            the thumbnail name
      */
     public void setName(String thumbnailName)
     {
         this.name = thumbnailName;
     }
-    
+
     /**
      * Gets the name of the thumbnail
      * 
-     * @return String   the name of the thumbnail, null if non specified
+     * @return String the name of the thumbnail, null if non specified
      */
     public String getName()
     {
         return name;
     }
-    
+
     public void setRunAs(String runAs)
     {
         this.runAs = runAs;
     }
-    
+
     public String getRunAs()
     {
         return this.runAs;
     }
-    
+
     /**
      * This method sets the placeholder resource path.
      * 
-     * @param placeHolderResourcePath String
+     * @param placeHolderResourcePath
+     *            String
      */
     public void setPlaceHolderResourcePath(String placeHolderResourcePath)
     {
         this.placeHolderResourcePath = placeHolderResourcePath;
     }
-    
+
     /**
      * 
      * @return String
      */
     public String getPlaceHolderResourcePath()
-    {   
+    {
         return placeHolderResourcePath;
     }
 
     /**
      * This method sets the mime-aware placeholder resource path template.
      * 
-     * @param mimeAwarePlaceHolderResourcePath String
+     * @param mimeAwarePlaceHolderResourcePath
+     *            String
      * @since 3.4.1 (Team)
      */
     public void setMimeAwarePlaceHolderResourcePath(String mimeAwarePlaceHolderResourcePath)
     {
         this.mimeAwarePlaceHolderResourcePath = mimeAwarePlaceHolderResourcePath;
     }
-    
+
     /**
      * 
      * @return String
      * @since 3.4.1 (Team)
      */
     public String getMimeAwarePlaceHolderResourcePath()
-    {   
+    {
         return mimeAwarePlaceHolderResourcePath;
     }
 
@@ -262,13 +276,14 @@ public class ThumbnailDefinition
     /**
      * Sets the thumbnail registry
      * 
-     * @param thumbnailRegistry ThumbnailRegistry
+     * @param thumbnailRegistry
+     *            ThumbnailRegistry
      */
     public void setThumbnailRegistry(ThumbnailRegistry thumbnailRegistry)
     {
         this.thumbnailRegistry = thumbnailRegistry;
     }
-    
+
     /**
      * Registers the thumbnail definition with the thumbnail registry.
      * 

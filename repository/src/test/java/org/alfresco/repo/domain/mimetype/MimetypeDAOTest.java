@@ -26,6 +26,8 @@
 package org.alfresco.repo.domain.mimetype;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -36,8 +38,6 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.testing.category.DBTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
  * @see MimetypeDAO
@@ -53,21 +53,20 @@ public class MimetypeDAOTest extends TestCase
     private TransactionService transactionService;
     private RetryingTransactionHelper txnHelper;
     private MimetypeDAO mimetypeDAO;
-    
+
     @Override
     public void setUp() throws Exception
     {
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
         txnHelper = transactionService.getRetryingTransactionHelper();
-        
+
         mimetypeDAO = (MimetypeDAO) ctx.getBean("mimetypeDAO");
     }
-    
+
     private Pair<Long, String> get(final String mimetype, final boolean autoCreate, boolean expectSuccess)
     {
-        RetryingTransactionCallback<Pair<Long, String>> callback = new RetryingTransactionCallback<Pair<Long, String>>()
-        {
+        RetryingTransactionCallback<Pair<Long, String>> callback = new RetryingTransactionCallback<Pair<Long, String>>() {
             public Pair<Long, String> execute() throws Throwable
             {
                 Pair<Long, String> mimetypePair = null;
@@ -102,8 +101,7 @@ public class MimetypeDAOTest extends TestCase
 
     private Pair<Long, String> update(final String oldMimetype, final String newMimetype)
     {
-        RetryingTransactionCallback<Pair<Long, String>> callback = new RetryingTransactionCallback<Pair<Long, String>>()
-        {
+        RetryingTransactionCallback<Pair<Long, String>> callback = new RetryingTransactionCallback<Pair<Long, String>>() {
             public Pair<Long, String> execute() throws Throwable
             {
                 mimetypeDAO.updateMimetype(oldMimetype, newMimetype);
@@ -112,7 +110,7 @@ public class MimetypeDAOTest extends TestCase
         };
         return txnHelper.doInTransaction(callback, false, false);
     }
-    
+
     public void testCreateWithCommit() throws Exception
     {
         // Create a mimetype
@@ -122,13 +120,12 @@ public class MimetypeDAOTest extends TestCase
         Pair<Long, String> mimetypePairCheck = get(mimetypePair.getSecond(), false, true);
         assertEquals("Mimetype ID changed", mimetypePair.getFirst(), mimetypePairCheck.getFirst());
     }
-    
+
     public void testCreateWithRollback() throws Exception
     {
         final String mimetype = GUID.generate();
         // Create a mimetype
-        RetryingTransactionCallback<Pair<Long, String>> callback = new RetryingTransactionCallback<Pair<Long, String>>()
-        {
+        RetryingTransactionCallback<Pair<Long, String>> callback = new RetryingTransactionCallback<Pair<Long, String>>() {
             public Pair<Long, String> execute() throws Throwable
             {
                 get(mimetype, true, true);
@@ -148,7 +145,7 @@ public class MimetypeDAOTest extends TestCase
         // Check that it doesn't exist
         get(mimetype, false, false);
     }
-    
+
     public void testCaseInsensitivity() throws Exception
     {
         String mimetype = "AAA-" + GUID.generate();
@@ -166,7 +163,7 @@ public class MimetypeDAOTest extends TestCase
         assertEquals(mimetype.toLowerCase(), uppercasePair.getSecond());
 
         // Check lower case values come back from update.
-        String mimetypeFoobar = "APPLICATION/FOOBAR/"+GUID.generate();
+        String mimetypeFoobar = "APPLICATION/FOOBAR/" + GUID.generate();
         Pair<Long, String> updatedMimetype = update(mimetype, mimetypeFoobar);
         assertEquals(id, updatedMimetype.getFirst());
         assertEquals(mimetypeFoobar.toLowerCase(), updatedMimetype.getSecond());
@@ -189,8 +186,7 @@ public class MimetypeDAOTest extends TestCase
         final String newMimetype = GUID.generate();
         Pair<Long, String> oldMimetypePair = get(oldMimetype, true, true);
         // Update it
-        RetryingTransactionCallback<Pair<Long, String>> callback = new RetryingTransactionCallback<Pair<Long, String>>()
-        {
+        RetryingTransactionCallback<Pair<Long, String>> callback = new RetryingTransactionCallback<Pair<Long, String>>() {
             public Pair<Long, String> execute() throws Throwable
             {
                 int count = mimetypeDAO.updateMimetype(oldMimetype, newMimetype);

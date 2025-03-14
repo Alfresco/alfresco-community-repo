@@ -49,10 +49,9 @@ public class Task
     String formResourceKey;
     String state;
     List<TaskVariable> variables;
-    
+
     public Task()
-    {
-    }
+    {}
 
     public Task(HistoricTaskInstance taskInstance)
     {
@@ -72,18 +71,18 @@ public class Task
         this.formResourceKey = taskInstance.getFormKey();
         if (taskInstance.getEndTime() != null)
         {
-        	this.state = TaskStateTransition.COMPLETED.name().toLowerCase();
+            this.state = TaskStateTransition.COMPLETED.name().toLowerCase();
         }
         else if (taskInstance.getAssignee() != null)
         {
-        	this.state = TaskStateTransition.CLAIMED.name().toLowerCase();
+            this.state = TaskStateTransition.CLAIMED.name().toLowerCase();
         }
         else
         {
-        	this.state = TaskStateTransition.UNCLAIMED.name().toLowerCase();
+            this.state = TaskStateTransition.UNCLAIMED.name().toLowerCase();
         }
     }
-    
+
     public Task(org.activiti.engine.task.Task taskInstance)
     {
         this.id = taskInstance.getId();
@@ -107,11 +106,11 @@ public class Task
         }
         else if (taskInstance.getAssignee() != null)
         {
-        	this.state = TaskStateTransition.CLAIMED.name().toLowerCase();
+            this.state = TaskStateTransition.CLAIMED.name().toLowerCase();
         }
         else
         {
-        	this.state = TaskStateTransition.UNCLAIMED.name().toLowerCase();
+            this.state = TaskStateTransition.UNCLAIMED.name().toLowerCase();
         }
     }
 
@@ -254,12 +253,12 @@ public class Task
     {
         this.formResourceKey = formResourceKey;
     }
-    
+
     public String getState()
     {
         return this.state;
     }
-    
+
     public void setState(String state)
     {
         this.state = state;

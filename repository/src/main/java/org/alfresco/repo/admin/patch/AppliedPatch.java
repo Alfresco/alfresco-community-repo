@@ -51,9 +51,8 @@ public class AppliedPatch
      * Default constructor
      */
     public AppliedPatch()
-    {
-    }
-    
+    {}
+
     /**
      * Construct an instance from another patch info-provider
      */
@@ -71,101 +70,112 @@ public class AppliedPatch
         this.succeeded = appliedPatch.getSucceeded();
         this.report = appliedPatch.getReport();
     }
-    
+
     public String getId()
     {
         return id;
     }
+
     public void setId(String id)
     {
         this.id = id;
     }
-    
+
     public String getDescription()
     {
         return description;
     }
+
     public void setDescription(String description)
     {
         this.description = description;
     }
-    
+
     public int getFixesFromSchema()
     {
         return fixesFromSchema;
     }
+
     public void setFixesFromSchema(int fixesFromSchema)
     {
         this.fixesFromSchema = fixesFromSchema;
     }
-    
+
     public int getFixesToSchema()
     {
         return fixesToSchema;
     }
+
     public void setFixesToSchema(int fixesToSchema)
     {
         this.fixesToSchema = fixesToSchema;
     }
-    
+
     public int getTargetSchema()
     {
         return targetSchema;
     }
+
     public void setTargetSchema(int targetSchema)
     {
         this.targetSchema = targetSchema;
     }
-    
+
     public int getAppliedToSchema()
     {
         return appliedToSchema;
     }
+
     public void setAppliedToSchema(int appliedToSchema)
     {
         this.appliedToSchema = appliedToSchema;
     }
-    
+
     public String getAppliedToServer()
     {
         return appliedToServer;
     }
+
     public void setAppliedToServer(String appliedToServer)
     {
         this.appliedToServer = appliedToServer;
     }
-    
+
     public Date getAppliedOnDate()
     {
         return appliedOnDate;
     }
+
     public void setAppliedOnDate(Date appliedOnDate)
     {
         this.appliedOnDate = appliedOnDate;
     }
-    
+
     public boolean getWasExecuted()
     {
         return wasExecuted;
     }
+
     public void setWasExecuted(boolean wasExecuted)
     {
         this.wasExecuted = wasExecuted;
     }
-    
+
     public boolean getSucceeded()
     {
         return succeeded;
     }
+
     public void setSucceeded(boolean succeeded)
     {
         this.succeeded = succeeded;
     }
-    
+
     public String getReport()
     {
         return report;
     }
+
     public void setReport(String report)
     {
         this.report = report;

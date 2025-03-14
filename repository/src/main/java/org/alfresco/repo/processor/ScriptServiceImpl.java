@@ -28,6 +28,10 @@ package org.alfresco.repo.processor;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.jscript.ScriptUrls;
@@ -39,9 +43,6 @@ import org.alfresco.service.cmr.repository.ScriptProcessor;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Script service implementation
@@ -52,15 +53,15 @@ import org.apache.commons.logging.LogFactory;
 public class ScriptServiceImpl implements ScriptService
 {
     /** Logger */
-    private static final Log    logger = LogFactory.getLog(ScriptServiceImpl.class);
-    
+    private static final Log logger = LogFactory.getLog(ScriptServiceImpl.class);
+
     /** The name of the default script processor */
-    private String defaultScriptProcessor;    
-    
+    private String defaultScriptProcessor;
+
     /** Maps containing the script processors */
     private Map<String, ScriptProcessor> scriptProcessors = new HashMap<String, ScriptProcessor>(8);
     private Map<String, String> scriptProcessorNamesByExtension = new HashMap<String, String>(8);
-    
+
     /** The node service */
     private NodeService nodeService;
 
@@ -69,17 +70,19 @@ public class ScriptServiceImpl implements ScriptService
     /**
      * Sets the name of the default script processor
      * 
-     * @param defaultScriptProcessor    the name of the default script processor
+     * @param defaultScriptProcessor
+     *            the name of the default script processor
      */
     public void setDefaultScriptProcessor(String defaultScriptProcessor)
     {
         this.defaultScriptProcessor = defaultScriptProcessor;
     }
-    
+
     /**
      * Set the node service
      * 
-     * @param nodeService   the node service
+     * @param nodeService
+     *            the node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -89,7 +92,8 @@ public class ScriptServiceImpl implements ScriptService
     /**
      * Set the sysAdminParams
      * 
-     * @param sysAdminParams the sysAdminParams 
+     * @param sysAdminParams
+     *            the sysAdminParams
      */
     public void setSysAdminParams(SysAdminParams sysAdminParams)
     {
@@ -99,14 +103,15 @@ public class ScriptServiceImpl implements ScriptService
     /**
      * Register a script processor
      * 
-     * @param   scriptProcessor     the script processor to register with the script service
+     * @param scriptProcessor
+     *            the script processor to register with the script service
      */
     public void registerScriptProcessor(ScriptProcessor scriptProcessor)
     {
         this.scriptProcessors.put(scriptProcessor.getName(), scriptProcessor);
         this.scriptProcessorNamesByExtension.put(scriptProcessor.getExtension(), scriptProcessor.getName());
     }
-    
+
     /**
      * Reset all registered script processors
      */
@@ -122,18 +127,18 @@ public class ScriptServiceImpl implements ScriptService
      * @see org.alfresco.service.cmr.repository.ScriptService#executeScript(java.lang.String, java.util.Map)
      */
     public Object executeScript(String scriptClasspath, Map<String, Object> model)
-        throws ScriptException
+            throws ScriptException
     {
         ParameterCheck.mandatory("scriptClasspath", scriptClasspath);
         ScriptProcessor scriptProcessor = getScriptProcessor(scriptClasspath);
         return execute(scriptProcessor, scriptClasspath, model);
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.repository.ScriptService#executeScript(java.lang.String, java.lang.String, java.util.Map)
      */
     public Object executeScript(String engine, String scriptClasspath, Map<String, Object> model)
-        throws ScriptException
+            throws ScriptException
     {
         ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
         return execute(scriptProcessor, scriptClasspath, model);
@@ -143,49 +148,49 @@ public class ScriptServiceImpl implements ScriptService
      * @see org.alfresco.service.cmr.repository.ScriptService#executeScript(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.util.Map)
      */
     public Object executeScript(NodeRef scriptRef, QName contentProp, Map<String, Object> model)
-        throws ScriptException
+            throws ScriptException
     {
         ParameterCheck.mandatory("scriptRef", scriptRef);
         ScriptProcessor scriptProcessor = getScriptProcessor(scriptRef);
         return execute(scriptProcessor, scriptRef, contentProp, model);
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.repository.ScriptService#executeScript(java.lang.String, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.util.Map)
      */
     public Object executeScript(String engine, NodeRef scriptRef, QName contentProp, Map<String, Object> model)
-        throws ScriptException
+            throws ScriptException
     {
         ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
         return execute(scriptProcessor, scriptRef, contentProp, model);
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.repository.ScriptService#executeScript(org.alfresco.service.cmr.repository.ScriptLocation, java.util.Map)
      */
     public Object executeScript(ScriptLocation location, Map<String, Object> model)
-    	throws ScriptException
+            throws ScriptException
     {
-    	ParameterCheck.mandatory("location", location);
+        ParameterCheck.mandatory("location", location);
         ScriptProcessor scriptProcessor = getScriptProcessor(location.toString());
         return execute(scriptProcessor, location, model);
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.repository.ScriptService#executeScript(java.lang.String, org.alfresco.service.cmr.repository.ScriptLocation, java.util.Map)
      */
     public Object executeScript(String engine, ScriptLocation location, Map<String, Object> model)
-        throws ScriptException
+            throws ScriptException
     {
         ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
         return execute(scriptProcessor, location, model);
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.repository.ScriptService#executeScriptString(java.lang.String, java.util.Map)
      */
     public Object executeScriptString(String script, Map<String, Object> model)
-        throws ScriptException
+            throws ScriptException
     {
         return executeScriptString(this.defaultScriptProcessor, script, model);
     }
@@ -194,7 +199,7 @@ public class ScriptServiceImpl implements ScriptService
      * @see org.alfresco.service.cmr.repository.ScriptService#executeScriptString(java.lang.String, java.util.Map, boolean)
      */
     public Object executeScriptString(String script, Map<String, Object> model, boolean secure)
-        throws ScriptException
+            throws ScriptException
     {
         return executeScriptString(this.defaultScriptProcessor, script, model, secure);
     }
@@ -203,7 +208,7 @@ public class ScriptServiceImpl implements ScriptService
      * @see org.alfresco.service.cmr.repository.ScriptService#executeScriptString(java.lang.String, java.util.Map)
      */
     public Object executeScriptString(String engine, String script, Map<String, Object> model)
-        throws ScriptException
+            throws ScriptException
     {
         ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
         return executeString(scriptProcessor, script, model, false);
@@ -213,19 +218,22 @@ public class ScriptServiceImpl implements ScriptService
      * @see org.alfresco.service.cmr.repository.ScriptService#executeScriptString(java.lang.String, java.util.Map, boolean)
      */
     public Object executeScriptString(String engine, String script, Map<String, Object> model, boolean secure)
-        throws ScriptException
+            throws ScriptException
     {
         ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
         return executeString(scriptProcessor, script, model, secure);
     }
-    
+
     /**
      * Execute script
      *
-     * @param processor the script processor that will be responsible for supplied script execution
-     * @param location  the location of the script 
-     * @param model     context model
-     * @return Object   the result of the script
+     * @param processor
+     *            the script processor that will be responsible for supplied script execution
+     * @param location
+     *            the location of the script
+     * @param model
+     *            context model
+     * @return Object the result of the script
      */
     protected Object execute(ScriptProcessor processor, ScriptLocation location, Map<String, Object> model)
     {
@@ -243,15 +251,19 @@ public class ScriptServiceImpl implements ScriptService
             throw translateProcessingException(location.toString(), err);
         }
     }
-    
+
     /**
      * Execute script
      * 
-     * @param processor     the script processor that will be responsible for supplied script execution
-     * @param scriptRef       the script node reference
-     * @param contentProp   the content property of the script
-     * @param model         the context model
-     * @return Object       the result of the script
+     * @param processor
+     *            the script processor that will be responsible for supplied script execution
+     * @param scriptRef
+     *            the script node reference
+     * @param contentProp
+     *            the content property of the script
+     * @param model
+     *            the context model
+     * @return Object the result of the script
      */
     protected Object execute(ScriptProcessor processor, NodeRef scriptRef, QName contentProp, Map<String, Object> model)
     {
@@ -269,14 +281,17 @@ public class ScriptServiceImpl implements ScriptService
             throw translateProcessingException(scriptRef.toString(), err);
         }
     }
-    
-    /** 
+
+    /**
      * Execute script
      *
-     * @param processor the script processor that will be responsible for supplied script execution
-     * @param location  the classpath string locating the script
-     * @param model     the context model
-     * @return Object   the result of the script
+     * @param processor
+     *            the script processor that will be responsible for supplied script execution
+     * @param location
+     *            the classpath string locating the script
+     * @param model
+     *            the context model
+     * @return Object the result of the script
      */
     protected Object execute(ScriptProcessor processor, String location, Map<String, Object> model)
     {
@@ -294,21 +309,24 @@ public class ScriptServiceImpl implements ScriptService
             throw translateProcessingException(location, err);
         }
     }
-    
+
     /**
      * Execute script string
      *
-     * @param processor the script processor that will be responsible for supplied script execution
-     * @param script    the script string
-     * @param model     the context model
-     * @param secure    the flag indicating if string script is considered secure (e.g., if it comes from classpath)
-     *                  if true it will have access to the full execution context, if false the script will be executed in a sandbox context
-     * @return Object   the result of the script 
+     * @param processor
+     *            the script processor that will be responsible for supplied script execution
+     * @param script
+     *            the script string
+     * @param model
+     *            the context model
+     * @param secure
+     *            the flag indicating if string script is considered secure (e.g., if it comes from classpath) if true it will have access to the full execution context, if false the script will be executed in a sandbox context
+     * @return Object the result of the script
      */
     protected Object executeString(ScriptProcessor processor, String script, Map<String, Object> model, boolean secure)
     {
         ParameterCheck.mandatoryString("script", script);
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("Executing script:\n" + script);
@@ -333,7 +351,7 @@ public class ScriptServiceImpl implements ScriptService
         }
         if (ScriptException.class.isAssignableFrom(err.getClass()))
         {
-            result = (ScriptException)err;
+            result = (ScriptException) err;
         }
         else
         {
@@ -345,8 +363,9 @@ public class ScriptServiceImpl implements ScriptService
     /**
      * Helper method to lookup the script processor based on a name
      * 
-     * @param   name  the name of the script processor
-     * @return  ScriptProcessor the script processor, default processor if no match found
+     * @param name
+     *            the name of the script processor
+     * @return ScriptProcessor the script processor, default processor if no match found
      */
     protected ScriptProcessor lookupScriptProcessor(String name)
     {
@@ -357,24 +376,26 @@ public class ScriptServiceImpl implements ScriptService
         }
         return scriptProcessor;
     }
-    
+
     /**
      * Gets a scipt processor based on the node reference of a script
      * 
-     * @param   scriptNode          the node reference of the script
-     * @return  ScriptProcessor     the script processor
+     * @param scriptNode
+     *            the node reference of the script
+     * @return ScriptProcessor the script processor
      */
     protected ScriptProcessor getScriptProcessor(NodeRef scriptNode)
     {
-        String scriptName = (String)this.nodeService.getProperty(scriptNode, ContentModel.PROP_NAME);
+        String scriptName = (String) this.nodeService.getProperty(scriptNode, ContentModel.PROP_NAME);
         return getScriptProcessorImpl(scriptName);
     }
-    
+
     /**
      * Gets a script processor based on the script location string
      * 
-     * @param   scriptLocation      the script location
-     * @return  ScriptProcessor     the script processor
+     * @param scriptLocation
+     *            the script location
+     * @return ScriptProcessor the script processor
      */
     protected ScriptProcessor getScriptProcessor(String scriptLocation)
     {
@@ -382,22 +403,23 @@ public class ScriptServiceImpl implements ScriptService
         {
             // Try and create the nodeRef
             NodeRef nodeRef = new NodeRef(scriptLocation);
-            scriptLocation = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);   
+            scriptLocation = (String) this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
         }
-        
+
         return getScriptProcessorImpl(scriptLocation);
     }
-    
-    /** 
+
+    /**
      * Gets a script processor based on the scripts file name
      * 
-     * @param   scriptFileName      the scripts file name
-     * @return  ScriptProcessor     the matching script processor
+     * @param scriptFileName
+     *            the scripts file name
+     * @return ScriptProcessor the matching script processor
      */
     protected ScriptProcessor getScriptProcessorImpl(String scriptFileName)
     {
         String engine = null;
-        
+
         if (scriptFileName != null)
         {
             String extension = getFileExtension(scriptFileName);
@@ -406,15 +428,16 @@ public class ScriptServiceImpl implements ScriptService
                 engine = this.scriptProcessorNamesByExtension.get(extension);
             }
         }
-        
+
         return lookupScriptProcessor(engine);
     }
-    
+
     /**
      * Gets the file extension of a file
      * 
-     * @param fileName  the file name
-     * @return  the file extension
+     * @param fileName
+     *            the file name
+     * @return the file extension
      */
     private String getFileExtension(String fileName)
     {
@@ -426,7 +449,7 @@ public class ScriptServiceImpl implements ScriptService
         }
         return extension;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.repository.ScriptService#buildCoreModel(java.util.Map)
      */
@@ -440,19 +463,19 @@ public class ScriptServiceImpl implements ScriptService
      * @see org.alfresco.service.cmr.repository.ScriptService#buildDefaultModel(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
     public Map<String, Object> buildDefaultModel(
-            NodeRef person, 
-            NodeRef companyHome, 
+            NodeRef person,
+            NodeRef companyHome,
             NodeRef userHome,
-            NodeRef script, 
-            NodeRef document, 
+            NodeRef script,
+            NodeRef document,
             NodeRef space)
     {
         Map<String, Object> model = new HashMap<String, Object>();
         buildCoreModel(model);
-        
+
         // add the well known node wrapper objects
         model.put("companyhome", companyHome);
-        if (userHome!= null)
+        if (userHome != null)
         {
             model.put("userhome", userHome);
         }
@@ -472,7 +495,7 @@ public class ScriptServiceImpl implements ScriptService
         {
             model.put("space", space);
         }
-        
+
         return model;
     }
 }

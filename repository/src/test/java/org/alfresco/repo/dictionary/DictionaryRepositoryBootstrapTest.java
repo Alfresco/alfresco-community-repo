@@ -31,8 +31,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-
 import jakarta.transaction.UserTransaction;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -54,49 +59,43 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.transaction.annotation.Transactional;
 
 @Category(BaseSpringTestsCategory.class)
 @Transactional
 public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
 {
-    public static final String TEMPLATE_MODEL_XML = 
-        "<model name={0} xmlns=\"http://www.alfresco.org/model/dictionary/1.0\">" +
-        
-        "   <description>{1}</description>" +
-        "   <author>Alfresco</author>" +
-        "   <published>2005-05-30</published>" +
-        "   <version>1.0</version>" +
-        
-        "   <imports>" +
-        "      <import uri=\"http://www.alfresco.org/model/dictionary/1.0\" prefix=\"d\"/>" +
-        "      {2} " +
-        "   </imports>" +
-    
-        "   <namespaces>" +
-        "      <namespace uri={3} prefix={4}/>" +
-        "   </namespaces>" +
+    public static final String TEMPLATE_MODEL_XML = "<model name={0} xmlns=\"http://www.alfresco.org/model/dictionary/1.0\">" +
 
-        "   <types>" +
-       
-        "      <type name={5}>" +
-        "        <title>Base</title>" +
-        "        <description>The Base Type</description>" +
-        "        <properties>" +
-        "           <property name={6}>" +
-        "              <type>d:text</type>" +
-        "           </property>" +
-        "        </properties>" +
-        "      </type>" +
-        
-        "   </types>" +
-        
-        "</model>";
-    
+            "   <description>{1}</description>" +
+            "   <author>Alfresco</author>" +
+            "   <published>2005-05-30</published>" +
+            "   <version>1.0</version>" +
+
+            "   <imports>" +
+            "      <import uri=\"http://www.alfresco.org/model/dictionary/1.0\" prefix=\"d\"/>" +
+            "      {2} " +
+            "   </imports>" +
+
+            "   <namespaces>" +
+            "      <namespace uri={3} prefix={4}/>" +
+            "   </namespaces>" +
+
+            "   <types>" +
+
+            "      <type name={5}>" +
+            "        <title>Base</title>" +
+            "        <description>The Base Type</description>" +
+            "        <properties>" +
+            "           <property name={6}>" +
+            "              <type>d:text</type>" +
+            "           </property>" +
+            "        </properties>" +
+            "      </type>" +
+
+            "   </types>" +
+
+            "</model>";
+
     public static final String MESSAGES_KEY = "my_bootstrap_test";
     public static final String MESSAGES_VALUE = "My Message";
     public static final String MESSAGES_VALUE_FR = "Mon message";
@@ -110,22 +109,22 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
 
     /** The bootstrap service */
     private DictionaryRepositoryBootstrap bootstrap;
-    
+
     /** The dictionary DAO */
     private DictionaryDAO dictionaryDAO;
-    
+
     /** The transaction service */
     private TransactionService transactionService;
-    
+
     /** The tenant deployer service */
     private TenantAdminService tenantAdminService;
-    
+
     /** The namespace service */
     private NamespaceService namespaceService;
-    
+
     /** The message service */
     private MessageService messageService;
-    
+
     private PolicyComponent policyComponent;
     private ContentService contentService;
     private NodeService nodeService;
@@ -141,17 +140,17 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
     public void before() throws Exception
     {
         // Get the behaviour filter
-        this.behaviourFilter = (BehaviourFilter)this.applicationContext.getBean("policyBehaviourFilter");
+        this.behaviourFilter = (BehaviourFilter) this.applicationContext.getBean("policyBehaviourFilter");
 
-        this.authenticationService = (MutableAuthenticationService)this.applicationContext.getBean("authenticationService");
-        this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
-        this.contentService = (ContentService)this.applicationContext.getBean("contentService");
-        this.dictionaryDAO = (DictionaryDAO)this.applicationContext.getBean("dictionaryDAO");
-        this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
-        this.tenantAdminService = (TenantAdminService)this.applicationContext.getBean("tenantAdminService");
-        this.namespaceService = (NamespaceService)this.applicationContext.getBean("namespaceService");
-        this.messageService = (MessageService)this.applicationContext.getBean("messageService");
-        this.policyComponent = (PolicyComponent)this.applicationContext.getBean("policyComponent");
+        this.authenticationService = (MutableAuthenticationService) this.applicationContext.getBean("authenticationService");
+        this.nodeService = (NodeService) this.applicationContext.getBean("nodeService");
+        this.contentService = (ContentService) this.applicationContext.getBean("contentService");
+        this.dictionaryDAO = (DictionaryDAO) this.applicationContext.getBean("dictionaryDAO");
+        this.transactionService = (TransactionService) this.applicationContext.getBean("transactionComponent");
+        this.tenantAdminService = (TenantAdminService) this.applicationContext.getBean("tenantAdminService");
+        this.namespaceService = (NamespaceService) this.applicationContext.getBean("namespaceService");
+        this.messageService = (MessageService) this.applicationContext.getBean("messageService");
+        this.policyComponent = (PolicyComponent) this.applicationContext.getBean("policyComponent");
 
         this.authenticationComponent = (AuthenticationComponent) this.applicationContext
                 .getBean("authenticationComponent");
@@ -184,7 +183,7 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
         this.bootstrap.setContentService(this.contentService);
         this.bootstrap.setDictionaryDAO(this.dictionaryDAO);
         this.bootstrap.setTransactionService(this.transactionService);
-        this.bootstrap.setTenantAdminService(this.tenantAdminService); 
+        this.bootstrap.setTenantAdminService(this.tenantAdminService);
         this.bootstrap.setNodeService(this.nodeService);
         this.bootstrap.setNamespaceService(this.namespaceService);
         this.bootstrap.setMessageService(this.messageService);
@@ -213,7 +212,7 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
     {
         authenticationService.clearCurrentSecurityContext();
     }
-    
+
     /**
      * Test bootstrap
      */
@@ -267,11 +266,11 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
         catch (DictionaryException exception)
         {
             // Ignore since we where expecting this
-        }        
-        
+        }
+
         // Now do the bootstrap
         this.bootstrap.init();
-        
+
         // Check that the model is now there
         ModelDefinition modelDefinition1 = this.dictionaryDAO.getModel(
                 QName.createQName("http://www.alfresco.org/model/test1DictionaryBootstrapFromRepo/1.0", "testModel1"));
@@ -293,23 +292,30 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
     }
 
     /**
-     * Create model node 
+     * Create model node
      * 
-     * @param uri String
-     * @param prefix String
-     * @param modelLocalName String
-     * @param importStatement String
-     * @param description String
-     * @param typeName String
-     * @param propertyName String
+     * @param uri
+     *            String
+     * @param prefix
+     *            String
+     * @param modelLocalName
+     *            String
+     * @param importStatement
+     *            String
+     * @param description
+     *            String
+     * @param typeName
+     *            String
+     * @param propertyName
+     *            String
      * @return NodeRef
      */
     private NodeRef createModelNode(
-            String uri, 
-            String prefix, 
-            String modelLocalName, 
-            String importStatement, 
-            String description, 
+            String uri,
+            String prefix,
+            String modelLocalName,
+            String importStatement,
+            String description,
             String typeName,
             String propertyName)
     {
@@ -323,21 +329,21 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
         contentWriter1.setEncoding("UTF-8");
         contentWriter1.setMimetype(MimetypeMap.MIMETYPE_XML);
         String modelOne = getModelString(
-                    uri,
-                    prefix,
-                    modelLocalName,
-                    importStatement,
-                    description,
-                    typeName,
-                    propertyName);        
+                uri,
+                prefix,
+                modelLocalName,
+                importStatement,
+                description,
+                typeName,
+                propertyName);
         contentWriter1.putContent(modelOne);
-        
+
         // activate the model
         nodeService.setProperty(model, ContentModel.PROP_MODEL_ACTIVE, Boolean.TRUE);
-        
+
         return model;
     }
-    
+
     /**
      * Create messages node
      * 
@@ -355,12 +361,11 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
         }
         // Create a model node
         NodeRef messageNode = this.nodeService.createNode(
-                this.rootMessagesNodeRef, 
+                this.rootMessagesNodeRef,
                 ContentModel.ASSOC_CHILDREN,
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, filename), 
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, filename),
                 ContentModel.TYPE_CONTENT,
-                Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, filename)
-                ).getChildRef();
+                Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, filename)).getChildRef();
 
         ContentWriter contentWriter = this.contentService.getWriter(messageNode, ContentModel.PROP_CONTENT, true);
         contentWriter.setEncoding("UTF-8");
@@ -370,33 +375,40 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
 
         return messageNode;
     }
-    
+
     /**
      * 
-     * Gets the model string 
+     * Gets the model string
      * 
-     * @param uri String
-     * @param prefix String
-     * @param modelLocalName String
-     * @param importStatement String
-     * @param description String
-     * @param typeName String
-     * @param propertyName String
+     * @param uri
+     *            String
+     * @param prefix
+     *            String
+     * @param modelLocalName
+     *            String
+     * @param importStatement
+     *            String
+     * @param description
+     *            String
+     * @param typeName
+     *            String
+     * @param propertyName
+     *            String
      * @return String
      */
     private String getModelString(
-            String uri, 
-            String prefix, 
-            String modelLocalName, 
-            String importStatement, 
-            String description, 
+            String uri,
+            String prefix,
+            String modelLocalName,
+            String importStatement,
+            String description,
             String typeName,
             String propertyName)
     {
-        return MessageFormat.format( 
-                TEMPLATE_MODEL_XML, 
+        return MessageFormat.format(
+                TEMPLATE_MODEL_XML,
                 new Object[]{
-                        "'" + prefix +":" + modelLocalName + "'",
+                        "'" + prefix + ":" + modelLocalName + "'",
                         description,
                         importStatement,
                         "'" + uri + "'",

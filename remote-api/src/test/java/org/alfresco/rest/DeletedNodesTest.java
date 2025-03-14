@@ -25,13 +25,14 @@
  */
 package org.alfresco.rest;
 
-import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -43,6 +44,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import com.google.common.collect.Ordering;
+import org.junit.After;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.extensions.webscripts.Status;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.rest.api.Nodes;
@@ -59,12 +66,6 @@ import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.rest.api.trashcan.TrashcanEntityResource;
 import org.alfresco.util.testing.category.IntermittentlyFailingTests;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.extensions.webscripts.Status;
-
-import com.google.common.collect.Ordering;
 
 /**
  * V1 REST API tests for managing the user's Trashcan (ie. "deleted nodes")
@@ -78,7 +79,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 
     protected static final String URL_DELETED_NODES = "deleted-nodes";
     private static final String URL_RENDITIONS = "renditions";
-    
+
     @Override
     public void setup() throws Exception
     {
@@ -90,33 +91,34 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
     {
         super.tearDown();
     }
-    
+
     /**
      * Tests getting deleted nodes
-     * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/}
-     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/}
+     * <p>
+     * GET:
+     * </p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/} {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/}
      */
     @Test
     public void testCreateAndDelete() throws Exception
     {
         setRequestContext(user1);
-        
+
         Date now = new Date();
         String folder1 = "folder-testCreateAndDelete-" + now.getTime() + "_1";
         Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
         assertNotNull(createdFolder);
         String f1Id = createdFolder.getId();
 
-        //Create a folder outside a site
+        // Create a folder outside a site
         Folder createdFolderNonSite = createFolder(Nodes.PATH_MY, folder1, null);
         assertNotNull(createdFolderNonSite);
 
         Document document = createEmptyTextFile(f1Id, "d1.txt");
 
         PublicApiClient.Paging paging = getPaging(0, 100);
-        
-        //First get any deleted nodes
+
+        // First get any deleted nodes
         HttpResponse response = getAll(URL_DELETED_NODES, paging, 200);
         List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertNotNull(nodes);
@@ -129,9 +131,9 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         response = getAll(URL_DELETED_NODES, paging, 200);
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertNotNull(nodes);
-        assertEquals(numOfNodes+3,nodes.size());
+        assertEquals(numOfNodes + 3, nodes.size());
 
-        //The list is ordered with the most recently deleted node first
+        // The list is ordered with the most recently deleted node first
         checkDeletedNodes(now, createdFolder, createdFolderNonSite, document, nodes);
 
         // sanity check paging
@@ -141,7 +143,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertNotNull(nodes);
         assertEquals(1, nodes.size());
         PublicApiClient.ExpectedPaging expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
-        assertEquals(numOfNodes+3, expectedPaging.getTotalItems().intValue());
+        assertEquals(numOfNodes + 3, expectedPaging.getTotalItems().intValue());
         assertEquals(1, expectedPaging.getCount().intValue());
         assertEquals(1, expectedPaging.getSkipCount().intValue());
         assertEquals(1, expectedPaging.getMaxItems().intValue());
@@ -154,8 +156,8 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertEquals(user1, node.getArchivedByUser().getId());
         assertTrue(node.getArchivedAt().after(now));
         PathInfo path = node.getPath();
-        assertNull("Path should be null because its parent has been deleted",path);
-        assertNull("We don't show the parent id for a deleted node",node.getParentId());
+        assertNull("Path should be null because its parent has been deleted", path);
+        assertNull("We don't show the parent id for a deleted node", node.getParentId());
 
         response = getSingle(URL_DELETED_NODES, createdFolder.getId(), params, 200);
         Folder fNode = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
@@ -164,9 +166,9 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertTrue(fNode.getArchivedAt().after(now));
         path = fNode.getPath();
         assertNotNull(path);
-        assertEquals("/Company Home/Sites/"+tSiteId+"/documentLibrary", path.getName());
+        assertEquals("/Company Home/Sites/" + tSiteId + "/documentLibrary", path.getName());
         assertTrue(path.getIsComplete());
-        assertNull("We don't show the parent id for a deleted node",fNode.getParentId());
+        assertNull("We don't show the parent id for a deleted node", fNode.getParentId());
 
         response = getSingle(URL_DELETED_NODES, createdFolderNonSite.getId(), params, 200);
         fNode = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
@@ -175,19 +177,19 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertTrue(fNode.getArchivedAt().after(now));
         path = fNode.getPath();
         assertNotNull(path);
-        assertEquals("/Company Home/User Homes/"+user1, path.getName());
+        assertEquals("/Company Home/User Homes/" + user1, path.getName());
         assertTrue(path.getIsComplete());
 
-        //User 2 can't get it but user 1 can.
+        // User 2 can't get it but user 1 can.
         setRequestContext(user2);
         getSingle(URL_DELETED_NODES, createdFolderNonSite.getId(), Status.STATUS_FORBIDDEN);
 
         setRequestContext(user1);
-        
-        //Invalid node ref
+
+        // Invalid node ref
         getSingle(URL_DELETED_NODES, "iddontexist", 404);
 
-        //Now as admin
+        // Now as admin
         setRequestContext(networkAdmin);
         paging = getPaging(0, 100);
         response = publicApiClient.get(getScope(), URL_DELETED_NODES, null, null, null, createParams(paging, null));
@@ -199,7 +201,9 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests restoring deleted nodes
-     * <p>post:</p>
+     * <p>
+     * post:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/restore}
      */
     @Test
@@ -270,7 +274,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         nodeTargetAssoc.setTargetParentId(adminf1Id);
         nodeTargetAssoc.setAssocType(ASSOC_TYPE_CM_CONTAINS);
         post(URL_DELETED_NODES + "/" + document.getId() + "/restore", toJsonAsStringNonNull(nodeTargetAssoc), null, 403);
-        
+
         deleteNode(createdFolder.getId());
 
         // We deleted the parent folder so lets see if we can restore a child
@@ -289,7 +293,9 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests purging a deleted node
-     * <p>delete:</p>
+     * <p>
+     * delete:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/}
      */
     @Test
@@ -308,25 +314,27 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         Folder fNode = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
         assertNotNull(fNode);
 
-        //try purging "nonsense"
+        // try purging "nonsense"
         delete(URL_DELETED_NODES, "nonsense", 404);
 
-        //User 2 can't do it
+        // User 2 can't do it
         setRequestContext(user2);
         delete(URL_DELETED_NODES, createdFolder.getId(), Status.STATUS_FORBIDDEN);
 
         setRequestContext(user1);
 
-        //Now purge the folder
+        // Now purge the folder
         delete(URL_DELETED_NODES, createdFolder.getId(), 204);
 
-        //This time we can't find it.
+        // This time we can't find it.
         getSingle(URL_DELETED_NODES, createdFolder.getId(), 404);
     }
 
     /**
      * Tests download of file/content.
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/content}
      */
     @Category(IntermittentlyFailingTests.class) // ACS-959
@@ -432,9 +440,10 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Test retrieve renditions for deleted nodes
-     * <p>post:</p>
-     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/renditions}
-     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/rendition/<renditionId>}
+     * <p>
+     * post:
+     * </p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/renditions} {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/rendition/<renditionId>}
      */
     @Test
     public void testListRenditions() throws Exception
@@ -481,14 +490,14 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertNotNull(contentInfo.getEncoding());
         assertTrue(contentInfo.getSizeInBytes() > 0);
 
-        //  +ve test - Add a filter on rendition 'status' and list only 'NOT_CREATED' renditions
+        // +ve test - Add a filter on rendition 'status' and list only 'NOT_CREATED' renditions
         Map<String, String> params = new HashMap<>(1);
         params.put("where", "(status='NOT_CREATED')");
         response = getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, params, 200);
         renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
         assertTrue(renditions.size() >= 2);
 
-        //  +ve test - Add a filter on rendition 'status' and list only the CREATED renditions
+        // +ve test - Add a filter on rendition 'status' and list only the CREATED renditions
         params.put("where", "(status='CREATED')");
         response = getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, params, 200);
         renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
@@ -527,7 +536,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         response = getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, params, 200);
         renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
         assertTrue(Ordering.natural().isOrdered(renditions));
-        
+
         // -ve - nodeId in the path parameter does not exist
         getAll(getDeletedNodeRenditionsUrl(UUID.randomUUID().toString()), paging, params, 404);
 
@@ -538,7 +547,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         // -ve - nodeId in the path parameter does not represent a file
         deleteNode(f1Id);
         getAll(getDeletedNodeRenditionsUrl(f1Id), paging, params, 400);
-        
+
         // -ve - Invalid status value
         params.put("where", "(status='WRONG')");
         getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, params, 400);
@@ -554,7 +563,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         // -ve - Current user does not have permission for nodeId
         setRequestContext(user2);
         getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, params, 403);
-        
+
         // Test get single node rendition
         setRequestContext(user1);
         // -ve - nodeId in the path parameter does not exist
@@ -577,7 +586,9 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests download rendition.
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/deleted-nodes/<nodeId>/renditions/<renditionId>/content}
      */
     @Test
@@ -602,7 +613,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         HttpResponse response = post(getNodeChildrenUrl(f1Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
         Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String contentNodeId = document.getId();
-        
+
         Rendition rendition = createAndGetRendition(contentNodeId, "doclib");
         assertNotNull(rendition);
         assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
@@ -675,7 +686,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
     }
 
     /**
-     *  Checks the deleted nodes are in the correct order.
+     * Checks the deleted nodes are in the correct order.
      */
     protected void checkDeletedNodes(Date now, Folder createdFolder, Folder createdFolderNonSite, Document document, List<Node> nodes)
     {
@@ -684,7 +695,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertEquals("This folder was deleted most recently", createdFolderNonSite.getId(), aNode.getId());
         assertEquals(user1, aNode.getArchivedByUser().getId());
         assertTrue(aNode.getArchivedAt().after(now));
-        assertNull("We don't show the parent id for a deleted node",aNode.getParentId());
+        assertNull("We don't show the parent id for a deleted node", aNode.getParentId());
 
         Node folderNode = (Node) nodes.get(1);
         assertNotNull(folderNode);
@@ -692,14 +703,14 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertEquals(user1, folderNode.getArchivedByUser().getId());
         assertTrue(folderNode.getArchivedAt().after(now));
         assertTrue("This folder was deleted before the non-site folder", folderNode.getArchivedAt().before(aNode.getArchivedAt()));
-        assertNull("We don't show the parent id for a deleted node",folderNode.getParentId());
+        assertNull("We don't show the parent id for a deleted node", folderNode.getParentId());
 
         aNode = (Node) nodes.get(2);
         assertNotNull(aNode);
         assertEquals(document.getId(), aNode.getId());
         assertEquals(user1, aNode.getArchivedByUser().getId());
         assertTrue(aNode.getArchivedAt().after(now));
-        assertNull("We don't show the parent id for a deleted node",aNode.getParentId());
+        assertNull("We don't show the parent id for a deleted node", aNode.getParentId());
     }
 
     @Test

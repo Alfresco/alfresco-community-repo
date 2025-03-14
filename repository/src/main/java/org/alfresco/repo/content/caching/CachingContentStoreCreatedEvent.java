@@ -38,7 +38,7 @@ public class CachingContentStoreCreatedEvent extends CachingContentStoreEvent
     {
         super(source);
     }
-    
+
     public CachingContentStore getCachingContentStore()
     {
         return (CachingContentStore) source;

@@ -39,17 +39,18 @@ public class Session extends BaseProcessorExtension
 {
     /** Service registry */
     private ServiceRegistry services;
-    
+
     /**
      * Set the service registry
      * 
-     * @param services  the service registry
+     * @param services
+     *            the service registry
      */
     public void setServiceRegistry(ServiceRegistry services)
     {
         this.services = services;
     }
-    
+
     /**
      * Get the user's authentication ticket.
      * 

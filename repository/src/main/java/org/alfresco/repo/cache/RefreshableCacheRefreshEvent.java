@@ -35,8 +35,10 @@ public class RefreshableCacheRefreshEvent extends AbstractRefreshableCacheEvent
 {
     /**
      *
-     * @param cacheId String
-     * @param tenantId String
+     * @param cacheId
+     *            String
+     * @param tenantId
+     *            String
      */
     RefreshableCacheRefreshEvent(String cacheId, String tenantId)
     {

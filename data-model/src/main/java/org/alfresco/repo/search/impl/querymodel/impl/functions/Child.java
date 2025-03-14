@@ -65,11 +65,9 @@ public class Child extends BaseFunction
         super(NAME, DataTypeDefinition.BOOLEAN, args);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Function#getValue(java.util.Set)
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Function#getValue(java.util.Set) */
     public Serializable getValue(Map<String, Argument> args, FunctionEvaluationContext context)
     {
         Argument selectorArgument = args.get(ARG_SELECTOR);

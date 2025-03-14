@@ -35,8 +35,7 @@ public class Rendition
 {
     public enum RenditionStatus
     {
-        CREATED,
-        NOT_CREATED
+        CREATED, NOT_CREATED
     }
 
     private String id;
@@ -78,9 +77,9 @@ public class Rendition
     {
         final StringBuilder sb = new StringBuilder(150);
         sb.append("Rendition [id=").append(id)
-                    .append(", status=").append(status)
-                    .append(", contentInfo=").append(contentInfo)
-                    .append(']');
+                .append(", status=").append(status)
+                .append(", contentInfo=").append(contentInfo)
+                .append(']');
         return sb.toString();
     }
 }

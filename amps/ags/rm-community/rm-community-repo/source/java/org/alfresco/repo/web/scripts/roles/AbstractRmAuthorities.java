@@ -29,16 +29,16 @@ package org.alfresco.repo.web.scripts.roles;
 
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.script.admin.RoleDeclarativeWebScript;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.module.org_alfresco_module_rm.script.admin.RoleDeclarativeWebScript;
+import org.alfresco.service.cmr.repository.NodeRef;
+
 /**
- * Abstract class for adding/removing a user/group to/from a role
- * This class contains the common methods needed in the sub classes.
+ * Abstract class for adding/removing a user/group to/from a role This class contains the common methods needed in the sub classes.
  *
  * @author Tuna Aksoy
  * @since 2.1
@@ -52,7 +52,8 @@ public class AbstractRmAuthorities extends RoleDeclarativeWebScript
     /**
      * Util method for getting the nodeRef from the request
      *
-     * @param req The webscript request
+     * @param req
+     *            The webscript request
      * @return The nodeRef passed in the request
      */
     protected NodeRef getFilePlan(WebScriptRequest req)
@@ -68,7 +69,8 @@ public class AbstractRmAuthorities extends RoleDeclarativeWebScript
     /**
      * Util method for getting the roleId from the request
      *
-     * @param req The webscript request
+     * @param req
+     *            The webscript request
      * @return The role id passed in the request
      */
     protected String getRoleId(WebScriptRequest req)
@@ -79,7 +81,8 @@ public class AbstractRmAuthorities extends RoleDeclarativeWebScript
     /**
      * Util method for getting the authorityName from the request
      *
-     * @param req The webscript request
+     * @param req
+     *            The webscript request
      * @return The authorityName passed in the request
      */
     protected String getAuthorityName(WebScriptRequest req)
@@ -90,8 +93,10 @@ public class AbstractRmAuthorities extends RoleDeclarativeWebScript
     /**
      * Helper method to get the value of parameter from the request
      *
-     * @param req The webscript request
-     * @param param The name of the parameter for which the value is requested
+     * @param req
+     *            The webscript request
+     * @param param
+     *            The name of the parameter for which the value is requested
      * @return The value for the requested parameter
      */
     private String getParamValue(WebScriptRequest req, String param)

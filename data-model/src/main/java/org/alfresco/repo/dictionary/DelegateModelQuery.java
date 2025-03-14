@@ -35,35 +35,34 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Model query that delegates its search if itself cannot find the model
- * item required.
+ * Model query that delegates its search if itself cannot find the model item required.
  * 
  * @author David Caruana
  *
  */
-/*package*/ class DelegateModelQuery implements ModelQuery
+/* package */ class DelegateModelQuery implements ModelQuery
 {
 
     private ModelQuery query;
     private ModelQuery delegate;
-    
-    
+
     /**
      * Construct
      * 
-     * @param query ModelQuery
-     * @param delegate ModelQuery
+     * @param query
+     *            ModelQuery
+     * @param delegate
+     *            ModelQuery
      */
-    /*package*/ DelegateModelQuery(ModelQuery query, ModelQuery delegate)
+    /* package */ DelegateModelQuery(ModelQuery query, ModelQuery delegate)
     {
         this.query = query;
         this.delegate = delegate;
     }
 
-    
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.impl.ModelQuery#getPropertyType(org.alfresco.repo.ref.QName)
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.impl.ModelQuery#getPropertyType(org.alfresco.repo.ref.QName) */
     public DataTypeDefinition getDataType(QName name)
     {
         DataTypeDefinition def = query.getDataType(name);
@@ -74,10 +73,9 @@ import org.alfresco.service.namespace.QName;
         return def;
     }
 
-    
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.ModelQuery#getDataType(java.lang.Class)
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.ModelQuery#getDataType(java.lang.Class) */
     public DataTypeDefinition getDataType(Class javaClass)
     {
         DataTypeDefinition def = query.getDataType(javaClass);
@@ -88,10 +86,9 @@ import org.alfresco.service.namespace.QName;
         return def;
     }
 
-
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.impl.ModelQuery#getType(org.alfresco.repo.ref.QName)
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.impl.ModelQuery#getType(org.alfresco.repo.ref.QName) */
     public TypeDefinition getType(QName name)
     {
         TypeDefinition def = query.getType(name);
@@ -102,10 +99,9 @@ import org.alfresco.service.namespace.QName;
         return def;
     }
 
-    
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.impl.ModelQuery#getAspect(org.alfresco.repo.ref.QName)
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.impl.ModelQuery#getAspect(org.alfresco.repo.ref.QName) */
     public AspectDefinition getAspect(QName name)
     {
         AspectDefinition def = query.getAspect(name);
@@ -116,10 +112,9 @@ import org.alfresco.service.namespace.QName;
         return def;
     }
 
-    
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.impl.ModelQuery#getClass(org.alfresco.repo.ref.QName)
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.impl.ModelQuery#getClass(org.alfresco.repo.ref.QName) */
     public ClassDefinition getClass(QName name)
     {
         ClassDefinition def = query.getClass(name);
@@ -130,10 +125,9 @@ import org.alfresco.service.namespace.QName;
         return def;
     }
 
-    
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.impl.ModelQuery#getProperty(org.alfresco.repo.ref.QName)
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.impl.ModelQuery#getProperty(org.alfresco.repo.ref.QName) */
     public PropertyDefinition getProperty(QName name)
     {
         PropertyDefinition def = query.getProperty(name);
@@ -144,10 +138,9 @@ import org.alfresco.service.namespace.QName;
         return def;
     }
 
-
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.impl.ModelQuery#getAssociation(org.alfresco.repo.ref.QName)
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.impl.ModelQuery#getAssociation(org.alfresco.repo.ref.QName) */
     public AssociationDefinition getAssociation(QName name)
     {
         AssociationDefinition def = query.getAssociation(name);
@@ -159,8 +152,8 @@ import org.alfresco.service.namespace.QName;
     }
 
     /* (non-Javadoc)
-     * @see ModelQuery#getConstraint(QName)
-     */
+     * 
+     * @see ModelQuery#getConstraint(QName) */
     public ConstraintDefinition getConstraint(QName name)
     {
         ConstraintDefinition def = query.getConstraint(name);

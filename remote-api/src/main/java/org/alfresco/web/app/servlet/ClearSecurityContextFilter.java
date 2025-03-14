@@ -25,13 +25,7 @@
  */
 package org.alfresco.web.app.servlet;
 
-import net.sf.acegisecurity.context.Context;
-import net.sf.acegisecurity.context.ContextHolder;
-import org.alfresco.repo.security.authentication.AlfrescoSecureContext;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
+import java.io.IOException;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -39,7 +33,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import java.io.IOException;
+
+import net.sf.acegisecurity.context.Context;
+import net.sf.acegisecurity.context.ContextHolder;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.repo.security.authentication.AlfrescoSecureContext;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 
 public class ClearSecurityContextFilter implements Filter
 {
@@ -119,8 +120,8 @@ public class ClearSecurityContextFilter implements Filter
                 sb.append(newLine);
             }
             sb.append("Other information about leaking ticket and tenant information may follow in the log, "
-                + "if org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl "
-                + "and org.alfresco.repo.tenant.TenantContextHolder loggers are set to 'trace'");
+                    + "if org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl "
+                    + "and org.alfresco.repo.tenant.TenantContextHolder loggers are set to 'trace'");
             sb.append(newLine);
 
             logger.debug(sb.toString());
@@ -133,11 +134,9 @@ public class ClearSecurityContextFilter implements Filter
 
     @Override
     public void init(FilterConfig config) throws ServletException
-    {
-    }
+    {}
 
     @Override
     public void destroy()
-    {
-    }
+    {}
 }

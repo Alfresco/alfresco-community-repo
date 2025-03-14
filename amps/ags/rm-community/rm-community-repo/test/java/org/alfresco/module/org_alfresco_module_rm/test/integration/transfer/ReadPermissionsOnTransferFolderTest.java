@@ -53,9 +53,7 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Test case which shows that the user who did not create a transfer folder will
- * be able to see the transfer folder if he gets read permissions, but will not
- * be able to action on it.
+ * Test case which shows that the user who did not create a transfer folder will be able to see the transfer folder if he gets read permissions, but will not be able to action on it.
  *
  * @author Tuna Aksoy
  * @since 2.3
@@ -100,8 +98,7 @@ public class ReadPermissionsOnTransferFolderTest extends BaseRMTestCase
 
     public void testReadPermissionsOnTransferFolder()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(testUser1)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(testUser1) {
             // Records folder
             private NodeRef recordsFolder = null;
 
@@ -114,8 +111,7 @@ public class ReadPermissionsOnTransferFolderTest extends BaseRMTestCase
             @Override
             public void given()
             {
-                runAs(new RunAsWork<Void>()
-                {
+                runAs(new RunAsWork<Void>() {
                     public Void doWork()
                     {
                         // Create category
@@ -155,7 +151,7 @@ public class ReadPermissionsOnTransferFolderTest extends BaseRMTestCase
             public void when()
             {
                 // FIXME: If the transfer step is executed here the test fails. See RM-3931
-                //transferFolder = (NodeRef) rmActionService.executeRecordsManagementAction(recordsFolder, TransferAction.NAME).getValue();
+                // transferFolder = (NodeRef) rmActionService.executeRecordsManagementAction(recordsFolder, TransferAction.NAME).getValue();
 
                 // Give testUser2 read permissions on transfer folder
                 filePlanPermissionService.setPermission(transferFolder, testUser2, READ_RECORDS);
@@ -176,8 +172,7 @@ public class ReadPermissionsOnTransferFolderTest extends BaseRMTestCase
                 // Check if testUser1 has filing permissions on the transfer folder
                 assertEquals(ALLOWED, permissionService.hasPermission(transferFolder, FILING));
 
-                runAs(new RunAsWork<Void>()
-                {
+                runAs(new RunAsWork<Void>() {
                     public Void doWork()
                     {
                         // Check transfer folder
@@ -190,7 +185,7 @@ public class ReadPermissionsOnTransferFolderTest extends BaseRMTestCase
                         assertEquals(ALLOWED, permissionService.hasPermission(transferFolder, READ_RECORDS));
 
                         // Check if testUser2 filing permissions on the transfer folder
-                        assertEquals(DENIED,  permissionService.hasPermission(transferFolder, FILING));
+                        assertEquals(DENIED, permissionService.hasPermission(transferFolder, FILING));
 
                         // Try to execute transfer complete action as testUser2 who has no filing permissions on the transfer folder
                         try

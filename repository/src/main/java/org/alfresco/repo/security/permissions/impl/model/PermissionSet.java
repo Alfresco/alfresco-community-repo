@@ -31,13 +31,15 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.alfresco.service.namespace.NamespacePrefixResolver;
-import org.alfresco.service.namespace.QName;
 import org.dom4j.Attribute;
 import org.dom4j.Element;
 
+import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.QName;
+
 /**
  * Store and read the definition of a permission set
+ * 
  * @author andyh
  */
 public final class PermissionSet implements XMLModelInitialisable
@@ -47,28 +49,27 @@ public final class PermissionSet implements XMLModelInitialisable
     private static final String PERMISSION = "permission";
     private static final String EXPOSE = "expose";
     private static final String EXPOSE_ALL = "all";
-    //private static final String EXPOSE_SELECTED = "selected";
-    
-    
+    // private static final String EXPOSE_SELECTED = "selected";
+
     private QName qname;
-    
+
     private boolean exposeAll;
-    
+
     private Set<PermissionGroup> permissionGroups = new LinkedHashSet<PermissionGroup>(32, 1.0f);
-    
+
     private Set<Permission> permissions = new HashSet<Permission>(32, 1.0f);
-    
+
     public PermissionSet()
     {
         super();
     }
-    
+
     public void initialise(Element element, NamespacePrefixResolver nspr, PermissionModel permissionModel)
     {
         qname = QName.createQName(element.attributeValue(TYPE), nspr);
-        
+
         Attribute exposeAttribute = element.attribute(EXPOSE);
-        if(exposeAttribute != null)
+        if (exposeAttribute != null)
         {
             exposeAll = exposeAttribute.getStringValue().equalsIgnoreCase(EXPOSE_ALL);
         }
@@ -76,23 +77,23 @@ public final class PermissionSet implements XMLModelInitialisable
         {
             exposeAll = true;
         }
-        
-        for(Iterator pgit = element.elementIterator(PERMISSION_GROUP); pgit.hasNext(); /**/)
+
+        for (Iterator pgit = element.elementIterator(PERMISSION_GROUP); pgit.hasNext(); /**/)
         {
-            Element permissionGroupElement = (Element)pgit.next();
+            Element permissionGroupElement = (Element) pgit.next();
             PermissionGroup permissionGroup = new PermissionGroup(qname);
             permissionGroup.initialise(permissionGroupElement, nspr, permissionModel);
             permissionGroups.add(permissionGroup);
         }
-        
-        for(Iterator pit = element.elementIterator(PERMISSION); pit.hasNext(); /**/)
+
+        for (Iterator pit = element.elementIterator(PERMISSION); pit.hasNext(); /**/)
         {
-            Element permissionElement = (Element)pit.next();
+            Element permissionElement = (Element) pit.next();
             Permission permission = new Permission(qname);
             permission.initialise(permissionElement, nspr, permissionModel);
             permissions.add(permission);
         }
-        
+
     }
 
     public Set<PermissionGroup> getPermissionGroups()

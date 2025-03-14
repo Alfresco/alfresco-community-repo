@@ -31,21 +31,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.io.SAXReader;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
 
 public class QueryRegisterComponentImpl implements QueryRegisterComponent
 {
     private DictionaryService dictionaryService;
 
     private NamespacePrefixResolver namespaceService;
-    
+
     private List<String> initCollections = null;
 
     private Map<String, QueryCollection> collections = new HashMap<String, QueryCollection>();
@@ -57,24 +58,24 @@ public class QueryRegisterComponentImpl implements QueryRegisterComponent
 
     private synchronized void loadCollectionsOnDemand()
     {
-        if(initCollections != null)
+        if (initCollections != null)
         {
-            for(String location: initCollections)
+            for (String location : initCollections)
             {
                 loadQueryCollection(location);
             }
         }
         initCollections = null;
     }
-    
+
     public CannedQueryDef getQueryDefinition(QName qName)
     {
         loadCollectionsOnDemand();
-        for(String key: collections.keySet())
+        for (String key : collections.keySet())
         {
             QueryCollection collection = collections.get(key);
-            CannedQueryDef  def = collection.getQueryDefinition(qName);
-            if(def != null)
+            CannedQueryDef def = collection.getQueryDefinition(qName);
+            if (def != null)
             {
                 return def;
             }
@@ -85,10 +86,10 @@ public class QueryRegisterComponentImpl implements QueryRegisterComponent
     public String getCollectionNameforQueryDefinition(QName qName)
     {
         loadCollectionsOnDemand();
-        for(String key: collections.keySet())
+        for (String key : collections.keySet())
         {
             QueryCollection collection = collections.get(key);
-            if(collection.containsQueryDefinition(qName))
+            if (collection.containsQueryDefinition(qName))
             {
                 return key;
             }
@@ -99,11 +100,11 @@ public class QueryRegisterComponentImpl implements QueryRegisterComponent
     public QueryParameterDefinition getParameterDefinition(QName qName)
     {
         loadCollectionsOnDemand();
-        for(String key: collections.keySet())
+        for (String key : collections.keySet())
         {
             QueryCollection collection = collections.get(key);
-            QueryParameterDefinition  def = collection.getParameterDefinition(qName);
-            if(def != null)
+            QueryParameterDefinition def = collection.getParameterDefinition(qName);
+            if (def != null)
             {
                 return def;
             }
@@ -114,10 +115,10 @@ public class QueryRegisterComponentImpl implements QueryRegisterComponent
     public String getCollectionNameforParameterDefinition(QName qName)
     {
         loadCollectionsOnDemand();
-        for(String key: collections.keySet())
+        for (String key : collections.keySet())
         {
             QueryCollection collection = collections.get(key);
-            if(collection.containsParameterDefinition(qName))
+            if (collection.containsParameterDefinition(qName))
             {
                 return key;
             }
@@ -151,7 +152,7 @@ public class QueryRegisterComponentImpl implements QueryRegisterComponent
             throw new AlfrescoRuntimeException("IO Error reading XML", e);
         }
     }
-    
+
     public void setCollections(List<String> collections)
     {
         this.initCollections = collections;

@@ -39,8 +39,7 @@ import org.alfresco.jlan.server.config.InvalidConfigurationException;
 import org.alfresco.jlan.server.config.SecurityConfigSection;
 
 /**
- * Simple description of a JLAN Access Control List that can be configured via JMX or a Spring bean definition. The
- * lists are partitioned by type to aid in the UI mapping.
+ * Simple description of a JLAN Access Control List that can be configured via JMX or a Spring bean definition. The lists are partitioned by type to aid in the UI mapping.
  */
 public class AccessControlListBean
 {

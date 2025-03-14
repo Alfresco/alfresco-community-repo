@@ -32,9 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A virtual folder definition. This class holds the (virtual entry)
- * structure of a virtual folder, created according to the template that is
- * applied.<br>
+ * A virtual folder definition. This class holds the (virtual entry) structure of a virtual folder, created according to the template that is applied.<br>
  * 
  * @author Bogdan Horje
  */
@@ -142,9 +140,9 @@ public class VirtualFolderDefinition
     {
         this.children.add(child);
         this.childrenByName.put(child.getName(),
-                                child);
+                child);
         this.childrenById.put(child.getId(),
-                              child);
+                child);
     }
 
     public VirtualFolderDefinition findChildById(String childId)

@@ -41,13 +41,13 @@ public class RestPersonModel extends TestModel implements IModelAssertion<RestPe
 {
     @JsonProperty(value = "entry")
     RestPersonModel personModel;
-    
+
     @Override
     public RestPersonModel onModel()
     {
         return personModel;
     }
-    
+
     private List<String> aspectNames;
 
     @JsonProperty(required = true)
@@ -82,8 +82,7 @@ public class RestPersonModel extends TestModel implements IModelAssertion<RestPe
     private Map<String, Boolean> capabilities;
 
     public RestPersonModel()
-    {
-    }
+    {}
 
     public RestPersonModel(String firstName, boolean emailNotificationsEnabled, RestCompanyModel company, String id, boolean enabled, String email)
     {
@@ -305,12 +304,11 @@ public class RestPersonModel extends TestModel implements IModelAssertion<RestPe
     {
         this.capabilities = capabilities;
     }
-    
+
     public String getPassword()
     {
         return password;
     }
-
 
     public void setPassword(String password)
     {
@@ -327,28 +325,31 @@ public class RestPersonModel extends TestModel implements IModelAssertion<RestPe
         this.displayName = displayName;
     }
 
-    public String getQuotaUsed() {
-		return quotaUsed;
-	}
+    public String getQuotaUsed()
+    {
+        return quotaUsed;
+    }
 
+    public void setQuotaUsed(String quotaUsed)
+    {
+        this.quotaUsed = quotaUsed;
+    }
 
-	public void setQuotaUsed(String quotaUsed) {
-		this.quotaUsed = quotaUsed;
-	}
+    public String getQuota()
+    {
+        return quota;
+    }
 
-	public String getQuota() {
-		return quota;
-	}
+    public void setQuota(String quota)
+    {
+        this.quota = quota;
+    }
 
-	public void setQuota(String quota) {
-		this.quota = quota;
-	}
-
-
-	/**
+    /**
      * Generate a PersonModel with random values for all existing fields excluding fields specified as ingnoredFields
      * 
-     * @param ignoredFields field to be excluded when generating a random model
+     * @param ignoredFields
+     *            field to be excluded when generating a random model
      * @return
      */
     public static RestPersonModel getRandomPersonModel(String... ignoredFields)

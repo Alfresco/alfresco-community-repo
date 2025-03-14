@@ -25,9 +25,13 @@
  */
 package org.alfresco.repo.rendition2;
 
-import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
-import org.alfresco.transform.registry.SupportedTransform;
-import org.alfresco.transform.registry.TransformServiceRegistry;
+import static org.alfresco.transform.common.Mimetype.MIMETYPE_IMAGE_JPEG;
+import static org.alfresco.transform.common.Mimetype.MIMETYPE_IWORK_PAGES;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,12 +39,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.alfresco.transform.common.Mimetype.MIMETYPE_IMAGE_JPEG;
-import static org.alfresco.transform.common.Mimetype.MIMETYPE_IWORK_PAGES;
+import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
+import org.alfresco.transform.registry.SupportedTransform;
+import org.alfresco.transform.registry.TransformServiceRegistry;
 
 /**
  * Integration tests for {@link LocalTransformServiceRegistry}
@@ -110,11 +111,11 @@ public class LocalTransformServiceRegistryIntegrationTest extends AbstractRendit
         Assert.assertFalse(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 1234, "pdfBad", options, "pdfBad"));
 
         // Good MaxSize docx max size is 768K
-        Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 768L*1024, targetMimetype, options, RENDITION_NAME));
+        Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 768L * 1024, targetMimetype, options, RENDITION_NAME));
 
         // -ve
         // Bad MaxSize docx max size is 768K
-        Assert.assertFalse(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 768L*1024+1, targetMimetype, options, RENDITION_NAME));
+        Assert.assertFalse(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 768L * 1024 + 1, targetMimetype, options, RENDITION_NAME));
     }
 
     @Test

@@ -37,38 +37,37 @@ import org.alfresco.util.ParameterCheck;
 /* package */ class ChildByNameKey implements Serializable
 {
     private static final long serialVersionUID = -2167221525380802365L;
-    
+
     private final Long parentNodeId;
     private QName assocTypeQName;
     private String childNodeName;
-    
+
     ChildByNameKey(Long parentNodeId, QName assocTypeQName, String childNodeName)
     {
-    	ParameterCheck.mandatory("childNodeName", childNodeName);
-    	ParameterCheck.mandatory("assocTypeQName", assocTypeQName);
-    	ParameterCheck.mandatory("parentNodeId", parentNodeId);
-    		
+        ParameterCheck.mandatory("childNodeName", childNodeName);
+        ParameterCheck.mandatory("assocTypeQName", assocTypeQName);
+        ParameterCheck.mandatory("parentNodeId", parentNodeId);
+
         this.parentNodeId = parentNodeId;
         this.assocTypeQName = assocTypeQName;
         this.childNodeName = childNodeName;
     }
-    
+
     public Long getParentNodeId()
     {
         return parentNodeId;
     }
-    
+
     public QName getAssocTypeQName()
     {
         return assocTypeQName;
     }
-    
+
     public String getChildNodeName()
     {
         return childNodeName;
     }
-    
-    
+
     @Override
     public boolean equals(Object other)
     {
@@ -80,27 +79,27 @@ import org.alfresco.util.ParameterCheck;
         {
             return false;
         }
-        ChildByNameKey o = (ChildByNameKey)other;
+        ChildByNameKey o = (ChildByNameKey) other;
         return parentNodeId.equals(o.getParentNodeId()) &&
-               assocTypeQName.equals(o.getAssocTypeQName()) &&
-               childNodeName.equalsIgnoreCase(o.getChildNodeName());
+                assocTypeQName.equals(o.getAssocTypeQName()) &&
+                childNodeName.equalsIgnoreCase(o.getChildNodeName());
     }
-    
+
     @Override
     public int hashCode()
     {
         return parentNodeId.hashCode() + assocTypeQName.hashCode() + childNodeName.toLowerCase().hashCode();
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
         builder.append("ChildByNameInfo ")
-               .append("[parentNodeId=").append(parentNodeId)
-               .append(", assocTypeQName=").append(assocTypeQName)
-               .append(", childNodeName=").append(childNodeName)
-               .append("]");
+                .append("[parentNodeId=").append(parentNodeId)
+                .append(", assocTypeQName=").append(assocTypeQName)
+                .append(", childNodeName=").append(childNodeName)
+                .append("]");
         return builder.toString();
     }
 }

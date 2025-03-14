@@ -26,33 +26,30 @@
 package org.alfresco.filesys.repo.rules;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.filesys.repo.rules.ScenarioInstance.Ranking;
 import org.alfresco.filesys.repo.rules.operations.CreateFileOperation;
 import org.alfresco.filesys.repo.rules.operations.DeleteFileOperation;
 import org.alfresco.filesys.repo.rules.operations.MoveFileOperation;
-import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.util.MaxSizeMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * A temp delete shuffle.
  * 
- * Files are created in a temporary directory 
- * and then a delete and move.
+ * Files are created in a temporary directory and then a delete and move.
  */
 public class ScenarioTempDeleteShuffle implements Scenario
 {
     private static Log logger = LogFactory.getLog(ScenarioTempDeleteShuffle.class);
 
     protected final static String SCENARIO_KEY = "org.alfresco.filesys.repo.rules.ScenarioTempDeleteShuffle";
-    
+
     /**
      * The regex pattern of a create that will identify a temporary directory.
      */
@@ -60,123 +57,120 @@ public class ScenarioTempDeleteShuffle implements Scenario
     private String strTempDirPattern;
 
     /**
-     * The regex pattern of a create that will trigger a new instance of
-     * the scenario.
-     */    
+     * The regex pattern of a create that will trigger a new instance of the scenario.
+     */
     private Pattern pattern;
     private String strPattern;
- 
-    
+
     private long timeout = 30000;
-    
+
     private Ranking ranking = Ranking.HIGH;
-    
+
     @Override
     public ScenarioInstance createInstance(final EvaluatorContext ctx, Operation operation)
     {
         /**
-         * This scenario is triggered by a delete of a file matching
-         * the pattern
+         * This scenario is triggered by a delete of a file matching the pattern
          */
-        if(operation instanceof CreateFileOperation)
+        if (operation instanceof CreateFileOperation)
         {
-            CreateFileOperation c = (CreateFileOperation)operation;
-            
-            // check whether file is below .TemporaryItems 
+            CreateFileOperation c = (CreateFileOperation) operation;
+
+            // check whether file is below .TemporaryItems
             String path = c.getPath();
-            
+
             // if path contains .TemporaryItems
             Matcher d = tempDirPattern.matcher(path);
-            if(d.matches())
+            if (d.matches())
             {
                 logger.debug("pattern matches temp dir folder so this is a new create in a temp dir");
                 Matcher m = pattern.matcher(c.getName());
-                if(m.matches())
+                if (m.matches())
                 {
                     // and how to lock - since we are already have one lock on the scenarios/folder here
                     // this is a potential deadlock and synchronization bottleneck
-                    Map<String, String> createdTempFiles = (Map<String,String>)ctx.getSessionState().get(SCENARIO_KEY);
-                    
-                    if(createdTempFiles == null)
+                    Map<String, String> createdTempFiles = (Map<String, String>) ctx.getSessionState().get(SCENARIO_KEY);
+
+                    if (createdTempFiles == null)
                     {
-                        synchronized(ctx.getSessionState())
+                        synchronized (ctx.getSessionState())
                         {
                             logger.debug("created new temp file map and added it to the session state");
-                            createdTempFiles = (Map<String,String>)ctx.getSessionState().get(SCENARIO_KEY);
-                            if(createdTempFiles == null)
+                            createdTempFiles = (Map<String, String>) ctx.getSessionState().get(SCENARIO_KEY);
+                            if (createdTempFiles == null)
                             {
                                 createdTempFiles = Collections.synchronizedMap(new MaxSizeMap<String, String>(5, false));
                                 ctx.getSessionState().put(SCENARIO_KEY, createdTempFiles);
                             }
-                        }                        
+                        }
                     }
                     createdTempFiles.put(c.getName(), c.getName());
-                
+
                     // TODO - Return a different scenario instance here ???
                     // So it can time out and have anti-patterns etc?
                 }
             }
         }
-        
+
         if (operation instanceof MoveFileOperation)
         {
-            MoveFileOperation mf = (MoveFileOperation)operation;
-            
-            // check whether file is below .TemporaryItems 
+            MoveFileOperation mf = (MoveFileOperation) operation;
+
+            // check whether file is below .TemporaryItems
             String path = mf.getFromPath();
-            
+
             // if path contains .TemporaryItems
             Matcher d = tempDirPattern.matcher(path);
-            if(d.matches())
+            if (d.matches())
             {
                 logger.debug("pattern matches temp dir folder so this is a new create in a temp dir");
                 Matcher m = pattern.matcher(mf.getFrom());
-                if(m.matches())
+                if (m.matches())
                 {
                     // and how to lock - since we are already have one lock on the scenarios/folder here
                     // this is a potential deadlock and synchronization bottleneck
-                    Map<String, String> createdTempFiles = (Map<String,String>)ctx.getSessionState().get(SCENARIO_KEY);
-                    
-                    if(createdTempFiles == null)
+                    Map<String, String> createdTempFiles = (Map<String, String>) ctx.getSessionState().get(SCENARIO_KEY);
+
+                    if (createdTempFiles == null)
                     {
-                        synchronized(ctx.getSessionState())
+                        synchronized (ctx.getSessionState())
                         {
                             logger.debug("created new temp file map and added it to the session state");
-                            createdTempFiles = (Map<String,String>)ctx.getSessionState().get(SCENARIO_KEY);
-                            if(createdTempFiles == null)
+                            createdTempFiles = (Map<String, String>) ctx.getSessionState().get(SCENARIO_KEY);
+                            if (createdTempFiles == null)
                             {
                                 createdTempFiles = Collections.synchronizedMap(new MaxSizeMap<String, String>(5, false));
                                 ctx.getSessionState().put(SCENARIO_KEY, createdTempFiles);
                             }
-                        }                        
+                        }
                     }
                     createdTempFiles.remove(mf.getFrom());
-                
+
                     // TODO - Return a different scenario instance here ???
                     // So it can time out and have anti-patterns etc?
                 }
             }
         }
-        
-        if(operation instanceof DeleteFileOperation)
+
+        if (operation instanceof DeleteFileOperation)
         {
-            DeleteFileOperation c = (DeleteFileOperation)operation;
-            
+            DeleteFileOperation c = (DeleteFileOperation) operation;
+
             Matcher m = pattern.matcher(c.getName());
-            if(m.matches())
+            if (m.matches())
             {
-                Map<String, String> createdTempFiles = (Map<String,String>)ctx.getSessionState().get(SCENARIO_KEY);
-                
-                if(createdTempFiles != null)
+                Map<String, String> createdTempFiles = (Map<String, String>) ctx.getSessionState().get(SCENARIO_KEY);
+
+                if (createdTempFiles != null)
                 {
-                    if(createdTempFiles.containsKey(c.getName()))
+                    if (createdTempFiles.containsKey(c.getName()))
                     {
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
                             logger.debug("New Scenario Temp Delete Shuffle Instance:" + c.getName());
                         }
-                
-                        ScenarioTempDeleteShuffleInstance instance = new ScenarioTempDeleteShuffleInstance() ;
+
+                        ScenarioTempDeleteShuffleInstance instance = new ScenarioTempDeleteShuffleInstance();
                         instance.setTimeout(timeout);
                         instance.setRanking(ranking);
                         return instance;
@@ -184,10 +178,10 @@ public class ScenarioTempDeleteShuffle implements Scenario
                 }
             }
         }
-        
+
         // No not interested.
         return null;
-   
+
     }
 
     public void setPattern(String pattern)
@@ -195,23 +189,23 @@ public class ScenarioTempDeleteShuffle implements Scenario
         this.pattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
         this.strPattern = pattern;
     }
-    
+
     public String getPattern()
     {
         return this.strPattern;
     }
-    
+
     public void setTempDirPattern(String tempDirPattern)
     {
         this.tempDirPattern = Pattern.compile(tempDirPattern, Pattern.CASE_INSENSITIVE);
         this.strTempDirPattern = tempDirPattern;
     }
-    
+
     public String getTempDirPattern()
     {
         return this.strTempDirPattern;
     }
-    
+
     public void setTimeout(long timeout)
     {
         this.timeout = timeout;

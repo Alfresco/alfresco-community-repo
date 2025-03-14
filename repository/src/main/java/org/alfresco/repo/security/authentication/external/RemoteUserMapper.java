@@ -34,12 +34,12 @@ import jakarta.servlet.http.HttpServletRequest;
  */
 public interface RemoteUserMapper
 {
-   /**
-    * Gets an externally authenticated user ID from an HTTP request.
-    * 
-    * @param request
-    *           the request
-    * @return the user ID or <code>null</code> if the user is unauthenticated
-    */
-   public String getRemoteUser(HttpServletRequest request);
+    /**
+     * Gets an externally authenticated user ID from an HTTP request.
+     * 
+     * @param request
+     *            the request
+     * @return the user ID or <code>null</code> if the user is unauthenticated
+     */
+    public String getRemoteUser(HttpServletRequest request);
 }

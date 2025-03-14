@@ -39,10 +39,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.alfresco.rest.antlr.WhereClauseParser;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang3.StringUtils;
+
+import org.alfresco.rest.antlr.WhereClauseParser;
 
 /**
  * Provides helper methods for handling a WHERE query.
@@ -52,7 +53,7 @@ import org.apache.commons.lang3.StringUtils;
 public abstract class QueryHelper
 {
     /**
-     * An interface used when walking a query tree.  Calls are made to methods when the particular clause is encountered.
+     * An interface used when walking a query tree. Calls are made to methods when the particular clause is encountered.
      */
     public interface WalkerCallback
     {
@@ -60,8 +61,11 @@ public abstract class QueryHelper
 
         /**
          * Called any time an EXISTS clause is encountered.
-         * @param propertyName Name of the property
-         * @param negated returns true if "NOT EXISTS" was used
+         * 
+         * @param propertyName
+         *            Name of the property
+         * @param negated
+         *            returns true if "NOT EXISTS" was used
          */
         default void exists(String propertyName, boolean negated)
         {
@@ -70,10 +74,15 @@ public abstract class QueryHelper
 
         /**
          * Called any time a BETWEEN clause is encountered.
-         * @param propertyName Name of the property
-         * @param firstValue String
-         * @param secondValue String
-         * @param negated returns true if "NOT BETWEEN" was used
+         * 
+         * @param propertyName
+         *            Name of the property
+         * @param firstValue
+         *            String
+         * @param secondValue
+         *            String
+         * @param negated
+         *            returns true if "NOT BETWEEN" was used
          */
         default void between(String propertyName, String firstValue, String secondValue, boolean negated)
         {
@@ -90,9 +99,13 @@ public abstract class QueryHelper
 
         /**
          * Called any time an IN clause is encountered.
-         * @param property Name of the property
-         * @param negated returns true if "NOT IN" was used
-         * @param propertyValues the property values
+         * 
+         * @param property
+         *            Name of the property
+         * @param negated
+         *            returns true if "NOT IN" was used
+         * @param propertyValues
+         *            the property values
          */
         default void in(String property, boolean negated, String... propertyValues)
         {
@@ -101,9 +114,13 @@ public abstract class QueryHelper
 
         /**
          * Called any time a MATCHES clause is encountered.
-         * @param property Name of the property
-         * @param propertyValue String
-         * @param negated returns true if "NOT MATCHES" was used
+         * 
+         * @param property
+         *            Name of the property
+         * @param propertyValue
+         *            String
+         * @param negated
+         *            returns true if "NOT MATCHES" was used
          */
         default void matches(String property, String propertyValue, boolean negated)
         {
@@ -117,6 +134,7 @@ public abstract class QueryHelper
         {
             throw UNSUPPORTED;
         }
+
         /**
          * Called any time an OR is encountered.
          */
@@ -132,15 +150,18 @@ public abstract class QueryHelper
     }
 
     /**
-     * Default implementation.  Override the methods you are interested in. If you don't
-     * override the methods then an InvalidQueryException will be thrown.
+     * Default implementation. Override the methods you are interested in. If you don't override the methods then an InvalidQueryException will be thrown.
      */
-    public static class WalkerCallbackAdapter implements WalkerCallback {}
+    public static class WalkerCallbackAdapter implements WalkerCallback
+    {}
 
     /**
      * Walks a query with a callback for each operation
-     * @param query the query
-     * @param callback a callback
+     * 
+     * @param query
+     *            the query
+     * @param callback
+     *            a callback
      */
     public static void walk(Query query, WalkerCallback callback)
     {
@@ -155,15 +176,20 @@ public abstract class QueryHelper
 
     /**
      * Processes a tree type and calls the corresponding callback method.
-     * @param tree Tree
-     * @param callback WalkerCallback
-     * @param negated boolean
+     * 
+     * @param tree
+     *            Tree
+     * @param callback
+     *            WalkerCallback
+     * @param negated
+     *            boolean
      */
     protected static void callbackTree(Tree tree, WalkerCallback callback, boolean negated)
     {
         if (tree != null)
         {
-            switch (tree.getType()) {
+            switch (tree.getType())
+            {
             case EXISTS:
                 if (WhereClauseParser.PROPERTYNAME == tree.getChild(0).getType())
                 {
@@ -182,11 +208,11 @@ public abstract class QueryHelper
                 if (WhereClauseParser.PROPERTYNAME == tree.getChild(0).getType())
                 {
                     List<Tree> children = getChildren(tree);
-                    //Don't need the first item because its the property name
-                    String[] inVals = new String[children.size()-1];
-                    for (int i = 1; i < children.size(); i++) 
+                    // Don't need the first item because its the property name
+                    String[] inVals = new String[children.size() - 1];
+                    for (int i = 1; i < children.size(); i++)
                     {
-                        inVals[i-1] = stripQuotes(children.get(i).getText());
+                        inVals[i - 1] = stripQuotes(children.get(i).getText());
                     }
                     callback.in(tree.getChild(0).getText(), negated, inVals);
                     return;
@@ -199,93 +225,97 @@ public abstract class QueryHelper
                     return;
                 }
                 break;
-            case EQUALS: //fall through (comparison)
-            case WhereClauseParser.LESSTHAN: //fall through (comparison)
-            case WhereClauseParser.GREATERTHAN: //fall through (comparison)
-            case WhereClauseParser.LESSTHANOREQUALS: //fall through (comparison)
-            case WhereClauseParser.GREATERTHANOREQUALS:		
+            case EQUALS: // fall through (comparison)
+            case WhereClauseParser.LESSTHAN: // fall through (comparison)
+            case WhereClauseParser.GREATERTHAN: // fall through (comparison)
+            case WhereClauseParser.LESSTHANOREQUALS: // fall through (comparison)
+            case WhereClauseParser.GREATERTHANOREQUALS:
                 if (WhereClauseParser.PROPERTYNAME == tree.getChild(0).getType() &&
-                    WhereClauseParser.PROPERTYVALUE == tree.getChild(1).getType())
+                        WhereClauseParser.PROPERTYVALUE == tree.getChild(1).getType())
                 {
                     callback.comparison(tree.getType(), tree.getChild(0).getText(), stripQuotes(tree.getChild(1).getText()), negated);
                     return;
                 }
                 break;
             case WhereClauseParser.NEGATION:
-                //Negate the next element
+                // Negate the next element
                 callbackTree(tree.getChild(0), callback, true);
                 return;
             case WhereClauseParser.OR:
                 callback.or();
                 List<Tree> children = getChildren(tree);
-                for (Tree child : children) 
+                for (Tree child : children)
                 {
                     callbackTree(child, callback, negated);
                 }
-                return;				
+                return;
             case WhereClauseParser.AND:
                 callback.and();
                 List<Tree> childrenOfAnd = getChildren(tree);
-                for (Tree child : childrenOfAnd) 
+                for (Tree child : childrenOfAnd)
                 {
                     callbackTree(child, callback, negated);
                 }
                 return;
             default:
             }
-            callbackTree(tree.getChild(0), callback, negated);  //Callback on the next node
+            callbackTree(tree.getChild(0), callback, negated); // Callback on the next node
         }
     }
 
     /**
-     * Finds the siblings of the current tree item (does not include the current item)
-     * that are after it in the tree (but at the same level).
-     * @param tree the current tree
+     * Finds the siblings of the current tree item (does not include the current item) that are after it in the tree (but at the same level).
+     * 
+     * @param tree
+     *            the current tree
      * @return siblings - all the elements at the same level in the tree
      */
-    //    public static List<Tree> getYoungerSiblings(Tree tree) 
-    //    {
-    //    	Tree parent = tree.getParent();
-    //    	
-    //    	if (parent!=null && parent.getChildCount() > 0)
-    //    	{
-    //    		List<Tree> sibs = new ArrayList<Tree>(parent.getChildCount()-1);
-    //    		boolean laterChildren = false;
-    //    		for (int i = 0; i < parent.getChildCount(); i++) {
-    //    			Tree child = parent.getChild(i);
-    //    			if (tree.equals(child))
-    //    			{
-    //    				laterChildren = true;
-    //    			}
-    //    			else
-    //    			{
-    //    				if (laterChildren)	sibs.add(child);
-    //    			}
-    //			}
-    //    		return sibs;
-    //    	}
-    //    	
+    // public static List<Tree> getYoungerSiblings(Tree tree)
+    // {
+    // Tree parent = tree.getParent();
     //
-    //	}
+    // if (parent!=null && parent.getChildCount() > 0)
+    // {
+    // List<Tree> sibs = new ArrayList<Tree>(parent.getChildCount()-1);
+    // boolean laterChildren = false;
+    // for (int i = 0; i < parent.getChildCount(); i++) {
+    // Tree child = parent.getChild(i);
+    // if (tree.equals(child))
+    // {
+    // laterChildren = true;
+    // }
+    // else
+    // {
+    // if (laterChildren) sibs.add(child);
+    // }
+    // }
+    // return sibs;
+    // }
+    //
+    //
+    // }
 
     /**
      * Gets the children as a List
-     * @param tree Tree
+     * 
+     * @param tree
+     *            Tree
      * @return either emptyList or the children.
      */
     public static List<Tree> getChildren(Tree tree)
     {
-        if (tree!=null && tree.getChildCount() > 0)
+        if (tree != null && tree.getChildCount() > 0)
         {
             List<Tree> children = new ArrayList<Tree>(tree.getChildCount());
-            for (int i = 0; i < tree.getChildCount(); i++) {
+            for (int i = 0; i < tree.getChildCount(); i++)
+            {
                 Tree child = tree.getChild(i);
                 children.add(child);
             }
             return children;
         }
 
-        //Default
+        // Default
         return Collections.emptyList();
     }
 
@@ -293,16 +323,18 @@ public abstract class QueryHelper
 
     /**
      * Strips off any leading or trailing single quotes.
-     * @param toBeStripped String
+     * 
+     * @param toBeStripped
+     *            String
      * @return the String that has been stripped
      */
     public static String stripQuotes(String toBeStripped)
     {
         if (StringUtils.isNotEmpty(toBeStripped) && toBeStripped.startsWith(SINGLE_QUOTE) && toBeStripped.endsWith(SINGLE_QUOTE))
         {
-            return toBeStripped.substring(1,toBeStripped.length()-1);
+            return toBeStripped.substring(1, toBeStripped.length() - 1);
         }
-        return toBeStripped; //default to return the String unchanged.
+        return toBeStripped; // default to return the String unchanged.
     }
 
     public static QueryResolver.WalkerSpecifier resolve(final Query query)
@@ -320,6 +352,7 @@ public abstract class QueryHelper
         protected Function<Collection<String>, BasicQueryWalker> orQueryWalkerSupplier;
         protected boolean clausesNegatable = true;
         protected boolean validateLeniently = false;
+
         protected abstract S self();
 
         public QueryResolver(Query query)
@@ -329,9 +362,13 @@ public abstract class QueryHelper
 
         /**
          * Get property expected values.
-         * @param propertyName Property name.
-         * @param clauseType Property comparison type.
-         * @param negated Comparison type negation.
+         * 
+         * @param propertyName
+         *            Property name.
+         * @param clauseType
+         *            Property comparison type.
+         * @param negated
+         *            Comparison type negation.
          * @return Map composed of all comparators and compared values.
          */
         public Collection<String> getProperty(final String propertyName, final int clauseType, final boolean negated)
@@ -398,7 +435,9 @@ public abstract class QueryHelper
 
             /**
              * Get property with expected values.
-             * @param propertyName Property name.
+             * 
+             * @param propertyName
+             *            Property name.
              * @return Map composed of all comparators and compared values.
              */
             public WhereProperty getProperty(final String propertyName)
@@ -409,7 +448,9 @@ public abstract class QueryHelper
 
             /**
              * Get multiple properties with it's expected values.
-             * @param propertyNames Property names.
+             * 
+             * @param propertyNames
+             *            Property names.
              * @return List of maps composed of all comparators and compared values.
              */
             public List<WhereProperty> getProperties(final String... propertyNames)
@@ -420,7 +461,9 @@ public abstract class QueryHelper
 
             /**
              * Get multiple properties with it's expected values.
-             * @param propertyNames Property names.
+             * 
+             * @param propertyNames
+             *            Property names.
              * @return Map composed of property names and maps composed of all comparators and compared values.
              */
             public Map<String, WhereProperty> getPropertiesAsMap(final String... propertyNames)
@@ -451,12 +494,16 @@ public abstract class QueryHelper
              */
             public DefaultWalkerOperations<? extends DefaultWalkerOperations<?>> usingOrOperator()
             {
-                this.orQueryWalkerSupplier = (propertyNames) -> new BasicQueryWalker(propertyNames)
-                {
+                this.orQueryWalkerSupplier = (propertyNames) -> new BasicQueryWalker(propertyNames) {
                     @Override
-                    public void or() {/*Enable OR support, disable AND support*/}
+                    public void or()
+                    {/* Enable OR support, disable AND support */}
+
                     @Override
-                    public void and() {throw UNSUPPORTED;}
+                    public void and()
+                    {
+                        throw UNSUPPORTED;
+                    }
                 };
                 return this;
             }

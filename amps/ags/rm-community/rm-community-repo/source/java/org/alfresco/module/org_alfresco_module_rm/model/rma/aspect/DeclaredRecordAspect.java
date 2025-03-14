@@ -42,10 +42,8 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  * @since 2.2
  */
-@BehaviourBean
-(
-   defaultType = "rma:declaredRecord"
-)
+@BehaviourBean(
+        defaultType = "rma:declaredRecord")
 public class DeclaredRecordAspect extends BaseBehaviourBean
 {
     /**
@@ -53,11 +51,9 @@ public class DeclaredRecordAspect extends BaseBehaviourBean
      * 
      * Aspect should not be copied.
      */
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            policy = "alf:getCopyCallback"
-    )
+            policy = "alf:getCopyCallback")
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
         return new DoNothingCopyBehaviourCallback();

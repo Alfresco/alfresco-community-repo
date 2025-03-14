@@ -25,7 +25,6 @@
  */
 package org.alfresco.rest.api.model;
 
-
 /**
  * A site target favourite.
  * 
@@ -34,32 +33,32 @@ package org.alfresco.rest.api.model;
  */
 public class SiteTarget extends Target
 {
-	private Site site;
+    private Site site;
 
-	public SiteTarget()
-	{
-		super();
-	}
+    public SiteTarget()
+    {
+        super();
+    }
 
-	public SiteTarget(Site site)
-	{
-		super();
-		this.site = site;
-	}
+    public SiteTarget(Site site)
+    {
+        super();
+        this.site = site;
+    }
 
-	public void setSite(Site site)
-	{
-		this.site = site;
-	}
+    public void setSite(Site site)
+    {
+        this.site = site;
+    }
 
-	public Site getSite()
-	{
-		return site;
-	}
+    public Site getSite()
+    {
+        return site;
+    }
 
-	@Override
-	public String toString()
-	{
-		return "SiteTarget [site=" + site + "]";
-	}
+    @Override
+    public String toString()
+    {
+        return "SiteTarget [site=" + site + "]";
+    }
 }

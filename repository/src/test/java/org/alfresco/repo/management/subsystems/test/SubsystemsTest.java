@@ -27,18 +27,18 @@ package org.alfresco.repo.management.subsystems.test;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
-import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
-import org.alfresco.repo.management.subsystems.InvalidPropertyValueException;
-import org.alfresco.repo.management.subsystems.SubsystemEarlyPropertyChecker;
-import org.alfresco.repo.management.subsystems.test.TestBean;
-import org.alfresco.repo.management.subsystems.test.TestService;
-import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.alfresco.util.BaseSpringTest;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
+
+import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
+import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
+import org.alfresco.repo.management.subsystems.InvalidPropertyValueException;
+import org.alfresco.repo.management.subsystems.SubsystemEarlyPropertyChecker;
+import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.util.BaseSpringTest;
 
 /**
  * Ensures the following features of subsystems are working:
@@ -59,7 +59,7 @@ import org.springframework.test.context.ContextConfiguration;
 public class SubsystemsTest extends BaseSpringTest
 {
     volatile boolean shouldBlockPort;
-    
+
     /**
      * Test subsystems.
      * 
@@ -127,15 +127,15 @@ public class SubsystemsTest extends BaseSpringTest
         testProperties.put("test5.port", "" + testPortNumber);
 
         String errorMessage = testBean.performEarlyPropertyChecks(testProperties);
-            
+
         assertTrue(errorMessage.contains("The value for TestSubsystem port property cannot be empty."));
         assertTrue(errorMessage.contains("Unable to parse value for TestSubsystem port property: 123xy."));
         assertTrue(errorMessage.contains("The port chosen for TestSubsystem is outside the required range (1, 65535): 0."));
         assertTrue(errorMessage.contains("The port chosen for TestSubsystem is outside the required range (1, 65535): 65536."));
-            
+
         assertTrue(errorMessage.contains(
                 "The port chosen for TestSubsystem is already in use or you don't have permission to use it: " + testPortNumber + "."));
-        
+
         testProperties.clear();
 
         testProperties.put("test_with_host.port", "" + testPortNumber);
@@ -143,7 +143,7 @@ public class SubsystemsTest extends BaseSpringTest
         testProperties.put("test.subsystem.host", testHost);
 
         errorMessage = testBean.performEarlyPropertyChecks(testProperties);
-        
+
         assertTrue(errorMessage.contains(
                 "The hostname chosen for TestSubsystem is unknown or misspelled: " + testProperties.get("test.subsystem.host") + "."));
 
@@ -154,8 +154,7 @@ public class SubsystemsTest extends BaseSpringTest
     {
         ChildApplicationContextFactory testBean = new ChildApplicationContextFactory();
 
-        SubsystemEarlyPropertyChecker testEarlyPropertyChecker = new SubsystemEarlyPropertyChecker()
-        {
+        SubsystemEarlyPropertyChecker testEarlyPropertyChecker = new SubsystemEarlyPropertyChecker() {
             @Override
             public void checkPropertyValue(String propertyName, String propertyValue, String pairedPropertyValue) throws InvalidPropertyValueException
             {
@@ -191,10 +190,10 @@ public class SubsystemsTest extends BaseSpringTest
         testBean.setEarlyPropertyCheckers(earlyPropertyCheckersMap);
 
         Map<String, String> testProperties = new HashMap<String, String>();
-        
+
         // Test empty value error:
         testProperties.put("test1.property", "");
-        
+
         // Test "Bad value" error:
         testProperties.put("test2.property", "Bad value");
 
@@ -202,14 +201,14 @@ public class SubsystemsTest extends BaseSpringTest
 
         assertTrue(errorMessage.contains("Property value cannot be empty."));
         assertTrue(errorMessage.contains("Property value cannot be a 'Bad value'."));
-        
+
         earlyPropertyCheckersMap.clear();
         earlyPropertyCheckersMap.put("test3.property", testEarlyPropertyChecker);
-        
+
         testProperties.clear();
         testProperties.put("testPairedPropertyName", "Test paired property bad value");
         testProperties.put("test3.property", "Test property value");
-        
+
         errorMessage = testBean.performEarlyPropertyChecks(testProperties);
         assertTrue(errorMessage.contains("No 'bad value's allowed!"));
     }

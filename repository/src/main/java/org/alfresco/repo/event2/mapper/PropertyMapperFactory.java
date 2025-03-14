@@ -25,13 +25,13 @@
  */
 package org.alfresco.repo.event2.mapper;
 
-import org.alfresco.repo.event2.shared.CSVStringToListParser;
-import org.alfresco.repo.event2.shared.TypeDefExpander;
-import org.alfresco.service.namespace.QName;
-
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+
+import org.alfresco.repo.event2.shared.CSVStringToListParser;
+import org.alfresco.repo.event2.shared.TypeDefExpander;
+import org.alfresco.service.namespace.QName;
 
 public class PropertyMapperFactory
 {

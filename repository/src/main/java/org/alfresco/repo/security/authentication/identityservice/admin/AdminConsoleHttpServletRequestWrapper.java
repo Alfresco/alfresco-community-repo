@@ -32,9 +32,9 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
+
 import org.alfresco.util.PropertyCheck;
 
 public class AdminConsoleHttpServletRequestWrapper extends HttpServletRequestWrapper
@@ -45,8 +45,10 @@ public class AdminConsoleHttpServletRequestWrapper extends HttpServletRequestWra
     /**
      * Constructs a request object wrapping the given request.
      *
-     * @param request the request to wrap
-     * @throws IllegalArgumentException if the request is null
+     * @param request
+     *            the request to wrap
+     * @throws IllegalArgumentException
+     *             if the request is null
      */
     public AdminConsoleHttpServletRequestWrapper(Map<String, String> additionalHeaders, HttpServletRequest request)
     {

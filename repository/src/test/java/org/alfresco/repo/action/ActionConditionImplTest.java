@@ -37,19 +37,19 @@ public class ActionConditionImplTest extends BaseParameterizedItemImplTest
     {
         return new ActionConditionImpl(
                 ID,
-                NAME, 
+                NAME,
                 this.paramValues);
     }
-    
+
     public void testGetRuleConditionDefintion()
     {
-        ActionCondition temp = (ActionCondition)create();
-        assertEquals(NAME, temp.getActionConditionDefinitionName());        
+        ActionCondition temp = (ActionCondition) create();
+        assertEquals(NAME, temp.getActionConditionDefinitionName());
     }
-    
+
     public void testSetGetInvertCondition()
     {
-        ActionCondition temp = (ActionCondition)create();
+        ActionCondition temp = (ActionCondition) create();
         assertFalse(temp.getInvertCondition());
         temp.setInvertCondition(true);
         assertTrue(temp.getInvertCondition());

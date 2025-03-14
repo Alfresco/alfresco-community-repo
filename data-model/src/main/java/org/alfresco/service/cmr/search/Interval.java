@@ -42,13 +42,13 @@ public class Interval
 
     @JsonCreator
     public Interval(
-                @JsonProperty("field") String field,
-                @JsonProperty("label") String label,
-                @JsonProperty("sets")  Set<IntervalSet> sets)
+            @JsonProperty("field") String field,
+            @JsonProperty("label") String label,
+            @JsonProperty("sets") Set<IntervalSet> sets)
     {
         this.field = field;
         this.label = label;
-        this.sets = sets == null ? new HashSet() :sets;
+        this.sets = sets == null ? new HashSet() : sets;
     }
 
     public String getField()
@@ -70,9 +70,9 @@ public class Interval
     public String toString()
     {
         return "Interval{" +
-                    "field='" + field + '\'' +
-                    ", label='" + label + '\'' +
-                    ", sets=" + sets +
-                    '}';
+                "field='" + field + '\'' +
+                ", label='" + label + '\'' +
+                ", sets=" + sets +
+                '}';
     }
 }

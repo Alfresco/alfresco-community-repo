@@ -28,15 +28,8 @@ package org.alfresco.repo.security.authentication;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.util.GUID;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,24 +38,33 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.util.GUID;
+
 /**
  * Tests CompositePasswordEncoder
+ * 
  * @author Gethin James
  */
 public class CompositePasswordEncoderTest
 {
     CompositePasswordEncoder encoder;
-    public static Map<String,Object> encodersConfig;
-    private static final String SOURCE_PASSWORD = "SOURCE PASS Word $%%^ #';/,_+{+} like €this"+"\u4eca\u65e5\u306f\u4e16\u754c";
+    public static Map<String, Object> encodersConfig;
+    private static final String SOURCE_PASSWORD = "SOURCE PASS Word $%%^ #';/,_+{+} like €this" + "\u4eca\u65e5\u306f\u4e16\u754c";
 
-    static {
+    static
+    {
         encodersConfig = new HashMap<>();
         encodersConfig.put("md4", new MD4PasswordEncoderImpl());
-        encodersConfig.put("sha256",  new ShaPasswordEncoderImpl(256));
-        encodersConfig.put("bcrypt10",new BCryptPasswordEncoder(10));
-        encodersConfig.put("bcrypt11",new BCryptPasswordEncoder(11));
-        encodersConfig.put("bcrypt12",new BCryptPasswordEncoder(12));
-        encodersConfig.put("badencoder",new Object());
+        encodersConfig.put("sha256", new ShaPasswordEncoderImpl(256));
+        encodersConfig.put("bcrypt10", new BCryptPasswordEncoder(10));
+        encodersConfig.put("bcrypt11", new BCryptPasswordEncoder(11));
+        encodersConfig.put("bcrypt12", new BCryptPasswordEncoder(12));
+        encodersConfig.put("badencoder", new Object());
     }
 
     @Before
@@ -80,7 +82,8 @@ public class CompositePasswordEncoderTest
         {
             encoded = encoder.encode(null, null, null);
             fail("Should throw exception");
-        } catch (IllegalArgumentException are)
+        }
+        catch (IllegalArgumentException are)
         {
             assertTrue(are.getMessage().contains("rawPassword is a mandatory"));
         }
@@ -89,7 +92,8 @@ public class CompositePasswordEncoderTest
         {
             encoded = encoder.encode(null, "fred", null);
             fail("Should throw exception");
-        } catch (IllegalArgumentException are)
+        }
+        catch (IllegalArgumentException are)
         {
             assertTrue(are.getMessage().contains("encoderKey is a mandatory parameter"));
         }
@@ -98,7 +102,8 @@ public class CompositePasswordEncoderTest
         {
             encoded = encoder.encode("nonsense", "fred", null);
             fail("Should throw exception");
-        } catch (AlfrescoRuntimeException are)
+        }
+        catch (AlfrescoRuntimeException are)
         {
             assertTrue(are.getMessage().contains("Invalid encoder specified"));
             assertTrue(are.getMessage().endsWith("nonsense"));
@@ -108,7 +113,8 @@ public class CompositePasswordEncoderTest
         {
             encoded = encoder.encode("badencoder", "fred", null);
             fail("Should throw exception");
-        } catch (AlfrescoRuntimeException are)
+        }
+        catch (AlfrescoRuntimeException are)
         {
             assertTrue(are.getMessage().contains("Unsupported encoder specified"));
             assertTrue(are.getMessage().endsWith("badencoder"));
@@ -122,47 +128,51 @@ public class CompositePasswordEncoderTest
         boolean match = false;
         try
         {
-            match = encoder.matches(null, null, null,null);
+            match = encoder.matches(null, null, null, null);
             fail("Should throw exception");
-        } catch (IllegalArgumentException are)
+        }
+        catch (IllegalArgumentException are)
         {
             assertTrue(are.getMessage().contains("rawPassword is a mandatory"));
         }
 
         try
         {
-            match = encoder.matches(null, "fred", null,null);
+            match = encoder.matches(null, "fred", null, null);
             fail("Should throw exception");
-        } catch (IllegalArgumentException are)
+        }
+        catch (IllegalArgumentException are)
         {
             assertTrue(are.getMessage().contains("encodedPassword is a mandatory parameter"));
         }
 
         try
         {
-            match = encoder.matches(null, "fred", "xyz",null);
+            match = encoder.matches(null, "fred", "xyz", null);
             fail("Should throw exception");
-        } catch (IllegalArgumentException are)
+        }
+        catch (IllegalArgumentException are)
         {
             assertTrue(are.getMessage().contains("encoderKey is a mandatory parameter"));
         }
 
         try
         {
-            match = encoder.matches("nonsense", "fred", "xyz",null);
+            match = encoder.matches("nonsense", "fred", "xyz", null);
             fail("Should throw exception");
-        } catch (AlfrescoRuntimeException are)
+        }
+        catch (AlfrescoRuntimeException are)
         {
             assertTrue(are.getMessage().contains("Invalid matches encoder specified"));
             assertTrue(are.getMessage().endsWith("nonsense"));
         }
 
-
         try
         {
             match = encoder.matches("badencoder", "fred", "xyz", null);
             fail("Should throw exception");
-        } catch (AlfrescoRuntimeException are)
+        }
+        catch (AlfrescoRuntimeException are)
         {
             assertTrue(are.getMessage().contains("Unsupported encoder for matching"));
             assertTrue(are.getMessage().endsWith("badencoder"));
@@ -178,7 +188,7 @@ public class CompositePasswordEncoderTest
         String sourceEncodedSaltFree = md4.encodePassword(SOURCE_PASSWORD, null);
 
         String encoded = encoder.encode("md4", SOURCE_PASSWORD, salt);
-        //The salt is ignored for MD4 so the passwords will match
+        // The salt is ignored for MD4 so the passwords will match
         assertTrue(encoder.matches("md4", SOURCE_PASSWORD, encoded, salt));
         assertTrue(encoder.matchesPassword(SOURCE_PASSWORD, encoded, salt, Arrays.asList("md4")));
 
@@ -194,7 +204,6 @@ public class CompositePasswordEncoderTest
         encoded = encoder.encode("sha256", SOURCE_PASSWORD, null);
         assertNotEquals(sourceEncodedSaltFree, encoded);
     }
-
 
     @Test
     public void testEncodeSha256() throws Exception
@@ -235,24 +244,25 @@ public class CompositePasswordEncoderTest
         List<String> mdbChain = Arrays.asList("bcrypt10");
 
         assertTrue(encoder.isSafeToEncodeChain(mdbChain));
-        mdbChain = Arrays.asList("md4","bcrypt10");
+        mdbChain = Arrays.asList("md4", "bcrypt10");
         assertTrue(encoder.isSafeToEncodeChain(mdbChain));
-        mdbChain = Arrays.asList("sha256","bcrypt10");
+        mdbChain = Arrays.asList("sha256", "bcrypt10");
         assertTrue(encoder.isSafeToEncodeChain(mdbChain));
-        mdbChain = Arrays.asList("md4","sha256","bcrypt10");
+        mdbChain = Arrays.asList("md4", "sha256", "bcrypt10");
         assertTrue(encoder.isSafeToEncodeChain(mdbChain));
-        mdbChain = Arrays.asList("sha256","md4");
+        mdbChain = Arrays.asList("sha256", "md4");
         assertTrue(encoder.isSafeToEncodeChain(mdbChain));
 
-        mdbChain = Arrays.asList("bcrypt10", "sha256","md4");
+        mdbChain = Arrays.asList("bcrypt10", "sha256", "md4");
         assertFalse(encoder.isSafeToEncodeChain(mdbChain));
         mdbChain = Arrays.asList("bcrypt10", "bcrypt11");
         assertFalse(encoder.isSafeToEncodeChain(mdbChain));
         mdbChain = Arrays.asList("bcrypt10", "sha256", "bcrypt11");
         assertFalse(encoder.isSafeToEncodeChain(mdbChain));
-        mdbChain = Arrays.asList("md4","bcrypt10","sha256");
+        mdbChain = Arrays.asList("md4", "bcrypt10", "sha256");
         assertFalse(encoder.isSafeToEncodeChain(mdbChain));
     }
+
     @Test
     public void testEncodeChain() throws Exception
     {
@@ -261,23 +271,23 @@ public class CompositePasswordEncoderTest
         String encoded = encoder.encodePassword(SOURCE_PASSWORD, null, mdbChain);
         assertTrue(encoder.matchesPassword(SOURCE_PASSWORD, encoded, null, mdbChain));
 
-        mdbChain = Arrays.asList("md4","bcrypt10");
+        mdbChain = Arrays.asList("md4", "bcrypt10");
         encoded = encoder.encodePassword(SOURCE_PASSWORD, salt, mdbChain);
         assertTrue(encoder.matchesPassword(SOURCE_PASSWORD, encoded, salt, mdbChain));
 
-        mdbChain = Arrays.asList("sha256","bcrypt10");
+        mdbChain = Arrays.asList("sha256", "bcrypt10");
         encoded = encoder.encodePassword(SOURCE_PASSWORD, salt, mdbChain);
         assertTrue(encoder.matchesPassword(SOURCE_PASSWORD, encoded, salt, mdbChain));
 
-        mdbChain = Arrays.asList("md4","sha256","bcrypt10");
+        mdbChain = Arrays.asList("md4", "sha256", "bcrypt10");
         encoded = encoder.encodePassword(SOURCE_PASSWORD, salt, mdbChain);
         assertTrue(encoder.matchesPassword(SOURCE_PASSWORD, encoded, salt, mdbChain));
 
-        mdbChain = Arrays.asList("sha256","md4");
+        mdbChain = Arrays.asList("sha256", "md4");
         encoded = encoder.encodePassword(SOURCE_PASSWORD, salt, mdbChain);
         assertTrue(encoder.matchesPassword(SOURCE_PASSWORD, encoded, salt, mdbChain));
 
-        mdbChain = Arrays.asList("bcrypt10", "sha256","md4");
+        mdbChain = Arrays.asList("bcrypt10", "sha256", "md4");
         encoded = encoder.encodePassword(SOURCE_PASSWORD, salt, mdbChain);
         assertFalse("bcrypt10 has its own internal salt so needs to be at the end of the chain.", encoder.matchesPassword(SOURCE_PASSWORD, encoded, salt, mdbChain));
 
@@ -285,15 +295,14 @@ public class CompositePasswordEncoderTest
         encoded = encoder.encodePassword(SOURCE_PASSWORD, salt, mdbChain);
         assertFalse("bcrypt10 has its own internal salt so you can only use it once.", encoder.matchesPassword(SOURCE_PASSWORD, encoded, salt, mdbChain));
 
-        mdbChain = Arrays.asList("md4","sha256");
+        mdbChain = Arrays.asList("md4", "sha256");
         encoded = encoder.encodePassword(SOURCE_PASSWORD, salt, mdbChain);
         assertTrue(encoder.matchesPassword(SOURCE_PASSWORD, encoded, salt, mdbChain));
 
-        mdbChain = Arrays.asList("md4","sha256","md4","sha256","bcrypt10");
+        mdbChain = Arrays.asList("md4", "sha256", "md4", "sha256", "bcrypt10");
         encoded = encoder.encodePassword(SOURCE_PASSWORD, salt, mdbChain);
         assertTrue(encoder.matchesPassword(SOURCE_PASSWORD, encoded, salt, mdbChain));
     }
-
 
     @Test
     public void testUserChain() throws Exception
@@ -331,7 +340,8 @@ public class CompositePasswordEncoderTest
         try
         {
             subject.init();
-        } catch (AlfrescoRuntimeException expected)
+        }
+        catch (AlfrescoRuntimeException expected)
         {
             expected.getMessage().contains("property_not_set");
         }
@@ -341,17 +351,19 @@ public class CompositePasswordEncoderTest
         try
         {
             subject.init();
-        } catch (AlfrescoRuntimeException expected)
+        }
+        catch (AlfrescoRuntimeException expected)
         {
             expected.getMessage().contains("property_not_set");
         }
 
-        //No default preferred encoding
+        // No default preferred encoding
         subject.setPreferredEncoding("nice_encoding");
         try
         {
             subject.init();
-        } catch (AlfrescoRuntimeException expected)
+        }
+        catch (AlfrescoRuntimeException expected)
         {
             expected.getMessage().contains("Invalid preferredEncoding specified");
         }
@@ -369,12 +381,12 @@ public class CompositePasswordEncoderTest
         assertTrue(subject.lastEncodingIsPreferred(Arrays.asList("fish")));
         assertEquals("fish", subject.getPreferredEncoding());
 
-        assertFalse(subject.lastEncodingIsPreferred((List)null));
-        assertFalse(subject.lastEncodingIsPreferred(Collections.<String>emptyList()));
+        assertFalse(subject.lastEncodingIsPreferred((List) null));
+        assertFalse(subject.lastEncodingIsPreferred(Collections.<String> emptyList()));
         assertTrue(subject.lastEncodingIsPreferred(Arrays.asList("fish")));
         assertFalse(subject.lastEncodingIsPreferred(Arrays.asList("bird")));
         assertTrue(subject.lastEncodingIsPreferred(Arrays.asList("bird", "fish")));
         assertFalse(subject.lastEncodingIsPreferred(Arrays.asList("bird", "fish", "dog", "cat")));
-        assertTrue(subject.lastEncodingIsPreferred(Arrays.asList("bird", "dog", "cat","fish")));
+        assertTrue(subject.lastEncodingIsPreferred(Arrays.asList("bird", "dog", "cat", "fish")));
     }
 }

@@ -29,11 +29,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.testng.Assert;
 
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.CustomAspectModel;
 import org.alfresco.utility.model.CustomAspectPropertiesModel;
-import org.testng.Assert;
 
 /**
  * @author Bogdan Bocancea

@@ -26,6 +26,7 @@
  */
 
 package org.alfresco.module.org_alfresco_module_rm.script;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -33,11 +34,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.admin.CustomMetadataException;
-import org.alfresco.module.org_alfresco_module_rm.admin.PropertyAlreadyExistsMetadataException;
-import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
-import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
-import org.alfresco.service.namespace.QName;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -48,9 +44,14 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.module.org_alfresco_module_rm.admin.CustomMetadataException;
+import org.alfresco.module.org_alfresco_module_rm.admin.PropertyAlreadyExistsMetadataException;
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
+import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
+import org.alfresco.service.namespace.QName;
+
 /**
- * Implementation for Java backed webscript to update RM custom property definitions
- * in the custom model.
+ * Implementation for Java backed webscript to update RM custom property definitions in the custom model.
  *
  * @author Neil McErlean
  */
@@ -96,7 +97,7 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
         catch (JSONException je)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
+                    "Could not parse JSON from req.", je);
         }
 
         return ftlModel;
@@ -104,6 +105,7 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
 
     /**
      * Applies custom properties.
+     * 
      * @throws CustomMetadataException
      */
     protected Map<String, Object> handlePropertyDefinitionUpdate(WebScriptRequest req, JSONObject json)
@@ -126,9 +128,7 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
     }
 
     /**
-     * If label has a non-null value, it is set on the property def.
-     * If constraintRef has a non-null value, it is set on this propDef.
-     * If constraintRef has a null value, all constraints for that propDef are removed.
+     * If label has a non-null value, it is set on the property def. If constraintRef has a non-null value, it is set on this propDef. If constraintRef has a null value, all constraints for that propDef are removed.
      *
      * @param params
      * @return
@@ -139,14 +139,14 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
         QName result = null;
         boolean updated = false;
 
-        String propId = (String)params.get(PROP_ID);
+        String propId = (String) params.get(PROP_ID);
         ParameterCheck.mandatoryString("propId", propId);
 
         QName propQName = rmAdminService.getQNameForClientId(propId);
         if (propQName == null)
         {
             propQName = rmAdminService.getQNameForClientId(URLEncoder.encode(propId));
-        }        	
+        }
         if (propQName == null)
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND,
@@ -155,7 +155,7 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
 
         if (params.containsKey(PARAM_CONSTRAINT_REF))
         {
-            String constraintRef = (String)params.get(PARAM_CONSTRAINT_REF);
+            String constraintRef = (String) params.get(PARAM_CONSTRAINT_REF);
             List<ConstraintDefinition> constraints = rmAdminService.getCustomPropertyDefinitions().get(propQName).getConstraints();
 
             if (constraintRef == null)
@@ -185,7 +185,7 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
 
         if (params.containsKey(PARAM_LABEL))
         {
-            String label = (String)params.get(PARAM_LABEL);
+            String label = (String) params.get(PARAM_LABEL);
             try
             {
                 result = rmAdminService.updateCustomPropertyDefinitionName(propQName, label);
@@ -203,9 +203,8 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
         return result;
     }
 
-
     @SuppressWarnings("unchecked")
-	protected Map<String, Serializable> getParamsFromUrlAndJson(WebScriptRequest req, JSONObject json)
+    protected Map<String, Serializable> getParamsFromUrlAndJson(WebScriptRequest req, JSONObject json)
             throws JSONException
     {
         Map<String, Serializable> params;
@@ -215,10 +214,10 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
         String propId = templateVars.get(PROP_ID);
         if (propId != null)
         {
-            params.put(PROP_ID, (Serializable)propId);
+            params.put(PROP_ID, (Serializable) propId);
         }
 
-        for (Iterator<String> iter = json.keys(); iter.hasNext(); )
+        for (Iterator<String> iter = json.keys(); iter.hasNext();)
         {
             String nextKeyString = iter.next();
             String nextValueString = null;

@@ -48,7 +48,7 @@ public class ArchivedNodeEntity extends NodeBackedEntity
     }
 
     public ArchivedNodeEntity(Long parentNodeId, Long nameQNameId, String filter,
-                Long assocTypeQNameId, Boolean sortOrderAscending, Boolean filterIgnoreCase)
+            Long assocTypeQNameId, Boolean sortOrderAscending, Boolean filterIgnoreCase)
     {
         super(parentNodeId, nameQNameId, null);
         setFilter(filter);
@@ -112,9 +112,9 @@ public class ArchivedNodeEntity extends NodeBackedEntity
     {
         StringBuilder builder = new StringBuilder(300);
         builder.append("ArchivedNodeEntity [filter=").append(this.filter)
-                    .append(", assocTypeQNameId=").append(this.assocTypeQNameId)
-                    .append(", sortOrderAscending=").append(this.sortOrderAscending)
-                    .append(", filterIgnoreCase=").append(this.filterIgnoreCase).append("]");
+                .append(", assocTypeQNameId=").append(this.assocTypeQNameId)
+                .append(", sortOrderAscending=").append(this.sortOrderAscending)
+                .append(", filterIgnoreCase=").append(this.filterIgnoreCase).append("]");
         return builder.toString();
     }
 }

@@ -25,14 +25,14 @@
  */
 package org.alfresco.repo.workflow.activiti;
 
-import org.alfresco.repo.i18n.MessageService;
-import org.alfresco.repo.workflow.WorkflowObjectFactory;
-import org.alfresco.service.cmr.workflow.WorkflowTransition;
+import junit.framework.TestCase;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import junit.framework.TestCase;
+import org.alfresco.repo.i18n.MessageService;
+import org.alfresco.repo.workflow.WorkflowObjectFactory;
+import org.alfresco.service.cmr.workflow.WorkflowTransition;
 
 public class WorklfowObjectFactoryTest extends TestCase
 {
@@ -43,8 +43,7 @@ public class WorklfowObjectFactoryTest extends TestCase
     public void testTransitionDefaultLabel()
     {
         MessageService mockedMessageService = Mockito.mock(MessageService.class);
-        Mockito.when(mockedMessageService.getMessage(Mockito.anyString())).thenAnswer(new Answer<String>()
-        {
+        Mockito.when(mockedMessageService.getMessage(Mockito.anyString())).thenAnswer(new Answer<String>() {
 
             @Override
             public String answer(InvocationOnMock invocation) throws Throwable

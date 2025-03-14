@@ -34,7 +34,6 @@ import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.service.NotAuditable;
 
-
 /**
  * This service interface provides support for Mimetypes.
  * 
@@ -44,9 +43,10 @@ import org.alfresco.service.NotAuditable;
 public interface MimetypeService
 {
     /**
-     * Get the extension for the specified mimetype  
+     * Get the extension for the specified mimetype
      * 
-     * @param mimetype a valid mimetype
+     * @param mimetype
+     *            a valid mimetype
      * @return Returns the default extension for the mimetype
      */
     @NotAuditable
@@ -55,7 +55,8 @@ public interface MimetypeService
     /**
      * Get the mimetype for the specified extension
      * 
-     * @param extension a valid file extension
+     * @param extension
+     *            a valid file extension
      * @return Returns a valid mimetype if found, or null if does not exist
      */
     @NotAuditable
@@ -92,12 +93,13 @@ public interface MimetypeService
      */
     @NotAuditable
     public Map<String, String> getMimetypesByExtension();
-    
+
     /**
      * Check if a given mimetype represents a text format.
      * 
-     * @param mimetype      the mimetype to check
-     * @return              Returns <tt>true</tt> if it is text
+     * @param mimetype
+     *            the mimetype to check
+     * @return Returns <tt>true</tt> if it is text
      */
     @NotAuditable
     public boolean isText(String mimetype);
@@ -111,52 +113,42 @@ public interface MimetypeService
     public List<String> getMimetypes();
 
     /**
-     * Provides a non-null best guess of the appropriate mimetype given a
-     * filename, based entirely on the file extension. Because file
-     * extensions can be wrong, you are strongly advised to use
-     * {@link #guessMimetype(String, ContentReader)} instead.
+     * Provides a non-null best guess of the appropriate mimetype given a filename, based entirely on the file extension. Because file extensions can be wrong, you are strongly advised to use {@link #guessMimetype(String, ContentReader)} instead.
      * 
-     * @param filename the name of the file with an optional file extension
-     * @return Returns the best guess mimetype or the mimetype for
-     *      straight binary files if no extension could be found.
+     * @param filename
+     *            the name of the file with an optional file extension
+     * @return Returns the best guess mimetype or the mimetype for straight binary files if no extension could be found.
      */
     @NotAuditable
     public String guessMimetype(String filename);
-    
+
     /**
-     * Provides a non-null best guess of the appropriate mimetype for a
-     * given file. Uses a mixture of file name and file content
-     * logic to identify the mimetype for the file, and will usually
-     * manage to identify files with incorrect extensions. 
+     * Provides a non-null best guess of the appropriate mimetype for a given file. Uses a mixture of file name and file content logic to identify the mimetype for the file, and will usually manage to identify files with incorrect extensions.
      * 
-     * @param filename the name of the file with an optional file extension
-     * @param reader a reader for the content of the file 
-     * @return Returns the best guess mimetype or the mimetype for
-     *      straight binary files if no extension could be found.
+     * @param filename
+     *            the name of the file with an optional file extension
+     * @param reader
+     *            a reader for the content of the file
+     * @return Returns the best guess mimetype or the mimetype for straight binary files if no extension could be found.
      */
     @NotAuditable
     public String guessMimetype(String filename, ContentReader reader);
-    
+
     /**
-     * Provides a non-null best guess of the appropriate mimetype for a
-     * given file. Uses a mixture of file name and file content
-     * logic to identify the mimetype for the file, and will usually
-     * manage to identify files with incorrect extensions. 
+     * Provides a non-null best guess of the appropriate mimetype for a given file. Uses a mixture of file name and file content logic to identify the mimetype for the file, and will usually manage to identify files with incorrect extensions.
      * 
-     * @param filename the name of the file with an optional file extension
-     * @param input an input stream for the content 
-     * @return Returns the best guess mimetype or the mimetype for
-     *      straight binary files if no extension could be found.
+     * @param filename
+     *            the name of the file with an optional file extension
+     * @param input
+     *            an input stream for the content
+     * @return Returns the best guess mimetype or the mimetype for straight binary files if no extension could be found.
      */
     @NotAuditable
     public String guessMimetype(String filename, InputStream input);
 
     /**
-     * Use detection heuristics to check if the mime type of the document really 
-     *  matches what it claims to be.
-     * This is typically used when a transformation or metadata extractions fails, 
-     *  and you want to know if someone has renamed a file and consequently it has 
-     *  the wrong mime type. 
+     * Use detection heuristics to check if the mime type of the document really matches what it claims to be. This is typically used when a transformation or metadata extractions fails, and you want to know if someone has renamed a file and consequently it has the wrong mime type.
+     * 
      * @return Null if the mime type seems ok, otherwise the mime type it probably is
      */
     @NotAuditable
@@ -165,17 +157,18 @@ public interface MimetypeService
     /**
      * Provides the system default charset finder.
      * 
-     * @return      Returns a character set finder that can be used to decode
-     *              streams in order to get the encoding.
+     * @return Returns a character set finder that can be used to decode streams in order to get the encoding.
      * 
      * @since 2.1
      */
     @NotAuditable
     public ContentCharsetFinder getContentCharsetFinder();
-    
+
     /**
      * Returns a collection of mimetypes ordered by extension.
-     * @param extension to restrict the collection to one entry
+     * 
+     * @param extension
+     *            to restrict the collection to one entry
      */
     @NotAuditable
     public Collection<String> getMimetypes(String extension);

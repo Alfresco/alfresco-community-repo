@@ -38,8 +38,7 @@ public class CustomAspect extends AbstractCustomClass
 {
 
     public CustomAspect()
-    {
-    }
+    {}
 
     public CustomAspect(AspectDefinition aspectDefinition, MessageLookup messageLookup, List<CustomModelProperty> properties)
     {
@@ -56,12 +55,12 @@ public class CustomAspect extends AbstractCustomClass
     {
         StringBuilder builder = new StringBuilder(512);
         builder.append("CustomAspect [name=").append(this.name)
-                    .append(", prefixedName=").append(this.prefixedName)
-                    .append(", title=").append(this.title)
-                    .append(", description=").append(this.description)
-                    .append(", parentName=").append(parentName)
-                    .append(", properties=").append(properties)
-                    .append(']');
+                .append(", prefixedName=").append(this.prefixedName)
+                .append(", title=").append(this.title)
+                .append(", description=").append(this.description)
+                .append(", parentName=").append(parentName)
+                .append(", properties=").append(properties)
+                .append(']');
         return builder.toString();
     }
 }

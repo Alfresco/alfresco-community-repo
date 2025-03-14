@@ -28,13 +28,13 @@ package org.alfresco.repo.module;
 import java.util.List;
 import java.util.Properties;
 
+import junit.framework.TestCase;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.module.ModuleDependency;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleInstallState;
 import org.alfresco.util.VersionNumber;
-
-import junit.framework.TestCase;
 
 /**
  * @see org.alfresco.repo.module.ModuleDetailsImpl
@@ -45,7 +45,8 @@ public class ModuleDetailsImplTest extends TestCase
 {
     public static Properties DEFAULT_PROPS;
 
-    static {
+    static
+    {
         DEFAULT_PROPS = new Properties();
         DEFAULT_PROPS.setProperty(ModuleDetails.PROP_ID, "org.alfresco.module.Test");
         DEFAULT_PROPS.setProperty(ModuleDetails.PROP_ALIASES, "test, Test");
@@ -73,7 +74,7 @@ public class ModuleDetailsImplTest extends TestCase
         props.putAll(DEFAULT_PROPS);
         ModuleDetails details = new ModuleDetailsImpl(props);
     }
-    
+
     public void testWriteAndReadProperties()
     {
         Properties props = new Properties();
@@ -84,20 +85,20 @@ public class ModuleDetailsImplTest extends TestCase
         assertEquals("The number of properties changed", props.size(), processedProperties.size());
         assertEquals("The properties are different", props, processedProperties);
     }
-    
+
     public void testDependencyChecks()
     {
         Properties props = new Properties();
         props.putAll(DEFAULT_PROPS);
         ModuleDetails details = new ModuleDetailsImpl(props);
-        
+
         Properties tempProperties = new Properties();
         tempProperties.setProperty(ModuleDetails.PROP_ID, "a");
         tempProperties.setProperty(ModuleDetails.PROP_TITLE, "A");
         tempProperties.setProperty(ModuleDetails.PROP_DESCRIPTION, "A description");
         tempProperties.setProperty(ModuleDetails.PROP_VERSION, "1.0.0");
         ModuleDetails tempDetails = new ModuleDetailsImpl(tempProperties);
-        
+
         List<ModuleDependency> dependencies = details.getDependencies();
         assertEquals("Incorrect number of dependencies", 8, dependencies.size());
         for (ModuleDependency dependency : dependencies)
@@ -109,7 +110,7 @@ public class ModuleDetailsImplTest extends TestCase
             }
         }
     }
-    
+
     public void testTrimming() throws Exception
     {
         Properties props = new Properties();
@@ -118,12 +119,12 @@ public class ModuleDetailsImplTest extends TestCase
         ModuleDetails details = new ModuleDetailsImpl(props);
         assertEquals("Expected the install state to be UNKNOWN", ModuleInstallState.UNKNOWN, details.getInstallState());
     }
-    
+
     public void testInvalidIds() throws Exception
     {
         Properties props = new Properties();
         props.putAll(DEFAULT_PROPS);
-        String[] invalidIds = new String[] {"", " ", "$", "module$Test", "module.Test$", "org alfresco module Test"};
+        String[] invalidIds = new String[]{"", " ", "$", "module$Test", "module.Test$", "org alfresco module Test"};
         for (String invalidId : invalidIds)
         {
             try
@@ -138,12 +139,12 @@ public class ModuleDetailsImplTest extends TestCase
             }
         }
     }
-    
+
     public void testValidIds() throws Exception
     {
         Properties props = new Properties();
         props.putAll(DEFAULT_PROPS);
-        String[] validIds = new String[] {"abc123", " abc123 ", "a-b-c", "a.b.c", "a_b_c", "A.1.2.3"};
+        String[] validIds = new String[]{"abc123", " abc123 ", "a-b-c", "a.b.c", "a_b_c", "A.1.2.3"};
         for (String validId : validIds)
         {
             props.setProperty(ModuleDetails.PROP_ID, validId);

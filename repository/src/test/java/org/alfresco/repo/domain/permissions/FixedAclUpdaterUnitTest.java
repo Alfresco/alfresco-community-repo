@@ -25,13 +25,19 @@
  */
 package org.alfresco.repo.domain.permissions;
 
-import static org.alfresco.model.ContentModel.TYPE_BASE;
-import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_ARCHIVE_SPACESSTORE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
+
+import static org.alfresco.model.ContentModel.TYPE_BASE;
+import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_ARCHIVE_SPACESSTORE;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.permissions.FixedAclUpdater.AclWorker;
@@ -40,10 +46,6 @@ import org.alfresco.repo.security.permissions.PermissionServicePolicies.OnInheri
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PolicyIgnoreUtil;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 
 /** Mock-based unit tests for {@link FixedAclUpdater}. */
 public class FixedAclUpdaterUnitTest

@@ -28,8 +28,7 @@ package org.alfresco.service.cmr.repository;
 import org.alfresco.api.AlfrescoPublicApi;
 
 /**
- * Unable to access as content is in an Archived state.
- * Default status is <i>Precondition Failed<i> Client Error = 412
+ * Unable to access as content is in an Archived state. Default status is <i>Precondition Failed<i> Client Error = 412
  * 
  * @author David Edwards
  */
@@ -38,12 +37,12 @@ public class ArchivedIOException extends ContentIOException
 {
     private static final long serialVersionUID = 3258135874596276087L;
 
-    public ArchivedIOException(String msg) 
+    public ArchivedIOException(String msg)
     {
         super(msg);
     }
 
-    public ArchivedIOException(String msg, Throwable cause) 
+    public ArchivedIOException(String msg, Throwable cause)
     {
         super(msg, cause);
     }

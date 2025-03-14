@@ -29,6 +29,9 @@ package org.alfresco.repo.rule.ruletrigger;
 
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -37,8 +40,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Prevent multiple triggering of outbound rules when moving records.
@@ -46,8 +47,8 @@ import org.apache.commons.logging.LogFactory;
  * @author Roy Wetherall
  */
 public class ExtendedBeforeDeleteChildAssociationRuleTrigger
-                extends RuleTriggerAbstractBase
-                implements NodeServicePolicies.BeforeDeleteChildAssociationPolicy
+        extends RuleTriggerAbstractBase
+        implements NodeServicePolicies.BeforeDeleteChildAssociationPolicy
 {
     /**
      * The logger

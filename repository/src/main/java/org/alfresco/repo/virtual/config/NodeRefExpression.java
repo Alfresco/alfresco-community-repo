@@ -33,6 +33,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface NodeRefExpression
 {
     NodeRef resolve();
-    
+
     NodeRef resolve(boolean createIfNotFound);
 }

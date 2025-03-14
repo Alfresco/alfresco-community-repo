@@ -37,6 +37,10 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
@@ -55,9 +59,6 @@ import org.alfresco.repo.virtual.ref.VanillaProtocol;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 public class TypeVirtualizationMethodIntegrationTest extends VirtualizationIntegrationTest
 {
@@ -81,7 +82,7 @@ public class TypeVirtualizationMethodIntegrationTest extends VirtualizationInteg
         super.tearDown();
         typeVirtualizationMethod.setQnameFilters(virtualizationConfigTestBootstrap.getTypeTemplatesQNameFilter());
     }
-    
+
     @Test
     public void testFiltering() throws Exception
     {
@@ -191,8 +192,7 @@ public class TypeVirtualizationMethodIntegrationTest extends VirtualizationInteg
         ResourceParameter vanillaResourceParameter = (ResourceParameter) parameters.get(VanillaProtocol.VANILLA_TEMPLATE_PARAM_INDEX);
         Resource vanillaResource = vanillaResourceParameter.getValue();
 
-        NodeRef resourceNodeRef = vanillaResource.processWith(new ResourceProcessor<NodeRef>()
-        {
+        NodeRef resourceNodeRef = vanillaResource.processWith(new ResourceProcessor<NodeRef>() {
 
             @Override
             public NodeRef process(Resource resource) throws ResourceProcessingError

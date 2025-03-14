@@ -45,7 +45,8 @@ public interface SuggesterService
     /**
      * Get suggestions for the specified term {@link SuggesterParameters#term}
      * 
-     * @param suggesterParameters the parameters to use
+     * @param suggesterParameters
+     *            the parameters to use
      * @return term suggestions result. Never <i>null</i>
      */
     public SuggesterResult getSuggestions(SuggesterParameters suggesterParameters);

@@ -47,28 +47,25 @@ public interface PatchService
     public void registerPatch(Patch patch);
 
     /**
-     * Does some up-front validation on the patches, specifically to see if they all apply to the current server version
-     * and not some future version. This is to prevent tampering with versioning information attached to a license.
+     * Does some up-front validation on the patches, specifically to see if they all apply to the current server version and not some future version. This is to prevent tampering with versioning information attached to a license.
      * 
      * @return true if validation is successful. Outputs errors and returns false otherwise.
      */
     public boolean validatePatches();
 
     /**
-     * Apply all outstanding patches that are relevant to the repo. If there is a failure, then the patches that were
-     * applied will remain so, but the process will not attempt to apply any further patches.
+     * Apply all outstanding patches that are relevant to the repo. If there is a failure, then the patches that were applied will remain so, but the process will not attempt to apply any further patches.
      * 
-     * @return Returns true if all outstanding patches were applied, or false if the process was terminated before all
-     *         patches could be applied.
+     * @return Returns true if all outstanding patches were applied, or false if the process was terminated before all patches could be applied.
      */
     public boolean applyOutstandingPatches();
-    
+
     /**
      * Apply the specified patch that is relevant to the repo, regardless of the <b>deferred</b> flag.
      * 
-     * @param patch the patch object
-     * @return true if the specified patch and its dependencies were applied, or
-     *         false if the process was terminated before all patches could be applied.
+     * @param patch
+     *            the patch object
+     * @return true if the specified patch and its dependencies were applied, or false if the process was terminated before all patches could be applied.
      */
     public boolean applyOutstandingPatch(Patch patch);
 
@@ -82,22 +79,21 @@ public interface PatchService
      * @return Returns all applied patches (successful or not)
      */
     public List<AppliedPatch> getPatches(Date fromDate, Date toDate);
-    
+
     /**
      * Retrieve an existing patch
      * 
-     * @param id the patch unique ID
+     * @param id
+     *            the patch unique ID
      * @return Returns the patch instance or <tt>null</tt> if one has not been persisted
      */
     public AppliedPatch getPatch(String id);
-    
+
     /**
-     * Does some up-front validation on the specified patch, specifically to see
-     * if it applies to the current server version and not some future version.
-     * This is to prevent tampering with versioning information attached to a
-     * license.
+     * Does some up-front validation on the specified patch, specifically to see if it applies to the current server version and not some future version. This is to prevent tampering with versioning information attached to a license.
      * 
-     * @param patch the patch object
+     * @param patch
+     *            the patch object
      * @return true if validation is successful. Outputs errors and returns false otherwise.
      */
     public boolean validatePatch(Patch patch);

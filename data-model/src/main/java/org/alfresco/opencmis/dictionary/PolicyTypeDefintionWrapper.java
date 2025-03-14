@@ -30,6 +30,12 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.chemistry.opencmis.commons.definitions.PropertyDefinition;
+import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.PolicyTypeDefinitionImpl;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.opencmis.CMISUtils;
 import org.alfresco.opencmis.mapping.CMISMapping;
@@ -38,11 +44,6 @@ import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
-import org.apache.chemistry.opencmis.commons.definitions.PropertyDefinition;
-import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.PolicyTypeDefinitionImpl;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class PolicyTypeDefintionWrapper extends AbstractTypeDefinitionWrapper
 {
@@ -54,7 +55,7 @@ public class PolicyTypeDefintionWrapper extends AbstractTypeDefinitionWrapper
     private PolicyTypeDefinitionImpl typeDefInclProperties;
     private DictionaryService dictionaryService;
 
-    public PolicyTypeDefintionWrapper(CMISMapping cmisMapping, PropertyAccessorMapping propertyAccessorMapping, 
+    public PolicyTypeDefintionWrapper(CMISMapping cmisMapping, PropertyAccessorMapping propertyAccessorMapping,
             PropertyLuceneBuilderMapping luceneBuilderMapping, String typeId, DictionaryService dictionaryService, ClassDefinition cmisClassDef)
     {
         this.dictionaryService = dictionaryService;
@@ -72,17 +73,20 @@ public class PolicyTypeDefintionWrapper extends AbstractTypeDefinitionWrapper
         {
             typeDef.setQueryName(ISO9075.encodeSQL(typeId));
             typeDef.setParentTypeId(null);
-        } else
+        }
+        else
         {
             typeDef.setQueryName(ISO9075.encodeSQL(cmisMapping.buildPrefixEncodedString(alfrescoName)));
             QName parentQName = cmisMapping.getCmisType(cmisClassDef.getParentName());
             if (parentQName == null)
             {
                 typeDef.setParentTypeId(cmisMapping.getCmisTypeId(CMISMapping.ASPECTS_QNAME));
-            } else if (cmisMapping.isValidCmisPolicy(parentQName))
+            }
+            else if (cmisMapping.isValidCmisPolicy(parentQName))
             {
                 typeDef.setParentTypeId(cmisMapping.getCmisTypeId(BaseTypeId.CMIS_POLICY, parentQName));
-            } else
+            }
+            else
             {
                 throw new IllegalStateException("The CMIS type model should ignore aspects that inherit from excluded aspects");
             }
@@ -110,17 +114,17 @@ public class PolicyTypeDefintionWrapper extends AbstractTypeDefinitionWrapper
     public List<TypeDefinitionWrapper> connectParentAndSubTypes(CMISMapping cmisMapping, CMISDictionaryRegistry registry,
             DictionaryService dictionaryService)
     {
-    	String parentTypeId = typeDef.getParentTypeId();
+        String parentTypeId = typeDef.getParentTypeId();
 
         // find parent
         if (typeDef.getParentTypeId() != null)
         {
             parent = registry.getTypeDefByTypeId(parentTypeId);
-//            if(registry.getTenant() != null && parent != null && registry.getTypeDefByTypeId(parentTypeId, false) == null)
-//            {
-//            	// this is a tenant registry and the parent is not defined locally so add this type as a child of it
-//            	registry.addChild(parent.getTypeId(), this);
-//            }
+            // if(registry.getTenant() != null && parent != null && registry.getTypeDefByTypeId(parentTypeId, false) == null)
+            // {
+            // // this is a tenant registry and the parent is not defined locally so add this type as a child of it
+            // registry.addChild(parent.getTypeId(), this);
+            // }
         }
         else
         {
@@ -149,11 +153,11 @@ public class PolicyTypeDefintionWrapper extends AbstractTypeDefinitionWrapper
             String aspectsTypeId = cmisMapping.getCmisTypeId(CMISMapping.ASPECTS_QNAME);
             for (AbstractTypeDefinitionWrapper tdw : registry.getTypeDefs(false))
             {
-//            	TypeDefinitionWrapper parent = tdw.getParent();
-//            	if(tdw.getTenantId().equals(parent.getTenantId()))
-//            	{
-            		// type and parent in same tenant
-//            	}
+                // TypeDefinitionWrapper parent = tdw.getParent();
+                // if(tdw.getTenantId().equals(parent.getTenantId()))
+                // {
+                // type and parent in same tenant
+                // }
                 String parentId = tdw.getTypeDefinition(false).getParentTypeId();
                 if ((parentId != null) && parentId.equals(aspectsTypeId))
                 {
@@ -188,7 +192,7 @@ public class PolicyTypeDefintionWrapper extends AbstractTypeDefinitionWrapper
         }
 
         return children;
-//        registry.setChildren(typeDef.getId(), children);
+        // registry.setChildren(typeDef.getId(), children);
     }
 
     public void resolveInheritance(CMISMapping cmisMapping,
@@ -244,10 +248,10 @@ public class PolicyTypeDefintionWrapper extends AbstractTypeDefinitionWrapper
         {
             super.updateDefinition(dictionaryService);
         }
-        
+
         updateTypeDefInclProperties();
     }
-    
+
     @Override
     public PropertyDefinitionWrapper getPropertyById(String propertyId)
     {

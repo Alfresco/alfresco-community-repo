@@ -33,6 +33,7 @@ import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.JobEntity;
 import org.activiti.engine.impl.pvm.PvmActivity;
 import org.activiti.engine.task.Task;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -43,60 +44,56 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 
 /**
- * An {@link JobHandler} which executes activiti timer-jobs
- * authenticated against Alfresco. It runs the timer execution
- * as the task's assignee (if any) when the timer is applied to a
- * task. If not, system user is used to execute timer.
+ * An {@link JobHandler} which executes activiti timer-jobs authenticated against Alfresco. It runs the timer execution as the task's assignee (if any) when the timer is applied to a task. If not, system user is used to execute timer.
  * 
  * It wraps another JobHandler to which the actual execution is delegated to.
  *
  * @author Frederik Heremans
  * @since 3.4.e
  */
-public class AuthenticatedTimerJobHandler implements JobHandler 
+public class AuthenticatedTimerJobHandler implements JobHandler
 {
     private JobHandler wrappedHandler;
     private NodeService unprotectedNodeService;
-    
+
     /**
-     * @param jobHandler the {@link JobHandler} to wrap.
-     * @param nodeService the UNPROTECTED {@link NodeService} to use for fetching initiator username
-     * when only tenant is known. We can't use initiator ScriptNode for this, because this uses the
-     * protected {@link NodeService} which requires an authenticated user in that tenant (see {@link #getInitiator(ActivitiScriptNode)}).
+     * @param jobHandler
+     *            the {@link JobHandler} to wrap.
+     * @param nodeService
+     *            the UNPROTECTED {@link NodeService} to use for fetching initiator username when only tenant is known. We can't use initiator ScriptNode for this, because this uses the protected {@link NodeService} which requires an authenticated user in that tenant (see {@link #getInitiator(ActivitiScriptNode)}).
      */
-    public AuthenticatedTimerJobHandler(JobHandler jobHandler, NodeService nodeService) 
+    public AuthenticatedTimerJobHandler(JobHandler jobHandler, NodeService nodeService)
     {
         if (jobHandler == null)
         {
             throw new IllegalArgumentException("JobHandler to delegate to is required");
         }
-        if(nodeService == null)
+        if (nodeService == null)
         {
             throw new IllegalArgumentException("NodeService is required");
         }
         this.unprotectedNodeService = nodeService;
         this.wrappedHandler = jobHandler;
     }
-    
+
     @Override
     public void execute(final JobEntity job, final String configuration, final ExecutionEntity execution,
-                final CommandContext commandContext) 
+            final CommandContext commandContext)
     {
         String userName = null;
         String tenantToRunIn = (String) execution.getVariable(ActivitiConstants.VAR_TENANT_DOMAIN);
-        if(tenantToRunIn != null && tenantToRunIn.trim().length() == 0)
+        if (tenantToRunIn != null && tenantToRunIn.trim().length() == 0)
         {
             tenantToRunIn = null;
         }
-        
+
         final ActivitiScriptNode initiatorNode = (ActivitiScriptNode) execution.getVariable(WorkflowConstants.PROP_INITIATOR);
-        
-        // Extracting the properties from the initiatornode should be done in correct tennant or as administrator, since we don't 
+
+        // Extracting the properties from the initiatornode should be done in correct tennant or as administrator, since we don't
         // know who started the workflow yet (We can't access node-properties when no valid authentication context is set up).
-        if(tenantToRunIn != null)
+        if (tenantToRunIn != null)
         {
-            userName = TenantUtil.runAsTenant(new TenantRunAsWork<String>()
-            {
+            userName = TenantUtil.runAsTenant(new TenantRunAsWork<String>() {
                 @Override
                 public String doWork() throws Exception
                 {
@@ -107,8 +104,7 @@ public class AuthenticatedTimerJobHandler implements JobHandler
         else
         {
             // No tenant on worklfow, run as admin in default tenant
-            userName = AuthenticationUtil.runAs(new RunAsWork<String>()
-            {
+            userName = AuthenticationUtil.runAs(new RunAsWork<String>() {
                 @SuppressWarnings("synthetic-access")
                 public String doWork() throws Exception
                 {
@@ -116,9 +112,9 @@ public class AuthenticatedTimerJobHandler implements JobHandler
                 }
             }, AuthenticationUtil.getSystemUserName());
         }
-        
+
         // Fall back to task assignee, if no initiator is found
-        if(userName == null)
+        if (userName == null)
         {
             PvmActivity targetActivity = execution.getActivity();
             if (targetActivity != null)
@@ -128,9 +124,9 @@ public class AuthenticatedTimerJobHandler implements JobHandler
                 if (ActivitiConstants.USER_TASK_NODE_TYPE.equals(activityType))
                 {
                     Task task = new TaskQueryImpl(commandContext)
-                    .executionId(execution.getId())
-                    .executeSingleResult(commandContext);
-                    
+                            .executionId(execution.getId())
+                            .executeSingleResult(commandContext);
+
                     if (task != null && task.getAssignee() != null)
                     {
                         userName = task.getAssignee();
@@ -138,18 +134,17 @@ public class AuthenticatedTimerJobHandler implements JobHandler
                 }
             }
         }
-        
+
         // When no task assignee is set, nor the initiator, use system user to run job
         if (userName == null)
         {
             userName = AuthenticationUtil.getSystemUserName();
             tenantToRunIn = null;
         }
-        
-        if(tenantToRunIn != null)
+
+        if (tenantToRunIn != null)
         {
-            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-            {
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -161,8 +156,7 @@ public class AuthenticatedTimerJobHandler implements JobHandler
         else
         {
             // Execute the timer without tenant
-            AuthenticationUtil.runAs(new RunAsWork<Void>()
-            {
+            AuthenticationUtil.runAs(new RunAsWork<Void>() {
                 @SuppressWarnings("synthetic-access")
                 public Void doWork() throws Exception
                 {
@@ -172,13 +166,13 @@ public class AuthenticatedTimerJobHandler implements JobHandler
             }, userName);
         }
     }
-    
+
     protected String getInitiator(ActivitiScriptNode initiatorNode)
     {
-        if(initiatorNode != null) 
+        if (initiatorNode != null)
         {
             NodeRef ref = initiatorNode.getNodeRef();
-            if(unprotectedNodeService.exists(ref))
+            if (unprotectedNodeService.exists(ref))
             {
                 return (String) unprotectedNodeService.getProperty(ref, ContentModel.PROP_USERNAME);
             }
@@ -187,7 +181,7 @@ public class AuthenticatedTimerJobHandler implements JobHandler
     }
 
     @Override
-    public String getType() 
+    public String getType()
     {
         return wrappedHandler.getType();
     }

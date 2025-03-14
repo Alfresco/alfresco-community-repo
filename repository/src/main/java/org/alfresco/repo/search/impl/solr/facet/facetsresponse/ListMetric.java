@@ -25,15 +25,15 @@
  */
 package org.alfresco.repo.search.impl.solr.facet.facetsresponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
-import org.json.JSONException;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 /**
  * A metric with one value
@@ -51,7 +51,7 @@ public class ListMetric implements Metric
         {
             JSONArray jsonArray = (JSONArray) val;
             List<Object> values = new ArrayList<>(jsonArray.length());
-            for(int i = 0; i < jsonArray.length(); i++)
+            for (int i = 0; i < jsonArray.length(); i++)
             {
                 values.add(jsonArray.get(i));
             }
@@ -59,11 +59,11 @@ public class ListMetric implements Metric
         }
         catch (ClassCastException cce)
         {
-            logger.debug("ClassCastException for "+val);
+            logger.debug("ClassCastException for " + val);
         }
         catch (JSONException e)
         {
-            logger.debug("Failed to process "+val+ " "+e.getMessage());
+            logger.debug("Failed to process " + val + " " + e.getMessage());
         }
     }
 

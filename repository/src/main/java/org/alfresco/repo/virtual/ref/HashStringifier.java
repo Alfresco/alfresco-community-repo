@@ -30,9 +30,7 @@ import java.util.List;
 
 /**
  * Hash encoded reference stringifier.<br>
- * Delegates to {@link VanillaHashStringifier},
- * {@link VirtualHashStringifier} or {@link NodeHashStringifier} for
- * custom protocol parsing.
+ * Delegates to {@link VanillaHashStringifier}, {@link VirtualHashStringifier} or {@link NodeHashStringifier} for custom protocol parsing.
  */
 public class HashStringifier implements Stringifier
 {
@@ -52,12 +50,12 @@ public class HashStringifier implements Stringifier
     {
         HashStore cpStore = HashStoreConfiguration.getInstance().getClasspathHashStore();
         nodeStringifier = new NodeHashStringifier(cpStore,
-                                                  this);
+                this);
         virtualStringifier = new VirtualHashStringifier(cpStore,
-                                                        this);
+                this);
 
         vanillaStringifier = new VanillaHashStringifier(cpStore,
-                                                        this);
+                this);
     }
 
     @Override
@@ -86,7 +84,7 @@ public class HashStringifier implements Stringifier
     private String stringifyUnknown(Reference reference) throws ReferenceEncodingException
     {
         throw new ReferenceEncodingException("Could not stringify unknown protocol reference s"
-                    + reference.encode(Encodings.PLAIN.encoding));
+                + reference.encode(Encodings.PLAIN.encoding));
     }
 
     @Override

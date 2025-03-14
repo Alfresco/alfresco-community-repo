@@ -41,9 +41,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Create hold audit event.
- * This listens to the NodeServicePolicies.OnCreateNodePolicy in order to cover the create hold action from Share
- * since that does not call the createHold from HoldService
+ * Create hold audit event. This listens to the NodeServicePolicies.OnCreateNodePolicy in order to cover the create hold action from Share since that does not call the createHold from HoldService
  *
  * @author Sara Aspery
  * @since 3.3
@@ -59,7 +57,8 @@ public class CreateHoldAuditEvent extends AuditEvent implements NodeServicePolic
     /**
      * Sets the node service
      *
-     * @param nodeService nodeService to set
+     * @param nodeService
+     *            nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -70,12 +69,10 @@ public class CreateHoldAuditEvent extends AuditEvent implements NodeServicePolic
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
     @Override
-    @Behaviour
-            (
-                    kind = BehaviourKind.CLASS,
-                    type = "rma:hold",
-                    notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-            )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            type = "rma:hold",
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
     public void onCreateNode(ChildAssociationRef childAssociationRef)
     {
         NodeRef holdNodeRef = childAssociationRef.getChildRef();

@@ -60,7 +60,7 @@ import org.alfresco.util.PropertyCheck;
  */
 public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<NodeRef>
 {
-	protected DictionaryService dictionaryService;
+    protected DictionaryService dictionaryService;
     protected NodeDAO nodeDAO;
     protected QNameDAO qnameDAO;
     protected LocaleDAO localeDAO;
@@ -68,49 +68,49 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
     protected CannedQueryDAO cannedQueryDAO;
     protected TenantService tenantService;
     protected NodeService nodeService;
-    
+
     protected MethodSecurityBean<NodeRef> methodSecurity;
-    
+
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     public void setNodeDAO(NodeDAO nodeDAO)
     {
         this.nodeDAO = nodeDAO;
     }
-    
+
     public void setQnameDAO(QNameDAO qnameDAO)
     {
         this.qnameDAO = qnameDAO;
     }
-    
+
     public void setLocaleDAO(LocaleDAO localeDAO)
     {
         this.localeDAO = localeDAO;
     }
-    
+
     public void setContentDataDAO(ContentDataDAO contentDataDAO)
     {
         this.contentDataDAO = contentDataDAO;
     }
-    
-    public void setCannedQueryDAO(CannedQueryDAO cannedQueryDAO) 
+
+    public void setCannedQueryDAO(CannedQueryDAO cannedQueryDAO)
     {
         this.cannedQueryDAO = cannedQueryDAO;
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setMethodSecurity(MethodSecurityBean<NodeRef> methodSecurity)
     {
         this.methodSecurity = methodSecurity;
@@ -120,24 +120,31 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
     public CannedQuery<NodeRef> getCannedQuery(CannedQueryParameters parameters)
     {
         NodePropertyHelper nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO);
-        
+
         return (CannedQuery<NodeRef>) new GetChildrenCannedQuery(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, nodeService, methodSecurity, parameters);
     }
-    
+
     /**
      * Retrieve an optionally filtered/sorted instance of a {@link CannedQuery} based on parameters including request for a total count (up to a given max)
      * 
      * Note: if both filtering and sorting is required then the combined total of unique QName properties should be the 0 to 3.
      *
-     * @param parentRef          parent node ref
-     * @param pattern			 the pattern to use to filter children (wildcard character is '*')
-     * @param assocTypeQNames	 qnames of assocs to include (may be null)
-     * @param childTypeQNames    type qnames of children nodes (pre-filter)
-     * @param filterProps        filter properties
-     * @param sortProps          sort property pairs (QName and Boolean - true if ascending)
-     * @param pagingRequest      skipCount, maxItems - optionally queryExecutionId and requestTotalCountMax
+     * @param parentRef
+     *            parent node ref
+     * @param pattern
+     *            the pattern to use to filter children (wildcard character is '*')
+     * @param assocTypeQNames
+     *            qnames of assocs to include (may be null)
+     * @param childTypeQNames
+     *            type qnames of children nodes (pre-filter)
+     * @param filterProps
+     *            filter properties
+     * @param sortProps
+     *            sort property pairs (QName and Boolean - true if ascending)
+     * @param pagingRequest
+     *            skipCount, maxItems - optionally queryExecutionId and requestTotalCountMax
      * 
-     * @return                   an implementation that will execute the query
+     * @return an implementation that will execute the query
      */
     public CannedQuery<NodeRef> getCannedQuery(NodeRef parentRef, String pattern, Set<QName> assocTypeQNames, Set<QName> childTypeQNames, List<FilterProp> filterProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
@@ -149,31 +156,40 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
      * 
      * Note: if both filtering and sorting is required then the combined total of unique QName properties should be the 0 to 3.
      *
-     * @param parentRef             parent node ref
-     * @param pattern			    the pattern to use to filter children (wildcard character is '*')
-     * @param assocTypeQNames	    qnames of assocs to include (may be null)
-     * @param childTypeQNames       type qnames of children nodes (pre-filter)
-     * @param inclusiveAspects      If not null, only child nodes with any aspect in this collection will be included in the results.
-     * @param exclusiveAspects      If not null, any child nodes with any aspect in this collection will be excluded in the results.
-     * @param filterProps           filter properties
-     * @param sortProps             sort property pairs (QName and Boolean - true if ascending)
-     * @param pagingRequest         skipCount, maxItems - optionally queryExecutionId and requestTotalCountMax
+     * @param parentRef
+     *            parent node ref
+     * @param pattern
+     *            the pattern to use to filter children (wildcard character is '*')
+     * @param assocTypeQNames
+     *            qnames of assocs to include (may be null)
+     * @param childTypeQNames
+     *            type qnames of children nodes (pre-filter)
+     * @param inclusiveAspects
+     *            If not null, only child nodes with any aspect in this collection will be included in the results.
+     * @param exclusiveAspects
+     *            If not null, any child nodes with any aspect in this collection will be excluded in the results.
+     * @param filterProps
+     *            filter properties
+     * @param sortProps
+     *            sort property pairs (QName and Boolean - true if ascending)
+     * @param pagingRequest
+     *            skipCount, maxItems - optionally queryExecutionId and requestTotalCountMax
      * 
-     * @return                      an implementation that will execute the query
+     * @return an implementation that will execute the query
      */
     public CannedQuery<NodeRef> getCannedQuery(NodeRef parentRef, String pattern, Set<QName> assocTypeQNames, Set<QName> childTypeQNames, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects, List<FilterProp> filterProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         ParameterCheck.mandatory("parentRef", parentRef);
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
-        
+
         int requestTotalCountMax = pagingRequest.getRequestTotalCountMax();
-        
+
         // specific query params - context (parent) and inclusive filters (child types, property values)
         GetChildrenCannedQueryParams paramBean = new GetChildrenCannedQueryParams(tenantService.getName(parentRef), assocTypeQNames, childTypeQNames, inclusiveAspects, exclusiveAspects, filterProps, pattern);
 
         // page details
         CannedQueryPageDetails cqpd = new CannedQueryPageDetails(pagingRequest.getSkipCount(), pagingRequest.getMaxItems(), CannedQueryPageDetails.DEFAULT_PAGE_NUMBER, CannedQueryPageDetails.DEFAULT_PAGE_COUNT);
-        
+
         // sort details
         CannedQuerySortDetails cqsd = null;
         if (sortProps != null)
@@ -183,38 +199,43 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
             {
                 sortPairs.add(new Pair<QName, SortOrder>(sortProp.getFirst(), (sortProp.getSecond() ? SortOrder.ASCENDING : SortOrder.DESCENDING)));
             }
-            
+
             cqsd = new CannedQuerySortDetails(sortPairs);
         }
-        
+
         // create query params holder
         CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, requestTotalCountMax, pagingRequest.getQueryExecutionId());
-        
+
         // return canned query instance
         return getCannedQuery(params);
     }
-    
+
     /**
      * Retrieve an unsorted instance of a {@link CannedQuery} based on parameters including request for a total count (up to a given max)
      *
-     * @param parentRef          parent node ref
-     * @param pattern			 the pattern to use to filter children (wildcard character is '*')
-     * @param assocTypeQNames	 qnames of assocs to include (may be null)
-     * @param childTypeQNames    type qnames of children nodes
-     * @param pagingRequest      skipCount, maxItems - optionally queryExecutionId and requestTotalCountMax
+     * @param parentRef
+     *            parent node ref
+     * @param pattern
+     *            the pattern to use to filter children (wildcard character is '*')
+     * @param assocTypeQNames
+     *            qnames of assocs to include (may be null)
+     * @param childTypeQNames
+     *            type qnames of children nodes
+     * @param pagingRequest
+     *            skipCount, maxItems - optionally queryExecutionId and requestTotalCountMax
      * 
-     * @return                   an implementation that will execute the query
+     * @return an implementation that will execute the query
      */
     public CannedQuery<NodeRef> getCannedQuery(NodeRef parentRef, String pattern, Set<QName> assocTypeQNames, Set<QName> childTypeQNames, PagingRequest pagingRequest)
     {
         return getCannedQuery(parentRef, pattern, assocTypeQNames, childTypeQNames, null, null, null, null, pagingRequest);
     }
-    
+
     @Override
     public void afterPropertiesSet() throws Exception
     {
         super.afterPropertiesSet();
-        
+
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
         PropertyCheck.mandatory(this, "tenantService", tenantService);
         PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);

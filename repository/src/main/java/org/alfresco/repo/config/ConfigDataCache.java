@@ -29,9 +29,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.cache.AbstractMTAsynchronouslyRefreshedCache;
-import org.alfresco.repo.config.ConfigDataCache.ConfigData;
-import org.alfresco.repo.config.xml.RepoXMLConfigService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.config.ConfigDeployment;
@@ -41,29 +38,27 @@ import org.springframework.extensions.config.ConfigService;
 import org.springframework.extensions.config.evaluator.Evaluator;
 import org.springframework.extensions.config.xml.elementreader.ConfigElementReader;
 
+import org.alfresco.repo.cache.AbstractMTAsynchronouslyRefreshedCache;
+import org.alfresco.repo.config.ConfigDataCache.ConfigData;
+import org.alfresco.repo.config.xml.RepoXMLConfigService;
+
 /**
- * An innder class that uses the {@link RepoXMLConfigService config service} to asynchronously
- * refresh tenant config data.
+ * An innder class that uses the {@link RepoXMLConfigService config service} to asynchronously refresh tenant config data.
  * <p/>
- * Cluster-wide invalidation messages mean that we have to be very careful about only making
- * updates to caches when entries really change.  However, the nature of the {@link ConfigService}
- * hierarchy makes it very difficult to do this in a deterministic manner without performing
- * write locks that run across tenants.  By receiving asynchronous messages to refresh we no
- * longer have to rely on a cluster-aware cache.
+ * Cluster-wide invalidation messages mean that we have to be very careful about only making updates to caches when entries really change. However, the nature of the {@link ConfigService} hierarchy makes it very difficult to do this in a deterministic manner without performing write locks that run across tenants. By receiving asynchronous messages to refresh we no longer have to rely on a cluster-aware cache.
  * 
  * @author Derek Hulley
  * @author Andy Hind
  * @since 4.1.5
  */
-public class ConfigDataCache extends  AbstractMTAsynchronouslyRefreshedCache<ConfigData>
+public class ConfigDataCache extends AbstractMTAsynchronouslyRefreshedCache<ConfigData>
 {
     private static Log logger = LogFactory.getLog(ConfigDataCache.class);
-    
+
     private RepoXMLConfigService repoXMLConfigService;
 
     /**
-     * Set the config service.  Depending on the order of injection, this might have to
-     * be done by code.
+     * Set the config service. Depending on the order of injection, this might have to be done by code.
      */
     public void setRepoXMLConfigService(RepoXMLConfigService repoXMLConfigService)
     {
@@ -88,7 +83,7 @@ public class ConfigDataCache extends  AbstractMTAsynchronouslyRefreshedCache<Con
         }
         return configData;
     }
-    
+
     /**
      * Data containing all a tenant's required UI configuration
      * 
@@ -96,71 +91,80 @@ public class ConfigDataCache extends  AbstractMTAsynchronouslyRefreshedCache<Con
      */
     public static class ConfigData
     {
-        private ConfigImpl globalConfig;   
+        private ConfigImpl globalConfig;
         private Map<String, Evaluator> evaluators;
         private Map<String, List<ConfigSection>> sectionsByArea;
         private List<ConfigSection> sections;
         private Map<String, ConfigElementReader> elementReaders;
-        
+
         private List<ConfigDeployment> configDeployments;
-        
+
         public ConfigData()
-        {
-        }
-        
+        {}
+
         public ConfigImpl getGlobalConfig()
         {
             return globalConfig;
         }
+
         public void setGlobalConfig(ConfigImpl globalConfig)
         {
             this.globalConfig = globalConfig;
         }
+
         public Map<String, Evaluator> getEvaluators()
         {
             return evaluators;
         }
+
         public void setEvaluators(Map<String, Evaluator> evaluators)
         {
             this.evaluators = evaluators;
         }
+
         public Map<String, List<ConfigSection>> getSectionsByArea()
         {
             return sectionsByArea;
         }
+
         public void setSectionsByArea(Map<String, List<ConfigSection>> sectionsByArea)
         {
             this.sectionsByArea = sectionsByArea;
         }
+
         public List<ConfigSection> getSections()
         {
             return sections;
         }
+
         public void setSections(List<ConfigSection> sections)
         {
             this.sections = sections;
         }
+
         public Map<String, ConfigElementReader> getElementReaders()
         {
             return elementReaders;
         }
+
         public void setElementReaders(Map<String, ConfigElementReader> elementReaders)
         {
             this.elementReaders = elementReaders;
         }
+
         public List<ConfigDeployment> getConfigDeployments()
         {
             return configDeployments;
         }
+
         public void setConfigDeployments(List<ConfigDeployment> configDeployments)
         {
             this.configDeployments = configDeployments;
         }
     }
-    
+
     /**
-     * Immutable version of {@link ConfigData} to ensure cast-iron safety of data
-     * being put into the caches.
+     * Immutable version of {@link ConfigData} to ensure cast-iron safety of data being put into the caches.
      * 
      * @author Derek Hulley
      * @since 4.1.5
@@ -171,18 +175,17 @@ public class ConfigDataCache extends  AbstractMTAsynchronouslyRefreshedCache<Con
          * Local variable to allow setter use during construction
          */
         private boolean locked = false;
-        
+
         /**
          * Copy constructor that prevents any data from being changed.
          * 
-         * @param configData            the config to copy
+         * @param configData
+         *            the config to copy
          */
         public ImmutableConfigData(ConfigData configData)
         {
-            /*
-             * Each member is copied or protected in some way to ensure immutability
-             */
-            
+            /* Each member is copied or protected in some way to ensure immutability */
+
             List<ConfigDeployment> configDeployments = configData.getConfigDeployments();
             if (configDeployments != null)
             {
@@ -191,9 +194,9 @@ public class ConfigDataCache extends  AbstractMTAsynchronouslyRefreshedCache<Con
             }
             else
             {
-                setConfigDeployments(Collections.<ConfigDeployment>emptyList());
+                setConfigDeployments(Collections.<ConfigDeployment> emptyList());
             }
-            
+
             Map<String, ConfigElementReader> elementReaders = configData.getElementReaders();
             if (elementReaders != null)
             {
@@ -202,9 +205,9 @@ public class ConfigDataCache extends  AbstractMTAsynchronouslyRefreshedCache<Con
             }
             else
             {
-                setElementReaders(Collections.<String, ConfigElementReader>emptyMap());
+                setElementReaders(Collections.<String, ConfigElementReader> emptyMap());
             }
-            
+
             Map<String, Evaluator> evaluators = configData.getEvaluators();
             if (evaluators != null)
             {
@@ -213,13 +216,13 @@ public class ConfigDataCache extends  AbstractMTAsynchronouslyRefreshedCache<Con
             }
             else
             {
-                setEvaluators(Collections.<String, Evaluator>emptyMap());
+                setEvaluators(Collections.<String, Evaluator> emptyMap());
             }
-            
+
             ConfigImpl globalConfig = configData.getGlobalConfig();
             ImmutableConfig globalConfigLocked = new ImmutableConfig(globalConfig);
             setGlobalConfig(globalConfigLocked);
-            
+
             List<ConfigSection> sections = configData.getSections();
             if (sections != null)
             {
@@ -228,9 +231,9 @@ public class ConfigDataCache extends  AbstractMTAsynchronouslyRefreshedCache<Con
             }
             else
             {
-                setSections(Collections.<ConfigSection>emptyList());
+                setSections(Collections.<ConfigSection> emptyList());
             }
-            
+
             Map<String, List<ConfigSection>> sectionsByArea = configData.getSectionsByArea();
             if (sectionsByArea != null)
             {
@@ -239,9 +242,9 @@ public class ConfigDataCache extends  AbstractMTAsynchronouslyRefreshedCache<Con
             }
             else
             {
-                setSectionsByArea(Collections.<String, List<ConfigSection>>emptyMap());
+                setSectionsByArea(Collections.<String, List<ConfigSection>> emptyMap());
             }
-            
+
             // Now prevent setters from being used
             locked = true;
         }

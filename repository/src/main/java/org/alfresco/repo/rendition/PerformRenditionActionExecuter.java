@@ -29,6 +29,10 @@ package org.alfresco.repo.rendition;
 import java.io.Serializable;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
@@ -39,9 +43,6 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /*
  * In Alfresco 3.3, this class was a required 'containing action' for all renditions.
@@ -64,9 +65,7 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
     public static final String NAME = "perform-rendition";
     public static final String PARAM_RENDITION_DEFINITION = "renditionDefinition";
 
-    /*
-     * Injected beans
-     */
+    /* Injected beans */
     private ActionService actionService;
 
     /**
@@ -88,18 +87,18 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
         {
             StringBuilder msg = new StringBuilder();
             msg.append("Rendering node ").append(actionedUponNodeRef).append(" with rendition definition ").append(
-                        renditionDefinition.getRenditionName());
+                    renditionDefinition.getRenditionName());
             msg.append("\n").append("  parameters:").append("\n");
             if (renditionDefinition.getParameterValues().isEmpty() == false)
             {
-            	for (String paramKey : renditionDefinition.getParameterValues().keySet())
-            	{
-            		msg.append("    ").append(paramKey).append("=").append(renditionDefinition.getParameterValue(paramKey)).append("\n");
-            	}
+                for (String paramKey : renditionDefinition.getParameterValues().keySet())
+                {
+                    msg.append("    ").append(paramKey).append("=").append(renditionDefinition.getParameterValue(paramKey)).append("\n");
+                }
             }
             else
             {
-            	msg.append("    [None]");
+                msg.append("    [None]");
             }
             log.debug(msg.toString());
         }
@@ -110,9 +109,12 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
 
     /**
      * This method gets the (mandatory) rendition definition parameter from the containing action.
-     * @param containingAction the containing action.
+     * 
+     * @param containingAction
+     *            the containing action.
      * @return the rendition definition.
-     * @throws IllegalArgumentException if the rendition definition is missing.
+     * @throws IllegalArgumentException
+     *             if the rendition definition is missing.
      */
     private RenditionDefinition getRenditionDefinition(final Action containingAction)
     {
@@ -123,8 +125,11 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
 
     /**
      * This method delegates to the action service for the execution of the rendition.
-     * @param sourceNode NodeRef
-     * @param definition RenditionDefinition
+     * 
+     * @param sourceNode
+     *            NodeRef
+     * @param definition
+     *            RenditionDefinition
      * @return the ChildAssociationRef result.
      */
     private ChildAssociationRef executeRendition(NodeRef sourceNode, RenditionDefinition definition)
@@ -139,9 +144,9 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_RENDITION_DEFINITION, DataTypeDefinition.ANY, true,
-                    getParamDisplayLabel(PARAM_RENDITION_DEFINITION)));
+                getParamDisplayLabel(PARAM_RENDITION_DEFINITION)));
 
         paramList.add(new ParameterDefinitionImpl(PARAM_RESULT, DataTypeDefinition.CHILD_ASSOC_REF, false,
-                    getParamDisplayLabel(PARAM_RESULT)));
+                getParamDisplayLabel(PARAM_RESULT)));
     }
 }

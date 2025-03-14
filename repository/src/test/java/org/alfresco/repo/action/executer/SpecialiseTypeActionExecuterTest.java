@@ -25,9 +25,13 @@
  */
 package org.alfresco.repo.action.executer;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -36,10 +40,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Specialise type action execution test
@@ -68,21 +68,22 @@ public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest
     /**
      * Called at the beginning of all tests
      */
-    @Before public void before() throws Exception
+    @Before
+    public void before() throws Exception
     {
         super.before();
 
         // Create the node used for tests
         this.nodeRef1 = this.nodeService
-            .createNode(this.rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}testnode"), ContentModel.TYPE_CONTENT).getChildRef();
+                .createNode(this.rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}testnode"), ContentModel.TYPE_CONTENT).getChildRef();
 
         // Create the node used for tests
         this.nodeRef2 = this.nodeService
-            .createNode(this.rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}testnode"), ContentModel.TYPE_CONTENT).getChildRef();
+                .createNode(this.rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}testnode"), ContentModel.TYPE_CONTENT).getChildRef();
 
         // Create the node used for tests
         this.nodeRef3 = this.nodeService
-            .createNode(this.rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}testnode"), ContentModel.TYPE_CONTENT).getChildRef();
+                .createNode(this.rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}testnode"), ContentModel.TYPE_CONTENT).getChildRef();
 
         // Get the executer instance
         this.executer = (SpecialiseTypeActionExecuter) this.applicationContext.getBean(SpecialiseTypeActionExecuter.NAME);
@@ -91,7 +92,8 @@ public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest
     /**
      * Test execution
      */
-    @Test public void testExecution()
+    @Test
+    public void testExecution()
     {
         // check with "Admin" user
         {
@@ -115,9 +117,9 @@ public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest
             checkActionAgainAndExpectTypeToChange(action, nodeRef2);
         }
 
-        //Check with normal user
+        // Check with normal user
         {
-            //Create user as coordinator without administrator writes
+            // Create user as coordinator without administrator writes
             String userName = "bob" + GUID.generate();
             createUser(userName);
             PermissionService permissionService = (PermissionService) applicationContext.getBean("PermissionService");
@@ -137,8 +139,7 @@ public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest
                 fail("The creation should NOT succeed because the code is not executed but Admin or System user/role");
             }
             catch (InvalidTypeException ex)
-            {
-            }
+            {}
         }
     }
 

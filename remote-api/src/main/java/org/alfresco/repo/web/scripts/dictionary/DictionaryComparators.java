@@ -50,13 +50,13 @@ public interface DictionaryComparators
 
         public ClassDefinitionComparator(MessageLookup messageLookup)
         {
-            this.messageLookup = messageLookup;            
+            this.messageLookup = messageLookup;
         }
 
         public int compare(ClassDefinition arg0, ClassDefinition arg1)
         {
             int result = 0;
-            
+
             String title0 = arg0.getTitle(messageLookup);
             if (title0 == null)
             {
@@ -67,7 +67,7 @@ public interface DictionaryComparators
             {
                 title1 = arg1.getName().getPrefixString();
             }
-            
+
             if (title0 == null && title1 != null)
             {
                 result = 1;
@@ -80,11 +80,11 @@ public interface DictionaryComparators
             {
                 result = String.CASE_INSENSITIVE_ORDER.compare(title0, title1);
             }
-            
+
             return result;
-        }        
+        }
     }
-    
+
     /**
      * Property definition comparator.
      * 
@@ -96,13 +96,13 @@ public interface DictionaryComparators
 
         public PropertyDefinitionComparator(MessageLookup messageLookup)
         {
-            this.messageLookup = messageLookup;            
+            this.messageLookup = messageLookup;
         }
 
         public int compare(PropertyDefinition arg0, PropertyDefinition arg1)
         {
             int result = 0;
-            
+
             String title0 = arg0.getTitle(messageLookup);
             if (title0 == null)
             {
@@ -113,7 +113,7 @@ public interface DictionaryComparators
             {
                 title1 = arg1.getName().getPrefixString();
             }
-            
+
             if (title0 == null && title1 != null)
             {
                 result = 1;
@@ -126,8 +126,8 @@ public interface DictionaryComparators
             {
                 result = String.CASE_INSENSITIVE_ORDER.compare(title0, title1);
             }
-            
+
             return result;
-        }        
+        }
     }
 }

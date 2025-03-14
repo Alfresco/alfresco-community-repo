@@ -26,15 +26,18 @@
 
 package org.alfresco.rest.categories;
 
-import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertTrue;
 
+import static org.alfresco.utility.report.log.Step.STEP;
+
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.testng.annotations.Test;
 
 import org.alfresco.rest.model.RestCategoryModel;
 import org.alfresco.rest.model.RestCategoryModelsCollection;
@@ -42,7 +45,6 @@ import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
-import org.testng.annotations.Test;
 
 public class GetCategoriesTests extends CategoriesRestTest
 {
@@ -69,8 +71,7 @@ public class GetCategoriesTests extends CategoriesRestTest
         createdCategory.assertThat().field("hasChildren").is(false);
 
         STEP("Get the created category (as regular user)");
-        final RestCategoryModel categoryFromGet =
-                restClient.authenticateUser(user).withCoreAPI().usingCategory(createdCategory).getCategory();
+        final RestCategoryModel categoryFromGet = restClient.authenticateUser(user).withCoreAPI().usingCategory(createdCategory).getCategory();
         restClient.assertStatusCodeIs(OK);
         categoryFromGet.assertThat().isEqualTo(createdCategory);
     }
@@ -124,8 +125,7 @@ public class GetCategoriesTests extends CategoriesRestTest
     {
         STEP("Get category children with -root- as parent id");
         final RestCategoryModel rootCategory = createCategoryModelWithId(ROOT_CATEGORY_ID);
-        RestCategoryModelsCollection childCategoriesList =
-                restClient.authenticateUser(user).withCoreAPI().usingCategory(rootCategory).getCategoryChildren();
+        RestCategoryModelsCollection childCategoriesList = restClient.authenticateUser(user).withCoreAPI().usingCategory(rootCategory).getCategoryChildren();
         restClient.assertStatusCodeIs(OK);
 
         childCategoriesList.assertThat().entriesListIsNotEmpty();

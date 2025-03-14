@@ -25,10 +25,11 @@
  */
 package org.alfresco.rest.framework.tests.api.mocks;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Arrays;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.alfresco.rest.framework.resource.EmbeddedEntityResource;
 import org.alfresco.rest.framework.resource.UniqueId;
@@ -40,18 +41,22 @@ import org.alfresco.rest.framework.resource.UniqueId;
  */
 public class Goat implements Animal
 {
-    public enum DEMEANOR {ANGRY,CRAZY,MELLOW}
+    public enum DEMEANOR
+    {
+        ANGRY, CRAZY, MELLOW
+    }
+
     private String name = "Billy";
     private int age = 2;
     private DEMEANOR mood = DEMEANOR.MELLOW;
     private String grassId = "3";
-    private List<String> favourites = Arrays.asList("front","back","over the road");
-    
+    private List<String> favourites = Arrays.asList("front", "back", "over the road");
+
     public Goat()
     {
         super();
     }
-    
+
     public Goat(String grassId)
     {
         super();
@@ -59,33 +64,38 @@ public class Goat implements Animal
     }
 
     @JsonProperty("goatId")
-    @UniqueId(name="goatId")
+    @UniqueId(name = "goatId")
     public String getName()
     {
         return this.name;
     }
+
     public void setName(String name)
     {
         this.name = name;
     }
+
     public int getAge()
     {
         return this.age;
     }
+
     public void setAge(int age)
     {
         this.age = age;
     }
+
     public DEMEANOR getMood()
     {
         return this.mood;
     }
+
     public void setMood(DEMEANOR mood)
     {
         this.mood = mood;
     }
 
-    @EmbeddedEntityResource(propertyName = "grass", entityResource=GrassEntityResource.class)
+    @EmbeddedEntityResource(propertyName = "grass", entityResource = GrassEntityResource.class)
     @JsonIgnore
     public String getGrassId()
     {

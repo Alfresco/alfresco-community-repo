@@ -48,7 +48,7 @@ import org.alfresco.service.cmr.repository.TemplateImageResolver;
  */
 @Deprecated
 public class FreemarkerRenderingEngine
-            extends BaseTemplateRenderingEngine
+        extends BaseTemplateRenderingEngine
 {
     public static final String NAME = "freemarkerRenderingEngine";
     private static final String PARAM_IMAGE_RESOLVER = "image_resolver";
@@ -61,11 +61,7 @@ public class FreemarkerRenderingEngine
     private Repository repository;
     private ServiceRegistry serviceRegistry;
 
-
-    /*
-     * @seeorg.alfresco.repo.rendition.executer.AbstractRenderingEngine#
-     * getParameterDefinitions()
-     */
+    /* @seeorg.alfresco.repo.rendition.executer.AbstractRenderingEngine# getParameterDefinitions() */
     @Override
     protected Collection<ParameterDefinition> getParameterDefinitions()
     {
@@ -78,8 +74,6 @@ public class FreemarkerRenderingEngine
         return paramList;
     }
 
-
-    
     @SuppressWarnings("unchecked")
     @Override
     protected Object buildModel(RenderingContext context)
@@ -88,17 +82,17 @@ public class FreemarkerRenderingEngine
         NodeRef companyHome = repository.getCompanyHome();
         NodeRef templateNode = getTemplateNode(context);
         Map<String, Serializable> paramMap = context.getCheckedParam(PARAM_MODEL, Map.class);
-        TemplateImageResolver imgResolver = context.getCheckedParam(PARAM_IMAGE_RESOLVER, 
+        TemplateImageResolver imgResolver = context.getCheckedParam(PARAM_IMAGE_RESOLVER,
                 TemplateImageResolver.class);
-        
+
         // The fully authenticated user below is the username of the person who logged in and
         // who requested the execution of the current rendition. This will not be the
         // same person as the current user as renditions are executed by the system user.
         String fullyAuthenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
         NodeRef person = serviceRegistry.getPersonService().getPerson(fullyAuthenticatedUser);
-        
+
         NodeRef userHome = repository.getUserHome(person);
-        Map<String, Object> model = getTemplateService().buildDefaultModel(person, companyHome, 
+        Map<String, Object> model = getTemplateService().buildDefaultModel(person, companyHome,
                 userHome, templateNode, imgResolver);
 
         TemplateNode sourceTemplateNode = new TemplateNode(context.getSourceNode(), serviceRegistry, imgResolver);
@@ -117,7 +111,8 @@ public class FreemarkerRenderingEngine
     }
 
     /**
-     * @param repository the repository to set
+     * @param repository
+     *            the repository to set
      */
     public void setRepositoryHelper(Repository repository)
     {
@@ -125,7 +120,8 @@ public class FreemarkerRenderingEngine
     }
 
     /**
-     * @param serviceRegistry the serviceRegistry to set
+     * @param serviceRegistry
+     *            the serviceRegistry to set
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {

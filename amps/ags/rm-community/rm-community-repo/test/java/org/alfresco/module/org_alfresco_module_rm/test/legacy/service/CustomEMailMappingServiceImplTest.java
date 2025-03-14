@@ -47,7 +47,7 @@ public class CustomEMailMappingServiceImplTest extends BaseRMTestCase
     {
         super.initServices();
 
-        eMailMappingService = (CustomEmailMappingService)applicationContext.getBean("customEmailMappingService");
+        eMailMappingService = (CustomEmailMappingService) applicationContext.getBean("customEmailMappingService");
     }
 
     @Override
@@ -66,8 +66,7 @@ public class CustomEMailMappingServiceImplTest extends BaseRMTestCase
 
     public void testCRUD() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 // Check the initial custom mapping size
@@ -107,7 +106,7 @@ public class CustomEMailMappingServiceImplTest extends BaseRMTestCase
                 }
                 catch (AlfrescoRuntimeException are)
                 {
-                    assertNotNull(are);  //Must throw this exception
+                    assertNotNull(are); // Must throw this exception
                     assertTrue(are.getMessage().contains("Invalid values for"));
                 }
 
@@ -118,11 +117,11 @@ public class CustomEMailMappingServiceImplTest extends BaseRMTestCase
                 }
                 catch (AlfrescoRuntimeException are)
                 {
-                    assertNotNull(are);  //Must throw this exception
+                    assertNotNull(are); // Must throw this exception
                     assertTrue(are.getMessage().contains("Invalid values for"));
                 }
 
-                eMailMappingService.addCustomMapping(firstKey, "cm:monkeyFace"); //valid key
+                eMailMappingService.addCustomMapping(firstKey, "cm:monkeyFace"); // valid key
 
                 return null;
             }

@@ -25,16 +25,17 @@
  */
 package org.alfresco.repo.content.transform;
 
-import junit.framework.TestCase;
-import org.alfresco.util.TempFileProvider;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.util.ResourceUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+
+import junit.framework.TestCase;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.util.ResourceUtils;
+
+import org.alfresco.util.TempFileProvider;
 
 /**
  * Now only contains methods to load quick files
@@ -47,13 +48,13 @@ import java.net.URL;
 public abstract class AbstractContentTransformerTest extends TestCase
 {
     private static Log logger = LogFactory.getLog(AbstractContentTransformerTest.class);
+
     /**
-     * Helper method to load one of the "The quick brown fox" files from the
-     * classpath.
+     * Helper method to load one of the "The quick brown fox" files from the classpath.
      * 
-     * @param quickname file required, eg <b>quick.txt</b>
-     * @return Returns a test resource loaded from the classpath or <tt>null</tt> if
-     *      no resource could be found.
+     * @param quickname
+     *            file required, eg <b>quick.txt</b>
+     * @return Returns a test resource loaded from the classpath or <tt>null</tt> if no resource could be found.
      * @throws IOException
      */
     public static File loadNamedQuickTestFile(String quickname) throws IOException
@@ -78,23 +79,23 @@ public abstract class AbstractContentTransformerTest extends TestCase
             }
             catch (Exception error)
             {
-                logger.error("Failed to load a quick file from a jar. "+error);
+                logger.error("Failed to load a quick file from a jar. " + error);
                 return null;
             }
         }
         return ResourceUtils.getFile(url);
     }
+
     /**
-     * Helper method to load one of the "The quick brown fox" files from the
-     * classpath.
+     * Helper method to load one of the "The quick brown fox" files from the classpath.
      * 
-     * @param extension file extension required, eg <b>txt</b> for the file quick.txt
-     * @return Returns a test resource loaded from the classpath or <tt>null</tt> if
-     *      no resource could be found.
+     * @param extension
+     *            file extension required, eg <b>txt</b> for the file quick.txt
+     * @return Returns a test resource loaded from the classpath or <tt>null</tt> if no resource could be found.
      * @throws IOException
      */
     public static File loadQuickTestFile(String extension) throws IOException
     {
-       return loadNamedQuickTestFile("quick."+extension);
+        return loadNamedQuickTestFile("quick." + extension);
     }
 }

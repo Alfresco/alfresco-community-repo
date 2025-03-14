@@ -40,7 +40,8 @@ public class QueryModelException extends AlfrescoRuntimeException
     private static final long serialVersionUID = 5103880924975096422L;
 
     /**
-     * @param msgId String
+     * @param msgId
+     *            String
      */
     public QueryModelException(String msgId)
     {
@@ -49,8 +50,10 @@ public class QueryModelException extends AlfrescoRuntimeException
     }
 
     /**
-     * @param msgId String
-     * @param msgParams Object[]
+     * @param msgId
+     *            String
+     * @param msgParams
+     *            Object[]
      */
     public QueryModelException(String msgId, Object[] msgParams)
     {
@@ -59,8 +62,10 @@ public class QueryModelException extends AlfrescoRuntimeException
     }
 
     /**
-     * @param msgId String
-     * @param cause Throwable
+     * @param msgId
+     *            String
+     * @param cause
+     *            Throwable
      */
     public QueryModelException(String msgId, Throwable cause)
     {
@@ -69,9 +74,12 @@ public class QueryModelException extends AlfrescoRuntimeException
     }
 
     /**
-     * @param msgId String
-     * @param msgParams Object[]
-     * @param cause Throwable
+     * @param msgId
+     *            String
+     * @param msgParams
+     *            Object[]
+     * @param cause
+     *            Throwable
      */
     public QueryModelException(String msgId, Object[] msgParams, Throwable cause)
     {

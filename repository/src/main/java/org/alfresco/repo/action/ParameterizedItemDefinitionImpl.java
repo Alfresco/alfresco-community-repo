@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.action.ParameterizedItemDefinition;
 import org.alfresco.service.cmr.rule.RuleServiceException;
@@ -51,27 +52,27 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
      * The name of the rule item
      */
     private String name;
-    
+
     /**
      * The title I18N key
      */
     private String titleKey;
-    
+
     /**
      * The description I18N key
      */
     private String descriptionKey;
-        
+
     /**
      * Indicates whether adHocProperties are allowed
      */
     private boolean adhocPropertiesAllowed = false;
-    
+
     /**
      * The list of parameters associated with the rule item
      */
     private Map<Locale, List<ParameterDefinition>> parameterDefinitions = new HashMap<Locale, List<ParameterDefinition>>();
-    
+
     /**
      * A map of the parameter definitions by name
      */
@@ -87,11 +88,12 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
     /**
      * Constructor
      * 
-     * @param name                  the name 
+     * @param name
+     *            the name
      */
     public ParameterizedItemDefinitionImpl(String name)
     {
-        this.name = name;        
+        this.name = name;
     }
 
     /**
@@ -105,13 +107,14 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
     /**
      * Set the title of the rule item
      * 
-     * @param title  the title
+     * @param title
+     *            the title
      */
     public void setTitleKey(String title)
     {
         this.titleKey = title;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.action.ParameterizedItemDefinition#getTitle()
      */
@@ -123,13 +126,14 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
     /**
      * Set the description I18N key
      * 
-     * @param descriptionKey  the description key
+     * @param descriptionKey
+     *            the description key
      */
     public void setDescriptionKey(String descriptionKey)
     {
         this.descriptionKey = descriptionKey;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.action.ParameterizedItemDefinition#getDescription()
      */
@@ -145,11 +149,12 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
     {
         return this.adhocPropertiesAllowed;
     }
-    
+
     /**
      * Set whether adhoc properties are allowed
      * 
-     * @param adhocPropertiesAllowed    true is adhoc properties are allowed, false otherwise
+     * @param adhocPropertiesAllowed
+     *            true is adhoc properties are allowed, false otherwise
      */
     public void setAdhocPropertiesAllowed(boolean adhocPropertiesAllowed)
     {
@@ -159,7 +164,8 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
     /**
      * Set the parameter definitions for the rule item with the locale specified
      *
-     * @param parameterDefinitions  the parameter definitions
+     * @param parameterDefinitions
+     *            the parameter definitions
      */
     public void setLocalizedParameterDefinitions(Map<Locale, List<ParameterDefinition>> parameterDefinitions)
     {
@@ -174,7 +180,8 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
     /**
      * Set the parameter definitions for the rule item
      * 
-     * @param parameterDefinitions  the parameter definitions
+     * @param parameterDefinitions
+     *            the parameter definitions
      */
     public void setParameterDefinitions(List<ParameterDefinition> parameterDefinitions)
     {
@@ -201,7 +208,7 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
 
             List<ParameterDefinition> localizedDefinitions = this.parameterDefinitions.get(locale);
 
-            if (localizedDefinitions!= null && localizedDefinitions.size()>0)
+            if (localizedDefinitions != null && localizedDefinitions.size() > 0)
             {
                 for (ParameterDefinition definition : localizedDefinitions)
                 {
@@ -212,12 +219,11 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
     }
 
     /**
-     * Determines whether the list of parameter definitions contains duplicate
-     * names of not.
+     * Determines whether the list of parameter definitions contains duplicate names of not.
      *
-     * @param parameterDefinitions  a list of parameter definitions
-     * @return                      true if there are name duplications, false
-     *                              otherwise
+     * @param parameterDefinitions
+     *            a list of parameter definitions
+     * @return true if there are name duplications, false otherwise
      */
     private boolean hasDuplicateNames(Map<Locale, List<ParameterDefinition>> parameterDefinitions)
     {
@@ -237,12 +243,11 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
     }
 
     /**
-     * Determines whether the list of parameter defintions contains duplicate
-     * names of not.
+     * Determines whether the list of parameter defintions contains duplicate names of not.
      * 
-     * @param parameterDefinitions  a list of parmeter definitions
-     * @return                      true if there are name duplications, false
-     *                              otherwise
+     * @param parameterDefinitions
+     *            a list of parmeter definitions
+     * @return true if there are name duplications, false otherwise
      */
     private boolean hasDuplicateNames(List<ParameterDefinition> parameterDefinitions)
     {
@@ -258,7 +263,7 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
         }
         return result;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.action.ParameterizedItemDefinition#hasParameterDefinitions()
      */
@@ -268,7 +273,7 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
 
         return (null != localizedDefinitions) && !localizedDefinitions.isEmpty();
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.action.ParameterizedItemDefinition#getParameterDefinitions()
      */
@@ -285,7 +290,7 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
 
         return result;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.action.ParameterizedItemDefinition#getParameterDefintion(java.lang.String)
      */

@@ -31,7 +31,7 @@ import java.lang.reflect.Method;
 
 public class JSPropertyExtractor
 {
-    //TODO Add logging.
+    // TODO Add logging.
     private StringBuilder getCapitalisedPropertyName(String name)
     {
         // Capitalise the first letter of the name.
@@ -48,7 +48,7 @@ public class JSPropertyExtractor
     {
         return this.resolveMethod(propertyName, jsObject) != null;
     }
-    
+
     Object extractProperty(String propertyName, Object jsObject)
     {
         Method resolvedMethod = resolveMethod(propertyName, jsObject);
@@ -56,7 +56,8 @@ public class JSPropertyExtractor
         if (resolvedMethod == null)
         {
             return null;
-        } else
+        }
+        else
         {
             try
             {
@@ -65,13 +66,16 @@ public class JSPropertyExtractor
                 // TODO Value conversion?
 
                 return propertyValue;
-            } catch (IllegalArgumentException e)
+            }
+            catch (IllegalArgumentException e)
             {
                 return null;
-            } catch (IllegalAccessException e)
+            }
+            catch (IllegalAccessException e)
             {
                 return null;
-            } catch (InvocationTargetException e)
+            }
+            catch (InvocationTargetException e)
             {
                 return null;
             }

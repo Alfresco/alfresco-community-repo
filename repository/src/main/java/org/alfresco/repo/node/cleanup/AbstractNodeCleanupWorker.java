@@ -28,6 +28,9 @@ package org.alfresco.repo.node.cleanup;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.StackTraceUtil;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.lock.JobLockService;
@@ -40,13 +43,9 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * Base class for Node cleaners.  This class ensures calls through
- * after having created a read-write transaction that is authenticated
- * as system.
+ * Base class for Node cleaners. This class ensures calls through after having created a read-write transaction that is authenticated as system.
  * 
  * @author Derek Hulley
  * @since 2.2 SP2
@@ -56,19 +55,19 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
     /** Lock key: system:NodeCleanup */
     private static final QName LOCK = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "NodeCleanup");
     /** Default Lock time to live: 1 minute */
-    private static final long LOCK_TTL = 60*1000L;
-    
+    private static final long LOCK_TTL = 60 * 1000L;
+
     protected final Log logger;
-    
+
     private NodeCleanupRegistry registry;
     protected TransactionService transactionService;
     protected JobLockService jobLockService;
     protected DbNodeServiceImpl dbNodeService;
     protected NodeDAO nodeDAO;
-    
+
     private ThreadLocal<String> lockToken = new ThreadLocal<String>();
     private VmShutdownListener shutdownListener = new VmShutdownListener("NodeCleanup");
-    
+
     /**
      * Default constructor
      */
@@ -76,7 +75,7 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
     {
         logger = LogFactory.getLog(this.getClass());
     }
-    
+
     public void setRegistry(NodeCleanupRegistry registry)
     {
         this.registry = registry;
@@ -114,9 +113,7 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
     }
 
     /**
-     * Calls {@link #doCleanInternal()} in a System-user authenticated read-write transaction.
-     * This method is non-blocking but passes all second and subsequent concurrent invocations
-     * straight through.
+     * Calls {@link #doCleanInternal()} in a System-user authenticated read-write transaction. This method is non-blocking but passes all second and subsequent concurrent invocations straight through.
      */
     public List<String> doClean()
     {
@@ -126,7 +123,7 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
             lockToken.set(null);
             String token = jobLockService.getLock(LOCK, LOCK_TTL);
             lockToken.set(token);
-            
+
             // Do the work
             return doCleanAsSystem();
         }
@@ -142,8 +139,8 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
                 StringBuilder sb = new StringBuilder(1024);
                 StackTraceUtil.buildStackTrace(
                         "Node cleanup failed: " +
-                        "   Worker: " + this.getClass().getName() + "\n" +
-                        "   Error:  " + e.getMessage(),
+                                "   Worker: " + this.getClass().getName() + "\n" +
+                                "   Error:  " + e.getMessage(),
                         e.getStackTrace(),
                         sb,
                         Integer.MAX_VALUE);
@@ -151,12 +148,12 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
             }
             StringBuilder sb = new StringBuilder(1024);
             StackTraceUtil.buildStackTrace(
-                "Node cleanup failed: " +
-                "   Worker: " + this.getClass().getName() + "\n" +
-                "   Error:  " + e.getMessage(),
-                e.getStackTrace(),
-                sb,
-                20);
+                    "Node cleanup failed: " +
+                            "   Worker: " + this.getClass().getName() + "\n" +
+                            "   Error:  " + e.getMessage(),
+                    e.getStackTrace(),
+                    sb,
+                    20);
             return Collections.singletonList(sb.toString());
         }
         finally
@@ -168,11 +165,10 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
             }
         }
     }
-    
+
     private List<String> doCleanAsSystem()
     {
-        final RunAsWork<List<String>> doCleanRunAs = new RunAsWork<List<String>>()
-        {
+        final RunAsWork<List<String>> doCleanRunAs = new RunAsWork<List<String>>() {
             public List<String> doWork() throws Exception
             {
                 try
@@ -188,7 +184,7 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
         };
         return AuthenticationUtil.runAs(doCleanRunAs, AuthenticationUtil.getSystemUserName());
     }
-    
+
     /**
      * Helper method to refresh the current job's lock token
      */
@@ -206,11 +202,11 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
             jobLockService.refreshLock("lock token not available", LOCK, LOCK_TTL);
         }
     }
-    
+
     /**
-     * Do the actual cleanup.  Any errors are handled by this base class.
+     * Do the actual cleanup. Any errors are handled by this base class.
      * 
-     * @return      Returns the cleanup messages.
+     * @return Returns the cleanup messages.
      */
     protected abstract List<String> doCleanInternal() throws Throwable;
 }

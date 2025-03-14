@@ -25,6 +25,9 @@
  */
 package org.alfresco.repo.search.impl;
 
+import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
+import org.apache.chemistry.opencmis.commons.enums.CapabilityJoin;
+
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.search.CMISQueryOptions;
 import org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryMode;
@@ -35,11 +38,8 @@ import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryLanguage;
 import org.alfresco.repo.search.impl.querymodel.QueryEngine;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
-import org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryModelFactory;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
-import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
-import org.apache.chemistry.opencmis.commons.enums.CapabilityJoin;
 
 /**
  * @author Andy
@@ -51,11 +51,12 @@ public class DbCmisQueryLanguage extends AbstractLuceneQueryLanguage
     private CMISDictionaryService cmisDictionaryService;
 
     OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck1;
-    
+
     OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck2;
 
     /**
-     * @param metadataIndexCheck1 the metadataIndexCheck1 to set
+     * @param metadataIndexCheck1
+     *            the metadataIndexCheck1 to set
      */
     public void setMetadataIndexCheck1(OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck1)
     {
@@ -63,7 +64,8 @@ public class DbCmisQueryLanguage extends AbstractLuceneQueryLanguage
     }
 
     /**
-     * @param metadataIndexCheck2 the metadataIndexCheck2 to set
+     * @param metadataIndexCheck2
+     *            the metadataIndexCheck2 to set
      */
     public void setMetadataIndexCheck2(OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck2)
     {
@@ -73,15 +75,17 @@ public class DbCmisQueryLanguage extends AbstractLuceneQueryLanguage
     /**
      * Set the query engine
      * 
-     * @param queryEngine QueryEngine
+     * @param queryEngine
+     *            QueryEngine
      */
     public void setQueryEngine(QueryEngine queryEngine)
     {
         this.queryEngine = queryEngine;
     }
-    
+
     /**
-     * @param cmisDictionaryService the cmisDictionaryService to set
+     * @param cmisDictionaryService
+     *            the cmisDictionaryService to set
      */
     public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
     {
@@ -96,7 +100,7 @@ public class DbCmisQueryLanguage extends AbstractLuceneQueryLanguage
     @Override
     public ResultSet executeQuery(SearchParameters searchParameters)
     {
-        if(metadataIndexCheck1.getPatchApplied())
+        if (metadataIndexCheck1.getPatchApplied())
         {
             return executeQueryImpl(searchParameters);
         }

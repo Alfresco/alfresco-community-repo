@@ -33,6 +33,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.bulkimport.ImportableItem.ContentAndMetadata;
 import org.alfresco.repo.bulkimport.MetadataLoader;
 import org.alfresco.repo.bulkimport.impl.FileUtils;
@@ -42,12 +45,9 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * Abstract MetadataLoader abstracts out the common features of loading metadata
- * from a <code>java.util.Map</code>, regardless of where it came from.
+ * Abstract MetadataLoader abstracts out the common features of loading metadata from a <code>java.util.Map</code>, regardless of where it came from.
  *
  * @since 4.0
  * 
@@ -56,38 +56,37 @@ import org.apache.commons.logging.LogFactory;
 abstract class AbstractMapBasedMetadataLoader implements MetadataLoader
 {
     private final static Log log = LogFactory.getLog(AbstractMapBasedMetadataLoader.class);
-    
-    private final static String PROPERTY_NAME_TYPE    = "type";
+
+    private final static String PROPERTY_NAME_TYPE = "type";
     private final static String PROPERTY_NAME_ASPECTS = "aspects";
-    
+
     private final static String DEFAULT_MULTI_VALUED_SEPARATOR = ",";
-    
+
     private final List<QName> TYPES_TO_HANDLE_EMPTY_VALUE = List.of(DataTypeDefinition.DATE, DataTypeDefinition.DATETIME,
             DataTypeDefinition.FLOAT, DataTypeDefinition.DOUBLE, DataTypeDefinition.INT, DataTypeDefinition.LONG);
 
-    protected final NamespaceService  namespaceService;
-    protected final DictionaryService dictionaryService; 
-    protected final String            multiValuedSeparator;
-    protected final String            metadataFileExtension;
-    
+    protected final NamespaceService namespaceService;
+    protected final DictionaryService dictionaryService;
+    protected final String multiValuedSeparator;
+    protected final String metadataFileExtension;
+
     protected AbstractMapBasedMetadataLoader(final ServiceRegistry serviceRegistry, final String fileExtension)
     {
         this(serviceRegistry, DEFAULT_MULTI_VALUED_SEPARATOR, fileExtension);
     }
-    
+
     protected AbstractMapBasedMetadataLoader(final ServiceRegistry serviceRegistry, final String multiValuedSeparator, final String fileExtension)
     {
         // PRECONDITIONS
-        assert serviceRegistry      != null : "serviceRegistry must not be null";
+        assert serviceRegistry != null : "serviceRegistry must not be null";
         assert multiValuedSeparator != null : "multiValuedSeparator must not be null";
-        
+
         // Body
-        this.namespaceService      = serviceRegistry.getNamespaceService();
-        this.dictionaryService     = serviceRegistry.getDictionaryService();
-        this.multiValuedSeparator  = multiValuedSeparator;
+        this.namespaceService = serviceRegistry.getNamespaceService();
+        this.dictionaryService = serviceRegistry.getDictionaryService();
+        this.multiValuedSeparator = multiValuedSeparator;
         this.metadataFileExtension = fileExtension;
     }
-    
 
     /**
      * @see org.alfresco.repo.bulkimport.MetadataLoader#getMetadataFileExtension()
@@ -95,16 +94,17 @@ abstract class AbstractMapBasedMetadataLoader implements MetadataLoader
     @Override
     public final String getMetadataFileExtension()
     {
-        return(metadataFileExtension);
+        return (metadataFileExtension);
     }
-    
-    
+
     /**
-     * Method that actually loads the properties from the file. 
-     * @param metadataFile The file to load the properties from <i>(must not be null)</i>.
+     * Method that actually loads the properties from the file.
+     * 
+     * @param metadataFile
+     *            The file to load the properties from <i>(must not be null)</i>.
      * @return A new <code>Properties</code> object loaded from that file.
      */
-    abstract protected Map<String,Serializable> loadMetadataFromFile(final Path metadataFile);
+    abstract protected Map<String, Serializable> loadMetadataFromFile(final Path metadataFile);
 
     @Override
     public final void loadMetadata(final ContentAndMetadata contentAndMetadata, Metadata metadata)

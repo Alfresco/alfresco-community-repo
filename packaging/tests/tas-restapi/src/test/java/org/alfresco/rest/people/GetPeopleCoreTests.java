@@ -1,5 +1,9 @@
 package org.alfresco.rest.people;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.constants.UserRole;
@@ -8,9 +12,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * 
@@ -37,16 +38,16 @@ public class GetPeopleCoreTests extends RestTest
         inexistentUser = new UserModel("inexistentUser", "password");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify inexistent user cannot get a person with Rest API and response is 401")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify inexistent user cannot get a person with Rest API and response is 401")
     public void inexistentUserIsUnauthorizedToGetPerson() throws Exception
     {
         restClient.authenticateUser(inexistentUser).withCoreAPI().usingUser(searchedUser).getPerson();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user cannot get a person that doesn't exists with Rest API and response is 404")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify user cannot get a person that doesn't exists with Rest API and response is 404")
     public void userCannotGetInexistentPerson() throws Exception
     {
         restClient.authenticateUser(managerUser).withCoreAPI().usingUser(inexistentUser).getPerson();

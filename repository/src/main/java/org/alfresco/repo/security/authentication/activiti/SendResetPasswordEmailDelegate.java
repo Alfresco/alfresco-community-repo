@@ -29,10 +29,10 @@ package org.alfresco.repo.security.authentication.activiti;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;
 
-/** 
+/**
  * @deprecated from 7.1.0
  * 
- * This {@link JavaDelegate activiti delegate} is executed when a user request password reset.
+ *             This {@link JavaDelegate activiti delegate} is executed when a user request password reset.
  *
  * @author Jamal Kaabi-Mofrad
  * @since 5.2.1

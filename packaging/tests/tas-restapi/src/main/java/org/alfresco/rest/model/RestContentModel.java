@@ -25,9 +25,9 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.utility.model.TestModel;
-
 import java.util.Set;
+
+import org.alfresco.utility.model.TestModel;
 
 /**
  * Created by Claudia Agache on 11/11/2016.

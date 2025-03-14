@@ -32,7 +32,7 @@ public class MockExceptionThrowingConsumer
 {
     private boolean isErrorThrown;
     private Object lastMessage;
-    
+
     public boolean isErrorThrown()
     {
         return isErrorThrown;

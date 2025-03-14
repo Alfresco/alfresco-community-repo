@@ -28,21 +28,19 @@ package org.alfresco.repo.admin.patch.impl;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.domain.mimetype.MimetypeDAO;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
-import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.util.Pair;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * A patch to update the value of a Mimetype.
  * <p>
- * This patch will only work fully if the content URL data has been fully normalized.
- * It supports renaming to existing, currently-used mimetypes as well as to
- * mimetypes that have not been used before.
+ * This patch will only work fully if the content URL data has been fully normalized. It supports renaming to existing, currently-used mimetypes as well as to mimetypes that have not been used before.
  * 
  * @author Derek Hulley
  * @since 3.3 SP1
@@ -66,7 +64,6 @@ public class GenericMimetypeRenamePatch extends AbstractPatch
     private RetryingTransactionHelper retryingTransactionHelper;
 
     private static long BATCH_SIZE = 100000L;
-
 
     /** Mimetype mappings */
     private Map<String, String> mimetypeMappings;
@@ -92,10 +89,9 @@ public class GenericMimetypeRenamePatch extends AbstractPatch
         this.reindex = reindex;
     }
 
-    
-    
     /**
-     * @param nodeDAO the nodeDAO to set
+     * @param nodeDAO
+     *            the nodeDAO to set
      */
     public void setNodeDAO(NodeDAO nodeDAO)
     {
@@ -103,7 +99,8 @@ public class GenericMimetypeRenamePatch extends AbstractPatch
     }
 
     /**
-     * @param retryingTransactionHelper the retryingTransactionHelper to set
+     * @param retryingTransactionHelper
+     *            the retryingTransactionHelper to set
      */
     public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
     {
@@ -142,10 +139,10 @@ public class GenericMimetypeRenamePatch extends AbstractPatch
 
             // pull all affectsed nodes into a new transaction id indexed
 
-            if(reindex)
+            if (reindex)
             {
                 long count = 0L;
-                for (Long i = 0L; i < maxNodeId; i+=BATCH_SIZE)
+                for (Long i = 0L; i < maxNodeId; i += BATCH_SIZE)
                 {
                     Work work = new Work(oldMimetypePair.getFirst(), i);
                     count += retryingTransactionHelper.doInTransaction(work, false, true);
@@ -183,11 +180,10 @@ public class GenericMimetypeRenamePatch extends AbstractPatch
         return result.toString();
     }
 
-
     private class Work implements RetryingTransactionHelper.RetryingTransactionCallback<Integer>
     {
         long mimetypeId;
-        
+
         long lower;
 
         Work(long mimetypeId, long lower)
@@ -196,10 +192,9 @@ public class GenericMimetypeRenamePatch extends AbstractPatch
             this.lower = lower;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute() */
         @Override
         public Integer execute() throws Throwable
         {

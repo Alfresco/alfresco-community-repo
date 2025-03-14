@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import org.alfresco.repo.lock.mem.Lifetime;
 import org.alfresco.service.cmr.lock.LockType;
 
@@ -40,20 +41,18 @@ public class LockInfo
     private Integer timeToExpire;
     private LockType2 type;
     private Lifetime lifetime;
-    
+
     /**
-     * Lock Type enum that maps to the current values in {@link org.alfresco.service.cmr.lock.LockType}.
-     * These values describe better the meanings of the lock types.
+     * Lock Type enum that maps to the current values in {@link org.alfresco.service.cmr.lock.LockType}. These values describe better the meanings of the lock types.
      */
     @SuppressWarnings("deprecation")
     public static enum LockType2
     {
-        FULL(LockType.READ_ONLY_LOCK),
-        ALLOW_OWNER_CHANGES(LockType.WRITE_LOCK);
+        FULL(LockType.READ_ONLY_LOCK), ALLOW_OWNER_CHANGES(LockType.WRITE_LOCK);
         // ALLOW_ADD_CHILDREN(LockType.NODE_LOCK); // removed for now, as per REPO-1187
-        
+
         private LockType type;
-        
+
         private LockType2(LockType type)
         {
             this.type = type;
@@ -64,8 +63,9 @@ public class LockInfo
             return type;
         }
     }
-    
-    public LockInfo() {}
+
+    public LockInfo()
+    {}
 
     public void setTimeToExpire(Integer timeToExpire)
     {

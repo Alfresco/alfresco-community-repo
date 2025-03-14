@@ -38,40 +38,40 @@ import org.alfresco.service.cmr.remoteticket.NoSuchSystemException;
 public interface OAuth1CredentialsStoreService
 {
 
-    @Auditable(parameters = { "remoteSystemId" })
+    @Auditable(parameters = {"remoteSystemId"})
     public abstract OAuth1CredentialsInfo storePersonalOAuth1Credentials(String remoteSystemId,
-                String token, String secret)
-                throws NoSuchSystemException;
+            String token, String secret)
+            throws NoSuchSystemException;
 
-    @Auditable(parameters = { "remoteSystemId" })
+    @Auditable(parameters = {"remoteSystemId"})
     public abstract OAuth1CredentialsInfo storeSharedOAuth1Credentials(String remoteSystemId,
-                String token, String secret)
-                throws NoSuchSystemException;
+            String token, String secret)
+            throws NoSuchSystemException;
 
-    @Auditable(parameters = { "remoteSystemId" })
+    @Auditable(parameters = {"remoteSystemId"})
     public abstract OAuth1CredentialsInfo getPersonalOAuth1Credentials(String remoteSystemId)
-                throws NoSuchSystemException;
+            throws NoSuchSystemException;
 
-    @Auditable(parameters = { "remoteSystemId" })
+    @Auditable(parameters = {"remoteSystemId"})
     public abstract OAuth1CredentialsInfo updateSharedOAuth1Credentials(
-                OAuth1CredentialsInfo exisitingCredentials, String remoteSystemId,
-                String token, String secret)
-                throws NoSuchSystemException;
+            OAuth1CredentialsInfo exisitingCredentials, String remoteSystemId,
+            String token, String secret)
+            throws NoSuchSystemException;
 
-    @Auditable(parameters = { "remoteSystemId" })
+    @Auditable(parameters = {"remoteSystemId"})
     public abstract List<OAuth1CredentialsInfo> listSharedOAuth1Credentials(String remoteSystemId)
-                throws NoSuchSystemException;
+            throws NoSuchSystemException;
 
-    @Auditable(parameters = { "remoteSystemId" })
+    @Auditable(parameters = {"remoteSystemId"})
     public abstract boolean deletePersonalOAuth1Credentials(String remoteSystemId)
-                throws NoSuchSystemException;
+            throws NoSuchSystemException;
 
-    @Auditable(parameters = { "remoteSystemId" })
+    @Auditable(parameters = {"remoteSystemId"})
     public abstract boolean deleteSharedOAuth1Credentials(String remoteSystemId,
-                OAuth1CredentialsInfo credentials) throws NoSuchSystemException;
+            OAuth1CredentialsInfo credentials) throws NoSuchSystemException;
 
-    @Auditable(parameters = { "remoteSystemId" })
+    @Auditable(parameters = {"remoteSystemId"})
     public abstract OAuth1CredentialsInfo updateCredentialsAuthenticationSucceeded(
-                boolean succeeded, OAuth1CredentialsInfo credentials);
+            boolean succeeded, OAuth1CredentialsInfo credentials);
 
 }

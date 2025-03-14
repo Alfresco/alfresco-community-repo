@@ -25,8 +25,9 @@
  */
 package org.alfresco.repo.management.subsystems.test;
 
-import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.springframework.beans.factory.BeanNameAware;
+
+import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 
 /**
  * A bean to test out 'composite property' features.
@@ -40,10 +41,9 @@ public class TestBean implements BeanNameAware
     private boolean boolProperty;
     private String anotherStringProperty;
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String) */
     public void setBeanName(String name)
     {
         this.id = name;

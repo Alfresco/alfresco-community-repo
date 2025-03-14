@@ -25,9 +25,10 @@
  */
 package org.alfresco.opencmis.mapping;
 
+import org.apache.chemistry.opencmis.commons.enums.Action;
+
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.apache.chemistry.opencmis.commons.enums.Action;
 
 /**
  * Action Evaluator whose evaluation is fixed
@@ -42,9 +43,12 @@ public class FixedValueActionEvaluator extends AbstractActionEvaluator
     /**
      * Construct
      * 
-     * @param serviceRegistry ServiceRegistry
-     * @param action Action
-     * @param allowed boolean
+     * @param serviceRegistry
+     *            ServiceRegistry
+     * @param action
+     *            Action
+     * @param allowed
+     *            boolean
      */
     protected FixedValueActionEvaluator(ServiceRegistry serviceRegistry, Action action, boolean allowed)
     {

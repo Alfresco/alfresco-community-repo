@@ -25,36 +25,34 @@
  */
 package org.alfresco.repo.rendition2;
 
-import org.alfresco.transform.registry.AbstractTransformRegistry;
-import org.alfresco.util.testing.category.DebugTests;
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Arrays;
-import java.util.List;
+import org.alfresco.transform.registry.AbstractTransformRegistry;
+import org.alfresco.util.testing.category.DebugTests;
 
 /**
- * Repeats quick file rendition tests with local transforms enabled but legacy transformers disabled.
- * The Transform Service does not exist for the Community edition.
- * Should be the same result as with legacy transforms only.
+ * Repeats quick file rendition tests with local transforms enabled but legacy transformers disabled. The Transform Service does not exist for the Community edition. Should be the same result as with legacy transforms only.
  *
  * @author adavis
  */
 public class LocalRenditionTest extends AbstractRenditionTest
 {
     public static final List<String> ALL_SOURCE_EXTENSIONS_EXCLUDE_LIST_LOCAL = Arrays.asList(
-        // - textToPdf returned a 400 status Miscellaneous Transformers - U+0628 ('afii57416') is not available in this font Helvetica encoding: WinAnsiEncoding
-        //   This is because the wrong transformer is being used due bug. The priority in the transform config is currently ignored.
-        "txt pdf pdf",
+            // - textToPdf returned a 400 status Miscellaneous Transformers - U+0628 ('afii57416') is not available in this font Helvetica encoding: WinAnsiEncoding
+            // This is because the wrong transformer is being used due bug. The priority in the transform config is currently ignored.
+            "txt pdf pdf",
 
-        "tiff jpg imgpreview",
-        "tiff jpg medium",
-        "tiff png doclib",
-        "tiff png avatar",
-        "tiff png avatar32"
-    );
+            "tiff jpg imgpreview",
+            "tiff jpg medium",
+            "tiff png doclib",
+            "tiff png avatar",
+            "tiff png avatar32");
 
     @BeforeClass
     public static void before()

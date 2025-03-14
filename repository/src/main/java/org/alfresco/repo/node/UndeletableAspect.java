@@ -31,7 +31,6 @@ import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
-import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -45,16 +44,11 @@ import org.alfresco.service.namespace.QName;
 /**
  * Undeletable aspect behaviour bean.
  * 
- * Deletions of nodes with the {@link ContentModel#ASPECT_UNDELETABLE} are not allowed by default.
- * This class registers the behaviour that prevents the deletion.
+ * Deletions of nodes with the {@link ContentModel#ASPECT_UNDELETABLE} are not allowed by default. This class registers the behaviour that prevents the deletion.
  * <p/>
- * This aspect/behaviour combination allows for detailed application control of when node deletion is allowed
- * or disallowed for particular nodes. It is not related to the normal permissions controls, which of course apply.
+ * This aspect/behaviour combination allows for detailed application control of when node deletion is allowed or disallowed for particular nodes. It is not related to the normal permissions controls, which of course apply.
  * <p/>
- * An example of its usage is in the {@link SiteService}, where {@link org.alfresco.repo.site.SiteModel#TYPE_SITE} nodes are given the
- * {@link ContentModel#ASPECT_UNDELETABLE} as a mandatory aspect. Therefore any attempt to delete such a node will
- * result in an exception. However, this behaviour is disabled within the {@link SiteService} in order to allow
- * site node deletion from within that service but from no other code.
+ * An example of its usage is in the {@link SiteService}, where {@link org.alfresco.repo.site.SiteModel#TYPE_SITE} nodes are given the {@link ContentModel#ASPECT_UNDELETABLE} as a mandatory aspect. Therefore any attempt to delete such a node will result in an exception. However, this behaviour is disabled within the {@link SiteService} in order to allow site node deletion from within that service but from no other code.
  * 
  * @author Neil Mc Erlean
  * @since 3.5.0
@@ -62,47 +56,49 @@ import org.alfresco.service.namespace.QName;
 public class UndeletableAspect implements NodeServicePolicies.BeforeDeleteNodePolicy,
         CopyServicePolicies.OnCopyNodePolicy
 {
-   private PolicyComponent policyComponent;
-   private NodeService nodeService;
-   
-   /**
-    * Set the policy component
-    * 
-    * @param policyComponent   policy component
-    */
-   public void setPolicyComponent(PolicyComponent policyComponent)
-   {
-       this.policyComponent = policyComponent;
-   }
-   
-   /**
-    * Set the node service
-    * 
-    * @param nodeService   node service
-    */
-   public void setNodeService(NodeService nodeService)
-   {
-       this.nodeService = nodeService;
-   }
-   
-   /**
-    * Initialise method
-    */
-   public void init()
-   {
-       this.policyComponent.bindClassBehaviour(BeforeDeleteNodePolicy.QNAME,
-               ContentModel.ASPECT_UNDELETABLE,
-               new JavaBehaviour(this, "beforeDeleteNode", Behaviour.NotificationFrequency.EVERY_EVENT));
+    private PolicyComponent policyComponent;
+    private NodeService nodeService;
 
-       policyComponent.bindClassBehaviour(
-               QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
-               ContentModel.ASPECT_UNDELETABLE,
-               new JavaBehaviour(this, "getCopyCallback"));
-   }
+    /**
+     * Set the policy component
+     * 
+     * @param policyComponent
+     *            policy component
+     */
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
 
-   /**
-    * Ensures that undeletable nodes cannot be deleted by default.
-    */
+    /**
+     * Set the node service
+     * 
+     * @param nodeService
+     *            node service
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    /**
+     * Initialise method
+     */
+    public void init()
+    {
+        this.policyComponent.bindClassBehaviour(BeforeDeleteNodePolicy.QNAME,
+                ContentModel.ASPECT_UNDELETABLE,
+                new JavaBehaviour(this, "beforeDeleteNode", Behaviour.NotificationFrequency.EVERY_EVENT));
+
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                ContentModel.ASPECT_UNDELETABLE,
+                new JavaBehaviour(this, "getCopyCallback"));
+    }
+
+    /**
+     * Ensures that undeletable nodes cannot be deleted by default.
+     */
     @Override
     public void beforeDeleteNode(NodeRef nodeRef)
     {

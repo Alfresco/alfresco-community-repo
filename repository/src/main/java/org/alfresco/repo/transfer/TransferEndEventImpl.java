@@ -32,7 +32,7 @@ import org.alfresco.service.cmr.transfer.TransferEvent;
 
 /**
  * An abstract implementation of TransferEndEvent.
-
+ * 
  * @see TransferEvent
  * @see RangedTransferEvent
  */
@@ -46,10 +46,9 @@ public class TransferEndEventImpl extends TransferEventImpl implements TransferE
         this.sourceReport = sourceReport;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.transfer.TransferEndEvent#getSourceReport()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.transfer.TransferEndEvent#getSourceReport() */
     @Override
     public NodeRef getSourceReport()
     {
@@ -61,10 +60,9 @@ public class TransferEndEventImpl extends TransferEventImpl implements TransferE
         this.destinationReport = destinationReport;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.transfer.TransferEndEvent#getDestinationReport()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.transfer.TransferEndEvent#getDestinationReport() */
     @Override
     public NodeRef getDestinationReport()
     {

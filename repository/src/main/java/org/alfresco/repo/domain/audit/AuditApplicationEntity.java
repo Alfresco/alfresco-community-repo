@@ -38,25 +38,24 @@ public class AuditApplicationEntity
     private Long applicationNameId;
     private Long auditModelId;
     private Long disabledPathsId;
-    
+
     public AuditApplicationEntity()
-    {
-    }
-    
+    {}
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("AuditApplicationEntity")
-          .append("[ ID=").append(id)
-          .append(", version=").append(version)
-          .append(", applicationNameId=").append(applicationNameId)
-          .append(", auditModelId=").append(auditModelId)
-          .append(", disabledPathsId=").append(disabledPathsId)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", version=").append(version)
+                .append(", applicationNameId=").append(applicationNameId)
+                .append(", auditModelId=").append(auditModelId)
+                .append(", disabledPathsId=").append(disabledPathsId)
+                .append("]");
         return sb.toString();
     }
-    
+
     public void incrementVersion()
     {
         if (version >= Short.MAX_VALUE)
@@ -68,7 +67,7 @@ public class AuditApplicationEntity
             this.version++;
         }
     }
-    
+
     public Long getId()
     {
         return id;

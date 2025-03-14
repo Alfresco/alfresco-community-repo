@@ -27,17 +27,17 @@ package org.alfresco.repo.domain.mimetype;
 
 import java.io.Serializable;
 
+import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.util.Pair;
-import org.springframework.dao.ConcurrencyFailureException;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Abstract implementation for Mimetype DAO.
  * <p>
- * This provides basic services such as caching, but defers to the underlying implementation
- * for CRUD operations. 
+ * This provides basic services such as caching, but defers to the underlying implementation for CRUD operations.
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -50,7 +50,8 @@ public abstract class AbstractMimetypeDAOImpl implements MimetypeDAO
 
     /**
      * 
-     * @param mimetypeEntityCache           the cache of IDs to mimetypes
+     * @param mimetypeEntityCache
+     *            the cache of IDs to mimetypes
      */
     public void setMimetypeEntityCache(SimpleCache<Serializable, Serializable> mimetypeEntityCache)
     {
@@ -83,7 +84,7 @@ public abstract class AbstractMimetypeDAOImpl implements MimetypeDAO
     {
         ParameterCheck.mandatory("mimetype", mimetype);
         mimetype = sanitizeMimetype(mimetype);
-        
+
         // Check the cache
         Long id = (Long) mimetypeEntityCache.get(mimetype);
         if (id != null)
@@ -121,7 +122,7 @@ public abstract class AbstractMimetypeDAOImpl implements MimetypeDAO
     {
         ParameterCheck.mandatory("mimetype", mimetype);
         mimetype = sanitizeMimetype(mimetype);
-        
+
         Pair<Long, String> result = getMimetype(mimetype);
         if (result == null)
         {
@@ -134,7 +135,7 @@ public abstract class AbstractMimetypeDAOImpl implements MimetypeDAO
         }
         return result;
     }
-    
+
     public int updateMimetype(String oldMimetype, String newMimetype)
     {
         ParameterCheck.mandatory("oldMimetype", oldMimetype);
@@ -143,7 +144,6 @@ public abstract class AbstractMimetypeDAOImpl implements MimetypeDAO
         ParameterCheck.mandatory("newMimetype", newMimetype);
         newMimetype = sanitizeMimetype(newMimetype);
 
-        
         Pair<Long, String> oldMimetypePair = getMimetype(oldMimetype);
         if (oldMimetypePair == null)
         {
@@ -175,11 +175,15 @@ public abstract class AbstractMimetypeDAOImpl implements MimetypeDAO
     }
 
     /**
-     * @param id            the ID of the mimetype entity
-     * @return              Return the entity or <tt>null</tt> if it doesn't exist
+     * @param id
+     *            the ID of the mimetype entity
+     * @return Return the entity or <tt>null</tt> if it doesn't exist
      */
     protected abstract MimetypeEntity getMimetypeEntity(Long id);
+
     protected abstract MimetypeEntity getMimetypeEntity(String mimetype);
+
     protected abstract MimetypeEntity createMimetypeEntity(String mimetype);
+
     protected abstract int updateMimetypeEntity(Long id, String newMimetype);
 }

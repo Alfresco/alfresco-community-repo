@@ -41,25 +41,25 @@ import org.alfresco.service.cmr.repository.NodeService;
 public class PrimaryParentNodeFinder extends AbstractNodeFinder
 {
     private NodeService nodeService;
-    
+
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public void init()
     {
         super.init();
         this.nodeService = serviceRegistry.getNodeService();
     }
-    
+
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public Set<NodeRef> findFrom(NodeRef thisNode)
     {
         ChildAssociationRef assoc = nodeService.getPrimaryParent(thisNode);
-        if(assoc != null)
+        if (assoc != null)
         {
             return Collections.singleton(assoc.getParentRef());
         }

@@ -59,16 +59,17 @@ public class ArchivedNodeState
     private String lastName;
     private String nodeType;
     private boolean isContentType;
-    
+
     /**
      * To prevent unauthorised construction.
      */
-    private ArchivedNodeState() { /* Intentionally empty*/ }
-    
+    private ArchivedNodeState()
+    { /* Intentionally empty */ }
+
     public static ArchivedNodeState create(NodeRef archivedNode, ServiceRegistry serviceRegistry)
     {
         ArchivedNodeState result = new ArchivedNodeState();
-        
+
         NodeService nodeService = serviceRegistry.getNodeService();
         Map<QName, Serializable> properties = nodeService.getProperties(archivedNode);
 
@@ -87,76 +88,76 @@ public class ArchivedNodeState
         {
             NodeRef personNodeRef = personService.getPerson(result.archivedBy, false);
             Map<QName, Serializable> personProps = nodeService.getProperties(personNodeRef);
-            
+
             result.firstName = (String) personProps.get(ContentModel.PROP_FIRSTNAME);
             result.lastName = (String) personProps.get(ContentModel.PROP_LASTNAME);
         }
-        
+
         ChildAssociationRef originalParentAssoc = (ChildAssociationRef) properties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
-        
+
         if (serviceRegistry.getPermissionService().hasPermission(originalParentAssoc.getParentRef(), PermissionService.READ).equals(AccessStatus.ALLOWED)
                 && nodeService.exists(originalParentAssoc.getParentRef()))
         {
-           result.displayPath = PathUtil.getDisplayPath(nodeService.getPath(originalParentAssoc.getParentRef()), true);
+            result.displayPath = PathUtil.getDisplayPath(nodeService.getPath(originalParentAssoc.getParentRef()), true);
         }
         else
         {
-           result.displayPath = "";
+            result.displayPath = "";
         }
-        
+
         return result;
     }
-    
+
     public NodeRef getNodeRef()
     {
         return this.archivedNodeRef;
     }
-    
+
     public String getArchivedBy()
     {
         return this.archivedBy;
     }
-    
+
     public Date getArchivedDate()
     {
         return this.archivedDate;
     }
-    
+
     public String getName()
     {
         return this.name;
     }
-    
+
     public String getTitle()
     {
         return this.title;
     }
-    
+
     public String getDescription()
     {
         return this.description;
     }
-    
+
     public String getDisplayPath()
     {
         return this.displayPath;
     }
-    
+
     public String getFirstName()
     {
         return this.firstName;
     }
-    
+
     public String getLastName()
     {
         return this.lastName;
     }
-    
+
     public String getNodeType()
     {
         return this.nodeType;
     }
-    
+
     public boolean getIsContentType()
     {
         return this.isContentType;

@@ -46,7 +46,8 @@ public class PeerAssociationEventConsolidator extends EventConsolidator<Associat
     /**
      * Add peer association created event on create of a peer association.
      *
-     * @param associationRef AssociationRef
+     * @param associationRef
+     *            AssociationRef
      */
     @Override
     public void onCreateAssociation(AssociationRef associationRef)
@@ -58,7 +59,8 @@ public class PeerAssociationEventConsolidator extends EventConsolidator<Associat
     /**
      * Add peer association deleted event on delete of a peer association.
      *
-     * @param associationRef AssociationRef
+     * @param associationRef
+     *            AssociationRef
      */
     @Override
     public void beforeDeleteAssociation(AssociationRef associationRef)
@@ -112,4 +114,3 @@ public class PeerAssociationEventConsolidator extends EventConsolidator<Associat
         return entityReference.getTypeQName();
     }
 }
-

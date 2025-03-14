@@ -30,9 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.search.SearchTrackingComponent;
-import org.alfresco.repo.solr.AlfrescoModelDiff;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -43,6 +40,10 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.repo.search.SearchTrackingComponent;
+import org.alfresco.repo.solr.AlfrescoModelDiff;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Support for SOLR: Track Alfresco model changes
@@ -58,7 +59,7 @@ public class AlfrescoModelsDiff extends DeclarativeWebScript
     private static final String MSG_JSON_EXCEPTION = "Unable to fetch model changes from ";
 
     private SearchTrackingComponent searchTrackingComponent;
-    
+
     public void setSearchTrackingComponent(SearchTrackingComponent searchTrackingComponent)
     {
         this.searchTrackingComponent = searchTrackingComponent;
@@ -109,14 +110,14 @@ public class AlfrescoModelsDiff extends DeclarativeWebScript
         Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
 
         Content content = req.getContent();
-        if(content == null)
+        if (content == null)
         {
             throw new WebScriptException("Failed to convert request to String");
         }
         JSONObject o = new JSONObject(content.getContent());
         JSONArray jsonModels = o.getJSONArray("models");
         Map<QName, Long> models = new HashMap<QName, Long>(jsonModels.length());
-        for(int i = 0; i < jsonModels.length(); i++)
+        for (int i = 0; i < jsonModels.length(); i++)
         {
             JSONObject jsonModel = jsonModels.getJSONObject(i);
             models.put(QName.createQName(jsonModel.getString("name")), jsonModel.getLong("checksum"));
@@ -129,7 +130,7 @@ public class AlfrescoModelsDiff extends DeclarativeWebScript
         {
             logger.debug("Result: \n\tRequest: " + req + "\n\tModel: " + model);
         }
-        
+
         return model;
     }
 }

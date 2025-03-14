@@ -38,7 +38,7 @@ public class RouteTestExtesnions
     public void intercept(Extend extendAnnotation, ExtensionTargetException ete) throws TestException
     {
         Throwable exception = AJExtender.asCheckThrowable(ete.getCause(),
-                                                          TestException.class);
+                TestException.class);
         if (exception instanceof TestException)
         {
             throw (TestException) exception;

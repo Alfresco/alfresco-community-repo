@@ -27,7 +27,6 @@ package org.alfresco.repo.imap;
 
 import java.io.IOException;
 import java.io.InputStream;
-
 import jakarta.mail.MessagingException;
 import jakarta.mail.util.SharedByteArrayInputStream;
 
@@ -48,11 +47,15 @@ public class ImapModelMessage extends AbstractMimeMessage
     /**
      * Constructs {@link ImapModelMessage} object.
      * 
-     * @param fileInfo - reference to the {@link FileInfo} object representing the message.
-     * @param serviceRegistry - serviceRegistry object.
-     * @param generateBody - if {@code true} message body will be generated.
+     * @param fileInfo
+     *            - reference to the {@link FileInfo} object representing the message.
+     * @param serviceRegistry
+     *            - serviceRegistry object.
+     * @param generateBody
+     *            - if {@code true} message body will be generated.
      * 
-     * @throws MessagingException if generation of the body fails.
+     * @throws MessagingException
+     *             if generation of the body fails.
      */
     public ImapModelMessage(FileInfo fileInfo, ServiceRegistry serviceRegistry, boolean generateBody) throws MessagingException
     {
@@ -94,7 +97,7 @@ public class ImapModelMessage extends AbstractMimeMessage
         }
         catch (ContentIOException e)
         {
-            //logger.error(e);
+            // logger.error(e);
             throw new MessagingException("The error occured during message creation from content stream.", e);
         }
         finally
@@ -134,15 +137,9 @@ public class ImapModelMessage extends AbstractMimeMessage
         }
         catch (Exception e)
         {
-            throw new MessagingException(e.getMessage(),e);
+            throw new MessagingException(e.getMessage(), e);
         }
     }
-    
-    /*
-    protected void parse(InputStream inputstream) throws MessagingException
-    {
-        headers = createInternetHeaders(inputstream);
-        contentStream = inputstream;
-    }
-    */
+
+    /* protected void parse(InputStream inputstream) throws MessagingException { headers = createInternetHeaders(inputstream); contentStream = inputstream; } */
 }

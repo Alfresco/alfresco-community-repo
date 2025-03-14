@@ -40,7 +40,7 @@ public class DataKeyInfo
     private final QName qName;
     private final FieldType fieldType;
     private final boolean isAdd;
-    
+
     private DataKeyInfo(String dataKey, QName qName, FieldType fieldType, boolean isAdd)
     {
         this.fieldName = dataKey;
@@ -48,27 +48,27 @@ public class DataKeyInfo
         this.fieldType = fieldType;
         this.isAdd = isAdd;
     }
-    
+
     public static DataKeyInfo makeAssociationDataKeyInfo(String dataKey, QName qName, boolean isAdd)
     {
         return new DataKeyInfo(dataKey, qName, FieldType.ASSOCIATION, isAdd);
     }
-    
+
     public static DataKeyInfo makePropertyDataKeyInfo(String dataKey, QName qName)
     {
         return new DataKeyInfo(dataKey, qName, FieldType.PROPERTY, true);
     }
-    
+
     public static DataKeyInfo makeTransientPropertyDataKeyInfo(String dataKey)
     {
         return new DataKeyInfo(dataKey, null, FieldType.TRANSIENT_PROPERTY, true);
     }
-    
+
     public static DataKeyInfo makeTransientAssociationDataKeyInfo(String dataKey, boolean isAdd)
     {
         return new DataKeyInfo(dataKey, null, FieldType.TRANSIENT_ASSOCIATION, isAdd);
     }
-    
+
     /**
      * @return the fieldName
      */
@@ -76,7 +76,7 @@ public class DataKeyInfo
     {
         return fieldName;
     }
-    
+
     /**
      * @return the qName
      */
@@ -84,7 +84,6 @@ public class DataKeyInfo
     {
         return qName;
     }
-    
 
     /**
      * @return the fieldType
@@ -93,7 +92,7 @@ public class DataKeyInfo
     {
         return fieldType;
     }
-    
+
     /**
      * @return the isAdd
      */

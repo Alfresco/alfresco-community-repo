@@ -29,6 +29,13 @@ import java.io.StringWriter;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.json.JSONWriter;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.activities.ActivityService;
@@ -39,12 +46,6 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.json.JSONWriter;
 
 /**
  * This class contains common code for doclink webscripts controllers
@@ -88,10 +89,7 @@ public abstract class AbstractDocLink extends DeclarativeWebScript
             ParameterCheck.mandatoryString("storeIdArg", storeIdArg);
             ParameterCheck.mandatoryString("idArg", idArg);
 
-            /*
-             * NodeRef based request
-             * <url>URL_BASE/{store_type}/{store_id}/{id}</url>
-             */
+            /* NodeRef based request <url>URL_BASE/{store_type}/{store_id}/{id}</url> */
             return new NodeRef(storeTypeArg, storeIdArg, idArg);
         }
         else
@@ -105,10 +103,7 @@ public abstract class AbstractDocLink extends DeclarativeWebScript
                 ParameterCheck.mandatoryString("siteArg", siteArg);
                 ParameterCheck.mandatoryString("containerArg", containerArg);
 
-                /*
-                 * Site based request <url>URL_BASE/{site}/{container}</url> or
-                 * <url>URL_BASE/{site}/{container}/{path}</url>
-                 */
+                /* Site based request <url>URL_BASE/{site}/{container}</url> or <url>URL_BASE/{site}/{container}/{path}</url> */
                 SiteInfo site = siteService.getSite(siteArg);
                 PropertyCheck.mandatory(this, "site", site);
 
@@ -145,27 +140,27 @@ public abstract class AbstractDocLink extends DeclarativeWebScript
 
     protected void addActivityEntry(String activityType, String title, String nodeRef, String site)
     {
-       try
-       {
-          StringWriter activityJson = new StringWriter();
-          JSONWriter activity = new JSONWriter(activityJson);
-          activity.startObject();
-          activity.writeValue("title", title);
-          activity.writeValue("nodeRef", nodeRef);
-          activity.writeValue("page", "document-details?nodeRef=" + nodeRef);
-          activity.endObject();
+        try
+        {
+            StringWriter activityJson = new StringWriter();
+            JSONWriter activity = new JSONWriter(activityJson);
+            activity.startObject();
+            activity.writeValue("title", title);
+            activity.writeValue("nodeRef", nodeRef);
+            activity.writeValue("page", "document-details?nodeRef=" + nodeRef);
+            activity.endObject();
 
-          activityService.postActivity(
-                activityType,
-                site,
-                ACTIVITY_TOOL,
-                activityJson.toString());
-       }
-       catch (Exception e)
-       {
-          // Warn, but carry on
-          logger.warn("Error adding link event to activities feed", e);
-       }
+            activityService.postActivity(
+                    activityType,
+                    site,
+                    ACTIVITY_TOOL,
+                    activityJson.toString());
+        }
+        catch (Exception e)
+        {
+            // Warn, but carry on
+            logger.warn("Error adding link event to activities feed", e);
+        }
     }
 
     public void setNodeService(NodeService nodeService)

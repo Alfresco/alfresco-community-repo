@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.sitesmembershipsrequests;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.SiteMembershipRequests;
 import org.alfresco.rest.api.model.SiteMembershipRequest;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -33,7 +35,6 @@ import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAct
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * An implementation of an Entity Resource for a Site Membership Request

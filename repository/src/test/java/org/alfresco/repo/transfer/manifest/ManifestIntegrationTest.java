@@ -38,9 +38,13 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transfer.TransferContext;
@@ -58,13 +62,8 @@ import org.alfresco.service.cmr.transfer.TransferService;
 import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
-import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.TempFileProvider;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Integration test for Transfer Manifest
@@ -87,10 +86,10 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
         super.before();
 
         // Get the required services
-        this.transferService = (TransferService)this.applicationContext.getBean("TransferService");
-        this.contentService = (ContentService)this.applicationContext.getBean("ContentService");
-        this.permissionService = (PermissionService)this.applicationContext.getBean("PermissionService");
-        this.dictionaryService = (DictionaryService)this.applicationContext.getBean("DictionaryService");
+        this.transferService = (TransferService) this.applicationContext.getBean("TransferService");
+        this.contentService = (ContentService) this.applicationContext.getBean("ContentService");
+        this.permissionService = (PermissionService) this.applicationContext.getBean("PermissionService");
+        this.dictionaryService = (DictionaryService) this.applicationContext.getBean("DictionaryService");
         this.mlAwareNodeService = (NodeService) this.applicationContext.getBean("mlAwareNodeService");
     }
 
@@ -101,7 +100,7 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
         String CONTENT_STRING = "hello world";
         Locale CONTENT_LOCALE = Locale.TAIWAN;
         String CONTENT_TITLE = "the title";
-        String CONTENT_NAME = "&the name <\\*";  // nasty name for XML
+        String CONTENT_NAME = "&the name <\\*"; // nasty name for XML
         String CONTENT_ASSOC_NAME = "&hell+-1we";
 
         String snapshotMe = "snapshotMe";
@@ -151,10 +150,7 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
             Set<NodeRef> nodes = new HashSet<NodeRef>();
 
             /**
-             * Write three nodes
-             * a: the root node of the workspace store
-             * b: the target node
-             * c: child of the target node
+             * Write three nodes a: the root node of the workspace store b: the target node c: child of the target node
              */
             nodes.add(nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE));
             nodes.add(target.getNodeRef());
@@ -166,7 +162,7 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
             header.setCreatedDate(new Date());
             formatter.startTransferManifest(snapshotWriter);
             formatter.writeTransferManifestHeader(header);
-            for(NodeRef nodeRef : nodes)
+            for (NodeRef nodeRef : nodes)
             {
                 TransferManifestNode node = nodeFactory.createTransferManifestNode(nodeRef, null, new TransferContext());
                 formatter.writeTransferManifestNode(node);
@@ -194,30 +190,30 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
             assertEquals("did not get back the same number of nodes", nodes.size(), processor.getNodes().size());
             assertNotNull("header is null", processor.getHeader());
 
-            for(NodeRef nodeId : nodes)
+            for (NodeRef nodeId : nodes)
             {
                 System.out.println("Processing node:" + nodeId);
-                TransferManifestNormalNode readNode = (TransferManifestNormalNode)processor.getNodes().get(nodeId);
-                TransferManifestNormalNode writeNode = (TransferManifestNormalNode)sentNodes.get(nodeId);
+                TransferManifestNormalNode readNode = (TransferManifestNormalNode) processor.getNodes().get(nodeId);
+                TransferManifestNormalNode writeNode = (TransferManifestNormalNode) sentNodes.get(nodeId);
                 assertNotNull("readNode is null", readNode);
                 assertNotNull("writeNode is null", writeNode);
 
                 assertEquals("type is different", writeNode.getType(), readNode.getType());
                 assertEquals("nodeRef is different", writeNode.getNodeRef(), readNode.getNodeRef());
                 assertEquals("parent node ref is different", writeNode.getPrimaryParentAssoc(), readNode.getPrimaryParentAssoc());
-                if(writeNode.getParentPath() != null)
+                if (writeNode.getParentPath() != null)
                 {
                     assertEquals("parent path is different", writeNode.getParentPath().toString(), readNode.getParentPath().toString());
                 }
 
                 assertEquals("aspects array different size", writeNode.getAspects().size(), readNode.getAspects().size());
-                for(QName aspect : writeNode.getAspects())
+                for (QName aspect : writeNode.getAspects())
                 {
                     assertTrue("missing aspect", readNode.getAspects().contains(aspect));
                 }
 
                 assertEquals("properties array different size", writeNode.getProperties().size(), readNode.getProperties().size());
-                for(QName prop : writeNode.getProperties().keySet())
+                for (QName prop : writeNode.getProperties().keySet())
                 {
                     assertTrue("missing property", readNode.getProperties().containsKey(prop));
                 }
@@ -227,19 +223,19 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
                 assertEquals("source assocs different", writeNode.getSourceAssocs().size(), readNode.getSourceAssocs().size());
                 assertEquals("target assocs different", writeNode.getTargetAssocs().size(), readNode.getTargetAssocs().size());
 
-                if(readNode.getNodeRef().equals(childNodeRef))
+                if (readNode.getNodeRef().equals(childNodeRef))
                 {
                     /**
                      * Check the child node since we created it at the start of this test this test
                      */
-                    ContentData data = (ContentData)readNode.getProperties().get(ContentModel.PROP_CONTENT);
+                    ContentData data = (ContentData) readNode.getProperties().get(ContentModel.PROP_CONTENT);
                     assertEquals("content data wrong size", data.getSize(), CONTENT_STRING.length());
                     assertEquals("content locale wrong", data.getLocale(), CONTENT_LOCALE);
 
-                    String childTitle = ((MLText)readNode.getProperties().get(ContentModel.PROP_TITLE)).getDefaultValue();
+                    String childTitle = ((MLText) readNode.getProperties().get(ContentModel.PROP_TITLE)).getDefaultValue();
                     assertEquals("content title wrong", childTitle, CONTENT_TITLE);
 
-                    String childName = (String)readNode.getProperties().get(ContentModel.PROP_NAME);
+                    String childName = (String) readNode.getProperties().get(ContentModel.PROP_NAME);
                     assertEquals("content name wrong", childName, CONTENT_NAME);
 
                     /**
@@ -265,7 +261,7 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
         }
         finally
         {
-            if(snapshotFile != null)
+            if (snapshotFile != null)
             {
                 snapshotFile.delete();
             }
@@ -275,13 +271,14 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
 
     /**
      * Utility to dump the contents of a file to the console
+     * 
      * @param file
      */
     private static void outputFile(File file) throws Exception
     {
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
         String s = reader.readLine();
-        while(s != null)
+        while (s != null)
         {
             System.out.println(s);
             s = reader.readLine();

@@ -40,12 +40,12 @@ public class SynchronizeDiagnosticImpl implements SynchronizeDiagnostic
     {
         this.isActive = isActive;
     }
-    
+
     public void setGroups(Collection<String> groups)
     {
         this.groups = groups;
     }
-    
+
     public void setUsers(Collection<String> users)
     {
         this.users = users;
@@ -68,12 +68,10 @@ public class SynchronizeDiagnosticImpl implements SynchronizeDiagnostic
     {
         return groups;
     }
-    
 
-    
     public String toString()
     {
-        return "SynchronizeDiagnosticImpl: isActive," + isActive ; 
+        return "SynchronizeDiagnosticImpl: isActive," + isActive;
     }
 
     public void setPersonLastSynced(Date personLastSynced)

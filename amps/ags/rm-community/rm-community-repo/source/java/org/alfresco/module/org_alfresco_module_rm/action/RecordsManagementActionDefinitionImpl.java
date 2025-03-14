@@ -45,11 +45,12 @@ public class RecordsManagementActionDefinitionImpl extends ActionDefinitionImpl 
 
     /** Applicable kinds */
     private Set<FilePlanComponentKind> applicableKinds;
-    
+
     /**
      * Default constructor.
      * 
-     * @param name  action definition name
+     * @param name
+     *            action definition name
      */
     public RecordsManagementActionDefinitionImpl(String name)
     {
@@ -57,13 +58,14 @@ public class RecordsManagementActionDefinitionImpl extends ActionDefinitionImpl 
     }
 
     /**
-     * @param applicableKinds   applicable kinds
+     * @param applicableKinds
+     *            applicable kinds
      */
     public void setApplicableKinds(Set<FilePlanComponentKind> applicableKinds)
     {
         this.applicableKinds = applicableKinds;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionDefinition#getApplicableKinds()
      */
@@ -71,5 +73,5 @@ public class RecordsManagementActionDefinitionImpl extends ActionDefinitionImpl 
     public Set<FilePlanComponentKind> getApplicableKinds()
     {
         return applicableKinds;
-    }    
+    }
 }

@@ -25,82 +25,50 @@
  */
 package org.alfresco.repo.web.scripts;
 
-
-
 import java.io.IOException;
-
 import java.io.Writer;
-
 import java.util.ArrayList;
-
 import java.util.HashMap;
-
 import java.util.List;
-
 import java.util.Map;
-
 import java.util.ResourceBundle;
 
-
-
 import org.apache.commons.logging.Log;
-
 import org.apache.commons.logging.LogFactory;
-
 import org.dom4j.Element;
-
 import org.springframework.extensions.config.ConfigImpl;
-
 import org.springframework.extensions.config.ConfigSection;
-
 import org.springframework.extensions.config.ConfigService;
-
 import org.springframework.extensions.config.evaluator.Evaluator;
-
 import org.springframework.extensions.config.xml.XMLConfigService;
-
 import org.springframework.extensions.config.xml.elementreader.ConfigElementReader;
-
 import org.springframework.extensions.surf.extensibility.BasicExtensionModule;
-
 import org.springframework.extensions.surf.extensibility.ExtensibilityModel;
-
 import org.springframework.extensions.surf.extensibility.HandlesExtensibility;
-
 import org.springframework.extensions.surf.extensibility.WebScriptExtensibilityModuleHandler;
-
 import org.springframework.extensions.surf.extensibility.impl.ExtensibilityModelImpl;
-
 import org.springframework.extensions.surf.extensibility.impl.MarkupDirective;
-
 import org.springframework.extensions.webscripts.Authenticator;
-
 import org.springframework.extensions.webscripts.ExtendedScriptConfigModel;
-
 import org.springframework.extensions.webscripts.ExtendedTemplateConfigModel;
-
 import org.springframework.extensions.webscripts.ScriptConfigModel;
-
 import org.springframework.extensions.webscripts.TemplateConfigModel;
-
 import org.springframework.extensions.webscripts.WebScriptPropertyResourceBundle;
-
 import org.springframework.extensions.webscripts.WebScriptRequest;
-
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
-
-
 /**
-
- * <p>A simple extensibility {@link org.springframework.extensions.webscripts.Container} for processing WebScripts. This extends the {@link RepositoryContainer} and
-
- * implements the {@link HandlesExtensibility} interface to provide extensibility capabilities.</p>
-
  * 
-
+ * <p>
+ * A simple extensibility {@link org.springframework.extensions.webscripts.Container} for processing WebScripts. This extends the {@link RepositoryContainer} and
+ * 
+ * implements the {@link HandlesExtensibility} interface to provide extensibility capabilities.
+ * </p>
+ * 
+ * 
+ * 
  * @author David Draper
-
+ * 
  */
 
 public class ExtensibilityContainer extends RepositoryContainer implements HandlesExtensibility
@@ -109,33 +77,31 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
     private static final Log logger = LogFactory.getLog(ExtensibilityContainer.class);
 
-    
-
     public boolean isExtensibilitySuppressed()
 
     {
 
-      return false;
+        return false;
 
     }
 
-    
-
     /**
-
-     * <p>Opens a new {@link ExtensibilityModel}, defers execution to the extended {@link RepositoryContainer} and
-
-     * then closes the {@link ExtensibilityModel}.</p>
-
+     * 
+     * <p>
+     * Opens a new {@link ExtensibilityModel}, defers execution to the extended {@link RepositoryContainer} and
+     * 
+     * then closes the {@link ExtensibilityModel}.
+     * </p>
+     * 
      */
 
     @Override
 
-    public void executeScript(WebScriptRequest scriptReq, 
+    public void executeScript(WebScriptRequest scriptReq,
 
-                              WebScriptResponse scriptRes, 
+            WebScriptResponse scriptRes,
 
-                              Authenticator auth) throws IOException
+            Authenticator auth) throws IOException
 
     {
 
@@ -187,42 +153,43 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
     }
 
-
-
     /**
-
-     * <p>This keeps track of whether or not the {@link ExtensibilityModel} for the current thread has been used. The
-
+     * 
+     * <p>
+     * This keeps track of whether or not the {@link ExtensibilityModel} for the current thread has been used. The
+     * 
      * thread local value will only be set to <code>true</code> if the <code>getCurrentExtensibilityModel</code> method
-
-     * is called.</p>
-
+     * 
+     * is called.
+     * </p>
+     * 
      */
 
     private ThreadLocal<Boolean> modelUsed = new ThreadLocal<Boolean>();
 
-    
-
     /**
-
-     * <p>A {@link WebScriptExtensibilityModuleHandler} is required for retrieving information on what
-
-     * {@link BasicExtensionModule} instances have been configured and the extension files that need 
-
-     * to be processed. This variable should be set thorugh the Spring application context configuration.</p>
-
+     * 
+     * <p>
+     * A {@link WebScriptExtensibilityModuleHandler} is required for retrieving information on what
+     * 
+     * {@link BasicExtensionModule} instances have been configured and the extension files that need
+     * 
+     * to be processed. This variable should be set thorugh the Spring application context configuration.
+     * </p>
+     * 
      */
 
     private WebScriptExtensibilityModuleHandler extensibilityModuleHandler = null;
 
-    
-
     /**
-
-     * <p>Sets the {@link WebScriptExtensibilityModuleHandler} for this {@link org.springframework.extensions.webscripts.Container}.</p>
-
-     * @param extensibilityModuleHandler WebScriptExtensibilityModuleHandler
-
+     * 
+     * <p>
+     * Sets the {@link WebScriptExtensibilityModuleHandler} for this {@link org.springframework.extensions.webscripts.Container}.
+     * </p>
+     * 
+     * @param extensibilityModuleHandler
+     *            WebScriptExtensibilityModuleHandler
+     * 
      */
 
     public void setExtensibilityModuleHandler(WebScriptExtensibilityModuleHandler extensibilityModuleHandler)
@@ -233,24 +200,24 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
     }
 
-
-
     /**
-
-     * <p>Maintains a list of all the {@link ExtensibilityModel} instances being used across all the 
-
-     * available threads.</p>
-
+     * 
+     * <p>
+     * Maintains a list of all the {@link ExtensibilityModel} instances being used across all the
+     * 
+     * available threads.
+     * </p>
+     * 
      */
 
     private ThreadLocal<ExtensibilityModel> extensibilityModel = new ThreadLocal<ExtensibilityModel>();
 
-    
-
     /**
-
-     * <p>Creates a new {@link ExtensibilityModel} and sets it on the current thread</p>
-
+     * 
+     * <p>
+     * Creates a new {@link ExtensibilityModel} and sets it on the current thread
+     * </p>
+     * 
      */
 
     public ExtensibilityModel openExtensibilityModel()
@@ -277,11 +244,9 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
         this.sectionsByArea.set(null);
 
-        
-
         ExtensibilityModel model = new ExtensibilityModelImpl(null, this);
 
-        this.extensibilityModel.set(model); 
+        this.extensibilityModel.set(model);
 
         this.modelUsed.set(Boolean.FALSE);
 
@@ -289,14 +254,14 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
     }
 
-
-
     /**
-
-     * <p>Flushes the {@link ExtensibilityModel} provided and sets its parent as the current {@link ExtensibilityModel}
-
-     * for the current thread.</p>
-
+     * 
+     * <p>
+     * Flushes the {@link ExtensibilityModel} provided and sets its parent as the current {@link ExtensibilityModel}
+     * 
+     * for the current thread.
+     * </p>
+     * 
      */
 
     public void closeExtensibilityModel(ExtensibilityModel model, Writer out)
@@ -311,8 +276,6 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
         }
 
-        
-
         model.flushModel(out);
 
         this.modelUsed.set(Boolean.FALSE);
@@ -321,12 +284,12 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
     }
 
-
-
     /**
-
-     * <p>Returns the {@link ExtensibilityModel} for the current thread.</p>
-
+     * 
+     * <p>
+     * Returns the {@link ExtensibilityModel} for the current thread.
+     * </p>
+     * 
      */
 
     public ExtensibilityModel getCurrentExtensibilityModel()
@@ -347,14 +310,14 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
     }
 
-
-
     /**
-
-     * <p>This method is implemented to perform no action as it is not necessary for a standalone WebScript
-
-     * container to add dependencies for processing.</p>
-
+     * 
+     * <p>
+     * This method is implemented to perform no action as it is not necessary for a standalone WebScript
+     * 
+     * container to add dependencies for processing.
+     * </p>
+     * 
      */
 
     public void updateExtendingModuleDependencies(String pathBeingProcessed, Map<String, Object> model)
@@ -365,32 +328,33 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
     }
 
-
-
     /**
-
-     * <p>A thread-safe cache of extended {@link ResourceBundle} instances for the current request.</p>
-
+     * 
+     * <p>
+     * A thread-safe cache of extended {@link ResourceBundle} instances for the current request.
+     * </p>
+     * 
      */
 
-    private ThreadLocal<Map<String, WebScriptPropertyResourceBundle>> extendedBundleCache = new ThreadLocal<Map<String, WebScriptPropertyResourceBundle>>(); 
-
-    
+    private ThreadLocal<Map<String, WebScriptPropertyResourceBundle>> extendedBundleCache = new ThreadLocal<Map<String, WebScriptPropertyResourceBundle>>();
 
     /**
-
-     * <p>Checks the cache to see if it has cached an extended bundle (that is a basic {@link ResourceBundle} that
-
-     * has had extension modules applied to it. Extended bundles can only be safely cached once per request as the modules
-
-     * applied can vary for each request.</p>
-
      * 
-
-     * @param webScriptId The id of the WebScript to retrieve the extended bundle for.
-
+     * <p>
+     * Checks the cache to see if it has cached an extended bundle (that is a basic {@link ResourceBundle} that
+     * 
+     * has had extension modules applied to it. Extended bundles can only be safely cached once per request as the modules
+     * 
+     * applied can vary for each request.
+     * </p>
+     * 
+     * 
+     * 
+     * @param webScriptId
+     *            The id of the WebScript to retrieve the extended bundle for.
+     * 
      * @return A cached bundle or <code>null</code> if the bundle has not previously been cached.
-
+     * 
      */
 
     public ResourceBundle getCachedExtendedBundle(String webScriptId)
@@ -413,22 +377,24 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
     }
 
-    
-
     /**
-
-     * <p>Adds a new extended bundle to the cache. An extended bundle is a WebScript {@link ResourceBundle} that has had 
-
-     * {@link ResourceBundle} instances merged into it from extension modules that have been applied. These can only be cached 
-
-     * for the lifetime of the request as different modules may be applied to the same WebScript for different requests.</p>
-
      * 
-
-     * @param webScriptId The id of the WebScript to cache the extended bundle against.
-
-     * @param extensionBundle The extended bundle to cache.
-
+     * <p>
+     * Adds a new extended bundle to the cache. An extended bundle is a WebScript {@link ResourceBundle} that has had
+     * 
+     * {@link ResourceBundle} instances merged into it from extension modules that have been applied. These can only be cached
+     * 
+     * for the lifetime of the request as different modules may be applied to the same WebScript for different requests.
+     * </p>
+     * 
+     * 
+     * 
+     * @param webScriptId
+     *            The id of the WebScript to cache the extended bundle against.
+     * 
+     * @param extensionBundle
+     *            The extended bundle to cache.
+     * 
      */
 
     public void addExtensionBundleToCache(String webScriptId, WebScriptPropertyResourceBundle extensionBundle)
@@ -455,28 +421,28 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
     }
 
-    
-
     /**
-
-     * <p>A {@link ThreadLocal} reference to the file currently being processed in the model.</p>
-
+     * 
+     * <p>
+     * A {@link ThreadLocal} reference to the file currently being processed in the model.
+     * </p>
+     * 
      */
 
     private ThreadLocal<String> fileBeingProcessed = new ThreadLocal<String>();
 
-    
-
     /**
-
-     * <p>Returns the path of the file currently being processed in the model by the current thread. 
-
-     * This information is primarily provided for the purposes of generating debug information.</p>
-
      * 
-
+     * <p>
+     * Returns the path of the file currently being processed in the model by the current thread.
+     * 
+     * This information is primarily provided for the purposes of generating debug information.
+     * </p>
+     * 
+     * 
+     * 
      * @return The path of the file currently being processed.
-
+     * 
      */
 
     public String getFileBeingProcessed()
@@ -487,16 +453,17 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
     }
 
-
-
     /**
-
-     * <p>Sets the path of the file currently being processed in the model by the current thread. 
-
-     * This information should be collected to assist with providing debug information.</p>
-
-     * @param file The path of the file currently being processed.
-
+     * 
+     * <p>
+     * Sets the path of the file currently being processed in the model by the current thread.
+     * 
+     * This information should be collected to assist with providing debug information.
+     * </p>
+     * 
+     * @param file
+     *            The path of the file currently being processed.
+     * 
      */
 
     public void setFileBeingProcessed(String file)
@@ -507,12 +474,12 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
     }
 
-    
-
     /**
-
-     * <p>Retrieves an files for the evaluated modules that are extending the WebScript files being processed.</p>
-
+     * 
+     * <p>
+     * Retrieves an files for the evaluated modules that are extending the WebScript files being processed.
+     * </p>
+     * 
      */
 
     public List<String> getExtendingModuleFiles(String pathBeingProcessed)
@@ -521,7 +488,7 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
         List<String> extendingModuleFiles = new ArrayList<String>();
 
-        for (BasicExtensionModule module: this.getEvaluatedModules())
+        for (BasicExtensionModule module : this.getEvaluatedModules())
 
         {
 
@@ -533,36 +500,36 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
     }
 
-
-
     /**
-
-     * <p>The list of {@link org.springframework.extensions.surf.types.ExtensionModule} instances that have been evaluated as applicable to
-
+     * 
+     * <p>
+     * The list of {@link org.springframework.extensions.surf.types.ExtensionModule} instances that have been evaluated as applicable to
+     * 
      * this RequestContext. This is set to <code>null</code> when during instantiation and is only
-
+     * 
      * properly set the first time the <code>getEvaluatedModules</code> method is invoked. This ensures
-
-     * that module evaluation only occurs once per request.</p>
-
+     * 
+     * that module evaluation only occurs once per request.
+     * </p>
+     * 
      */
 
     private ThreadLocal<List<BasicExtensionModule>> evaluatedModules = new ThreadLocal<List<BasicExtensionModule>>();
 
-    
-
     /**
-
-     * <p>Retrieve the list of {@link org.springframework.extensions.surf.types.ExtensionModule} instances that have been evaluated as applicable
-
-     * for the current request. If this list has not yet been populated then use the {@link org.springframework.extensions.surf.extensibility.ExtensibilityModuleHandler}
-
-     * configured in the Spring application context to evaluate them.</p>
-
      * 
-
+     * <p>
+     * Retrieve the list of {@link org.springframework.extensions.surf.types.ExtensionModule} instances that have been evaluated as applicable
+     * 
+     * for the current request. If this list has not yet been populated then use the {@link org.springframework.extensions.surf.extensibility.ExtensibilityModuleHandler}
+     * 
+     * configured in the Spring application context to evaluate them.
+     * </p>
+     * 
+     * 
+     * 
      * @return A list of {@link org.springframework.extensions.surf.types.ExtensionModule} instances that are applicable to the current request.
-
+     * 
      */
 
     public List<BasicExtensionModule> getEvaluatedModules()
@@ -609,70 +576,70 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
     }
 
-    
-
     /**
-
-     * <p>This is a local {@link ConfigImpl} instance that will only be used when extension modules are employed. It will
-
+     * 
+     * <p>
+     * This is a local {@link ConfigImpl} instance that will only be used when extension modules are employed. It will
+     * 
      * initially be populated with the default "static" global configuration taken from the {@link ConfigService} associated
-
+     * 
      * with this {@link org.springframework.extensions.surf.RequestContext} but then updated to include global configuration provided by extension modules that
-
-     * have been evaluated to be applied to the current request.</p>
-
+     * 
+     * have been evaluated to be applied to the current request.
+     * </p>
+     * 
      */
 
     private ThreadLocal<ConfigImpl> globalConfig = new ThreadLocal<ConfigImpl>();
 
-    
-
     /**
-
-     * <p>This map represents {@link ConfigSection} instances mapped by area. It  will only be used when extension modules are 
-
+     * 
+     * <p>
+     * This map represents {@link ConfigSection} instances mapped by area. It will only be used when extension modules are
+     * 
      * employed. It will initially be populated with the default "static" configuration taken from the {@link ConfigService} associated
-
+     * 
      * with this {@link org.springframework.extensions.surf.RequestContext} but then updated to include configuration provided by extension modules that have been evaluated
-
-     * to be applied to the current request.</p>
-
+     * 
+     * to be applied to the current request.
+     * </p>
+     * 
      */
 
-    private ThreadLocal<Map<String, List<ConfigSection>>> sectionsByArea = new ThreadLocal<Map<String,List<ConfigSection>>>();
-
-    
+    private ThreadLocal<Map<String, List<ConfigSection>>> sectionsByArea = new ThreadLocal<Map<String, List<ConfigSection>>>();
 
     /**
-
-     * <p>A list of {@link ConfigSection} instances that are only applicable to the current request. It  will only be used when extension modules are 
-
+     * 
+     * <p>
+     * A list of {@link ConfigSection} instances that are only applicable to the current request. It will only be used when extension modules are
+     * 
      * employed. It will initially be populated with the default "static" configuration taken from the {@link ConfigService} associated
-
+     * 
      * with this {@link org.springframework.extensions.surf.RequestContext} but then updated to include configuration provided by extension modules that have been evaluated
-
-     * to be applied to the current request.</p>
-
+     * 
+     * to be applied to the current request.
+     * </p>
+     * 
      */
 
     private ThreadLocal<List<ConfigSection>> sections = new ThreadLocal<List<ConfigSection>>();
 
-    
-
     /**
-
-     * <p>Creates a new {@link ExtendedScriptConfigModel} instance using the local configuration generated for this request.
-
+     * 
+     * <p>
+     * Creates a new {@link ExtendedScriptConfigModel} instance using the local configuration generated for this request.
+     * 
      * If configuration for the request will be generated if it does not yet exist. It is likely that this method will be
-
+     * 
      * called multiple times within the context of a single request and although the configuration containers will always
-
+     * 
      * be the same a new {@link ExtendedScriptConfigModel} instance will always be created as the the supplied <code>xmlConfig</code>
-
+     * 
      * string could be different for each call (because each WebScript invoked in the request will supply different
-
-     * configuration.</p>
-
+     * 
+     * configuration.
+     * </p>
+     * 
      */
 
     public ScriptConfigModel getExtendedScriptConfigModel(String xmlConfig)
@@ -691,22 +658,22 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
     }
 
-    
-
     /**
-
-     * <p>Creates a new {@link TemplateConfigModel} instance using the local configuration generated for this request.
-
+     * 
+     * <p>
+     * Creates a new {@link TemplateConfigModel} instance using the local configuration generated for this request.
+     * 
      * If configuration for the request will be generated if it does not yet exist. It is likely that this method will be
-
+     * 
      * called multiple times within the context of a single request and although the configuration containers will always
-
+     * 
      * be the same a new {@link TemplateConfigModel} instance will always be created as the the supplied <code>xmlConfig</code>
-
+     * 
      * string could be different for each call (because each WebScript invoked in the request will supply different
-
-     * configuration.</p>
-
+     * 
+     * configuration.
+     * </p>
+     * 
      */
 
     public TemplateConfigModel getExtendedTemplateConfigModel(String xmlConfig)
@@ -725,16 +692,16 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
     }
 
-    
-
     /**
-
-     * <p>Creates and populates the request specific configuration container objects (<code>globalConfig</code>, <code>sectionsByArea</code> & 
-
+     * 
+     * <p>
+     * Creates and populates the request specific configuration container objects (<code>globalConfig</code>, <code>sectionsByArea</code> &
+     * 
      * <code>sections</code> with a combination of the default static configuration (taken from files accessed by the {@link ConfigService}) and
-
-     * dynamic configuration taken from extension modules evaluated for the current request. </p>  
-
+     * 
+     * dynamic configuration taken from extension modules evaluated for the current request.
+     * </p>
+     * 
      */
 
     private void getConfigExtensions()
@@ -743,13 +710,13 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
         // Extended configuration is only possible if config service is an XMLConfigService...
 
-        // 
+        //
 
         // ...also, it's only necessary to populate the configuration containers if they have not already been populated. This test should also
 
         // be carried out by the two methods ("getExtendedTemplateConfigModel" & "getExtendedTemplateConfigModel") to prevent duplication
 
-        // of effort... but in case other methods attempt to access it we will make these additional tests. 
+        // of effort... but in case other methods attempt to access it we will make these additional tests.
 
         if (getConfigService() instanceof XMLConfigService && this.globalConfig == null && this.sectionsByArea == null && this.sections == null)
 
@@ -759,23 +726,17 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
             XMLConfigService xmlConfigService = (XMLConfigService) getConfigService();
 
-            
-
             // Get the current configuration from the ConfigService - we don't want to permanently pollute
 
             // the standard configuration with additions from the modules...
 
-            this.globalConfig.set(new ConfigImpl((ConfigImpl)xmlConfigService.getGlobalConfig())); // Make a copy of the current global config
-
-            
+            this.globalConfig.set(new ConfigImpl((ConfigImpl) xmlConfigService.getGlobalConfig())); // Make a copy of the current global config
 
             // Initialise these with the config service values...
 
-            this.sectionsByArea.set(new HashMap<String, List<ConfigSection>>(xmlConfigService.getSectionsByArea())); 
+            this.sectionsByArea.set(new HashMap<String, List<ConfigSection>>(xmlConfigService.getSectionsByArea()));
 
             this.sections.set(new ArrayList<ConfigSection>(xmlConfigService.getSections()));
-
-            
 
             // Check to see if there are any modules that we need to apply...
 
@@ -785,11 +746,11 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
             {
 
-                for (BasicExtensionModule currModule: evaluatedModules)
+                for (BasicExtensionModule currModule : evaluatedModules)
 
                 {
 
-                    for (Element currentConfigElement: currModule.getConfigurations())
+                    for (Element currentConfigElement : currModule.getConfigurations())
 
                     {
 
@@ -800,8 +761,6 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
                         Map<String, Evaluator> parsedEvaluators = new HashMap<String, Evaluator>();
 
                         List<ConfigSection> parsedConfigSections = new ArrayList<ConfigSection>();
-
-                        
 
                         // Parse and process the parses configuration...
 
@@ -847,12 +806,12 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 
     }
 
-    
-
     /**
-
-     * <p>Adds the <{@code}@markup> directive to the container which allows FreeMarker templates to be extended.</p>
-
+     * 
+     * <p>
+     * Adds the <{@code}@markup> directive to the container which allows FreeMarker templates to be extended.
+     * </p>
+     * 
      */
 
     public void addExtensibilityDirectives(Map<String, Object> freeMarkerModel, ExtensibilityModel extModel)
@@ -866,4 +825,3 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
     }
 
 }
-

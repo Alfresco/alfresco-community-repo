@@ -25,6 +25,22 @@
  */
 package org.alfresco.repo.workflow;
 
+import java.io.InputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.function.Supplier;
+import jakarta.transaction.UserTransaction;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryBootstrap;
@@ -56,21 +72,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-
-import jakarta.transaction.UserTransaction;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.function.Supplier;
 
 /**
  * Alfresco bootstrap Process deployment.
@@ -87,10 +88,10 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     public static final String LOCATION = "location";
     public static final String MIMETYPE = "mimetype";
     public static final String REDEPLOY = "redeploy";
-    
+
     public static final String CATEGORY_ALFRESCO_INTERNAL = "http://alfresco.org/workflows/internal";
     public static final String CATEGORY_FULL_ACCESS = "http://alfresco.org/workflows/fullAccess";
-    
+
     // Dependencies
     private TransactionService transactionService;
     private WorkflowService workflowService;
@@ -102,7 +103,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     private List<String> resourceBundles = new ArrayList<String>();
     private TenantAdminService tenantAdminService;
     private TenantService tenantService;
-    
+
     private NodeService nodeService;
     private NamespaceService namespaceService;
     private SearchService searchService;
@@ -112,31 +113,34 @@ public class WorkflowDeployer extends AbstractLifecycleBean
 
     public final static String CRITERIA_ALL = "/*"; // immediate children only
     public final static String defaultSubtypeOfWorkflowDefinitionType = "subtypeOf('bpm:workflowDefinition')";
-    
+
     /**
      * Sets the Transaction Service
      * 
-     * @param transactionService the transaction service
+     * @param transactionService
+     *            the transaction service
      */
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
     }
-    
+
     /**
      * Sets the workflow service
      * 
-     * @param workflowService the workflow service
+     * @param workflowService
+     *            the workflow service
      */
     public void setWorkflowService(WorkflowService workflowService)
     {
         this.workflowService = workflowService;
     }
-    
+
     /**
      * Sets the workflow admin service
      * 
-     * @param workflowAdminService the workflow admin service
+     * @param workflowAdminService
+     *            the workflow admin service
      */
     public void setWorkflowAdminService(WorkflowAdminService workflowAdminService)
     {
@@ -146,7 +150,8 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     /**
      * Set the authentication component
      * 
-     * @param authenticationContext AuthenticationContext
+     * @param authenticationContext
+     *            AuthenticationContext
      */
     public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
@@ -156,17 +161,19 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     /**
      * Sets the Dictionary DAO
      * 
-     * @param dictionaryDAO DictionaryDAO
+     * @param dictionaryDAO
+     *            DictionaryDAO
      */
     public void setDictionaryDAO(DictionaryDAO dictionaryDAO)
     {
         this.dictionaryDAO = dictionaryDAO;
     }
-    
+
     /**
      * Sets the tenant admin service
      * 
-     * @param tenantAdminService the tenant admin service
+     * @param tenantAdminService
+     *            the tenant admin service
      */
     public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
@@ -176,13 +183,14 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     /**
      * Sets the tenant service
      * 
-     * @param tenantService the tenant service
+     * @param tenantService
+     *            the tenant service
      */
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-    
+
     /**
      * Sets the Workflow Definitions
      * 
@@ -195,51 +203,51 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     /**
      * Sets the initial list of Workflow models to bootstrap with
      * 
-     * @param modelResources the model names
+     * @param modelResources
+     *            the model names
      */
     public void setModels(List<String> modelResources)
     {
         this.models = modelResources;
     }
-    
+
     /**
      * Sets the initial list of Workflow resource bundles to bootstrap with
      * 
-     * @param labels the list of labels
+     * @param labels
+     *            the list of labels
      */
     public void setLabels(List<String> labels)
     {
         this.resourceBundles = labels;
     }
-       
+
     // used by TenantAdminService when creating a new tenant and bootstrapping the pre-defined workflows
     public List<Properties> getWorkflowDefinitions()
     {
         return this.workflowDefinitions;
     }
-    
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
     }
-    
+
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
-    
+
     public void setRepositoryWorkflowDefsLocations(RepositoryLocation repoWorkflowDefsLocation)
     {
         this.repoWorkflowDefsLocation = repoWorkflowDefsLocation;
     }
-    
-        
+
     /**
      * Deploy the Workflow Definitions
      */
@@ -258,15 +266,15 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         {
             if (logger.isWarnEnabled())
                 logger.warn("Repository is in read-only mode; not deploying workflows.");
-            
+
             return;
         }
-        
+
         UserTransaction userTransaction = transactionService.getUserTransaction();
         try
         {
             userTransaction.begin();
-        
+
             // bootstrap the workflow models and static labels (from classpath)
             if (models != null && resourceBundles != null && ((models.size() > 0) || (resourceBundles.size() > 0)))
             {
@@ -276,11 +284,11 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                 dictionaryBootstrap.setModels(models);
                 dictionaryBootstrap.setLabels(resourceBundles);
                 dictionaryBootstrap.bootstrap(); // also registers with dictionary
-                
-                // MNT-10537 fix, since new model was deployed we need to destroy dictionary to force lazy re-init 
+
+                // MNT-10537 fix, since new model was deployed we need to destroy dictionary to force lazy re-init
                 AlfrescoTransactionSupport.bindListener(this.workflowDeployerTransactionListener);
             }
-            
+
             // bootstrap the workflow definitions (from classpath)
             if (workflowDefinitions != null)
             {
@@ -292,13 +300,13 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                     {
                         throw new WorkflowException("Workflow Engine Id must be provided");
                     }
-                    
+
                     String location = workflowDefinition.getProperty(LOCATION);
                     if (location == null || location.length() == 0)
                     {
                         throw new WorkflowException("Workflow definition location must be provided");
                     }
-                    
+
                     if (workflowAdminService.isEngineEnabled(engineId))
                     {
                         Boolean redeploy = Boolean.valueOf(workflowDefinition.getProperty(REDEPLOY));
@@ -306,7 +314,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
 
                         // retrieve input stream on workflow definition
                         ClassPathResource workflowResource = new ClassPathResource(location);
-                        
+
                         // deploy workflow definition
                         if (!redeploy && workflowService.isDefinitionDeployed(engineId, workflowResource.getInputStream(), mimetype))
                         {
@@ -319,8 +327,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                         else
                         {
                             final InputStream workflowInputStream = workflowResource.getInputStream();
-                            final Optional<WorkflowDeployment> possibleDeployment = tryToDeploy(() ->
-                                    workflowService.deployDefinition(engineId, workflowInputStream, mimetype, workflowResource.getFilename(), true));
+                            final Optional<WorkflowDeployment> possibleDeployment = tryToDeploy(() -> workflowService.deployDefinition(engineId, workflowInputStream, mimetype, workflowResource.getFilename(), true));
                             possibleDeployment.ifPresent(deployment -> logDeployment(location, deployment));
                         }
                     }
@@ -331,13 +338,13 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                     }
                 }
             }
-            
+
             // deploy workflow definitions from repository (if any)
             if (repoWorkflowDefsLocation != null)
             {
                 StoreRef storeRef = repoWorkflowDefsLocation.getStoreRef();
                 NodeRef rootNode = nodeService.getRootNode(storeRef);
-                List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, repoWorkflowDefsLocation.getPath()+CRITERIA_ALL+"["+defaultSubtypeOfWorkflowDefinitionType+"]", null, namespaceService, false);
+                List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, repoWorkflowDefsLocation.getPath() + CRITERIA_ALL + "[" + defaultSubtypeOfWorkflowDefinitionType + "]", null, namespaceService, false);
 
                 if (nodeRefs.size() > 0)
                 {
@@ -347,22 +354,22 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                     }
                 }
             }
-                
+
             userTransaction.commit();
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             // rollback the transaction
             try
-            { 
-                if (userTransaction != null) 
+            {
+                if (userTransaction != null)
                 {
                     userTransaction.rollback();
                 }
             }
             catch (Exception ex)
             {
-                // NOOP 
+                // NOOP
             }
             throw new AlfrescoRuntimeException("Workflow deployment failed", e);
         }
@@ -380,7 +387,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
      */
     public void deploy(NodeRef nodeRef, boolean redeploy)
     {
-        // Ignore if the node is a working copy 
+        // Ignore if the node is a working copy
         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
         {
             if (!isValidLocation(nodeRef))
@@ -389,15 +396,15 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                 {
                     Path nodePath = nodeService.getPath(nodeRef);
                     logger.debug("Workflow deployer: Definition '" + nodeRef +
-                            "' ("+nodePath+") not deployed as it is not in the correct location.");
+                            "' (" + nodePath + ") not deployed as it is not in the correct location.");
                 }
                 return;
             }
-            Boolean value = (Boolean)nodeService.getProperty(nodeRef, WorkflowModel.PROP_WORKFLOW_DEF_DEPLOYED);
+            Boolean value = (Boolean) nodeService.getProperty(nodeRef, WorkflowModel.PROP_WORKFLOW_DEF_DEPLOYED);
             if ((value != null) && (value.booleanValue() == true))
             {
                 String engineId = (String) nodeService.getProperty(nodeRef, WorkflowModel.PROP_WORKFLOW_DEF_ENGINE_ID);
-                
+
                 if (workflowAdminService.isEngineEnabled(engineId))
                 {
                     if (!redeploy && workflowService.isDefinitionDeployed(nodeRef))
@@ -408,11 +415,10 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                     else
                     {
                         // deploy / re-deploy
-                        tryToDeploy(() -> workflowService.deployDefinition(nodeRef)).ifPresent(deployment ->
-                        {
+                        tryToDeploy(() -> workflowService.deployDefinition(nodeRef)).ifPresent(deployment -> {
                             logDeployment(nodeRef, deployment);
                             WorkflowDefinition def = deployment.getDefinition();
-                            
+
                             // Update the meta data for the model
                             Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
 
@@ -428,9 +434,9 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                                 }
                             }
 
-                           nodeService.setProperties(nodeRef, props);
-                         });
-                     }
+                            nodeService.setProperties(nodeRef, props);
+                        });
+                    }
                 }
                 else
                 {
@@ -461,8 +467,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     }
 
     /**
-     * Validate that the workflow definition node is a child of the correct
-     * workflow location node, e.g. "/Company Home/Data Dictionary/Workflows"
+     * Validate that the workflow definition node is a child of the correct workflow location node, e.g. "/Company Home/Data Dictionary/Workflows"
      */
     private boolean isValidLocation(NodeRef definitionNode)
     {
@@ -474,13 +479,13 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                 null,
                 namespaceService,
                 false);
-        
+
         if (nodeRefs.isEmpty() || nodeRefs.size() > 1)
         {
-            throw new IllegalStateException("Incorrect number of nodes ("+nodeRefs.size()+")" +
-                    " found for workflow location: "+repoWorkflowDefsLocation.getPath());
+            throw new IllegalStateException("Incorrect number of nodes (" + nodeRefs.size() + ")" +
+                    " found for workflow location: " + repoWorkflowDefsLocation.getPath());
         }
-        
+
         NodeRef workflowParent = nodeRefs.get(0);
 
         for (ChildAssociationRef assoc : nodeService.getParentAssocs(definitionNode))
@@ -491,7 +496,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                 return true;
             }
         }
-        
+
         // Invalid location
         return false;
     }
@@ -499,25 +504,25 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     private void logDeployment(Object location, WorkflowDeployment deployment)
     {
         if (logger.isDebugEnabled())
-         {
+        {
             String title = deployment.getDefinition().getTitle();
             String version = deployment.getDefinition().getVersion();
             int problemLength = deployment.getProblems().length;
             logger.debug("Workflow deployer: Deployed process definition '" + title + "' (version " + version + ") from '" + location + "' with " + problemLength + " problems");
-         }
+        }
     }
-    
+
     public void undeploy(NodeRef nodeRef)
     {
-        // Ignore if the node is a working copy 
+        // Ignore if the node is a working copy
         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
         {
-            String defName = (String)nodeService.getProperty(nodeRef, WorkflowModel.PROP_WORKFLOW_DEF_NAME);
+            String defName = (String) nodeService.getProperty(nodeRef, WorkflowModel.PROP_WORKFLOW_DEF_NAME);
             if (defName != null)
             {
                 // Undeploy the workflow definition
                 List<WorkflowDefinition> defs = workflowService.getAllDefinitionsByName(defName);
-                for (WorkflowDefinition def: defs)
+                for (WorkflowDefinition def : defs)
                 {
                     if (logger.isDebugEnabled())
                         logger.debug("Undeploying workflow '" + defName + "' ...");
@@ -535,22 +540,22 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                 logger.debug("Workflow deployer: Definition '" + nodeRef + "' not undeployed since it is a working copy");
         }
     }
-    
+
     public int undeploy(List<String> workflowNames)
     {
         int undeployed = 0;
-        for(String workflowName : workflowNames)
+        for (String workflowName : workflowNames)
         {
             String engineId = BPMEngineRegistry.getEngineId(workflowName);
             if (workflowAdminService.isEngineEnabled(engineId))
             {
                 // Undeploy the workflow definition
                 List<WorkflowDefinition> defs = workflowService.getAllDefinitionsByName(workflowName);
-                if(defs.size() > 0)
+                if (defs.size() > 0)
                 {
                     undeployed++;
                 }
-                for (WorkflowDefinition def: defs)
+                for (WorkflowDefinition def : defs)
                 {
                     if (logger.isDebugEnabled())
                     {
@@ -572,29 +577,29 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         }
         return undeployed;
     }
-    
+
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-    	RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-    	txnHelper.setForceWritable(true);
-    	txnHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+        txnHelper.setForceWritable(true);
+        txnHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
 
-			@Override
-			public Object execute() throws Throwable {
-				// run as System on bootstrap
-		        return AuthenticationUtil.runAs(new RunAsWork<Object>()
-		        {
-		            public Object doWork()
-		            {
-		                init();
-		                return null;
-		            }
-		        }, AuthenticationUtil.getSystemUserName());
-			}
-    		
-		}, false, true);
-        
+            @Override
+            public Object execute() throws Throwable
+            {
+                // run as System on bootstrap
+                return AuthenticationUtil.runAs(new RunAsWork<Object>() {
+                    public Object doWork()
+                    {
+                        init();
+                        return null;
+                    }
+                }, AuthenticationUtil.getSystemUserName());
+            }
+
+        }, false, true);
+
         tenantAdminService.register(this);
     }
 
@@ -604,7 +609,6 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         // NOOP
     }
 
-    
     /**
      * Workflow deployer transaction listener class.
      */
@@ -613,30 +617,28 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         @Override
         public void afterCommit()
         {
-            RetryingTransactionCallback<Void> work = new RetryingTransactionCallback<Void>()
-            {
+            RetryingTransactionCallback<Void> work = new RetryingTransactionCallback<Void>() {
                 public Void execute() throws Throwable
                 {
-                    AuthenticationUtil.runAs(new RunAsWork<Object>()
-                            {
-                                public Object doWork()
-                                {
-                                    // force refresh of the dictionary
-                                    dictionaryDAO.init();
+                    AuthenticationUtil.runAs(new RunAsWork<Object>() {
+                        public Object doWork()
+                        {
+                            // force refresh of the dictionary
+                            dictionaryDAO.init();
 
-                                    if (logger.isTraceEnabled())
-                                    {
-                                        logger.trace("Workflow deployer afterCommit: Dictionary destroyed ["+AlfrescoTransactionSupport.getTransactionId()+"]");
-                                    }
-                                    
-                                    return null; 
-                                }
-                            }, AuthenticationUtil.getSystemUserName());
-                    
+                            if (logger.isTraceEnabled())
+                            {
+                                logger.trace("Workflow deployer afterCommit: Dictionary destroyed [" + AlfrescoTransactionSupport.getTransactionId() + "]");
+                            }
+
+                            return null;
+                        }
+                    }, AuthenticationUtil.getSystemUserName());
+
                     return null;
                 }
             };
-            
+
             transactionService.getRetryingTransactionHelper().doInTransaction(work, true, true);
         }
     }

@@ -69,8 +69,7 @@ public class ActionListImpl<A extends Action> implements ActionList<A>
     }
 
     /**
-     * @see org.alfresco.service.cmr.action.CompositeAction#addAction(int,
-     *      org.alfresco.service.cmr.action.Action)
+     * @see org.alfresco.service.cmr.action.CompositeAction#addAction(int, org.alfresco.service.cmr.action.Action)
      */
     public void addAction(int index, A action)
     {
@@ -78,8 +77,7 @@ public class ActionListImpl<A extends Action> implements ActionList<A>
     }
 
     /**
-     * @see org.alfresco.service.cmr.action.CompositeAction#setAction(int,
-     *      org.alfresco.service.cmr.action.Action)
+     * @see org.alfresco.service.cmr.action.CompositeAction#setAction(int, org.alfresco.service.cmr.action.Action)
      */
     public void setAction(int index, A action)
     {

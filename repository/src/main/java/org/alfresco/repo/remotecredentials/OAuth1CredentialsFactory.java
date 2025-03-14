@@ -44,33 +44,32 @@ import org.alfresco.service.namespace.QName;
 public class OAuth1CredentialsFactory implements RemoteCredentialsInfoFactory
 {
     private MetadataEncryptor metadataEncryptor;
-    
+
     public void setMetadataEncryptor(MetadataEncryptor metadataEncryptor)
     {
         this.metadataEncryptor = metadataEncryptor;
     }
-    
+
     /**
      * Creates a new {@link OAuth1CredentialsInfo} based on the details of the underlying node.
      */
-    public OAuth1CredentialsInfo createCredentials(QName type, NodeRef nodeRef, String remoteSystemName, 
-            NodeRef remoteSystemContainerNodeRef, Map<QName,Serializable> properties)
+    public OAuth1CredentialsInfo createCredentials(QName type, NodeRef nodeRef, String remoteSystemName,
+            NodeRef remoteSystemContainerNodeRef, Map<QName, Serializable> properties)
     {
         // Decrypt the token and secret
-        String token = (String)metadataEncryptor.decrypt(
+        String token = (String) metadataEncryptor.decrypt(
                 RemoteCredentialsModel.PROP_OAUTH1_TOKEN, properties.get(RemoteCredentialsModel.PROP_OAUTH1_TOKEN));
-        String secret = (String)metadataEncryptor.decrypt(
+        String secret = (String) metadataEncryptor.decrypt(
                 RemoteCredentialsModel.PROP_OAUTH1_TOKEN_SECRET, properties.get(RemoteCredentialsModel.PROP_OAUTH1_TOKEN_SECRET));
-        
+
         // Build the object
-        OAuth1CredentialsInfoImpl credentials = 
-            new OAuth1CredentialsInfoImpl(nodeRef, remoteSystemName, remoteSystemContainerNodeRef);
-        
+        OAuth1CredentialsInfoImpl credentials = new OAuth1CredentialsInfoImpl(nodeRef, remoteSystemName, remoteSystemContainerNodeRef);
+
         // Populate
         RemoteCredentialsInfoFactory.FactoryHelper.setCoreCredentials(credentials, properties);
         credentials.setOAuthToken(token);
         credentials.setOAuthSecret(secret);
-        
+
         // All done
         return credentials;
     }
@@ -78,26 +77,27 @@ public class OAuth1CredentialsFactory implements RemoteCredentialsInfoFactory
     /**
      * Serializes the given {@link BaseCredentialsInfo} object to node properties.
      * 
-     * @param info The Credentials object to serialize
+     * @param info
+     *            The Credentials object to serialize
      * @return The final set of properties to be serialized for the node
      */
-    public Map<QName,Serializable> serializeCredentials(BaseCredentialsInfo info)
+    public Map<QName, Serializable> serializeCredentials(BaseCredentialsInfo info)
     {
-        if (! (info instanceof OAuth1CredentialsInfo))
+        if (!(info instanceof OAuth1CredentialsInfo))
         {
             throw new IllegalStateException("Incorrect registration, info must be a OAuth1CredentialsInfo");
         }
-        
+
         // Encrypt the details
-        OAuth1CredentialsInfo credentials = (OAuth1CredentialsInfo)info;
-        
+        OAuth1CredentialsInfo credentials = (OAuth1CredentialsInfo) info;
+
         Serializable tokenEncrypted = metadataEncryptor.encrypt(
                 RemoteCredentialsModel.PROP_OAUTH1_TOKEN, credentials.getOAuthToken());
         Serializable secretEncrypted = metadataEncryptor.encrypt(
                 RemoteCredentialsModel.PROP_OAUTH1_TOKEN_SECRET, credentials.getOAuthSecret());
 
         // Store our specific types and return
-        Map<QName,Serializable> properties = new HashMap<QName, Serializable>();
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(RemoteCredentialsModel.PROP_OAUTH1_TOKEN, tokenEncrypted);
         properties.put(RemoteCredentialsModel.PROP_OAUTH1_TOKEN_SECRET, secretEncrypted);
         return properties;

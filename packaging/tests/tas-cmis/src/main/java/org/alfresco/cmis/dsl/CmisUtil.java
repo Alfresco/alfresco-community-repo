@@ -1,16 +1,16 @@
 package org.alfresco.cmis.dsl;
 
-import org.alfresco.cmis.CmisWrapper;
-import org.alfresco.cmis.exception.InvalidCmisObjectException;
-import org.alfresco.utility.LogFactory;
-import org.alfresco.utility.Utility;
-import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.exception.IORuntimeException;
-import org.alfresco.utility.model.ContentModel;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FolderModel;
-import org.alfresco.utility.model.GroupModel;
-import org.alfresco.utility.model.UserModel;
+import static org.alfresco.utility.report.log.Step.STEP;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.FileableCmisObject;
@@ -40,16 +40,17 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.testng.collections.Lists;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static org.alfresco.utility.report.log.Step.STEP;
+import org.alfresco.cmis.CmisWrapper;
+import org.alfresco.cmis.exception.InvalidCmisObjectException;
+import org.alfresco.utility.LogFactory;
+import org.alfresco.utility.Utility;
+import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.exception.IORuntimeException;
+import org.alfresco.utility.model.ContentModel;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.GroupModel;
+import org.alfresco.utility.model.UserModel;
 
 /**
  * DSL utility for managing CMIS objects
@@ -67,7 +68,8 @@ public class CmisUtil
     /**
      * Get cmis object by object id
      *
-     * @param objectId cmis object id
+     * @param objectId
+     *            cmis object id
      * @return CmisObject cmis object
      */
     public CmisObject getCmisObjectById(String objectId)
@@ -87,8 +89,10 @@ public class CmisUtil
     /**
      * Get cmis object by object id with OperationContext
      *
-     * @param objectId cmis object id
-     * @param context OperationContext
+     * @param objectId
+     *            cmis object id
+     * @param context
+     *            OperationContext
      * @return CmisObject cmis object
      */
     public CmisObject getCmisObjectById(String objectId, OperationContext context)
@@ -107,7 +111,8 @@ public class CmisUtil
     /**
      * Get cmis object by path
      *
-     * @param pathToItem String path to item
+     * @param pathToItem
+     *            String path to item
      * @return CmisObject cmis object
      */
     public CmisObject getCmisObject(String pathToItem)
@@ -140,8 +145,10 @@ public class CmisUtil
     /**
      * Get cmis object by path with context
      *
-     * @param pathToItem String path to item
-     * @param context OperationContext
+     * @param pathToItem
+     *            String path to item
+     * @param context
+     *            OperationContext
      * @return CmisObject cmis object
      */
     public CmisObject getCmisObject(String pathToItem, OperationContext context)
@@ -174,7 +181,8 @@ public class CmisUtil
     /**
      * Get Document object for a file
      *
-     * @param path String path to document
+     * @param path
+     *            String path to document
      * @return {@link Document} object
      */
     public Document getCmisDocument(final String path)
@@ -196,7 +204,8 @@ public class CmisUtil
     /**
      * Get Folder object for a folder
      *
-     * @param path String path to folder
+     * @param path
+     *            String path to folder
      * @return {@link Folder} object
      */
     public Folder getCmisFolder(final String path)
@@ -264,8 +273,10 @@ public class CmisUtil
     /**
      * Copy folder with all children
      *
-     * @param sourceFolder source folder
-     * @param targetFolder target folder
+     * @param sourceFolder
+     *            source folder
+     * @param targetFolder
+     *            target folder
      * @return CmisObject of new created folder
      */
     public CmisObject copyFolder(Folder sourceFolder, Folder targetFolder)
@@ -290,14 +301,18 @@ public class CmisUtil
             return false;
         }
 
-        if (Boolean.FALSE.equals(document.isVersionable())) return false;
-        if (Boolean.FALSE.equals(document.isVersionSeriesCheckedOut())) return false;
+        if (Boolean.FALSE.equals(document.isVersionable()))
+            return false;
+        if (Boolean.FALSE.equals(document.isVersionSeriesCheckedOut()))
+            return false;
 
         final Boolean isPWC = document.isPrivateWorkingCopy();
-        if (isPWC != null) return isPWC;
+        if (isPWC != null)
+            return isPWC;
 
         final String vsCoId = document.getVersionSeriesCheckedOutId();
-        if (vsCoId == null) return false;
+        if (vsCoId == null)
+            return false;
 
         return vsCoId.equals(document.getId());
     }
@@ -408,15 +423,8 @@ public class CmisUtil
     /**
      * Gets the folder descendants starting with the current folder
      *
-     * @param depth level of the tree that you want to go to
-     *            - currentFolder
-     *            -- file1.txt
-     *            -- file2.txt
-     *            -- folderB
-     *            --- file3.txt
-     *            --- file4.txt
-     *            e.g. A depth of 1 will give you just the current folder descendants (file1.txt, file2.txt, folder1)
-     *            e.g. A depth of -1 will return all the descendants (file1.txt, file2.txt, folder1, file3.txt and file4.txt)
+     * @param depth
+     *            level of the tree that you want to go to - currentFolder -- file1.txt -- file2.txt -- folderB --- file3.txt --- file4.txt e.g. A depth of 1 will give you just the current folder descendants (file1.txt, file2.txt, folder1) e.g. A depth of -1 will return all the descendants (file1.txt, file2.txt, folder1, file3.txt and file4.txt)
      */
     public List<CmisObject> getFolderDescendants(int depth)
     {
@@ -453,13 +461,8 @@ public class CmisUtil
     /**
      * Gets only the folder descendants for the {@link #getLastResource()} folder
      *
-     * @param depth level of the tree that you want to go to
-     *            - currentFolder
-     *            -- folderB
-     *            -- folderC
-     *            --- folderD
-     *            e.g. A depth of 1 will give you just the current folder descendants (folderB, folderC)
-     *            e.g. A depth of -1 will return all the descendants (folderB, folderC, folderD)
+     * @param depth
+     *            level of the tree that you want to go to - currentFolder -- folderB -- folderC --- folderD e.g. A depth of 1 will give you just the current folder descendants (folderB, folderC) e.g. A depth of -1 will return all the descendants (folderB, folderC, folderD)
      */
     public List<CmisObject> getFolderTree(int depth)
     {
@@ -614,8 +617,10 @@ public class CmisUtil
     /**
      * Update property for last resource cmis object
      * 
-     * @param propertyName String property name (e.g. cmis:name)
-     * @param propertyValue Object property value
+     * @param propertyName
+     *            String property name (e.g. cmis:name)
+     * @param propertyValue
+     *            Object property value
      */
     public void updateProperties(String propertyName, Object propertyValue)
     {
@@ -710,9 +715,7 @@ public class CmisUtil
         return files;
     }
 
-    /*
-     * Get document(set as last resource) content
-     */
+    /* Get document(set as last resource) content */
     public String getDocumentContent()
     {
         Utility.waitToLoopTime(2);
@@ -736,7 +739,7 @@ public class CmisUtil
                 actualContent = getContentAsString(contentStream);
             }
         }
-        if(actualContent.isEmpty())
+        if (actualContent.isEmpty())
         {
             Utility.waitToLoopTime(2);
             Document retryDoc = getCmisDocument(cmisAPI.getLastResource());
@@ -754,7 +757,8 @@ public class CmisUtil
     /**
      * Get user noderef
      * 
-     * @param user {@link UserModel}
+     * @param user
+     *            {@link UserModel}
      */
     public String getUserNodeRef(UserModel user)
     {

@@ -43,10 +43,12 @@ public class RestFavoriteSiteModel extends TestModel implements IRestModel<RestF
     {
         return model;
     }
+
     public String getId()
     {
         return id;
     }
+
     public void setId(String id)
     {
         this.id = id;

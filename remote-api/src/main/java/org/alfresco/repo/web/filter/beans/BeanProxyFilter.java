@@ -26,7 +26,6 @@
 package org.alfresco.repo.web.filter.beans;
 
 import java.io.IOException;
-
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -39,23 +38,20 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
- * An adapter from the servlet filter world into the Spring dependency injected world. Simply looks up a
- * {@link DependencyInjectedFilter} with a configured bean name and delegates the
- * {@link #doFilter(ServletRequest, ServletResponse, FilterChain)} call to that. This allows us to swap in and out
- * different implementations for different 'hook points' in web.xml.
+ * An adapter from the servlet filter world into the Spring dependency injected world. Simply looks up a {@link DependencyInjectedFilter} with a configured bean name and delegates the {@link #doFilter(ServletRequest, ServletResponse, FilterChain)} call to that. This allows us to swap in and out different implementations for different 'hook points' in web.xml.
  * 
  * @author dward
  */
 public class BeanProxyFilter implements Filter
 {
     /**
-     * Name of the init parameter that carries the proxied bean name 
+     * Name of the init parameter that carries the proxied bean name
      */
     private static final String INIT_PARAM_BEAN_NAME = "beanName";
-    
+
     private DependencyInjectedFilter filter;
-    private ServletContext context;    
-    
+    private ServletContext context;
+
     /**
      * Initialize the filter.
      * 
@@ -68,21 +64,21 @@ public class BeanProxyFilter implements Filter
     public void init(FilterConfig args) throws ServletException
     {
         WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(args.getServletContext());
-        this.filter = (DependencyInjectedFilter)ctx.getBean(args.getInitParameter(INIT_PARAM_BEAN_NAME));
+        this.filter = (DependencyInjectedFilter) ctx.getBean(args.getInitParameter(INIT_PARAM_BEAN_NAME));
         this.context = args.getServletContext();
     }
 
     /* (non-Javadoc)
-     * @see jakarta.servlet.Filter#destroy()
-     */
+     * 
+     * @see jakarta.servlet.Filter#destroy() */
     public void destroy()
     {
         this.filter = null;
     }
 
     /* (non-Javadoc)
-     * @see jakarta.servlet.Filter#doFilter(jakarta.servlet.ServletRequest, jakarta.servlet.ServletResponse, jakarta.servlet.FilterChain)
-     */
+     * 
+     * @see jakarta.servlet.Filter#doFilter(jakarta.servlet.ServletRequest, jakarta.servlet.ServletResponse, jakarta.servlet.FilterChain) */
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
             ServletException
     {

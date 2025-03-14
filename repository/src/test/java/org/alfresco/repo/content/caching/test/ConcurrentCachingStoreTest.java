@@ -25,19 +25,19 @@
  */
 package org.alfresco.repo.content.caching.test;
 
-
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.alfresco.repo.content.caching.CachingContentStore;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
+
+import org.alfresco.repo.content.caching.CachingContentStore;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.util.ApplicationContextHelper;
 
 /**
  * Tests to ensure that the CachingContentStore works as expected under highly concurrent load.
@@ -58,15 +58,14 @@ public class ConcurrentCachingStoreTest
     public void setUp()
     {
         String slowconf = "classpath:cachingstore/test-slow-context.xml";
-        ctx = ApplicationContextHelper.getApplicationContext(new String[] { slowconf });
-        
+        ctx = ApplicationContextHelper.getApplicationContext(new String[]{slowconf});
+
         store = (CachingContentStore) ctx.getBean("cachingContentStore");
         store.setCacheOnInbound(false);
-        
+
         backingStore = (SlowContentStore) ctx.getBean("backingStore");
     }
 
-    
     @Test
     public void concurrentReadsWillReadCacheOncePerURL() throws InterruptedException
     {
@@ -78,45 +77,43 @@ public class ConcurrentCachingStoreTest
             threads[i] = t;
             t.start();
         }
-        
+
         for (int i = 0; i < threads.length; i++)
             threads[i].join();
-        
-        
+
         log.debug("\nResults:");
-        
+
         // Check how many times the backing store was read from
         int failedURLs = 0;
-        
+
         for (Map.Entry<String, AtomicLong> entry : backingStore.getUrlHits().entrySet())
         {
             String url = entry.getKey();
             long numHits = entry.getValue().get();
             log.debug("URL: " + url + ", hits: " + numHits);
-            
-            if (numHits > 1) failedURLs++;
+
+            if (numHits > 1)
+                failedURLs++;
         }
-        
-        
+
         // If any of the URLs were accessed more than once, then the test will fail.
         if (failedURLs > 0)
             Assert.fail(failedURLs + " URLs were requested more than once.");
     }
-    
 
-    
     private class CacheReaderThread extends Thread
     {
         private final int threadNum;
         private final int numUrls;
         private int reads = 50;
-        
-        CacheReaderThread(int threadNum, int numUrls) {
+
+        CacheReaderThread(int threadNum, int numUrls)
+        {
             super(CacheReaderThread.class.getSimpleName() + "-" + threadNum);
             this.threadNum = threadNum;
             this.numUrls = numUrls;
         }
-        
+
         @Override
         public void run()
         {
@@ -134,6 +131,6 @@ public class ConcurrentCachingStoreTest
         {
             int urlNum = threadNum % numUrls;
             return "store://2010/11/5/17/33/" + urlNum + ".bin";
-        }   
+        }
     }
 }

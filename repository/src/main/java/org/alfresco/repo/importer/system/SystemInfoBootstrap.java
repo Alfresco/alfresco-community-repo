@@ -27,8 +27,10 @@ package org.alfresco.repo.importer.system;
 
 import java.io.InputStream;
 import java.util.List;
-
 import jakarta.transaction.UserTransaction;
+
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
@@ -36,9 +38,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-import org.springframework.context.ApplicationEvent;
-
 
 /**
  * Repository System Information bootstrap
@@ -52,35 +51,37 @@ public class SystemInfoBootstrap extends AbstractLifecycleBean
     private NodeService nodeService;
     private AuthenticationContext authenticationContext;
     private SystemExporterImporter systemImporter;
-    
+
     private List<String> mustNotExistStoreUrls = null;
     private String bootstrapView = null;
-    
-    
+
     /**
      * Sets the Transaction Service
      * 
-     * @param transactionService the transaction service
+     * @param transactionService
+     *            the transaction service
      */
     public void setTransactionService(TransactionService transactionService)
     {
-        this.transactionService = transactionService; 
+        this.transactionService = transactionService;
     }
 
     /**
      * Sets the node service
      * 
-     * @param nodeService the node service
+     * @param nodeService
+     *            the node service
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Set the authentication component
      * 
-     * @param authenticationContext AuthenticationContext
+     * @param authenticationContext
+     *            AuthenticationContext
      */
     public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
@@ -90,7 +91,8 @@ public class SystemInfoBootstrap extends AbstractLifecycleBean
     /**
      * Set the System Importer
      * 
-     * @param systemImporter SystemExporterImporter
+     * @param systemImporter
+     *            SystemExporterImporter
      */
     public void setSystemImporter(SystemExporterImporter systemImporter)
     {
@@ -100,17 +102,19 @@ public class SystemInfoBootstrap extends AbstractLifecycleBean
     /**
      * If any of the store urls exist, the bootstrap does not take place
      * 
-     * @param storeUrls  the list of store urls to check
+     * @param storeUrls
+     *            the list of store urls to check
      */
     public void setMustNotExistStoreUrls(List<String> storeUrls)
     {
         this.mustNotExistStoreUrls = storeUrls;
     }
-        
+
     /**
      * Set the bootstrap view containing the system information
      * 
-     * @param bootstrapView String
+     * @param bootstrapView
+     *            String
      */
     public void setBootstrapView(String bootstrapView)
     {
@@ -128,7 +132,7 @@ public class SystemInfoBootstrap extends AbstractLifecycleBean
         try
         {
             userTransaction.begin();
-        
+
             // check the repository exists, create if it doesn't
             if (performBootstrap())
             {
@@ -148,11 +152,24 @@ public class SystemInfoBootstrap extends AbstractLifecycleBean
             }
             userTransaction.commit();
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             // rollback the transaction
-            try { if (userTransaction != null) {userTransaction.rollback();} } catch (Exception ex) {}
-            try {authenticationContext.clearCurrentSecurityContext(); } catch (Exception ex) {}
+            try
+            {
+                if (userTransaction != null)
+                {
+                    userTransaction.rollback();
+                }
+            }
+            catch (Exception ex)
+            {}
+            try
+            {
+                authenticationContext.clearCurrentSecurityContext();
+            }
+            catch (Exception ex)
+            {}
             throw new AlfrescoRuntimeException("System Info Bootstrap failed", e);
         }
         finally
@@ -160,11 +177,11 @@ public class SystemInfoBootstrap extends AbstractLifecycleBean
             authenticationContext.clearCurrentSecurityContext();
         }
     }
-    
+
     /**
      * Determine if bootstrap should take place
      * 
-     * @return  true => yes, it should
+     * @return true => yes, it should
      */
     private boolean performBootstrap()
     {
@@ -185,7 +202,7 @@ public class SystemInfoBootstrap extends AbstractLifecycleBean
         }
         return true;
     }
-        
+
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -197,5 +214,5 @@ public class SystemInfoBootstrap extends AbstractLifecycleBean
     {
         // NOOP
     }
-    
+
 }

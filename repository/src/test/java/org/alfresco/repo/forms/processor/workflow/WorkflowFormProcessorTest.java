@@ -26,16 +26,17 @@
 
 package org.alfresco.repo.forms.processor.workflow;
 
-import static org.alfresco.repo.workflow.WorkflowModel.ASPECT_WORKFLOW_PACKAGE;
-import static org.alfresco.repo.workflow.WorkflowModel.ASSOC_PACKAGE;
-import static org.alfresco.repo.workflow.WorkflowModel.PROP_PACKAGE_ACTION_GROUP;
-import static org.alfresco.repo.workflow.WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP;
-import static org.alfresco.repo.workflow.WorkflowModel.PROP_WORKFLOW_PRIORITY;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import static org.alfresco.repo.workflow.WorkflowModel.ASPECT_WORKFLOW_PACKAGE;
+import static org.alfresco.repo.workflow.WorkflowModel.ASSOC_PACKAGE;
+import static org.alfresco.repo.workflow.WorkflowModel.PROP_PACKAGE_ACTION_GROUP;
+import static org.alfresco.repo.workflow.WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP;
+import static org.alfresco.repo.workflow.WorkflowModel.PROP_WORKFLOW_PRIORITY;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -45,11 +46,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
+import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.FormNotFoundException;
 import org.alfresco.repo.forms.Item;
-import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.node.DefaultFieldProcessor;
 import org.alfresco.repo.forms.processor.node.MockClassAttributeDefinition;
 import org.alfresco.repo.forms.processor.node.MockFieldProcessorRegistry;
@@ -70,8 +74,6 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.NamespaceServiceMemoryImpl;
 import org.alfresco.service.namespace.QName;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 /**
  * 
@@ -87,7 +89,7 @@ public class WorkflowFormProcessorTest extends FormProcessorTest
     private WorkflowInstance newInstance;
     private WorkflowDefinition definition;
     private Map<QName, Serializable> actualProperties = null;
-    
+
     public void testGetTypedItem() throws Exception
     {
         try
@@ -119,7 +121,7 @@ public class WorkflowFormProcessorTest extends FormProcessorTest
     {
         super.testPersistPropertyComment(item.getId());
     }
-    
+
     public void testGenerateSetsItemAndUrl() throws Exception
     {
         Form form = ((WorkflowFormProcessor) processor).generate(item, null, null, null);
@@ -265,7 +267,7 @@ public class WorkflowFormProcessorTest extends FormProcessorTest
     {
         String fieldName = ASSOC_WITH_.toPrefixString(namespaceService);
         String dataKey = makeDataKeyName(fieldName, true);
-        String value = FAKE_NODE+ ", " + FAKE_NODE2;
+        String value = FAKE_NODE + ", " + FAKE_NODE2;
         processPersist(dataKey, value);
 
         assertEquals(2, actualProperties.size());
@@ -275,26 +277,25 @@ public class WorkflowFormProcessorTest extends FormProcessorTest
         assertTrue(nodeRefs.contains(FAKE_NODE));
         assertTrue(nodeRefs.contains(FAKE_NODE2));
     }
-    
 
     public void testPersistPackageItemsAdded() throws Exception
     {
         mockPackageItems(FAKE_NODE3);
-        String dataKey = makeDataKeyName(PackageItemsFieldProcessor.KEY, true); 
+        String dataKey = makeDataKeyName(PackageItemsFieldProcessor.KEY, true);
         String value = FAKE_NODE + ", " + FAKE_NODE2;
         processPersist(dataKey, value);
         checkAddPackageItem(FAKE_NODE, true);
         checkAddPackageItem(FAKE_NODE2, true);
         checkAddPackageItem(FAKE_NODE3, false);
     }
-    
+
     public void testPersistPackageItemsRemovedIgnored() throws Exception
     {
         mockPackageItems(FAKE_NODE, FAKE_NODE2);
-        String dataKey = makeDataKeyName(PackageItemsFieldProcessor.KEY, false); 
-        String value = FAKE_NODE + ", " + FAKE_NODE2+ "," + FAKE_NODE3;
+        String dataKey = makeDataKeyName(PackageItemsFieldProcessor.KEY, false);
+        String value = FAKE_NODE + ", " + FAKE_NODE2 + "," + FAKE_NODE3;
         processPersist(dataKey, value);
-        
+
         // Check nodes 1 and 2 removed correctly.
         checkRemovedPackageItem(FAKE_NODE, false);
         checkRemovedPackageItem(FAKE_NODE2, false);
@@ -313,7 +314,7 @@ public class WorkflowFormProcessorTest extends FormProcessorTest
     {
         return processForm(Arrays.asList(fields));
     }
-    
+
     private Form processForm(List<String> fields)
     {
         return ((WorkflowFormProcessor) processor).generate(item, fields, null, null);
@@ -328,10 +329,8 @@ public class WorkflowFormProcessorTest extends FormProcessorTest
         assertNotNull(pckgItemActionData);
         assertEquals("start_package_item_actions", pckgItemActionData.getValue());
     }
-   
-    /*
-     * @see junit.framework.TestCase#setUp()
-     */
+
+    /* @see junit.framework.TestCase#setUp() */
     @Override
     protected void setUp() throws Exception
     {
@@ -343,16 +342,16 @@ public class WorkflowFormProcessorTest extends FormProcessorTest
         DictionaryService dictionaryService = makeDictionaryService();
         super.namespaceService = makeNamespaceService();
         MockFieldProcessorRegistry fieldProcessorRegistry = new MockFieldProcessorRegistry(namespaceService,
-                    dictionaryService);
+                dictionaryService);
         DefaultFieldProcessor defaultProcessor = super.makeDefaultFieldProcessor(dictionaryService);
         super.processor = makeWorkflowFormProcessor(dictionaryService, fieldProcessorRegistry, defaultProcessor);
     }
 
     private WorkflowFormProcessor makeWorkflowFormProcessor(DictionaryService dictionaryService,
-                MockFieldProcessorRegistry fieldProcessorRegistry, DefaultFieldProcessor defaultProcessor)
+            MockFieldProcessorRegistry fieldProcessorRegistry, DefaultFieldProcessor defaultProcessor)
     {
         WorkflowFormProcessor processor1 = new WorkflowFormProcessor();
-        processor1 =(WorkflowFormProcessor) super.makeTaskFormProcessor(processor1, dictionaryService,
+        processor1 = (WorkflowFormProcessor) super.makeTaskFormProcessor(processor1, dictionaryService,
                 fieldProcessorRegistry, defaultProcessor);
         return processor1;
     }
@@ -374,7 +373,7 @@ public class WorkflowFormProcessorTest extends FormProcessorTest
         TypeDefinition metadata = makeTypeDef();
         WorkflowNode node = new WorkflowNode("", "", "", "", false);
         return new WorkflowTaskDefinition(id,
-                    node, metadata);
+                node, metadata);
     }
 
     private TypeDefinition makeTypeDef()
@@ -399,7 +398,7 @@ public class WorkflowFormProcessorTest extends FormProcessorTest
         QName intType = DataTypeDefinition.INT;
         MockClassAttributeDefinition priorityDef = MockClassAttributeDefinition.mockPropertyDefinition(PRIORITY_NAME, intType, "2");
         properties.put(PRIORITY_NAME, priorityDef);
-        
+
         QName textType = DataTypeDefinition.TEXT;
 
         // Add a Description property
@@ -417,13 +416,13 @@ public class WorkflowFormProcessorTest extends FormProcessorTest
         // Add a Package Action property
         QName pckgActionGroup = PROP_PACKAGE_ACTION_GROUP;
         PropertyDefinition pckgAction = MockClassAttributeDefinition.mockPropertyDefinition(pckgActionGroup, textType,
-                    "add_package_item_actions");
+                "add_package_item_actions");
         properties.put(pckgActionGroup, pckgAction);
 
         // Add a Package Action property
         QName pckgItemActionGroup = PROP_PACKAGE_ITEM_ACTION_GROUP;
         PropertyDefinition pckgItemAction = MockClassAttributeDefinition.mockPropertyDefinition(pckgItemActionGroup,
-                    textType, "start_package_item_actions");
+                textType, "start_package_item_actions");
         properties.put(pckgItemActionGroup, pckgItemAction);
 
         return properties;
@@ -453,36 +452,35 @@ public class WorkflowFormProcessorTest extends FormProcessorTest
     {
         WorkflowService service = mock(WorkflowService.class);
         when(service.getDefinitionByName(WF_DEF_NAME)).thenReturn(definition);
-        
+
         String instanceId = "foo$instanceId";
         newInstance = new WorkflowInstance(instanceId,
-                    definition, null, null, null,
-                    null, true, null, null);
+                definition, null, null, null,
+                null, true, null, null);
         WorkflowTask startTask = new WorkflowTask("foo$taskId", null, null, null, null, null, null, null);
         String pathId = "foo$pathId";
         final WorkflowPath path = new WorkflowPath(pathId, newInstance, null, true);
-        
+
         when(service.startWorkflow(eq(definition.getId()), anyMap()))
-            .thenAnswer(new Answer<WorkflowPath>()
-            {
-                public WorkflowPath answer(InvocationOnMock invocation) throws Throwable
-                {
-                    Object[] arguments = invocation.getArguments();
-                    actualProperties = (Map<QName, Serializable>) arguments[1];
-                    return path;
-                }
-            });
+                .thenAnswer(new Answer<WorkflowPath>() {
+                    public WorkflowPath answer(InvocationOnMock invocation) throws Throwable
+                    {
+                        Object[] arguments = invocation.getArguments();
+                        actualProperties = (Map<QName, Serializable>) arguments[1];
+                        return path;
+                    }
+                });
         when(service.getTasksForWorkflowPath(path.getId()))
-            .thenReturn(Collections.singletonList(startTask));
+                .thenReturn(Collections.singletonList(startTask));
         when(service.createPackage(null)).thenReturn(PCKG_NODE);
         return service;
     }
-    
+
     private NodeService makeNodeService()
     {
         NodeService service = mock(NodeService.class);
         when(service.hasAspect(PCKG_NODE, ASPECT_WORKFLOW_PACKAGE))
-            .thenReturn(true);
+                .thenReturn(true);
         return service;
     }
 

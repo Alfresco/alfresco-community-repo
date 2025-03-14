@@ -26,16 +26,17 @@
 
 package org.alfresco.repo.forms.processor.workflow;
 
-import org.alfresco.repo.forms.AssociationFieldDefinition;
-import org.alfresco.repo.forms.FieldDefinition;
-import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
-import org.alfresco.repo.forms.processor.FieldProcessor;
-import org.alfresco.repo.forms.processor.node.TransientFieldProcessor;
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_PREFIX;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
-import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_PREFIX;
+import org.alfresco.repo.forms.AssociationFieldDefinition;
+import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
+import org.alfresco.repo.forms.FieldDefinition;
+import org.alfresco.repo.forms.processor.FieldProcessor;
+import org.alfresco.repo.forms.processor.node.TransientFieldProcessor;
 
 /**
  * {@link FieldProcessor} for handling package contents when displaying Workflow and Task Forms.
@@ -54,13 +55,13 @@ public class PackageItemsFieldProcessor extends TransientFieldProcessor
     private static final String MSG_DESCRIPTION = "form_service.package.items.description";
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.node.TransientFieldProcessor#makeTransientPropertyDefinition()
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.node.TransientFieldProcessor#makeTransientPropertyDefinition() */
     @Override
     protected FieldDefinition makeTransientFieldDefinition()
     {
         AssociationFieldDefinition fieldDef = new AssociationFieldDefinition(
-                    KEY, KEY, Direction.TARGET);
+                KEY, KEY, Direction.TARGET);
         fieldDef.setLabel(I18NUtil.getMessage(MSG_LABEL));
         fieldDef.setDescription(I18NUtil.getMessage(MSG_DESCRIPTION));
         fieldDef.setProtectedField(false);
@@ -74,8 +75,8 @@ public class PackageItemsFieldProcessor extends TransientFieldProcessor
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.AbstractFieldProcessor#getLogger()
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.AbstractFieldProcessor#getLogger() */
     @Override
     protected Log getLogger()
     {
@@ -83,8 +84,8 @@ public class PackageItemsFieldProcessor extends TransientFieldProcessor
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.AbstractFieldProcessor#getRegistryKey()
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.AbstractFieldProcessor#getRegistryKey() */
     @Override
     protected String getRegistryKey()
     {

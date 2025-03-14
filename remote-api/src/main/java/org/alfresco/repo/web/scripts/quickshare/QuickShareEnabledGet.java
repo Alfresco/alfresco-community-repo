@@ -46,9 +46,9 @@ public class QuickShareEnabledGet extends AbstractQuickShareContent
     protected Map<String, Object> executeImpl(final WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         model.put("enabled", isEnabled());
-        
+
         return model;
     }
 }

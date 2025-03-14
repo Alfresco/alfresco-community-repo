@@ -42,11 +42,11 @@ public class WorkflowTransition
     /** Transition Title (Localised) */
     @Deprecated
     public String title;
-    
+
     /** Transition Description (Localised) */
     @Deprecated
     public String description;
-    
+
     /** Is this the default transition */
     @Deprecated
     public boolean isDefault;
@@ -66,7 +66,7 @@ public class WorkflowTransition
     {
         return id;
     }
-    
+
     /**
      * @return the title
      */
@@ -74,7 +74,7 @@ public class WorkflowTransition
     {
         return title;
     }
-    
+
     /**
      * @return the description
      */
@@ -82,7 +82,7 @@ public class WorkflowTransition
     {
         return description;
     }
-    
+
     /**
      * @return the isDefault
      */
@@ -90,9 +90,9 @@ public class WorkflowTransition
     {
         return isDefault;
     }
-    
+
     /**
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
     @Override
     public String toString()

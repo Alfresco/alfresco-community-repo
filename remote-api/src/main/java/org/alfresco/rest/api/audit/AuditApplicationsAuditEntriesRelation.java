@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.audit;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.Audit;
 import org.alfresco.rest.api.model.AuditEntry;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -34,7 +36,6 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Audit Entries (within the context of an Audit Application)

@@ -33,10 +33,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
-
 import jakarta.transaction.UserTransaction;
 
 import net.sf.acegisecurity.providers.encoding.PasswordEncoder;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -67,16 +74,7 @@ import org.alfresco.service.cmr.view.RepositoryExporterService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * MT Admin Service Implementation.
@@ -86,92 +84,83 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
 {
     // Logger
     private static Log logger = LogFactory.getLog(MultiTAdminServiceImpl.class);
-    
+
     // Keep hold of the app context
     protected ApplicationContext ctx;
-    
-    // Dependencies    
+
+    // Dependencies
     private NodeService nodeService;
     private RepoAdminService repoAdminService;
     private AuthenticationContext authenticationContext;
     private MultiTServiceImpl tenantService;
     private BehaviourFilter behaviourFilter;
-    
+
     protected TransactionService transactionService;
     protected DictionaryComponent dictionaryComponent;
     protected TenantAdminDAO tenantAdminDAO;
     protected PasswordEncoder passwordEncoder;
     protected ContentStore tenantFileContentStore;
-    
+
     private ThumbnailRegistry thumbnailRegistry;
     private String contentRootContainerPath = null;
-    
+
     private WorkflowService workflowService;
     private RepositoryExporterService repositoryExporterService;
     private ModuleService moduleService;
     private List<WorkflowDeployer> workflowDeployers = new ArrayList<WorkflowDeployer>();
-    
-    private String baseAdminUsername = null; 
+
+    private String baseAdminUsername = null;
 
     // Experimental: Thor
     private TenantRoutingDataSource trds;
 
-    /*
-     * Tenant domain/ids are unique strings that are case-insensitive. Tenant ids must be valid filenames. 
-     * They may also map onto domains and hence should allow valid FQDN.
+    /* Tenant domain/ids are unique strings that are case-insensitive. Tenant ids must be valid filenames. They may also map onto domains and hence should allow valid FQDN.
      *
-     *       The following PCRE-style
-     *       regex defines a valid label within a FQDN:
+     * The following PCRE-style regex defines a valid label within a FQDN:
      *
-     *          ^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$
+     * ^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$
      *
-     *       Less formally:
+     * Less formally:
      *
-     *          o  Case insensitive
-     *          o  First/last character:  alphanumeric
-     *          o  Interior characters:   alphanumeric plus hyphen
-     *          o  Minimum length:        2  characters
-     *          o  Maximum length:        63 characters
+     * o Case insensitive o First/last character: alphanumeric o Interior characters: alphanumeric plus hyphen o Minimum length: 2 characters o Maximum length: 63 characters
      *
-     *       The FQDN (fully qualified domain name) has the following constraints:
+     * The FQDN (fully qualified domain name) has the following constraints:
      *
-     *          o  Maximum 255 characters (***)
-     *          o  Must contain at least one alpha
-     *          
-     *  Note: (***) Due to various internal restrictions (such as store identifier) we restrict tenant ids to 75 characters.
-     */
+     * o Maximum 255 characters (***) o Must contain at least one alpha
+     * 
+     * Note: (***) Due to various internal restrictions (such as store identifier) we restrict tenant ids to 75 characters. */
 
     protected final static String REGEX_VALID_DNS_LABEL = "^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$";
-    
+
     protected final static String REGEX_CONTAINS_ALPHA = "^(.*)[a-zA-Z](.*)$";
-    
+
     protected final static int MAX_LEN = 75;
-    	
+
     public void setNodeService(DbNodeServiceImpl dbNodeService)
     {
         this.nodeService = dbNodeService;
     }
-    
+
     public void setDictionaryComponent(DictionaryComponent dictionaryComponent)
     {
         this.dictionaryComponent = dictionaryComponent;
     }
-    
+
     public void setRepoAdminService(RepoAdminService repoAdminService)
     {
         this.repoAdminService = repoAdminService;
     }
-    
+
     public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
         this.authenticationContext = authenticationContext;
     }
-    
+
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
     }
-  
+
     public void setTenantService(MultiTServiceImpl tenantService)
     {
         this.tenantService = tenantService;
@@ -186,27 +175,27 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     {
         this.tenantAdminDAO = tenantAdminDAO;
     }
-    
+
     public void setPasswordEncoder(PasswordEncoder passwordEncoder)
     {
         this.passwordEncoder = passwordEncoder;
     }
-    
+
     public void setTenantFileContentStore(ContentStore tenantFileContentStore)
     {
         this.tenantFileContentStore = tenantFileContentStore;
     }
-    
+
     public void setWorkflowService(WorkflowService workflowService)
     {
         this.workflowService = workflowService;
     }
-    
+
     public void setRepositoryExporterService(RepositoryExporterService repositoryExporterService)
     {
         this.repositoryExporterService = repositoryExporterService;
     }
-    
+
     /**
      * @deprecated see setWorkflowDeployers
      */
@@ -215,52 +204,52 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         // NOOP
         logger.warn(WARN_MSG);
     }
-    
+
     public void setModuleService(ModuleService moduleService)
     {
         this.moduleService = moduleService;
     }
-    
+
     public void setThumbnailRegistry(ThumbnailRegistry thumbnailRegistry)
     {
         this.thumbnailRegistry = thumbnailRegistry;
     }
-    
+
     public void setBaseAdminUsername(String baseAdminUsername)
     {
         this.baseAdminUsername = baseAdminUsername;
     }
-    
+
     public void setTenantRoutingDataSource(TenantRoutingDataSource trds)
     {
         this.trds = trds;
     }
-    
+
     // if set then tenant are not co-mingled and all content roots will appear below this container (in <tenantdomain> sub-folder)
     public void setContentRootContainerPath(String contentRootContainerPath)
     {
         this.contentRootContainerPath = contentRootContainerPath;
     }
-    
+
     public static final String PROTOCOL_STORE_USER = "user";
     public static final String PROTOCOL_STORE_WORKSPACE = "workspace";
     public static final String PROTOCOL_STORE_SYSTEM = "system";
-    public static final String PROTOCOL_STORE_ARCHIVE = "archive"; 
+    public static final String PROTOCOL_STORE_ARCHIVE = "archive";
     public static final String STORE_BASE_ID_USER = "alfrescoUserStore";
     public static final String STORE_BASE_ID_SYSTEM = "system";
     public static final String STORE_BASE_ID_VERSION1 = "lightWeightVersionStore"; // deprecated
     public static final String STORE_BASE_ID_VERSION2 = "version2Store";
     public static final String STORE_BASE_ID_SPACES = "SpacesStore";
-    
+
     public static final String TENANTS_ATTRIBUTE_PATH = "alfresco-tenants";
     public static final String TENANT_ATTRIBUTE_ENABLED = "enabled";
     public static final String TENANT_ATTRIBUTE_ROOT_CONTENT_STORE_DIR = "rootContentStoreDir";
     public static final String TENANT_ATTRIBUTE_DB_URL = "dbUrl"; // if not co-mingled
-    
+
     private List<TenantDeployer> tenantDeployers = new ArrayList<TenantDeployer>();
-    
+
     private static final String WARN_MSG = "system.mt.warn.upgrade_mt_admin_context";
-    
+
     @Override
     public void afterPropertiesSet() throws Exception
     {
@@ -269,7 +258,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         {
             logger.warn(I18NUtil.getMessage(WARN_MSG));
         }
-        
+
         PropertyCheck.mandatory(this, "NodeService", nodeService);
         PropertyCheck.mandatory(this, "DictionaryComponent", dictionaryComponent);
         PropertyCheck.mandatory(this, "RepoAdminService", repoAdminService);
@@ -282,7 +271,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         PropertyCheck.mandatory(this, "RepositoryExporterService", repositoryExporterService);
         PropertyCheck.mandatory(this, "moduleService", moduleService);
     }
-    
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
@@ -293,43 +282,43 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     public void startTenants()
     {
         AuthenticationUtil.setMtEnabled(true);
-        
+
         // initialise the tenant admin service and status of tenants (using attribute service)
         // note: this requires that the repository schema has already been initialised
-        
+
         // register dictionary - to allow enable/disable tenant callbacks
         register(dictionaryComponent);
-        
+
         if (isTenantDeployer(tenantFileContentStore))
         {
             // register file store - to allow enable/disable tenant callbacks
             // note: tenantFileContentStore must be registed before dictionaryRepositoryBootstrap
             register(tenantDeployer(tenantFileContentStore), 0);
         }
-        
+
         UserTransaction userTransaction = transactionService.getUserTransaction();
-        
+
         try
         {
             authenticationContext.setSystemUserAsCurrentUser();
             userTransaction.begin();
-            
+
             // bootstrap Tenant Service internal cache
             List<Tenant> tenants = getAllTenants();
-            
+
             int enabledCount = 0;
             int disabledCount = 0;
-            
+
             for (Tenant tenant : tenants)
             {
-                if ((! (isTenantRoutingContentStore(tenantFileContentStore))) && (! tenantFileContentStore.getRootLocation().equals(tenant.getRootContentStoreDir())))
+                if ((!(isTenantRoutingContentStore(tenantFileContentStore))) && (!tenantFileContentStore.getRootLocation().equals(tenant.getRootContentStoreDir())))
                 {
                     // eg. ALF-14121 - MT will not work with replicating-content-services-context.sample if tenants are not co-mingled
                     throw new AlfrescoRuntimeException("MT: cannot start tenants - TenantRoutingContentStore is not configured AND not all tenants use co-mingled content store");
                 }
-                
+
                 String tenantDomain = tenant.getTenantDomain();
-                
+
                 if (tenant.isEnabled())
                 {
                     // notify tenant deployers registered so far ...
@@ -339,36 +328,44 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                 else
                 {
                     disabledCount++;
-                    
+
                     if (logger.isDebugEnabled())
                     {
                         logger.debug("Tenant disabled: " + tenantDomain);
                     }
                 }
             }
-            
+
             userTransaction.commit();
-            
-            if ((enabledCount+disabledCount) == 0)
+
+            if ((enabledCount + disabledCount) == 0)
             {
                 AuthenticationUtil.setMtEnabled(false); // explicitly disable if there are no tenants
             }
-            
-            if (logger.isInfoEnabled() && ((enabledCount+disabledCount) > 0))
+
+            if (logger.isInfoEnabled() && ((enabledCount + disabledCount) > 0))
             {
                 logger.info(String.format("Alfresco Multi-Tenant startup - %d enabled tenants, %d disabled tenants",
-                                          enabledCount, disabledCount));
+                        enabledCount, disabledCount));
             }
             else if (logger.isDebugEnabled())
             {
                 logger.debug(String.format("Alfresco Multi-Tenant startup - %d enabled tenants, %d disabled tenants",
-                             enabledCount, disabledCount));
+                        enabledCount, disabledCount));
             }
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             // rollback the transaction
-            try { if (userTransaction != null) {userTransaction.rollback();} } catch (Exception ex) {}
+            try
+            {
+                if (userTransaction != null)
+                {
+                    userTransaction.rollback();
+                }
+            }
+            catch (Exception ex)
+            {}
             throw new AlfrescoRuntimeException("Failed to bootstrap tenants", e);
         }
         finally
@@ -376,7 +373,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             authenticationContext.clearCurrentSecurityContext();
         }
     }
-    
+
     @Override
     public void stopTenants()
     {
@@ -387,32 +384,32 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
 
     @Override
     public void createTenant(final String tenantDomain, final char[] tenantAdminRawPassword)
-    {  
+    {
         createTenant(tenantDomain, tenantAdminRawPassword, null);
     }
-    
+
     @Override
     public void createTenant(final String tenantDomain, final char[] tenantAdminRawPassword, String contentRoot)
     {
         createTenant(tenantDomain, tenantAdminRawPassword, contentRoot, null);
     }
-    
+
     @Override
     public void createTenant(final String tenantDomainIn, final char[] tenantAdminRawPassword, String contentRootPath, final String dbUrl)
     {
         ParameterCheck.mandatory("tenantAdminRawPassword", tenantAdminRawPassword);
-        
+
         final String tenantDomain = getTenantDomain(tenantDomainIn);
 
         AuthenticationUtil.setMtEnabled(true); // in case this is the 1st tenant
-        
+
         long start = System.currentTimeMillis();
-        
-        if ((contentRootContainerPath != null) && (! contentRootContainerPath.isEmpty()))
+
+        if ((contentRootContainerPath != null) && (!contentRootContainerPath.isEmpty()))
         {
             String defaultContentRoot = null;
-            
-            if (! contentRootContainerPath.endsWith("/"))
+
+            if (!contentRootContainerPath.endsWith("/"))
             {
                 defaultContentRoot = contentRootContainerPath + "/" + tenantDomain;
             }
@@ -420,17 +417,17 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             {
                 defaultContentRoot = contentRootContainerPath + tenantDomain;
             }
-            
-            if ((contentRootPath != null) && (! contentRootPath.isEmpty()))
+
+            if ((contentRootPath != null) && (!contentRootPath.isEmpty()))
             {
-                logger.warn("Use default content root path: "+defaultContentRoot+" (ignoring: "+contentRootPath+")");
+                logger.warn("Use default content root path: " + defaultContentRoot + " (ignoring: " + contentRootPath + ")");
             }
-            
+
             contentRootPath = defaultContentRoot;
         }
 
         initTenant(tenantDomain, contentRootPath, dbUrl);
-        
+
         if ((dbUrl != null) && (trds != null))
         {
             try
@@ -440,78 +437,71 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             }
             catch (SQLException se)
             {
-                throw new AlfrescoRuntimeException("Failed to create tenant '"+tenantDomain+"' for dbUrl '"+dbUrl+"'", se);
+                throw new AlfrescoRuntimeException("Failed to create tenant '" + tenantDomain + "' for dbUrl '" + dbUrl + "'", se);
             }
         }
-        
+
         try
         {
             // note: runAs would cause auditable property "creator" to be "admin" instead of "System@xxx"
             AuthenticationUtil.pushAuthentication();
             AuthenticationUtil.setFullyAuthenticatedUser(getSystemUser(tenantDomain));
-            
-            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
-            {
+
+            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>() {
                 public Object doWork()
                 {
                     dictionaryComponent.init();
-                    
+
                     if (isTenantDeployer(tenantFileContentStore))
                     {
                         TenantDeployer deployer = tenantDeployer(tenantFileContentStore);
                         deployer.init();
                     }
-                    
+
                     // callback
-                    RetryingTransactionCallback<Object> doImportCallback = new RetryingTransactionCallback<Object>()
-                    {
+                    RetryingTransactionCallback<Object> doImportCallback = new RetryingTransactionCallback<Object>() {
                         public Object execute() throws Throwable
                         {
                             // create tenant-specific stores
-                            ImporterBootstrap userImporterBootstrap = (ImporterBootstrap)ctx.getBean("userBootstrap-mt");
+                            ImporterBootstrap userImporterBootstrap = (ImporterBootstrap) ctx.getBean("userBootstrap-mt");
                             bootstrapUserTenantStore(userImporterBootstrap, tenantDomain, tenantAdminRawPassword);
-                            
-                            ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap)ctx.getBean("systemBootstrap-mt");
+
+                            ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap) ctx.getBean("systemBootstrap-mt");
                             bootstrapSystemTenantStore(systemImporterBootstrap, tenantDomain);
-                            
+
                             // deprecated
-                            ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap)ctx.getBean("versionBootstrap-mt");
+                            ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap) ctx.getBean("versionBootstrap-mt");
                             bootstrapVersionTenantStore(versionImporterBootstrap, tenantDomain);
-                            
-                            ImporterBootstrap version2ImporterBootstrap = (ImporterBootstrap)ctx.getBean("version2Bootstrap-mt");
+
+                            ImporterBootstrap version2ImporterBootstrap = (ImporterBootstrap) ctx.getBean("version2Bootstrap-mt");
                             bootstrapVersionTenantStore(version2ImporterBootstrap, tenantDomain);
-                            
-                            ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesArchiveBootstrap-mt");
+
+                            ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap) ctx.getBean("spacesArchiveBootstrap-mt");
                             bootstrapSpacesArchiveTenantStore(spacesArchiveImporterBootstrap, tenantDomain);
-                            
-                            ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesBootstrap-mt");
+
+                            ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap) ctx.getBean("spacesBootstrap-mt");
                             bootstrapSpacesTenantStore(spacesImporterBootstrap, tenantDomain);
 
                             thumbnailRegistry.initThumbnailDefinitions();
-                    
+
                             // TODO janv - resolve this conflict later
                             /* Note: assume for now that all tenant deployers can lazily init
-                            
-                            // notify listeners that tenant has been created & hence enabled
-                            for (TenantDeployer tenantDeployer : tenantDeployers)
-                            {
-                                tenantDeployer.onEnableTenant();
-                            }
-                            */
-                            
+                             * 
+                             * // notify listeners that tenant has been created & hence enabled for (TenantDeployer tenantDeployer : tenantDeployers) { tenantDeployer.onEnableTenant(); } */
+
                             // bootstrap workflows
                             for (WorkflowDeployer workflowDeployer : workflowDeployers)
                             {
                                 workflowDeployer.init();
-                            }                            
-                            
+                            }
+
                             // bootstrap modules (if any)
                             moduleService.startModules();
-                            
+
                             return null;
                         }
                     };
-                    
+
                     // if not default DB (ie. dbUrl != null) then run in new Spring managed txn (to ensure datasource is switched)
                     transactionService.getRetryingTransactionHelper().doInTransaction(doImportCallback, transactionService.isReadOnly(), (dbUrl != null));
                     return null;
@@ -522,13 +512,13 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         {
             AuthenticationUtil.popAuthentication();
         }
-        
+
         if (logger.isInfoEnabled())
         {
-            logger.info("Tenant created: " + tenantDomain + " in "+(System.currentTimeMillis()-start)+ " ms");
+            logger.info("Tenant created: " + tenantDomain + " in " + (System.currentTimeMillis() - start) + " ms");
         }
     }
-    
+
     /**
      * Export tenant - equivalent to the tenant admin running a 'complete repo' export from the Web Client Admin
      */
@@ -536,22 +526,21 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     public void exportTenant(String tenantDomainIn, final File directoryDestination)
     {
         final String tenantDomain = getTenantDomain(tenantDomainIn);
-        
-        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
-        {
+
+        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>() {
             public Object doWork()
             {
                 repositoryExporterService.export(directoryDestination, tenantDomain);
                 return null;
             }
         }, tenantDomain);
-        
+
         if (logger.isInfoEnabled())
         {
             logger.info("Tenant exported: " + tenantDomain);
         }
     }
-    
+
     /**
      * Create tenant by restoring from a complete repository export. This is equivalent to a bootstrap import using restore-context.xml.
      */
@@ -559,25 +548,25 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     public void importTenant(final String tenantDomainIn, final File directorySource, String contentRoot)
     {
         final String tenantDomain = getTenantDomain(tenantDomainIn);
-        
+
         AuthenticationUtil.setMtEnabled(true); // in case this is the 1st tenant
-        
+
         initTenant(tenantDomain, contentRoot, null);
-        
+
         try
         {
             // note: runAs would cause auditable property "creator" to be "admin" instead of "System@xxx"
             AuthenticationUtil.pushAuthentication();
             AuthenticationUtil.setFullyAuthenticatedUser(getSystemUser(tenantDomain));
-            
+
             dictionaryComponent.init();
-            
+
             if (isTenantDeployer(tenantFileContentStore))
             {
                 TenantDeployer deployer = tenantDeployer(tenantFileContentStore);
                 deployer.init();
             }
-            
+
             // import tenant-specific stores
             importBootstrapUserTenantStore(tenantDomain, directorySource);
             importBootstrapSystemTenantStore(tenantDomain, directorySource);
@@ -585,24 +574,24 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             importBootstrapSpacesArchiveTenantStore(tenantDomain, directorySource);
             importBootstrapSpacesModelsTenantStore(tenantDomain, directorySource);
             importBootstrapSpacesTenantStore(tenantDomain, directorySource);
-            
+
             thumbnailRegistry.initThumbnailDefinitions();
-            
+
             // notify listeners that tenant has been created & hence enabled
             for (TenantDeployer tenantDeployer : tenantDeployers)
             {
                 tenantDeployer.onEnableTenant();
             }
-            
+
             // bootstrap workflows, if needed
-            if(workflowService.isMultiTenantWorkflowDeploymentEnabled()) 
+            if (workflowService.isMultiTenantWorkflowDeploymentEnabled())
             {
-            	for (WorkflowDeployer workflowDeployer : workflowDeployers)
-            	{
-            		workflowDeployer.init();
-            	}
+                for (WorkflowDeployer workflowDeployer : workflowDeployers)
+                {
+                    workflowDeployer.init();
+                }
             }
-            
+
             // bootstrap modules (if any)
             moduleService.startModules();
         }
@@ -610,24 +599,24 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         {
             AuthenticationUtil.popAuthentication();
         }
-        
+
         if (logger.isInfoEnabled())
         {
             logger.info("Tenant imported: " + tenantDomain);
         }
     }
-    
+
     @Override
     public boolean existsTenant(String tenantDomain)
     {
         // Check that all the passed values are not null
         ParameterCheck.mandatory("tenantDomain", tenantDomain);
-        
+
         tenantDomain = getTenantDomain(tenantDomain);
-        
+
         return (getTenantAttributes(tenantDomain) != null);
     }
-    
+
     private Tenant getTenantAttributes(String tenantDomain)
     {
         TenantEntity tenantEntity = tenantAdminDAO.getTenant(tenantDomain);
@@ -641,29 +630,29 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             return tenant;
         }
     }
-    
+
     @Override
     public void enableTenant(String tenantDomain)
-    { 
+    {
         tenantDomain = getTenantDomain(tenantDomain);
-        
-        if (! existsTenant(tenantDomain))
+
+        if (!existsTenant(tenantDomain))
         {
             throw new AuthenticationException("Tenant does not exist: " + tenantDomain);
         }
-        
+
         if (isEnabledTenant(tenantDomain))
         {
             logger.warn("Tenant already enabled: " + tenantDomain);
         }
-        
+
         TenantUpdateEntity tenantUpdateEntity = tenantAdminDAO.getTenantForUpdate(tenantDomain);
         tenantUpdateEntity.setEnabled(true);
         tenantAdminDAO.updateTenant(tenantUpdateEntity);
-        
+
         notifyAfterEnableTenant(tenantDomain);
     }
-    
+
     /**
      * Call all {@link TenantDeployer#onEnableTenant() TenantDeployers} as the system tenant.
      */
@@ -671,10 +660,9 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     {
         // Check that all the passed values are not null
         ParameterCheck.mandatory("tenantDomain", tenantDomain);
-        
+
         // notify listeners that tenant has been enabled
-        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
-        {
+        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>() {
             public Object doWork()
             {
                 for (TenantDeployer tenantDeployer : tenantDeployers)
@@ -684,43 +672,42 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                 return null;
             }
         }, tenantDomain);
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("Tenant enabled: " + tenantDomain);
         }
     }
-    
+
     @Override
     public void disableTenant(String tenantDomain)
-    { 
+    {
         tenantDomain = getTenantDomain(tenantDomain);
-        
-        if (! existsTenant(tenantDomain))
+
+        if (!existsTenant(tenantDomain))
         {
             throw new AuthenticationException("Tenant does not exist: " + tenantDomain);
         }
-        
-        if (! isEnabledTenant(tenantDomain))
+
+        if (!isEnabledTenant(tenantDomain))
         {
             logger.warn("Tenant already disabled: " + tenantDomain);
         }
-        
+
         notifyBeforeDisableTenant(tenantDomain);
-        
-        // update tenant attributes / tenant cache - need to disable after notifying listeners (else they cannot disable) 
+
+        // update tenant attributes / tenant cache - need to disable after notifying listeners (else they cannot disable)
         TenantUpdateEntity tenantUpdateEntity = tenantAdminDAO.getTenantForUpdate(tenantDomain);
         tenantUpdateEntity.setEnabled(false);
         tenantAdminDAO.updateTenant(tenantUpdateEntity);
     }
-    
+
     private void notifyBeforeDisableTenant(String tenantDomain)
     {
         tenantDomain = getTenantDomain(tenantDomain);
-        
+
         // notify listeners that tenant has been disabled
-        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
-        {
+        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>() {
             public Object doWork()
             {
                 for (TenantDeployer tenantDeployer : tenantDeployers)
@@ -730,48 +717,48 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                 return null;
             }
         }, tenantDomain);
-        
+
         if (logger.isInfoEnabled())
         {
             logger.info("Tenant disabled: " + tenantDomain);
         }
     }
-    
+
     @Override
     public boolean isEnabledTenant(String tenantDomain)
-    {       
+    {
         // Check that all the passed values are not null
         ParameterCheck.mandatory("tenantDomain", tenantDomain);
-        
+
         tenantDomain = getTenantDomain(tenantDomain);
-        
+
         Tenant tenant = getTenantAttributes(tenantDomain);
         if (tenant != null)
         {
             return tenant.isEnabled();
         }
-        
+
         return false;
     }
-    
+
     @Override
     public Tenant getTenant(String tenantDomain)
     {
         tenantDomain = getTenantDomain(tenantDomain);
-        if (! existsTenant(tenantDomain))
+        if (!existsTenant(tenantDomain))
         {
             throw new AuthenticationException("Tenant does not exist: " + tenantDomain);
         }
-        
+
         return getTenantAttributes(tenantDomain);
     }
-    
+
     @Override
     public void deleteTenant(String tenantDomain)
     {
         tenantDomain = getTenantDomain(tenantDomain);
-        
-        if (! existsTenant(tenantDomain))
+
+        if (!existsTenant(tenantDomain))
         {
             throw new AuthenticationException("Tenant does not exist: " + tenantDomain);
         }
@@ -779,22 +766,22 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         {
             try
             {
-                TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
-                {
+                TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>() {
                     public Object doWork()
                     {
-                    	// Only undeploy tenant-workflows when MT-workflow deployment is enabled
-                    	if(workflowService.isMultiTenantWorkflowDeploymentEnabled()) {
-                    		List<WorkflowDefinition> workflowDefs = workflowService.getDefinitions();
-                    		if (workflowDefs != null)
-                    		{
-                    			for (WorkflowDefinition workflowDef : workflowDefs)
-                    			{
-                    				workflowService.undeployDefinition(workflowDef.getId());
-                    			}
-                    		}
-                    	}
-                        
+                        // Only undeploy tenant-workflows when MT-workflow deployment is enabled
+                        if (workflowService.isMultiTenantWorkflowDeploymentEnabled())
+                        {
+                            List<WorkflowDefinition> workflowDefs = workflowService.getDefinitions();
+                            if (workflowDefs != null)
+                            {
+                                for (WorkflowDefinition workflowDef : workflowDefs)
+                                {
+                                    workflowService.undeployDefinition(workflowDef.getId());
+                                }
+                            }
+                        }
+
                         List<String> messageResourceBundles = repoAdminService.getMessageBundles();
                         if (messageResourceBundles != null)
                         {
@@ -802,8 +789,8 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                             {
                                 repoAdminService.undeployMessageBundle(messageResourceBundle);
                             }
-                        }   
-                        
+                        }
+
                         List<RepoModelDefinition> models = repoAdminService.getModels();
                         if (models != null)
                         {
@@ -812,11 +799,11 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                                 repoAdminService.undeployModel(model.getRepoName());
                             }
                         }
-                       
+
                         return null;
                     }
                 }, tenantDomain);
-                
+
                 // delete tenant-specific stores
                 behaviourFilter.disableBehaviour(ContentModel.ASPECT_UNDELETABLE);
                 try
@@ -830,48 +817,47 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                 }
                 finally
                 {
-                    behaviourFilter.enableBehaviour(ContentModel.ASPECT_UNDELETABLE);                    
+                    behaviourFilter.enableBehaviour(ContentModel.ASPECT_UNDELETABLE);
                 }
-                
-                TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
-                {
+
+                TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>() {
                     public Object doWork()
                     {
                         // shutdown modules (if any)
                         moduleService.shutdownModules();
-                        
+
                         // notify listeners that tenant has been deleted & hence disabled
                         for (TenantDeployer tenantDeployer : tenantDeployers)
                         {
                             tenantDeployer.onDisableTenant();
                         }
-                        
+
                         return null;
                     }
                 }, tenantDomain);
-                
+
                 // remove tenant
                 tenantAdminDAO.deleteTenant(tenantDomain);
-            } 
+            }
             catch (Throwable t)
             {
                 throw new AlfrescoRuntimeException("Failed to delete tenant: " + tenantDomain, t);
             }
-            
+
             if (logger.isInfoEnabled())
             {
                 logger.info("Tenant deleted: " + tenantDomain);
             }
         }
     }
-    
+
     @Override
     @Deprecated
     public List<Tenant> getAllTenants()
     {
         return getTenants(false);
     }
-    
+
     @Override
     @Deprecated
     public List<Tenant> getTenants(boolean enabledOnly)
@@ -890,157 +876,157 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         // Import Bootstrap (restore) Tenant-Specific Version Store
         Properties bootstrapView = new Properties();
         bootstrapView.put("path", "/");
-        bootstrapView.put("location", directorySource.getPath()+"/"+tenantDomain+"_system.acp");
-        
+        bootstrapView.put("location", directorySource.getPath() + "/" + tenantDomain + "_system.acp");
+
         List<Properties> bootstrapViews = new ArrayList<Properties>(1);
         bootstrapViews.add(bootstrapView);
-        
-        ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap)ctx.getBean("systemBootstrap");
+
+        ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap) ctx.getBean("systemBootstrap");
         systemImporterBootstrap.setBootstrapViews(bootstrapViews);
-        
+
         bootstrapSystemTenantStore(systemImporterBootstrap, tenantDomain);
     }
-    
+
     private void bootstrapSystemTenantStore(ImporterBootstrap systemImporterBootstrap, String tenantDomain)
     {
         // Bootstrap Tenant-Specific System Store
         StoreRef bootstrapStoreRef = systemImporterBootstrap.getStoreRef();
         StoreRef tenantBootstrapStoreRef = new StoreRef(bootstrapStoreRef.getProtocol(), tenantService.getName(bootstrapStoreRef.getIdentifier(), tenantDomain));
         systemImporterBootstrap.setStoreUrl(tenantBootstrapStoreRef.toString());
-        
+
         // override default property (workspace://SpacesStore)
         List<String> mustNotExistStoreUrls = new ArrayList<String>();
         mustNotExistStoreUrls.add(new StoreRef(PROTOCOL_STORE_WORKSPACE, tenantService.getName(STORE_BASE_ID_USER, tenantDomain)).toString());
         systemImporterBootstrap.setMustNotExistStoreUrls(mustNotExistStoreUrls);
-        
+
         systemImporterBootstrap.bootstrap();
-        
+
         // reset since systemImporter is singleton (hence reused)
         systemImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
-        
+
         if (logger.isDebugEnabled())
         {
-            logger.debug("Bootstrapped store: "+tenantService.getBaseName(tenantBootstrapStoreRef)+" (Tenant: "+tenantDomain+")");
+            logger.debug("Bootstrapped store: " + tenantService.getBaseName(tenantBootstrapStoreRef) + " (Tenant: " + tenantDomain + ")");
         }
     }
-    
+
     private void importBootstrapUserTenantStore(String tenantDomain, File directorySource)
     {
         // Import Bootstrap (restore) Tenant-Specific User Store
         Properties bootstrapView = new Properties();
         bootstrapView.put("path", "/");
-        bootstrapView.put("location", directorySource.getPath()+"/"+tenantDomain+"_users.acp");
+        bootstrapView.put("location", directorySource.getPath() + "/" + tenantDomain + "_users.acp");
 
         List<Properties> bootstrapViews = new ArrayList<Properties>(1);
         bootstrapViews.add(bootstrapView);
-        
-        ImporterBootstrap userImporterBootstrap = (ImporterBootstrap)ctx.getBean("userBootstrap");
+
+        ImporterBootstrap userImporterBootstrap = (ImporterBootstrap) ctx.getBean("userBootstrap");
         userImporterBootstrap.setBootstrapViews(bootstrapViews);
-        
+
         bootstrapUserTenantStore(userImporterBootstrap, tenantDomain, null);
     }
-    
+
     private void bootstrapUserTenantStore(ImporterBootstrap userImporterBootstrap, String tenantDomain, char[] tenantAdminRawPassword)
     {
         // Bootstrap Tenant-Specific User Store
         StoreRef bootstrapStoreRef = userImporterBootstrap.getStoreRef();
         bootstrapStoreRef = new StoreRef(bootstrapStoreRef.getProtocol(), tenantService.getName(bootstrapStoreRef.getIdentifier(), tenantDomain));
         userImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
-        
+
         // override admin username property
         Properties props = userImporterBootstrap.getConfiguration();
         props.put("alfresco_user_store.adminusername", getTenantAdminUser(tenantDomain));
-        
+
         if (tenantAdminRawPassword != null)
         {
             // TODO: This needs to be replaced with the composite password encoder
-            //       and use the new passwordHash property but some further thought
-            //       is required how to handle the case where no passsword is provided
-            //       as we can no longer presume what hash encoding is being used.
-            //       Or maybe this is fine as the background job will upgrade the user object?
-            
+            // and use the new passwordHash property but some further thought
+            // is required how to handle the case where no passsword is provided
+            // as we can no longer presume what hash encoding is being used.
+            // Or maybe this is fine as the background job will upgrade the user object?
+
             // generate the new MD4 password hash
             props.put("alfresco_user_store.adminpassword", passwordEncoder.encodePassword(new String(tenantAdminRawPassword), null));
-            
+
             // generate the new SHA256 password hash
             String salt = props.getProperty("alfresco_user_store.adminsalt");
             ShaPasswordEncoderImpl sha256PasswordEncoder = new ShaPasswordEncoderImpl(256);
             String sha256Password = sha256PasswordEncoder.encodePassword(new String(tenantAdminRawPassword), salt);
             props.put("alfresco_user_store.adminpassword2", sha256Password);
         }
-        
+
         userImporterBootstrap.bootstrap();
-        
+
         if (logger.isDebugEnabled())
         {
-            logger.debug("Bootstrapped store: "+tenantService.getBaseName(bootstrapStoreRef)+" (Tenant: "+tenantDomain+")");
+            logger.debug("Bootstrapped store: " + tenantService.getBaseName(bootstrapStoreRef) + " (Tenant: " + tenantDomain + ")");
         }
     }
-    
+
     private void importBootstrapVersionTenantStore(String tenantDomain, File directorySource)
     {
         // Import Bootstrap (restore) Tenant-Specific Version Store
         Properties bootstrapView = new Properties();
         bootstrapView.put("path", "/");
-        bootstrapView.put("location", directorySource.getPath()+"/"+tenantDomain+"_versions2.acp");
-        
+        bootstrapView.put("location", directorySource.getPath() + "/" + tenantDomain + "_versions2.acp");
+
         List<Properties> bootstrapViews = new ArrayList<Properties>(1);
         bootstrapViews.add(bootstrapView);
-        
-        ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap)ctx.getBean("versionBootstrap");
+
+        ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap) ctx.getBean("versionBootstrap");
         versionImporterBootstrap.setBootstrapViews(bootstrapViews);
-        
+
         bootstrapVersionTenantStore(versionImporterBootstrap, tenantDomain);
     }
-    
+
     private void bootstrapVersionTenantStore(ImporterBootstrap versionImporterBootstrap, String tenantDomain)
     {
         // Bootstrap Tenant-Specific Version Store
         StoreRef bootstrapStoreRef = versionImporterBootstrap.getStoreRef();
         bootstrapStoreRef = new StoreRef(bootstrapStoreRef.getProtocol(), tenantService.getName(bootstrapStoreRef.getIdentifier(), tenantDomain));
         versionImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
-        
+
         versionImporterBootstrap.bootstrap();
-        
+
         if (logger.isDebugEnabled())
         {
-            logger.debug("Bootstrapped store: "+tenantService.getBaseName(bootstrapStoreRef)+" (Tenant: "+tenantDomain+")");
+            logger.debug("Bootstrapped store: " + tenantService.getBaseName(bootstrapStoreRef) + " (Tenant: " + tenantDomain + ")");
         }
     }
-    
+
     private void importBootstrapSpacesArchiveTenantStore(String tenantDomain, File directorySource)
     {
         // Import Bootstrap (restore) Tenant-Specific Spaces Archive Store
         Properties bootstrapView = new Properties();
         bootstrapView.put("path", "/");
-        bootstrapView.put("location", directorySource.getPath()+"/"+tenantDomain+"_spaces_archive.acp");
-        
+        bootstrapView.put("location", directorySource.getPath() + "/" + tenantDomain + "_spaces_archive.acp");
+
         List<Properties> bootstrapViews = new ArrayList<Properties>(1);
         bootstrapViews.add(bootstrapView);
-        
-        ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesArchiveBootstrap");
+
+        ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap) ctx.getBean("spacesArchiveBootstrap");
         spacesArchiveImporterBootstrap.setBootstrapViews(bootstrapViews);
-        
+
         bootstrapSpacesArchiveTenantStore(spacesArchiveImporterBootstrap, tenantDomain);
     }
-    
+
     private void bootstrapSpacesArchiveTenantStore(ImporterBootstrap spacesArchiveImporterBootstrap, String tenantDomain)
     {
         // Bootstrap Tenant-Specific Spaces Archive Store
         StoreRef bootstrapStoreRef = spacesArchiveImporterBootstrap.getStoreRef();
         bootstrapStoreRef = new StoreRef(bootstrapStoreRef.getProtocol(), tenantService.getName(bootstrapStoreRef.getIdentifier(), tenantDomain));
         spacesArchiveImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
-    
-        // override default property (archive://SpacesStore)       
+
+        // override default property (archive://SpacesStore)
         List<String> mustNotExistStoreUrls = new ArrayList<String>();
         mustNotExistStoreUrls.add(bootstrapStoreRef.toString());
         spacesArchiveImporterBootstrap.setMustNotExistStoreUrls(mustNotExistStoreUrls);
-        
+
         spacesArchiveImporterBootstrap.bootstrap();
-        
+
         if (logger.isDebugEnabled())
         {
-            logger.debug("Bootstrapped store: "+tenantService.getBaseName(bootstrapStoreRef)+" (Tenant: "+tenantDomain+")");
+            logger.debug("Bootstrapped store: " + tenantService.getBaseName(bootstrapStoreRef) + " (Tenant: " + tenantDomain + ")");
         }
     }
 
@@ -1049,65 +1035,65 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         // Import Bootstrap (restore) Tenant-Specific Spaces Store
         Properties bootstrapView = new Properties();
         bootstrapView.put("path", "/");
-        bootstrapView.put("location", directorySource.getPath()+"/"+tenantDomain+"_models.acp");
+        bootstrapView.put("location", directorySource.getPath() + "/" + tenantDomain + "_models.acp");
 
         List<Properties> bootstrapViews = new ArrayList<Properties>(1);
         bootstrapViews.add(bootstrapView);
-        
-        ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesBootstrap");
+
+        ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap) ctx.getBean("spacesBootstrap");
         spacesImporterBootstrap.setBootstrapViews(bootstrapViews);
 
         bootstrapSpacesTenantStore(spacesImporterBootstrap, tenantDomain);
     }
-    
+
     private void importBootstrapSpacesTenantStore(String tenantDomain, File directorySource)
     {
         // Import Bootstrap (restore) Tenant-Specific Spaces Store
         Properties bootstrapView = new Properties();
         bootstrapView.put("path", "/");
-        bootstrapView.put("location", directorySource.getPath()+"/"+tenantDomain+"_spaces.acp");
+        bootstrapView.put("location", directorySource.getPath() + "/" + tenantDomain + "_spaces.acp");
         bootstrapView.put("uuidBinding", "UPDATE_EXISTING");
 
         List<Properties> bootstrapViews = new ArrayList<Properties>(1);
         bootstrapViews.add(bootstrapView);
-        
-        ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesBootstrap");
+
+        ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap) ctx.getBean("spacesBootstrap");
         spacesImporterBootstrap.setBootstrapViews(bootstrapViews);
-        
+
         spacesImporterBootstrap.setUseExistingStore(true);
 
         bootstrapSpacesTenantStore(spacesImporterBootstrap, tenantDomain);
     }
-    
+
     private void bootstrapSpacesTenantStore(ImporterBootstrap spacesImporterBootstrap, String tenantDomain)
     {
         // Bootstrap Tenant-Specific Spaces Store
         StoreRef bootstrapStoreRef = spacesImporterBootstrap.getStoreRef();
         StoreRef tenantBootstrapStoreRef = new StoreRef(bootstrapStoreRef.getProtocol(), tenantService.getName(bootstrapStoreRef.getIdentifier(), tenantDomain));
         spacesImporterBootstrap.setStoreUrl(tenantBootstrapStoreRef.toString());
-    
+
         // override admin username property
         Properties props = spacesImporterBootstrap.getConfiguration();
         props.put("alfresco_user_store.adminusername", getTenantAdminUser(tenantDomain));
-        
+
         // override guest username property
         props.put("alfresco_user_store.guestusername", getTenantGuestUser(tenantDomain));
-        
+
         spacesImporterBootstrap.bootstrap();
-        
+
         // reset since spacesImporterBootstrap is singleton (hence reused)
         spacesImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
-        
+
         // calculate any missing usages
-        UserUsageTrackingComponent userUsageTrackingComponent = (UserUsageTrackingComponent)ctx.getBean("userUsageTrackingComponent");
+        UserUsageTrackingComponent userUsageTrackingComponent = (UserUsageTrackingComponent) ctx.getBean("userUsageTrackingComponent");
         userUsageTrackingComponent.bootstrapInternal();
-        
+
         if (logger.isDebugEnabled())
         {
-            logger.debug("Bootstrapped store: "+tenantService.getBaseName(tenantBootstrapStoreRef)+" (Tenant: "+tenantDomain+")");
+            logger.debug("Bootstrapped store: " + tenantService.getBaseName(tenantBootstrapStoreRef) + " (Tenant: " + tenantDomain + ")");
         }
     }
-   
+
     @Override
     public void deployTenants(final TenantDeployer deployer, Log logger)
     {
@@ -1119,30 +1105,38 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         {
             throw new AlfrescoRuntimeException("Logger must be provided");
         }
-        
+
         if (tenantService.isEnabled())
         {
             UserTransaction userTransaction = transactionService.getUserTransaction();
             authenticationContext.setSystemUserAsCurrentUser();
-            
+
             List<Tenant> tenants = null;
-            try 
+            try
             {
                 userTransaction.begin();
                 tenants = getAllTenants();
                 userTransaction.commit();
             }
-            catch(Throwable e)
+            catch (Throwable e)
             {
                 // rollback the transaction
-                try { if (userTransaction != null) {userTransaction.rollback();} } catch (Exception ex) {}
+                try
+                {
+                    if (userTransaction != null)
+                    {
+                        userTransaction.rollback();
+                    }
+                }
+                catch (Exception ex)
+                {}
                 throw new AlfrescoRuntimeException("Failed to get tenants", e);
             }
             finally
             {
                 authenticationContext.clearCurrentSecurityContext();
             }
-            
+
             for (Tenant tenant : tenants)
             {
                 if (tenant.isEnabled())
@@ -1150,8 +1144,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                     try
                     {
                         // deploy within context of tenant domain
-                        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
-                        {
+                        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>() {
                             public Object doWork()
                             {
                                 // init the service within tenant context
@@ -1159,23 +1152,23 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                                 return null;
                             }
                         }, tenant.getTenantDomain());
-                    
+
                     }
                     catch (Throwable e)
                     {
                         logger.error("Deployment failed" + e);
-                        
+
                         StringWriter stringWriter = new StringWriter();
                         e.printStackTrace(new PrintWriter(stringWriter));
                         logger.error(stringWriter.toString());
-                        
+
                         // tenant deploy failure should not necessarily affect other tenants
                     }
                 }
             }
         }
     }
-    
+
     @Override
     public void undeployTenants(final TenantDeployer deployer, Log logger)
     {
@@ -1187,12 +1180,12 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         {
             throw new AlfrescoRuntimeException("Logger must be provided");
         }
-        
+
         if (tenantService.isEnabled())
         {
             UserTransaction userTransaction = transactionService.getUserTransaction();
             authenticationContext.setSystemUserAsCurrentUser();
-            
+
             List<Tenant> tenants = null;
             try
             {
@@ -1200,14 +1193,27 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                 tenants = getAllTenants();
                 userTransaction.commit();
             }
-            catch(Throwable e)
+            catch (Throwable e)
             {
                 // rollback the transaction
-                try { if (userTransaction != null) {userTransaction.rollback();} } catch (Exception ex) {}
-                try {authenticationContext.clearCurrentSecurityContext(); } catch (Exception ex) {}
+                try
+                {
+                    if (userTransaction != null)
+                    {
+                        userTransaction.rollback();
+                    }
+                }
+                catch (Exception ex)
+                {}
+                try
+                {
+                    authenticationContext.clearCurrentSecurityContext();
+                }
+                catch (Exception ex)
+                {}
                 throw new AlfrescoRuntimeException("Failed to get tenants", e);
             }
-            
+
             try
             {
                 AuthenticationUtil.pushAuthentication();
@@ -1218,8 +1224,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                         try
                         {
                             // undeploy within context of tenant domain
-                            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
-                            {
+                            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>() {
                                 public Object doWork()
                                 {
                                     // destroy the service within tenant context
@@ -1231,11 +1236,11 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                         catch (Throwable e)
                         {
                             logger.error("Undeployment failed" + e);
-                            
+
                             StringWriter stringWriter = new StringWriter();
                             e.printStackTrace(new PrintWriter(stringWriter));
                             logger.error(stringWriter.toString());
-                            
+
                             // tenant undeploy failure should not necessarily affect other tenants
                         }
                     }
@@ -1247,21 +1252,21 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             }
         }
     }
-    
+
     @Override
     public void register(TenantDeployer deployer)
     {
         register(deployer, -1);
     }
-    
+
     private void register(TenantDeployer deployer, int position)
     {
         if (deployer == null)
         {
             throw new AlfrescoRuntimeException("Deployer must be provided");
         }
-       
-        if (! tenantDeployers.contains(deployer))
+
+        if (!tenantDeployers.contains(deployer))
         {
             if (position == -1)
             {
@@ -1273,7 +1278,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             }
         }
     }
-    
+
     @Override
     public void unregister(TenantDeployer deployer)
     {
@@ -1281,13 +1286,13 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         {
             throw new AlfrescoRuntimeException("TenantDeployer must be provided");
         }
-        
+
         if (tenantDeployers != null)
         {
             tenantDeployers.remove(deployer);
         }
     }
-    
+
     @Override
     public void register(WorkflowDeployer workflowDeployer)
     {
@@ -1295,13 +1300,13 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         {
             throw new AlfrescoRuntimeException("WorkflowDeployer must be provided");
         }
-        
-        if (! workflowDeployers.contains(workflowDeployer))
+
+        if (!workflowDeployers.contains(workflowDeployer))
         {
             workflowDeployers.add(workflowDeployer);
         }
     }
-     
+
     protected TenantRoutingContentStore tenantRoutingContentStore(ContentStore contentStore)
     {
         if (contentStore instanceof TenantRoutingContentStore)
@@ -1315,13 +1320,13 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
         return null;
     }
-    
+
     protected boolean isTenantRoutingContentStore(ContentStore contentStore)
     {
         boolean router = tenantRoutingContentStore(contentStore) != null;
         return router;
     }
-    
+
     protected TenantDeployer tenantDeployer(ContentStore contentStore)
     {
         if (contentStore instanceof TenantDeployer)
@@ -1335,51 +1340,50 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
         return null;
     }
-    
+
     protected boolean isTenantDeployer(ContentStore contentStore)
     {
         boolean deployer = tenantDeployer(contentStore) != null;
         return deployer;
     }
-    
-    
+
     private void initTenant(String tenantDomain, String contentRoot, String dbUrl)
     {
         validateTenantName(tenantDomain);
-        
+
         if (existsTenant(tenantDomain))
         {
             throw new AlfrescoRuntimeException("Tenant already exists: " + tenantDomain);
         }
-        
+
         if (contentRoot == null)
         {
             contentRoot = tenantFileContentStore.getRootLocation();
         }
         else
         {
-            if (! isTenantRoutingContentStore(tenantFileContentStore))
+            if (!isTenantRoutingContentStore(tenantFileContentStore))
             {
                 // eg. ALF-14121 - MT will not work with replicating-content-services-context.sample
                 throw new AlfrescoRuntimeException("MT: cannot initialse tenant - TenantRoutingContentStore is not configured AND tenant is not using co-mingled content store (ie. default root location)");
             }
-            
+
             File tenantRootDir = new File(contentRoot);
             if ((tenantRootDir.exists()) && (tenantRootDir.list().length != 0))
             {
                 logger.warn("Tenant root directory is not empty: " + contentRoot);
             }
         }
-        
+
         // init - need to enable tenant (including tenant service) before stores bootstrap
         TenantEntity tenantEntity = new TenantEntity(tenantDomain);
         tenantEntity.setEnabled(true);
         tenantEntity.setContentRoot(contentRoot);
         tenantEntity.setDbUrl(dbUrl);
-        
+
         tenantAdminDAO.createTenant(tenantEntity);
     }
-    
+
     /**
      * @see #MAX_LEN
      * @see #REGEX_CONTAINS_ALPHA
@@ -1388,45 +1392,45 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     protected void validateTenantName(String tenantDomain)
     {
         ParameterCheck.mandatory("tenantDomain", tenantDomain);
-        
+
         if (tenantDomain.length() > MAX_LEN)
         {
-        	throw new IllegalArgumentException(tenantDomain + " is not a valid tenant name (must be less than " + MAX_LEN + " characters)");
+            throw new IllegalArgumentException(tenantDomain + " is not a valid tenant name (must be less than " + MAX_LEN + " characters)");
         }
-        
-        if (! Pattern.matches(REGEX_CONTAINS_ALPHA, tenantDomain))
+
+        if (!Pattern.matches(REGEX_CONTAINS_ALPHA, tenantDomain))
         {
-        	throw new IllegalArgumentException(tenantDomain + " is not a valid tenant name (must contain at least one alpha character)");
+            throw new IllegalArgumentException(tenantDomain + " is not a valid tenant name (must contain at least one alpha character)");
         }
-        
+
         String[] dnsLabels = tenantDomain.split("\\.");
         if (dnsLabels.length != 0)
         {
-	        for (int i = 0; i < dnsLabels.length; i++)
-	        {
-		        if (! Pattern.matches(REGEX_VALID_DNS_LABEL, dnsLabels[i]))
-		        {
-		        	throw new IllegalArgumentException(dnsLabels[i] + " is not a valid DNS label (must match " + REGEX_VALID_DNS_LABEL + ")");
-		        }
-	        }
+            for (int i = 0; i < dnsLabels.length; i++)
+            {
+                if (!Pattern.matches(REGEX_VALID_DNS_LABEL, dnsLabels[i]))
+                {
+                    throw new IllegalArgumentException(dnsLabels[i] + " is not a valid DNS label (must match " + REGEX_VALID_DNS_LABEL + ")");
+                }
+            }
         }
         else
         {
-	        if (! Pattern.matches(REGEX_VALID_DNS_LABEL, tenantDomain))
-	        {
-	        	throw new IllegalArgumentException(tenantDomain + " is not a valid DNS label (must match " + REGEX_VALID_DNS_LABEL + ")");
-	        }
+            if (!Pattern.matches(REGEX_VALID_DNS_LABEL, tenantDomain))
+            {
+                throw new IllegalArgumentException(tenantDomain + " is not a valid DNS label (must match " + REGEX_VALID_DNS_LABEL + ")");
+            }
         }
     }
-    
+
     // tenant deployer/user services delegated to tenant service
-    
+
     @Override
     public boolean isEnabled()
     {
         return tenantService.isEnabled();
     }
-    
+
     @Override
     public String getCurrentUserDomain()
     {
@@ -1438,22 +1442,22 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     {
         return tenantService.getUserDomain(username);
     }
-    
+
     @Override
     public String getBaseNameUser(String username)
     {
         return tenantService.getBaseNameUser(username);
     }
-    
+
     @Override
     public String getDomainUser(String baseUsername, String tenantDomain)
     {
         tenantDomain = getTenantDomain(tenantDomain);
         return tenantService.getDomainUser(baseUsername, tenantDomain);
     }
-    
+
     // local helpers
-    
+
     private String getBaseAdminUser()
     {
         // default for backwards compatibility only - eg. upgrade of existing MT instance (mt-admin-context.xml.sample)
@@ -1463,15 +1467,15 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
         return getBaseNameUser(AuthenticationUtil.getAdminUserName());
     }
-    
+
     private String getSystemUser(String tenantDomain)
     {
         return tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain);
     }
-    
+
     private String getTenantAdminUser(String tenantDomain)
     {
-        
+
         return tenantService.getDomainUser(getBaseAdminUser(), tenantDomain);
     }
 
@@ -1479,7 +1483,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     {
         return authenticationContext.getGuestUserName(tenantDomain);
     }
-    
+
     /**
      * Do a null check and convert tenant domain to lowercase
      */

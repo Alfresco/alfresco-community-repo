@@ -29,13 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.alfresco.error.ExceptionStackUtil;
-import org.alfresco.repo.node.integrity.IntegrityException;
-import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.service.cmr.coci.CheckOutCheckInServiceException;
-import org.alfresco.service.cmr.lock.NodeLockedException;
-import org.alfresco.service.cmr.model.FileExistsException;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
@@ -47,6 +40,14 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisUpdateConflictExcept
 import org.apache.chemistry.opencmis.commons.exceptions.CmisVersioningException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.error.ExceptionStackUtil;
+import org.alfresco.repo.node.integrity.IntegrityException;
+import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.cmr.coci.CheckOutCheckInServiceException;
+import org.alfresco.service.cmr.lock.NodeLockedException;
+import org.alfresco.service.cmr.model.FileExistsException;
 
 /**
  * Interceptor to catch various exceptions and translate them into CMIS-related exceptions
@@ -61,28 +62,28 @@ public class AlfrescoCmisExceptionInterceptor implements MethodInterceptor
     /**
      * Exceptions that are specifically handled.
      */
-    @SuppressWarnings({ "rawtypes" })
+    @SuppressWarnings({"rawtypes"})
     public static final Class[] EXCEPTIONS_OF_INTEREST;
     static
     {
-        Class<?>[] coreClasses = new Class[] {
+        Class<?>[] coreClasses = new Class[]{
                 AuthenticationException.class,
                 CheckOutCheckInServiceException.class,
                 FileExistsException.class,
-                IntegrityException.class,     // Similar to StaleObjectState
+                IntegrityException.class, // Similar to StaleObjectState
                 AccessDeniedException.class,
                 NodeLockedException.class
-                };
-     
+        };
+
         List<Class<?>> retryExceptions = new ArrayList<Class<?>>();
         // Add core classes to the list.
         retryExceptions.addAll(Arrays.asList(coreClasses));
-        
-        EXCEPTIONS_OF_INTEREST = retryExceptions.toArray(new Class[] {});
+
+        EXCEPTIONS_OF_INTEREST = retryExceptions.toArray(new Class[]{});
     }
 
     private static Log logger = LogFactory.getLog(AlfrescoCmisExceptionInterceptor.class);
-    
+
     public Object invoke(MethodInvocation mi) throws Throwable
     {
         try
@@ -93,7 +94,7 @@ public class AlfrescoCmisExceptionInterceptor implements MethodInterceptor
         {
             // We dig into the exception to see if there is anything of interest to CMIS
             Throwable cmisAffecting = ExceptionStackUtil.getCause(e, EXCEPTIONS_OF_INTEREST);
-            
+
             if (cmisAffecting == null)
             {
                 // The exception is not something that CMIS needs to handle in any special way

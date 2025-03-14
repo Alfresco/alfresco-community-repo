@@ -62,8 +62,7 @@ public class ValueDerivingMapFactory<O, K, V>
      */
     public Map<K, V> getMap(final O source)
     {
-        return new AbstractMap<K, V>()
-        {
+        return new AbstractMap<K, V>() {
 
             @Override
             public V get(Object key)
@@ -95,15 +94,13 @@ public class ValueDerivingMapFactory<O, K, V>
             {
                 final Set<Map.Entry<K, ValueDeriver<O, V>>> entries = ValueDerivingMapFactory.this.valueDerivers
                         .entrySet();
-                return new AbstractSet<Entry<K, V>>()
-                {
+                return new AbstractSet<Entry<K, V>>() {
 
                     @Override
                     public Iterator<Map.Entry<K, V>> iterator()
                     {
                         final Iterator<Map.Entry<K, ValueDeriver<O, V>>> i = entries.iterator();
-                        return new Iterator<Map.Entry<K, V>>()
-                        {
+                        return new Iterator<Map.Entry<K, V>>() {
 
                             public boolean hasNext()
                             {
@@ -113,8 +110,7 @@ public class ValueDerivingMapFactory<O, K, V>
                             public Map.Entry<K, V> next()
                             {
                                 final Map.Entry<K, ValueDeriver<O, V>> next = i.next();
-                                return new Map.Entry<K, V>()
-                                {
+                                return new Map.Entry<K, V>() {
 
                                     public K getKey()
                                     {

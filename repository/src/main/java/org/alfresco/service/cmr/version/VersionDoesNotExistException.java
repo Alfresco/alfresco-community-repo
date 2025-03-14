@@ -27,7 +27,6 @@ package org.alfresco.service.cmr.version;
 
 import java.text.MessageFormat;
 
-
 /**
  * Version does not exist exception class.
  * 

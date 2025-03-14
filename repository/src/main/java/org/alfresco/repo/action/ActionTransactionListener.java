@@ -39,42 +39,40 @@ public class ActionTransactionListener implements TransactionListener
      * Id used in equals and hash
      */
     private String id = GUID.generate();
-    
+
     /**
      * The action service (runtime interface)
      */
     private RuntimeActionService actionService;
-    
+
     /**
      * Constructor
      * 
-     * @param actionService        the action service
+     * @param actionService
+     *            the action service
      */
     public ActionTransactionListener(RuntimeActionService actionService)
     {
         this.actionService = actionService;
     }
-    
+
     /**
      * @see org.alfresco.repo.transaction.TransactionListener#flush()
      */
     public void flush()
-    {
-    }
+    {}
 
     /**
      * @see org.alfresco.repo.transaction.TransactionListener#beforeCommit(boolean)
      */
     public void beforeCommit(boolean readOnly)
-    {
-    }
+    {}
 
     /**
      * @see org.alfresco.repo.transaction.TransactionListener#beforeCompletion()
      */
     public void beforeCompletion()
-    {
-    }
+    {}
 
     /**
      * @see org.alfresco.repo.transaction.TransactionListener#afterCommit()
@@ -88,9 +86,8 @@ public class ActionTransactionListener implements TransactionListener
      * @see org.alfresco.repo.transaction.TransactionListener#afterRollback()
      */
     public void afterRollback()
-    {
-    }
-    
+    {}
+
     /**
      * @see java.lang.Object#hashCode()
      */
@@ -99,7 +96,7 @@ public class ActionTransactionListener implements TransactionListener
     {
         return this.id.hashCode();
     }
-    
+
     /**
      * @see java.lang.Object#equals(java.lang.Object)
      */

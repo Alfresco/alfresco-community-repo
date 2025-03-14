@@ -38,10 +38,14 @@ public class LuceneJoin extends BaseJoin
 {
 
     /**
-     * @param left Source
-     * @param right Source
-     * @param joinType JoinType
-     * @param joinConstraint Constraint
+     * @param left
+     *            Source
+     * @param right
+     *            Source
+     * @param joinType
+     *            JoinType
+     * @param joinConstraint
+     *            Constraint
      */
     public LuceneJoin(Source left, Source right, JoinType joinType, Constraint joinConstraint)
     {

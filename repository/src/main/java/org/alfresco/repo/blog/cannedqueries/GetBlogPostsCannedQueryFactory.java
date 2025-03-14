@@ -27,15 +27,14 @@ package org.alfresco.repo.blog.cannedqueries;
 
 import java.util.Date;
 
-import org.alfresco.model.BlogIntegrationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails;
-import org.alfresco.query.PagingRequest;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.service.cmr.blog.BlogPostInfo;
 import org.alfresco.service.cmr.blog.BlogService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -56,61 +55,61 @@ public class GetBlogPostsCannedQueryFactory extends AbstractBlogPostsCannedQuery
     public CannedQuery<BlogEntity> getCannedQuery(CannedQueryParameters parameters)
     {
         final GetBlogPostsCannedQuery cq = new GetBlogPostsCannedQuery(cannedQueryDAO, methodSecurity, parameters);
-        
+
         return (CannedQuery<BlogEntity>) cq;
     }
-    
+
     public CannedQuery<BlogEntity> getGetDraftsCannedQuery(NodeRef blogContainerNode, String username, PagingRequest pagingReq)
     {
         ParameterCheck.mandatory("blogContainerNode", blogContainerNode);
         ParameterCheck.mandatory("pagingReq", pagingReq);
-        
+
         int requestTotalCountMax = pagingReq.getRequestTotalCountMax();
-        
-        //FIXME Need tenant service like for GetChildren?
+
+        // FIXME Need tenant service like for GetChildren?
         boolean isPublished = false;
         GetBlogPostsCannedQueryParams paramBean = new GetBlogPostsCannedQueryParams(getNodeId(blogContainerNode),
-                                                                                    getQNameId(ContentModel.PROP_NAME),
-                                                                                    getQNameId(ContentModel.PROP_PUBLISHED),
-                                                                                    getQNameId(ContentModel.TYPE_CONTENT),
-                                                                                    username,
-                                                                                    isPublished,
-                                                                                    null, null,
-                                                                                    null, null);
-        
+                getQNameId(ContentModel.PROP_NAME),
+                getQNameId(ContentModel.PROP_PUBLISHED),
+                getQNameId(ContentModel.TYPE_CONTENT),
+                username,
+                isPublished,
+                null, null,
+                null, null);
+
         CannedQueryPageDetails cqpd = createCQPageDetails(pagingReq);
         CannedQuerySortDetails cqsd = createCQSortDetails(ContentModel.PROP_CREATED, SortOrder.DESCENDING);
-        
+
         // create query params holder
         CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, requestTotalCountMax, pagingReq.getQueryExecutionId());
-        
+
         // return canned query instance
         return getCannedQuery(params);
     }
-    
+
     public CannedQuery<BlogEntity> getGetPublishedCannedQuery(NodeRef blogContainerNode, Date fromDate, Date toDate, String byUser, PagingRequest pagingReq)
     {
         ParameterCheck.mandatory("blogContainerNode", blogContainerNode);
         ParameterCheck.mandatory("pagingReq", pagingReq);
-        
+
         int requestTotalCountMax = pagingReq.getRequestTotalCountMax();
-        
+
         boolean isPublished = true;
         GetBlogPostsCannedQueryParams paramBean = new GetBlogPostsCannedQueryParams(getNodeId(blogContainerNode),
-                                                                                    getQNameId(ContentModel.PROP_NAME),
-                                                                                    getQNameId(ContentModel.PROP_PUBLISHED),
-                                                                                    getQNameId(ContentModel.TYPE_CONTENT),
-                                                                                    byUser,
-                                                                                    isPublished,
-                                                                                    fromDate, toDate,
-                                                                                    null, null);
-        
+                getQNameId(ContentModel.PROP_NAME),
+                getQNameId(ContentModel.PROP_PUBLISHED),
+                getQNameId(ContentModel.TYPE_CONTENT),
+                byUser,
+                isPublished,
+                fromDate, toDate,
+                null, null);
+
         CannedQueryPageDetails cqpd = createCQPageDetails(pagingReq);
         CannedQuerySortDetails cqsd = createCQSortDetails(ContentModel.PROP_PUBLISHED, SortOrder.DESCENDING);
-        
+
         // create query params holder
         CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, requestTotalCountMax, pagingReq.getQueryExecutionId());
-        
+
         // return canned query instance
         return getCannedQuery(params);
     }

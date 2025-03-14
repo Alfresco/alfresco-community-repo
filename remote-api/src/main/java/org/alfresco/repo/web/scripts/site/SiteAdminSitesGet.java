@@ -30,8 +30,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingResults;
@@ -47,11 +52,6 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ScriptPagingDetails;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * This class is the controller for the <i>site-admin-sites.get</i> web script.
@@ -97,7 +97,7 @@ public class SiteAdminSitesGet extends DeclarativeWebScript
 
         // Create paging
         final ScriptPagingDetails paging = new ScriptPagingDetails(getIntParameter(req, MAX_ITEMS,
-                    DEFAULT_MAX_ITEMS_PER_PAGE), getIntParameter(req, SKIP_COUNT, 0));
+                DEFAULT_MAX_ITEMS_PER_PAGE), getIntParameter(req, SKIP_COUNT, 0));
 
         // request a total count of found items
         paging.setRequestTotalCountMax(Integer.MAX_VALUE);
@@ -108,21 +108,20 @@ public class SiteAdminSitesGet extends DeclarativeWebScript
         sortProps.add(new Pair<QName, Boolean>(ContentModel.PROP_NAME, true));
 
         PagingResults<SiteInfo> pagingResults = AuthenticationUtil.runAs(
-                    new AuthenticationUtil.RunAsWork<PagingResults<SiteInfo>>()
+                new AuthenticationUtil.RunAsWork<PagingResults<SiteInfo>>() {
+                    public PagingResults<SiteInfo> doWork() throws Exception
                     {
-                        public PagingResults<SiteInfo> doWork() throws Exception
-                        {
-                            return siteService.listSites(filterProp, sortProps, paging);
-                        }
-                    }, AuthenticationUtil.getAdminUserName());
+                        return siteService.listSites(filterProp, sortProps, paging);
+                    }
+                }, AuthenticationUtil.getAdminUserName());
 
         List<SiteInfo> result = pagingResults.getPage();
         List<SiteState> sites = new ArrayList<SiteState>(result.size());
         for (SiteInfo info : result)
         {
             sites.add(SiteState.create(info,
-                        siteService.listMembers(info.getShortName(), null, SiteModel.SITE_MANAGER, 0), currentUser,
-                        nodeService, personService));
+                    siteService.listMembers(info.getShortName(), null, SiteModel.SITE_MANAGER, 0), currentUser,
+                    nodeService, personService));
         }
 
         Map<String, Object> sitesData = new HashMap<String, Object>(6);
@@ -135,7 +134,7 @@ public class SiteAdminSitesGet extends DeclarativeWebScript
         sitesData.put("totalItems", (pagingResults.getTotalResultCount() == null ? -1 : pagingResults.getTotalResultCount().getFirst()));
         sitesData.put("skipCount", paging.getSkipCount());
         sitesData.put("maxItems", paging.getMaxItems());
-        
+
         // Create the model from the site and pagination data
         Map<String, Object> model = new HashMap<String, Object>(1);
         model.put("data", sitesData);

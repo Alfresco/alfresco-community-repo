@@ -1,17 +1,16 @@
 package org.alfresco.cmis;
 
-import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.data.DataUser;
-import org.alfresco.utility.model.*;
-import org.alfresco.utility.report.Bug;
-import org.alfresco.utility.testrail.ExecutionType;
-import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisUnauthorizedException;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.model.*;
+import org.alfresco.utility.testrail.ExecutionType;
+import org.alfresco.utility.testrail.annotation.TestRail;
 
 public class GetObjectTypeTests extends CmisTest
 {
@@ -22,7 +21,7 @@ public class GetObjectTypeTests extends CmisTest
     DataUser.ListUserWithRoles usersWithRoles;
 
     @BeforeClass(alwaysRun = true)
-    public void dataPreparation() throws Exception 
+    public void dataPreparation() throws Exception
     {
         siteManager = dataUser.createRandomTestUser();
         testSite = dataSite.usingUser(siteManager).createPublicRandomSite();
@@ -38,7 +37,7 @@ public class GetObjectTypeTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.SANITY,
             description = "Verify CMIS folder type")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = {TestGroup.SANITY, TestGroup.CMIS})
     public void verifyCmisFolderType() throws Exception
     {
         cmisApi.authenticateUser(siteManager).usingSite(testSite)
@@ -48,17 +47,17 @@ public class GetObjectTypeTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.SANITY,
             description = "Verify CMIS document type")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = {TestGroup.SANITY, TestGroup.CMIS})
     public void verifyCmisDocumentType() throws Exception
     {
         cmisApi.authenticateUser(siteManager).usingSite(testSite)
                 .usingResource(testFile)
                 .assertThat().baseTypeIdIs(BaseTypeId.CMIS_DOCUMENT.value());
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify CMIS folder type of folder that was deleted")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisObjectNotFoundException.class})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisObjectNotFoundException.class})
     public void verifyCmisFolderTypeOfDeletedFolder() throws Exception
     {
         FolderModel folderModel = FolderModel.getRandomFolderModel();
@@ -70,7 +69,7 @@ public class GetObjectTypeTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify CMIS document type of file that was deleted")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisObjectNotFoundException.class})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisObjectNotFoundException.class})
     public void verifyCmisDocumentTypeOfDeletedDocument() throws Exception
     {
         FileModel fileModel = FileModel.getRandomFileModel(FileType.MSWORD);
@@ -82,7 +81,7 @@ public class GetObjectTypeTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Site contributor verifies CMIS document type")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteContributorVerifiesCmisDocumentType() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingResource(testFile)
@@ -91,7 +90,7 @@ public class GetObjectTypeTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Site contributor verifies CMIS folder type")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteContributorVerifiesCmisFolderType() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingResource(testFolder)
@@ -100,7 +99,7 @@ public class GetObjectTypeTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Site collaborator verifies CMIS document type")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteCollaboratorVerifiesCmisDocumentType() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).usingResource(testFile)
@@ -109,7 +108,7 @@ public class GetObjectTypeTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Site collaborator verifies CMIS folder type")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteCollaboratorVerifiesCmisFolderType() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).usingResource(testFolder)
@@ -118,7 +117,7 @@ public class GetObjectTypeTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Site consumer verifies CMIS document type")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteConsumerVerifiesCmisDocumentType() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).usingResource(testFile)
@@ -127,7 +126,7 @@ public class GetObjectTypeTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Site consumer verifies CMIS folder type")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteConsumerVerifiesCmisFolderType() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).usingResource(testFolder)
@@ -136,7 +135,7 @@ public class GetObjectTypeTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Non site member is not able to verify CMIS document type for a document from a private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberCannotVerifyCmisObjectTypeForADocumentFromPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
@@ -150,7 +149,7 @@ public class GetObjectTypeTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Non site member is not able to verify CMIS document type for a folder from a private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberCannotVerifyCmisFolderTypeForAFolderFromPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
@@ -164,7 +163,7 @@ public class GetObjectTypeTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Non site member is not able to verify CMIS document type for a document from a moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberCannotVerifyCmisObjectTypeForADocumentFromModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingAdmin().createModeratedRandomSite();
@@ -178,7 +177,7 @@ public class GetObjectTypeTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Non site member is not able to verify CMIS document type for a folder from a moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberCannotVerifyCmisObjectTypeForAFolderFromModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingAdmin().createModeratedRandomSite();

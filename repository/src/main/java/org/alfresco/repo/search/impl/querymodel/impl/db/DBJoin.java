@@ -38,10 +38,14 @@ public class DBJoin extends BaseJoin
 {
 
     /**
-     * @param left Source
-     * @param right Source
-     * @param joinType JoinType
-     * @param joinConstraint Constraint
+     * @param left
+     *            Source
+     * @param right
+     *            Source
+     * @param joinType
+     *            JoinType
+     * @param joinConstraint
+     *            Constraint
      */
     public DBJoin(Source left, Source right, JoinType joinType, Constraint joinConstraint)
     {

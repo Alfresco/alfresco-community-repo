@@ -32,12 +32,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Implementation for the period data type "d:period" A period is specified by the period type and an optional
- * expression. The string value is periodType|expression Examples are: none day - one day day|3 - 3 days week - one week
- * week|1 - one week week|2 - two weeks month year monthend quarterend The period type specifies a period
- * implementation. This is registered with this class and is used to when adding the period to a date, handles any
- * processing of the expression, reports if the expression is not required, optional or mandatory.
- * The period data type can be also passed as a Map of keys: periodType and expression.
+ * Implementation for the period data type "d:period" A period is specified by the period type and an optional expression. The string value is periodType|expression Examples are: none day - one day day|3 - 3 days week - one week week|1 - one week week|2 - two weeks month year monthend quarterend The period type specifies a period implementation. This is registered with this class and is used to when adding the period to a date, handles any processing of the expression, reports if the expression is not required, optional or mandatory. The period data type can be also passed as a Map of keys: periodType and expression.
  * 
  * @author andyh
  */
@@ -54,7 +49,9 @@ public class Period implements Serializable
 
     /**
      * Register a provider
-     * @param periodProvider PeriodProvider
+     * 
+     * @param periodProvider
+     *            PeriodProvider
      */
     public static void registerProvider(PeriodProvider periodProvider)
     {
@@ -63,9 +60,12 @@ public class Period implements Serializable
 
     /**
      * Find a provider
-     * @param periodType String
+     * 
+     * @param periodType
+     *            String
      * @return the provider
-     * @throws IllegalStateException of there is no implementation
+     * @throws IllegalStateException
+     *             of there is no implementation
      */
     public static PeriodProvider getProvider(String periodType)
     {
@@ -79,6 +79,7 @@ public class Period implements Serializable
 
     /**
      * Get the set of registered providers
+     * 
      * @return - the set of registered providers
      */
     public static Set<String> getProviderNames()
@@ -93,7 +94,8 @@ public class Period implements Serializable
     /**
      * Create a period without an accompanying expression.
      * 
-     * @param period String
+     * @param period
+     *            String
      */
     public Period(String period)
     {
@@ -104,7 +106,7 @@ public class Period implements Serializable
             expression = parts[1];
         }
     }
-    
+
     /**
      * Create a period using key-value
      * 
@@ -120,7 +122,7 @@ public class Period implements Serializable
         {
             throw new IllegalArgumentException("Cannot create Period with null periodType");
         }
-        
+
         periodType = source.get("periodType");
         expression = source.get("expression");
     }
@@ -144,7 +146,8 @@ public class Period implements Serializable
     /**
      * Calculate the next date for this period given the a start date.
      * 
-     * @param date Date
+     * @param date
+     *            Date
      * @return the next date.
      */
     public Date getNextDate(Date date)
@@ -153,7 +156,7 @@ public class Period implements Serializable
         {
             return null;
         }
-        
+
         PeriodProvider provider = getProvider(periodType);
         return provider.getNextDate(date, expression != null ? expression : provider.getDefaultExpression());
     }

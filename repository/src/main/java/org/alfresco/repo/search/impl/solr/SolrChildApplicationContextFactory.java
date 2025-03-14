@@ -29,20 +29,21 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
-import org.alfresco.repo.search.QueryParserException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.context.ApplicationContext;
 
+import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
+import org.alfresco.repo.search.QueryParserException;
+
 /**
  * @author Andy
  */
 public class SolrChildApplicationContextFactory extends ChildApplicationContextFactory
 {
-    
+
     private static final Log LOGGER = LogFactory.getLog(SolrChildApplicationContextFactory.class);
 
     protected static final String ALFRESCO_ACTIVE = "tracker.alfresco.active";
@@ -62,7 +63,7 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
     protected static final String ARCHIVE_APPROX_INDEXING_TIME_REMAINING = "tracker.archive.approx.indexing.time.remaining";
     protected static final String ARCHIVE_DISK = "tracker.archive.disk";
     protected static final String ARCHIVE_MEMORY = "tracker.archive.memory";
-    
+
     private static final String SUMMARY_FIELD_TOTAL_SEARCHER_CACHE_GB = "Total Searcher Cache (GB)";
     private static final String SUMMARY_FIELD_ON_DISK_GB = "On disk (GB)";
     private static final String SUMMARY_FIELD_APPROX_TRANSACTION_INDEXING_TIME_REMAINING = "Approx transaction indexing time remaining";
@@ -73,12 +74,12 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
     private static final String SUMMARY_FIELD_ACTIVE = "Active";
 
     private SolrAdminHTTPClient adminClient;
-    
+
     public void setAdminClient(SolrAdminHTTPClient adminClient)
     {
         this.adminClient = adminClient;
     }
-    
+
     public SolrAdminHTTPClient getAdminClient()
     {
         if (adminClient == null)
@@ -88,7 +89,7 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
         }
         return adminClient;
     }
-    
+
     private static boolean isAlfrescoCoreProperty(String name)
     {
         return name.startsWith("tracker.alfresco.");
@@ -98,66 +99,65 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
     {
         return name.startsWith("tracker.archive.");
     }
-    
+
     @Override
     public boolean isUpdateable(String name)
     {
         // TODO Auto-generated method stub
         return super.isUpdateable(name)
-                && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_ACTIVE) 
+                && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_ACTIVE)
                 && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAG)
-                && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAG_DURATION) 
-                && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAST_INDEXED_TXN) 
-                && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_APPROX_TXNS_REMAINING) 
+                && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAG_DURATION)
+                && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAST_INDEXED_TXN)
+                && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_APPROX_TXNS_REMAINING)
                 && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_APPROX_INDEXING_TIME_REMAINING)
                 && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_DISK)
                 && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_MEMORY)
-                
+
                 && !name.equals(SolrChildApplicationContextFactory.ARCHIVE_ACTIVE)
-                && !name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAG) 
+                && !name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAG)
                 && !name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAG_DURATION)
                 && !name.equals(SolrChildApplicationContextFactory.ARCHIVE_APPROX_TXNS_REMAINING)
                 && !name.equals(SolrChildApplicationContextFactory.ARCHIVE_APPROX_INDEXING_TIME_REMAINING)
                 && !name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAST_INDEXED_TXN)
                 && !name.equals(SolrChildApplicationContextFactory.ARCHIVE_DISK)
-                && !name.equals(SolrChildApplicationContextFactory.ARCHIVE_MEMORY)
-                ;
+                && !name.equals(SolrChildApplicationContextFactory.ARCHIVE_MEMORY);
     }
-    
+
     private String getPropertyValue(JSONObject core, String name)
     {
         switch (name)
         {
-            case SolrChildApplicationContextFactory.ALFRESCO_ACTIVE:
-            case SolrChildApplicationContextFactory.ARCHIVE_ACTIVE:
-                return core.getBoolean(SUMMARY_FIELD_ACTIVE) ? "true" : "false";
-            case SolrChildApplicationContextFactory.ALFRESCO_LAG:
-            case SolrChildApplicationContextFactory.ARCHIVE_LAG:
-                return core.getString(SUMMARY_FIELD_TX_LAG);
-            case SolrChildApplicationContextFactory.ALFRESCO_LAG_DURATION:
-            case SolrChildApplicationContextFactory.ARCHIVE_LAG_DURATION:
-                return core.getString(SUMMARY_FIELD_TX_DURATION);
-            case SolrChildApplicationContextFactory.ALFRESCO_LAST_INDEXED_TXN:
-            case SolrChildApplicationContextFactory.ARCHIVE_LAST_INDEXED_TXN:
-                return core.getNumber(SUMMARY_FIELD_ID_FOR_LAST_TX_IN_INDEX).toString();
-            case SolrChildApplicationContextFactory.ALFRESCO_APPROX_TXNS_REMAINING:
-            case SolrChildApplicationContextFactory.ARCHIVE_APPROX_TXNS_REMAINING:
-                return core.getNumber(SUMMARY_FIELD_APPROX_TRANSACTIONS_REMAINING).toString();
-            case SolrChildApplicationContextFactory.ALFRESCO_APPROX_INDEXING_TIME_REMAINING:
-            case SolrChildApplicationContextFactory.ARCHIVE_APPROX_INDEXING_TIME_REMAINING:
-                return core.getString(SUMMARY_FIELD_APPROX_TRANSACTION_INDEXING_TIME_REMAINING);
-            case SolrChildApplicationContextFactory.ALFRESCO_DISK:
-            case SolrChildApplicationContextFactory.ARCHIVE_DISK:
-                return core.getNumber(SUMMARY_FIELD_ON_DISK_GB).toString();
-            case SolrChildApplicationContextFactory.ALFRESCO_MEMORY:
-            case SolrChildApplicationContextFactory.ARCHIVE_MEMORY:
-                return core.getNumber(SUMMARY_FIELD_TOTAL_SEARCHER_CACHE_GB).toString();
-            default:
-                return null;
-            
+        case SolrChildApplicationContextFactory.ALFRESCO_ACTIVE:
+        case SolrChildApplicationContextFactory.ARCHIVE_ACTIVE:
+            return core.getBoolean(SUMMARY_FIELD_ACTIVE) ? "true" : "false";
+        case SolrChildApplicationContextFactory.ALFRESCO_LAG:
+        case SolrChildApplicationContextFactory.ARCHIVE_LAG:
+            return core.getString(SUMMARY_FIELD_TX_LAG);
+        case SolrChildApplicationContextFactory.ALFRESCO_LAG_DURATION:
+        case SolrChildApplicationContextFactory.ARCHIVE_LAG_DURATION:
+            return core.getString(SUMMARY_FIELD_TX_DURATION);
+        case SolrChildApplicationContextFactory.ALFRESCO_LAST_INDEXED_TXN:
+        case SolrChildApplicationContextFactory.ARCHIVE_LAST_INDEXED_TXN:
+            return core.getNumber(SUMMARY_FIELD_ID_FOR_LAST_TX_IN_INDEX).toString();
+        case SolrChildApplicationContextFactory.ALFRESCO_APPROX_TXNS_REMAINING:
+        case SolrChildApplicationContextFactory.ARCHIVE_APPROX_TXNS_REMAINING:
+            return core.getNumber(SUMMARY_FIELD_APPROX_TRANSACTIONS_REMAINING).toString();
+        case SolrChildApplicationContextFactory.ALFRESCO_APPROX_INDEXING_TIME_REMAINING:
+        case SolrChildApplicationContextFactory.ARCHIVE_APPROX_INDEXING_TIME_REMAINING:
+            return core.getString(SUMMARY_FIELD_APPROX_TRANSACTION_INDEXING_TIME_REMAINING);
+        case SolrChildApplicationContextFactory.ALFRESCO_DISK:
+        case SolrChildApplicationContextFactory.ARCHIVE_DISK:
+            return core.getNumber(SUMMARY_FIELD_ON_DISK_GB).toString();
+        case SolrChildApplicationContextFactory.ALFRESCO_MEMORY:
+        case SolrChildApplicationContextFactory.ARCHIVE_MEMORY:
+            return core.getNumber(SUMMARY_FIELD_TOTAL_SEARCHER_CACHE_GB).toString();
+        default:
+            return null;
+
         }
     }
-    
+
     private JSONObject getSolrSummary()
     {
         HashMap<String, String> args = new HashMap<String, String>();
@@ -166,7 +166,7 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
         JSONObject json = getAdminClient().execute(args);
         return json.getJSONObject("Summary");
     }
-    
+
     @Override
     public String getProperty(String name)
     {
@@ -175,12 +175,12 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
         {
             try
             {
-                
+
                 JSONObject summary = getSolrSummary();
-                
+
                 if (isAlfrescoCoreProperty(name))
                 {
-    	            JSONObject alfresco = null;
+                    JSONObject alfresco = null;
                     try
                     {
                         alfresco = summary.getJSONObject("alfresco");
@@ -190,13 +190,13 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
                         // The core might be absent.
                         LOGGER.debug("Node alfresco not found", e);
                     }
-    
+
                     if (alfresco != null)
                     {
                         return getPropertyValue(alfresco, name);
                     }
                 }
-                
+
                 if (isArchiveCoreProperty(name))
                 {
                     JSONObject archive = null;
@@ -209,7 +209,7 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
                         // The core might be absent.
                         LOGGER.debug("Node archive not found", e);
                     }
-    
+
                     if (archive != null)
                     {
                         return getPropertyValue(archive, name);
@@ -234,10 +234,10 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
         }
         else
         {
-        	// solr subsystem is not started or not active
+            // solr subsystem is not started or not active
             if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_ACTIVE))
             {
-             	return "";
+                return "";
             }
             else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_ACTIVE))
             {
@@ -249,23 +249,23 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
             }
             else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAG_DURATION))
             {
-            	return "Unavailable: solr subsystem not started";
+                return "Unavailable: solr subsystem not started";
             }
             else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAST_INDEXED_TXN))
             {
-            	return "Unavailable: solr subsystem not started";
+                return "Unavailable: solr subsystem not started";
             }
             else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_APPROX_TXNS_REMAINING))
             {
-            	return "Unavailable: solr subsystem not started";
+                return "Unavailable: solr subsystem not started";
             }
             else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_APPROX_INDEXING_TIME_REMAINING))
             {
-            	return "Unavailable: solr subsystem not started";
+                return "Unavailable: solr subsystem not started";
             }
             else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_DISK))
             {
-                return "Unavailable: solr subsystem not started";   
+                return "Unavailable: solr subsystem not started";
             }
             else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_MEMORY))
             {
@@ -273,27 +273,27 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
             }
             else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAG))
             {
-            	return "Unavailable: solr subsystem not started";
+                return "Unavailable: solr subsystem not started";
             }
             else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAG_DURATION))
             {
-            	return "Unavailable: solr subsystem not started";
+                return "Unavailable: solr subsystem not started";
             }
             else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAST_INDEXED_TXN))
             {
-            	return "Unavailable: solr subsystem not started";
+                return "Unavailable: solr subsystem not started";
             }
             else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_APPROX_TXNS_REMAINING))
             {
-            	return "Unavailable: solr subsystem not started";
+                return "Unavailable: solr subsystem not started";
             }
             else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_APPROX_INDEXING_TIME_REMAINING))
             {
-            	return "Unavailable: solr subsystem not started";
+                return "Unavailable: solr subsystem not started";
             }
             else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_DISK))
             {
-                return "Unavailable: solr subsystem not started";   
+                return "Unavailable: solr subsystem not started";
             }
             else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_MEMORY))
             {
@@ -318,7 +318,7 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
         result.add(SolrChildApplicationContextFactory.ALFRESCO_APPROX_INDEXING_TIME_REMAINING);
         result.add(SolrChildApplicationContextFactory.ALFRESCO_DISK);
         result.add(SolrChildApplicationContextFactory.ALFRESCO_MEMORY);
-       
+
         result.add(SolrChildApplicationContextFactory.ARCHIVE_ACTIVE);
         result.add(SolrChildApplicationContextFactory.ARCHIVE_LAG);
         result.add(SolrChildApplicationContextFactory.ARCHIVE_LAG_DURATION);
@@ -333,13 +333,13 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
 
     public void setProperty(String name, String value)
     {
-        if(false == isUpdateable(name))
+        if (false == isUpdateable(name))
         {
             throw new IllegalStateException("Illegal write to property \"" + name + "\"");
         }
         super.setProperty(name, value);
-    }  
-    
+    }
+
     protected void destroy(boolean isPermanent)
     {
         super.destroy(isPermanent);

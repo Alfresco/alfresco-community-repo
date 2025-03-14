@@ -25,15 +25,15 @@
  */
 package org.alfresco;
 
-import org.alfresco.repo.security.mtls.LocalTransformClientWithMTLSIntegrationTest;
 import org.junit.experimental.categories.Categories;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
-@RunWith (Categories.class)
+import org.alfresco.repo.security.mtls.LocalTransformClientWithMTLSIntegrationTest;
+
+@RunWith(Categories.class)
 @Suite.SuiteClasses({
         LocalTransformClientWithMTLSIntegrationTest.class
 })
 public class MTLSTestSuite
-{
-}
+{}

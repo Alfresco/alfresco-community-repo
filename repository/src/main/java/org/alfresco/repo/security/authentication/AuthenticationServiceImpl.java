@@ -28,6 +28,9 @@ package org.alfresco.repo.security.authentication;
 import java.util.Collections;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent.UserNameValidationMode;
@@ -35,8 +38,6 @@ import org.alfresco.repo.tenant.TenantContextHolder;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class AuthenticationServiceImpl extends AbstractAuthenticationService implements ActivateableBean
 {
@@ -97,7 +98,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
 
         this.serviceInstanceId = GUID.generate();
     }
-    
+
     public void setTicketComponent(TicketComponent ticketComponent)
     {
         this.ticketComponent = ticketComponent;
@@ -107,7 +108,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     {
         this.authenticationComponent = authenticationComponent;
     }
-   
+
     public boolean isActive()
     {
         return !(this.authenticationComponent instanceof ActivateableBean)
@@ -147,11 +148,11 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
                 final String protectedUserKey = getProtectedUserKey(userName);
                 if (protectedUsersCache.get(protectedUserKey) != null)
                 {
-                     protectedUsersCache.remove(protectedUserKey);
+                    protectedUsersCache.remove(protectedUserKey);
                 }
             }
         }
-        catch(AuthenticationException ae)
+        catch (AuthenticationException ae)
         {
             if (logger.isDebugEnabled())
             {
@@ -190,9 +191,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     }
 
     /**
-     * Method records a failed login attempt.
-     * If the number of recorded failures exceeds {@link AuthenticationServiceImpl#protectionLimit}
-     * the user will be considered 'protected'.
+     * Method records a failed login attempt. If the number of recorded failures exceeds {@link AuthenticationServiceImpl#protectionLimit} the user will be considered 'protected'.
      */
     public void recordFailedAuthentication(String userName)
     {
@@ -216,6 +215,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
             protectedUsersCache.put(protectedUserKey, protectedUser);
         }
     }
+
     /**
      * Creates a key by combining the service instance ID with the username. This are the type of keys maintained by protectedUsersCache map.
      */
@@ -237,27 +237,26 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     {
         ticketComponent.invalidateTicketByUser(userName);
     }
-    
+
     public Set<String> getUsersWithTickets(boolean nonExpiredOnly)
     {
-    	return ticketComponent.getUsersWithTickets(nonExpiredOnly);
+        return ticketComponent.getUsersWithTickets(nonExpiredOnly);
     }
 
     public void invalidateTicket(String ticket) throws AuthenticationException
     {
         ticketComponent.invalidateTicketById(ticket);
     }
-    
+
     public int countTickets(boolean nonExpiredOnly)
     {
-    	return ticketComponent.countTickets(nonExpiredOnly);
+        return ticketComponent.countTickets(nonExpiredOnly);
     }
-    
+
     public int invalidateTickets(boolean expiredOnly)
     {
-    	return ticketComponent.invalidateTickets(expiredOnly);
+        return ticketComponent.invalidateTickets(expiredOnly);
     }
-    
 
     public void validate(String ticket) throws AuthenticationException
     {
@@ -265,12 +264,12 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         try
         {
             String tenant = getPrevalidationTenantDomain();
-            
+
             // clear context - to avoid MT concurrency issue (causing domain mismatch) - see also 'authenticate' above
             clearCurrentSecurityContext();
             currentUser = ticketComponent.validateTicket(ticket);
             authenticationComponent.setCurrentUser(currentUser, UserNameValidationMode.NONE);
-            
+
             if (tenant == null)
             {
                 Pair<String, String> userTenant = AuthenticationUtil.getUserTenant(currentUser);
@@ -288,12 +287,10 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
             throw ae;
         }
     }
-    
+
     /**
-     * This method is called from the {@link #validate(String)} method. If this method returns null then
-     * the user's tenant will be obtained from the username. This is generally correct in the case where the user can be
-     * associated with just one tenant.
-     * Override this method in order to force the selection of a different tenant (for whatever reason).
+     * This method is called from the {@link #validate(String)} method. If this method returns null then the user's tenant will be obtained from the username. This is generally correct in the case where the user can be associated with just one tenant. Override this method in order to force the selection of a different tenant (for whatever reason).
+     * 
      * @return String
      */
     protected String getPrevalidationTenantDomain()
@@ -304,7 +301,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     public String getCurrentTicket() throws AuthenticationException
     {
         String userName = getCurrentUserName();
-        
+
         // So that preAuthenticationCheck can constrain the creation of new tickets, we first ask for the current ticket without auto-creation
         String ticket = ticketComponent.getCurrentTicket(userName, false);
         if (ticket == null)
@@ -313,7 +310,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
             if (logger.isTraceEnabled())
             {
                 logger.trace("Ticket was null, but, if we got through the authentication check, then it's safe to issue a new ticket for user: "
-                    + AuthenticationUtil.maskUsername(userName));
+                        + AuthenticationUtil.maskUsername(userName));
             }
             return getNewTicket();
         }
@@ -323,7 +320,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     public String getNewTicket()
     {
         String userName = getCurrentUserName();
-        
+
         try
         {
             preAuthenticationCheck(userName);
@@ -339,7 +336,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         }
         return ticketComponent.getNewTicket(userName);
     }
-    
+
     public void clearCurrentSecurityContext()
     {
         authenticationComponent.clearCurrentSecurityContext();
@@ -368,7 +365,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
             logger.trace("Authenticated as guest: " + guestUser);
         }
     }
-    
+
     public boolean guestUserAuthenticationAllowed()
     {
         return authenticationComponent.guestUserAuthenticationAllowed();
@@ -416,42 +413,42 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
 
     public Set<String> getDomains()
     {
-       return Collections.singleton(getDomain());
+        return Collections.singleton(getDomain());
     }
 
     public Set<String> getDomainsThatAllowUserCreation()
     {
-        if(getAllowsUserCreation())
+        if (getAllowsUserCreation())
         {
-            return Collections.singleton(getDomain()); 
+            return Collections.singleton(getDomain());
         }
         else
         {
-            return Collections.<String>emptySet();
+            return Collections.<String> emptySet();
         }
     }
 
     public Set<String> getDomainsThatAllowUserDeletion()
     {
-        if(getAllowsUserDeletion())
+        if (getAllowsUserDeletion())
         {
-            return Collections.singleton(getDomain()); 
+            return Collections.singleton(getDomain());
         }
         else
         {
-            return Collections.<String>emptySet();
+            return Collections.<String> emptySet();
         }
     }
 
     public Set<String> getDomiansThatAllowUserPasswordChanges()
     {
-        if(getAllowsUserPasswordChange())
+        if (getAllowsUserPasswordChange())
         {
-            return Collections.singleton(getDomain()); 
+            return Collections.singleton(getDomain());
         }
         else
         {
-            return Collections.<String>emptySet();
+            return Collections.<String> emptySet();
         }
     }
 

@@ -25,6 +25,10 @@
  */
 package org.alfresco.repo.domain.propval;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,6 +37,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.attributes.AttributeService;
@@ -40,14 +49,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.DBTests;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @see PropertyValueDAO#cleanupUnusedValues()
@@ -63,24 +64,24 @@ public class PropertyValueCleanupTest
     private TransactionService transactionService;
     private AttributeService attributeService;
     private PropertyValueDAO propertyValueDAO;
-    
+
     @Before
     public void setUp() throws Exception
     {
         transactionService = (TransactionService) ctx.getBean("TransactionService");
-        
+
         attributeService = (AttributeService) ctx.getBean("AttributeService");
         propertyValueDAO = (PropertyValueDAO) ctx.getBean("propertyValueDAO");
-        
+
         // Remove the caches to test all functionality
         clearCaches();
     }
-    
+
     private void clearCaches()
     {
-        ((AbstractPropertyValueDAOImpl)propertyValueDAO).clearCaches();
+        ((AbstractPropertyValueDAOImpl) propertyValueDAO).clearCaches();
     }
-    
+
     @Test
     public synchronized void testRapidCreationDuringCleanup() throws Exception
     {
@@ -98,7 +99,7 @@ public class PropertyValueCleanupTest
         attributeService.removeAttribute(toDeleteKey1, toDeleteKey2);
         // Check that we can STILL get hold of the underlying property
         assertNotNull("Key2 should be present as a property value (even if unreferenced)", propertyValueDAO.getPropertyStringValue(toDeleteKey2));
-        
+
         // Start threads that throw stuff into the AttributeService
         ThreadGroup threadGroup = new ThreadGroup("testRapidCreationDuringCleanup");
         InsertSerializableAttributes[] runnables = new InsertSerializableAttributes[2];
@@ -119,12 +120,11 @@ public class PropertyValueCleanupTest
 
             // Wait a bit for data to really get in there
             wait(1000L);
-            
+
             RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
             // do it in a retrying transaction because there may be other threads modifying
             // the alf_prop_* and therefore the cleanup may fail sometimes
-            RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-            {
+            RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
                 public Void execute() throws Throwable
                 {
                     // Now run the cleanup script
@@ -146,24 +146,24 @@ public class PropertyValueCleanupTest
         }
         // Clear any caches
         clearCaches();
-        
+
         // The cleanup should have removed the key2
         assertNull("Key2 should be NOT present as a property value (cleanup job)", propertyValueDAO.getPropertyStringValue(toDeleteKey2));
-        
+
         // Now check that all the properties written can still be retrieved
         for (int i = 0; i < runnables.length; i++)
         {
             // Runnable
             String key1 = runnables[i].key1;
             String key2 = runnables[i].key2;
-            List<Integer> key3s = new ArrayList<Integer>(runnables[i].key3s);       // Copy entire list
+            List<Integer> key3s = new ArrayList<Integer>(runnables[i].key3s); // Copy entire list
             for (Integer key3 : key3s)
             {
                 // Get the attribute
                 byte[] propFetched = (byte[]) attributeService.getAttribute(key1, key2, key3);
                 if (propFetched == null)
                 {
-                    // This is OK.  As long as we don't get a failure
+                    // This is OK. As long as we don't get a failure
                     continue;
                 }
                 assertTrue(
@@ -172,11 +172,9 @@ public class PropertyValueCleanupTest
             }
         }
     }
-    
+
     /**
-     * Simple runnable that continuously creates new serializable attributes until stopped.
-     * Each thread has a unique second key value, a sequential third key and generates serializable (unshared)
-     * property values.
+     * Simple runnable that continuously creates new serializable attributes until stopped. Each thread has a unique second key value, a sequential third key and generates serializable (unshared) property values.
      * 
      * @author Derek Hulley
      */
@@ -186,10 +184,10 @@ public class PropertyValueCleanupTest
         private final String key2;
         private List<Integer> key3s;
         private final byte[] prop;
-        
+
         private AtomicBoolean running = new AtomicBoolean(true);
         private int counter = 0;
-        
+
         private InsertSerializableAttributes() throws UnsupportedEncodingException
         {
             key1 = "PropertyValueCleanupTest";
@@ -197,7 +195,7 @@ public class PropertyValueCleanupTest
             key3s = Collections.synchronizedList(new ArrayList<Integer>(200));
             prop = new String("Key is " + key2).getBytes("US-ASCII");
         }
-        
+
         @Override
         public synchronized void run()
         {
@@ -210,7 +208,12 @@ public class PropertyValueCleanupTest
                 // Increment the counter
                 counter++;
                 // Wait a bit so that we don't drown the test
-                try { wait(10L); } catch (InterruptedException e) {}
+                try
+                {
+                    wait(10L);
+                }
+                catch (InterruptedException e)
+                {}
             }
         }
     }

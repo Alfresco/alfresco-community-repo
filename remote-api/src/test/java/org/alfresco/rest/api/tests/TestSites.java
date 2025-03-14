@@ -30,6 +30,13 @@ import static org.junit.Assert.fail;
 
 import java.util.*;
 
+import org.apache.commons.httpclient.HttpStatus;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.rest.api.model.SiteUpdate;
@@ -44,12 +51,6 @@ import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.*;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
-import org.apache.commons.httpclient.HttpStatus;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * V1 REST API tests for managing Sites
@@ -59,12 +60,12 @@ import org.junit.Test;
  */
 public class TestSites extends EnterpriseTestApi
 {
-    private static final String RUNID = System.currentTimeMillis()+"";
-    
+    private static final String RUNID = System.currentTimeMillis() + "";
+
     // test network 1
-	private TestNetwork network1;
-	private String person1Id;
-	private String person2Id;
+    private TestNetwork network1;
+    private String person1Id;
+    private String person2Id;
 
     private Site site1;
     private Site site2;
@@ -102,22 +103,20 @@ public class TestSites extends EnterpriseTestApi
     private static final String OR_PREDICATE = " OR ";
 
     @Override
-	@Before
-	public void 
-    setup() throws Exception
-	{
+    @Before
+    public void setup() throws Exception
+    {
         initializeNetwork1();
-	}
+    }
 
     private void initializeNetwork1() throws Exception
     {
         if (network1 == null)
         {
-            network1 = getRepoService().createNetwork(this.getClass().getName().toLowerCase()+"-1-"+RUNID, true);
+            network1 = getRepoService().createNetwork(this.getClass().getName().toLowerCase() + "-1-" + RUNID, true);
             network1.create();
 
-            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
-            {
+            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -128,16 +127,15 @@ public class TestSites extends EnterpriseTestApi
             }, network1.getId());
         }
     }
-    
+
     private void initializeNetwork2WithSites() throws Exception
     {
         if (network2 == null)
         {
-            network2 = getRepoService().createNetwork(this.getClass().getName().toLowerCase()+"-2-"+RUNID, true);
+            network2 = getRepoService().createNetwork(this.getClass().getName().toLowerCase() + "-2-" + RUNID, true);
             network2.create();
 
-            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
-            {
+            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -145,11 +143,11 @@ public class TestSites extends EnterpriseTestApi
                     return null;
                 }
             }, network2.getId());
-            
+
             publicApiClient.setRequestContext(new RequestContext(network2.getId(), person3Id));
 
             Sites sitesProxy = publicApiClient.sites();
-            
+
             Site site = new SiteImpl(site4_id, site4_title, site4_description, SiteVisibility.PRIVATE.toString());
             site4 = sitesProxy.createSite(site);
 
@@ -170,8 +168,7 @@ public class TestSites extends EnterpriseTestApi
             network3 = getRepoService().createNetwork(this.getClass().getName().toLowerCase() + "-3-" + RUNID, true);
             network3.create();
 
-            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
-            {
+            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -180,8 +177,7 @@ public class TestSites extends EnterpriseTestApi
                 }
             }, network3.getId());
 
-            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-            {
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -197,8 +193,8 @@ public class TestSites extends EnterpriseTestApi
         }
     }
 
-	@Test
-	public void testGetSiteAndListSites() throws Exception
+    @Test
+    public void testGetSiteAndListSites() throws Exception
     {
         Sites sitesProxy = publicApiClient.sites();
 
@@ -228,8 +224,7 @@ public class TestSites extends EnterpriseTestApi
             site3.expected(ret);
         }
 
-        List<TestSite> expectedSites = TenantUtil.runAsUserTenant(new TenantRunAsWork<List<TestSite>>()
-        {
+        List<TestSite> expectedSites = TenantUtil.runAsUserTenant(new TenantRunAsWork<List<TestSite>>() {
             @Override
             public List<TestSite> doWork() throws Exception
             {
@@ -263,23 +258,23 @@ public class TestSites extends EnterpriseTestApi
     public void testCreateAndDeleteSite() throws Exception
     {
         Sites sitesProxy = publicApiClient.sites();
-        
-		// test create and delete site
-		{
+
+        // test create and delete site
+        {
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
 
             String siteTitle = "my site !*#$ 123";
             String siteDescription = "my site description";
 
-			SiteImpl site = new SiteImpl(siteTitle, SiteVisibility.PRIVATE.toString());
+            SiteImpl site = new SiteImpl(siteTitle, SiteVisibility.PRIVATE.toString());
             site.setDescription(siteDescription);
 
-			Site ret = sitesProxy.createSite(site);
-			String siteId = ret.getSiteId();
+            Site ret = sitesProxy.createSite(site);
+            String siteId = ret.getSiteId();
 
-			String expectedSiteId = "my-site-123";
-			Site siteExp = new SiteImpl(null, expectedSiteId, ret.getGuid(), siteTitle, siteDescription,  SiteVisibility.PRIVATE.toString(), null, SiteRole.SiteManager);
-			siteExp.expected(ret);
+            String expectedSiteId = "my-site-123";
+            Site siteExp = new SiteImpl(null, expectedSiteId, ret.getGuid(), siteTitle, siteDescription, SiteVisibility.PRIVATE.toString(), null, SiteRole.SiteManager);
+            siteExp.expected(ret);
 
             ret = sitesProxy.getSite(siteId);
             siteExp.expected(ret);
@@ -325,13 +320,13 @@ public class TestSites extends EnterpriseTestApi
         // -ve tests
         {
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2Id));
-            
+
             SiteImpl site = new SiteImpl("a private site", SiteVisibility.PRIVATE.toString());
             String siteIdOfPrivateSite = sitesProxy.createSite(site, 201).getSiteId();
 
             site = new SiteImpl("a public site", SiteVisibility.PUBLIC.toString());
             String siteIdOfPublicSite = sitesProxy.createSite(site, 201).getSiteId();
-            
+
             // invalid auth
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), GUID.generate(), "password"));
             sitesProxy.getSite(siteIdOfPrivateSite, 401);
@@ -341,7 +336,7 @@ public class TestSites extends EnterpriseTestApi
             // -ve - cannot view or delete a private site
             sitesProxy.getSite(siteIdOfPrivateSite, 404);
             sitesProxy.removeSite(siteIdOfPrivateSite, false, 404);
-            
+
             // -ve - test cannot delete a public site (but can view it)
             sitesProxy.getSite(siteIdOfPublicSite, 200);
             sitesProxy.removeSite(siteIdOfPublicSite, false, 403);
@@ -350,7 +345,6 @@ public class TestSites extends EnterpriseTestApi
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2Id));
             sitesProxy.removeSite(siteIdOfPrivateSite, false, 204);
             sitesProxy.removeSite(siteIdOfPublicSite, false, 204);
-            
 
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
 
@@ -440,27 +434,28 @@ public class TestSites extends EnterpriseTestApi
 
             // try to update to invalid site visibility
             JSONObject prop = new JSONObject();
-            prop.put("st:siteVisibility","INVALID");
+            prop.put("st:siteVisibility", "INVALID");
             JSONObject properties = new JSONObject();
             properties.put("properties", new JSONObject(prop));
             try
             {
                 sitesProxy.update("nodes", siteNodeId, null, null, properties.toJSONString(), null);
                 fail();
-            } catch (PublicApiException e)
+            }
+            catch (PublicApiException e)
             {
                 assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
             }
 
             sitesProxy.removeSite(siteId); // cleanup
         }
-        
+
         // -ve test - cannot create multiple sites in single POST call (unsupported)
         {
             List<Site> sites = new ArrayList<>(2);
             sites.add(new SiteImpl(null, "siteA1", null, "siteA1", null, SiteVisibility.PRIVATE.toString(), null, null));
             sites.add(new SiteImpl(null, "siteB1", null, "siteB1", null, SiteVisibility.PRIVATE.toString(), null, null));
-            
+
             sitesProxy.create("sites", null, null, null, JSONArray.toJSONString(sites), null, 405);
         }
 
@@ -473,7 +468,8 @@ public class TestSites extends EnterpriseTestApi
             {
                 sitesProxy.create("sites", "site", null, null, null, "Unable to POST to a site");
                 fail();
-            } catch (PublicApiException e)
+            }
+            catch (PublicApiException e)
             {
                 assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
             }
@@ -483,7 +479,8 @@ public class TestSites extends EnterpriseTestApi
             {
                 sitesProxy.remove("sites", null, null, null, "Unable to DELETE sites");
                 fail();
-            } catch (PublicApiException e)
+            }
+            catch (PublicApiException e)
             {
                 assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
             }
@@ -497,17 +494,16 @@ public class TestSites extends EnterpriseTestApi
             sitesProxy.createSite(site, 400);
         }
         // Test Case cloud-1478
-		// Test Case cloud-1479
-		// user invited to network and user invited to site
-		// user invited to network and user not invited to site
-	}
+        // Test Case cloud-1479
+        // user invited to network and user invited to site
+        // user invited to network and user not invited to site
+    }
 
     @Test
     public void testUpdateSite() throws PublicApiException
     {
         Sites sitesProxy = publicApiClient.sites();
         publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-
 
         // +ve test: simple happy path with successful update.
         {
@@ -623,7 +619,6 @@ public class TestSites extends EnterpriseTestApi
 
             expectedUpdate.expected(updatedSite);
 
-
             // Check we can update just the visibility
             updatedSite = sitesProxy.updateSite(
                     site.getSiteId(),
@@ -668,12 +663,12 @@ public class TestSites extends EnterpriseTestApi
                     null,
                     null,
                     "{\n" +
-                    "  \"title\": \"Updated Title\",\n" +
-                    "  \"description\": \"This is an updated description for the site\",\n" +
-                    "  \"visibility\": \"INVALID_VISIBILITY\"\n" +
-                    "}",
+                            "  \"title\": \"Updated Title\",\n" +
+                            "  \"description\": \"This is an updated description for the site\",\n" +
+                            "  \"visibility\": \"INVALID_VISIBILITY\"\n" +
+                            "}",
                     null,
-                    "Expected 400 response when updating "+site.getSiteId(), 400);
+                    "Expected 400 response when updating " + site.getSiteId(), 400);
 
             // Invalid fields
             // Check that id, guid and role are not silently ignored. This is until REPO-110
@@ -685,11 +680,11 @@ public class TestSites extends EnterpriseTestApi
                     null,
                     null,
                     "{\n" +
-                    "  \"id\": \"a-new-id\"," +
-                    "  \"title\": \"Updated Title\"\n" +
-                    "}",
+                            "  \"id\": \"a-new-id\"," +
+                            "  \"title\": \"Updated Title\"\n" +
+                            "}",
                     null,
-                    "Expected 400 response when updating "+site.getSiteId(), 400);
+                    "Expected 400 response when updating " + site.getSiteId(), 400);
 
             sitesProxy.update(
                     "sites",
@@ -697,10 +692,10 @@ public class TestSites extends EnterpriseTestApi
                     null,
                     null,
                     "{\n" +
-                    "  \"guid\": \"76ba60c1-f05b-406a-86a4-4eeb1bb49aaa\"" +
-                    "}",
+                            "  \"guid\": \"76ba60c1-f05b-406a-86a4-4eeb1bb49aaa\"" +
+                            "}",
                     null,
-                    "Expected 400 response when updating "+site.getSiteId(), 400);
+                    "Expected 400 response when updating " + site.getSiteId(), 400);
 
             sitesProxy.update(
                     "sites",
@@ -708,10 +703,10 @@ public class TestSites extends EnterpriseTestApi
                     null,
                     null,
                     "{\n" +
-                    "  \"role\": \"SiteConsumer\"" +
-                    "}",
+                            "  \"role\": \"SiteConsumer\"" +
+                            "}",
                     null,
-                    "Expected 400 response when updating "+site.getSiteId(), 400);
+                    "Expected 400 response when updating " + site.getSiteId(), 400);
 
             sitesProxy.update(
                     "sites",
@@ -722,7 +717,7 @@ public class TestSites extends EnterpriseTestApi
                             "  \"preset\": \"sitePreset\"" +
                             "}",
                     null,
-                    "Expected 400 response when updating "+site.getSiteId(), 400);
+                    "Expected 400 response when updating " + site.getSiteId(), 400);
 
             // Details should not have changed.
             Site fresh = sitesProxy.getSite(site.getSiteId(), 200);
@@ -792,7 +787,7 @@ public class TestSites extends EnterpriseTestApi
         {
             sitesProxy.removeSite(siteId, true, 204);
         }
-        catch(PublicApiException e)
+        catch (PublicApiException e)
         {
             // If it doesn't exist currently, that's fine.
             if (e.getHttpResponse().getStatusCode() != 404)
@@ -803,8 +798,7 @@ public class TestSites extends EnterpriseTestApi
     }
 
     /**
-     * Tests the capability to sort and paginate the sites list
-     * orderBy = title ASC skip = 1, count = 2
+     * Tests the capability to sort and paginate the sites list orderBy = title ASC skip = 1, count = 2
      *
      * @throws Exception
      */
@@ -821,16 +815,15 @@ public class TestSites extends EnterpriseTestApi
 
         // check results
         List<SiteImpl> expectedList = new LinkedList<>();
-        expectedList.add((SiteImpl)site6);
-        expectedList.add((SiteImpl)site4);
+        expectedList.add((SiteImpl) site6);
+        expectedList.add((SiteImpl) site4);
 
         checkList(expectedList, paging.getExpectedPaging(), resp);
 
     }
 
     /**
-     * Tests the capability to sort and paginate the sites list
-     * orderBy = title DESC skip = 1, count = 2
+     * Tests the capability to sort and paginate the sites list orderBy = title DESC skip = 1, count = 2
      *
      * @throws Exception
      */
@@ -847,15 +840,14 @@ public class TestSites extends EnterpriseTestApi
 
         // check results
         List<SiteImpl> expectedList = new LinkedList<>();
-        expectedList.add((SiteImpl)site6);
-        expectedList.add((SiteImpl)site5);
+        expectedList.add((SiteImpl) site6);
+        expectedList.add((SiteImpl) site5);
 
         checkList(expectedList, paging.getExpectedPaging(), resp);
     }
 
     /**
-     * Tests the capability to sort and paginate the sites list
-     * orderBy = description ASC skip = 1, count = 2
+     * Tests the capability to sort and paginate the sites list orderBy = description ASC skip = 1, count = 2
      *
      * @throws Exception
      */
@@ -872,15 +864,14 @@ public class TestSites extends EnterpriseTestApi
 
         // check results
         List<SiteImpl> expectedList = new LinkedList<>();
-        expectedList.add((SiteImpl)site4);
-        expectedList.add((SiteImpl)site5);
+        expectedList.add((SiteImpl) site4);
+        expectedList.add((SiteImpl) site5);
 
         checkList(expectedList, paging.getExpectedPaging(), resp);
     }
 
     /**
-     * Tests the capability to sort and paginate the sites list
-     * orderBy = description DESC skip = 1, count = 2
+     * Tests the capability to sort and paginate the sites list orderBy = description DESC skip = 1, count = 2
      *
      * @throws Exception
      */
@@ -897,15 +888,14 @@ public class TestSites extends EnterpriseTestApi
 
         // check results
         List<SiteImpl> expectedList = new LinkedList<>();
-        expectedList.add((SiteImpl)site4);
-        expectedList.add((SiteImpl)site6);
+        expectedList.add((SiteImpl) site4);
+        expectedList.add((SiteImpl) site6);
 
         checkList(expectedList, paging.getExpectedPaging(), resp);
     }
 
     /**
-     * Tests the capability to sort and paginate the sites list
-     * orderBy = id ASC skip = 1, count = 2
+     * Tests the capability to sort and paginate the sites list orderBy = id ASC skip = 1, count = 2
      *
      * @throws Exception
      */
@@ -922,15 +912,14 @@ public class TestSites extends EnterpriseTestApi
 
         // check results
         List<SiteImpl> expectedList = new LinkedList<>();
-        expectedList.add((SiteImpl)site5);
-        expectedList.add((SiteImpl)site6);
+        expectedList.add((SiteImpl) site5);
+        expectedList.add((SiteImpl) site6);
 
         checkList(expectedList, paging.getExpectedPaging(), resp);
     }
 
     /**
-     * Tests the capability to sort and paginate the sites list
-     * orderBy = id DESC skip = 1, count = 2
+     * Tests the capability to sort and paginate the sites list orderBy = id DESC skip = 1, count = 2
      *
      * @throws Exception
      */
@@ -947,15 +936,14 @@ public class TestSites extends EnterpriseTestApi
 
         // check results
         List<SiteImpl> expectedList = new LinkedList<>();
-        expectedList.add((SiteImpl)site5);
-        expectedList.add((SiteImpl)site4);
+        expectedList.add((SiteImpl) site5);
+        expectedList.add((SiteImpl) site4);
 
         checkList(expectedList, paging.getExpectedPaging(), resp);
     }
 
     /**
-     * Tests the capability to sort and paginate the sites list
-     * default sorting (id asc), all results
+     * Tests the capability to sort and paginate the sites list default sorting (id asc), all results
      *
      * @throws Exception
      */
@@ -970,9 +958,9 @@ public class TestSites extends EnterpriseTestApi
 
         // check results
         List<SiteImpl> expectedList = new LinkedList<>();
-        expectedList.add((SiteImpl)site5);
-        expectedList.add((SiteImpl)site6);
-        expectedList.add((SiteImpl)site4);
+        expectedList.add((SiteImpl) site5);
+        expectedList.add((SiteImpl) site6);
+        expectedList.add((SiteImpl) site4);
 
         checkList(expectedList, paging.getExpectedPaging(), resp);
 
@@ -983,7 +971,7 @@ public class TestSites extends EnterpriseTestApi
     public void testSortingAndPaging() throws Exception
     {
         initializeNetwork2WithSites();
-        
+
         publicApiClient.setRequestContext(new RequestContext(network2.getId(), person3Id));
 
         testSortingAndPagingByTitleAsc();
@@ -998,7 +986,7 @@ public class TestSites extends EnterpriseTestApi
     private ListResponse<Site> listSites(final Paging paging, String sortColumn, boolean asc) throws Exception
     {
         final Sites sitesProxy = publicApiClient.sites();
-        
+
         // sort params
         final Map<String, String> params = new HashMap<String, String>();
         if (sortColumn != null)
@@ -1006,7 +994,7 @@ public class TestSites extends EnterpriseTestApi
             params.put("orderBy", sortColumn + " " + (asc ? "ASC" : "DESC"));
         }
 
-       return sitesProxy.getSites(createParams(paging, params));
+        return sitesProxy.getSites(createParams(paging, params));
     }
 
     private ListResponse<Site> listSitesWithWhere(final Paging paging, Map<String, String> filters, String predicate) throws Exception
@@ -1042,7 +1030,7 @@ public class TestSites extends EnterpriseTestApi
         filters.put("visibility", SiteVisibility.PRIVATE.name());
 
         // list sites
-        ListResponse<Site> resp =  listSitesWithWhere(null, filters, null);
+        ListResponse<Site> resp = listSitesWithWhere(null, filters, null);
 
         // check results
         List<SiteImpl> expectedList = new LinkedList<>();
@@ -1137,7 +1125,7 @@ public class TestSites extends EnterpriseTestApi
         filters.put("visibility", SiteVisibility.PRIVATE.name());
         filters.put("preset", "site-dashboard");
 
-        ListResponse<Site> resp =  listSitesWithWhere(null, filters, OR_PREDICATE);
+        ListResponse<Site> resp = listSitesWithWhere(null, filters, OR_PREDICATE);
 
         // check results
         List<SiteImpl> expectedList = new LinkedList<>();
@@ -1184,6 +1172,7 @@ public class TestSites extends EnterpriseTestApi
             assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
         }
     }
+
     @Test
     public void testListSitesWhereExpected() throws Exception
     {
@@ -1201,7 +1190,6 @@ public class TestSites extends EnterpriseTestApi
         testListSitesWhereVisibilityANDPreset();
         testListSitesWhereByVisibilityORPreset();
     }
-
 
     public static class SiteUpdateJSONSerializer implements JSONAble
     {

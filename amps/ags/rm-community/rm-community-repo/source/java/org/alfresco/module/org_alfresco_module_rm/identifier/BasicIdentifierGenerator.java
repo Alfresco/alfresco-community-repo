@@ -47,11 +47,11 @@ public class BasicIdentifierGenerator extends IdentifierGeneratorBase
     @Override
     public String generateId(Map<String, Serializable> context)
     {
-        NodeRef nodeRef = (NodeRef)context.get(IdentifierService.CONTEXT_NODEREF);
+        NodeRef nodeRef = (NodeRef) context.get(IdentifierService.CONTEXT_NODEREF);
         Long dbId = 0l;
         if (nodeRef != null)
         {
-            dbId = (Long)nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID);
+            dbId = (Long) nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID);
         }
         else
         {

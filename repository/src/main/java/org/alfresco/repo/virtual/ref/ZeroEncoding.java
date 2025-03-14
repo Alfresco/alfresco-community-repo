@@ -36,7 +36,7 @@ public interface ZeroEncoding
     static final String STRING_PARAMETER = "s";
 
     /** depending on the resource type */
-    static final String RESOURCE_PARAMETER[] = { "0", "1", "2" };
+    static final String RESOURCE_PARAMETER[] = {"0", "1", "2"};
 
     static final String REFERENCE_PARAMETER = "r";
 

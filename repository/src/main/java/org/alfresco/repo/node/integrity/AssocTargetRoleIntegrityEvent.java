@@ -51,13 +51,13 @@ public class AssocTargetRoleIntegrityEvent extends AbstractIntegrityEvent
     {
         super(nodeService, dictionaryService, sourceNodeRef, assocTypeQName, assocName);
     }
-    
+
     public void checkIntegrity(List<IntegrityRecord> eventResults)
     {
         QName assocTypeQName = getTypeQName();
         QName assocQName = getQName();
         NodeRef sourceNodeRef = getNodeRef();
-        
+
         // get the association def
         AssociationDefinition assocDef = getAssocDef(eventResults, assocTypeQName);
         // the association definition must exist
@@ -65,11 +65,11 @@ public class AssocTargetRoleIntegrityEvent extends AbstractIntegrityEvent
         {
             IntegrityRecord result = new IntegrityRecord(
                     "Association type does not exist: \n" +
-                    "   Association Type: " + assocTypeQName);
+                            "   Association Type: " + assocTypeQName);
             eventResults.add(result);
             return;
         }
-        
+
         // check that we are dealing with child associations
         if (assocQName == null)
         {
@@ -80,7 +80,7 @@ public class AssocTargetRoleIntegrityEvent extends AbstractIntegrityEvent
             throw new UnsupportedOperationException("This operation is only relevant to child associations");
         }
         ChildAssociationDefinition childAssocDef = (ChildAssociationDefinition) assocDef;
-        
+
         // perform required checks
         checkAssocQNameRegex(eventResults, childAssocDef, assocQName, sourceNodeRef);
     }
@@ -104,10 +104,10 @@ public class AssocTargetRoleIntegrityEvent extends AbstractIntegrityEvent
             {
                 IntegrityRecord result = new IntegrityRecord(
                         "The association name does not match the allowed role names: \n" +
-                        "   Source Node: " + sourceNodeRef + "\n" +
-                        "   Association: " + assocDef + "\n" +
-                        "   Allowed roles: " + rolePattern + "\n" +
-                        "   Name assigned: " + assocRoleQName);
+                                "   Source Node: " + sourceNodeRef + "\n" +
+                                "   Association: " + assocDef + "\n" +
+                                "   Allowed roles: " + rolePattern + "\n" +
+                                "   Name assigned: " + assocRoleQName);
                 eventResults.add(result);
             }
         }

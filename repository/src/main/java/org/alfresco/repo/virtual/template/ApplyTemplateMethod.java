@@ -24,12 +24,15 @@
  * #L%
  */
 
-
 package org.alfresco.repo.virtual.template;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.repo.virtual.ActualEnvironment;
 import org.alfresco.repo.virtual.VirtualContext;
@@ -44,13 +47,9 @@ import org.alfresco.repo.virtual.ref.Resource;
 import org.alfresco.repo.virtual.ref.ResourceProcessingError;
 import org.alfresco.repo.virtual.ref.VanillaProtocol;
 import org.alfresco.repo.virtual.ref.VirtualProtocol;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * Creates a {@link VirtualFolderDefinition} by executing the template indicated
- * by a virtualized entity reference.
+ * Creates a {@link VirtualFolderDefinition} by executing the template indicated by a virtualized entity reference.
  * 
  * @author Bogdan Horje
  */
@@ -69,22 +68,22 @@ public class ApplyTemplateMethod extends AbstractProtocolMethod<VirtualFolderDef
     }
 
     public VirtualFolderDefinition execute(VirtualProtocol virtualProtocol, Reference reference)
-                throws ProtocolMethodException
+            throws ProtocolMethodException
     {
         VirtualContext context = createVirtualContext(reference);
         return execute(virtualProtocol,
-                       reference,
-                       context);
+                reference,
+                context);
     }
 
     private VirtualContext createVirtualContext(Reference reference) throws ProtocolMethodException
     {
         return new VirtualContext(environment,
-                                  reference.execute(new GetActualNodeRefMethod(environment)));
+                reference.execute(new GetActualNodeRefMethod(environment)));
     }
 
     public VirtualFolderDefinition execute(VirtualProtocol virtualProtocol, Reference reference, VirtualContext context)
-                throws ProtocolMethodException
+            throws ProtocolMethodException
     {
         Resource resource = reference.getResource();
 
@@ -119,19 +118,19 @@ public class ApplyTemplateMethod extends AbstractProtocolMethod<VirtualFolderDef
 
     @Override
     public VirtualFolderDefinition execute(VanillaProtocol vanillaProtocol, Reference reference)
-                throws ProtocolMethodException
+            throws ProtocolMethodException
     {
         InputStream vanillaIS = reference.execute(new GetVanillaScriptInputStreamMethod(environment));
         try
         {
             String vanillaJSON = IOUtils.toString(vanillaIS,
-                                                  StandardCharsets.UTF_8);
+                    StandardCharsets.UTF_8);
             VirtualContext context = createVirtualContext(reference);
             context.setParameter(VANILLA_JSON_PARAM_NAME,
-                                 vanillaJSON);
+                    vanillaJSON);
             return execute(vanillaProtocol,
-                           reference,
-                           context);
+                    reference,
+                    context);
 
         }
         catch (IOException e)
@@ -154,8 +153,7 @@ public class ApplyTemplateMethod extends AbstractProtocolMethod<VirtualFolderDef
     }
 
     /**
-     * Creates an empty {@link VirtualFolderDefinition} parameterized with a
-     * {@link NullFilingRule} as this method is called for non-virtual nodes.
+     * Creates an empty {@link VirtualFolderDefinition} parameterized with a {@link NullFilingRule} as this method is called for non-virtual nodes.
      * 
      * @param protocol
      * @param reference

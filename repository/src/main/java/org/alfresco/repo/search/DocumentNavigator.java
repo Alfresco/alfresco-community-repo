@@ -33,7 +33,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
+import org.jaxen.DefaultNavigator;
+import org.jaxen.JaxenException;
+import org.jaxen.NamedAccessNavigator;
+import org.jaxen.UnsupportedAxisException;
+import org.jaxen.XPath;
+
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -48,17 +53,11 @@ import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.ISO9075;
-import org.jaxen.DefaultNavigator;
-import org.jaxen.JaxenException;
-import org.jaxen.NamedAccessNavigator;
-import org.jaxen.UnsupportedAxisException;
-import org.jaxen.XPath;
 
 /**
  * An implementation of the Jaxen xpath against the node service API
  * 
- * This means any node service can do xpath style navigation. Given any context
- * node we can navigate between nodes using xpath.
+ * This means any node service can do xpath style navigation. Given any context node we can navigate between nodes using xpath.
  * 
  * This allows simple path navigation and much more.
  * 
@@ -95,7 +94,6 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
         }
     }
 
-   
     public class Namespace
     {
         public final String prefix;
@@ -108,9 +106,9 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
             this.uri = uri;
         }
     }
-    
+
     private boolean followAllParentLinks;
-    
+
     /**
      * @deprecated useJCRRootNode parameter is now obsolete.
      */
@@ -119,22 +117,18 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
     {
         this(dictionaryService, nodeService, searchService, nspr, followAllParentLinks);
     }
-    
+
     /**
      * @param dictionaryService
-     *            used to resolve the <b>subtypeOf</b> function and other
-     *            type-related functions
+     *            used to resolve the <b>subtypeOf</b> function and other type-related functions
      * @param nodeService
      *            the <tt>NodeService</tt> against which to execute
      * @param searchService
-     *            the service that helps resolve functions such as <b>like</b>
-     *            and <b>contains</b>
+     *            the service that helps resolve functions such as <b>like</b> and <b>contains</b>
      * @param nspr
      *            resolves namespaces in the xpath
      * @param followAllParentLinks
-     *            true if the XPath should traverse all parent associations when
-     *            going up the hierarchy; false if the only the primary
-     *            parent-child association should be traversed
+     *            true if the XPath should traverse all parent associations when going up the hierarchy; false if the only the primary parent-child association should be traversed
      */
     public DocumentNavigator(DictionaryService dictionaryService, NodeService nodeService, SearchService searchService,
             NamespacePrefixResolver nspr, boolean followAllParentLinks)
@@ -147,14 +141,10 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
         this.followAllParentLinks = followAllParentLinks;
     }
 
-    
-    
     public NamespacePrefixResolver getNamespacePrefixResolver()
     {
         return nspr;
     }
-
-
 
     /**
      * Allow this to be set as it commonly changes from one search to the next
@@ -182,7 +172,7 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
     {
         QName qName = ((Property) o).qname;
         String escapedLocalName = ISO9075.encode(qName.getLocalName());
-        if (EqualsHelper.nullSafeEquals(escapedLocalName, qName.getLocalName()))        
+        if (EqualsHelper.nullSafeEquals(escapedLocalName, qName.getLocalName()))
         {
             return qName.toString();
         }
@@ -208,7 +198,7 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
     public String getElementName(Object o)
     {
         QName qName = ((ChildAssociationRef) o).getQName();
-        if(qName == null)
+        if (qName == null)
         {
             return "";
         }
@@ -218,7 +208,7 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
     public String getElementNamespaceUri(Object o)
     {
         QName qName = ((ChildAssociationRef) o).getQName();
-        if(qName == null)
+        if (qName == null)
         {
             return "";
         }
@@ -228,12 +218,12 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
     public String getElementQName(Object o)
     {
         QName qName = ((ChildAssociationRef) o).getQName();
-        if(qName == null)
+        if (qName == null)
         {
             return "";
         }
         String escapedLocalName = ISO9075.encode(qName.getLocalName());
-        if (EqualsHelper.nullSafeEquals(escapedLocalName, qName.getLocalName()))        
+        if (EqualsHelper.nullSafeEquals(escapedLocalName, qName.getLocalName()))
         {
             return qName.toString();
         }
@@ -314,7 +304,7 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
     {
         // decode the localname
         localName = ISO9075.decode(localName);
-        
+
         NodeRef nodeRef = ((ChildAssociationRef) contextNode).getChildRef();
         QName qName = QName.createQName(namespaceURI, localName);
         Serializable value = nodeService.getProperty(nodeRef, qName);
@@ -325,7 +315,7 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
             {
                 Collection<Serializable> values = (Collection<Serializable>) value;
                 properties = new ArrayList<Property>(values.size());
-                for(Serializable collectionValue : values)
+                for (Serializable collectionValue : values)
                 {
                     Property property = new Property(qName, collectionValue, nodeRef);
                     properties.add(property);
@@ -352,9 +342,9 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
         Map<QName, Serializable> map = nodeService.getProperties(nodeRef);
         for (QName qName : map.keySet())
         {
-            if(map.get(qName) instanceof Collection)
+            if (map.get(qName) instanceof Collection)
             {
-                for(Serializable ob : (Collection<Serializable>) map.get(qName))
+                for (Serializable ob : (Collection<Serializable>) map.get(qName))
                 {
                     Property property = new Property(qName, ob, nodeRef);
                     properties.add(property);
@@ -364,9 +354,9 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
             {
                 Property property = new Property(qName, map.get(qName), nodeRef);
                 properties.add(property);
-            }        
+            }
         }
-        
+
         return properties.iterator();
     }
 
@@ -374,13 +364,13 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
     {
         // decode the localname
         localName = ISO9075.decode(localName);
-        
+
         // MNT-10730
         if (localName != null && (localName.equalsIgnoreCase("true") || localName.equalsIgnoreCase("false")))
         {
             return Collections.singletonList(Boolean.valueOf(Boolean.parseBoolean(localName))).iterator();
         }
-        
+
         ChildAssociationRef assocRef = (ChildAssociationRef) contextNode;
         NodeRef childRef = assocRef.getChildRef();
         QName qName = QName.createQName(namespaceURI, localName);
@@ -402,6 +392,7 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
 
     /** Used to prevent crazy ordering code in from repeatedly getting child association */
     private static final UnsupportedAxisException EXCEPTION_NOT_SUPPORTED = new UnsupportedAxisException("");
+
     /**
      * @see #EXCEPTION_NOT_SUPPORTED always thrown
      */
@@ -492,7 +483,7 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
     {
         return nodeService.getPrimaryParent(nodeRef);
     }
-    
+
     public List<ChildAssociationRef> getNode(NodeRef nodeRef, QNamePattern qNamePattern)
     {
         return nodeService.getParentAssocs(nodeRef, RegexQNamePattern.MATCH_ALL, qNamePattern);

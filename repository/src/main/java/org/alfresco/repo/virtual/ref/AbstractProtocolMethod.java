@@ -27,9 +27,7 @@
 package org.alfresco.repo.virtual.ref;
 
 /**
- * Handles protocol method dispatch. Not supported: base protocol
- * dispatches. The vanilla protocol can be handled by default
- * as the virtual protocol.
+ * Handles protocol method dispatch. Not supported: base protocol dispatches. The vanilla protocol can be handled by default as the virtual protocol.
  *
  * @param <R>
  */
@@ -43,7 +41,7 @@ public abstract class AbstractProtocolMethod<R> implements ProtocolMethod<R>
         // cast to force virtual protocol execution
 
         return execute((VirtualProtocol) vanillaProtocol,
-                       reference);
+                reference);
     }
 
     @Override

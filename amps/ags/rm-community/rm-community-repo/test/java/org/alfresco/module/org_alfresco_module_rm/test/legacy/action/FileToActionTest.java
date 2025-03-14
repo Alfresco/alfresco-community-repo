@@ -33,6 +33,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.util.StringUtils;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.FileToAction;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
@@ -42,7 +44,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.springframework.util.StringUtils;
 
 /**
  * FileTo action unit test
@@ -74,8 +75,7 @@ public class FileToActionTest extends BaseRMTestCase
 
     public void testFileToNodeRef()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             @Override
             public void given() throws Exception
             {
@@ -117,8 +117,7 @@ public class FileToActionTest extends BaseRMTestCase
 
     private void initRecord()
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 nodeService.setProperty(dmDocument, ContentModel.PROP_TITLE, "mytestvalue");
@@ -130,10 +129,9 @@ public class FileToActionTest extends BaseRMTestCase
             }
 
             @Override
-            public void test(Void result) throws Exception 
+            public void test(Void result) throws Exception
             {
-                AuthenticationUtil.runAs(() ->
-                {
+                AuthenticationUtil.runAs(() -> {
                     // check things have gone according to plan
                     assertTrue(recordService.isRecord(dmDocument));
                     assertFalse(recordService.isFiled(dmDocument));
@@ -146,14 +144,13 @@ public class FileToActionTest extends BaseRMTestCase
                     return null;
                 }, AuthenticationUtil.getAdminUserName());
             }
-            
+
         }, dmCollaborator);
     }
 
     public void testFileToPath()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             @Override
             public void given() throws Exception
             {
@@ -187,8 +184,7 @@ public class FileToActionTest extends BaseRMTestCase
 
     public void testFileToPath2()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             @Override
             public void given() throws Exception
             {
@@ -252,8 +248,7 @@ public class FileToActionTest extends BaseRMTestCase
         params.put(FileToAction.PARAM_PATH, path);
         params.put(FileToAction.PARAM_CREATE_RECORD_PATH, true);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run() throws Exception
             {
                 // show the folder doesn't exist to begin with
@@ -269,8 +264,7 @@ public class FileToActionTest extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run() throws Exception
             {
                 // execute file-to action
@@ -279,12 +273,11 @@ public class FileToActionTest extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run() throws Exception
             {
                 // show the folder has now been created
-            	FileInfo createdRecordFolder = fileFolderService.resolveNamePath(filePlan, new ArrayList<>(Arrays.asList(pathValues)), false);
+                FileInfo createdRecordFolder = fileFolderService.resolveNamePath(filePlan, new ArrayList<>(Arrays.asList(pathValues)), false);
                 assertNotNull(createdRecordFolder);
                 assertEquals(name, createdRecordFolder.getName());
                 NodeRef createdRecordFolderNodeRef = createdRecordFolder.getNodeRef();
@@ -304,8 +297,7 @@ public class FileToActionTest extends BaseRMTestCase
 
     public void failureTests() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 // create record from document
@@ -323,11 +315,8 @@ public class FileToActionTest extends BaseRMTestCase
             }
         }, dmCollaborator);
 
-        doTestInTransaction(new FailureTest
-        (
-            "Path is invalid and record create not set."
-        )
-        {
+        doTestInTransaction(new FailureTest(
+                "Path is invalid and record create not set.") {
             @Override
             public void run() throws Exception
             {
@@ -341,11 +330,8 @@ public class FileToActionTest extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new FailureTest
-        (
-            "Path is for a new folder, but create not set."
-        )
-        {
+        doTestInTransaction(new FailureTest(
+                "Path is for a new folder, but create not set.") {
             @Override
             public void run() throws Exception
             {

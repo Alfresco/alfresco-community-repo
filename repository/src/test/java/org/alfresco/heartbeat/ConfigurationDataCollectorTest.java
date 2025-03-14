@@ -37,6 +37,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.descriptor.DescriptorDAO;
@@ -57,9 +61,6 @@ import org.alfresco.service.cmr.workflow.WorkflowAdminService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.traitextender.SpringExtensionBundle;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * @author mpopa
@@ -136,8 +137,8 @@ public class ConfigurationDataCollectorTest
         // Mock transaction service calls
         when(mockRetryingTransactionHelper
                 .doInTransaction(any(RetryingTransactionHelper.RetryingTransactionCallback.class), anyBoolean()))
-                .thenReturn(true) // First call made by the collector to get the server readOnly value via transformation service
-                .thenReturn(auditApps); // Second call to get the audit applications
+                        .thenReturn(true) // First call made by the collector to get the server readOnly value via transformation service
+                        .thenReturn(auditApps); // Second call to get the audit applications
         when(mockTransactionService.getRetryingTransactionHelper()).thenReturn(mockRetryingTransactionHelper);
 
         // mock authentication chain
@@ -170,7 +171,7 @@ public class ConfigurationDataCollectorTest
     @Test
     public void testHBDataFields()
     {
-        for(HBData data : this.collectedData)
+        for (HBData data : this.collectedData)
         {
             assertNotNull(data.getCollectorId());
             assertNotNull(data.getCollectorVersion());
@@ -187,7 +188,7 @@ public class ConfigurationDataCollectorTest
         HBData confData = grabDataByCollectorId(configurationCollector.getCollectorId());
         assertNotNull("Repository configuration data missing.", confData);
 
-        Map<String,Object> data = confData.getData();
+        Map<String, Object> data = confData.getData();
         assertTrue(data.containsKey("smartFoldersEnabled"));
 
         assertTrue(data.containsKey("db"));
@@ -204,12 +205,12 @@ public class ConfigurationDataCollectorTest
         assertTrue(data.containsKey("authenticationChain"));
 
         assertTrue(data.containsKey("replication"));
-        Map<String, Object> replication = (Map<String, Object>)((Map<String, Object>)data.get("replication"));
+        Map<String, Object> replication = (Map<String, Object>) ((Map<String, Object>) data.get("replication"));
         assertTrue(replication.containsKey("enabled"));
         assertTrue(replication.containsKey("readOnly"));
 
         assertTrue(data.containsKey("module"));
-        Map<String, Object> installedModules = (Map<String, Object>)((Map<String, Object>)data.get("module")).get("installed");
+        Map<String, Object> installedModules = (Map<String, Object>) ((Map<String, Object>) data.get("module")).get("installed");
         assertTrue(installedModules != null);
         assertEquals(2, installedModules.get("count"));
         Map<String, Object> installedModulesList = (Map<String, Object>) installedModules.get("modules");
@@ -223,7 +224,7 @@ public class ConfigurationDataCollectorTest
         assertTrue(installedModulesInfo.containsKey("version"));
         assertEquals(INSTALLED_MODULE_VERSION_2.toString(), installedModulesInfo.get("version"));
 
-        Map<String, Object> missingModules = (Map<String, Object>)((Map<String, Object>)data.get("module")).get("missing");
+        Map<String, Object> missingModules = (Map<String, Object>) ((Map<String, Object>) data.get("module")).get("missing");
         assertTrue(missingModules != null);
         Map<String, Object> missingModulesList = (Map<String, Object>) missingModules.get("modules");
         assertTrue(missingModulesList.containsKey(MISSING_MODULE_ID_1));
@@ -233,7 +234,7 @@ public class ConfigurationDataCollectorTest
 
         assertTrue(data.containsKey("audit"));
         assertTrue(((Map<String, Object>) data.get("audit")).containsKey("enabled"));
-        Map<String, Object> auditApps = (Map<String, Object>)((Map<String, Object>)data.get("audit")).get("apps");
+        Map<String, Object> auditApps = (Map<String, Object>) ((Map<String, Object>) data.get("audit")).get("apps");
         assertTrue(auditApps != null);
         assertTrue(auditApps.containsKey(AUDIT_APP_NAME));
         Map<String, Object> auditAppInfo = (Map<String, Object>) auditApps.get(AUDIT_APP_NAME);
@@ -244,7 +245,7 @@ public class ConfigurationDataCollectorTest
     {
         for (HBData d : this.collectedData)
         {
-            if(d.getCollectorId()!=null && d.getCollectorId().equals(collectorId))
+            if (d.getCollectorId() != null && d.getCollectorId().equals(collectorId))
             {
                 return d;
             }

@@ -27,28 +27,26 @@ package org.alfresco.rest.api.search;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+
+import java.util.List;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
-import org.alfresco.rest.api.Queries;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
-import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
-import org.alfresco.rest.api.tests.client.data.FolderNode;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Basic test to exercise the Search API endpoint
  *
- * <p>POST:</p>
+ * <p>
+ * POST:
+ * </p>
  * {@literal <host>:<port>/alfresco/api/<networkId>/public/search/versions/1/search}
  *
  * @author Gethin James
@@ -58,8 +56,8 @@ public class BasicSearchApiIntegrationTest extends AbstractSingleNetworkSiteTest
 {
     private static final String URL_SEARCH = "search";
     private static final String SEARCH_API_NAME = "search";
-    private static final String  json = "{ \"query\": {\"query\": \"cm:name:king\",\"userQuery\": \"great\",\"language\": \"afts\"}, \"fields\" : [\"id\",\"name\", \"search\"]}";
-    private static final String  bad_json = "{ \"query\": {\"qu\": \"cm:some nonsense \",\"userQuery\": \"great\",\"language\": \"afts\"}}";
+    private static final String json = "{ \"query\": {\"query\": \"cm:name:king\",\"userQuery\": \"great\",\"language\": \"afts\"}, \"fields\" : [\"id\",\"name\", \"search\"]}";
+    private static final String bad_json = "{ \"query\": {\"qu\": \"cm:some nonsense \",\"userQuery\": \"great\",\"language\": \"afts\"}}";
 
     /**
      * Tests basic api for search
@@ -88,7 +86,7 @@ public class BasicSearchApiIntegrationTest extends AbstractSingleNetworkSiteTest
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
 
-            //Just happy if it doesn't error
+            // Just happy if it doesn't error
             response = post(URL_SEARCH, SerializerTestHelper.JSON, null, null, SEARCH_API_NAME, 200);
 
         }
@@ -106,7 +104,7 @@ public class BasicSearchApiIntegrationTest extends AbstractSingleNetworkSiteTest
     public void testBadQuery() throws Exception
     {
         setRequestContext(user1);
-        //Bad request
+        // Bad request
         HttpResponse response = post(URL_SEARCH, bad_json, null, null, SEARCH_API_NAME, 400);
     }
 }

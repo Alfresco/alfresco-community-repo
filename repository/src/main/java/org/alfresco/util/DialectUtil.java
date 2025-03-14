@@ -25,9 +25,10 @@
  */
 package org.alfresco.util;
 
-import org.alfresco.repo.domain.dialect.Dialect;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
+
+import org.alfresco.repo.domain.dialect.Dialect;
 
 public abstract class DialectUtil
 {
@@ -35,10 +36,7 @@ public abstract class DialectUtil
     public static final String PLACEHOLDER_DIALECT = "\\$\\{db\\.script\\.dialect\\}";
 
     /**
-     * Replaces the dialect placeholder in the resource URL and attempts to find a
-     * file for it. If not found, the dialect hierarchy will be walked until a
-     * compatible resource is found. This makes it possible to have resources that
-     * are generic to all dialects.
+     * Replaces the dialect placeholder in the resource URL and attempts to find a file for it. If not found, the dialect hierarchy will be walked until a compatible resource is found. This makes it possible to have resources that are generic to all dialects.
      *
      * @return The Resource, otherwise null
      */
@@ -71,9 +69,7 @@ public abstract class DialectUtil
     }
 
     /**
-     * Takes resource URL containing the {@link DialectUtil#PLACEHOLDER_DIALECT
-     * dialect placeholder text} and substitutes the placeholder with the name of
-     * the given dialect's class.
+     * Takes resource URL containing the {@link DialectUtil#PLACEHOLDER_DIALECT dialect placeholder text} and substitutes the placeholder with the name of the given dialect's class.
      * <p/>
      * For example:
      * 

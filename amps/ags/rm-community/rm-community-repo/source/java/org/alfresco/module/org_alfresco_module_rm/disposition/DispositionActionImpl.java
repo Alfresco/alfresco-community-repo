@@ -34,6 +34,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
@@ -41,15 +44,12 @@ import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.script.slingshot.RMSearchGet;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Disposition action implementation.
@@ -58,7 +58,7 @@ import org.apache.commons.logging.LogFactory;
  * @since 1.0
  */
 public class DispositionActionImpl implements DispositionAction,
-                                              RecordsManagementModel
+        RecordsManagementModel
 {
     /** logger */
     private static Log logger = LogFactory.getLog(DispositionActionImpl.class);
@@ -75,8 +75,10 @@ public class DispositionActionImpl implements DispositionAction,
     /**
      * Constructor
      *
-     * @param services                  records management service registry
-     * @param dispositionActionNodeRef  disposition action node reference
+     * @param services
+     *            records management service registry
+     * @param dispositionActionNodeRef
+     *            disposition action node reference
      */
     public DispositionActionImpl(RecordsManagementServiceRegistry services, NodeRef dispositionActionNodeRef)
     {
@@ -92,7 +94,7 @@ public class DispositionActionImpl implements DispositionAction,
         if (dispositionActionDefinition == null)
         {
             // Get the current action
-            String id = (String)services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_ACTION_ID);
+            String id = (String) services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_ACTION_ID);
 
             // Get the disposition instructions for the owning node
             NodeRef recordNodeRef = services.getNodeService().getPrimaryParent(this.dispositionNodeRef).getParentRef();
@@ -117,7 +119,7 @@ public class DispositionActionImpl implements DispositionAction,
      */
     public NodeRef getNodeRef()
     {
-       return this.dispositionNodeRef;
+        return this.dispositionNodeRef;
     }
 
     /**
@@ -143,7 +145,7 @@ public class DispositionActionImpl implements DispositionAction,
      */
     public String getId()
     {
-        return (String)services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_ACTION_ID);
+        return (String) services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_ACTION_ID);
     }
 
     /**
@@ -151,7 +153,7 @@ public class DispositionActionImpl implements DispositionAction,
      */
     public String getName()
     {
-        return (String)services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_ACTION);
+        return (String) services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_ACTION);
     }
 
     /**
@@ -159,7 +161,7 @@ public class DispositionActionImpl implements DispositionAction,
      */
     public Date getAsOfDate()
     {
-        return (Date)services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_AS_OF);
+        return (Date) services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_AS_OF);
     }
 
     /**
@@ -167,7 +169,7 @@ public class DispositionActionImpl implements DispositionAction,
      */
     public boolean isEventsEligible()
     {
-        return ((Boolean)services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_EVENTS_ELIGIBLE)).booleanValue();
+        return ((Boolean) services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_EVENTS_ELIGIBLE)).booleanValue();
     }
 
     /**
@@ -175,7 +177,7 @@ public class DispositionActionImpl implements DispositionAction,
      */
     public Date getCompletedAt()
     {
-        return (Date)services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_AT);
+        return (Date) services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_AT);
     }
 
     /**
@@ -183,7 +185,7 @@ public class DispositionActionImpl implements DispositionAction,
      */
     public String getCompletedBy()
     {
-        return (String)services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_BY);
+        return (String) services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_BY);
     }
 
     /**
@@ -191,7 +193,7 @@ public class DispositionActionImpl implements DispositionAction,
      */
     public Date getStartedAt()
     {
-        return (Date)services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_ACTION_STARTED_AT);
+        return (Date) services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_ACTION_STARTED_AT);
     }
 
     /**
@@ -199,7 +201,7 @@ public class DispositionActionImpl implements DispositionAction,
      */
     public String getStartedBy()
     {
-        return (String)services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_ACTION_STARTED_BY);
+        return (String) services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_ACTION_STARTED_BY);
     }
 
     /**
@@ -208,9 +210,9 @@ public class DispositionActionImpl implements DispositionAction,
     public List<EventCompletionDetails> getEventCompletionDetails()
     {
         List<ChildAssociationRef> assocs = services.getNodeService().getChildAssocs(
-                                                        this.dispositionNodeRef,
-                                                        ASSOC_EVENT_EXECUTIONS,
-                                                        RegexQNamePattern.MATCH_ALL);
+                this.dispositionNodeRef,
+                ASSOC_EVENT_EXECUTIONS,
+                RegexQNamePattern.MATCH_ALL);
         List<EventCompletionDetails> result = new ArrayList<>(assocs.size());
         for (ChildAssociationRef assoc : assocs)
         {
@@ -221,11 +223,11 @@ public class DispositionActionImpl implements DispositionAction,
     }
 
     /**
-     * Helper method to create object representation of event completed details from
-     * node reference.
+     * Helper method to create object representation of event completed details from node reference.
      *
-     * @param nodeRef                           node reference
-     * @return {@link EventCompletionDetails}   event completion details
+     * @param nodeRef
+     *            node reference
+     * @return {@link EventCompletionDetails} event completion details
      */
     private EventCompletionDetails getEventCompletionDetailsFromNodeRef(NodeRef nodeRef)
     {
@@ -233,7 +235,7 @@ public class DispositionActionImpl implements DispositionAction,
         Map<QName, Serializable> props = this.services.getNodeService().getProperties(nodeRef);
 
         // get the event name
-        String eventName = (String)props.get(PROP_EVENT_EXECUTION_NAME);
+        String eventName = (String) props.get(PROP_EVENT_EXECUTION_NAME);
 
         // create event completion details
         return new EventCompletionDetails(
@@ -258,7 +260,7 @@ public class DispositionActionImpl implements DispositionAction,
         boolean result = defaultValue;
         if (value instanceof Boolean)
         {
-            result = ((Boolean)value).booleanValue();
+            result = ((Boolean) value).booleanValue();
         }
         return result;
     }
@@ -268,8 +270,9 @@ public class DispositionActionImpl implements DispositionAction,
      * <p>
      * Returns null if event can not be found.
      *
-     * @param  eventName   name of the event
-     * @return {@link EventCompletionDetails}   event completion details for named event, null otherwise
+     * @param eventName
+     *            name of the event
+     * @return {@link EventCompletionDetails} event completion details for named event, null otherwise
      *
      * @since 2.2
      */
@@ -301,8 +304,7 @@ public class DispositionActionImpl implements DispositionAction,
         final EventCompletionDetails event = getEventCompletionDetails(eventName);
         if (event != null && !event.isEventComplete())
         {
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
                 @Override
                 public Void doWork()
                 {
@@ -352,8 +354,7 @@ public class DispositionActionImpl implements DispositionAction,
         final EventCompletionDetails event = getEventCompletionDetails(eventName);
         if (event != null && event.isEventComplete())
         {
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
                 @Override
                 public Void doWork()
                 {
@@ -381,8 +382,7 @@ public class DispositionActionImpl implements DispositionAction,
     @Override
     public void refreshEvents()
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork()
             {
@@ -407,7 +407,7 @@ public class DispositionActionImpl implements DispositionAction,
                         if (logger.isDebugEnabled())
                         {
                             logger.debug("Removed '" + eventName + "' from next action '" + getName() +
-                                         "' (" + getNodeRef() + ")");
+                                    "' (" + getNodeRef() + ")");
                         }
                     }
                 }
@@ -425,7 +425,7 @@ public class DispositionActionImpl implements DispositionAction,
                             if (logger.isDebugEnabled())
                             {
                                 logger.debug("Added '" + eventName + "' to next action '" + getName() +
-                                             "' (" + getNodeRef() + ")");
+                                        "' (" + getNodeRef() + ")");
                             }
                         }
                     }
@@ -440,7 +440,7 @@ public class DispositionActionImpl implements DispositionAction,
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Set events eligible flag to '" + eligible + "' for next action '" + getName() +
-                                 "' (" + getNodeRef() + ")");
+                            "' (" + getNodeRef() + ")");
                 }
 
                 return null;
@@ -462,18 +462,17 @@ public class DispositionActionImpl implements DispositionAction,
 
         // Create the event execution object
         services.getNodeService().createNode(getNodeRef(),
-                                             ASSOC_EVENT_EXECUTIONS,
-                                             ASSOC_EVENT_EXECUTIONS,
-                                             TYPE_EVENT_EXECUTION,
-                                             eventProps);
+                ASSOC_EVENT_EXECUTIONS,
+                ASSOC_EVENT_EXECUTIONS,
+                TYPE_EVENT_EXECUTION,
+                eventProps);
     }
 
-
     /**
-     * Calculates and updates the <code>rma:dispositionEventsEligible</code>
-     * property for the given next disposition action.
+     * Calculates and updates the <code>rma:dispositionEventsEligible</code> property for the given next disposition action.
      *
-     * @param nextAction The next disposition action
+     * @param nextAction
+     *            The next disposition action
      * @return The result of calculation
      *
      * @since 2.2
@@ -490,7 +489,7 @@ public class DispositionActionImpl implements DispositionAction,
             // get the disposition action definition
             DispositionActionDefinition dispositionActionDefinition = getDispositionActionDefinition();
             if (dispositionActionDefinition != null)
-            {            
+            {
                 if (!dispositionActionDefinition.eligibleOnFirstCompleteEvent())
                 {
                     // if one event is complete then the disposition action is eligible
@@ -528,9 +527,12 @@ public class DispositionActionImpl implements DispositionAction,
     /**
      * Sets declassification review authority and date on records and record folder
      *
-     * @param eventNodeRef Declassification review event node ref
-     * @param completedAtValue Declassification review authority
-     * @param completedByValue Declassification review date
+     * @param eventNodeRef
+     *            Declassification review event node ref
+     * @param completedAtValue
+     *            Declassification review authority
+     * @param completedByValue
+     *            Declassification review date
      */
     private void setDeclassificationReview(NodeRef eventNodeRef, Date completedAtValue, String completedByValue)
     {

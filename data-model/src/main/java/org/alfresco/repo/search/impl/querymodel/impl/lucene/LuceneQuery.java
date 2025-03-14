@@ -52,19 +52,19 @@ public class LuceneQuery<Q, S, E extends Throwable> extends BaseQuery implements
 {
 
     /**
-     * @param source Source
-     * @param constraint Constraint
+     * @param source
+     *            Source
+     * @param constraint
+     *            Constraint
      */
     public LuceneQuery(List<Column> columns, Source source, Constraint constraint, List<Ordering> orderings)
     {
         super(columns, source, constraint, orderings);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilder#buildQuery()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilder#buildQuery() */
     public Q buildQuery(Set<String> selectors, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext) throws E
     {
         QueryParserExpressionAdaptor<Q, E> expressionBuilder = luceneContext.getLuceneQueryParserAdaptor().getExpressionAdaptor();
@@ -137,23 +137,19 @@ public class LuceneQuery<Q, S, E extends Throwable> extends BaseQuery implements
         return expressionBuilder.getQuery();
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilder#buildSort(java.lang.String,
-     *      org.alfresco.repo.search.impl.querymodel.impl.lucene.QueryBuilderContext,
-     *      org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilder#buildSort(java.lang.String, org.alfresco.repo.search.impl.querymodel.impl.lucene.QueryBuilderContext, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext) */
     public S buildSort(Set<String> selectors, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext) throws E
     {
         if ((getOrderings() == null) || (getOrderings().size() == 0))
         {
             return null;
         }
-        
+
         return luceneContext.getLuceneQueryParserAdaptor().buildSort(getOrderings(), functionContext);
     }
-    
+
     public List<SortDefinition> buildSortDefinitions(Set<String> selectors, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext)
     {
         if ((getOrderings() == null) || (getOrderings().size() == 0))
@@ -177,7 +173,7 @@ public class LuceneQuery<Q, S, E extends Throwable> extends BaseQuery implements
                 String propertyName = property.getPropertyName();
 
                 String fieldName = functionContext.getLuceneFieldName(propertyName);
-                
+
                 definitions.add(new SortDefinition(SortType.FIELD, fieldName, ordering.getOrder() == Order.ASCENDING));
             }
             else if (ordering.getColumn().getFunction().getName().equals(Score.NAME))

@@ -40,39 +40,34 @@ import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.BaseAlfrescoTestCase;
 import org.alfresco.util.GUID;
 import org.alfresco.util.VersionNumber;
-import org.alfresco.repo.module.ModuleVersionNumber;
 
 /**
  * @see org.alfresco.repo.module.ModuleComponentHelper
- * <p/>
- * This test creates a bunch of dummy components and then simulates
- * startups with different module current versions.
- * <p/>
- * There are 3 modules.  There are 3 components.
+ *      <p/>
+ *      This test creates a bunch of dummy components and then simulates startups with different module current versions.
+ *      <p/>
+ *      There are 3 modules. There are 3 components.
  * 
  * @author Derek Hulley
  */
 public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
 {
     private final String SOME_GUID = "" + GUID.generate();
-    private final String[] MODULE_IDS =
-    {
-        "M0 @ " + SOME_GUID,
-        "M1 @ " + SOME_GUID,
-        "M2 @ " + SOME_GUID
+    private final String[] MODULE_IDS = {
+            "M0 @ " + SOME_GUID,
+            "M1 @ " + SOME_GUID,
+            "M2 @ " + SOME_GUID
     };
-    private final String[] COMPONENT_NAMES =
-    {
-        "C0 @ " + SOME_GUID,
-        "C1 @ " + SOME_GUID,
-        "C2 @ " + SOME_GUID
+    private final String[] COMPONENT_NAMES = {
+            "C0 @ " + SOME_GUID,
+            "C1 @ " + SOME_GUID,
+            "C2 @ " + SOME_GUID
     };
-    private final VersionNumber[] VERSIONS =
-    {
-        new VersionNumber("0"),
-        new VersionNumber("1"),
-        new VersionNumber("2"),
-        new VersionNumber("3")
+    private final VersionNumber[] VERSIONS = {
+            new VersionNumber("0"),
+            new VersionNumber("1"),
+            new VersionNumber("2"),
+            new VersionNumber("3")
     };
     private static final Map<ModuleVersionNumber, Integer> EXECUTION_COUNT_BY_VERSION;
     static
@@ -87,24 +82,24 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
         EXECUTION_COUNT_BY_VERSION.put(new ModuleVersionNumber("3.0"), 3);
         EXECUTION_COUNT_BY_VERSION.put(new ModuleVersionNumber("3.5"), 0);
     };
-    
+
     private RegistryService registryService;
     private TenantAdminService tenantAdminService;
     private DescriptorService descriptorService;
     private DummyModuleService moduleService;
     private ModuleComponentHelper helper;
-    
+
     private DummyModuleComponent[][] components;
-    
+
     public void setUp() throws Exception
     {
         super.setUp();
-        
+
         registryService = (RegistryService) ctx.getBean("RegistryService");
         tenantAdminService = (TenantAdminService) ctx.getBean("tenantAdminService");
-        
+
         descriptorService = serviceRegistry.getDescriptorService();
-        
+
         moduleService = new DummyModuleService();
         helper = new ModuleComponentHelper();
         helper.setModuleService(moduleService);
@@ -112,37 +107,37 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
         helper.setServiceRegistry(serviceRegistry);
         helper.setDescriptorService(descriptorService);
         helper.setTenantAdminService(tenantAdminService);
-        
+
         // Register the components
-        components = new DummyModuleComponent[3][3];    // i,j
-        for (int i = 0; i < 3; i++)                     // i = module number
+        components = new DummyModuleComponent[3][3]; // i,j
+        for (int i = 0; i < 3; i++) // i = module number
         {
-            for (int j = 0; j < 3; j++)                 // j = component number
+            for (int j = 0; j < 3; j++) // j = component number
             {
                 DummyModuleComponent component = new DummyModuleComponent(
                         MODULE_IDS[i],
                         COMPONENT_NAMES[j],
                         VERSIONS[j],
-                        VERSIONS[j+1]);
+                        VERSIONS[j + 1]);
                 component.setServiceRegistry(serviceRegistry);
                 component.setAuthenticationComponent(authenticationComponent);
                 component.setModuleService(moduleService);
                 component.setTenantAdminService(tenantAdminService);
-                // Don't initialize the component as that will do the registration.  We do it manually.
+                // Don't initialize the component as that will do the registration. We do it manually.
                 helper.registerComponent(component);
                 // Add to array
                 components[i][j] = component;
             }
         }
         // M1-C1 depends on M0-C1
-        components[1][1].setDependsOn(Collections.<ModuleComponent>singletonList(components[0][1]));
+        components[1][1].setDependsOn(Collections.<ModuleComponent> singletonList(components[0][1]));
     }
-    
+
     public void testSetup() throws Exception
     {
         // See that it all starts OK
     }
-    
+
     private void startComponents(ModuleVersionNumber moduleVersion)
     {
         int expectedCount = (Integer) EXECUTION_COUNT_BY_VERSION.get(moduleVersion);
@@ -151,83 +146,89 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
         // Start them
         helper.startModules();
 
-// ALF-19207: MT module startup does not work
-//        int tenantCount = 0;
-//        if (tenantDeployerService.isEnabled())
-//        {
-//        	tenantCount = tenantDeployerService.getTenants(true).size();
-//        }
-//        // Check
-//        assertEquals(ModuleVersionNumber
-//                "Incorrent number of executions (version " + moduleVersion + ")",
-//                expectedCount + (expectedCount * tenantCount),
-//                executed);
+        // ALF-19207: MT module startup does not work
+        // int tenantCount = 0;
+        // if (tenantDeployerService.isEnabled())
+        // {
+        // tenantCount = tenantDeployerService.getTenants(true).size();
+        // }
+        // // Check
+        // assertEquals(ModuleVersionNumber
+        // "Incorrent number of executions (version " + moduleVersion + ")",
+        // expectedCount + (expectedCount * tenantCount),
+        // executed);
         // Check
         assertEquals("Incorrent number of executions (version " + moduleVersion + ")", expectedCount, executed);
     }
-    
+
     public void testStartComponentsV00()
     {
         ModuleVersionNumber moduleVersion = new ModuleVersionNumber("0.0");
         startComponents(moduleVersion);
     }
-    
+
     public void testStartComponentsV05()
     {
         ModuleVersionNumber moduleVersion = new ModuleVersionNumber("0.5");
         startComponents(moduleVersion);
     }
-    
+
     public void testStartComponentsV10()
     {
         ModuleVersionNumber moduleVersion = new ModuleVersionNumber("1.0");
         startComponents(moduleVersion);
     }
-    
+
     public void testStartComponentsV15()
     {
         ModuleVersionNumber moduleVersion = new ModuleVersionNumber("1.5");
         startComponents(moduleVersion);
     }
-    
+
     public void testStartComponentsV30()
     {
         ModuleVersionNumber moduleVersion = new ModuleVersionNumber("3.0");
         startComponents(moduleVersion);
     }
-    
+
     public void testStartComponentsV35()
     {
         ModuleVersionNumber moduleVersion = new ModuleVersionNumber("3.5");
         startComponents(moduleVersion);
     }
-    
-	public void testgetModuleVersionNumber() {
-		ModuleVersionNumber moduleVersion = new ModuleVersionNumber("3.5");
-		VersionNumber versNumber = new VersionNumber("3.5");
-		assertEquals(moduleVersion, helper.getModuleVersionNumber(moduleVersion));
-		assertEquals(moduleVersion, helper.getModuleVersionNumber(versNumber));
 
-		try {
-			helper.getModuleVersionNumber(null);
-			assertTrue(false); //should never get here
-		} catch (ModuleManagementToolException e) {
-			//should get here
-		}
-//		try {
-//			helper.getModuleVersionNumber("any object");
-//			assertTrue(false); //should never get here
-//		} catch (ModuleManagementToolException e) {
-//			//should get here
-//		}
-//		assertTrue(true);
-	}
+    public void testgetModuleVersionNumber()
+    {
+        ModuleVersionNumber moduleVersion = new ModuleVersionNumber("3.5");
+        VersionNumber versNumber = new VersionNumber("3.5");
+        assertEquals(moduleVersion, helper.getModuleVersionNumber(moduleVersion));
+        assertEquals(moduleVersion, helper.getModuleVersionNumber(versNumber));
+
+        try
+        {
+            helper.getModuleVersionNumber(null);
+            assertTrue(false); // should never get here
+        }
+        catch (ModuleManagementToolException e)
+        {
+            // should get here
+        }
+        // try {
+        // helper.getModuleVersionNumber("any object");
+        // assertTrue(false); //should never get here
+        // } catch (ModuleManagementToolException e) {
+        // //should get here
+        // }
+        // assertTrue(true);
+    }
+
     /**
      * Helper bean to simulate module presences under controlled conditions.
      */
     private class DummyModuleService implements ModuleService
     {
         private ModuleVersionNumber currentVersion;
+
         /** Set the current version of all the modules */
         public void setCurrentVersion(ModuleVersionNumber currentVersion)
         {
@@ -255,7 +256,7 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
                 details.add(moduleDetails);
             }
             // Done
-            return details; 
+            return details;
         }
 
         public ModuleDetails getModule(String moduleId)
@@ -279,7 +280,7 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
         {
             throw new UnsupportedOperationException();
         }
-        
+
         @Override
         public List<ModuleDetails> getMissingModules()
         {
@@ -295,20 +296,21 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
                 details.add(moduleDetails);
             }
             // Done
-            return details; 
+            return details;
         }
-        
+
         public void shutdownModules()
         {
             throw new UnsupportedOperationException();
         }
     }
-    
+
     /** Keep track of the execution count */
     private volatile int executed = 0;
-    
+
     /**
-     * A dummy 
+     * A dummy
+     * 
      * @author Derek Hulley
      */
     private class DummyModuleComponent extends AbstractModuleComponent
@@ -319,16 +321,16 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
             super.setAuthenticationComponent(authenticationComponent);
             super.setModuleService(moduleService);
             super.setTenantAdminService(tenantAdminService);
-            
+
             super.setModuleId(moduleId);
             super.setName(name);
             super.setAppliesFromVersion(from.toString());
             super.setAppliesToVersion(to.toString());
             super.setSinceVersion("10.1.2");
-            
+
             super.setDescription("A dummy module component");
         }
-        
+
         @Override
         protected void executeInternal() throws Throwable
         {
@@ -342,7 +344,6 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
     {
         @Override
         protected void executeInternal() throws Throwable
-        {
-        }
+        {}
     }
 }

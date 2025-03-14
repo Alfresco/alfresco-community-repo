@@ -46,62 +46,65 @@ package org.alfresco.rest.search;
 import org.alfresco.utility.model.TestModel;
 
 /**
- * Search response sample.
- *  "pagination": {
- *     "maxItems": 100,
- *     "hasMoreItems": false,
- *     "totalItems": 0,
- *     "count": 0,
- *     "skipCount": 0
- *  },
+ * Search response sample. "pagination": { "maxItems": 100, "hasMoreItems": false, "totalItems": 0, "count": 0, "skipCount": 0 },
  **/
 public class Pagination extends TestModel
 {
-    
+
     private Integer maxItems;
     private Integer totalItems;
     private Integer count;
     private Integer skipCount;
     private boolean hasMoreItems;
+
     public Integer getMaxItems()
     {
         return maxItems;
     }
+
     public void setMaxItems(Integer maxItems)
     {
         this.maxItems = maxItems;
     }
+
     public Integer getTotalItems()
     {
         return totalItems;
     }
+
     public void setTotalItems(Integer totalItems)
     {
         this.totalItems = totalItems;
     }
+
     public Integer getCount()
     {
         return count;
     }
+
     public void setCount(Integer count)
     {
         this.count = count;
     }
+
     public Integer getSkipCount()
     {
         return skipCount;
     }
+
     public void setSkipCount(Integer skipCount)
     {
         this.skipCount = skipCount;
     }
+
     public boolean isHasMoreItems()
     {
         return hasMoreItems;
     }
+
     public void setHasMoreItems(boolean hasMoreItems)
     {
         this.hasMoreItems = hasMoreItems;
     }
-    
+
 }

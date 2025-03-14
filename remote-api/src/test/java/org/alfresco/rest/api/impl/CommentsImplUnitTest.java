@@ -38,6 +38,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forum.CommentService;
 import org.alfresco.rest.api.Nodes;
@@ -50,8 +53,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TypeConstraint;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * Unit tests for {@link CommentsImpl} class.
@@ -67,9 +68,10 @@ public class CommentsImplUnitTest
     private NodeService nodeService;
     private ContentService contentService;
     private People people;
-    
+
     @Before
-    public void setUp(){
+    public void setUp()
+    {
         commentsImpl = new CommentsImpl();
         nodes = mock(Nodes.class);
         typeConstraint = mock(TypeConstraint.class);
@@ -100,7 +102,7 @@ public class CommentsImplUnitTest
         Map<QName, Serializable> nodeProps = new HashMap<>();
         nodeProps.put(ContentModel.PROP_CREATOR, "user1");
         nodeProps.put(ContentModel.PROP_MODIFIER, "user2");
-        
+
         Person person1 = new Person();
         person1.setUserName("user1");
         person1.setEmail("user1@alfresco.com");
@@ -128,8 +130,9 @@ public class CommentsImplUnitTest
     }
 
     @Test
-    public void testCreateCommentForDeletedUser(){
-        
+    public void testCreateCommentForDeletedUser()
+    {
+
         String nodeId = "node-id";
         Comment comment = new Comment();
         NodeRef nodeRef = new NodeRef("protocol", "identifier", "id");
@@ -137,7 +140,7 @@ public class CommentsImplUnitTest
         Map<String, Boolean> map = new HashMap<>();
         map.put(CommentService.CAN_EDIT, true);
         map.put(CommentService.CAN_DELETE, true);
-        
+
         Map<QName, Serializable> nodeProps = new HashMap<>();
         nodeProps.put(ContentModel.PROP_CREATOR, "user1");
         nodeProps.put(ContentModel.PROP_MODIFIER, "user2");
@@ -151,7 +154,7 @@ public class CommentsImplUnitTest
         when(people.getPerson(eq("user2"), any(List.class))).thenThrow(EntityNotFoundException.class);
 
         Comment resultComment = commentsImpl.createComment(nodeId, comment);
-        
+
         assertNotNull(resultComment);
         assertNotNull(resultComment.getCreatedBy());
         assertEquals("user1", resultComment.getCreatedBy().getUserName());

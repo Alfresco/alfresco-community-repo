@@ -29,35 +29,12 @@ import static org.alfresco.utility.report.log.Step.STEP;
 
 import java.util.List;
 
-import org.alfresco.rest.core.RestModels;
 import org.testng.Assert;
 
+import org.alfresco.rest.core.RestModels;
+
 /**
- * Handle collection of <RestRatingModel>
-{
-  "list": {
-    "pagination": {
-      "count": 0,
-      "hasMoreItems": true,
-      "totalItems": 0,
-      "skipCount": 0,
-      "maxItems": 0
-    },
-    "entries": [
-      {
-        "entry": {
-          "id": "string",
-          "aggregate": {
-            "numberOfRatings": 0,
-            "average": 0
-          },
-          "ratedAt": "2016-09-28T13:56:58.931Z",
-          "myRating": "string"
-        }
-      }
-    ]
-  }
-}
+ * Handle collection of <RestRatingModel> { "list": { "pagination": { "count": 0, "hasMoreItems": true, "totalItems": 0, "skipCount": 0, "maxItems": 0 }, "entries": [ { "entry": { "id": "string", "aggregate": { "numberOfRatings": 0, "average": 0 }, "ratedAt": "2016-09-28T13:56:58.931Z", "myRating": "string" } } ] } }
  */
 public class RestRatingModelsCollection extends RestModels<RestRatingModel, RestRatingModelsCollection>
 {
@@ -89,12 +66,13 @@ public class RestRatingModelsCollection extends RestModels<RestRatingModel, Rest
     {
         STEP("REST API: Assert that document has no five star rating");
         Assert.assertTrue(getNumberOfRatingsFor("fiveStar") == 0, "Node should have no five star ratings");
-       
+
         return this;
     }
-    
+
     /**
      * Default, the rating value can be: "likes" or "fiveStar"
+     * 
      * @param ratingValue
      * @return
      */
@@ -112,4 +90,4 @@ public class RestRatingModelsCollection extends RestModels<RestRatingModel, Rest
 
         return noOfRatings;
     }
-}    
+}

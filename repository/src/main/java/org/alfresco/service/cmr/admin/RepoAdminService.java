@@ -34,7 +34,6 @@ import org.alfresco.service.cmr.admin.RepoUsage.UsageType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
-
 /**
  * Repository Admin Service.
  *
@@ -49,34 +48,33 @@ public interface RepoAdminService
 
     /**
      * Get list of deployed custom model.
-     */  
+     */
     @Auditable
     public List<RepoModelDefinition> getModels();
 
     /**
-     * Deploy custom model (to the 'Models' space). 
-     * Allows creation of new models and incremental update of existing models.
+     * Deploy custom model (to the 'Models' space). Allows creation of new models and incremental update of existing models.
      * 
      */
     @Auditable(parameters = {"modelStream", "modelFileName"}, recordable = {false, true})
     public void deployModel(InputStream modelStream, String modelFileName);
 
     /**
-     * Deploy custom model (to the 'Models' space). Allows creation of new
-     * models and incremental update of existing models.
+     * Deploy custom model (to the 'Models' space). Allows creation of new models and incremental update of existing models.
      * 
-     * @param modelStream the model input stream
-     * @param modelFileName modelFileName the model file name
-     * @param activate whether the model should be activated or not
+     * @param modelStream
+     *            the model input stream
+     * @param modelFileName
+     *            modelFileName the model file name
+     * @param activate
+     *            whether the model should be activated or not
      * @return the nodeRef of the created model
      */
-    @Auditable(parameters = { "modelStream", "modelFileName", "activate" }, recordable = { false, true, false })
+    @Auditable(parameters = {"modelStream", "modelFileName", "activate"}, recordable = {false, true, false})
     public NodeRef deployModel(InputStream modelStream, String modelFileName, boolean activate);
 
     /**
-     * Undeploy custom model (from the 'Models' space). 
-     * Allows delete of existing models, if not used. 
-     * Permanently removes the model definition from the repository (all versions).
+     * Undeploy custom model (from the 'Models' space). Allows delete of existing models, if not used. Permanently removes the model definition from the repository (all versions).
      */
     @Auditable(parameters = {"modelFileName"})
     public QName undeployModel(String modelFileName);
@@ -86,7 +84,7 @@ public interface RepoAdminService
      */
     @Auditable(parameters = {"modelFileName"})
     public QName activateModel(String modelFileName);
-    
+
     /**
      * Deactivate custom model.
      */
@@ -115,7 +113,7 @@ public interface RepoAdminService
      */
     @Auditable(parameters = {"bundleBaseName"})
     public void undeployMessageBundle(String bundleBaseName);
- 
+
     /**
      * Reload custom message resource bundle.
      */
@@ -125,7 +123,7 @@ public interface RepoAdminService
     //
     // Usage
     //
-    
+
     /**
      * Get the currently-active restrictions to the repository usage
      * 
@@ -133,35 +131,29 @@ public interface RepoAdminService
      */
     @Auditable
     public RepoUsage getRestrictions();
-    
+
     /**
      * Get the repository usage, where known
      * 
-     * @return          the currently-known repository usage
+     * @return the currently-known repository usage
      * 
      * @since 3.5
      */
     public RepoUsage getUsage();
-    
+
     /**
-     * Force an update of the usages, providing a hint on the specific updates required.
-     * If another client is already performing the update, then the calling code will need
-     * to determine the severity i.e. is an updated value <b>really</b> needed.  Generally
-     * clients should accept that the data might be slightly stale, especially since there
-     * is no way to guarantee visibility of data being put into the database by other
-     * transactions.
+     * Force an update of the usages, providing a hint on the specific updates required. If another client is already performing the update, then the calling code will need to determine the severity i.e. is an updated value <b>really</b> needed. Generally clients should accept that the data might be slightly stale, especially since there is no way to guarantee visibility of data being put into the database by other transactions.
      * 
-     * @param usageType         the type of usage update to perform
-     * @return                  <tt>true</tt> if the update succeeded or <tt>false</tt> if
-     *                          some other client was already performing the same update
+     * @param usageType
+     *            the type of usage update to perform
+     * @return <tt>true</tt> if the update succeeded or <tt>false</tt> if some other client was already performing the same update
      */
     public boolean updateUsage(UsageType usageType);
-    
+
     /**
-     * Get full information on the state of the usage limits, including errors and warnings
-     * about limits in play.
+     * Get full information on the state of the usage limits, including errors and warnings about limits in play.
      * 
-     * @return                  the object containing all the information
+     * @return the object containing all the information
      */
     public RepoUsageStatus getUsageStatus();
 }

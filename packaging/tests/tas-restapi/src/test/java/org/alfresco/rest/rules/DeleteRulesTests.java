@@ -26,19 +26,25 @@
 package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
-import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
-import static org.alfresco.utility.constants.UserRole.SiteContributor;
-import static org.alfresco.utility.constants.UserRole.SiteManager;
-import static org.alfresco.utility.report.log.Step.STEP;
+
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
+import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
+import static org.alfresco.utility.constants.UserRole.SiteContributor;
+import static org.alfresco.utility.constants.UserRole.SiteManager;
+import static org.alfresco.utility.report.log.Step.STEP;
+
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.junit.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
@@ -46,9 +52,6 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.junit.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Tests for DELETE /nodes/{nodeId}/rule-sets/{ruleSetId}/rules/{ruleId}.
@@ -92,14 +95,12 @@ public class DeleteRulesTests extends RulesRestTest
         restClient.assertStatusCodeIs(NO_CONTENT);
 
         STEP("Get and check the rules from the folder after deleting one of them");
-        final RestRuleModelsCollection rulesAfterDeletion =
-                restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet().getListOfRules();
+        final RestRuleModelsCollection rulesAfterDeletion = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet().getListOfRules();
         restClient.assertStatusCodeIs(OK);
         rulesAfterDeletion.assertThat().entriesListCountIs(createdRules.size() - 1);
         Assert.assertTrue(rulesAfterDeletion.getEntries()
                 .stream()
-                .noneMatch(r -> r.onModel().getId().equals(ruleA.getId()))
-        );
+                .noneMatch(r -> r.onModel().getId().equals(ruleA.getId())));
         final Set<String> ruleIdsThatShouldBeLeft = createdRules.stream()
                 .filter(r -> !r.getName().equals("ruleA"))
                 .map(RestRuleModel::getId)
@@ -185,9 +186,8 @@ public class DeleteRulesTests extends RulesRestTest
         final SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();
         final FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
         final RestRuleModel ruleModel = rulesUtils.createRuleModel("Private site rule");
-        final RestRuleModel createdRule =
-                restClient.authenticateUser(privateUser).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet()
-                        .createSingleRule(ruleModel);
+        final RestRuleModel createdRule = restClient.authenticateUser(privateUser).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
 
         STEP("Try to delete the rule with another user");
         restClient.authenticateUser(user).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet().deleteRule(createdRule.getId());
@@ -226,9 +226,8 @@ public class DeleteRulesTests extends RulesRestTest
         final SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();
         final FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
         final RestRuleModel ruleModel = rulesUtils.createRuleModel("Private site rule");
-        final RestRuleModel createdRule =
-                restClient.authenticateUser(privateUser).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet()
-                        .createSingleRule(ruleModel);
+        final RestRuleModel createdRule = restClient.authenticateUser(privateUser).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
 
         STEP("Create a manager in the private site");
         final UserModel siteManager = dataUser.createRandomTestUser();

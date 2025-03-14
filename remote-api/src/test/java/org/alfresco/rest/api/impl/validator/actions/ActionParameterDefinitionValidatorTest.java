@@ -26,6 +26,11 @@
 
 package org.alfresco.rest.api.impl.validator.actions;
 
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+
 import static org.alfresco.rest.api.impl.validator.actions.ActionParameterDefinitionValidator.EMPTY_ACTION_DEFINITION;
 import static org.alfresco.rest.api.impl.validator.actions.ActionParameterDefinitionValidator.INVALID_ACTION_DEFINITION;
 import static org.alfresco.rest.api.impl.validator.actions.ActionParameterDefinitionValidator.MISSING_PARAMETER;
@@ -33,15 +38,17 @@ import static org.alfresco.rest.api.impl.validator.actions.ActionParameterDefini
 import static org.alfresco.rest.api.impl.validator.actions.ActionParameterDefinitionValidator.PARAMS_SHOULD_NOT_BE_EMPTY;
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.BOOLEAN;
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.TEXT;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.model.ActionDefinition;
@@ -50,11 +57,6 @@ import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.namespace.QName;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 @Experimental
 @RunWith(MockitoJUnitRunner.class)
@@ -76,12 +78,11 @@ public class ActionParameterDefinitionValidatorTest
         final String actionDefinitionId = "properActionDefinition";
         action.setActionDefinitionId(actionDefinitionId);
         action.setParams(Map.of(MANDATORY_PARAM_KEY, "paramValue"));
-        final List<ActionDefinition.ParameterDefinition> parameterDefinitions =
-                List.of(createParameterDefinition(MANDATORY_PARAM_KEY, TEXT, true, null));
+        final List<ActionDefinition.ParameterDefinition> parameterDefinitions = List.of(createParameterDefinition(MANDATORY_PARAM_KEY, TEXT, true, null));
         final ActionDefinition actionDefinition = createActionDefinition(actionDefinitionId, parameterDefinitions);
         given(actionsMock.getRuleActionDefinitionById(actionDefinitionId)).willReturn(actionDefinition);
 
-        //when
+        // when
         objectUnderTest.validate(action);
 
         then(actionsMock).should().getRuleActionDefinitionById(actionDefinitionId);
@@ -97,7 +98,7 @@ public class ActionParameterDefinitionValidatorTest
         final ActionDefinition actionDefinition = createActionDefinition(actionDefinitionId, null);
         given(actionsMock.getRuleActionDefinitionById(actionDefinitionId)).willReturn(actionDefinition);
 
-        //when
+        // when
         objectUnderTest.validate(action);
 
         then(actionsMock).should().getRuleActionDefinitionById(actionDefinitionId);
@@ -110,11 +111,10 @@ public class ActionParameterDefinitionValidatorTest
         final Action action = new Action();
         final String actionDefinitionId = "properActionDefinition";
         action.setActionDefinitionId(actionDefinitionId);
-        final ActionDefinition actionDefinition =
-                createActionDefinition(actionDefinitionId, List.of(createParameterDefinition(NON_MANDATORY_PARAM_KEY, TEXT, false, null)));
+        final ActionDefinition actionDefinition = createActionDefinition(actionDefinitionId, List.of(createParameterDefinition(NON_MANDATORY_PARAM_KEY, TEXT, false, null)));
         given(actionsMock.getRuleActionDefinitionById(actionDefinitionId)).willReturn(actionDefinition);
 
-        //when
+        // when
         objectUnderTest.validate(action);
 
         then(actionsMock).should().getRuleActionDefinitionById(actionDefinitionId);
@@ -128,13 +128,12 @@ public class ActionParameterDefinitionValidatorTest
         final String actionDefinitionId = "properActionDefinition";
         action.setActionDefinitionId(actionDefinitionId);
         action.setParams(Map.of(MANDATORY_PARAM_KEY, "paramValue"));
-        final List<ActionDefinition.ParameterDefinition> parameterDefinitions =
-                List.of(createParameterDefinition(MANDATORY_PARAM_KEY, TEXT, true, null),
-                        createParameterDefinition(NON_MANDATORY_PARAM_KEY, BOOLEAN, false, null));
+        final List<ActionDefinition.ParameterDefinition> parameterDefinitions = List.of(createParameterDefinition(MANDATORY_PARAM_KEY, TEXT, true, null),
+                createParameterDefinition(NON_MANDATORY_PARAM_KEY, BOOLEAN, false, null));
         final ActionDefinition actionDefinition = createActionDefinition(actionDefinitionId, parameterDefinitions);
         given(actionsMock.getRuleActionDefinitionById(actionDefinitionId)).willReturn(actionDefinition);
 
-        //when
+        // when
         objectUnderTest.validate(action);
 
         then(actionsMock).should().getRuleActionDefinitionById(actionDefinitionId);
@@ -148,12 +147,11 @@ public class ActionParameterDefinitionValidatorTest
         final String actionDefinitionId = "properActionDefinition";
         action.setActionDefinitionId(actionDefinitionId);
         action.setParams(Map.of(MANDATORY_PARAM_KEY, "paramValue", NON_MANDATORY_PARAM_KEY, false));
-        final List<ActionDefinition.ParameterDefinition> parameterDefinitions =
-                List.of(createParameterDefinition(MANDATORY_PARAM_KEY, TEXT, true, null));
+        final List<ActionDefinition.ParameterDefinition> parameterDefinitions = List.of(createParameterDefinition(MANDATORY_PARAM_KEY, TEXT, true, null));
         final ActionDefinition actionDefinition = createActionDefinition(actionDefinitionId, parameterDefinitions);
         given(actionsMock.getRuleActionDefinitionById(actionDefinitionId)).willReturn(actionDefinition);
 
-        //when
+        // when
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.validate(action))
                 .withMessageContaining(String.format(MUST_NOT_CONTAIN_PARAMETER, actionDefinitionId, NON_MANDATORY_PARAM_KEY));
 
@@ -167,12 +165,11 @@ public class ActionParameterDefinitionValidatorTest
         final Action action = new Action();
         final String actionDefinitionId = "properActionDefinition";
         action.setActionDefinitionId(actionDefinitionId);
-        final List<ActionDefinition.ParameterDefinition> parameterDefinitions =
-                List.of(createParameterDefinition(MANDATORY_PARAM_KEY, TEXT, true, null));
+        final List<ActionDefinition.ParameterDefinition> parameterDefinitions = List.of(createParameterDefinition(MANDATORY_PARAM_KEY, TEXT, true, null));
         final ActionDefinition actionDefinition = createActionDefinition(actionDefinitionId, parameterDefinitions);
         given(actionsMock.getRuleActionDefinitionById(actionDefinitionId)).willReturn(actionDefinition);
 
-        //when
+        // when
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.validate(action))
                 .withMessageContaining(String.format(PARAMS_SHOULD_NOT_BE_EMPTY, actionDefinitionId));
 
@@ -189,12 +186,11 @@ public class ActionParameterDefinitionValidatorTest
         final Map<String, java.io.Serializable> params = new HashMap<>();
         params.put(MANDATORY_PARAM_KEY, null);
         action.setParams(params);
-        final List<ActionDefinition.ParameterDefinition> parameterDefinitions =
-                List.of(createParameterDefinition(MANDATORY_PARAM_KEY, TEXT, true, null));
+        final List<ActionDefinition.ParameterDefinition> parameterDefinitions = List.of(createParameterDefinition(MANDATORY_PARAM_KEY, TEXT, true, null));
         final ActionDefinition actionDefinition = createActionDefinition(actionDefinitionId, parameterDefinitions);
         given(actionsMock.getRuleActionDefinitionById(actionDefinitionId)).willReturn(actionDefinition);
 
-        //when
+        // when
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.validate(action))
                 .withMessageContaining(String.format(MISSING_PARAMETER, MANDATORY_PARAM_KEY));
 
@@ -209,13 +205,12 @@ public class ActionParameterDefinitionValidatorTest
         final String actionDefinitionId = "properActionDefinition";
         action.setActionDefinitionId(actionDefinitionId);
         action.setParams(Map.of(NON_MANDATORY_PARAM_KEY, true));
-        final List<ActionDefinition.ParameterDefinition> parameterDefinitions =
-                List.of(createParameterDefinition(MANDATORY_PARAM_KEY, TEXT, true, null),
-                        createParameterDefinition(NON_MANDATORY_PARAM_KEY, BOOLEAN, false, null));
+        final List<ActionDefinition.ParameterDefinition> parameterDefinitions = List.of(createParameterDefinition(MANDATORY_PARAM_KEY, TEXT, true, null),
+                createParameterDefinition(NON_MANDATORY_PARAM_KEY, BOOLEAN, false, null));
         final ActionDefinition actionDefinition = createActionDefinition(actionDefinitionId, parameterDefinitions);
         given(actionsMock.getRuleActionDefinitionById(actionDefinitionId)).willReturn(actionDefinition);
 
-        //when
+        // when
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.validate(action))
                 .withMessageContaining(String.format(MISSING_PARAMETER, MANDATORY_PARAM_KEY));
 
@@ -230,7 +225,7 @@ public class ActionParameterDefinitionValidatorTest
         action.setActionDefinitionId(null);
         action.setParams(Map.of(MANDATORY_PARAM_KEY, "paramValue"));
 
-        //when
+        // when
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.validate(action))
                 .withMessageContaining(EMPTY_ACTION_DEFINITION);
 
@@ -246,7 +241,7 @@ public class ActionParameterDefinitionValidatorTest
         action.setParams(Map.of(MANDATORY_PARAM_KEY, "paramValue"));
         given(actionsMock.getRuleActionDefinitionById(actionDefinitionId)).willThrow(NotFoundException.class);
 
-        //when
+        // when
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.validate(action))
                 .withMessageContaining(String.format(INVALID_ACTION_DEFINITION, actionDefinitionId));
 
@@ -264,14 +259,14 @@ public class ActionParameterDefinitionValidatorTest
     }
 
     private ActionDefinition createActionDefinition(final String actionDefinitionId,
-                                                    List<ActionDefinition.ParameterDefinition> parameterDefinitions)
+            List<ActionDefinition.ParameterDefinition> parameterDefinitions)
     {
         return new ActionDefinition(actionDefinitionId, actionDefinitionId, "title", "description", Collections.emptyList(), false, false,
                 parameterDefinitions);
     }
 
     private ActionDefinition.ParameterDefinition createParameterDefinition(final String name, final QName qName, final boolean mandatory,
-                                                                           final String constraint)
+            final String constraint)
     {
         return new ActionDefinition.ParameterDefinition(name, qName.toPrefixString(), false, mandatory, "label", constraint);
     }

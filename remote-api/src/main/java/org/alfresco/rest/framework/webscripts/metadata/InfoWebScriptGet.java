@@ -36,6 +36,9 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.ResourceDictionary;
 import org.alfresco.rest.framework.core.ResourceLookupDictionary;
@@ -47,8 +50,6 @@ import org.alfresco.rest.framework.jacksonextensions.JacksonHelper.Writer;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.webscripts.ApiWebScript;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
 
 /**
  * Provides general information about the Api calls and methods.
@@ -59,45 +60,41 @@ public class InfoWebScriptGet extends ApiWebScript
 {
 
     private ResourceLookupDictionary lookupDictionary;
-    
 
     public void setLookupDictionary(ResourceLookupDictionary lookupDictionary)
     {
         this.lookupDictionary = lookupDictionary;
     }
 
-
     @Override
     public void execute(final Api api, WebScriptRequest req, WebScriptResponse res) throws IOException
     {
-        
+
         ResourceDictionary resourceDic = lookupDictionary.getDictionary();
         final Map<String, ResourceWithMetadata> apiResources = resourceDic.getAllResources().get(api);
         if (apiResources == null)
         {
-          throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_INVALID_API);         
+            throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_INVALID_API);
         }
 
-        assistant.getJsonHelper().withWriter(res.getOutputStream(), new Writer()
-        {
+        assistant.getJsonHelper().withWriter(res.getOutputStream(), new Writer() {
             @Override
             public void writeContents(JsonGenerator generator, ObjectMapper objectMapper)
-                        throws JsonGenerationException, JsonMappingException, IOException
-            {   
+                    throws JsonGenerationException, JsonMappingException, IOException
+            {
 
-               List<ExecutionResult> entities = new ArrayList<ExecutionResult>();
-               for (ResourceWithMetadata resource : apiResources.values())
-               {
-                 entities.add(new ExecutionResult(resource.getMetaData(), null));
-               }
-               Collections.sort(entities, new Comparator<ExecutionResult>()
-               {
+                List<ExecutionResult> entities = new ArrayList<ExecutionResult>();
+                for (ResourceWithMetadata resource : apiResources.values())
+                {
+                    entities.add(new ExecutionResult(resource.getMetaData(), null));
+                }
+                Collections.sort(entities, new Comparator<ExecutionResult>() {
                     public int compare(ExecutionResult r1, ExecutionResult r2)
                     {
                         return ((ResourceMetadata) r1.getRoot()).getUniqueId().compareTo(((ResourceMetadata) r2.getRoot()).getUniqueId());
                     }
-               });
-               objectMapper.writeValue(generator, CollectionWithPagingInfo.asPaged(Paging.DEFAULT,entities));
+                });
+                objectMapper.writeValue(generator, CollectionWithPagingInfo.asPaged(Paging.DEFAULT, entities));
             }
         });
     }

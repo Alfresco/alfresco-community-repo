@@ -44,7 +44,7 @@ public class RenditionDefinition2Impl implements RenditionDefinition2
      * Constructor used by statically (e.g. XML Spring beans) defined renditions.
      */
     public RenditionDefinition2Impl(String renditionName, String targetMimetype, Map<String, String> transformOptions,
-                                    RenditionDefinitionRegistry2Impl registry)
+            RenditionDefinitionRegistry2Impl registry)
     {
         this(renditionName, targetMimetype, transformOptions, false, registry);
     }
@@ -53,7 +53,7 @@ public class RenditionDefinition2Impl implements RenditionDefinition2
      * Constructor used by dynamically defined renditions that may be changed without restarting.
      */
     public RenditionDefinition2Impl(String renditionName, String targetMimetype, Map<String, String> transformOptions,
-                                    boolean dynamicallyLoaded, RenditionDefinitionRegistry2Impl registry)
+            boolean dynamicallyLoaded, RenditionDefinitionRegistry2Impl registry)
     {
         this.renditionName = renditionName;
         this.targetMimetype = targetMimetype;

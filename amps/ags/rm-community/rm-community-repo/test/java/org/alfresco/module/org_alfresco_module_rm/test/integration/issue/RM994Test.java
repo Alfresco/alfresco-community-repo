@@ -60,8 +60,7 @@ public class RM994Test extends BaseRMTestCase
 
     public void testRM944() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -76,8 +75,7 @@ public class RM994Test extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -99,8 +97,7 @@ public class RM994Test extends BaseRMTestCase
             }
         }, "admin");
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {

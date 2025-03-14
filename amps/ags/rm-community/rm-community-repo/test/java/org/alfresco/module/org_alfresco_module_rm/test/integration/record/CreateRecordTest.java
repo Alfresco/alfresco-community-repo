@@ -53,8 +53,7 @@ public class CreateRecordTest extends BaseRMTestCase
 {
     public void testCreateRecordCapabilityOnly() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             /** test data */
             String roleName = GUID.generate();
             String user = GUID.generate();
@@ -83,8 +82,7 @@ public class CreateRecordTest extends BaseRMTestCase
                 // give read and file permissions to user
                 filePlanPermissionService.setPermission(recordFolder, user, RMPermissionModel.FILING);
 
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         record = recordService.createRecordFromContent(recordFolder, GUID.generate(), TYPE_CONTENT, null, null);
@@ -107,8 +105,7 @@ public class CreateRecordTest extends BaseRMTestCase
      */
     public void testCreateRecordCapabilityOnlyFromFileFolderService() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             /** test data */
             String roleName = GUID.generate();
             String user = GUID.generate();
@@ -137,8 +134,7 @@ public class CreateRecordTest extends BaseRMTestCase
                 // give read and file permissions to user
                 filePlanPermissionService.setPermission(recordFolder, user, RMPermissionModel.FILING);
 
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         record = fileFolderService.create(recordFolder, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
@@ -162,13 +158,11 @@ public class CreateRecordTest extends BaseRMTestCase
     }
 
     /**
-     * unit test for RM1649 fix
-     * test if a user with create record permissions and without file record permission is able to create a record within unfiled record container
+     * unit test for RM1649 fix test if a user with create record permissions and without file record permission is able to create a record within unfiled record container
      */
     public void testCreateRecordCapabilityInsideUnfiledRecordsContainer() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             /** test data */
             String roleName = GUID.generate();
             String user = GUID.generate();
@@ -183,20 +177,18 @@ public class CreateRecordTest extends BaseRMTestCase
                 capabilities.add(capabilityService.getCapability("CreateModifyDestroyFileplanMetadata"));
                 filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
 
-
                 // create user and assign to role
                 createPerson(user, true);
                 filePlanRoleService.assignRoleToAuthority(filePlan, roleName, user);
 
-                //give read and file permission to user on unfiled records container
-                filePlanPermissionService.setPermission(unfiledContainer , user, RMPermissionModel.FILING);
-                filePlanPermissionService.setPermission(unfiledContainer , user, RMPermissionModel.CREATE_MODIFY_DESTROY_FILEPLAN_METADATA);
+                // give read and file permission to user on unfiled records container
+                filePlanPermissionService.setPermission(unfiledContainer, user, RMPermissionModel.FILING);
+                filePlanPermissionService.setPermission(unfiledContainer, user, RMPermissionModel.CREATE_MODIFY_DESTROY_FILEPLAN_METADATA);
             }
 
             public void when()
             {
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         record = recordService.createRecordFromContent(unfiledContainer, GUID.generate(), TYPE_CONTENT, null, null);
@@ -214,19 +206,15 @@ public class CreateRecordTest extends BaseRMTestCase
             }
         });
     }
-    
+
     /**
-     * Given I have ViewRecord and CreateRecord capabilities
-     * And I have filling on a record folder
-     * When I create content via ScriptNode (simulated)
-     * Then the record is successfully created
+     * Given I have ViewRecord and CreateRecord capabilities And I have filling on a record folder When I create content via ScriptNode (simulated) Then the record is successfully created
      * 
      * @see https://issues.alfresco.com/jira/browse/RM-1956
      */
     public void testCreateRecordViaCoreServices() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             /** test data */
             String roleName = GUID.generate();
             String user = GUID.generate();
@@ -247,21 +235,20 @@ public class CreateRecordTest extends BaseRMTestCase
 
                 // create file plan structure
                 NodeRef rc = filePlanService.createRecordCategory(filePlan, GUID.generate());
-                recordFolder = recordFolderService.createRecordFolder(rc, GUID.generate());                 
+                recordFolder = recordFolderService.createRecordFolder(rc, GUID.generate());
             }
 
             public void when()
             {
                 // give read and file permissions to user
                 filePlanPermissionService.setPermission(recordFolder, user, RMPermissionModel.FILING);
-                
-                record = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-                {
+
+                record = AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
                     public NodeRef doWork() throws Exception
                     {
-                        NodeRef record = fileFolderService.create(recordFolder, "testRecord.txt", ContentModel.TYPE_CONTENT).getNodeRef();                        
-                        ContentData content = (ContentData)nodeService.getProperty(record, PROP_CONTENT);
-                        nodeService.setProperty(record, PROP_CONTENT, ContentData.setMimetype(content, MimetypeMap.MIMETYPE_TEXT_PLAIN));                        
+                        NodeRef record = fileFolderService.create(recordFolder, "testRecord.txt", ContentModel.TYPE_CONTENT).getNodeRef();
+                        ContentData content = (ContentData) nodeService.getProperty(record, PROP_CONTENT);
+                        nodeService.setProperty(record, PROP_CONTENT, ContentData.setMimetype(content, MimetypeMap.MIMETYPE_TEXT_PLAIN));
                         return record;
                     }
                 }, user);
@@ -271,15 +258,14 @@ public class CreateRecordTest extends BaseRMTestCase
             {
                 // check the details of the record
                 assertTrue(recordService.isRecord(record));
-                
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         // we are expecting an expception here
                         try
                         {
-                            ContentData content = (ContentData)nodeService.getProperty(record, PROP_CONTENT);
+                            ContentData content = (ContentData) nodeService.getProperty(record, PROP_CONTENT);
                             nodeService.setProperty(record, PROP_CONTENT, ContentData.setMimetype(content, MimetypeMap.MIMETYPE_TEXT_PLAIN));
                             fail("Expecting access denied exception");
                         }
@@ -287,12 +273,12 @@ public class CreateRecordTest extends BaseRMTestCase
                         {
                             // expceted
                         }
-                        
+
                         return null;
                     }
                 }, user);
             }
-  
+
         });
-    }    
+    }
 }

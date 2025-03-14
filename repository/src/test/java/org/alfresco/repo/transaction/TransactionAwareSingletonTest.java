@@ -26,14 +26,14 @@
 package org.alfresco.repo.transaction;
 
 import java.util.Random;
-
 import jakarta.transaction.UserTransaction;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * @see org.alfresco.repo.transaction.TransactionAwareSingleton
@@ -74,7 +74,12 @@ public class TransactionAwareSingletonTest extends BaseSpringTest
         }
         catch (Throwable e)
         {
-            try { txn.rollback(); } catch (Throwable ee) {}
+            try
+            {
+                txn.rollback();
+            }
+            catch (Throwable ee)
+            {}
             throw e;
         }
         check(INTEGER_ONE, true);
@@ -98,7 +103,12 @@ public class TransactionAwareSingletonTest extends BaseSpringTest
         }
         catch (Throwable e)
         {
-            try { txn.rollback(); } catch (Throwable ee) {}
+            try
+            {
+                txn.rollback();
+            }
+            catch (Throwable ee)
+            {}
             throw e;
         }
         check(null, true);
@@ -106,6 +116,7 @@ public class TransactionAwareSingletonTest extends BaseSpringTest
     }
 
     private static final int THREAD_COUNT = 20;
+
     @Test
     public void testThreadsCommit() throws Throwable
     {
@@ -121,9 +132,14 @@ public class TransactionAwareSingletonTest extends BaseSpringTest
         {
             while (threads[i].finished == false)
             {
-                synchronized(this)
+                synchronized (this)
                 {
-                    try { wait(20); } catch (Throwable e) {}
+                    try
+                    {
+                        wait(20);
+                    }
+                    catch (Throwable e)
+                    {}
                 }
             }
             if (threads[i].error != null)
@@ -132,6 +148,7 @@ public class TransactionAwareSingletonTest extends BaseSpringTest
             }
         }
     }
+
     @Test
     public void testThreadsRollback() throws Throwable
     {
@@ -146,6 +163,7 @@ public class TransactionAwareSingletonTest extends BaseSpringTest
 
     /**
      * Dumps random values into
+     * 
      * @author Derek Hulley
      */
     private class TestThread extends Thread
@@ -159,6 +177,7 @@ public class TransactionAwareSingletonTest extends BaseSpringTest
         {
             this.commit = commit;
         }
+
         @Override
         public synchronized void run()
         {
@@ -172,8 +191,8 @@ public class TransactionAwareSingletonTest extends BaseSpringTest
                 // wait for some random time
                 try
                 {
-                    // DH:  The "+1" is necessary to ensure that wait(0) is never called
-                    wait((long)(rand.nextDouble() * 1000.0) + 1);   // wait up to a second
+                    // DH: The "+1" is necessary to ensure that wait(0) is never called
+                    wait((long) (rand.nextDouble() * 1000.0) + 1); // wait up to a second
                 }
                 catch (InterruptedException e)
                 {
@@ -195,7 +214,12 @@ public class TransactionAwareSingletonTest extends BaseSpringTest
             }
             catch (Throwable e)
             {
-                try { txn.rollback(); } catch (Throwable ee) {}
+                try
+                {
+                    txn.rollback();
+                }
+                catch (Throwable ee)
+                {}
                 this.error = e;
             }
             if (!commit)
@@ -216,8 +240,7 @@ public class TransactionAwareSingletonTest extends BaseSpringTest
 
     private void check(final Integer expected, boolean inTransaction)
     {
-        RetryingTransactionCallback<Object> checkWork = new RetryingTransactionCallback<Object>()
-        {
+        RetryingTransactionCallback<Object> checkWork = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Exception
             {
                 Integer actual = singleton.get();

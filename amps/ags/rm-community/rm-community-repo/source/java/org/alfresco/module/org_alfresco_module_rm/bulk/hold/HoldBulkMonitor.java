@@ -38,7 +38,8 @@ public interface HoldBulkMonitor extends BulkMonitor<HoldBulkStatus>
     /**
      * Get the bulk statuses with process details for a hold
      *
-     * @param holdId the hold id
+     * @param holdId
+     *            the hold id
      * @return the bulk statuses with process details
      */
     List<HoldBulkStatusAndProcessDetails> getBulkStatusesWithProcessDetails(String holdId);
@@ -46,8 +47,10 @@ public interface HoldBulkMonitor extends BulkMonitor<HoldBulkStatus>
     /**
      * Get the bulk status with process details
      *
-     * @param holdId       the hold id
-     * @param bulkStatusId the bulk status id
+     * @param holdId
+     *            the hold id
+     * @param bulkStatusId
+     *            the bulk status id
      * @return the bulk status with process details
      */
     HoldBulkStatusAndProcessDetails getBulkStatusWithProcessDetails(String holdId, String bulkStatusId);

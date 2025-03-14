@@ -52,12 +52,12 @@ public class CheckInActionExecuter extends ActionExecuterAbstractBase
     public static final String NAME = "check-in";
     public static final String PARAM_DESCRIPTION = "description";
     public static final String PARAM_MINOR_CHANGE = "minorChange";
-    
+
     /**
      * The node service
      */
     private NodeService nodeService;
-    
+
     /**
      * The coci service
      */
@@ -66,19 +66,21 @@ public class CheckInActionExecuter extends ActionExecuterAbstractBase
     /**
      * Set node service
      * 
-     * @param nodeService  the node service
+     * @param nodeService
+     *            the node service
      */
-    public void setNodeService(NodeService nodeService) 
+    public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Set the checkIn checkOut service
      * 
-     * @param cociService  the checkIn checkOut Service
+     * @param cociService
+     *            the checkIn checkOut Service
      */
-    public void setCociService(CheckOutCheckInService cociService) 
+    public void setCociService(CheckOutCheckInService cociService)
     {
         this.cociService = cociService;
     }
@@ -90,33 +92,33 @@ public class CheckInActionExecuter extends ActionExecuterAbstractBase
     {
         // First ensure that the actionedUponNodeRef is a workingCopy
         if (this.nodeService.exists(actionedUponNodeRef) == true &&
-            this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY) == true)
+                this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY) == true)
         {
             // Get the version description
-            String description = (String)ruleAction.getParameterValue(PARAM_DESCRIPTION);
+            String description = (String) ruleAction.getParameterValue(PARAM_DESCRIPTION);
             Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(1);
             versionProperties.put(Version.PROP_DESCRIPTION, description);
-            
+
             // determine whether the change is minor or major
-            Boolean minorChange = (Boolean)ruleAction.getParameterValue(PARAM_MINOR_CHANGE);
+            Boolean minorChange = (Boolean) ruleAction.getParameterValue(PARAM_MINOR_CHANGE);
             if (minorChange != null && minorChange.booleanValue() == false)
             {
-               versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+                versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
             }
             else
             {
-               versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
+                versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
             }
-            
+
             // TODO determine whether the document should be kept checked out
-            
+
             // Check the node in
             this.cociService.checkin(actionedUponNodeRef, versionProperties);
         }
     }
 
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_DESCRIPTION, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_DESCRIPTION)));
         paramList.add(new ParameterDefinitionImpl(PARAM_MINOR_CHANGE, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_MINOR_CHANGE)));

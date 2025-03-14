@@ -78,6 +78,7 @@ public class SearchTypesFactory
 
     /**
      * Helper method to build search types for unfiled container and unfiled record folders endpoints
+     * 
      * @param parameters
      * @param listFolderChildrenEqualsQueryProperties
      * @return
@@ -176,6 +177,7 @@ public class SearchTypesFactory
 
     /**
      * Helper method to build search types for categories endpoint
+     * 
      * @param parameters
      * @param listRecordCategoryChildrenEqualsQueryProperties
      * @return
@@ -253,6 +255,7 @@ public class SearchTypesFactory
 
     /**
      * Helper method to build search types for transfer containers endpoint
+     * 
      * @return
      */
     public Set<QName> buildSearchTypesForTransferContainersEndpoint()
@@ -263,8 +266,8 @@ public class SearchTypesFactory
     }
 
     /**
-     * Helper method to parse the nodeType filter
-     * default nodeType filtering is without subTypes (unless nodeType value is suffixed with ' INCLUDESUBTYPES')
+     * Helper method to parse the nodeType filter default nodeType filtering is without subTypes (unless nodeType value is suffixed with ' INCLUDESUBTYPES')
+     * 
      * @param nodeTypeStr
      * @return
      */
@@ -295,12 +298,12 @@ public class SearchTypesFactory
     private static boolean checkIncludeRecords(Boolean isUnfiledRecordFolder, Boolean isRecord)
     {
         return (isUnfiledRecordFolder != null && !isUnfiledRecordFolder.booleanValue()) || (isRecord != null
-                    && isRecord.booleanValue());
+                && isRecord.booleanValue());
     }
 
     private static boolean checkIncludeUnfiledRecordFolders(Boolean isUnfiledRecordFolder, Boolean isRecord)
     {
         return (isUnfiledRecordFolder != null && isUnfiledRecordFolder.booleanValue()) || (isRecord != null
-                    && !isRecord.booleanValue());
+                && !isRecord.booleanValue());
     }
 }

@@ -33,10 +33,6 @@ import static org.mockito.Mockito.doReturn;
 
 import java.io.UnsupportedEncodingException;
 
-import org.alfresco.httpclient.HttpClientFactory;
-import org.alfresco.httpclient.RequestHeadersHttpClient;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.util.Pair;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
@@ -48,6 +44,11 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.BeanFactory;
 
+import org.alfresco.httpclient.HttpClientFactory;
+import org.alfresco.httpclient.RequestHeadersHttpClient;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.util.Pair;
+
 /**
  * @author Andy
  *
@@ -57,69 +58,69 @@ import org.springframework.beans.factory.BeanFactory;
 public class SolrStoreMappingWrapperTest
 {
     SolrStoreMapping mapping;
-    
+
     ExplicitSolrStoreMappingWrapper wrapper;
-    
+
     @Mock
     HttpClientFactory httpClientFactory;
-    
+
     @Mock
     RequestHeadersHttpClient httpClientCommon;
-    
+
     @Mock
     RequestHeadersHttpClient httpClient1;
-    
+
     @Mock
     RequestHeadersHttpClient httpClient2;
-    
+
     @Mock
     RequestHeadersHttpClient httpClient3;
-    
+
     @Mock
     RequestHeadersHttpClient httpClient4;
-    
+
     @Mock
     RequestHeadersHttpClient httpClient5;
-    
+
     @Mock
     RequestHeadersHttpClient httpClient6;
-    
+
     @Mock
     RequestHeadersHttpClient httpClient7;
-    
+
     @Mock
     RequestHeadersHttpClient httpClient8;
-    
+
     @Mock
     RequestHeadersHttpClient httpClient9;
-    
+
     @Mock
     HostConfiguration hostConfigurationCommon;
-    
+
     @Mock
     HostConfiguration hostConfiguration1;
-    
+
     @Mock
     HostConfiguration hostConfiguration2;
-    
+
     @Mock
     HostConfiguration hostConfiguration3;
-    
+
     @Mock
     HostConfiguration hostConfiguration4;
-    
+
     @Mock
     HostConfiguration hostConfiguration5;
-    
+
     @Mock
     HostConfiguration hostConfiguration6;
-    
+
     @Mock
     HostConfiguration hostConfiguration7;
-    
+
     @Mock
     HostConfiguration hostConfiguration8;
-    
+
     @Mock
     HostConfiguration hostConfiguration9;
 
@@ -127,12 +128,12 @@ public class SolrStoreMappingWrapperTest
     Protocol protocol;
 
     private SolrStoreMapping unsharded;
-    
+
     private ExplicitSolrStoreMappingWrapper unshardedWrapper;
 
     @Mock
     private BeanFactory beanFactory;
-    
+
     @Before
     public void init()
     {
@@ -141,7 +142,6 @@ public class SolrStoreMappingWrapperTest
         doReturn("common").when(hostConfigurationCommon).getHost();
         doReturn(999).when(hostConfigurationCommon).getPort();
         doReturn(protocol).when(hostConfigurationCommon).getProtocol();
-
 
         doReturn("host").when(hostConfiguration1).getHost();
         doReturn(999).when(hostConfiguration1).getPort();
@@ -189,7 +189,7 @@ public class SolrStoreMappingWrapperTest
         doReturn(hostConfiguration7).when(httpClient7).getHostConfiguration();
         doReturn(hostConfiguration8).when(httpClient8).getHostConfiguration();
         doReturn(hostConfiguration9).when(httpClient9).getHostConfiguration();
-        
+
         doReturn(httpClientCommon).when(httpClientFactory).getHttpClient();
         doReturn("common").when(httpClientFactory).getHost();
         doReturn(999).when(httpClientFactory).getPort();
@@ -203,10 +203,9 @@ public class SolrStoreMappingWrapperTest
         doReturn(httpClient7).when(httpClientFactory).getHttpClient(eq("common"), eq(567));
         doReturn(httpClient8).when(httpClientFactory).getHttpClient(eq("common"), eq(678));
         doReturn(httpClient9).when(httpClientFactory).getHttpClient(eq("common"), eq(789));
-        
+
         doReturn(httpClientFactory).when(beanFactory).getBean(eq("httpClientFactory"));
-        
-       
+
         mapping = new SolrStoreMapping();
         mapping.setBaseUrl("/solr4");
         mapping.setHttpClientFactory("httpClientFactory");
@@ -216,31 +215,27 @@ public class SolrStoreMappingWrapperTest
         mapping.setProtocol(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getProtocol());
         mapping.setReplicationFactor(3);
         wrapper = new ExplicitSolrStoreMappingWrapper(mapping, beanFactory);
-   
-        
-        
+
         unsharded = new SolrStoreMapping();
         unsharded.setBaseUrl("/solr4");
         unsharded.setHttpClientFactory("httpClientFactory");
         unsharded.setIdentifier(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getIdentifier());
         unsharded.setProtocol(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getProtocol());
-        unshardedWrapper =  new ExplicitSolrStoreMappingWrapper(unsharded, beanFactory);
+        unshardedWrapper = new ExplicitSolrStoreMappingWrapper(unsharded, beanFactory);
     }
-    
 
     @Test
     public void testBasics()
     {
         assertEquals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getIdentifier(), mapping.getIdentifier());
         assertEquals(24, mapping.getNumShards());
-        assertEquals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getProtocol() , mapping.getProtocol());
+        assertEquals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getProtocol(), mapping.getProtocol());
         assertEquals(3, mapping.getReplicationFactor());
         assertEquals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, mapping.getStoreRef());
         assertEquals(12, wrapper.getNodeCount());
         assertTrue(wrapper.isSharded());
     }
-    
-    
+
     @Test
     public void testShards()
     {
@@ -271,7 +266,7 @@ public class SolrStoreMappingWrapperTest
         assertEquals("common", distributor.getFirst().getHostConfiguration().getHost());
         assertEquals(999, distributor.getFirst().getHostConfiguration().getPort());
     }
-    
+
     @Test
     public void testUnsharded()
     {

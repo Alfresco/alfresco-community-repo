@@ -55,41 +55,41 @@ public class StatsRequestParameters
 
     @JsonCreator
     public StatsRequestParameters(
-                 @JsonProperty("field") String field,
-                 @JsonProperty("label") String label,
-                 @JsonProperty("percentiles") List<Float> percentiles,
-                 @JsonProperty("min") Boolean min,
-                 @JsonProperty("max") Boolean max,
-                 @JsonProperty("sum") Boolean sum,
-                 @JsonProperty("countValues") Boolean countValues,
-                 @JsonProperty("missing") Boolean missing,
-                 @JsonProperty("sumOfSquares") Boolean sumOfSquares,
-                 @JsonProperty("mean") Boolean mean,
-                 @JsonProperty("stddev") Boolean stddev,
-                 @JsonProperty("distinctValues") Boolean distinctValues,
-                 @JsonProperty("countDistinct") Boolean countDistinct,
-                 @JsonProperty("cardinality") Boolean cardinality,
-                 @JsonProperty("cardinalityAccuracy") Float cardinalityAccuracy,
-                 @JsonProperty("excludeFilters") List<String> excludeFilters)
+            @JsonProperty("field") String field,
+            @JsonProperty("label") String label,
+            @JsonProperty("percentiles") List<Float> percentiles,
+            @JsonProperty("min") Boolean min,
+            @JsonProperty("max") Boolean max,
+            @JsonProperty("sum") Boolean sum,
+            @JsonProperty("countValues") Boolean countValues,
+            @JsonProperty("missing") Boolean missing,
+            @JsonProperty("sumOfSquares") Boolean sumOfSquares,
+            @JsonProperty("mean") Boolean mean,
+            @JsonProperty("stddev") Boolean stddev,
+            @JsonProperty("distinctValues") Boolean distinctValues,
+            @JsonProperty("countDistinct") Boolean countDistinct,
+            @JsonProperty("cardinality") Boolean cardinality,
+            @JsonProperty("cardinalityAccuracy") Float cardinalityAccuracy,
+            @JsonProperty("excludeFilters") List<String> excludeFilters)
     {
         this.field = field;
         this.label = label;
-        this.percentiles = percentiles == null? Collections.emptyList():percentiles;
+        this.percentiles = percentiles == null ? Collections.emptyList() : percentiles;
 
-        this.min = min == null?true:min;
-        this.max = max == null?true:max;
-        this.sum = sum == null?true:sum;
-        this.countValues = countValues == null?true:countValues;
-        this.missing = missing == null?true:missing;
-        this.sumOfSquares = sumOfSquares == null?true:sumOfSquares;
-        this.mean = mean == null?true:mean;
-        this.stddev = stddev == null?true:stddev;
+        this.min = min == null ? true : min;
+        this.max = max == null ? true : max;
+        this.sum = sum == null ? true : sum;
+        this.countValues = countValues == null ? true : countValues;
+        this.missing = missing == null ? true : missing;
+        this.sumOfSquares = sumOfSquares == null ? true : sumOfSquares;
+        this.mean = mean == null ? true : mean;
+        this.stddev = stddev == null ? true : stddev;
 
-        this.distinctValues = distinctValues == null?false:distinctValues;
-        this.countDistinct = countDistinct == null?false:countDistinct;
-        this.cardinality = cardinality == null?false:cardinality;
-        this.cardinalityAccuracy = cardinalityAccuracy == null?0.3f:cardinalityAccuracy;
-        this.excludeFilters = excludeFilters == null? Collections.emptyList():excludeFilters;
+        this.distinctValues = distinctValues == null ? false : distinctValues;
+        this.countDistinct = countDistinct == null ? false : countDistinct;
+        this.cardinality = cardinality == null ? false : cardinality;
+        this.cardinalityAccuracy = cardinalityAccuracy == null ? 0.3f : cardinalityAccuracy;
+        this.excludeFilters = excludeFilters == null ? Collections.emptyList() : excludeFilters;
     }
 
     public String getField()
@@ -176,8 +176,8 @@ public class StatsRequestParameters
     public String toString()
     {
         return "StatsRequestParameters{" + "field='" + field + '\'' + ", label='" + label + '\'' + ", percentiles=" + percentiles + ", min=" + min
-                    + ", max=" + max + ", sum=" + sum + ", countValues=" + countValues + ", missing=" + missing + ", sumOfSquares=" + sumOfSquares + ", mean="
-                    + mean + ", stddev=" + stddev + ", distinctValues=" + distinctValues + ", countDistinct=" + countDistinct + ", cardinality="
-                    + cardinality + ", cardinalityAccuracy=" + cardinalityAccuracy + ", excludeFilters=" + excludeFilters + '}';
+                + ", max=" + max + ", sum=" + sum + ", countValues=" + countValues + ", missing=" + missing + ", sumOfSquares=" + sumOfSquares + ", mean="
+                + mean + ", stddev=" + stddev + ", distinctValues=" + distinctValues + ", countDistinct=" + countDistinct + ", cardinality="
+                + cardinality + ", cardinalityAccuracy=" + cardinalityAccuracy + ", excludeFilters=" + excludeFilters + '}';
     }
 }

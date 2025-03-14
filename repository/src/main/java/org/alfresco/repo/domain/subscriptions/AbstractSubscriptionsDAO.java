@@ -76,7 +76,8 @@ public abstract class AbstractSubscriptionsDAO implements SubscriptionsDAO
         try
         {
             return personService.getPerson(userId, false);
-        } catch (NoSuchPersonException nspe)
+        }
+        catch (NoSuchPersonException nspe)
         {
             return null;
         }

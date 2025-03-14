@@ -39,8 +39,10 @@ public class LuceneFunctionArgument extends BaseFunctionArgument
 {
 
     /**
-     * @param name String
-     * @param function Function
+     * @param name
+     *            String
+     * @param function
+     *            Function
      */
     public LuceneFunctionArgument(String name, Function function, Map<String, Argument> arguments)
     {

@@ -32,8 +32,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.alfresco.service.namespace.QName;
 
 /**
- * A simple permission reference (not persisted). A permission is identified by name for a given type, which is
- * identified by its qualified name.
+ * A simple permission reference (not persisted). A permission is identified by name for a given type, which is identified by its qualified name.
  * 
  * @author andyh
  */
@@ -54,8 +53,11 @@ public class PermissionReferenceImpl extends AbstractPermissionReference
 
     /**
      * Factory method to create permission references
-     * @param qName QName
-     * @param name String
+     * 
+     * @param qName
+     *            QName
+     * @param name
+     *            String
      * @return the permissions reference
      */
     public static PermissionReferenceImpl getPermissionReference(QName qName, String name)
@@ -64,10 +66,10 @@ public class PermissionReferenceImpl extends AbstractPermissionReference
         try
         {
             HashMap<String, PermissionReferenceImpl> typed = instances.get(qName);
-            if(typed != null)
+            if (typed != null)
             {
                 PermissionReferenceImpl instance = typed.get(name);
-                if(instance != null)
+                if (instance != null)
                 {
                     return instance;
                 }
@@ -77,18 +79,18 @@ public class PermissionReferenceImpl extends AbstractPermissionReference
         {
             lock.readLock().unlock();
         }
-        
+
         lock.writeLock().lock();
         try
         {
             HashMap<String, PermissionReferenceImpl> typed = instances.get(qName);
-            if(typed == null)
+            if (typed == null)
             {
                 typed = new HashMap<String, PermissionReferenceImpl>();
                 instances.put(qName, typed);
             }
             PermissionReferenceImpl instance = typed.get(name);
-            if(instance == null)
+            if (instance == null)
             {
                 instance = new PermissionReferenceImpl(qName, name);
                 typed.put(name, instance);

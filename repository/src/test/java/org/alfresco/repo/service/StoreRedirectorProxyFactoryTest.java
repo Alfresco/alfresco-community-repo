@@ -26,11 +26,11 @@
 package org.alfresco.repo.service;
 
 import junit.framework.TestCase;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class StoreRedirectorProxyFactoryTest extends TestCase
 {
@@ -101,30 +101,29 @@ public class StoreRedirectorProxyFactoryTest extends TestCase
         String result2 = service.nodeRef(nodeRef1);
         assertEquals("Type1:" + nodeRef1, result2);
     }
-    
+
     public void testException()
     {
         StoreRef storeRef1 = new StoreRef("Type1", "id");
         NodeRef nodeRef1 = new NodeRef(storeRef1, "id");
         TestServiceInterface service = (TestServiceInterface) factory.getBean("redirector_service1");
-        
+
         try
         {
             service.throwException(nodeRef1);
             fail("Service method did not throw exception");
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             assertTrue(e instanceof IllegalArgumentException);
             assertEquals(nodeRef1.toString(), e.getMessage());
         }
     }
-    
 
     public interface TestServiceInterface
     {
         public String noArgs();
-        
+
         public String defaultBinding(String arg);
 
         public String storeRef(StoreRef ref1);
@@ -136,11 +135,10 @@ public class StoreRedirectorProxyFactoryTest extends TestCase
         public String multiNodeRef(NodeRef ref1, NodeRef ref2);
 
         public String mixedStoreNodeRef(StoreRef ref2, NodeRef ref1);
-        
+
         public void throwException(NodeRef ref1);
     }
 
-    
     public static abstract class Component implements TestServiceInterface
     {
         private String type;
@@ -149,7 +147,7 @@ public class StoreRedirectorProxyFactoryTest extends TestCase
         {
             this.type = type;
         }
-        
+
         public String noArgs()
         {
             return type;
@@ -184,12 +182,12 @@ public class StoreRedirectorProxyFactoryTest extends TestCase
         {
             return type + ":" + ref1 + "," + ref2;
         }
-        
+
         public void throwException(NodeRef ref1)
         {
             throw new IllegalArgumentException(ref1.toString());
         }
-        
+
     }
 
     public static class Type1Component extends Component

@@ -36,11 +36,11 @@ import org.alfresco.service.cmr.search.SearchService;
 public class SolrXPathQueryLanguage extends AbstractLuceneQueryLanguage
 {
     SolrQueryLanguage solrQueryLanguage;
-    
+
     @Override
     public ResultSet executeQuery(SearchParameters searchParameters)
     {
-        String query = "PATH:\""+searchParameters.getQuery()+"\"";
+        String query = "PATH:\"" + searchParameters.getQuery() + "\"";
         SearchParameters sp = searchParameters.copy();
         sp.setLanguage(SearchService.LANGUAGE_INDEX_FTS_ALFRESCO);
         sp.setQuery(query);

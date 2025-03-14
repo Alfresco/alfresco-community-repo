@@ -56,9 +56,8 @@ public class ClosedCapabilityCondition extends AbstractCapabilityCondition
         else if (recordService.isRecord(nodeRef))
         {
             final List<ChildAssociationRef> assocs = nodeService.getParentAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-            
-            result = AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
-            {
+
+            result = AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>() {
                 @Override
                 public Boolean doWork()
                 {
@@ -73,7 +72,7 @@ public class ClosedCapabilityCondition extends AbstractCapabilityCondition
                     return false;
                 }
             });
-          
+
         }
         return result;
     }

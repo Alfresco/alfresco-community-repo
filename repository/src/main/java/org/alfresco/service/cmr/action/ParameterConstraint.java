@@ -31,7 +31,7 @@ import java.util.Map;
 import org.alfresco.api.AlfrescoPublicApi;
 
 /**
- * Parameter constraint.  Helps to constraint the list of allowable values for a action parameter.
+ * Parameter constraint. Helps to constraint the list of allowable values for a action parameter.
  * 
  * @author Roy Wetherall
  */
@@ -41,34 +41,35 @@ public interface ParameterConstraint
     /**
      * Gets the unique name of the constraint
      * 
-     * @return String   constraint name
+     * @return String constraint name
      */
     String getName();
-    
+
     /**
-     * Indicates whether the provided value satisfies the constraint.  True if it does, false otherwise.
+     * Indicates whether the provided value satisfies the constraint. True if it does, false otherwise.
      * 
-     * @return  boolean  true if valid, false otherwise
+     * @return boolean true if valid, false otherwise
      */
     boolean isValidValue(String value);
-    
+
     /**
      * 
-     * @param value String
+     * @param value
+     *            String
      * @return String
      */
     String getValueDisplayLabel(String value);
-    
+
     /**
-     *  The implementers are expected to return allowed values in the insertion order.
+     * The implementers are expected to return allowed values in the insertion order.
      */
     Map<String, String> getAllowableValues();
 
     /**
-     *  Returns possible constraint values.
-     *  By default returns getAllowableValues() to be backwards compatible.
+     * Returns possible constraint values. By default returns getAllowableValues() to be backwards compatible.
      */
-    default Map<String, String> getValues() {
+    default Map<String, String> getValues()
+    {
         return getAllowableValues();
     }
 }

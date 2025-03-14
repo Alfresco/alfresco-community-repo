@@ -27,6 +27,8 @@ package org.alfresco.rest.api.trashcan;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
 import org.alfresco.rest.api.DeletedNodes;
 import org.alfresco.rest.api.DirectAccessUrlHelper;
@@ -47,7 +49,6 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 @RelationshipResource(name = "renditions", entityResource = TrashcanEntityResource.class, title = "Node renditions via archived node")
 public class TrashcanRenditionsRelation
@@ -82,17 +83,17 @@ public class TrashcanRenditionsRelation
     }
 
     @WebApiDescription(title = "Download archived node rendition", description = "Download rendition for an archived node")
-    @BinaryProperties({ "content" })
+    @BinaryProperties({"content"})
     @Override
     public BinaryResource readProperty(String nodeId, String renditionId, Parameters parameters)
     {
         return deletedNodes.getContent(nodeId, renditionId, parameters);
     }
 
-    @Operation ("request-direct-access-url")
-    @WebApiParam (name = "directAccessUrlRequest", title = "Request direct access url", description = "Options for direct access url request", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
+    @Operation("request-direct-access-url")
+    @WebApiParam(name = "directAccessUrlRequest", title = "Request direct access url", description = "Options for direct access url request", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
     @WebApiDescription(title = "Request content url",
-            description="Generates a direct access URL.",
+            description = "Generates a direct access URL.",
             successStatus = HttpServletResponse.SC_OK)
     public DirectAccessUrl requestContentDirectUrl(String originalNodeId, String renditionId, DirectAccessUrlRequest directAccessUrlRequest, Parameters parameters, WithResponse withResponse)
     {

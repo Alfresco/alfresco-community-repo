@@ -56,17 +56,15 @@ public interface VirtualQuery
      * @param pagingRequest
      * @return -
      * @throws VirtualizationException
-     * @deprecated will be replaced by
-     *             {@link #perform(ActualEnvironment, VirtualQueryConstraint,Reference)}
-     *             once complex constrains are implemented
+     * @deprecated will be replaced by {@link #perform(ActualEnvironment, VirtualQueryConstraint,Reference)} once complex constrains are implemented
      */
     PagingResults<Reference> perform(ActualEnvironment actualEnvironment, boolean files, boolean folders,
-                String pattern,  Set<QName> searchTypeQNames,Set<QName> ignoreTypeQNames, Set<QName> ignoreAspectQNames,
-                List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest, Reference parentReference)
-                throws VirtualizationException;
+            String pattern, Set<QName> searchTypeQNames, Set<QName> ignoreTypeQNames, Set<QName> ignoreAspectQNames,
+            List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest, Reference parentReference)
+            throws VirtualizationException;
 
     PagingResults<Reference> perform(ActualEnvironment actualEnvironment, VirtualQueryConstraint constraint,
-                PagingRequest pagingRequest, Reference parentReference) throws VirtualizationException;
+            PagingRequest pagingRequest, Reference parentReference) throws VirtualizationException;
 
     String getQueryString();
 

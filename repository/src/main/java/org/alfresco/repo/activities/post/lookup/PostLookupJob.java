@@ -25,11 +25,12 @@
  */
 package org.alfresco.repo.activities.post.lookup;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * Executes scheduled post lookup quartz-job - refer to scheduled-jobs-context.xml
@@ -37,8 +38,7 @@ import org.quartz.JobExecutionException;
 public class PostLookupJob implements Job
 {
     public PostLookupJob()
-    {
-    }
+    {}
 
     /**
      * Calls the post lookup to do its work
@@ -53,7 +53,7 @@ public class PostLookupJob implements Job
             throw new AlfrescoRuntimeException(
                     "FeedCleanupJob data must contain valid 'postLookup' reference");
         }
-        PostLookup postLookup = (PostLookup)postLookupObj;
+        PostLookup postLookup = (PostLookup) postLookupObj;
         postLookup.execute();
     }
 }

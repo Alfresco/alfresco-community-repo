@@ -60,23 +60,32 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
-
 import javax.sql.DataSource;
 
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.ProcessEngineConfiguration;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.ibatis.SerializableTypeHandler;
 import org.alfresco.repo.admin.patch.AppliedPatch;
 import org.alfresco.repo.admin.patch.Patch;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
 import org.alfresco.repo.content.filestore.FileContentWriter;
-import org.alfresco.repo.domain.dialect.MySQLClusterNDBDialect;
-import org.alfresco.repo.domain.dialect.Oracle9Dialect;
-import org.alfresco.repo.domain.dialect.SQLServerDialect;
 import org.alfresco.repo.domain.dialect.Dialect;
+import org.alfresco.repo.domain.dialect.MySQLClusterNDBDialect;
 import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
+import org.alfresco.repo.domain.dialect.Oracle9Dialect;
 import org.alfresco.repo.domain.dialect.PostgreSQLDialect;
+import org.alfresco.repo.domain.dialect.SQLServerDialect;
 import org.alfresco.repo.domain.patch.AppliedPatchDAO;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.descriptor.DescriptorService;
@@ -94,19 +103,9 @@ import org.alfresco.util.schemacomp.SchemaComparator;
 import org.alfresco.util.schemacomp.SchemaDifferenceHelper;
 import org.alfresco.util.schemacomp.XMLToSchema;
 import org.alfresco.util.schemacomp.model.Schema;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * Bootstraps the schema and schema update.  The schema is considered missing if the applied patch table
- * is not present, and the schema is considered empty if the applied patch table is empty.
+ * Bootstraps the schema and schema update. The schema is considered missing if the applied patch table is not present, and the schema is considered empty if the applied patch table is empty.
  * 
  * @author Derek Hulley
  */
@@ -146,10 +145,10 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String WARN_SCHEMA_COMP_PROBLEMS_FOUND = "system.schema_comp.warn.problems_found";
     private static final String WARN_SCHEMA_COMP_PROBLEMS_FOUND_NO_FILE = "system.schema_comp.warn.problems_found_no_file";
     private static final String DEBUG_SCHEMA_COMP_TIME_TAKEN = "system.schema_comp.debug.time_taken";
-    
+
     public static final int DEFAULT_LOCK_RETRY_COUNT = 24;
     public static final int DEFAULT_LOCK_RETRY_WAIT_SECONDS = 5;
-    
+
     public static final int DEFAULT_MAX_STRING_LENGTH = 1024;
     public static final int DEFAULT_MAX_STRING_LENGTH_NDB = 400;
 
@@ -165,28 +164,28 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     public static final void setMaxStringLength(int length, Dialect dialect)
     {
         int max = (dialect instanceof MySQLClusterNDBDialect ? DEFAULT_MAX_STRING_LENGTH_NDB : DEFAULT_MAX_STRING_LENGTH);
-        
+
         if (length < max)
         {
-            throw new AlfrescoRuntimeException("The maximum string length must >= "+max+" characters.");
+            throw new AlfrescoRuntimeException("The maximum string length must >= " + max + " characters.");
         }
         SchemaBootstrap.maxStringLength = length;
     }
-    
+
     /**
-     * @return      Returns the maximum number of characters that a string field can be
+     * @return Returns the maximum number of characters that a string field can be
      */
     public static final int getMaxStringLength()
     {
         return SchemaBootstrap.maxStringLength;
     }
-    
+
     /**
-     * Truncates or returns a string that will fit into the string columns in the schema.  Text fields can
-     * either cope with arbitrarily long text fields or have the default limit, {@link #DEFAULT_MAX_STRING_LENGTH}.
+     * Truncates or returns a string that will fit into the string columns in the schema. Text fields can either cope with arbitrarily long text fields or have the default limit, {@link #DEFAULT_MAX_STRING_LENGTH}.
      * 
-     * @param value             the string to check
-     * @return                  Returns a string that is short enough for {@link SchemaBootstrap#getMaxStringLength()}
+     * @param value
+     *            the string to check
+     * @return Returns a string that is short enough for {@link SchemaBootstrap#getMaxStringLength()}
      * 
      * @since 3.2
      */
@@ -201,24 +200,23 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             return value;
         }
     }
-    
-    
+
     /**
-     * Provide a reference to the DescriptorService, used to provide information
-     * about the repository such as the database schema version number.
+     * Provide a reference to the DescriptorService, used to provide information about the repository such as the database schema version number.
      * 
-     * @param descriptorService the descriptorService to set
+     * @param descriptorService
+     *            the descriptorService to set
      */
     public void setDescriptorService(DescriptorService descriptorService)
     {
         this.descriptorService = descriptorService;
     }
 
-
     /**
      * Defines the DatabaseMetaDataHelper to be used
      * 
-     * @param databaseMetaDataHelper DatabaseMetaDataHelper
+     * @param databaseMetaDataHelper
+     *            DatabaseMetaDataHelper
      */
     public void setDatabaseMetaDataHelper(DatabaseMetaDataHelper databaseMetaDataHelper)
     {
@@ -242,7 +240,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
 
     private static Log logger = LogFactory.getLog(SchemaBootstrap.class);
-    
+
     private DescriptorService descriptorService;
     private DataSource dataSource;
     private AppliedPatchDAO appliedPatchDAO;
@@ -274,7 +272,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         maximumStringLength = -1;
         globalProperties = new Properties();
     }
-    
+
     public void setDataSource(DataSource dataSource)
     {
         this.dataSource = dataSource;
@@ -288,7 +286,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     /**
      * Set this to output the full database creation script
      * 
-     * @param schemaOuputFilename the name of a file to dump the schema to, or null to ignore
+     * @param schemaOuputFilename
+     *            the name of a file to dump the schema to, or null to ignore
      */
     public void setSchemaOuputFilename(String schemaOuputFilename)
     {
@@ -296,10 +295,10 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
 
     /**
-     * Set whether to modify the schema or not.  Either way, the schema will be validated.
+     * Set whether to modify the schema or not. Either way, the schema will be validated.
      * 
-     * @param updateSchema true to update and validate the schema, otherwise false to just
-     *      validate the schema.  Default is <b>true</b>.
+     * @param updateSchema
+     *            true to update and validate the schema, otherwise false to just validate the schema. Default is <b>true</b>.
      */
     public void setUpdateSchema(boolean updateSchema)
     {
@@ -307,14 +306,12 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
 
     /**
-     * Set whether this component should terminate the bootstrap process after running all the
-     * usual checks and scripts.  This has the additional effect of dumping a final schema
-     * structure file just before exiting.
+     * Set whether this component should terminate the bootstrap process after running all the usual checks and scripts. This has the additional effect of dumping a final schema structure file just before exiting.
      * <p>
      * <b>WARNING: </b>USE FOR DEBUG AND UPGRADE TESTING ONLY
      * 
-     * @param stopAfterSchemaBootstrap      <tt>true</tt> to terminate (with exception) after
-     *                                      running all the usual schema updates and checks.
+     * @param stopAfterSchemaBootstrap
+     *            <tt>true</tt> to terminate (with exception) after running all the usual schema updates and checks.
      */
     public void setStopAfterSchemaBootstrap(boolean stopAfterSchemaBootstrap)
     {
@@ -322,23 +319,21 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
 
     /**
-     * Specifies the schema reference files that will be used to validate the repository
-     * schema whenever changes have been made. The database dialect placeholder will be
-     * resolved so that the correct reference files are loaded for the current database
-     * type (e.g. PostgreSQL)
+     * Specifies the schema reference files that will be used to validate the repository schema whenever changes have been made. The database dialect placeholder will be resolved so that the correct reference files are loaded for the current database type (e.g. PostgreSQL)
      * 
-     * @param schemaReferenceUrls the schemaReferenceUrls to set
+     * @param schemaReferenceUrls
+     *            the schemaReferenceUrls to set
      */
     public void setSchemaReferenceUrls(List<String> schemaReferenceUrls)
     {
         this.schemaReferenceUrls = schemaReferenceUrls;
     }
-    
+
     /**
-     * Set the number times that the DB must be checked for the presence of the table
-     * indicating that a schema change is in progress.
+     * Set the number times that the DB must be checked for the presence of the table indicating that a schema change is in progress.
      * 
-     * @param schemaUpdateLockRetryCount        the number of times to retry (default 24)
+     * @param schemaUpdateLockRetryCount
+     *            the number of times to retry (default 24)
      */
     public void setSchemaUpdateLockRetryCount(int schemaUpdateLockRetryCount)
     {
@@ -348,7 +343,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     /**
      * Set the wait time (seconds) between checks for the schema update lock.
      * 
-     * @param schemaUpdateLockRetryWaitSeconds  the number of seconds between checks (default 5 seconds)
+     * @param schemaUpdateLockRetryWaitSeconds
+     *            the number of seconds between checks (default 5 seconds)
      */
     public void setSchemaUpdateLockRetryWaitSeconds(int schemaUpdateLockRetryWaitSeconds)
     {
@@ -356,22 +352,14 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
 
     /**
-     * Optionally override the system's default maximum string length.  Some databases have
-     * limitations on how long the <b>string_value</b> columns can be while other do not.
-     * Some parts of the persistence have alternatives when the string values exceed this
-     * length while others do not.  Either way, it is possible to adjust the text column sizes
-     * and adjust this value manually to override the default associated with the database
-     * being used.
+     * Optionally override the system's default maximum string length. Some databases have limitations on how long the <b>string_value</b> columns can be while other do not. Some parts of the persistence have alternatives when the string values exceed this length while others do not. Either way, it is possible to adjust the text column sizes and adjust this value manually to override the default associated with the database being used.
      * <p>
-     * The system - as of V2.1.2 - will attempt to adjust the maximum string length size
-     * automatically and therefore this method is not normally required.  But it is possible
-     * to manually override the value if, for example, the system doesn't guess the correct
-     * maximum length or if the dialect is not explicitly catered for.
+     * The system - as of V2.1.2 - will attempt to adjust the maximum string length size automatically and therefore this method is not normally required. But it is possible to manually override the value if, for example, the system doesn't guess the correct maximum length or if the dialect is not explicitly catered for.
      * <p>
-     * All negative or zero values are ignored and the system defaults to its best guess based
-     * on the dialect being used.
+     * All negative or zero values are ignored and the system defaults to its best guess based on the dialect being used.
      * 
-     * @param maximumStringLength       the maximum length of the <b>string_value</b> columns
+     * @param maximumStringLength
+     *            the maximum length of the <b>string_value</b> columns
      */
     public void setMaximumStringLength(int maximumStringLength)
     {
@@ -402,12 +390,12 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     {
         this.globalProperties = globalProperties;
     }
-    
+
     /**
-     * Register a new script for execution when creating a clean schema.  The order of registration
-     * determines the order of execution.
+     * Register a new script for execution when creating a clean schema. The order of registration determines the order of execution.
      * 
-     * @param preCreateScriptUrl            the script URL, possibly containing the <b>${db.script.dialect}</b> placeholder
+     * @param preCreateScriptUrl
+     *            the script URL, possibly containing the <b>${db.script.dialect}</b> placeholder
      */
     public void addPreCreateScriptUrl(String preCreateScriptUrl)
     {
@@ -419,10 +407,10 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
 
     /**
-     * Register a new script for execution after the Hibernate schema creation phase.  The order of registration
-     * determines the order of execution.
+     * Register a new script for execution after the Hibernate schema creation phase. The order of registration determines the order of execution.
      * 
-     * @param postUpdateScriptUrl           the script URL, possibly containing the <b>${db.script.dialect}</b> placeholder
+     * @param postUpdateScriptUrl
+     *            the script URL, possibly containing the <b>${db.script.dialect}</b> placeholder
      */
     public void addPostCreateScriptUrl(String postUpdateScriptUrl)
     {
@@ -435,12 +423,13 @@ public class SchemaBootstrap extends AbstractLifecycleBean
 
     /**
      * Register a new SQL-based patch for consideration against the instance (before Hibernate execution)
-     *  
-     * @param scriptPatch                   the patch that will be examined for execution
+     * 
+     * @param scriptPatch
+     *            the patch that will be examined for execution
      */
     public void addPreUpdateScriptPatch(SchemaUpgradeScriptPatch scriptPatch)
     {
-        if(false == scriptPatch.isIgnored())
+        if (false == scriptPatch.isIgnored())
         {
             if (logger.isDebugEnabled())
             {
@@ -452,17 +441,18 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         {
             logger.info("Ignoring script patch (pre-Hibernate): " + scriptPatch.getId());
         }
-        
+
     }
 
     /**
      * Register a new SQL-based patch for consideration against the instance (after Hibernate execution)
-     *  
-     * @param scriptPatch                   the patch that will be examined for execution
+     * 
+     * @param scriptPatch
+     *            the patch that will be examined for execution
      */
     public void addPostUpdateScriptPatch(SchemaUpgradeScriptPatch scriptPatch)
     {
-        if(false == scriptPatch.isIgnored())
+        if (false == scriptPatch.isIgnored())
         {
             if (logger.isDebugEnabled())
             {
@@ -478,12 +468,13 @@ public class SchemaBootstrap extends AbstractLifecycleBean
 
     /**
      * Register a new SQL-based patch for consideration against the Activiti instance
-     *  
-     * @param scriptPatch                   the patch that will be examined for execution
+     * 
+     * @param scriptPatch
+     *            the patch that will be examined for execution
      */
     public void addUpdateActivitiScriptPatch(SchemaUpgradeScriptPatch scriptPatch)
     {
-        if(false == scriptPatch.isIgnored())
+        if (false == scriptPatch.isIgnored())
         {
             if (logger.isDebugEnabled())
             {
@@ -495,7 +486,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         {
             logger.info("Ignoring Activiti script patch: " + scriptPatch.getId());
         }
-        
+
     }
 
     private static class NoSchemaException extends Exception
@@ -514,19 +505,21 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static class BootstrapStopException extends RuntimeException
     {
         private static final long serialVersionUID = 4250016675538442181L;
+
         private BootstrapStopException()
         {
             super(I18NUtil.getMessage(ERR_FORCED_STOP));
         }
     }
-    
+
     /**
-     * Count applied patches.  This fails if multiple applied patch tables are found,
-     * which normally indicates that the schema view needs to be limited.
+     * Count applied patches. This fails if multiple applied patch tables are found, which normally indicates that the schema view needs to be limited.
      * 
-     * @param connection    a valid database connection
+     * @param connection
+     *            a valid database connection
      * @return Returns the number of applied patches
-     * @throws NoSchemaException if the table of applied patches can't be found
+     * @throws NoSchemaException
+     *             if the table of applied patches can't be found
      */
     private int countAppliedPatches(Connection connection) throws Exception
     {
@@ -542,7 +535,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             defaultCatalog = null;
         }
         DatabaseMetaData dbMetadata = connection.getMetaData();
-        
+
         ResultSet tableRs = dbMetadata.getTables(defaultCatalog, defaultSchema, "%", null);
         boolean newPatchTable = false;
         boolean oldPatchTable = false;
@@ -579,9 +572,16 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         finally
         {
-            try { tableRs.close(); } catch (Throwable e) {e.printStackTrace(); }
+            try
+            {
+                tableRs.close();
+            }
+            catch (Throwable e)
+            {
+                e.printStackTrace();
+            }
         }
-        
+
         if (newPatchTable)
         {
             Statement stmt = connection.createStatement();
@@ -599,7 +599,12 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             }
             finally
             {
-                try { stmt.close(); } catch (Throwable e) {}
+                try
+                {
+                    stmt.close();
+                }
+                catch (Throwable e)
+                {}
             }
         }
         else if (oldPatchTable)
@@ -615,7 +620,12 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             }
             finally
             {
-                try { stmt.close(); } catch (Throwable e) {}
+                try
+                {
+                    stmt.close();
+                }
+                catch (Throwable e)
+                {}
             }
         }
         else
@@ -624,12 +634,12 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             throw new NoSchemaException();
         }
     }
-    
-    
+
     /**
      * Check whether Activiti tables already created in db.
      * 
-     * @param connection    a valid database connection
+     * @param connection
+     *            a valid database connection
      * @return <code>true</code> if Activiti tables already created in schema, otherwise <code>false</code>
      */
     private boolean checkActivitiTablesExist(Connection connection)
@@ -655,12 +665,13 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     stmt.close();
                 }
             }
-            catch (Throwable e) {}
+            catch (Throwable e)
+            {}
         }
     }
-    
+
     /**
-     * @return  Returns the name of the applied patch table, or <tt>null</tt> if the table doesn't exist
+     * @return Returns the name of the applied patch table, or <tt>null</tt> if the table doesn't exist
      */
     private String getAppliedPatchTableName(Connection connection) throws Exception
     {
@@ -676,7 +687,12 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         finally
         {
-            try { stmt.close(); } catch (Throwable e) {}
+            try
+            {
+                stmt.close();
+            }
+            catch (Throwable e)
+            {}
         }
         // for pre-1.4 databases, the table was named differently
         stmt = connection.createStatement();
@@ -692,10 +708,15 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         finally
         {
-            try { stmt.close(); } catch (Throwable e) {}
+            try
+            {
+                stmt.close();
+            }
+            catch (Throwable e)
+            {}
         }
     }
-    
+
     /**
      * @return Returns the number of applied patches
      */
@@ -717,7 +738,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             }
             boolean succeeded = rs.getBoolean(1);
             boolean wasExecuted = rs.getBoolean(2);
-            
+
             if (alternative)
             {
                 return succeeded && wasExecuted;
@@ -729,17 +750,20 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         finally
         {
-            try { stmt.close(); } catch (Throwable e) {}
+            try
+            {
+                stmt.close();
+            }
+            catch (Throwable e)
+            {}
         }
     }
-    
+
     /**
      * Finds the <b>version.properties</b> file and determines the installed <b>version.schema</b>.<br>
-     * The only way to determine the original installed schema number is by quering the for the minimum value in
-     * <b>alf_applied_patch.applied_to_schema</b>.  This might not work if an upgrade is attempted straight from
-     * Alfresco v1.0!
+     * The only way to determine the original installed schema number is by quering the for the minimum value in <b>alf_applied_patch.applied_to_schema</b>. This might not work if an upgrade is attempted straight from Alfresco v1.0!
      * 
-     * @return          the installed schema number or <tt>-1</tt> if the installation is new.
+     * @return the installed schema number or <tt>-1</tt> if the installation is new.
      */
     private int getInstalledSchemaNumber(Connection connection) throws Exception
     {
@@ -763,16 +787,20 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         finally
         {
-            try { stmt.close(); } catch (Throwable e) {}
+            try
+            {
+                stmt.close();
+            }
+            catch (Throwable e)
+            {}
         }
     }
-    
+
     private static class LockFailedException extends Exception
     {
         private static final long serialVersionUID = -6676398230191205456L;
     }
-    
-    
+
     /**
      * Records that the bootstrap process has started
      */
@@ -797,14 +825,17 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         finally
         {
-            try { stmt.close(); } catch (Throwable e) {}
+            try
+            {
+                stmt.close();
+            }
+            catch (Throwable e)
+            {}
         }
     }
 
     /**
-     * Used to identify the case where one of the nodes (!maybe even this one!)
-     * has created the alf_bootstrap_lock table - This table indicates that a schema initialization
-     * or schema DB update is in progress.
+     * Used to identify the case where one of the nodes (!maybe even this one!) has created the alf_bootstrap_lock table - This table indicates that a schema initialization or schema DB update is in progress.
      *
      * @return true if the alf_bootstrap_lock marker table exists in the DB; false otherwise
      *
@@ -829,10 +860,15 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         finally
         {
-            try { stmt.close(); } catch (Throwable e) {}
+            try
+            {
+                stmt.close();
+            }
+            catch (Throwable e)
+            {}
         }
     }
-    
+
     /**
      * Records that the bootstrap process has finished
      */
@@ -861,10 +897,15 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         finally
         {
-            try { stmt.close(); } catch (Throwable e) {}
+            try
+            {
+                stmt.close();
+            }
+            catch (Throwable e)
+            {}
         }
     }
-    
+
     /**
      * Builds the schema from scratch or applies the necessary patches to the schema.
      */
@@ -891,7 +932,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         if (create)
         {
             long start = System.currentTimeMillis();
-            
+
             // execute pre-create scripts (not patches)
             for (String scriptUrl : this.preCreateScriptUrls)
             {
@@ -914,14 +955,14 @@ public class SchemaBootstrap extends AbstractLifecycleBean
 
             // Execute any pre-auto-update scripts
             checkSchemaPatchScripts(connection, preUpdateScriptPatches, true);
-            
+
             // Execute any post-auto-update scripts
             checkSchemaPatchScripts(connection, postUpdateScriptPatches, true);
 
             if (logger.isInfoEnabled())
             {
                 logger.info(
-                    "Checking and patching Alfresco tables took " + (System.currentTimeMillis() - start) + " ms");
+                        "Checking and patching Alfresco tables took " + (System.currentTimeMillis() - start) + " ms");
             }
         }
 
@@ -934,7 +975,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             logger.info("Activiti tables need to be " + (activitiTablesExist ? "checked for patches" : " created"));
         }
 
-        if(!activitiTablesExist)
+        if (!activitiTablesExist)
         {
             long start = System.currentTimeMillis();
 
@@ -943,7 +984,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // Activiti DB updates are performed as patches in alfresco, only give
             // control to activiti when creating new one.
             initialiseActivitiDBSchema(new UnclosableConnection(connection));
-            
+
             // ALF-18996: Upgrade from 3.4.12 to 4.2.0 fails: Activiti tables have not been bootstrapped
             // The Activiti bootstrap is effectively doing the work of all the other patches,
             // which should be considered complete.
@@ -958,7 +999,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 appliedPatch.setTargetSchema(activitiScriptPatch.getTargetSchema());
                 appliedPatch.setAppliedToSchema(installedSchemaNumber);
                 appliedPatch.setAppliedToServer("UNKNOWN");
-                appliedPatch.setAppliedOnDate(new Date());                   // the date applied
+                appliedPatch.setAppliedOnDate(new Date()); // the date applied
                 appliedPatch.setSucceeded(true);
                 appliedPatch.setWasExecuted(false);
                 appliedPatch.setReport("Placeholder for Activiti bootstrap at schema " + installedSchemaNumber);
@@ -990,8 +1031,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             long start = System.currentTimeMillis();
 
             // verify that all patches have been applied correctly
-            checkSchemaPatchScripts(connection, preUpdateScriptPatches, false);       // check scripts
-            checkSchemaPatchScripts(connection, postUpdateScriptPatches, false);      // check scripts
+            checkSchemaPatchScripts(connection, preUpdateScriptPatches, false); // check scripts
+            checkSchemaPatchScripts(connection, postUpdateScriptPatches, false); // check scripts
 
             if (logger.isInfoEnabled())
             {
@@ -1001,11 +1042,12 @@ public class SchemaBootstrap extends AbstractLifecycleBean
 
         return create;
     }
-    
+
     /**
      * Initialises the Activiti DB schema, if not present it's created.
      * 
-     * @param connection Connection to use the initialise DB schema
+     * @param connection
+     *            Connection to use the initialise DB schema
      */
     private void initialiseActivitiDBSchema(Connection connection)
     {
@@ -1015,12 +1057,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         try
         {
             // build the engine
-            engine = engineConfig.setDataSource(dataSource).
-                setDatabaseSchemaUpdate("none").
-                setProcessEngineName("activitiBootstrapEngine").
-                setHistory("full").
-                setJobExecutorActivate(false).
-                buildProcessEngine();
+            engine = engineConfig.setDataSource(dataSource).setDatabaseSchemaUpdate("none").setProcessEngineName("activitiBootstrapEngine").setHistory("full").setJobExecutorActivate(false).buildProcessEngine();
 
             String schemaName = dbSchemaName != null ? dbSchemaName : databaseMetaDataHelper.getSchema(connection);
             if (logger.isInfoEnabled())
@@ -1038,7 +1075,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             }
         }
     }
-    
+
     /**
      * Check that the necessary scripts have been executed against the database
      */
@@ -1061,12 +1098,11 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         // Retrieve the first installed schema number
         int installedSchema = getInstalledSchemaNumber(connection);
 
-        nextPatch:
-        for (SchemaUpgradeScriptPatch patch : scriptPatches)
+        nextPatch: for (SchemaUpgradeScriptPatch patch : scriptPatches)
         {
             final String patchId = patch.getId();
             final String scriptUrl = patch.getScriptUrl();
-            
+
             // Check if any of the alternative patches were executed
             List<Patch> alternatives = patch.getAlternatives();
             for (Patch alternativePatch : alternatives)
@@ -1103,14 +1139,10 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
 
     /**
-     * This method throws a LockFailedException in case the current Alfresco cluster node
-     * is NOT the node that is doing the schema bootstrap;
-     * This is the exception that signals that this node should wait for a while and retry
+     * This method throws a LockFailedException in case the current Alfresco cluster node is NOT the node that is doing the schema bootstrap; This is the exception that signals that this node should wait for a while and retry
      *
      *
-     * Only one node from the cluster should do the initialization of the DB, so all other
-     * nodes should just retry to execute the schema checks after the initialization of
-     * the DB has ended;
+     * Only one node from the cluster should do the initialization of the DB, so all other nodes should just retry to execute the schema checks after the initialization of the DB has ended;
      *
      */
     private void ensureCurrentClusterMemberIsBootstrapping(Connection connection) throws Exception
@@ -1126,14 +1158,14 @@ public class SchemaBootstrap extends AbstractLifecycleBean
 
     /**
      *
-     * @return true if there is a bootstrap in progress and this node has NOT executed any queries
-     * therefore this node is NOT the one doing the schema initialization/upgrade
+     * @return true if there is a bootstrap in progress and this node has NOT executed any queries therefore this node is NOT the one doing the schema initialization/upgrade
      *
-     * @throws Exception if the DB connections has problems
+     * @throws Exception
+     *             if the DB connections has problems
      */
     private boolean isAnotherClusterMemberBootstrapping(Connection connection) throws Exception
     {
-        return executedStatementsThreadLocal.get()== null && isBootstrapInProgress(connection);
+        return executedStatementsThreadLocal.get() == null && isBootstrapInProgress(connection);
     }
 
     private void executeScriptUrl(Connection connection, String scriptUrl) throws Exception
@@ -1156,18 +1188,21 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         finally
         {
-            try { scriptInputStream.close(); } catch (Throwable e) {}  // usually a duplicate close
+            try
+            {
+                scriptInputStream.close();
+            }
+            catch (Throwable e)
+            {} // usually a duplicate close
         }
         // now execute it
         String dialectScriptUrl = scriptUrl.replaceAll(DialectUtil.PLACEHOLDER_DIALECT, dialect.getClass().getName());
         // Replace the script placeholders
         executeScriptFile(connection, tempFile, dialectScriptUrl);
     }
-    
+
     /**
-     * Replaces the dialect placeholder in the script URL and attempts to find a file for
-     * it.  If not found, the dialect hierarchy will be walked until a compatible script is
-     * found.  This makes it possible to have scripts that are generic to all dialects.
+     * Replaces the dialect placeholder in the script URL and attempts to find a file for it. If not found, the dialect hierarchy will be walked until a compatible script is found. This makes it possible to have scripts that are generic to all dialects.
      * 
      * @return Returns an input stream onto the script, otherwise null
      */
@@ -1180,12 +1215,14 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         return resource.getInputStream();
     }
-    
+
     /**
-     * @param connection    the DB connection to use
-     * @param scriptFile    the file containing the statements
-     * @param scriptUrl     the URL of the script to report.  If this is null, the script
-     *                      is assumed to have been auto-generated.
+     * @param connection
+     *            the DB connection to use
+     * @param scriptFile
+     *            the file containing the statements
+     * @param scriptUrl
+     *            the URL of the script to report. If this is null, the script is assumed to have been auto-generated.
      */
     private void executeScriptFile(
             Connection connection,
@@ -1198,14 +1235,14 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         {
             // Validate the schema, pre-upgrade
             validateSchema("Alfresco-{0}-Validation-Pre-Upgrade-{1}-", null);
-            
+
             dumpSchema("pre-upgrade");
 
-            // There is no lock at this stage.  This process can fall out if the lock can't be applied.
+            // There is no lock at this stage. This process can fall out if the lock can't be applied.
             setBootstrapStarted(connection);
             executedStatementsThreadLocal.set(new StringBuilder(8094));
         }
-        
+
         if (scriptUrl == null)
         {
             LogUtil.info(logger, MSG_EXECUTING_GENERATED_SCRIPT, scriptFile);
@@ -1214,7 +1251,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         {
             LogUtil.info(logger, MSG_EXECUTING_COPIED_SCRIPT, scriptFile, scriptUrl);
         }
-        
+
         InputStream scriptInputStream = new FileInputStream(scriptFile);
         BufferedReader reader = new BufferedReader(new InputStreamReader(scriptInputStream, "UTF-8"));
         try
@@ -1250,18 +1287,18 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             long now = System.currentTimeMillis();
             varAssignments.put("now", Long.valueOf(now).toString());
             varAssignments.put("NOW", Long.valueOf(now).toString());
-            
-            while(true)
+
+            while (true)
             {
                 String sqlOriginal = reader.readLine();
                 line++;
-                
+
                 if (sqlOriginal == null)
                 {
                     // nothing left in the file
                     break;
                 }
-                
+
                 // trim it
                 String sql = sqlOriginal.trim();
                 // Check of includes
@@ -1309,11 +1346,11 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     {
                         doBatch = true;
                         // Select the upper bound of the table column
-                        String stmt = "SELECT MAX(" + args[1].substring(sepIndex+1) + ") AS upper_limit FROM " + args[1].substring(0, sepIndex);
-                        Object fetchedVal = executeStatement(connection, stmt, "upper_limit", false, line, scriptFile);                        
+                        String stmt = "SELECT MAX(" + args[1].substring(sepIndex + 1) + ") AS upper_limit FROM " + args[1].substring(0, sepIndex);
+                        Object fetchedVal = executeStatement(connection, stmt, "upper_limit", false, line, scriptFile);
                         if (fetchedVal instanceof Number)
                         {
-                            batchUpperLimit = ((Number)fetchedVal).intValue();
+                            batchUpperLimit = ((Number) fetchedVal).intValue();
                             // Read the batch size from the named property
                             String batchSizeString = globalProperties.getProperty(args[2]);
                             // Fall back to the default property
@@ -1329,14 +1366,14 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 // Allow transaction delineation
                 else if (sql.startsWith("--BEGIN TXN"))
                 {
-                   connection.setAutoCommit(false);
-                   continue;
+                    connection.setAutoCommit(false);
+                    continue;
                 }
                 else if (sql.startsWith("--END TXN"))
                 {
-                   connection.commit();
-                   connection.setAutoCommit(true);
-                   continue;
+                    connection.commit();
+                    connection.setAutoCommit(true);
+                    continue;
                 }
                 else if (sql.startsWith("--SET-DELIMITER:"))
                 {
@@ -1357,9 +1394,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
 
                 // Check for comments
                 if (sql.length() == 0 ||
-                    sql.startsWith( "--" ) ||
-                    sql.startsWith( "//" ) ||
-                    sql.startsWith( "/*" ) )
+                        sql.startsWith("--") ||
+                        sql.startsWith("//") ||
+                        sql.startsWith("/*"))
                 {
                     if (sb.length() > 0)
                     {
@@ -1412,17 +1449,17 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 {
                     // Now substitute and execute the statement the appropriate number of times
                     String unsubstituted = sb.toString();
-                    for(int lowerBound = 0; lowerBound <= batchUpperLimit; lowerBound += batchSize)
+                    for (int lowerBound = 0; lowerBound <= batchUpperLimit; lowerBound += batchSize)
                     {
                         sql = unsubstituted;
-                        
+
                         // Substitute in the next pair of range parameters
                         if (doBatch)
                         {
                             varAssignments.put("LOWERBOUND", String.valueOf(lowerBound));
                             varAssignments.put("UPPERBOUND", String.valueOf(lowerBound + batchSize - 1));
                         }
-                        
+
                         // Perform variable replacement using the ${var} format
                         for (Map.Entry<String, Object> entry : varAssignments.entrySet())
                         {
@@ -1430,7 +1467,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                             Object val = entry.getValue();
                             sql = sql.replaceAll("\\$\\{" + var + "\\}", val.toString());
                         }
-                        
+
                         // Handle the 0/1 values that PostgreSQL doesn't translate to TRUE
                         if (this.dialect != null && this.dialect instanceof PostgreSQLDialect)
                         {
@@ -1440,65 +1477,73 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                         {
                             sql = sql.replaceAll("\\$\\{TRUE\\}", "1");
                         }
-                        
+
                         if (this.dialect != null && this.dialect instanceof MySQLInnoDBDialect)
                         {
                             // note: enable bootstrap on MySQL 5.5 (eg. for auto-generated SQL)
                             sql = sql.replaceAll("(?i)TYPE=InnoDB", "ENGINE=InnoDB");
                         }
-                        
+
                         if (this.dialect != null && this.dialect instanceof MySQLClusterNDBDialect)
                         {
                             // note: enable bootstrap on MySQL Cluster NDB
-                            /*
-                             * WARNING: Experimental/unsupported - see MySQLClusterNDBDialect !
-                             */
+                            /* WARNING: Experimental/unsupported - see MySQLClusterNDBDialect ! */
                             sql = sql.replaceAll("(?i)TYPE=InnoDB", "ENGINE=NDB"); // belts-and-braces
                             sql = sql.replaceAll("(?i)ENGINE=InnoDB", "ENGINE=NDB");
-                            
+
                             sql = sql.replaceAll("(?i) BIT ", " BOOLEAN ");
                             sql = sql.replaceAll("(?i) BIT,", " BOOLEAN,");
-                            
-                            sql = sql.replaceAll("(?i) string_value text", " string_value VARCHAR("+DEFAULT_MAX_STRING_LENGTH_NDB+")");
-                            
+
+                            sql = sql.replaceAll("(?i) string_value text", " string_value VARCHAR(" + DEFAULT_MAX_STRING_LENGTH_NDB + ")");
+
                             sql = sql.replaceAll("(?i) VARCHAR(4000)", "TEXT(4000)");
                         }
-                        
+
                         Object fetchedVal = executeStatement(connection, sql, fetchColumnName, optional, line, scriptFile);
                         if (fetchVarName != null && fetchColumnName != null)
                         {
                             if (fetchedVal != null)
                             {
                                 varAssignments.put(fetchVarName, fetchedVal);
-                            }                        
+                            }
                             else
                             {
                                 varAssignments.put(fetchVarName, defaultFetchValue);
                             }
-                        }                        
-                    }                        
+                        }
+                    }
                     sb.setLength(0);
                     fetchVarName = null;
                     fetchColumnName = null;
                     defaultFetchValue = null;
                     doBatch = false;
                     batchUpperLimit = 0;
-                    batchSize = 1;                    
+                    batchSize = 1;
                 }
             }
         }
         finally
         {
-            try { reader.close(); } catch (Throwable e) {}
-            try { scriptInputStream.close(); } catch (Throwable e) {}
+            try
+            {
+                reader.close();
+            }
+            catch (Throwable e)
+            {}
+            try
+            {
+                scriptInputStream.close();
+            }
+            catch (Throwable e)
+            {}
         }
     }
-    
+
     /**
-     * Execute the given SQL statement, absorbing exceptions that we expect during
-     * schema creation or upgrade.
+     * Execute the given SQL statement, absorbing exceptions that we expect during schema creation or upgrade.
      * 
-     * @param fetchColumnName       the name of the column value to return
+     * @param fetchColumnName
+     *            the name of the column value to return
      */
     private Object executeStatement(
             Connection connection,
@@ -1550,43 +1595,47 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         finally
         {
-            try { stmt.close(); } catch (Throwable e) {}
+            try
+            {
+                stmt.close();
+            }
+            catch (Throwable e)
+            {}
         }
         return ret;
     }
-    
+
     /**
-     * Performs dialect-specific checking.  This includes checking for InnoDB, dumping the dialect being used
-     * as well as setting any runtime, dialect-specific properties.
+     * Performs dialect-specific checking. This includes checking for InnoDB, dumping the dialect being used as well as setting any runtime, dialect-specific properties.
      */
     private void checkDialect(Dialect dialect)
     {
         Class<?> dialectClazz = dialect.getClass();
         LogUtil.info(logger, MSG_DIALECT_USED, dialectClazz.getName());
-//        if (dialectClazz.equals(MySQLDialect.class) || dialectClazz.equals(MySQL5Dialect.class))
-//        {
-//            LogUtil.error(logger, ERR_DIALECT_SHOULD_USE, dialectClazz.getName(), MySQLInnoDBDialect.class.getName());
-//            throw AlfrescoRuntimeException.create(WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
-//        }
-//        else if (dialectClazz.equals(HSQLDialect.class))
-//        {
-//            LogUtil.info(logger, WARN_DIALECT_HSQL);
-//        }
-//        else if (dialectClazz.equals(DerbyDialect.class))
-//        {
-//            LogUtil.info(logger, WARN_DIALECT_DERBY);
-//        }
-//        else if (dialectClazz.equals(Oracle9iDialect.class) || dialectClazz.equals(Oracle10gDialect.class))
-//        {
-//            LogUtil.error(logger, ERR_DIALECT_SHOULD_USE, dialectClazz.getName(), Oracle9Dialect.class.getName());
-//            throw AlfrescoRuntimeException.create(WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
-//        }
-//        else if (dialectClazz.equals(OracleDialect.class) || dialectClazz.equals(Oracle9Dialect.class))
-//        {
-//            LogUtil.error(logger, ERR_DIALECT_SHOULD_USE, dialectClazz.getName(), Oracle9Dialect.class.getName());
-//            throw AlfrescoRuntimeException.create(WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
-//        }
-        
+        // if (dialectClazz.equals(MySQLDialect.class) || dialectClazz.equals(MySQL5Dialect.class))
+        // {
+        // LogUtil.error(logger, ERR_DIALECT_SHOULD_USE, dialectClazz.getName(), MySQLInnoDBDialect.class.getName());
+        // throw AlfrescoRuntimeException.create(WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
+        // }
+        // else if (dialectClazz.equals(HSQLDialect.class))
+        // {
+        // LogUtil.info(logger, WARN_DIALECT_HSQL);
+        // }
+        // else if (dialectClazz.equals(DerbyDialect.class))
+        // {
+        // LogUtil.info(logger, WARN_DIALECT_DERBY);
+        // }
+        // else if (dialectClazz.equals(Oracle9iDialect.class) || dialectClazz.equals(Oracle10gDialect.class))
+        // {
+        // LogUtil.error(logger, ERR_DIALECT_SHOULD_USE, dialectClazz.getName(), Oracle9Dialect.class.getName());
+        // throw AlfrescoRuntimeException.create(WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
+        // }
+        // else if (dialectClazz.equals(OracleDialect.class) || dialectClazz.equals(Oracle9Dialect.class))
+        // {
+        // LogUtil.error(logger, ERR_DIALECT_SHOULD_USE, dialectClazz.getName(), Oracle9Dialect.class.getName());
+        // throw AlfrescoRuntimeException.create(WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
+        // }
+
         int maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
         int serializableType = SerializableTypeHandler.getSerializableType();
         // Adjust the maximum allowable String length according to the dialect
@@ -1620,26 +1669,26 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // serializable_value bytea,
             maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
         }
-        
+
         SchemaBootstrap.setMaxStringLength(maxStringLength, dialect);
         SerializableTypeHandler.setSerializableType(serializableType);
-        
+
         // Now override the maximum string length if it was set directly
         if (maximumStringLength > 0)
         {
             SchemaBootstrap.setMaxStringLength(maximumStringLength, dialect);
         }
     }
-    
+
     @Override
     public synchronized void onBootstrap(ApplicationEvent event)
     {
         if (event != null)
         {
             // Use the application context to load resources
-            rpr = (ApplicationContext)event.getSource();
+            rpr = (ApplicationContext) event.getSource();
         }
-        
+
         // do everything in a transaction
         Connection connection = null;
         try
@@ -1651,17 +1700,17 @@ public class SchemaBootstrap extends AbstractLifecycleBean
 
             // Check and dump the dialect being used
             checkDialect(this.dialect);
-            
+
             // Update the schema, if required.
             if (updateSchema)
             {
                 // Retries are required here as the DB lock will be applied lazily upon first statement execution.
                 // So if the schema is up to date (no statements executed) then the LockFailException cannot be
-                // thrown.  If it is thrown, the the update needs to be rerun as it will probably generate no SQL
+                // thrown. If it is thrown, the the update needs to be rerun as it will probably generate no SQL
                 // statements the second time around.
                 boolean updatedSchema = false;
                 boolean createdSchema = false;
-                
+
                 for (int i = 0; i < schemaUpdateLockRetryCount; i++)
                 {
                     try
@@ -1674,20 +1723,25 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                         if (logger.isInfoEnabled())
                         {
                             logger.info(
-                                (createdSchema ? "Creating" : "Updating") +
-                                    " the DB schema took " + (System.currentTimeMillis() - start) + " ms");
+                                    (createdSchema ? "Creating" : "Updating") +
+                                            " the DB schema took " + (System.currentTimeMillis() - start) + " ms");
                         }
                         break;
                     }
                     catch (LockFailedException e)
                     {
                         logger.info(
-                            "The current Alfresco cluster node is waiting for another chance to bootstrap the DB schema. "
-                                + "Attempt: " + (i + 1) + " of " + schemaUpdateLockRetryCount);
-                        try { this.wait(schemaUpdateLockRetryWaitSeconds * 1000L); } catch (InterruptedException ee) {}
+                                "The current Alfresco cluster node is waiting for another chance to bootstrap the DB schema. "
+                                        + "Attempt: " + (i + 1) + " of " + schemaUpdateLockRetryCount);
+                        try
+                        {
+                            this.wait(schemaUpdateLockRetryWaitSeconds * 1000L);
+                        }
+                        catch (InterruptedException ee)
+                        {}
                     }
                 }
-                
+
                 if (!updatedSchema)
                 {
                     // The retries were exceeded
@@ -1711,7 +1765,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             {
                 LogUtil.info(logger, MSG_BYPASSING_SCHEMA_UPDATE);
             }
-            
+
             if (stopAfterSchemaBootstrap)
             {
                 // 4.0+ schema dump
@@ -1790,23 +1844,24 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
 
     /**
-     * Collate differences and validation problems with the schema with respect to an appropriate
-     * reference schema.
+     * Collate differences and validation problems with the schema with respect to an appropriate reference schema.
      * 
-     * @param outputFileNameTemplate String
-     * @param out PrintWriter
+     * @param outputFileNameTemplate
+     *            String
+     * @param out
+     *            PrintWriter
      * @return the number of potential problems found.
      */
     public synchronized int validateSchema(String outputFileNameTemplate, PrintWriter out)
     {
         int totalProblems = 0;
-        
+
         // Discover available reference files (e.g. for prefixes alf_, etc.)
         // and process each in turn.
         for (String schemaReferenceUrl : schemaReferenceUrls)
         {
             Resource referenceResource = DialectUtil.getDialectResource(rpr, dialect.getClass(), schemaReferenceUrl);
-            
+
             if (referenceResource == null || !referenceResource.exists())
             {
                 String resourceUrl = DialectUtil.resolveDialectUrl(dialect.getClass(), schemaReferenceUrl);
@@ -1819,7 +1874,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 totalProblems += problems;
             }
         }
-        
+
         // Return number of problems found across all reference files.
         return totalProblems;
     }
@@ -1852,17 +1907,18 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      * <b>N.B.:</b> The method only writes messages of the report. And it <b>doesn't flush and doesn't close</b> the specified output stream!<br />
      * <br />
      * 
-     * @param referenceResource - {@link Resource} instance, which determines file of reference schema
-     * @param outputFileNameTemplate - {@link String} value, which determines template of temporary filename for validation report. <b>It can't be <code>null</code> if
-     *        <code>out</code> is <code>null</code></b>!
-     * @param out - {@link PrintWriter} instance, which represents an external output stream for writing a validation report. This stream is never closed or flushed. <b>It can't be
-     *        <code>null</code> if <code>outputFileNameTemplate</code> is <code>null</code></b>!
+     * @param referenceResource
+     *            - {@link Resource} instance, which determines file of reference schema
+     * @param outputFileNameTemplate
+     *            - {@link String} value, which determines template of temporary filename for validation report. <b>It can't be <code>null</code> if <code>out</code> is <code>null</code></b>!
+     * @param out
+     *            - {@link PrintWriter} instance, which represents an external output stream for writing a validation report. This stream is never closed or flushed. <b>It can't be <code>null</code> if <code>outputFileNameTemplate</code> is <code>null</code></b>!
      * @return {@link Integer} value, which determines amount of errors or warnings that were detected during validation
      */
     private int attemptValidateSchema(Resource referenceResource, String outputFileNameTemplate, PrintWriter out)
     {
-        Date startTime = new Date(); 
-        
+        Date startTime = new Date();
+
         InputStream is = null;
         try
         {
@@ -1872,28 +1928,27 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         {
             throw new RuntimeException("Unable to open schema reference file: " + referenceResource);
         }
-        
+
         XMLToSchema xmlToSchema = new XMLToSchema(is);
         xmlToSchema.parse();
         Schema reference = xmlToSchema.getSchema();
         ExportDb exporter = new ExportDb(dataSource, dialect, descriptorService, databaseMetaDataHelper);
         exporter.setDbSchemaName(dbSchemaName);
         // Ensure that the database objects we're validating are filtered
-        // by the same prefix as the reference file.  
+        // by the same prefix as the reference file.
         exporter.setNamePrefix(reference.getDbPrefix());
         exporter.execute();
         Schema target = exporter.getSchema();
-        
+
         SchemaComparator schemaComparator = new SchemaComparator(reference, target, dialect);
-        
+
         schemaComparator.validateAndCompare();
-        
+
         Results results = schemaComparator.getComparisonResults();
-        
-        Object[] outputFileNameParams = new Object[]
-        {
-                    dialect.getClass().getSimpleName(),
-                    reference.getDbPrefix()
+
+        Object[] outputFileNameParams = new Object[]{
+                dialect.getClass().getSimpleName(),
+                reference.getDbPrefix()
         };
         PrintWriter pw = null;
         File outputFile = null;
@@ -1950,12 +2005,12 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 }
             }
 
-            for (String optionalPatchId: optionalPatchMessages.keySet())
+            for (String optionalPatchId : optionalPatchMessages.keySet())
             {
                 pw.print(SchemaComparator.LINE_SEPARATOR);
                 pw.print(I18NUtil.getMessage(MSG_OPTIONAL_PATCH_RUN_SUGGESTION, optionalPatchId));
                 pw.print(SchemaComparator.LINE_SEPARATOR);
-                for (String optionalPatchMessage: optionalPatchMessages.get(optionalPatchId))
+                for (String optionalPatchMessage : optionalPatchMessages.get(optionalPatchId))
                 {
                     pw.print(optionalPatchMessage);
                     pw.print(SchemaComparator.LINE_SEPARATOR);
@@ -1970,7 +2025,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 pw.close();
             }
         }
-
 
         if (results.size() == 0)
         {
@@ -1991,7 +2045,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         Date endTime = new Date();
         long durationMillis = endTime.getTime() - startTime.getTime();
         LogUtil.debug(logger, DEBUG_SCHEMA_COMP_TIME_TAKEN, durationMillis);
-        
+
         return results.size();
     }
 
@@ -2007,8 +2061,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
 
     /**
-     * Produces schema dump in XML format: this is performed pre- and post-upgrade (i.e. if
-     * changes are made to the schema) and can made upon demand via JMX.
+     * Produces schema dump in XML format: this is performed pre- and post-upgrade (i.e. if changes are made to the schema) and can made upon demand via JMX.
      * 
      * @return List of output files.
      */
@@ -2016,34 +2069,38 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     {
         return dumpSchema("", null);
     }
-    
+
     /**
-     * Produces schema dump in XML format: this is performed pre- and post-upgrade (i.e. if
-     * changes are made to the schema) and can made upon demand via JMX.
+     * Produces schema dump in XML format: this is performed pre- and post-upgrade (i.e. if changes are made to the schema) and can made upon demand via JMX.
      * 
-     * @param dbPrefixes Array of database object prefixes to produce the dump for, e.g. "alf_".
+     * @param dbPrefixes
+     *            Array of database object prefixes to produce the dump for, e.g. "alf_".
      * @return List of output files.
      */
     public List<File> dumpSchema(String[] dbPrefixes)
     {
         return dumpSchema("", dbPrefixes);
     }
-    
+
     /**
      * Dumps the DB schema to temporary file(s), named similarly to:
+     * 
      * <pre>
      *   Alfresco-schema-DialectName-whenDumped-dbPrefix-23498732.xml
      * </pre>
-     * Where the digits serve to create a unique temp file name. If whenDumped is empty or null,
-     * then the output is similar to:
+     * 
+     * Where the digits serve to create a unique temp file name. If whenDumped is empty or null, then the output is similar to:
+     * 
      * <pre>
      *   Alfresco-schema-DialectName-dbPrefix-23498732.xml
      * </pre>
-     * If dbPrefixes is null, then the default list is used (see {@link MultiFileDumper#DEFAULT_PREFIXES})
-     * The dump files' paths are logged at info level.
      * 
-     * @param whenDumped String
-     * @param dbPrefixes Array of database object prefixes to filter by, e.g. "alf_"
+     * If dbPrefixes is null, then the default list is used (see {@link MultiFileDumper#DEFAULT_PREFIXES}) The dump files' paths are logged at info level.
+     * 
+     * @param whenDumped
+     *            String
+     * @param dbPrefixes
+     *            Array of database object prefixes to filter by, e.g. "alf_"
      * @return List of output files.
      */
     private List<File> dumpSchema(String whenDumped, String[] dbPrefixes)
@@ -2051,33 +2108,32 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         // Build a string to use as the file name template,
         // e.g. "Alfresco-schema-MySQLDialect-pre-upgrade-{0}-"
         StringBuilder sb = new StringBuilder(64);
-        sb.append("Alfresco-schema-").
-            append(dialect.getClass().getSimpleName());
+        sb.append("Alfresco-schema-").append(dialect.getClass().getSimpleName());
         if (whenDumped != null && whenDumped.length() > 0)
         {
             sb.append("-");
             sb.append(whenDumped);
         }
         sb.append("-{0}-");
-        
+
         File outputDir = TempFileProvider.getTempDir();
         String fileNameTemplate = sb.toString();
         return dumpSchema(outputDir, fileNameTemplate, dbPrefixes);
     }
-    
+
     /**
-     * Same as for {@link #dumpSchema(String, String[])} - except that the default list
-     * of database object prefixes is used for filtering.
+     * Same as for {@link #dumpSchema(String, String[])} - except that the default list of database object prefixes is used for filtering.
      * 
      * @see #dumpSchema(String, String[])
-     * @param whenDumped String
+     * @param whenDumped
+     *            String
      * @return List<File>
      */
     private List<File> dumpSchema(String whenDumped)
     {
         return dumpSchema(whenDumped, null);
     }
-    
+
     private List<File> dumpSchema(File outputDir, String fileNameTemplate, String[] dbPrefixes)
     {
         try
@@ -2093,13 +2149,13 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             return null;
         }
     }
-    
+
     private List<File> attemptDumpSchema(File outputDir, String fileNameTemplate, String[] dbPrefixes)
     {
         DbToXMLFactory dbToXMLFactory = new MultiFileDumper.DbToXMLFactoryImpl(getApplicationContext());
-        
+
         MultiFileDumper dumper;
-        
+
         if (dbPrefixes == null)
         {
             dumper = new MultiFileDumper(outputDir, fileNameTemplate, dbToXMLFactory, dbSchemaName);
@@ -2109,38 +2165,36 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             dumper = new MultiFileDumper(dbPrefixes, outputDir, fileNameTemplate, dbToXMLFactory, dbSchemaName);
         }
         List<File> files = dumper.dumpFiles();
-        
+
         for (File file : files)
-        {            
+        {
             if (logger.isInfoEnabled())
             {
                 LogUtil.info(logger, MSG_NORMALIZED_SCHEMA, file.getAbsolutePath());
             }
         }
-        
+
         return files;
     }
 
     @Override
     protected void onShutdown(ApplicationEvent event)
-    {
-    }
-    
+    {}
+
     /**
-     * A {@link Connection} wrapper that delegates all calls to the wrapped class
-     * except for the close methods, which are ignored.
+     * A {@link Connection} wrapper that delegates all calls to the wrapped class except for the close methods, which are ignored.
      *
      * @author Frederik Heremans
      */
-    public class UnclosableConnection implements Connection 
+    public class UnclosableConnection implements Connection
     {
         private Connection wrapped;
-        
+
         public UnclosableConnection(Connection wrappedConnection)
         {
             this.wrapped = wrappedConnection;
         }
-        
+
         @Override
         public boolean isWrapperFor(Class<?> iface) throws SQLException
         {
@@ -2209,14 +2263,14 @@ public class SchemaBootstrap extends AbstractLifecycleBean
 
         @Override
         public Statement createStatement(int resultSetType, int resultSetConcurrency)
-                    throws SQLException
+                throws SQLException
         {
             return wrapped.createStatement(resultSetType, resultSetConcurrency);
         }
 
         @Override
         public Statement createStatement(int resultSetType, int resultSetConcurrency,
-                    int resultSetHoldability) throws SQLException
+                int resultSetHoldability) throws SQLException
         {
             return wrapped.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
         }
@@ -2313,14 +2367,14 @@ public class SchemaBootstrap extends AbstractLifecycleBean
 
         @Override
         public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency)
-                    throws SQLException
+                throws SQLException
         {
             return wrapped.prepareCall(sql, resultSetType, resultSetConcurrency);
         }
 
         @Override
         public CallableStatement prepareCall(String sql, int resultSetType,
-                    int resultSetConcurrency, int resultSetHoldability) throws SQLException
+                int resultSetConcurrency, int resultSetHoldability) throws SQLException
         {
             return wrapped.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
         }
@@ -2333,35 +2387,35 @@ public class SchemaBootstrap extends AbstractLifecycleBean
 
         @Override
         public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys)
-                    throws SQLException
+                throws SQLException
         {
             return wrapped.prepareStatement(sql, autoGeneratedKeys);
         }
 
         @Override
         public PreparedStatement prepareStatement(String sql, int[] columnIndexes)
-                    throws SQLException
+                throws SQLException
         {
             return wrapped.prepareStatement(sql, columnIndexes);
         }
 
         @Override
         public PreparedStatement prepareStatement(String sql, String[] columnNames)
-                    throws SQLException
+                throws SQLException
         {
             return wrapped.prepareStatement(sql, columnNames);
         }
 
         @Override
         public PreparedStatement prepareStatement(String sql, int resultSetType,
-                    int resultSetConcurrency) throws SQLException
+                int resultSetConcurrency) throws SQLException
         {
             return wrapped.prepareStatement(sql, resultSetType, resultSetConcurrency);
         }
 
         @Override
         public PreparedStatement prepareStatement(String sql, int resultSetType,
-                    int resultSetConcurrency, int resultSetHoldability) throws SQLException
+                int resultSetConcurrency, int resultSetHoldability) throws SQLException
         {
             return wrapped.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
         }

@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import junit.framework.TestCase;
-
 import org.antlr.gunit.GrammarInfo;
 import org.antlr.gunit.gUnitLexer;
 import org.antlr.gunit.gUnitParser;
@@ -64,14 +63,13 @@ public class CMISTest extends TestCase
         InputStream modelStream = cl.getResourceAsStream("org/alfresco/repo/search/impl/parsers/cmis_test.gunit");
 
         CharStream input = new ANTLRInputStream(modelStream);
-        
-        
+
         gUnitExecutor executer = new gUnitExecutor(parse(input), "CMIS");
-        
-        System.out.print(executer.execTest());  // unit test result
-        
-        assertEquals("Failures ", 0, executer.failures.size()); 
-        assertEquals("Invalids ", 0, executer.invalids.size()); 
+
+        System.out.print(executer.execTest()); // unit test result
+
+        assertEquals("Failures ", 0, executer.failures.size());
+        assertEquals("Invalids ", 0, executer.invalids.size());
     }
 
     private GrammarInfo parse(CharStream input) throws RecognitionException
@@ -85,5 +83,4 @@ public class CMISTest extends TestCase
         return grammarInfo;
     }
 
-    
 }

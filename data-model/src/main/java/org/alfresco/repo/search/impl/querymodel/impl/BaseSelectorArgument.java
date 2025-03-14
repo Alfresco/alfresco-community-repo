@@ -34,14 +34,16 @@ import org.alfresco.repo.search.impl.querymodel.SelectorArgument;
  * @author andyh
  *
  */
-public class BaseSelectorArgument  extends BaseStaticArgument implements SelectorArgument
+public class BaseSelectorArgument extends BaseStaticArgument implements SelectorArgument
 {
 
     private String selector;
 
     /**
-     * @param name String
-     * @param selector String
+     * @param name
+     *            String
+     * @param selector
+     *            String
      */
     public BaseSelectorArgument(String name, String selector)
     {
@@ -49,26 +51,23 @@ public class BaseSelectorArgument  extends BaseStaticArgument implements Selecto
         this.selector = selector;
 
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.SelectorArgument#getSelector()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.SelectorArgument#getSelector() */
     public String getSelector()
     {
         return selector;
     }
 
-   
-
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.Argument#getValue()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.Argument#getValue() */
     public Serializable getValue(FunctionEvaluationContext context)
     {
         return getSelector();
     }
 
-    
     public String toString()
     {
         StringBuilder builder = new StringBuilder();

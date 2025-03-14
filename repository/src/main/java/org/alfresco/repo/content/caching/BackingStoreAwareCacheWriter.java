@@ -41,9 +41,7 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.MimetypeServiceAware;
 
 /**
- * Wrapper for cache writer that is aware of backing store
- * writer and calls backing store for getSize and getContentData
- * in case if cache file was deleted
+ * Wrapper for cache writer that is aware of backing store writer and calls backing store for getSize and getContentData in case if cache file was deleted
  * 
  * @see <a href=https://issues.alfresco.com/jira/browse/MNT-9663>MNT-9663</a>
  * 

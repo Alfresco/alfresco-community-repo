@@ -89,9 +89,9 @@ public class FacetQueryContext
     public String toString()
     {
         return "FacetQueryContext{" +
-                    "label='" + label + '\'' +
-                    ", filterQuery='" + filterQuery + '\'' +
-                    ", count=" + count +
-                    '}';
+                "label='" + label + '\'' +
+                ", filterQuery='" + filterQuery + '\'' +
+                ", count=" + count +
+                '}';
     }
 }

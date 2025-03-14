@@ -30,18 +30,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+
 import org.alfresco.repo.dictionary.DictionaryRepositoryBootstrappedEvent;
 import org.alfresco.repo.domain.schema.SchemaAvailableEvent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListener;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
 
 /**
- * A default implementation of {@link PropertyBackedBeanRegistry}. An instance of this class will defer broadcasting
- * {@link PropertyBackedBeanEvent}s until it is notified that the database schema is available via a
- * {@link SchemaAvailableEvent}. This allows listeners to potentially reconfigure the beans using persisted database
- * information.
+ * A default implementation of {@link PropertyBackedBeanRegistry}. An instance of this class will defer broadcasting {@link PropertyBackedBeanEvent}s until it is notified that the database schema is available via a {@link SchemaAvailableEvent}. This allows listeners to potentially reconfigure the beans using persisted database information.
  * 
  * @author dward
  */
@@ -61,78 +59,58 @@ public class DefaultPropertyBackedBeanRegistry implements PropertyBackedBeanRegi
     /** Registered listeners. */
     private List<ApplicationListener> listeners = new LinkedList<ApplicationListener>();
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.management.PropertyBackedBeanRegistry#addListener(org.springframework.context.ApplicationListener
-     * )
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.PropertyBackedBeanRegistry#addListener(org.springframework.context.ApplicationListener ) */
     public void addListener(ApplicationListener listener)
     {
         this.listeners.add(listener);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.management.PropertyBackedBeanRegistry#register(org.alfresco.repo.management.PropertyBackedBean)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.PropertyBackedBeanRegistry#register(org.alfresco.repo.management.PropertyBackedBean) */
     public void register(PropertyBackedBean bean)
     {
         broadcastEvent(new PropertyBackedBeanRegisteredEvent(bean));
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.management.subsystems.PropertyBackedBeanRegistry#deregister(org.alfresco.repo.management.subsystems
-     * .PropertyBackedBean, boolean)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanRegistry#deregister(org.alfresco.repo.management.subsystems .PropertyBackedBean, boolean) */
     public void deregister(PropertyBackedBean bean, boolean isPermanent)
     {
         broadcastEvent(new PropertyBackedBeanUnregisteredEvent(bean, isPermanent));
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.management.subsystems.PropertyBackedBeanRegistry#broadcastStart(org.alfresco.repo.management
-     * .subsystems.PropertyBackedBean)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanRegistry#broadcastStart(org.alfresco.repo.management .subsystems.PropertyBackedBean) */
     public void broadcastStart(PropertyBackedBean bean)
     {
         broadcastEvent(new PropertyBackedBeanStartedEvent(bean));
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.management.subsystems.PropertyBackedBeanRegistry#broadcastStop(org.alfresco.repo.management
-     * .subsystems.PropertyBackedBean)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanRegistry#broadcastStop(org.alfresco.repo.management .subsystems.PropertyBackedBean) */
     public void broadcastStop(PropertyBackedBean bean)
     {
         broadcastEvent(new PropertyBackedBeanStoppedEvent(bean));
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.management.subsystems.PropertyBackedBeanRegistry#broadcastSetProperty(org.alfresco.repo.management
-     * .subsystems.PropertyBackedBean, String, String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanRegistry#broadcastSetProperty(org.alfresco.repo.management .subsystems.PropertyBackedBean, String, String) */
     @Override
     public void broadcastSetProperty(PropertyBackedBean bean, String name, String value)
     {
         broadcastEvent(new PropertyBackedBeanSetPropertyEvent(bean, name, value));
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.management.subsystems.PropertyBackedBeanRegistry#broadcastSetProperties(org.alfresco.repo.management
-     * .subsystems.PropertyBackedBean, Map<String, String>)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanRegistry#broadcastSetProperties(org.alfresco.repo.management .subsystems.PropertyBackedBean, Map<String, String>) */
     @Override
     public void broadcastSetProperties(PropertyBackedBean bean, Map<String, String> properties)
     {
@@ -161,7 +139,7 @@ public class DefaultPropertyBackedBeanRegistry implements PropertyBackedBeanRegi
             // see ALF-20066
             if (AlfrescoTransactionSupport.getTransactionId() != null &&
                     (event instanceof PropertyBackedBeanStartedEvent ||
-                    event instanceof PropertyBackedBeanStoppedEvent))
+                            event instanceof PropertyBackedBeanStoppedEvent))
             {
                 this.afterTransactionEvents.add(event);
                 AlfrescoTransactionSupport.bindListener(this);
@@ -181,11 +159,9 @@ public class DefaultPropertyBackedBeanRegistry implements PropertyBackedBeanRegi
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent) */
     public void onApplicationEvent(ApplicationEvent event)
     {
         if (event instanceof SchemaAvailableEvent)
@@ -194,20 +170,19 @@ public class DefaultPropertyBackedBeanRegistry implements PropertyBackedBeanRegi
 
             if (wasDictionaryBootstrapped && isSchemaAvailable)
             {
-            // Broadcast all the events we had been deferring until this event
-            for (PropertyBackedBeanEvent event1 : this.deferredEvents)
-            {
-                broadcastEvent(event1);
+                // Broadcast all the events we had been deferring until this event
+                for (PropertyBackedBeanEvent event1 : this.deferredEvents)
+                {
+                    broadcastEvent(event1);
+                }
+                this.deferredEvents.clear();
             }
-            this.deferredEvents.clear();
-        }
 
-           
         }
         if (event instanceof DictionaryRepositoryBootstrappedEvent)
         {
             this.wasDictionaryBootstrapped = true;
-            
+
             if (wasDictionaryBootstrapped && isSchemaAvailable)
             {
                 // Broadcast all the events we had been deferring until this event

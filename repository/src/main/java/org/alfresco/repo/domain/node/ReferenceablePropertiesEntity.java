@@ -36,8 +36,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Class holding properties associated with the <b>sys:referenceable</b> aspect.
- * This aspect is common enough to warrant direct inclusion on the <b>Node</b> entity.
+ * Class holding properties associated with the <b>sys:referenceable</b> aspect. This aspect is common enough to warrant direct inclusion on the <b>Node</b> entity.
  * 
  * @author Derek Hulley
  * @since 3.4
@@ -53,15 +52,15 @@ public class ReferenceablePropertiesEntity
         REFERENCEABLE_PROP_QNAMES.add(ContentModel.PROP_NODE_UUID);
         REFERENCEABLE_PROP_QNAMES.add(ContentModel.PROP_NODE_DBID);
     }
-    
+
     /**
-     * @return          Returns <tt>true</tt> if the property belongs to the <b>sys:referenceable</b> aspect
+     * @return Returns <tt>true</tt> if the property belongs to the <b>sys:referenceable</b> aspect
      */
     public static boolean isReferenceableProperty(QName qname)
     {
         return REFERENCEABLE_PROP_QNAMES.contains(qname);
     }
-    
+
     /**
      * Remove all {@link ContentModel#ASPECT_REFERENCEABLE referencable} properties
      */
@@ -75,7 +74,7 @@ public class ReferenceablePropertiesEntity
             properties.remove(ContentModel.PROP_NAME);
         }
     }
-    
+
     /**
      * Remove all {@link ContentModel#ASPECT_REFERENCEABLE referencable} properties
      */
@@ -83,7 +82,7 @@ public class ReferenceablePropertiesEntity
     {
         propertyQNames.removeAll(REFERENCEABLE_PROP_QNAMES);
     }
-    
+
     /**
      * Adds all {@link ContentModel#ASPECT_REFERENCEABLE referencable} properties.
      */

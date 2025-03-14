@@ -25,15 +25,15 @@
  */
 package org.alfresco.util.schemacomp;
 
-
 import java.io.File;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.testing.category.DBTests;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Tests for the DbToXML class.

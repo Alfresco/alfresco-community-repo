@@ -26,11 +26,8 @@
 
 package org.alfresco.rest.framework.resource.parameters;
 
-import junit.framework.TestCase;
-import org.alfresco.rest.framework.resource.SerializablePagedCollection;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,19 +35,23 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
+import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
+
+import org.alfresco.rest.framework.resource.SerializablePagedCollection;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ArrayListPageTest extends TestCase
 {
 
-    private List<PageFormat> getPageFormats() {
+    private List<PageFormat> getPageFormats()
+    {
         return List.of(
-            new PageFormat(10, 0),
-            new PageFormat(10, 10),
-            new PageFormat(110, 20)
-        );
+                new PageFormat(10, 0),
+                new PageFormat(10, 10),
+                new PageFormat(110, 20));
     }
 
     @Test
@@ -61,7 +62,7 @@ public class ArrayListPageTest extends TestCase
         {
             final int pageSize = pageFormat.size;
             final int offset = pageFormat.offset;
-            final List<Object> list = randomListOf(offset,100, Object.class);
+            final List<Object> list = randomListOf(offset, 100, Object.class);
             final Paging paging = Paging.valueOf(offset, pageSize);
 
             // when
@@ -69,41 +70,41 @@ public class ArrayListPageTest extends TestCase
 
             assertThat(page)
                     .isNotNull()
-                .extracting(SerializablePagedCollection::getCollection)
+                    .extracting(SerializablePagedCollection::getCollection)
                     .isNotNull()
                     .isEqualTo(list.subList(offset, Math.min(offset + pageSize, list.size())))
-                .extracting(Collection::size)
+                    .extracting(Collection::size)
                     .isEqualTo(Math.min(pageSize, list.size() - offset));
             assertThat(page.getTotalItems())
-                .isEqualTo(list.size());
+                    .isEqualTo(list.size());
             assertThat(page.hasMoreItems())
-                .isEqualTo(list.size() - offset > pageSize);
+                    .isEqualTo(list.size() - offset > pageSize);
             assertThat(page.getPaging())
-                .isNotNull();
+                    .isNotNull();
         }
     }
 
     @Test
     public void testCreatePageWithoutPaging()
     {
-        final List<Object> list = randomListOf(0,100, Object.class);
+        final List<Object> list = randomListOf(0, 100, Object.class);
 
         // when
         final SerializablePagedCollection<Object> page = new ArrayListPage<>(list);
 
         assertThat(page)
                 .isNotNull()
-            .extracting(SerializablePagedCollection::getCollection)
+                .extracting(SerializablePagedCollection::getCollection)
                 .isNotNull()
                 .isEqualTo(list)
-            .extracting(Collection::size)
+                .extracting(Collection::size)
                 .isEqualTo(list.size());
         assertThat(page.getTotalItems())
-            .isEqualTo(list.size());
+                .isEqualTo(list.size());
         assertThat(page.hasMoreItems())
-            .isFalse();
+                .isFalse();
         assertThat(page.getPaging())
-            .isNull();
+                .isNull();
     }
 
     @Test
@@ -118,14 +119,14 @@ public class ArrayListPageTest extends TestCase
 
         assertThat(page)
                 .isNotNull()
-            .extracting(SerializablePagedCollection::getCollection)
+                .extracting(SerializablePagedCollection::getCollection)
                 .isNotNull()
-            .extracting(Collection::isEmpty)
+                .extracting(Collection::isEmpty)
                 .isEqualTo(true);
         assertThat(page.getTotalItems())
-            .isEqualTo(list.size());
+                .isEqualTo(list.size());
         assertThat(page.hasMoreItems())
-            .isFalse();
+                .isFalse();
     }
 
     @Test
@@ -136,14 +137,14 @@ public class ArrayListPageTest extends TestCase
 
         assertThat(page)
                 .isNotNull()
-            .extracting(SerializablePagedCollection::getCollection)
+                .extracting(SerializablePagedCollection::getCollection)
                 .isNotNull()
-            .extracting(Collection::isEmpty)
+                .extracting(Collection::isEmpty)
                 .isEqualTo(true);
         assertThat(page.getTotalItems())
-            .isEqualTo(0);
+                .isEqualTo(0);
         assertThat(page.hasMoreItems())
-            .isFalse();
+                .isFalse();
     }
 
     @Test
@@ -156,25 +157,28 @@ public class ArrayListPageTest extends TestCase
 
         assertThat(page)
                 .isNotNull()
-            .extracting(SerializablePagedCollection::getCollection)
+                .extracting(SerializablePagedCollection::getCollection)
                 .isNotNull()
-            .extracting(Collection::size)
+                .extracting(Collection::size)
                 .isEqualTo(list.size());
         assertThat(page.getTotalItems())
-            .isEqualTo(list.size());
+                .isEqualTo(list.size());
         assertThat(page.hasMoreItems())
-            .isFalse();
+                .isFalse();
         assertThat(page.getPaging())
-            .isNull();
+                .isNull();
     }
 
-    private static <T> List<T> randomListOf(final int minSize, final int maxSize, final Class<T> clazz) {
+    private static <T> List<T> randomListOf(final int minSize, final int maxSize, final Class<T> clazz)
+    {
         return createListOf(new Random().nextInt((maxSize - minSize) + 1) + minSize, clazz);
     }
 
-    private static <T> List<T> createListOf(final int size, final Class<T> clazz) {
+    private static <T> List<T> createListOf(final int size, final Class<T> clazz)
+    {
         final List<T> list = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++)
+        {
             list.add(mock(clazz));
         }
         Collections.shuffle(list);

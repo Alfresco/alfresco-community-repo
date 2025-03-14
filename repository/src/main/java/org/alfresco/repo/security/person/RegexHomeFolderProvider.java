@@ -32,40 +32,36 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.FileNameValidator;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * Implementation that returns a tree structure for a home folder based on a property (typically userName)
- * from the supplied person. The parent folder names are derived from regular expression groups matched
- * against the property value. The final folder name is the full property value.<p>
+ * Implementation that returns a tree structure for a home folder based on a property (typically userName) from the supplied person. The parent folder names are derived from regular expression groups matched against the property value. The final folder name is the full property value.
+ * <p>
  * 
- * For example, given the value "adavis" and the regular expression <tt>"^(..)"</tt> the
- * resulting home folder path would be {@code "/ad/adavis"}. However with the regular expression
- * <tt>"^(.)(.?)"</tt> the home folder path would be {@code "/a/d/adavis"}. If any group matches a zero
- * length string, it is just ignored.<p>
+ * For example, given the value "adavis" and the regular expression <tt>"^(..)"</tt> the resulting home folder path would be {@code "/ad/adavis"}. However with the regular expression <tt>"^(.)(.?)"</tt> the home folder path would be {@code "/a/d/adavis"}. If any group matches a zero length string, it is just ignored.
+ * <p>
  * 
- * Note: In order to choose an efficient distribution scheme, be aware that, when m users are
- * distributed into n leaf folders, when m >> n log n the statistical maximum load is
- * m/n + O( sqrt((m log n)/n)), w.h.p
+ * Note: In order to choose an efficient distribution scheme, be aware that, when m users are distributed into n leaf folders, when m >> n log n the statistical maximum load is m/n + O( sqrt((m log n)/n)), w.h.p
  * 
  * @author Romain Guinot, Alan Davis
  */
 public class RegexHomeFolderProvider extends UsernameHomeFolderProvider
 {
     private static Log logger = LogFactory.getLog(RegexHomeFolderProvider.class);
-    
+
     private QName propertyName;
     private Pattern pattern;
     private List<Integer> groupOrder;
-    
+
     /**
-     * @param propertyName String the cm:person property used as the key, such as userName
-     *        or organizationId.
+     * @param propertyName
+     *            String the cm:person property used as the key, such as userName or organizationId.
      */
     public void setPropertyName(String propertyName)
     {
@@ -73,8 +69,8 @@ public class RegexHomeFolderProvider extends UsernameHomeFolderProvider
     }
 
     /**
-     * @param patternString the regex pattern against the cm:person property value. Regex
-     *        groups define the parent folder structure.
+     * @param patternString
+     *            the regex pattern against the cm:person property value. Regex groups define the parent folder structure.
      */
     public void setPattern(String patternString)
     {
@@ -82,9 +78,8 @@ public class RegexHomeFolderProvider extends UsernameHomeFolderProvider
     }
 
     /**
-     * @param groupOrderString String the order (as a comma separated list) in which the
-     *        regex pattern groups should be assembled into folders (such as {@code 2,1}).
-     *        The default ordering is as they appear.
+     * @param groupOrderString
+     *            String the order (as a comma separated list) in which the regex pattern groups should be assembled into folders (such as {@code 2,1}). The default ordering is as they appear.
      */
     public void setGroupOrder(String groupOrderString)
     {
@@ -95,13 +90,14 @@ public class RegexHomeFolderProvider extends UsernameHomeFolderProvider
     {
         if (patternString == null || patternString.trim().length() == 0)
             return null;
-        
+
         Pattern pattern;
         try
         {
             pattern = Pattern.compile(patternString);
             logger.debug("Successfully compiled patternString : " + patternString);
-        } catch (PatternSyntaxException pse)
+        }
+        catch (PatternSyntaxException pse)
         {
             throw new PersonException("Pattern string :" + patternString + " does not compile", pse);
         }
@@ -112,11 +108,11 @@ public class RegexHomeFolderProvider extends UsernameHomeFolderProvider
     {
         if (groupOrderString == null || groupOrderString.trim().length() == 0)
             return Collections.emptyList();
-        
+
         String[] groupOrderStrings = groupOrderString.split(",");
-        List<Integer>groupOrder = new ArrayList<Integer>(groupOrderStrings.length);
+        List<Integer> groupOrder = new ArrayList<Integer>(groupOrderStrings.length);
         for (String group : groupOrderStrings)
-        {       
+        {
             Integer i;
             try
             {
@@ -134,7 +130,7 @@ public class RegexHomeFolderProvider extends UsernameHomeFolderProvider
         }
         return groupOrder;
     }
-    
+
     @Override
     public List<String> getHomeFolderPath(NodeRef person)
     {
@@ -170,12 +166,12 @@ public class RegexHomeFolderProvider extends UsernameHomeFolderProvider
             }
         }
         path.add(key);
-        
+
         if (logger.isDebugEnabled())
         {
-            logger.debug("returning "+path+" for key: "+key);
+            logger.debug("returning " + path + " for key: " + key);
         }
-        
+
         return path;
     }
 

@@ -6,11 +6,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.alfresco.cmis.CmisWrapper;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.OperationContext;
 import org.testng.Assert;
+
+import org.alfresco.cmis.CmisWrapper;
 
 /**
  * DSL utility for verifying a document version {@link Document}

@@ -30,7 +30,6 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocket;
@@ -46,7 +45,7 @@ import org.apache.commons.logging.LogFactory;
 public class AlfrescoLdapSSLSocketFactory extends SocketFactory
 {
     private static Log logger = LogFactory.getLog(AlfrescoLdapSSLSocketFactory.class);
-    
+
     private static Boolean useJava6CodeBase = null;
     private static Boolean useJava7CodeBase = null;
 
@@ -92,7 +91,7 @@ public class AlfrescoLdapSSLSocketFactory extends SocketFactory
     {
         if (useJava6CodeBase == null || useJava6CodeBase)
         {
-            //Try to use SSLSocketImpl.trySetHostnameVerification method that is supported by java6 and lower
+            // Try to use SSLSocketImpl.trySetHostnameVerification method that is supported by java6 and lower
             try
             {
                 Method m = sslSocket.getClass().getMethod("trySetHostnameVerification", String.class);
@@ -108,7 +107,7 @@ public class AlfrescoLdapSSLSocketFactory extends SocketFactory
 
         if (useJava7CodeBase == null || useJava7CodeBase)
         {
-            //Try to use sslParams.setEndpointIdentificationAlgorithm method that is supported by java 7 and higher
+            // Try to use sslParams.setEndpointIdentificationAlgorithm method that is supported by java 7 and higher
             try
             {
                 SSLParameters sslParams = new SSLParameters();
@@ -121,8 +120,8 @@ public class AlfrescoLdapSSLSocketFactory extends SocketFactory
             catch (Throwable ee)
             {
                 useJava7CodeBase = false;
-                
-                if(useJava6CodeBase == false && logger.isWarnEnabled())
+
+                if (useJava6CodeBase == false && logger.isWarnEnabled())
                 {
                     logger.warn("AlfrescoLdapSSLSocketFactory: Unable to turn on Hostname Verification");
                 }

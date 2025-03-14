@@ -40,12 +40,11 @@ public class NodeMetaDataParameters
 
     // default is 'all' results
     private int maxResults = 0;
-    
+
     private Long fromNodeId;
     private Long toNodeId;
     private List<Long> nodeIds;
 
-    
     public int getMaxResults()
     {
         return maxResults;

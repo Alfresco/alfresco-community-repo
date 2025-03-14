@@ -1,5 +1,9 @@
 package org.alfresco.rest.workflow.tasks.items;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
@@ -16,16 +20,13 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Created by Claudia Agache on 12/8/2016.
  */
 public class GetTaskItemsRegressionTests extends RestTest
 {
-    private UserModel  userWhoStartsTask, assignee, adminUser;
+    private UserModel userWhoStartsTask, assignee, adminUser;
     private SiteModel siteModel;
     private FileModel fileModel;
     private TaskModel taskModel;
@@ -34,7 +35,7 @@ public class GetTaskItemsRegressionTests extends RestTest
     private RestTaskModel addedTask;
     private RestItemModel taskItem;
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         adminUser = dataUser.getAdminUser();
@@ -44,9 +45,9 @@ public class GetTaskItemsRegressionTests extends RestTest
         fileModel = dataContent.usingUser(adminUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify if get task items call return status code 404 when invalid taskId is provided")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void getTaskItemsUsingInvalidTaskId() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assignee);
@@ -65,10 +66,10 @@ public class GetTaskItemsRegressionTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
             executionType = ExecutionType.REGRESSION,
             description = "Verify if get task items request returns status code 200 after the task is finished.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void getTaskItemsAfterFinishingTask() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assignee);
@@ -79,10 +80,10 @@ public class GetTaskItemsRegressionTests extends RestTest
         itemModels.assertThat().entriesListIsNotEmpty().and().entriesListContains("name", fileModel.getName());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
             executionType = ExecutionType.REGRESSION,
             description = "Verify if get task items request returns status code 200 after the process is deleted (Task state is now completed.)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void getTaskItemsAfterDeletingProcess() throws Exception
     {
         addedProcess = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
@@ -97,9 +98,9 @@ public class GetTaskItemsRegressionTests extends RestTest
         itemModels.assertThat().entriesListIsNotEmpty().and().entriesListContains("name", fileModel.getName());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Check default error model schema for get task items api call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void getTaskItemsUsingCheckErrorModel() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assignee);
@@ -113,8 +114,8 @@ public class GetTaskItemsRegressionTests extends RestTest
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that admin user can get task items")
     public void getTaskItemsByAdminUser() throws Exception
     {
@@ -139,9 +140,9 @@ public class GetTaskItemsRegressionTests extends RestTest
                 .assertThat().field("mimeType").contains(fileModel.getFileType().mimeType);
     }
 
-    @Bug(id="MNT-17438")
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Bug(id = "MNT-17438")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that user who started the process can get task items with skip count parameter")
     public void getTaskItemsWithSkipCount() throws Exception
     {
@@ -157,9 +158,9 @@ public class GetTaskItemsRegressionTests extends RestTest
                 .and().paginationField("count").is("1");
     }
 
-    @Bug(id="MNT-17438")
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Bug(id = "MNT-17438")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that user who started the process can get task items with max items parameter")
     public void getTaskItemsWithMaxItems() throws Exception
     {
@@ -175,8 +176,8 @@ public class GetTaskItemsRegressionTests extends RestTest
                 .and().paginationField("count").is("1");
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that user who started the process can get task items with valid properties")
     public void getTaskItemsWithValidProperties() throws Exception
     {
@@ -198,8 +199,8 @@ public class GetTaskItemsRegressionTests extends RestTest
                 .field("mimeType").isNull();
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that user who started the process can get task items with an invalid property")
     public void getTaskItemsWithInvalidProperties() throws Exception
     {
@@ -221,8 +222,8 @@ public class GetTaskItemsRegressionTests extends RestTest
                 .field("mimeType").isNull();
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that involved user in process that was deleted cannot get task items")
     public void getTaskItemsByDeletedUserInvolvedInProcess() throws Exception
     {
@@ -236,8 +237,8 @@ public class GetTaskItemsRegressionTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that involved user in process that was disabled cannot get task items")
     public void getTaskItemsByDisabledUserInvolvedInProcess() throws Exception
     {

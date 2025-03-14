@@ -47,7 +47,8 @@ public class ChildAssociationEventConsolidator extends EventConsolidator<ChildAs
     /**
      * Add child association created event on create of a child association.
      *
-     * @param childAssociationRef ChildAssociationRef
+     * @param childAssociationRef
+     *            ChildAssociationRef
      */
     @Override
     public void onCreateChildAssociation(ChildAssociationRef childAssociationRef, boolean isNewNode)
@@ -59,7 +60,8 @@ public class ChildAssociationEventConsolidator extends EventConsolidator<ChildAs
     /**
      * Add child association deleted event on delete of a child association.
      *
-     * @param childAssociationRef ChildAssociationRef
+     * @param childAssociationRef
+     *            ChildAssociationRef
      */
     @Override
     public void beforeDeleteChildAssociation(ChildAssociationRef childAssociationRef)

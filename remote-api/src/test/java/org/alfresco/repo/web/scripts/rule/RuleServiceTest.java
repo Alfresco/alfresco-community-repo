@@ -28,6 +28,15 @@ package org.alfresco.repo.web.scripts.rule;
 import java.text.MessageFormat;
 import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.rule.LinkRules;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -44,14 +53,6 @@ import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
  * Unit test to test rules Web Script API
@@ -164,8 +165,7 @@ public class RuleServiceTest extends BaseWebScriptTest
     protected void tearDown() throws Exception
     {
         super.tearDown();
-        RetryingTransactionCallback<Void> deleteCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> deleteCallback = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -174,7 +174,7 @@ public class RuleServiceTest extends BaseWebScriptTest
                 deleteNodeIfExists(testWorkNodeRef);
                 return null;
             }
-            
+
             private void deleteNodeIfExists(NodeRef nodeRef)
             {
                 if (nodeService.exists(nodeRef))
@@ -191,7 +191,7 @@ public class RuleServiceTest extends BaseWebScriptTest
     {
         return createRule(ruleOwnerNodeRef, "test_rule");
     }
-    
+
     private JSONObject createRule(NodeRef ruleOwnerNodeRef, String title) throws Exception
     {
         JSONObject jsonRule = buildTestRule(title);
@@ -283,7 +283,7 @@ public class RuleServiceTest extends BaseWebScriptTest
 
     private void checkUpdatedRule(JSONObject before, JSONObject after) throws JSONException
     {
-        // check saving of basic feilds 
+        // check saving of basic feilds
         assertEquals("It seams that 'id' is not correct", before.getString("id"), after.getString("id"));
 
         assertEquals("It seams that 'title' was not saved", before.getString("title"), after.getString("title"));
@@ -296,20 +296,20 @@ public class RuleServiceTest extends BaseWebScriptTest
         assertEquals(before.getBoolean("executeAsynchronously"), after.getBoolean("executeAsynchronously"));
         assertEquals(before.getBoolean("disabled"), after.getBoolean("disabled"));
 
-        // check saving of collections        
+        // check saving of collections
         JSONObject afterAction = after.getJSONObject("action");
 
         // we didn't change actions collection
         assertEquals(1, afterAction.getJSONArray("actions").length());
 
-        // conditions should be empty (should not present in response), 
+        // conditions should be empty (should not present in response),
         assertFalse(afterAction.has("conditions"));
 
         assertEquals(before.has("url"), after.has("url"));
     }
 
     private void checkRuleset(JSONObject result, int rulesCount, String[] ruleIds, int inhRulesCount, String[] parentRuleIds,
-                                boolean isLinkedFrom, boolean isLinkedTo) throws Exception
+            boolean isLinkedFrom, boolean isLinkedTo) throws Exception
     {
         assertNotNull("Response is null.", result);
 
@@ -362,7 +362,7 @@ public class RuleServiceTest extends BaseWebScriptTest
         }
 
         assertEquals(isLinkedTo, data.has("linkedToRuleSet"));
-        
+
         assertEquals(isLinkedFrom, data.has("linkedFromRuleSets"));
 
         assertTrue(data.has("url"));
@@ -435,7 +435,7 @@ public class RuleServiceTest extends BaseWebScriptTest
             assertTrue(actionConditionDefinition.has("parameterDefinitions"));
         }
     }
-    
+
     public void testGetActionConstraints() throws Exception
     {
         Response response = sendRequest(new GetRequest(URL_ACTIONCONSTRAINTS), 200);
@@ -465,7 +465,7 @@ public class RuleServiceTest extends BaseWebScriptTest
             }
         }
     }
-    
+
     public void testGetActionConstraint() throws Exception
     {
 
@@ -620,10 +620,10 @@ public class RuleServiceTest extends BaseWebScriptTest
     public void testGetRuleset() throws Exception
     {
         JSONObject parentRule = createRule(testWorkNodeRef);
-        String[] parentRuleIds = new String[] { parentRule.getJSONObject("data").getString("id") };
+        String[] parentRuleIds = new String[]{parentRule.getJSONObject("data").getString("id")};
 
         JSONObject jsonRule = createRule(testNodeRef);
-        String[] ruleIds = new String[] { jsonRule.getJSONObject("data").getString("id") };
+        String[] ruleIds = new String[]{jsonRule.getJSONObject("data").getString("id")};
 
         Action linkRulesAction = actionService.createAction(LinkRules.NAME);
         linkRulesAction.setParameterValue(LinkRules.PARAM_LINK_FROM_NODE, testNodeRef);
@@ -631,12 +631,12 @@ public class RuleServiceTest extends BaseWebScriptTest
 
         Response linkedFromResponse = sendRequest(new GetRequest(formatRulesetUrl(testNodeRef)), 200);
         JSONObject linkedFromResult = new JSONObject(linkedFromResponse.getContentAsString());
-        
+
         checkRuleset(linkedFromResult, 1, ruleIds, 1, parentRuleIds, true, false);
 
         Response linkedToResponse = sendRequest(new GetRequest(formatRulesetUrl(testNodeRef2)), 200);
         JSONObject linkedToResult = new JSONObject(linkedToResponse.getContentAsString());
-        
+
         checkRuleset(linkedToResult, 1, ruleIds, 1, parentRuleIds, false, true);
     }
 
@@ -667,7 +667,7 @@ public class RuleServiceTest extends BaseWebScriptTest
 
         // do some changes for action object
         JSONObject beforeAction = before.getJSONObject("action");
-        // no changes for actions list  
+        // no changes for actions list
         beforeAction.remove("actions");
         // clear conditions
         beforeAction.put("conditions", new JSONArray());
@@ -700,30 +700,30 @@ public class RuleServiceTest extends BaseWebScriptTest
 
         assertTrue(success);
 
-        // no more rules present 
+        // no more rules present
         assertEquals(0, ruleService.getRules(testNodeRef).size());
     }
-    
+
     @SuppressWarnings("unused")
     public void testRuleReorder() throws Exception
     {
         assertEquals(0, ruleService.getRules(testNodeRef).size());
-        
+
         // Create 3 rules
         NodeRef rule1 = createRuleNodeRef(testNodeRef, "Rule 1");
         NodeRef rule2 = createRuleNodeRef(testNodeRef, "Rule 2");
         NodeRef rule3 = createRuleNodeRef(testNodeRef, "Rule 3");
-        
+
         List<Rule> rules = ruleService.getRules(testNodeRef);
         assertEquals(3, rules.size());
         assertEquals("Rule 1", rules.get(0).getTitle());
         assertEquals("Rule 2", rules.get(1).getTitle());
         assertEquals("Rule 3", rules.get(2).getTitle());
-        
+
         JSONObject action = new JSONObject();
         action.put("actionDefinitionName", "reorder-rules");
         action.put("actionedUponNode", testNodeRef.toString());
-        
+
         JSONObject params = new JSONObject();
         JSONArray orderArray = new JSONArray();
         orderArray.put(rules.get(2).getNodeRef().toString());
@@ -731,7 +731,7 @@ public class RuleServiceTest extends BaseWebScriptTest
         orderArray.put(rules.get(0).getNodeRef().toString());
         params.put("rules", orderArray);
         action.put("parameterValues", params);
-        
+
         String url = formateQueueActionUrl(false);
 
         // execute before response (should be successful)
@@ -745,14 +745,14 @@ public class RuleServiceTest extends BaseWebScriptTest
         assertTrue(successData.has("actionedUponNode"));
         assertFalse(successData.has("exception"));
         assertTrue(successData.has("action"));
-        
+
         rules = ruleService.getRules(testNodeRef);
         assertEquals(3, rules.size());
         assertEquals("Rule 3", rules.get(0).getTitle());
         assertEquals("Rule 2", rules.get(1).getTitle());
         assertEquals("Rule 1", rules.get(2).getTitle());
     }
-    
+
     private NodeRef createRuleNodeRef(NodeRef folder, String title) throws Exception
     {
         JSONObject jsonRule = createRule(folder, title);
@@ -811,10 +811,10 @@ public class RuleServiceTest extends BaseWebScriptTest
         result.put("description", "this is description for " + actionName);
         result.put("title", "test_title");
 
-        //JSONObject parameterValues = new JSONObject();
-        //parameterValues.put("test_name", "test_value");
+        // JSONObject parameterValues = new JSONObject();
+        // parameterValues.put("test_name", "test_value");
 
-        //result.put("parameterValues", parameterValues);
+        // result.put("parameterValues", parameterValues);
 
         result.put("executeAsync", addActions);
 
@@ -848,10 +848,10 @@ public class RuleServiceTest extends BaseWebScriptTest
         result.put("conditionDefinitionName", conditionName);
         result.put("invertCondition", false);
 
-        //JSONObject parameterValues = new JSONObject();
-        //parameterValues.put("test_name", "test_value");
+        // JSONObject parameterValues = new JSONObject();
+        // parameterValues.put("test_name", "test_value");
 
-        //result.put("parameterValues", parameterValues);
+        // result.put("parameterValues", parameterValues);
 
         return result;
     }

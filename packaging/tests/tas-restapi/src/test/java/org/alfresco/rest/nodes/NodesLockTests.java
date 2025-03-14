@@ -1,5 +1,11 @@
 package org.alfresco.rest.nodes;
 
+import static org.alfresco.utility.report.log.Step.STEP;
+
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
@@ -20,11 +26,6 @@ import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.report.Bug.Status;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import static org.alfresco.utility.report.log.Step.STEP;
 
 public class NodesLockTests extends RestTest
 {
@@ -46,8 +47,8 @@ public class NodesLockTests extends RestTest
 
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can not lock PERSISTENT after EPHEMERAL lock made by different user")
     public void lockEphemeralAndRelockPersistentDifferentUser() throws Exception
     {
@@ -69,8 +70,8 @@ public class NodesLockTests extends RestTest
         STEP("4. Verify with user1 that the file is locked.");
         RestNodeModel file1Model2 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").getNode();
         file1Model2.assertThat().field("isLocked").is(true)
-            .assertThat().field("properties").contains("lockLifetime=EPHEMERAL")
-            .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
+                .assertThat().field("properties").contains("lockLifetime=EPHEMERAL")
+                .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
 
         STEP("5. Cannot lock the file using mode PERSISTENT with user2 while the file is still locked");
         RestNodeLockBodyModel lockBodyModel2 = new RestNodeLockBodyModel();
@@ -84,8 +85,8 @@ public class NodesLockTests extends RestTest
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can not lock EPHEMERAL after EPHEMERAL lock made by different user")
     public void lockEphemeralAndRelockEphemeralDifferentUser() throws Exception
     {
@@ -122,8 +123,8 @@ public class NodesLockTests extends RestTest
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock EPHEMERAL after EPHEMERAL lock made by same user")
     public void lockEphemeralAndRelockEphemeralSameUser() throws Exception
     {
@@ -161,8 +162,8 @@ public class NodesLockTests extends RestTest
     }
 
     @Bug(id = "MNT-17612", status = Status.FIXED, description = "AccessDeniedException in AOS Edit Offline Upload New Version")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock PERSISTENT after EPHEMERAL lock made by same user")
     public void lockEphemeralAndRelockPersistentSameUser() throws Exception
     {
@@ -199,8 +200,7 @@ public class NodesLockTests extends RestTest
                 .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
 
         STEP("6. Verify that the file is locked PERSISTENT only after EPHEMERAL lock has expired");
-        Utility.sleep(500, 5000, () ->
-        {
+        Utility.sleep(500, 5000, () -> {
             RestNodeModel file1Model4 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").getNode();
             file1Model4.assertThat().field("isLocked").is(true)
                     .assertThat().field("properties").contains("lockLifetime=PERSISTENT")
@@ -208,8 +208,8 @@ public class NodesLockTests extends RestTest
         });
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can not lock EPHEMERAL after PERSISTENT lock made by different user")
     public void lockPersistentAndRelockEphemeralDifferentUser() throws Exception
     {
@@ -246,8 +246,8 @@ public class NodesLockTests extends RestTest
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can not lock PERSISTENT after PERSISTENT lock made by different user")
     public void lockPersistentAndRelockPersistentDifferentUser() throws Exception
     {
@@ -284,8 +284,8 @@ public class NodesLockTests extends RestTest
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock EPHEMERAL after PERSISTENT lock made by different user is expired")
     public void lockPersistentAndRelockEphemeralAfterExpiredLockDifferentUser() throws Exception
     {
@@ -315,8 +315,7 @@ public class NodesLockTests extends RestTest
         lockBodyModel2.setLifetime("EPHEMERAL");
         lockBodyModel2.setTimeToExpire(20);
         lockBodyModel2.setType("FULL");
-        Utility.sleep(500, 5000, () ->
-        {
+        Utility.sleep(500, 5000, () -> {
             RestNodeModel file1Model3 = restClient.authenticateUser(user2).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
             restClient.assertStatusCodeIs(HttpStatus.OK);
             file1Model3.assertThat().field("isLocked").is(true)
@@ -325,10 +324,10 @@ public class NodesLockTests extends RestTest
         });
     }
 
-//  TODO: uncomment this:  @Bug(id = "MNT-17612", status = Status.FIXED, description = "AccessDeniedException in AOS Edit Offline Upload New Version")
+    // TODO: uncomment this: @Bug(id = "MNT-17612", status = Status.FIXED, description = "AccessDeniedException in AOS Edit Offline Upload New Version")
     @Bug(id = "REPO-4790")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock PERSISTENT after EPHEMERAL lock made by another user is expired")
     public void lockEphemeralAndRelockPersistentAfterExpiredLockDifferentUser() throws Exception
     {
@@ -358,8 +357,7 @@ public class NodesLockTests extends RestTest
         lockBodyModel2.setLifetime("PERSISTENT");
         lockBodyModel2.setTimeToExpire(20);
         lockBodyModel2.setType("ALLOW_OWNER_CHANGES");
-        Utility.sleep(500, 5000, () ->
-        {
+        Utility.sleep(500, 5000, () -> {
             RestNodeModel file1Model3 = restClient.authenticateUser(user2).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
             restClient.assertStatusCodeIs(HttpStatus.OK);
             file1Model3.assertThat().field("isLocked").is(true)
@@ -369,8 +367,8 @@ public class NodesLockTests extends RestTest
         });
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock EPHEMERAL after EPHEMERAL lock made by another user is expired")
     public void lockEphemeralAndRelockEphemeralAfterExpiredLockDifferentUser() throws Exception
     {
@@ -400,8 +398,7 @@ public class NodesLockTests extends RestTest
         lockBodyModel2.setLifetime("EPHEMERAL");
         lockBodyModel2.setTimeToExpire(20);
         lockBodyModel2.setType("FULL");
-        Utility.sleep(500, 5000, () ->
-        {
+        Utility.sleep(500, 5000, () -> {
             RestNodeModel file1Model3 = restClient.authenticateUser(user2).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
             restClient.assertStatusCodeIs(HttpStatus.OK);
             file1Model3.assertThat().field("isLocked").is(true)
@@ -410,8 +407,8 @@ public class NodesLockTests extends RestTest
         });
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock PERSISTENT after PERSISTENT lock made by different user is expired")
     public void lockPersistentAndRelockPersistentAfterExpiredLockDifferentUser() throws Exception
     {
@@ -441,8 +438,7 @@ public class NodesLockTests extends RestTest
         lockBodyModel2.setLifetime("PERSISTENT");
         lockBodyModel2.setTimeToExpire(20);
         lockBodyModel2.setType("ALLOW_OWNER_CHANGES");
-        Utility.sleep(500, 5000, () ->
-        {
+        Utility.sleep(500, 5000, () -> {
             RestNodeModel file1Model3 = restClient.authenticateUser(user2).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
             restClient.assertStatusCodeIs(HttpStatus.OK);
             file1Model3.assertThat().field("isLocked").is(true)
@@ -451,8 +447,8 @@ public class NodesLockTests extends RestTest
         });
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock EPHEMERAL after EPHEMERAL lock made by same user is expired")
     public void lockEphemeralAndRelockEphemeralAfterExpiredLockSameUser() throws Exception
     {
@@ -482,8 +478,7 @@ public class NodesLockTests extends RestTest
         lockBodyModel2.setLifetime("EPHEMERAL");
         lockBodyModel2.setTimeToExpire(20);
         lockBodyModel2.setType("FULL");
-        Utility.sleep(500, 5000, () ->
-        {
+        Utility.sleep(500, 5000, () -> {
             RestNodeModel file1Model3 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
             restClient.assertStatusCodeIs(HttpStatus.OK);
             file1Model3.assertThat().field("isLocked").is(true)
@@ -492,8 +487,8 @@ public class NodesLockTests extends RestTest
         });
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock PERSISTENT after PERSISTENT lock made by same user is expired")
     public void lockPersistentAndRelockPersistentAfterExpiredLockSameUser() throws Exception
     {
@@ -522,8 +517,7 @@ public class NodesLockTests extends RestTest
         lockBodyModel2.setLifetime("PERSISTENT");
         lockBodyModel2.setTimeToExpire(20);
         lockBodyModel2.setType("ALLOW_OWNER_CHANGES");
-        Utility.sleep(500, 5000, () ->
-        {
+        Utility.sleep(500, 5000, () -> {
             RestNodeModel file1Model3 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
             restClient.assertStatusCodeIs(HttpStatus.OK);
             file1Model3.assertThat().field("isLocked").is(true)
@@ -532,8 +526,8 @@ public class NodesLockTests extends RestTest
         });
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock EPHEMERAL after PERSISTENT lock made by same user is expired")
     public void lockPersistentAndRelockEphemeralAfterExpiredLockSameUser() throws Exception
     {
@@ -563,8 +557,7 @@ public class NodesLockTests extends RestTest
         lockBodyModel2.setLifetime("EPHEMERAL");
         lockBodyModel2.setTimeToExpire(20);
         lockBodyModel2.setType("FULL");
-        Utility.sleep(500, 5000, () ->
-        {
+        Utility.sleep(500, 5000, () -> {
             RestNodeModel file1Model3 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
             restClient.assertStatusCodeIs(HttpStatus.OK);
             file1Model3.assertThat().field("isLocked").is(true)
@@ -573,10 +566,10 @@ public class NodesLockTests extends RestTest
         });
     }
 
-//  TODO: uncomment this:    @Bug(id = "MNT-17612", status = Status.FIXED, description = "AccessDeniedException in AOS Edit Offline Upload New Version")
+    // TODO: uncomment this: @Bug(id = "MNT-17612", status = Status.FIXED, description = "AccessDeniedException in AOS Edit Offline Upload New Version")
     @Bug(id = "REPO-4809")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock PERSISTENT after EPHEMERAL lock made by same user is expired")
     public void lockEphemeralAndRelockPersistentAfterExpiredLockSameUser() throws Exception
     {
@@ -607,8 +600,7 @@ public class NodesLockTests extends RestTest
         lockBodyModel2.setLifetime("PERSISTENT");
         lockBodyModel2.setTimeToExpire(20);
         lockBodyModel2.setType("ALLOW_OWNER_CHANGES");
-        Utility.sleep(500, 5000, () ->
-        {
+        Utility.sleep(500, 5000, () -> {
             RestNodeModel file1Model3 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
             restClient.assertStatusCodeIs(HttpStatus.OK);
             file1Model3.assertThat().field("isLocked").is(true)
@@ -617,8 +609,8 @@ public class NodesLockTests extends RestTest
         });
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock PERSISTENT after PERSISTENT lock made by same user")
     public void lockPersistentAndRelockPersistentSameUser() throws Exception
     {
@@ -655,8 +647,8 @@ public class NodesLockTests extends RestTest
                 .assertThat().field("properties").contains("lockType=WRITE_LOCK");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock EPHERMERAL after PERSISTENT lock made by same user")
     public void lockPersistentAndRelockEphemeralSameUser() throws Exception
     {
@@ -693,8 +685,8 @@ public class NodesLockTests extends RestTest
                 .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION, TestGroup.REQUIRE_SOLR })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION, TestGroup.REQUIRE_SOLR})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that child nodes can be locked differently and unlocked")
     public void testLockUnlockParentChild() throws Exception
     {
@@ -727,7 +719,7 @@ public class NodesLockTests extends RestTest
                 .assertThat().field("properties").contains("lockType=WRITE_LOCK");
 
         STEP("4. Lock childNode2 using mode PERSISTENT with adminUser (POST nodes/{nodeId}/lock).");
-         lockBodyModel = new RestNodeLockBodyModel();
+        lockBodyModel = new RestNodeLockBodyModel();
         lockBodyModel.setLifetime("PERSISTENT");
         lockBodyModel.setTimeToExpire(0);
         lockBodyModel.setType("FULL");
@@ -749,12 +741,11 @@ public class NodesLockTests extends RestTest
         query.setIncludeRequest(false);
 
         // Allow indexing to complete.
-        Utility.sleep(500, 60000, () ->
-        {
-        SearchResponse response = query(query);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        response.assertThat().entriesListContains("id",childNode1.getNodeRefWithoutVersion());
-        response.assertThat().entriesListContains("id",childNode2.getNodeRefWithoutVersion());
+        Utility.sleep(500, 60000, () -> {
+            SearchResponse response = query(query);
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+            response.assertThat().entriesListContains("id", childNode1.getNodeRefWithoutVersion());
+            response.assertThat().entriesListContains("id", childNode2.getNodeRefWithoutVersion());
         });
 
         STEP("6. Unlock the nodes.");
@@ -766,12 +757,11 @@ public class NodesLockTests extends RestTest
 
         STEP("7. Verify that childNode1 and childNode2 are not found in the query results.");
         // Allow indexing to complete.
-        Utility.sleep(500, 60000, () ->
-        {
-        SearchResponse response = query(query);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        response.assertThat().entriesListDoesNotContain("id",childNode1.getNodeRefWithoutVersion());
-        response.assertThat().entriesListDoesNotContain("id",childNode2.getNodeRefWithoutVersion());
+        Utility.sleep(500, 60000, () -> {
+            SearchResponse response = query(query);
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+            response.assertThat().entriesListDoesNotContain("id", childNode1.getNodeRefWithoutVersion());
+            response.assertThat().entriesListDoesNotContain("id", childNode2.getNodeRefWithoutVersion());
         });
     }
 

@@ -47,6 +47,7 @@ import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
+
 import org.alfresco.repo.tenant.TenantUtil;
 
 /**
@@ -74,7 +75,7 @@ public class ActivitiUtil
         this.managementService = engine.getManagementService();
         this.deployWorkflowsInTenant = deployWorkflowsInTenant;
     }
-    
+
     public ActivitiUtil(ProcessEngine engine, boolean deployWorkflowsInTenant, boolean retentionHistoricProcessInstance)
     {
         this.repoService = engine.getRepositoryService();
@@ -90,77 +91,78 @@ public class ActivitiUtil
     public ProcessDefinition getProcessDefinition(String definitionId)
     {
         return repoService.createProcessDefinitionQuery()
-            .processDefinitionId(definitionId)
-            .singleResult();
+                .processDefinitionId(definitionId)
+                .singleResult();
     }
 
     public ProcessDefinition getProcessDefinitionByKey(String processKey)
     {
         return repoService.createProcessDefinitionQuery()
-            .processDefinitionKey(processKey)
-            .latestVersion()
-            .singleResult();
+                .processDefinitionKey(processKey)
+                .latestVersion()
+                .singleResult();
     }
 
     public ProcessDefinition getProcessDefinitionForDeployment(String deploymentId)
     {
         return repoService.createProcessDefinitionQuery()
-            .deploymentId(deploymentId)
-            .singleResult();
+                .deploymentId(deploymentId)
+                .singleResult();
     }
-    
+
     public ProcessInstance getProcessInstance(String id)
     {
         return runtimeService.createProcessInstanceQuery()
-            .processInstanceId(id)
-            .singleResult();
+                .processInstanceId(id)
+                .singleResult();
     }
-    
+
     public Task getTaskInstance(String taskId)
     {
         TaskQuery taskQuery = taskService.createTaskQuery().taskId(taskId);
-        if(!deployWorkflowsInTenant) {
-        	taskQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
+        if (!deployWorkflowsInTenant)
+        {
+            taskQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
         }
         return taskQuery.singleResult();
     }
-    
+
     public HistoricProcessInstance getHistoricProcessInstance(String id)
     {
         return historyService.createHistoricProcessInstanceQuery()
-                    .processInstanceId(id)
-                    .singleResult();
+                .processInstanceId(id)
+                .singleResult();
     }
 
     public Execution getExecution(String id)
     {
         return runtimeService.createExecutionQuery()
-            .executionId(id)
-            .singleResult();
+                .executionId(id)
+                .singleResult();
     }
-    
-    public ReadOnlyProcessDefinition getDeployedProcessDefinition(String processDefinitionId) 
+
+    public ReadOnlyProcessDefinition getDeployedProcessDefinition(String processDefinitionId)
     {
-        // Currently, getDeployedProcessDefinition is still experimental and not exposed on 
+        // Currently, getDeployedProcessDefinition is still experimental and not exposed on
         // RepositoryService interface
-        return ((RepositoryServiceImpl)repoService).getDeployedProcessDefinition(processDefinitionId);
+        return ((RepositoryServiceImpl) repoService).getDeployedProcessDefinition(processDefinitionId);
     }
-    
+
     public String getStartFormKey(String processDefinitionId)
     {
         ProcessDefinitionEntity procDef = (ProcessDefinitionEntity) getDeployedProcessDefinition(processDefinitionId);
-        if(procDef.getStartFormHandler() == null) 
+        if (procDef.getStartFormHandler() == null)
         {
             return null;
         }
         return procDef.getStartFormHandler().createStartFormData(procDef).getFormKey();
     }
-    
+
     public String getStartTaskTypeName(String processDefinitionId)
     {
         String startTaskName = null;
         StartFormData startFormData = formService.getStartFormData(processDefinitionId);
-        if (startFormData != null) 
+        if (startFormData != null)
         {
             startTaskName = startFormData.getFormKey();
         }
@@ -179,7 +181,7 @@ public class ActivitiUtil
     {
         return formService;
     }
-    
+
     /**
      * @return the historyService
      */
@@ -187,7 +189,7 @@ public class ActivitiUtil
     {
         return historyService;
     }
-    
+
     /**
      * @return the repoService
      */
@@ -195,7 +197,7 @@ public class ActivitiUtil
     {
         return repoService;
     }
-    
+
     /**
      * @return the runtimeService
      */
@@ -203,7 +205,7 @@ public class ActivitiUtil
     {
         return runtimeService;
     }
-    
+
     /**
      * @return the taskService
      */
@@ -221,24 +223,26 @@ public class ActivitiUtil
     }
 
     /**
-     * @param localId String
+     * @param localId
+     *            String
      * @return HistoricTaskInstance
      */
     public HistoricTaskInstance getHistoricTaskInstance(String localId)
     {
-        HistoricTaskInstanceQuery taskQuery =  historyService.createHistoricTaskInstanceQuery()
-            .taskId(localId);
-        if(!deployWorkflowsInTenant) {
-        	taskQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
+        HistoricTaskInstanceQuery taskQuery = historyService.createHistoricTaskInstanceQuery()
+                .taskId(localId);
+        if (!deployWorkflowsInTenant)
+        {
+            taskQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
         }
         return taskQuery.singleResult();
     }
-    
-    public boolean isMultiTenantWorkflowDeploymentEnabled() 
+
+    public boolean isMultiTenantWorkflowDeploymentEnabled()
     {
-		return deployWorkflowsInTenant;
-	}
-    
+        return deployWorkflowsInTenant;
+    }
+
     public boolean isRetentionHistoricProcessInstanceEnabled()
     {
         return retentionHistoricProcessInstance;

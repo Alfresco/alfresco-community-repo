@@ -50,11 +50,11 @@ public class LuceneUpper<Q, S, E extends Throwable> extends Upper implements Luc
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(java.util.Set, java.util.Map, org.alfresco.repo.search.impl.querymodel.impl.lucene.QueryBuilderContext, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(java.util.Set, java.util.Map, org.alfresco.repo.search.impl.querymodel.impl.lucene.QueryBuilderContext, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext) */
     public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext)
             throws E
     {
-        throw new QueryModelException("Unsupported function in query "+getName());
+        throw new QueryModelException("Unsupported function in query " + getName());
     }
 }

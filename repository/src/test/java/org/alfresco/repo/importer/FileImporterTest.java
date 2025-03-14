@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.net.URL;
 import java.util.List;
-
 import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
 import jakarta.transaction.NotSupportedException;
@@ -38,6 +37,8 @@ import jakarta.transaction.SystemException;
 import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
@@ -58,8 +59,6 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.TestWithUserUtils;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 @Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class FileImporterTest extends TestCase
@@ -186,7 +185,7 @@ public class FileImporterTest extends TestCase
      *            <li>StoreRef: The store to load the files into
      *            <li>String: The path within the store into which to load the files (e.g. /app:company_home)
      *            <li>String: Directory to use as source (e.g. c:/temp)
-     *            <li>String: New name to give the source.  It may have a suffix added (e.g. upload_xxx)
+     *            <li>String: New name to give the source. It may have a suffix added (e.g. upload_xxx)
      *            <li>Integer: Number of times to repeat the load.
      *            <li>Boolean: (optional - default 'false') Create each file/folder in a new transaction
      *            <li>String: (optional) user to authenticate as
@@ -215,10 +214,10 @@ public class FileImporterTest extends TestCase
             count++;
             FileImporterTest test = new FileImporterTest();
             test.setUp();
-            
+
             test.authenticationComponent.setSystemUserAsCurrentUser();
             TransactionService transactionService = test.serviceRegistry.getTransactionService();
-            UserTransaction tx = transactionService.getUserTransaction(); 
+            UserTransaction tx = transactionService.getUserTransaction();
             tx.begin();
 
             try
@@ -240,12 +239,12 @@ public class FileImporterTest extends TestCase
                 {
                     throw new AlfrescoRuntimeException(
                             "Root node not found, " +
-                            args[1] +
-                            " not found in store, " +
-                            storeRoot);
+                                    args[1] +
+                                    " not found in store, " +
+                                    storeRoot);
                 }
                 NodeRef importLocation = importLocations.get(0);
-                
+
                 // optionally authenticate as a specific user
                 if (userName != null)
                 {
@@ -266,7 +265,7 @@ public class FileImporterTest extends TestCase
                     tx = transactionService.getUserTransaction();
                     tx.begin();
                 }
-                
+
                 long start = System.nanoTime();
                 FileImporter importer = test.createFileImporter(txnPerFile);
                 int importCount = importer.loadNamedFile(
@@ -276,7 +275,7 @@ public class FileImporterTest extends TestCase
                         String.format("%s-%05d-%s", baseName, count, System.currentTimeMillis()));
                 grandTotal += importCount;
                 long end = System.nanoTime();
-                long first = end-start;
+                long first = end - start;
                 System.out.println("Created in: " + ((end - start) / 1000000.0) + "ms");
                 start = System.nanoTime();
 
@@ -285,10 +284,10 @@ public class FileImporterTest extends TestCase
                     tx.commit();
                 }
                 end = System.nanoTime();
-                long second = end-start;
+                long second = end - start;
                 System.out.println("Committed in: " + ((end - start) / 1000000.0) + "ms");
-                double total = ((first+second)/1000000.0);
-                System.out.println("Grand Total: "+ grandTotal);
+                double total = ((first + second) / 1000000.0);
+                System.out.println("Grand Total: " + grandTotal);
                 System.out.println("Imported: " + importCount + " files or directories");
                 System.out.println("Average: " + (importCount / (total / 1000.0)) + " files per second");
             }

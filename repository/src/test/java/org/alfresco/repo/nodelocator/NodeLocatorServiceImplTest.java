@@ -32,9 +32,6 @@ import static org.mockito.Mockito.when;
 
 import jakarta.annotation.Resource;
 
-import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.site.SiteServiceInternal;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,13 +39,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.site.SiteServiceInternal;
+import org.alfresco.service.cmr.repository.NodeRef;
+
 /**
  * @author Nick Smith
  * @since 4.0
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"classpath:alfresco/node-locator-context.xml", "classpath:test-nodeLocatorServiceImpl-context.xml"})
+@ContextConfiguration(locations = {"classpath:alfresco/node-locator-context.xml", "classpath:test-nodeLocatorServiceImpl-context.xml"})
 public class NodeLocatorServiceImplTest
 {
     private static final NodeRef companyHome = new NodeRef("alfresco://company/home");
@@ -56,43 +57,43 @@ public class NodeLocatorServiceImplTest
 
     @Resource
     private NodeLocatorService nodeLocatorService;
-    
+
     @Autowired
     private Repository repositoryHelper;
-    
+
     @Autowired
     private SiteServiceInternal siteService;
-    
+
     @Test
     public void testUnknownNodeLocator() throws Exception
     {
-        try 
+        try
         {
             nodeLocatorService.getNode(null, null, null);
             fail("An exception should have been thrown!");
         }
-        catch(IllegalArgumentException e)
+        catch (IllegalArgumentException e)
         {
-            //NOOP
+            // NOOP
         }
-        try 
+        try
         {
             nodeLocatorService.getNode("some unknown name", null, null);
             fail("An exception should have been thrown!");
         }
-        catch(IllegalArgumentException e)
+        catch (IllegalArgumentException e)
         {
-            //NOOP
+            // NOOP
         }
     }
-    
+
     @Test
     public void testCompanyHomeNodeLocator() throws Exception
     {
         NodeRef result = nodeLocatorService.getNode(CompanyHomeNodeLocator.NAME, null, null);
         assertEquals(companyHome, result);
     }
-    
+
     @Test
     public void testSitesHomeNodeLocator() throws Exception
     {

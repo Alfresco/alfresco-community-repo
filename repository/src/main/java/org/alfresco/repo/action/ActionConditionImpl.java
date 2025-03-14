@@ -40,15 +40,14 @@ public class ActionConditionImpl extends ParameterizedItemImpl implements Serial
      * Serial version UID
      */
     private static final long serialVersionUID = 3257288015402644020L;
-    
+
     /**
      * Rule condition definition
      */
     private String actionConditionDefinitionName;
-    
+
     /**
-     * Indicates whether the result of the condition should have the NOT logical operator applied 
-     * to it.
+     * Indicates whether the result of the condition should have the NOT logical operator applied to it.
      */
     private boolean invertCondition = false;
 
@@ -62,12 +61,14 @@ public class ActionConditionImpl extends ParameterizedItemImpl implements Serial
 
     /**
      *
-     * @param id String
-     * @param actionConditionDefinitionName String
+     * @param id
+     *            String
+     * @param actionConditionDefinitionName
+     *            String
      */
     public ActionConditionImpl(
             String id,
-            String actionConditionDefinitionName, 
+            String actionConditionDefinitionName,
             Map<String, Serializable> parameterValues)
     {
         super(id, parameterValues);
@@ -81,7 +82,7 @@ public class ActionConditionImpl extends ParameterizedItemImpl implements Serial
     {
         return this.actionConditionDefinitionName;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.action.ActionCondition#setInvertCondition(boolean)
      */
@@ -89,12 +90,12 @@ public class ActionConditionImpl extends ParameterizedItemImpl implements Serial
     {
         this.invertCondition = invertCondition;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.action.ActionCondition#getInvertCondition()
      */
     public boolean getInvertCondition()
     {
         return this.invertCondition;
-    }    
+    }
 }

@@ -25,6 +25,20 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Queries;
@@ -36,27 +50,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
-import org.alfresco.util.testing.category.LuceneTests;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentCaptor;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 /**
-* V1 REST API tests for pre-defined 'live' search Queries on Sites
+ * V1 REST API tests for pre-defined 'live' search Queries on Sites
  * 
  * <ul>
- * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/queries/sites} </li>
+ * <li>{@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/queries/sites}</li>
  * </ul>
  *
  * @author janv
@@ -64,7 +63,7 @@ import static org.mockito.Mockito.verify;
 public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
 {
     private static final String URL_QUERIES_LSS = "queries/sites";
-    
+
     private SiteService siteService;
 
     @Before
@@ -72,7 +71,7 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
     public void setup() throws Exception
     {
         super.setup();
-        siteService = (SiteService)applicationContext.getBean("SiteService");
+        siteService = (SiteService) applicationContext.getBean("SiteService");
     }
 
     // Note expectedIds defaults to ids
@@ -86,7 +85,7 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
         }
 
         dummySearchServiceQueryNodeRefs.clear();
-        for (String id: ids)
+        for (String id : ids)
         {
             NodeRef nodeRef = getNodeRef(id);
             dummySearchServiceQueryNodeRefs.add(nodeRef);
@@ -98,7 +97,7 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
         if (expectedStatus == 200)
         {
             String termWithEscapedAsterisks = term.replaceAll("\\*", "\\\\*");
-            String expectedQuery = "TYPE:\"{http://www.alfresco.org/model/site/1.0}site\" AND (\"*"+ termWithEscapedAsterisks +"*\")";
+            String expectedQuery = "TYPE:\"{http://www.alfresco.org/model/site/1.0}site\" AND (\"*" + termWithEscapedAsterisks + "*\")";
             ArgumentCaptor<SearchParameters> searchParametersCaptor = ArgumentCaptor.forClass(SearchParameters.class);
             verify(mockSearchService, times(++callCountToMockSearchService)).query(searchParametersCaptor.capture());
             SearchParameters parameters = searchParametersCaptor.getValue();
@@ -109,30 +108,32 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
 
             if (orderBy != null)
             {
-                for (int i=0; i<expectedIds.length; i++)
+                for (int i = 0; i < expectedIds.length; i++)
                 {
                     String id = expectedIds[i];
                     String actualId = sites.get(i).getId();
-                    assertEquals("Order "+i+":", id, actualId);
+                    assertEquals("Order " + i + ":", id, actualId);
                 }
             }
         }
     }
 
-   /**
+    /**
      * Tests basic api for nodes live search sites - metadata (id, title, description)
      *
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/queries/sites}
      */
     @Test
     public void testLiveSearchSites() throws Exception
     {
         setRequestContext(user1);
-        
+
         int sCount = 5;
         assertTrue(sCount > 4); // as relied on by test below
-        
+
         List<String> siteIds = new ArrayList<>(sCount);
 
         try
@@ -149,14 +150,14 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
             String siteD = "siteD";
 
             int charValue = siteI.charAt(0);
-            
+
             // create some some sites with site id: ab00001, abc00002, abcd00003, abcde00004, abcdef00005 (and some specific titles and descriptions)
             for (int i = 1; i <= sCount; i++)
             {
                 String num = String.format("%05d", i);
 
-                charValue = charValue+1;
-                siteI = siteI + String.valueOf((char)charValue);
+                charValue = charValue + 1;
+                siteI = siteI + String.valueOf((char) charValue);
 
                 String siteId = siteI + num + RUNID;
                 String siteTitle = siteT + num + siteT;
@@ -220,7 +221,7 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
         {
             // some cleanup
             setRequestContext(user1);
-            
+
             for (String siteId : siteIds)
             {
                 deleteSite(siteId, true, 204);
@@ -232,10 +233,10 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
     {
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
         // The following call to siteService.getSite(createdSiteId).getNodeRef() returns a NodeRef like:
-        //    workspace://SpacesStore/9db76769-96de-4de4-bdb4-a127130af362
+        // workspace://SpacesStore/9db76769-96de-4de4-bdb4-a127130af362
         // We call tenantService.getName(nodeRef) to get a fully qualified NodeRef as Solr returns this.
         // They look like:
-        //    workspace://@org.alfresco.rest.api.tests.queriespeopleapitest@SpacesStore/9db76769-96de-4de4-bdb4-a127130af362
+        // workspace://@org.alfresco.rest.api.tests.queriespeopleapitest@SpacesStore/9db76769-96de-4de4-bdb4-a127130af362
         NodeRef nodeRef = siteService.getSite(createdSiteId).getNodeRef();
         nodeRef = tenantService.getName(nodeRef);
         return nodeRef;
@@ -245,7 +246,7 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
     public void testLiveSearchSites_SortPage() throws Exception
     {
         setRequestContext(user1);
-        
+
         List<String> siteIds = new ArrayList<>(5);
 
         try
@@ -253,14 +254,14 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
             // As user 1 ...
 
             Paging paging = getPaging(0, 100);
-            
+
             // create site
-            String s1 = createSite("siABCDEF"+RUNID, "ABCDEF DEF", "sdABCDEF", SiteVisibility.PRIVATE, 201).getId();
-            String s2 = createSite("siABCD"+RUNID, "ABCD DEF", "sdABCD", SiteVisibility.PRIVATE, 201).getId();
-            String s3 = createSite("siABCDE"+RUNID, "ABCDE DEF", "sdABCDE", SiteVisibility.PRIVATE, 201).getId();
-            String s4 = createSite("siAB"+RUNID, "AB DEF", "sdAB", SiteVisibility.PRIVATE, 201).getId();
-            String s5 = createSite("siABC"+RUNID, "ABC DEF", "sdABC", SiteVisibility.PRIVATE, 201).getId();
-            
+            String s1 = createSite("siABCDEF" + RUNID, "ABCDEF DEF", "sdABCDEF", SiteVisibility.PRIVATE, 201).getId();
+            String s2 = createSite("siABCD" + RUNID, "ABCD DEF", "sdABCD", SiteVisibility.PRIVATE, 201).getId();
+            String s3 = createSite("siABCDE" + RUNID, "ABCDE DEF", "sdABCDE", SiteVisibility.PRIVATE, 201).getId();
+            String s4 = createSite("siAB" + RUNID, "AB DEF", "sdAB", SiteVisibility.PRIVATE, 201).getId();
+            String s5 = createSite("siABC" + RUNID, "ABC DEF", "sdABC", SiteVisibility.PRIVATE, 201).getId();
+
             // test sort order
             {
                 // default sort order - title asc
@@ -276,11 +277,11 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
             // basic paging tests
             {
                 // sort order - title desc
-                checkApiCall("siAB", "title desc", getPaging(0, 2), 200, new String[] {s1, s3}, s1, s3, s2, s5, s4);
-                checkApiCall("siAB", "title desc", getPaging(2, 2), 200, new String[] {s2, s5}, s1, s3, s2, s5, s4);
-                checkApiCall("siAB", "title desc", getPaging(4, 2), 200, new String[] {s4}, s1, s3, s2, s5, s4);
+                checkApiCall("siAB", "title desc", getPaging(0, 2), 200, new String[]{s1, s3}, s1, s3, s2, s5, s4);
+                checkApiCall("siAB", "title desc", getPaging(2, 2), 200, new String[]{s2, s5}, s1, s3, s2, s5, s4);
+                checkApiCall("siAB", "title desc", getPaging(4, 2), 200, new String[]{s4}, s1, s3, s2, s5, s4);
             }
-            
+
             // -ve tests
             {
                 // -ve test - invalid sort field
@@ -304,7 +305,7 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
             }
         }
     }
-    
+
     @Override
     public String getScope()
     {

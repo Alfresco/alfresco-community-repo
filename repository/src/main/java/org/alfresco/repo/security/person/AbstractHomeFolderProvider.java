@@ -27,21 +27,20 @@ package org.alfresco.repo.security.person;
 
 import java.util.List;
 
+import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.BeanNameAware;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
- * Common support for creating home folders This is hooked into node creation events from Person type objects via the
- * homeFolderManager. Provider must all be wired up to the homeFolderManager.
+ * Common support for creating home folders This is hooked into node creation events from Person type objects via the homeFolderManager. Provider must all be wired up to the homeFolderManager.
  * 
- * @deprecated 
- * Depreciated since 4.0. {@link AbstractHomeFolderProvider2} should now be used.
+ * @deprecated Depreciated since 4.0. {@link AbstractHomeFolderProvider2} should now be used.
  * 
  * @author Andy Hind
  */
@@ -66,12 +65,12 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
      * Service registry to get hold of public services (so that actions are audited)
      */
     private ServiceRegistry serviceRegistry;
-    
+
     /**
      * The path to a folder
      */
     private String path;
-    
+
     /**
      * The owner to set on creation of a home folder (if unset this will be the uid).
      */
@@ -116,7 +115,9 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
 
     /**
      * Set the home folder manager.
-     * @param homeFolderManager PortableHomeFolderManager
+     * 
+     * @param homeFolderManager
+     *            PortableHomeFolderManager
      */
     public void setHomeFolderManager(PortableHomeFolderManager homeFolderManager)
     {
@@ -156,7 +157,7 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     {
         boolean reset = this.path != null;
         this.path = path;
-        
+
         // If a reset need to clear caches
         if (reset)
         {
@@ -203,7 +204,7 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     {
         this.serviceRegistry = serviceRegistry;
     }
-    
+
     /**
      * Set the tenant service
      */
@@ -211,7 +212,7 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     {
         // keep class signature but no longer use value
     }
-    
+
     /**
      * Set the permission manager
      */
@@ -256,7 +257,7 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     {
         return ownerOnCreate;
     }
-    
+
     /**
      * Cache path to node resolution
      */
@@ -264,7 +265,7 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     {
         return homeFolderManager.getRootPathNodeRef(v2Adaptor);
     }
-    
+
     /**
      * Utility method to resolve paths to nodes.
      */
@@ -285,7 +286,7 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
      * Abstract implementation to find/create the appropriate home space.
      */
     protected abstract HomeSpaceNodeRef getHomeFolder(NodeRef person);
-    
+
     /**
      * Get adaptor for this instance to be a HomeFolderProvider2
      */
@@ -293,14 +294,14 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     {
         return v2Adaptor;
     }
-    
+
     /**
      * Adaptor to the HomeFolderProvider2 interface.
      */
     public class V2Adaptor implements HomeFolderProvider2
     {
         AbstractHomeFolderProvider abstractHomeFolderProvider;
-        
+
         public V2Adaptor(AbstractHomeFolderProvider abstractHomeFolderProvider)
         {
             this.abstractHomeFolderProvider = abstractHomeFolderProvider;
@@ -329,16 +330,16 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
         public List<String> getHomeFolderPath(NodeRef person)
         {
             return (abstractHomeFolderProvider instanceof UIDBasedHomeFolderProvider)
-            ? ((UIDBasedHomeFolderProvider)abstractHomeFolderProvider).getHomeFolderPath(person)
-            : null;
+                    ? ((UIDBasedHomeFolderProvider) abstractHomeFolderProvider).getHomeFolderPath(person)
+                    : null;
         }
 
         @Override
         public NodeRef getTemplateNodeRef()
         {
             return (abstractHomeFolderProvider instanceof UIDBasedHomeFolderProvider)
-            ? ((UIDBasedHomeFolderProvider)abstractHomeFolderProvider).getTemplateNodeRef()
-            : null;
+                    ? ((UIDBasedHomeFolderProvider) abstractHomeFolderProvider).getTemplateNodeRef()
+                    : null;
         }
 
         @Override

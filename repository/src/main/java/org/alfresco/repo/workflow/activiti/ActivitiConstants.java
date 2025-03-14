@@ -35,7 +35,7 @@ public interface ActivitiConstants
     public static final String ENGINE_ID = "activiti";
     public static final String NODE_NAME = "name";
     public static final String NODE_DESCRIPTION = "documentation";
-    public static final String NODE_TYPE= "type";
+    public static final String NODE_TYPE = "type";
 
     public static final String PROP_START_TASK_END_DATE = "_startTaskCompleted";
     public static final String START_TASK_PREFIX = "start";
@@ -54,7 +54,7 @@ public interface ActivitiConstants
     public static final String SERVICE_REGISTRY_BEAN_KEY = "services";
 
     public static final String PROCESS_INSTANCE_IMAGE_FORMAT = "png";
-    
+
     public static final String VAR_TENANT_DOMAIN = "_tenant_domain";
-    
+
 }

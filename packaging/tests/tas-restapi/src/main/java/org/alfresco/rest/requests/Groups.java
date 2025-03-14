@@ -25,13 +25,14 @@
  */
 package org.alfresco.rest.requests;
 
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestGroupMember;
 import org.alfresco.rest.model.RestGroupMemberModelsCollection;
 import org.alfresco.rest.model.RestGroupsModel;
 import org.alfresco.rest.model.RestGroupsModelsCollection;
-import org.springframework.http.HttpMethod;
 
 public class Groups extends ModelRequest<Groups>
 {
@@ -98,7 +99,7 @@ public class Groups extends ModelRequest<Groups>
     /**
      * Create a group membership using POST on '/groups/{groupId}/members
      */
-    public RestGroupMember createGroupMembership (String groupId, String groupMembershipBodyCreate)
+    public RestGroupMember createGroupMembership(String groupId, String groupMembershipBodyCreate)
     {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, groupMembershipBodyCreate, "groups/{groupId}/members?{parameters}", groupId,
                 restWrapper.getParameters());

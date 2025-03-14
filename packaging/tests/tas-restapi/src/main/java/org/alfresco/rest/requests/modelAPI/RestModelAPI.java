@@ -26,16 +26,16 @@
 package org.alfresco.rest.requests.modelAPI;
 
 import io.restassured.RestAssured;
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.*;
 import org.alfresco.rest.requests.ModelRequest;
-import org.springframework.http.HttpMethod;
 
 /**
- * Defines the entire Rest Model API
- * {@link https://api-explorer.alfresco.com/api-explorer/} select "Model API"
+ * Defines the entire Rest Model API {@link https://api-explorer.alfresco.com/api-explorer/} select "Model API"
  */
 public class RestModelAPI extends ModelRequest<RestModelAPI>
 {

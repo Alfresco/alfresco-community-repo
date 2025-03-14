@@ -36,11 +36,15 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.collect.Sets;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
 import org.alfresco.repo.batch.BatchProcessor;
-import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeDAO.NodeRefQueryCallback;
 import org.alfresco.repo.lock.JobLockService;
@@ -53,7 +57,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.PermissionServicePolicies;
 import org.alfresco.repo.security.permissions.PermissionServicePolicies.OnInheritPermissionsDisabled;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -63,13 +66,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PolicyIgnoreUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * Finds nodes with ASPECT_PENDING_FIX_ACL aspect and sets fixed ACLs for them
@@ -218,8 +214,7 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
         List<NodeRef> getNodesWithAspects()
         {
             List<NodeRef> nodes = transactionService.getRetryingTransactionHelper()
-                    .doInTransaction(new RetryingTransactionCallback<List<NodeRef>>()
-                    {
+                    .doInTransaction(new RetryingTransactionCallback<List<NodeRef>>() {
                         @Override
                         public List<NodeRef> execute() throws Throwable
                         {
@@ -235,15 +230,15 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
 
         int countNodesWithAspects()
         {
-            if (maxItems < DEFAULT_MAX_ITEMS) {
+            if (maxItems < DEFAULT_MAX_ITEMS)
+            {
                 log.info("Job limited to process a maximum of " + maxItems + " Pending Acls");
                 return maxItems;
             }
 
             final CountNodesWithAspectCallback countNodesCallback = new CountNodesWithAspectCallback();
             int count = transactionService.getRetryingTransactionHelper()
-                    .doInTransaction(new RetryingTransactionCallback<Integer>()
-                    {
+                    .doInTransaction(new RetryingTransactionCallback<Integer>() {
                         @Override
                         public Integer execute() throws Throwable
                         {
@@ -270,19 +265,19 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
         @Override
         public int getTotalEstimatedWorkSize()
         {
-            return (int)getTotalEstimatedWorkSizeLong();
+            return (int) getTotalEstimatedWorkSizeLong();
         }
+
         @Override
         public long getTotalEstimatedWorkSizeLong()
         {
             return getNodesWithAspects.getWorkSize();
         }
 
-
         @Override
         public Collection<NodeRef> getNextWork()
         {
-            if(estimatedUpdatedItems >= maxItems)
+            if (estimatedUpdatedItems >= maxItems)
             {
                 log.info("Reached max items to process. Nodes Processed: " + estimatedUpdatedItems + "/" + maxItems);
                 return Collections.emptyList();
@@ -294,14 +289,14 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
 
             if (log.isDebugEnabled())
             {
-                log.debug("Query for batch executed in " + (endTime-initTime) + " ms");
+                log.debug("Query for batch executed in " + (endTime - initTime) + " ms");
             }
 
             if (!batchNodes.isEmpty())
             {
                 // Increment estimatedUpdatedItems with the expected number of nodes to process
                 estimatedUpdatedItems += batchNodes.size();
-                execTime+=endTime-initTime;
+                execTime += endTime - initTime;
                 execBatches++;
             }
 
@@ -310,7 +305,7 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
 
         public double getAverageQueryExecutionTime()
         {
-            return execBatches > 0 ? execTime/execBatches : 0;
+            return execBatches > 0 ? execTime / execBatches : 0;
         }
 
     }
@@ -330,17 +325,14 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
         }
 
         public void beforeProcess() throws Throwable
-        {
-        }
+        {}
 
         public void afterProcess() throws Throwable
-        {
-        }
+        {}
 
-        public void process(final NodeRef nodeRef) 
+        public void process(final NodeRef nodeRef)
         {
-            RunAsWork<Void> findAndUpdateAclRunAsWork = new RunAsWork<Void>()
-            {
+            RunAsWork<Void> findAndUpdateAclRunAsWork = new RunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -404,7 +396,6 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
             AuthenticationUtil.runAs(findAndUpdateAclRunAsWork, AuthenticationUtil.getSystemUserName());
         }
     };
-    
 
     /** Create a new AclWorker. */
     protected AclWorker createAclWorker()

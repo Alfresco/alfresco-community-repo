@@ -28,12 +28,12 @@ package org.alfresco.repo.content;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.alfresco.repo.content.filestore.FileContentStore;
 import org.springframework.context.ApplicationEvent;
 
+import org.alfresco.repo.content.filestore.FileContentStore;
+
 /**
- * A class of event that notifies the listener of the existence of a {@link FileContentStore}. Useful for Monitoring
- * purposes.
+ * A class of event that notifies the listener of the existence of a {@link FileContentStore}. Useful for Monitoring purposes.
  * 
  * @author dward
  * @since 3.1
@@ -54,17 +54,17 @@ public class ContentStoreCreatedEvent extends ApplicationEvent
         super(source);
         this.extendedEventParams = extendedEventParams;
     }
-    
+
     /**
-     * @return      Returns the source {@link ContentStore}
+     * @return Returns the source {@link ContentStore}
      */
     public ContentStore getContentStore()
     {
         return (ContentStore) getSource();
     }
-    
+
     public Map<String, Serializable> getExtendedEventParams()
     {
-    	return extendedEventParams;
+        return extendedEventParams;
     }
 }

@@ -37,9 +37,9 @@ import org.mybatis.spring.SqlSessionTemplate;
 public class AuthorityBridgeDAOImpl extends AbstractAuthorityBridgeDAO
 {
     private static final String QUERY_SELECT_GET_AUTHORITY_BRIDGE_ENTRIES = "alfresco.query.authorities.select_GetAuthorityBridgeEntries";
-    
+
     private static final String QUERY_SELECT_GET_DIRECT_AUTHORITIES_FOR_UESR = "alfresco.query.authorities.select_GetDirectAuthoritiesForUser";
-   
+
     private Log logger = LogFactory.getLog(getClass());
 
     private SqlSessionTemplate template;
@@ -49,47 +49,45 @@ public class AuthorityBridgeDAOImpl extends AbstractAuthorityBridgeDAO
         this.template = sqlSessionTemplate;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.security.authority.AbstractAuthorityBridgeDAO#selectAuthorityBridgeLinks(java.lang.Long,
-     * java.lang.Long, java.lang.Long, java.lang.Long)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.security.authority.AbstractAuthorityBridgeDAO#selectAuthorityBridgeLinks(java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long) */
     @Override
     protected List<AuthorityBridgeLink> selectAuthorityBridgeLinks(Long authorityContainerTypeQNameId, Long memberAssocQNameId, Long authorityNameQNameId, Long storeId)
     {
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
-        
+
         AuthorityBridgeParametersEntity authorityBridgeParametersEntity = new AuthorityBridgeParametersEntity(authorityContainerTypeQNameId, memberAssocQNameId, authorityNameQNameId, storeId);
-        
+
         List<AuthorityBridgeLink> links = template.selectList(QUERY_SELECT_GET_AUTHORITY_BRIDGE_ENTRIES, authorityBridgeParametersEntity);
-        
+
         if (start != null)
         {
-            logger.debug("Authority bridge query: "+links.size()+" in "+(System.currentTimeMillis()-start)+" msecs");
+            logger.debug("Authority bridge query: " + links.size() + " in " + (System.currentTimeMillis() - start) + " msecs");
         }
-        
+
         return links;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.security.authority.AbstractAuthorityBridgeDAO#selectDirectAuthoritiesForUser(java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String)
-     */
+     * 
+     * @see org.alfresco.repo.security.authority.AbstractAuthorityBridgeDAO#selectDirectAuthoritiesForUser(java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String) */
     @Override
     protected List<AuthorityBridgeLink> selectDirectAuthoritiesForUser(Long authorityContainerTypeQNameId, Long memberAssocQNameId, Long authorityNameQNameId, Long storeId,
             Long nodeId)
     {
-        
+
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
-        
+
         AuthorityBridgeParametersEntity authorityBridgeParametersEntity = new AuthorityBridgeParametersEntity(authorityContainerTypeQNameId, memberAssocQNameId, authorityNameQNameId, storeId, nodeId);
-        
+
         List<AuthorityBridgeLink> links = template.selectList(QUERY_SELECT_GET_DIRECT_AUTHORITIES_FOR_UESR, authorityBridgeParametersEntity);
-        
+
         if (start != null)
         {
-            logger.debug("Direct authority: "+links.size()+" in "+(System.currentTimeMillis()-start)+" msecs");
+            logger.debug("Direct authority: " + links.size() + " in " + (System.currentTimeMillis() - start) + " msecs");
         }
-        
+
         return links;
     }
 

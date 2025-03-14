@@ -38,9 +38,12 @@ public class DBLiteralArgument extends BaseLiteralArgument
 {
 
     /**
-     * @param name String
-     * @param type QName
-     * @param value Serializable
+     * @param name
+     *            String
+     * @param type
+     *            QName
+     * @param value
+     *            Serializable
      */
     public DBLiteralArgument(String name, QName type, Serializable value)
     {

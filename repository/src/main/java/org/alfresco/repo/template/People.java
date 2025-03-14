@@ -32,6 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.AuthorityDAO;
@@ -42,10 +45,8 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.util.ValueDerivingMapFactory;
 import org.alfresco.util.ValueDerivingMapFactory.ValueDeriver;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * People and users support in FreeMarker templates.
@@ -61,51 +62,49 @@ public class People extends BaseTemplateProcessorExtension implements Initializi
     private MutableAuthenticationService authenticationService;
     private PersonService personService;
     private StoreRef storeRef;
-    private ValueDerivingMapFactory<TemplateNode, String, Boolean> valueDerivingMapFactory;        
-    
+    private ValueDerivingMapFactory<TemplateNode, String, Boolean> valueDerivingMapFactory;
+
     public void afterPropertiesSet() throws Exception
     {
-        Map <String, ValueDeriver<TemplateNode, Boolean>> capabilityTesters = new HashMap<String, ValueDeriver<TemplateNode, Boolean>>(5);
-        capabilityTesters.put("isAdmin", new ValueDeriver<TemplateNode, Boolean>()
+        Map<String, ValueDeriver<TemplateNode, Boolean>> capabilityTesters = new HashMap<String, ValueDeriver<TemplateNode, Boolean>>(5);
+        capabilityTesters.put("isAdmin", new ValueDeriver<TemplateNode, Boolean>() {
+            public Boolean deriveValue(TemplateNode source)
+            {
+                return isAdmin(source);
+            }
+        });
+        capabilityTesters.put("isGuest", new ValueDeriver<TemplateNode, Boolean>() {
+            public Boolean deriveValue(TemplateNode source)
+            {
+                return isGuest(source);
+            }
+        });
+        capabilityTesters.put("isMutable", new ValueDeriver<TemplateNode, Boolean>() {
+            public Boolean deriveValue(TemplateNode source)
+            {
+                // Check whether the account is mutable according to the authentication service
+                String sourceUser = (String) source.getProperties().get(ContentModel.PROP_USERNAME);
+                if (!authenticationService.isAuthenticationMutable(sourceUser))
                 {
-                    public Boolean deriveValue(TemplateNode source)
-                    {
-                        return isAdmin(source);
-                    }
-                });
-                capabilityTesters.put("isGuest", new ValueDeriver<TemplateNode, Boolean>()
+                    return false;
+                }
+                // Only allow non-admin users to mutate their own accounts
+                String currentUser = authenticationService.getCurrentUserName();
+                if (currentUser.equals(sourceUser) || authorityService.isAdminAuthority(currentUser))
                 {
-                    public Boolean deriveValue(TemplateNode source)
-                    {
-                        return isGuest(source);
-                    }
-                });
-                capabilityTesters.put("isMutable", new ValueDeriver<TemplateNode, Boolean>()
-                {
-                    public Boolean deriveValue(TemplateNode source)
-                    {
-                        // Check whether the account is mutable according to the authentication service
-                        String sourceUser = (String) source.getProperties().get(ContentModel.PROP_USERNAME);
-                        if (!authenticationService.isAuthenticationMutable(sourceUser))
-                        {
-                            return false;
-                        }
-                        // Only allow non-admin users to mutate their own accounts
-                        String currentUser = authenticationService.getCurrentUserName();
-                        if (currentUser.equals(sourceUser) || authorityService.isAdminAuthority(currentUser))
-                        {
-                            return true;
-                        }
-                        return false;
-                    }
-                });
+                    return true;
+                }
+                return false;
+            }
+        });
         this.valueDerivingMapFactory = new ValueDerivingMapFactory<TemplateNode, String, Boolean>(capabilityTesters);
     }
 
     /**
      * Set the default store reference
      * 
-     * @param   storeRef the default store reference
+     * @param storeRef
+     *            the default store reference
      */
     public void setStoreUrl(String storeRef)
     {
@@ -120,43 +119,47 @@ public class People extends BaseTemplateProcessorExtension implements Initializi
     /**
      * Set the service registry
      * 
-     * @param serviceRegistry	the service registry
+     * @param serviceRegistry
+     *            the service registry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
-    	this.services = serviceRegistry;
+        this.services = serviceRegistry;
     }
 
     /**
      * Set the authority DAO
      *
-     * @param authorityDAO  authority dao
+     * @param authorityDAO
+     *            authority dao
      */
     public void setAuthorityDAO(AuthorityDAO authorityDAO)
     {
         this.authorityDAO = authorityDAO;
     }
-    
+
     /**
      * Set the authority service
      * 
-     * @param authorityService The authorityService to set.
+     * @param authorityService
+     *            The authorityService to set.
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
     }
-    
+
     /**
      * Set the person service
      * 
-     * @param personService The personService to set.
+     * @param personService
+     *            The personService to set.
      */
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
     }
-    
+
     /**
      * Sets the authentication service.
      * 
@@ -171,8 +174,9 @@ public class People extends BaseTemplateProcessorExtension implements Initializi
     /**
      * Gets the Person given the username
      * 
-     * @param username  the username of the person to get
-     * @return the person node (type cm:person) or null if no such person exists 
+     * @param username
+     *            the username of the person to get
+     * @return the person node (type cm:person) or null if no such person exists
      */
     public TemplateNode getPerson(String username)
     {
@@ -189,7 +193,8 @@ public class People extends BaseTemplateProcessorExtension implements Initializi
     /**
      * Gets the Group given the group name
      * 
-     * @param groupName  name of group to get
+     * @param groupName
+     *            name of group to get
      * @return the group node (type usr:authorityContainer) or null if no such group exists
      */
     public TemplateNode getGroup(String groupName)
@@ -203,11 +208,12 @@ public class People extends BaseTemplateProcessorExtension implements Initializi
         }
         return group;
     }
-    
+
     /**
      * Gets the members (people) of a group (including all sub-groups)
      * 
-     * @param group        the group to retrieve members for
+     * @param group
+     *            the group to retrieve members for
      * 
      * @return list of nodes representing the group members
      */
@@ -220,8 +226,10 @@ public class People extends BaseTemplateProcessorExtension implements Initializi
     /**
      * Gets the members (people) of a group
      * 
-     * @param group        the group to retrieve members for
-     * @param recurse      recurse into sub-groups
+     * @param group
+     *            the group to retrieve members for
+     * @param recurse
+     *            recurse into sub-groups
      * 
      * @return list of nodes representing the group members
      */
@@ -230,11 +238,12 @@ public class People extends BaseTemplateProcessorExtension implements Initializi
         ParameterCheck.mandatory("Group", group);
         return getContainedAuthorities(group, AuthorityType.USER, recurse);
     }
-    
+
     /**
      * Gets the groups that contain the specified authority
      * 
-     * @param person       the user (cm:person) to get the containing groups for
+     * @param person
+     *            the user (cm:person) to get the containing groups for
      * 
      * @return the containing groups as a List of TemplateNode objects, can be null
      */
@@ -244,7 +253,7 @@ public class People extends BaseTemplateProcessorExtension implements Initializi
         List<TemplateNode> parents;
         Set<String> authorities = this.authorityService.getContainingAuthoritiesInZone(
                 AuthorityType.GROUP,
-                (String)person.getProperties().get(ContentModel.PROP_USERNAME),
+                (String) person.getProperties().get(ContentModel.PROP_USERNAME),
                 AuthorityService.ZONE_APP_DEFAULT, null, 1000);
         parents = new ArrayList<TemplateNode>(authorities.size());
         for (String authority : authorities)
@@ -252,7 +261,7 @@ public class People extends BaseTemplateProcessorExtension implements Initializi
             TemplateNode group = getGroup(authority);
             if (group != null)
             {
-                parents.add(group); 
+                parents.add(group);
             }
         }
         return parents;
@@ -261,33 +270,36 @@ public class People extends BaseTemplateProcessorExtension implements Initializi
     /**
      * Return true if the specified user is an Administrator authority.
      * 
-     * @param person to test
+     * @param person
+     *            to test
      * 
      * @return true if an admin, false otherwise
      */
     public boolean isAdmin(TemplateNode person)
     {
         ParameterCheck.mandatory("Person", person);
-        return this.authorityService.isAdminAuthority((String)person.getProperties().get(ContentModel.PROP_USERNAME));
+        return this.authorityService.isAdminAuthority((String) person.getProperties().get(ContentModel.PROP_USERNAME));
     }
-    
+
     /**
      * Return true if the specified user is an Guest authority.
      * 
-     * @param person to test
+     * @param person
+     *            to test
      * 
      * @return true if a guest user, false otherwise
      */
     public boolean isGuest(TemplateNode person)
     {
         ParameterCheck.mandatory("Person", person);
-        return this.authorityService.isGuestAuthority((String)person.getProperties().get(ContentModel.PROP_USERNAME));
+        return this.authorityService.isGuestAuthority((String) person.getProperties().get(ContentModel.PROP_USERNAME));
     }
-    
+
     /**
      * Gets a map of capabilities (boolean assertions) for the given person.
      * 
-     * @param person the person
+     * @param person
+     *            the person
      * @return the capability map
      */
     public Map<String, Boolean> getCapabilities(final TemplateNode person)
@@ -298,8 +310,9 @@ public class People extends BaseTemplateProcessorExtension implements Initializi
 
     /**
      * Return true if the specified user account is enabled.
-     *  
-     * @param person to test
+     * 
+     * @param person
+     *            to test
      * 
      * @return true if account enabled, false if disabled
      */
@@ -317,19 +330,22 @@ public class People extends BaseTemplateProcessorExtension implements Initializi
     /**
      * Get Contained Authorities
      * 
-     * @param container  authority containers
-     * @param type       authority type to filter by
-     * @param recurse    recurse into sub-containers
+     * @param container
+     *            authority containers
+     * @param type
+     *            authority type to filter by
+     * @param recurse
+     *            recurse into sub-containers
      * 
      * @return contained authorities
      */
     private List<TemplateNode> getContainedAuthorities(TemplateNode container, AuthorityType type, boolean recurse)
     {
         List<TemplateNode> members = null;
-        
+
         if (container.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
         {
-            String groupName = (String)container.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
+            String groupName = (String) container.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
             Set<String> authorities = authorityService.getContainedAuthorities(type, groupName, !recurse);
             members = new ArrayList<TemplateNode>(authorities.size());
             for (String authority : authorities)
@@ -353,7 +369,7 @@ public class People extends BaseTemplateProcessorExtension implements Initializi
                 }
             }
         }
-        
-        return members != null ? members : Collections.<TemplateNode>emptyList();
+
+        return members != null ? members : Collections.<TemplateNode> emptyList();
     }
 }

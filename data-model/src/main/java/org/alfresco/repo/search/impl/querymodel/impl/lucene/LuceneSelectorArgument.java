@@ -35,8 +35,10 @@ public class LuceneSelectorArgument extends BaseSelectorArgument
 {
 
     /**
-     * @param name String
-     * @param selector String
+     * @param name
+     *            String
+     * @param selector
+     *            String
      */
     public LuceneSelectorArgument(String name, String selector)
     {

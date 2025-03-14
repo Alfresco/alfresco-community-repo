@@ -34,10 +34,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Test;
+
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
-import org.junit.Test;
 
 /**
  * Tests verifying {@link QueryHelper.QueryResolver} functionality based on {@link BasicQueryWalker}.
@@ -51,7 +52,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName=testValue)");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.EQUALS, false)).isTrue();
@@ -80,7 +81,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName > testValue)");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.GREATERTHAN, false)).isTrue();
@@ -92,7 +93,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName >= testValue)");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.GREATERTHANOREQUALS, false)).isTrue();
@@ -104,7 +105,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName < testValue)");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.LESSTHAN, false)).isTrue();
@@ -116,7 +117,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName <= testValue)");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.LESSTHANOREQUALS, false)).isTrue();
@@ -128,7 +129,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName BETWEEN (testValue, testValue2))");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.BETWEEN, false)).isTrue();
@@ -140,7 +141,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName IN (testValue, testValue2))");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.IN, false)).isTrue();
@@ -152,7 +153,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName MATCHES ('*Value'))");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.MATCHES, false)).isTrue();
@@ -164,7 +165,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(EXISTS (propName))");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.EXISTS, false)).isTrue();
@@ -176,7 +177,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(NOT propName=testValue)");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.EQUALS, true)).isTrue();
@@ -205,7 +206,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(NOT propName > testValue)");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.GREATERTHAN, true)).isTrue();
@@ -217,7 +218,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(NOT propName >= testValue)");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.GREATERTHANOREQUALS, true)).isTrue();
@@ -229,7 +230,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(NOT propName < testValue)");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.LESSTHAN, true)).isTrue();
@@ -241,7 +242,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(NOT propName <= testValue)");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.LESSTHANOREQUALS, true)).isTrue();
@@ -253,7 +254,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(NOT propName BETWEEN (testValue, testValue2))");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.BETWEEN, true)).isTrue();
@@ -265,7 +266,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(NOT propName IN (testValue, testValue2))");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.IN, true)).isTrue();
@@ -277,7 +278,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(NOT propName MATCHES ('*Value'))");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.MATCHES, true)).isTrue();
@@ -289,7 +290,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(NOT EXISTS (propName))");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.EXISTS, true)).isTrue();
@@ -301,7 +302,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName=testValue AND differentName>18)");
 
-        //when
+        // when
         final Throwable actualException = catchThrowable(() -> QueryHelper.resolve(query).getProperty("differentName"));
 
         assertThat(actualException).isInstanceOf(InvalidQueryException.class);
@@ -312,7 +313,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName=testValue AND differentName>18)");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).leniently().getProperty("differentName");
 
         assertThat(property.containsType(WhereClauseParser.EQUALS, false)).isFalse();
@@ -328,7 +329,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName=testValue)");
 
-        //when
+        // when
         final Throwable actualException = catchThrowable(() -> QueryHelper.resolve(query).getProperty("differentName"));
 
         assertThat(actualException).isInstanceOf(InvalidQueryException.class);
@@ -339,7 +340,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(EXISTS (prop/name/with/slashes))");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("prop/name/with/slashes");
 
         assertThat(property.containsType(WhereClauseParser.EXISTS, false)).isTrue();
@@ -351,7 +352,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName BETWEEN ('2012-01-01', '2012-12-31'))");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.BETWEEN, false)).isTrue();
@@ -363,7 +364,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName >= 18 AND propName < 65)");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper.resolve(query).getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.GREATERTHANOREQUALS, false)).isTrue();
@@ -377,7 +378,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName1 > 20 AND NOT propName2 MATCHES ('external*'))");
 
-        //when
+        // when
         final List<WhereProperty> property = QueryHelper.resolve(query).getProperties("propName1", "propName2");
 
         assertThat(property.get(0).containsType(WhereClauseParser.GREATERTHAN, false)).isTrue();
@@ -391,7 +392,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(NOT propName=testValue)");
 
-        //when
+        // when
         final Throwable actualException = catchThrowable(() -> QueryHelper.resolve(query).withoutNegations().getProperty("propName"));
 
         assertThat(actualException).isInstanceOf(InvalidQueryException.class);
@@ -402,7 +403,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName=testValue)");
 
-        //when
+        // when
         final WhereProperty actualProperty = QueryHelper.resolve(query).withoutNegations().getProperty("propName");
 
         assertThat(actualProperty.containsType(WhereClauseParser.EQUALS, false)).isTrue();
@@ -416,7 +417,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName=testValue OR propName BETWEEN (testValue2, testValue3))");
 
-        //when
+        // when
         final Throwable actualException = catchThrowable(() -> QueryHelper.resolve(query).getProperty("propName"));
 
         assertThat(actualException).isInstanceOf(InvalidQueryException.class);
@@ -427,11 +428,11 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName=testValue OR propName=testValue2)");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper
-            .resolve(query)
-            .usingOrOperator()
-            .getProperty("propName");
+                .resolve(query)
+                .usingOrOperator()
+                .getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.EQUALS, false)).isTrue();
         assertThat(property.getExpectedValuesFor(WhereClauseParser.EQUALS, false)).containsOnly("testValue", "testValue2");
@@ -442,11 +443,11 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName=testValue)");
 
-        //when
+        // when
         final Collection<String> propertyValues = QueryHelper
-            .resolve(query)
-            .usingWalker(new MapBasedQueryWalker(Set.of("propName"), null))
-            .getProperty("propName", WhereClauseParser.EQUALS, false);
+                .resolve(query)
+                .usingWalker(new MapBasedQueryWalker(Set.of("propName"), null))
+                .getProperty("propName", WhereClauseParser.EQUALS, false);
 
         assertThat(propertyValues).containsOnly("testValue");
     }
@@ -456,18 +457,22 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName=testValue OR propName=testValue2)");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper
-            .resolve(query)
-            .usingWalker(new BasicQueryWalker("propName")
-            {
-                @Override
-                public void or() {}
-                @Override
-                public void and() {throw UNSUPPORTED;}
-            })
-            .withoutNegations()
-            .getProperty("propName");
+                .resolve(query)
+                .usingWalker(new BasicQueryWalker("propName") {
+                    @Override
+                    public void or()
+                    {}
+
+                    @Override
+                    public void and()
+                    {
+                        throw UNSUPPORTED;
+                    }
+                })
+                .withoutNegations()
+                .getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.EQUALS, false)).isTrue();
         assertThat(property.getExpectedValuesFor(WhereClauseParser.EQUALS, false)).containsOnly("testValue", "testValue2");
@@ -478,7 +483,7 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName=testValue AND propName IN (testValue2, testValue3))");
 
-        //when
+        // when
         final Throwable actualException = catchThrowable(() -> QueryHelper.resolve(query).getProperty("propName"));
 
         assertThat(actualException).isInstanceOf(InvalidQueryException.class);
@@ -489,12 +494,12 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName=testValue OR propName IN (testValue2, testValue3))");
 
-        //when
+        // when
         final WhereProperty whereProperty = QueryHelper.resolve(query).usingOrOperator().getProperty("propName");
 
         assertThat(whereProperty).isNotNull();
         assertThat(whereProperty.getExpectedValuesForAllOf(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated())
-            .isEqualTo(Map.of(WhereClauseParser.EQUALS, Set.of("testValue"), WhereClauseParser.IN, Set.of("testValue2", "testValue3")));
+                .isEqualTo(Map.of(WhereClauseParser.EQUALS, Set.of("testValue"), WhereClauseParser.IN, Set.of("testValue2", "testValue3")));
     }
 
     @Test
@@ -502,10 +507,10 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName=testValue AND propName2 IN (testValue2, testValue3))");
 
-        //when
+        // when
         final List<WhereProperty> properties = QueryHelper
-            .resolve(query)
-            .getProperties("propName", "propName2");
+                .resolve(query)
+                .getProperties("propName", "propName2");
 
         assertThat(properties.get(0).containsType(WhereClauseParser.EQUALS, false)).isTrue();
         assertThat(properties.get(0).containsType(WhereClauseParser.IN, false)).isFalse();
@@ -522,10 +527,10 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName=testValue)");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper
-            .resolve(query)
-            .getProperty("propName");
+                .resolve(query)
+                .getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.EQUALS, false)).isTrue();
         assertThat(property.containsType(WhereClauseParser.IN, false)).isFalse();
@@ -538,10 +543,10 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName IN (testValue))");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper
-            .resolve(query)
-            .getProperty("propName");
+                .resolve(query)
+                .getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.EQUALS, false)).isFalse();
         assertThat(property.containsType(WhereClauseParser.IN, false)).isTrue();
@@ -554,13 +559,13 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName MATCHES (testValue))");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper
-            .resolve(query)
-            .getProperty("propName");
+                .resolve(query)
+                .getProperty("propName");
 
         assertThatExceptionOfType(InvalidQueryException.class)
-            .isThrownBy(() -> property.getExpectedValuesForAllOf(WhereClauseParser.EQUALS, WhereClauseParser.MATCHES));
+                .isThrownBy(() -> property.getExpectedValuesForAllOf(WhereClauseParser.EQUALS, WhereClauseParser.MATCHES));
     }
 
     @Test
@@ -568,10 +573,10 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName=testValue AND propName MATCHES (testValue))");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper
-            .resolve(query)
-            .getProperty("propName");
+                .resolve(query)
+                .getProperty("propName");
 
         assertThat(property.getExpectedValuesForAllOf(WhereClauseParser.EQUALS).skipNegated(WhereClauseParser.EQUALS)).containsOnly("testValue");
     }
@@ -581,10 +586,10 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(a=v1 AND b>18 AND b<=65 AND NOT c BETWEEN ('2012-01-01','2012-12-31') AND d IN (v1, v2) AND e MATCHES ('*@mail.com') AND EXISTS (f/g))");
 
-        //when
+        // when
         final List<WhereProperty> properties = QueryHelper
-            .resolve(query)
-            .getProperties("a", "b", "c", "d", "e", "f/g");
+                .resolve(query)
+                .getProperties("a", "b", "c", "d", "e", "f/g");
 
         assertThat(properties).hasSize(6);
         assertThat(properties.get(0).getExpectedValuesFor(WhereProperty.ClauseType.EQUALS)).containsOnly("v1");
@@ -603,11 +608,11 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(a=v1 OR b>18 OR b<=65 OR NOT c BETWEEN ('2012-01-01','2012-12-31') OR d IN (v1, v2) OR e MATCHES ('*@mail.com') OR EXISTS (f/g))");
 
-        //when
+        // when
         final List<WhereProperty> properties = QueryHelper
-            .resolve(query)
-            .usingOrOperator()
-            .getProperties("a", "b", "c", "d", "e", "f/g");
+                .resolve(query)
+                .usingOrOperator()
+                .getProperties("a", "b", "c", "d", "e", "f/g");
 
         assertThat(properties).hasSize(6);
         assertThat(properties.get(0).getExpectedValuesFor(WhereProperty.ClauseType.EQUALS)).containsOnly("v1");
@@ -626,10 +631,10 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName MATCHES (testValue))");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper
-            .resolve(query)
-            .getProperty("propName");
+                .resolve(query)
+                .getProperty("propName");
 
         assertThat(property.getExpectedValuesForAnyOf(WhereClauseParser.EQUALS, WhereClauseParser.MATCHES).skipNegated(WhereClauseParser.MATCHES)).containsOnly("testValue");
     }
@@ -639,13 +644,13 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName=testValue AND propName MATCHES (testValue))");
 
-        //when
+        // when
         final WhereProperty property = QueryHelper
-            .resolve(query)
-            .getProperty("propName");
+                .resolve(query)
+                .getProperty("propName");
 
         assertThatExceptionOfType(InvalidQueryException.class)
-            .isThrownBy(() -> property.getExpectedValuesForAnyOf(WhereClauseParser.IN));
+                .isThrownBy(() -> property.getExpectedValuesForAnyOf(WhereClauseParser.IN));
     }
 
     @Test
@@ -653,13 +658,13 @@ public class QueryResolverTest
     {
         final Query query = queryExtractor.getWhereClause("(propName MATCHES ('test*') OR propName MATCHES ('*value*'))");
 
-        //when
+        // when
         final Collection<String> expectedValues = QueryHelper
-            .resolve(query)
-            .usingOrOperator()
-            .getProperty("propName")
-            .getExpectedValuesFor(WhereClauseParser.MATCHES)
-            .skipNegated();
+                .resolve(query)
+                .usingOrOperator()
+                .getProperty("propName")
+                .getExpectedValuesFor(WhereClauseParser.MATCHES)
+                .skipNegated();
 
         assertThat(expectedValues).containsOnly("test*", "*value*");
     }

@@ -38,7 +38,7 @@ public abstract class AbstractStoreException extends RuntimeException
     private static final long serialVersionUID = 1315634811903555316L;
 
     private StoreRef storeRef;
-    
+
     public AbstractStoreException(StoreRef storeRef)
     {
         this(null, storeRef, null);

@@ -42,12 +42,12 @@ public class RMv22FileHoldReportCapabilityPatch extends CapabilityPatch
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.patch.common.CapabilityPatch#applyCapabilityPatch(org.alfresco.service.cmr.repository.NodeRef)
      */
-    protected void applyCapabilityPatch(NodeRef filePlan) 
+    protected void applyCapabilityPatch(NodeRef filePlan)
     {
         // add new capability
         addCapability(filePlan,
-                      "FileHoldReport",
-                      FilePlanRoleService.ROLE_ADMIN,
-                      FilePlanRoleService.ROLE_RECORDS_MANAGER);
+                "FileHoldReport",
+                FilePlanRoleService.ROLE_ADMIN,
+                FilePlanRoleService.ROLE_RECORDS_MANAGER);
     }
 }

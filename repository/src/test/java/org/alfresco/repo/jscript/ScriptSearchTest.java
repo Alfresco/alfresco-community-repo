@@ -26,6 +26,15 @@
 
 package org.alfresco.repo.jscript;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.*;
+
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetHelper;
 import org.alfresco.repo.search.impl.solr.facet.handler.AbstractFacetLabelDisplayHandler;
 import org.alfresco.repo.search.impl.solr.facet.handler.FacetLabel;
@@ -36,19 +45,12 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.Pair;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.*;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Elia Porciani
  */
-public class ScriptSearchTest {
+public class ScriptSearchTest
+{
 
     private Search SEARCH_SCRIPT;
     private String fieldFacet1;
@@ -59,7 +61,6 @@ public class ScriptSearchTest {
 
     private String TXT_LABEL = "TXT";
     private String PDF_LABEL = "PDF";
-
 
     @Before
     public void init()
@@ -74,7 +75,6 @@ public class ScriptSearchTest {
         SEARCH_SCRIPT = new Search();
         SEARCH_SCRIPT.setServiceRegistry(mockServiceRegistry());
     }
-
 
     private ServiceRegistry mockServiceRegistry()
     {
@@ -118,7 +118,7 @@ public class ScriptSearchTest {
         sp.setQueryConsistency(QueryConsistency.EVENTUAL);
         sp.addFieldFacet(new SearchParameters.FieldFacet(fieldFacet1));
         sp.addFieldFacet(new SearchParameters.FieldFacet(fieldFacet2));
-        Pair<Object[], Map<String,Object>> results = SEARCH_SCRIPT.queryResultMeta(sp, false);
+        Pair<Object[], Map<String, Object>> results = SEARCH_SCRIPT.queryResultMeta(sp, false);
         Map<String, Object> facets = (Map<String, Object>) results.getSecond().get("facets");
         List<Object> mimetypes = (List<Object>) facets.get(fieldFacet1);
         List<Object> modifiers = (List<Object>) facets.get(fieldFacet2);
@@ -141,25 +141,25 @@ public class ScriptSearchTest {
 
     }
 
-
     private class MimetypeOrderDisplayHandler extends AbstractFacetLabelDisplayHandler
     {
         public FacetLabel getDisplayLabel(String value)
         {
             Integer order;
             String label;
-            switch (value) {
-                case "txt":
-                    order = 1;
-                    label = TXT_LABEL;
-                    break;
-                case "pdf":
-                    order = 3;
-                    label = PDF_LABEL;
-                    break;
-                default:
-                    order = 100;
-                    label = value;
+            switch (value)
+            {
+            case "txt":
+                order = 1;
+                label = TXT_LABEL;
+                break;
+            case "pdf":
+                order = 3;
+                label = PDF_LABEL;
+                break;
+            default:
+                order = 100;
+                label = value;
             }
             return new FacetLabel(value, label, order);
         }

@@ -36,7 +36,7 @@ public class LDAPUserAccountStatusInterpreter extends AbstractDirectoryServiceUs
     {
         this.disabledAccountPropertyValue = disabledAccountPropertyValue;
     }
-    
+
     public void setAcceptNullArgument(boolean acceptNullArgument)
     {
         this.acceptNullArgument = acceptNullArgument;

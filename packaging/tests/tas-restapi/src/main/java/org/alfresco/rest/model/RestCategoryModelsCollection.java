@@ -32,4 +32,3 @@ public class RestCategoryModelsCollection extends RestModels<RestCategoryModel, 
 {
 
 }
- 

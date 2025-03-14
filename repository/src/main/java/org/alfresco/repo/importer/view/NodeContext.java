@@ -50,7 +50,6 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 
-
 /**
  * Maintains state about the currently imported node.
  * 
@@ -58,13 +57,13 @@ import org.alfresco.service.namespace.QName;
  *
  */
 public class NodeContext extends ElementContext
-    implements ImportNode
+        implements ImportNode
 {
     private ParentContext parentContext;
     private boolean isReference = false;
     private NodeRef nodeRef;
-    private String importId;        // unique identifier within import (optional)
-    private String uuid;            // unique identifier within repository
+    private String importId; // unique identifier within import (optional)
+    private String uuid; // unique identifier within repository
     private TypeDefinition typeDef;
     private String childName;
     private Map<QName, AspectDefinition> nodeAspects = new HashMap<QName, AspectDefinition>();
@@ -75,14 +74,16 @@ public class NodeContext extends ElementContext
     // permissions
     private boolean inherit = true;
     private List<AccessPermission> accessControlEntries = new ArrayList<AccessPermission>();
-    
 
     /**
      * Construct
      * 
-     * @param elementName QName
-     * @param parentContext ParentContext
-     * @param typeDef TypeDefinition
+     * @param elementName
+     *            QName
+     * @param parentContext
+     *            ParentContext
+     * @param typeDef
+     *            TypeDefinition
      */
     public NodeContext(QName elementName, ParentContext parentContext, TypeDefinition typeDef)
     {
@@ -93,134 +94,136 @@ public class NodeContext extends ElementContext
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.importer.ImportNode#getParentContext()
-     */
+     * 
+     * @see org.alfresco.repo.importer.ImportNode#getParentContext() */
     public ParentContext getParentContext()
     {
         return parentContext;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.importer.ImportNode#getTypeDefinition()
-     */
+     * 
+     * @see org.alfresco.repo.importer.ImportNode#getTypeDefinition() */
     public TypeDefinition getTypeDefinition()
     {
         return typeDef;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.importer.ImportNode#isReference()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.importer.ImportNode#isReference() */
     public boolean isReference()
     {
         return isReference;
     }
-    
+
     /**
-     * @param isReference  true => this is a node reference
+     * @param isReference
+     *            true => this is a node reference
      */
     public void setReference(boolean isReference)
     {
         this.isReference = isReference;
     }
-    
+
     /**
      * Set Type Definition
      * 
-     * @param typeDef TypeDefinition
+     * @param typeDef
+     *            TypeDefinition
      */
     public void setTypeDefinition(TypeDefinition typeDef)
     {
         this.typeDef = typeDef;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.importer.ImportNode#getNodeRef()
-     */
+     * 
+     * @see org.alfresco.repo.importer.ImportNode#getNodeRef() */
     public NodeRef getNodeRef()
     {
         return nodeRef;
     }
-    
+
     /**
-     * @param nodeRef  the node ref
+     * @param nodeRef
+     *            the node ref
      */
     public void setNodeRef(NodeRef nodeRef)
     {
         this.nodeRef = nodeRef;
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.alfresco.repo.importer.ImportNode#getUUID()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.importer.ImportNode#getUUID() */
     public String getUUID()
     {
         return uuid;
     }
-    
+
     /**
-     * @param uuid  uuid
+     * @param uuid
+     *            uuid
      */
     public void setUUID(String uuid)
     {
         this.uuid = uuid;
     }
-    
-    /*
-     *  (non-Javadoc)
-     * @see org.alfresco.repo.importer.ImportNode#getImportId()
-     */
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.importer.ImportNode#getImportId() */
     public String getImportId()
     {
         return importId;
     }
-    
+
     /**
-     * @param importId  import scoped id
+     * @param importId
+     *            import scoped id
      */
     public void setImportId(String importId)
     {
         this.importId = importId;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.importer.ImportNode#getChildName()
-     */
+     * 
+     * @see org.alfresco.repo.importer.ImportNode#getChildName() */
     public String getChildName()
     {
         return childName;
     }
-    
+
     /**
-     * @param childName  the child name
+     * @param childName
+     *            the child name
      */
     public void setChildName(String childName)
     {
         this.childName = childName;
     }
 
-    /*
-     * @param  inherit  determines if node inherits permissions from parent
-     */
+    /* @param inherit determines if node inherits permissions from parent */
     public void setInheritPermissions(boolean inherit)
     {
         this.inherit = inherit;
     }
-    
+
     /**
-     * @return  true => node inherits permissions from parent
+     * @return true => node inherits permissions from parent
      */
     public boolean getInheritPermissions()
     {
         return this.inherit;
     }
-    
+
     /**
      * Adds a collection property to the node
      * 
-     * @param property QName
+     * @param property
+     *            QName
      */
     public void addPropertyCollection(QName property)
     {
@@ -235,18 +238,19 @@ public class NodeContext extends ElementContext
                 return;
             }
         }
-        
+
         // create collection and assign to property
-        List<Serializable>values = new ArrayList<Serializable>();
-        nodeProperties.put(property, (Serializable)values);
+        List<Serializable> values = new ArrayList<Serializable>();
+        nodeProperties.put(property, (Serializable) values);
     }
-    
-    
+
     /**
      * Adds a property to the node
      * 
-     * @param property  the property name
-     * @param value  the property value
+     * @param property
+     *            the property name
+     * @param value
+     *            the property value
      */
     public void addProperty(QName property, Serializable value)
     {
@@ -269,7 +273,7 @@ public class NodeContext extends ElementContext
                 return;
             }
         }
-        
+
         // Handle single / multi-valued cases
         Serializable newValue = value;
         Serializable existingValue = nodeProperties.get(property);
@@ -278,52 +282,53 @@ public class NodeContext extends ElementContext
             if (existingValue instanceof Collection)
             {
                 // add to existing collection of values
-                ((Collection<Serializable>)existingValue).add(value);
+                ((Collection<Serializable>) existingValue).add(value);
                 newValue = existingValue;
             }
             else
             {
                 // convert single to multi-valued
-                List<Serializable>values = new ArrayList<Serializable>();
-                values.add((String)existingValue);
+                List<Serializable> values = new ArrayList<Serializable>();
+                values.add((String) existingValue);
                 values.add(value);
-                newValue = (Serializable)values;
+                newValue = (Serializable) values;
             }
         }
         nodeProperties.put(property, newValue);
     }
-    
+
     /**
      * Adds a property datatype to the node
      * 
-     * @param property  property name
-     * @param datatype  property datatype
+     * @param property
+     *            property name
+     * @param datatype
+     *            property datatype
      */
     public void addDatatype(QName property, DataTypeDefinition datatype)
     {
         propertyDatatypes.put(property, datatype);
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.importer.ImportNode#getPropertyDatatypes()
-     */
+     * 
+     * @see org.alfresco.repo.importer.ImportNode#getPropertyDatatypes() */
     public Map<QName, DataTypeDefinition> getPropertyDatatypes()
     {
         return propertyDatatypes;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.importer.ImportNode#getProperties()
-     */
+     * 
+     * @see org.alfresco.repo.importer.ImportNode#getProperties() */
     public Map<QName, Serializable> getProperties()
     {
         return nodeProperties;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.importer.ImportNode#getPropertyDataType(org.alfresco.service.namespace.QName)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.importer.ImportNode#getPropertyDataType(org.alfresco.service.namespace.QName) */
     public DataTypeDefinition getPropertyDataType(QName propertyName)
     {
         // get property datatype
@@ -338,11 +343,12 @@ public class NodeContext extends ElementContext
         }
         return valueDataType;
     }
-        
+
     /**
      * Adds an aspect to the node
      * 
-     * @param aspect  the aspect
+     * @param aspect
+     *            the aspect
      */
     public void addAspect(AspectDefinition aspect)
     {
@@ -351,10 +357,10 @@ public class NodeContext extends ElementContext
             nodeAspects.put(aspect.getName(), aspect);
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.importer.ImportNode#getNodeAspects()
-     */
+     * 
+     * @see org.alfresco.repo.importer.ImportNode#getNodeAspects() */
     public Set<QName> getNodeAspects()
     {
         return nodeAspects.keySet();
@@ -363,38 +369,41 @@ public class NodeContext extends ElementContext
     /**
      * Adds an Access Control Entry
      * 
-     * @param accessStatus AccessStatus
-     * @param authority String
-     * @param permission String
+     * @param accessStatus
+     *            AccessStatus
+     * @param authority
+     *            String
+     * @param permission
+     *            String
      */
     public void addAccessControlEntry(AccessStatus accessStatus, String authority, String permission)
     {
-       // Note: Map guest permission to Consumer permission - this is to handle the case where 
-       //       exports made against a pre 1.2 RC2 release
-       if (permission.equalsIgnoreCase("guest"))
-       {
-           permission = PermissionService.CONSUMER;
-       }
-      
-       ACE ace = new ACE(accessStatus, authority, permission);
-       accessControlEntries.add(ace);
+        // Note: Map guest permission to Consumer permission - this is to handle the case where
+        // exports made against a pre 1.2 RC2 release
+        if (permission.equalsIgnoreCase("guest"))
+        {
+            permission = PermissionService.CONSUMER;
+        }
+
+        ACE ace = new ACE(accessStatus, authority, permission);
+        accessControlEntries.add(ace);
     }
 
     /**
      * Gets the Access Control Entries
      * 
-     * @return  access control entries
+     * @return access control entries
      */
     public List<AccessPermission> getAccessControlEntries()
     {
         return accessControlEntries;
     }
-    
+
     /**
-     * Determine the type of definition (aspect, property, association) from the
-     * specified name
+     * Determine the type of definition (aspect, property, association) from the specified name
      * 
-     * @param defName QName
+     * @param defName
+     *            QName
      * @return the dictionary definition
      */
     public Object determineDefinition(QName defName)
@@ -410,11 +419,12 @@ public class NodeContext extends ElementContext
         }
         return def;
     }
-    
+
     /**
      * Determine if name referes to an aspect
      * 
-     * @param defName QName
+     * @param defName
+     *            QName
      * @return AspectDefinition
      */
     public AspectDefinition determineAspect(QName defName)
@@ -426,11 +436,12 @@ public class NodeContext extends ElementContext
         }
         return def;
     }
-    
+
     /**
      * Determine if name refers to a property
      * 
-     * @param defName QName
+     * @param defName
+     *            QName
      * @return PropertyDefinition
      */
     public PropertyDefinition determineProperty(QName defName)
@@ -459,11 +470,12 @@ public class NodeContext extends ElementContext
         }
         return def;
     }
-    
+
     /**
      * Determine if name referes to an association
      * 
-     * @param defName QName
+     * @param defName
+     *            QName
      * @return AssociationDefinition
      */
     public AssociationDefinition determineAssociation(QName defName)
@@ -475,28 +487,29 @@ public class NodeContext extends ElementContext
         }
         return def;
     }
-    
+
     /**
      * Determine if the provided class name is to be imported
      * 
-     * @param className  class to check (type or aspect)
-     * @return  true => import,  false => ignore on import
+     * @param className
+     *            class to check (type or aspect)
+     * @return true => import, false => ignore on import
      */
     private boolean isImportableClass(QName className)
     {
         return !getImporter().isExcludedClass(className);
     }
-    
+
     /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
+     * 
+     * @see java.lang.Object#toString() */
     @Override
     public String toString()
     {
-        return "NodeContext[childName=" + getChildName() + ",type=" + (typeDef == null ? "null" : typeDef.getName()) + ",nodeRef=" + nodeRef + 
-            ",aspects=" + nodeAspects.values() + ",parentContext=" + parentContext.toString() + "]";
+        return "NodeContext[childName=" + getChildName() + ",type=" + (typeDef == null ? "null" : typeDef.getName()) + ",nodeRef=" + nodeRef +
+                ",aspects=" + nodeAspects.values() + ",parentContext=" + parentContext.toString() + "]";
     }
- 
+
     /**
      * Access Control Entry
      */
@@ -505,7 +518,7 @@ public class NodeContext extends ElementContext
         private AccessStatus accessStatus;
         private String authority;
         private String permission;
-        
+
         public ACE(AccessStatus accessStatus, String authority, String permission)
         {
             this.accessStatus = accessStatus;
@@ -513,37 +526,33 @@ public class NodeContext extends ElementContext
             this.permission = permission;
         }
 
-        /*
-         *  (non-Javadoc)
-         * @see org.alfresco.service.cmr.security.AccessPermission#getPermission()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.service.cmr.security.AccessPermission#getPermission() */
         public String getPermission()
         {
             return permission;
         }
 
-        /*
-         *  (non-Javadoc)
-         * @see org.alfresco.service.cmr.security.AccessPermission#getAccessStatus()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.service.cmr.security.AccessPermission#getAccessStatus() */
         public AccessStatus getAccessStatus()
         {
             return accessStatus;
         }
-        
-        /*
-         *  (non-Javadoc)
-         * @see org.alfresco.service.cmr.security.AccessPermission#getAuthority()
-         */
+
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.service.cmr.security.AccessPermission#getAuthority() */
         public String getAuthority()
         {
             return authority;
         }
-        
-        /*
-         *  (non-Javadoc)
-         * @see org.alfresco.service.cmr.security.AccessPermission#getAuthorityType()
-         */
+
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.service.cmr.security.AccessPermission#getAuthorityType() */
         public AuthorityType getAuthorityType()
         {
             return null;
@@ -561,7 +570,7 @@ public class NodeContext extends ElementContext
 
         public boolean isSetDirectly()
         {
-           return true;
+            return true;
         }
     }
 

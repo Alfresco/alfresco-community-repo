@@ -48,9 +48,9 @@ public class HashStore
         try
         {
             hashStore.put(string,
-                          hash);
+                    hash);
             lookupStore.put(hash,
-                            string);
+                    string);
         }
         finally
         {

@@ -41,6 +41,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.commons.httpclient.HttpStatus;
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.rest.api.tests.RepoService.SiteInformation;
@@ -56,9 +60,6 @@ import org.alfresco.rest.api.tests.client.data.MemberOfSite;
 import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
-import org.apache.commons.httpclient.HttpStatus;
-import org.junit.Before;
-import org.junit.Test;
 
 public class TestPersonSites extends EnterpriseTestApi
 {
@@ -115,8 +116,7 @@ public class TestPersonSites extends EnterpriseTestApi
         final List<TestPerson> people = new ArrayList<TestPerson>(1);
 
         // Create some users
-        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
-        {
+        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -129,8 +129,7 @@ public class TestPersonSites extends EnterpriseTestApi
             }
         }, network1.getId());
 
-        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
-        {
+        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -146,8 +145,7 @@ public class TestPersonSites extends EnterpriseTestApi
         this.person21 = people.get(2);
 
         // ...and some sites
-        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-        {
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -171,7 +169,7 @@ public class TestPersonSites extends EnterpriseTestApi
                 site.inviteToSite(person11.getId(), SiteRole.SiteCollaborator);
                 sites.add(site);
 
-                //Special site for person removal
+                // Special site for person removal
                 site = network1.createSite(SiteVisibility.PRIVATE);
                 site.inviteToSite(person11.getId(), SiteRole.SiteConsumer);
                 sites.add(site);
@@ -180,16 +178,11 @@ public class TestPersonSites extends EnterpriseTestApi
         }, person12.getId(), network1.getId());
     }
 
-    // TODO switch to use V1 createSite (instead of RepoService) 
+    // TODO switch to use V1 createSite (instead of RepoService)
     private void initializeSites() throws Exception
     {
-        /*
-         * Create data for testing the site sorting. We create the sites as
-         * person31 and assign roles to person32. The list requests will be
-         * performed as person32.
-         */
-        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
-        {
+        /* Create data for testing the site sorting. We create the sites as person31 and assign roles to person32. The list requests will be performed as person32. */
+        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -199,8 +192,7 @@ public class TestPersonSites extends EnterpriseTestApi
             }
         }, network1.getId());
 
-        this.site1 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
-        {
+        this.site1 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>() {
             @Override
             public TestSite doWork() throws Exception
             {
@@ -211,8 +203,7 @@ public class TestPersonSites extends EnterpriseTestApi
             }
         }, person31.getId(), network1.getId());
 
-        this.site2 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
-        {
+        this.site2 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>() {
             @Override
             public TestSite doWork() throws Exception
             {
@@ -223,8 +214,7 @@ public class TestPersonSites extends EnterpriseTestApi
             }
         }, person31.getId(), network1.getId());
 
-        this.site3 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
-        {
+        this.site3 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>() {
             @Override
             public TestSite doWork() throws Exception
             {
@@ -244,8 +234,7 @@ public class TestPersonSites extends EnterpriseTestApi
             network4.create();
 
             // Create some users
-            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
-            {
+            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -256,8 +245,7 @@ public class TestPersonSites extends EnterpriseTestApi
             }, network4.getId());
 
             // ...and some sites
-            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-            {
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -283,15 +271,14 @@ public class TestPersonSites extends EnterpriseTestApi
     {
         Set<MemberOfSite> personSites = new TreeSet<MemberOfSite>();
 
-        //Get last site for use with personRemoveSite
+        // Get last site for use with personRemoveSite
         TestSite personRemoveSite = sites.get(sites.size() - 1);
         sites.remove(sites.size() - 1);
 
         personSites.addAll(network1.getSiteMemberships(person11.getId()));
 
         // Create some sites
-        personSites.addAll(TenantUtil.runAsUserTenant(new TenantRunAsWork<List<MemberOfSite>>()
-        {
+        personSites.addAll(TenantUtil.runAsUserTenant(new TenantRunAsWork<List<MemberOfSite>>() {
             @Override
             public List<MemberOfSite> doWork() throws Exception
             {
@@ -310,8 +297,7 @@ public class TestPersonSites extends EnterpriseTestApi
             }
         }, person11.getId(), network1.getId()));
 
-        personSites.addAll(TenantUtil.runAsUserTenant(new TenantRunAsWork<List<MemberOfSite>>()
-        {
+        personSites.addAll(TenantUtil.runAsUserTenant(new TenantRunAsWork<List<MemberOfSite>>() {
             @Override
             public List<MemberOfSite> doWork() throws Exception
             {
@@ -457,7 +443,7 @@ public class TestPersonSites extends EnterpriseTestApi
         }
 
         {
-            //Tests removing a person from the site
+            // Tests removing a person from the site
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
             sitesProxy.remove("people", person11.getId(), "sites", personRemoveSite.getSiteId(), "Unable to DELETE a person site");
 
@@ -557,8 +543,7 @@ public class TestPersonSites extends EnterpriseTestApi
         }
 
         // get memberships
-        ListResponse<MemberOfSite> resp = TenantUtil.runAsUserTenant(new TenantRunAsWork<ListResponse<MemberOfSite>>()
-        {
+        ListResponse<MemberOfSite> resp = TenantUtil.runAsUserTenant(new TenantRunAsWork<ListResponse<MemberOfSite>>() {
             @Override
             public ListResponse<MemberOfSite> doWork() throws Exception
             {
@@ -572,8 +557,7 @@ public class TestPersonSites extends EnterpriseTestApi
     }
 
     /**
-     * Tests the capability to sort and paginate the site memberships associated
-     * to a user orderBy = title ASC skip = 1, count = 2
+     * Tests the capability to sort and paginate the site memberships associated to a user orderBy = title ASC skip = 1, count = 2
      *
      * @throws Exception
      */
@@ -598,8 +582,7 @@ public class TestPersonSites extends EnterpriseTestApi
     }
 
     /**
-     * Tests the capability to sort and paginate the site memberships associated
-     * to a user orderBy = title DESC skip = 1, count = 2
+     * Tests the capability to sort and paginate the site memberships associated to a user orderBy = title DESC skip = 1, count = 2
      *
      * @throws Exception
      */
@@ -623,8 +606,7 @@ public class TestPersonSites extends EnterpriseTestApi
     }
 
     /**
-     * Tests the capability to sort and paginate the site memberships associated
-     * to a user orderBy = role ASC skip = 1, count = 2
+     * Tests the capability to sort and paginate the site memberships associated to a user orderBy = role ASC skip = 1, count = 2
      *
      * @throws Exception
      */
@@ -648,8 +630,7 @@ public class TestPersonSites extends EnterpriseTestApi
     }
 
     /**
-     * Tests the capability to sort and paginate the site memberships associated
-     * to a user orderBy = role DESC skip = 1, count = 2
+     * Tests the capability to sort and paginate the site memberships associated to a user orderBy = role DESC skip = 1, count = 2
      *
      * @throws Exception
      */
@@ -673,8 +654,7 @@ public class TestPersonSites extends EnterpriseTestApi
     }
 
     /**
-     * Tests the capability to sort and paginate the site memberships associated
-     * to a user orderBy = id ASC skip = 1, count = 2
+     * Tests the capability to sort and paginate the site memberships associated to a user orderBy = id ASC skip = 1, count = 2
      *
      * @throws Exception
      */
@@ -698,8 +678,7 @@ public class TestPersonSites extends EnterpriseTestApi
     }
 
     /**
-     * Tests the capability to sort and paginate the site memberships associated
-     * to a user orderBy = id DESC skip = 1, count = 2
+     * Tests the capability to sort and paginate the site memberships associated to a user orderBy = id DESC skip = 1, count = 2
      *
      * @throws Exception
      */
@@ -723,8 +702,7 @@ public class TestPersonSites extends EnterpriseTestApi
     }
 
     /**
-     * Tests the capability to sort and paginate the site memberships associated
-     * default sorting (title asc), all results
+     * Tests the capability to sort and paginate the site memberships associated default sorting (title asc), all results
      *
      * @throws Exception
      */
@@ -773,8 +751,7 @@ public class TestPersonSites extends EnterpriseTestApi
         final String site4_title = site3_title; // Same title as site3
         final SiteRole site4_role = SiteRole.SiteCollaborator;
 
-        TestSite site4 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
-        {
+        TestSite site4 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>() {
             @Override
             public TestSite doWork() throws Exception
             {
@@ -838,8 +815,7 @@ public class TestPersonSites extends EnterpriseTestApi
         if (runAsUserTenant)
         {
             // get memberships
-            resp = TenantUtil.runAsUserTenant(new TenantRunAsWork<ListResponse<MemberOfSite>>()
-            {
+            resp = TenantUtil.runAsUserTenant(new TenantRunAsWork<ListResponse<MemberOfSite>>() {
                 @Override
                 public ListResponse<MemberOfSite> doWork() throws Exception
                 {
@@ -881,6 +857,7 @@ public class TestPersonSites extends EnterpriseTestApi
 
         return getSiteMembershipsForPersonAndNetwork(paging, params, person41, network4, runAsUserTenant);
     }
+
     private ListResponse<MemberOfSite> getSiteMembershipsForPerson41NOTWhere(final Paging paging, String siteVisibility, boolean runAsUserTenant) throws Exception
     {
         final Map<String, String> params = new HashMap<>();
@@ -893,7 +870,7 @@ public class TestPersonSites extends EnterpriseTestApi
 
         return getSiteMembershipsForPersonAndNetwork(paging, params, person41, network4, runAsUserTenant);
     }
-    
+
     private ListResponse<MemberOfSite> getSiteMembershipsForPerson41(final Paging paging, String siteVisibility) throws Exception
     {
         return getSiteMembershipsForPerson41(paging, siteVisibility, true);
@@ -978,7 +955,7 @@ public class TestPersonSites extends EnterpriseTestApi
     {
         try
         {
-        	getSiteMembershipsForPerson41NOTWhere(null, SiteVisibility.MODERATED.name(), false);
+            getSiteMembershipsForPerson41NOTWhere(null, SiteVisibility.MODERATED.name(), false);
             fail("");
         }
         catch (PublicApiException e)
@@ -986,7 +963,7 @@ public class TestPersonSites extends EnterpriseTestApi
             assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
         }
     }
-    
+
     @Test
     public void testGetSiteMembershipsWithWhereClause() throws Exception
     {

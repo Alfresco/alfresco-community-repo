@@ -27,25 +27,27 @@ package org.alfresco.rest.api.impl.rules;
 
 import static java.util.Collections.emptyList;
 
-import static org.alfresco.rest.api.impl.rules.RuleLoader.IS_SHARED;
-import static org.alfresco.rest.api.model.rules.RuleTrigger.OUTBOUND;
-import static org.alfresco.rest.api.model.rules.RuleTrigger.UPDATE;
-import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
+import static org.alfresco.rest.api.impl.rules.RuleLoader.IS_SHARED;
+import static org.alfresco.rest.api.model.rules.RuleTrigger.OUTBOUND;
+import static org.alfresco.rest.api.model.rules.RuleTrigger.UPDATE;
+import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+
 import java.util.List;
 
-import org.alfresco.rest.api.model.mapper.RestModelMapper;
-import org.alfresco.rest.api.model.rules.Rule;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.rule.RuleService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import org.alfresco.rest.api.model.mapper.RestModelMapper;
+import org.alfresco.rest.api.model.rules.Rule;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.rule.RuleService;
 
 /** Unit tests for {@link RuleLoader}. */
 @RunWith(MockitoJUnitRunner.class)
@@ -79,23 +81,23 @@ public class RuleLoaderTest
         final Rule restModelRule = getRestModelRule();
         given(ruleMapperMock.toRestModel(serviceRule)).willReturn(restModelRule);
 
-        //when
+        // when
         Rule rule = ruleLoader.loadRule(serviceRule, emptyList());
 
         Rule expected = Rule.builder().id(NODE_ID)
-                            .name(TITLE)
-                            .description(DESCRIPTION)
-                            .isEnabled(ENABLED)
-                            .isInheritable(INHERITABLE)
-                            .isAsynchronous(EXECUTE_ASYNCHRONOUSLY)
-                            .triggers(List.of(UPDATE, OUTBOUND)).create();
+                .name(TITLE)
+                .description(DESCRIPTION)
+                .isEnabled(ENABLED)
+                .isInheritable(INHERITABLE)
+                .isAsynchronous(EXECUTE_ASYNCHRONOUSLY)
+                .triggers(List.of(UPDATE, OUTBOUND)).create();
         assertThat(rule).isEqualTo(expected);
     }
 
     @Test
     public void testLoadRule_noExceptionWithNullInclude()
     {
-        //when
+        // when
         ruleLoader.loadRule(serviceRule, null);
 
         then(ruleMapperMock).should().toRestModel(serviceRule);

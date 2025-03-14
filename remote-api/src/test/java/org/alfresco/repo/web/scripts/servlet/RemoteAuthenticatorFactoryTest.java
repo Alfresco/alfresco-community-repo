@@ -33,9 +33,16 @@ import static org.mockito.Mockito.when;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.webscripts.Authenticator;
+import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
+import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
+import org.springframework.extensions.webscripts.servlet.WebScriptServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
@@ -49,13 +56,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.webscripts.Authenticator;
-import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
-import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
-import org.springframework.extensions.webscripts.servlet.WebScriptServletResponse;
 
 /**
  * 
@@ -64,7 +64,7 @@ import org.springframework.extensions.webscripts.servlet.WebScriptServletRespons
  */
 public class RemoteAuthenticatorFactoryTest
 {
-    private static final String[] contextLocations = new String[] {
+    private static final String[] contextLocations = new String[]{
             "classpath:alfresco/application-context.xml",
             "classpath:alfresco/web-scripts-application-context.xml",
             "classpath:alfresco/web-scripts-application-context-test.xml"
@@ -81,9 +81,9 @@ public class RemoteAuthenticatorFactoryTest
         ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(contextLocations);
         DefaultChildApplicationContextManager childApplicationContextManager = (DefaultChildApplicationContextManager) ctx.getBean("Authentication");
         remoteUserAuthenticatorFactory = (RemoteUserAuthenticatorFactory) ctx.getBean("webscripts.authenticator.remoteuser");
-        personService = (PersonService)ctx.getBean("PersonService");
-        transactionService = (TransactionService)ctx.getBean("TransactionService");
-        authenticationDAO = (MutableAuthenticationDao)ctx.getBean("authenticationDao");
+        personService = (PersonService) ctx.getBean("PersonService");
+        transactionService = (TransactionService) ctx.getBean("TransactionService");
+        authenticationDAO = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
 
         childApplicationContextManager.stop();
         childApplicationContextManager.setProperty("chain", "external1:external");
@@ -99,7 +99,7 @@ public class RemoteAuthenticatorFactoryTest
         properties.put(ContentModel.PROP_USERNAME, username);
         properties.put(ContentModel.PROP_FIRSTNAME, username);
         properties.put(ContentModel.PROP_LASTNAME, username);
-        if(!enabled)
+        if (!enabled)
         {
             properties.put(ContentModel.PROP_ENABLED, enabled);
         }
@@ -114,13 +114,11 @@ public class RemoteAuthenticatorFactoryTest
     @Test
     public void testDisabledUser() throws Exception
     {
-        final String username = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<String>()
-        {
+        final String username = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<String>() {
             @Override
             public String execute() throws Throwable
             {
-                return AuthenticationUtil.runAs(new RunAsWork<String>()
-                {
+                return AuthenticationUtil.runAs(new RunAsWork<String>() {
                     @Override
                     public String doWork() throws Exception
                     {
@@ -130,13 +128,11 @@ public class RemoteAuthenticatorFactoryTest
             }
         }, false, true);
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
-                return AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                return AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     @Override
                     public Void doWork() throws Exception
                     {
@@ -164,13 +160,11 @@ public class RemoteAuthenticatorFactoryTest
     @Test
     public void testEnabledUser() throws Exception
     {
-        final String username = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<String>()
-        {
+        final String username = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<String>() {
             @Override
             public String execute() throws Throwable
             {
-                return AuthenticationUtil.runAs(new RunAsWork<String>()
-                {
+                return AuthenticationUtil.runAs(new RunAsWork<String>() {
                     @Override
                     public String doWork() throws Exception
                     {
@@ -217,4 +211,3 @@ public class RemoteAuthenticatorFactoryTest
         assertTrue("The user should be auto created.", personService.personExists(username));
     }
 }
-

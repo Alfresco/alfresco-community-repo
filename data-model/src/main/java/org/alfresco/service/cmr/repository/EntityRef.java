@@ -32,8 +32,7 @@ import org.alfresco.api.AlfrescoPublicApi;
 /**
  * A marker interface for entity reference classes.
  * <p>
- * This is used primarily as a means of ensuring type safety in collections
- * of mixed type references.
+ * This is used primarily as a means of ensuring type safety in collections of mixed type references.
  * 
  * @see org.alfresco.service.cmr.repository.NodeService#removeChild(NodeRef, NodeRef)
  * 
@@ -41,5 +40,4 @@ import org.alfresco.api.AlfrescoPublicApi;
  */
 @AlfrescoPublicApi
 public interface EntityRef extends Serializable
-{
-}
+{}

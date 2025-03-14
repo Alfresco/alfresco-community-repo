@@ -36,7 +36,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
  *
  * @author janv
  */
-@RelationshipResource(name = "relation-b1-c1", entityResource= TypeA1toB1RelationshipResource.class, title = "Relation Type B1 to Type C1")
+@RelationshipResource(name = "relation-b1-c1", entityResource = TypeA1toB1RelationshipResource.class, title = "Relation Type B1 to Type C1")
 public class TypeB1toC1RelationshipResource implements RelationshipResourceAction.ReadById<TypeC1>
 {
     // GET /type-a1/a1/type-b1/b1/relation-b1-c1/c1

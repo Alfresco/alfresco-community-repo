@@ -30,6 +30,11 @@ import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.rules.ExternalResource;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -38,14 +43,9 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.rules.ExternalResource;
-import org.springframework.context.ApplicationContext;
 
 /**
- * A JUnit rule designed to help with the automatic cleanup of temporary models and to make it easier to
- * create common test models with JUnit code.
+ * A JUnit rule designed to help with the automatic cleanup of temporary models and to make it easier to create common test models with JUnit code.
  * 
  * @author Alex Miller
  * @since 4.2
@@ -53,46 +53,48 @@ import org.springframework.context.ApplicationContext;
 public class TemporaryModels extends ExternalResource
 {
     private static final Log logger = LogFactory.getLog(TemporaryModels.class);
-    
+
     private final ApplicationContextInit appContextRule;
-    
+
     private final Set<QName> loadedModels = new HashSet<QName>();
 
     /**
      * Constructs the rule with a reference to a {@link ApplicationContextInit rule} which can be used to retrieve the ApplicationContext.
      * 
-     * @param appContextRule a rule which can be used to retrieve the spring app context.
+     * @param appContextRule
+     *            a rule which can be used to retrieve the spring app context.
      */
     public TemporaryModels(ApplicationContextInit appContextRule)
     {
         this.appContextRule = appContextRule;
     }
-    
-    
-    @Override protected void before() throws Throwable
+
+    @Override
+    protected void before() throws Throwable
     {
         // Intentionally empty
     }
-    
-    @Override protected void after()
+
+    @Override
+    protected void after()
     {
         final RetryingTransactionHelper transactionHelper = getTransactionHelper();
         final DictionaryDAO dictionaryDAO = getDictionaryDAO();
-        
+
         // Run as system to ensure all non-system nodes can be deleted irrespective of which user created them.
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
-            @Override public Void doWork() throws Exception
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
+            @Override
+            public Void doWork() throws Exception
             {
-                transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-                {
-                    @Override public Void execute() throws Throwable
+                transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
+                    @Override
+                    public Void execute() throws Throwable
                     {
-                    	for (QName model : loadedModels)
-                    	{
-                    		dictionaryDAO.removeModel(model);
-                    	}
-                    	return null;
+                        for (QName model : loadedModels)
+                        {
+                            dictionaryDAO.removeModel(model);
+                        }
+                        return null;
                     }
                 });
                 return null;
@@ -100,14 +102,14 @@ public class TemporaryModels extends ExternalResource
         }, AuthenticationUtil.getSystemUserName());
     }
 
+    private RetryingTransactionHelper getTransactionHelper()
+    {
+        final ApplicationContext springContext = appContextRule.getApplicationContext();
 
-	private RetryingTransactionHelper getTransactionHelper() {
-		final ApplicationContext springContext = appContextRule.getApplicationContext();
-        
         final RetryingTransactionHelper transactionHelper = springContext.getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
-		return transactionHelper;
-	}
-    
+        return transactionHelper;
+    }
+
     public QName loadModel(String modelPath, ClassLoader classLoader)
     {
         InputStream modelStream = classLoader.getResourceAsStream(modelPath);
@@ -115,56 +117,56 @@ public class TemporaryModels extends ExternalResource
         {
             throw new DictionaryException("Could not find bootstrap model " + modelPath);
         }
-    	try
-    	{
-    		return loadModel(modelStream); 
-    	}
+        try
+        {
+            return loadModel(modelStream);
+        }
         finally
         {
             try
             {
                 modelStream.close();
-            } 
+            }
             catch (IOException ioe)
             {
-                logger.warn("Failed to close model input stream for '"+modelPath+"': "+ioe);
+                logger.warn("Failed to close model input stream for '" + modelPath + "': " + ioe);
             }
         }
     }
 
-    public QName loadModel(InputStream modelStream) 
+    public QName loadModel(InputStream modelStream)
     {
         try
         {
             final M2Model model = M2Model.createModel(modelStream);
-            
+
             return loadModel(model);
         }
-        catch(DictionaryException e)
+        catch (DictionaryException e)
         {
             throw new DictionaryException("Could not import model", e);
         }
-	
+
     }
 
-
-	private QName loadModel(final M2Model model) {
+    private QName loadModel(final M2Model model)
+    {
         if (logger.isDebugEnabled())
         {
-            logger.debug("Loading model: "+model.getName());
+            logger.debug("Loading model: " + model.getName());
         }
-        
+
         final DictionaryDAO dictionaryDAO = getDictionaryDAO();
-		QName modelQName = dictionaryDAO.putModel(model);
-		loadedModels.add(modelQName);
-		return modelQName;
-	}
+        QName modelQName = dictionaryDAO.putModel(model);
+        loadedModels.add(modelQName);
+        return modelQName;
+    }
 
-
-	private DictionaryDAO getDictionaryDAO() {
-		final ApplicationContext springContext = appContextRule.getApplicationContext();
+    private DictionaryDAO getDictionaryDAO()
+    {
+        final ApplicationContext springContext = appContextRule.getApplicationContext();
 
         DictionaryDAO dictionaryDAO = springContext.getBean("dictionaryDAO", DictionaryDAO.class);
-		return dictionaryDAO;
-	}
+        return dictionaryDAO;
+    }
 }

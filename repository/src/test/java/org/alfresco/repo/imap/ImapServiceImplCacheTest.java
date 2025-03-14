@@ -30,7 +30,10 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.icegreen.greenmail.store.SimpleStoredMessage;
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
@@ -50,14 +53,9 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.config.RepositoryFolderConfigBean;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-
-import com.icegreen.greenmail.store.SimpleStoredMessage;
 
 /**
- * Unit test for cache implementation in the ImapServiceImpl. Based on ImapServiceImplTest, but
- * we need this separate test because we need to get transactions to commit to trigger behaviours in ImapServiceImpl.
+ * Unit test for cache implementation in the ImapServiceImpl. Based on ImapServiceImplTest, but we need this separate test because we need to get transactions to commit to trigger behaviours in ImapServiceImpl.
  * 
  * @author ArsenyKo
  */
@@ -77,11 +75,11 @@ public class ImapServiceImplCacheTest extends TestCase
     private FileFolderService fileFolderService;
     private ContentService contentService;
     private FileInfo oldFile;
-    
+
     private ImapService imapService;
 
     private NodeRef testImapFolderNodeRef;
-    
+
     @Override
     public void setUp() throws Exception
     {
@@ -94,7 +92,7 @@ public class ImapServiceImplCacheTest extends TestCase
         namespaceService = serviceRegistry.getNamespaceService();
         fileFolderService = serviceRegistry.getFileFolderService();
         contentService = serviceRegistry.getContentService();
-        
+
         authenticationService.authenticate(USER_NAME, USER_PASSWORD.toCharArray());
 
         String storePath = "workspace://SpacesStore";
@@ -109,24 +107,24 @@ public class ImapServiceImplCacheTest extends TestCase
 
         ChildApplicationContextFactory imap = (ChildApplicationContextFactory) ctx.getBean("imap");
         ApplicationContext imapCtx = imap.getApplicationContext();
-        final ImapServiceImpl imapServiceImpl = (ImapServiceImpl)imapCtx.getBean("imapService");
+        final ImapServiceImpl imapServiceImpl = (ImapServiceImpl) imapCtx.getBean("imapService");
 
         // Creating IMAP test folder for IMAP root
         LinkedList<String> folders = new LinkedList<String>();
         folders.add(TEST_IMAP_FOLDER_NAME);
         FileInfo folder = FileFolderUtil.makeFolders(fileFolderService, companyHomeNodeRef, folders, ContentModel.TYPE_FOLDER);
         oldFile = fileFolderService.create(folder.getNodeRef(), "oldFile", ContentModel.TYPE_CONTENT);
-        
+
         // Setting IMAP root
         RepositoryFolderConfigBean imapHome = new RepositoryFolderConfigBean();
         imapHome.setStore(storePath);
         imapHome.setRootPath(companyHomePathInStore);
         imapHome.setFolderPath(NamespaceService.CONTENT_MODEL_PREFIX + ":" + TEST_IMAP_FOLDER_NAME);
         imapServiceImpl.setImapHome(imapHome);
-        
+
         // Starting IMAP
         imapServiceImpl.startupInTxn(true);
-        
+
         nodeRefs = searchService.selectNodes(storeRootNodeRef,
                 companyHomePathInStore + "/" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + TEST_IMAP_FOLDER_NAME,
                 null,
@@ -141,24 +139,23 @@ public class ImapServiceImplCacheTest extends TestCase
         fileFolderService.delete(testImapFolderNodeRef);
     }
 
-    
     public void testRepoBehaviourWithFoldersCache() throws Exception
     {
         AlfrescoImapUser localUser = new AlfrescoImapUser(USER_NAME + "@alfresco.com", USER_NAME, USER_PASSWORD);
         String folderName = "ALF9361";
         String mailbox = "Alfresco IMAP" + AlfrescoImapConst.HIERARCHY_DELIMITER +
-                         TEST_IMAP_FOLDER_NAME + AlfrescoImapConst.HIERARCHY_DELIMITER +
-                         folderName;
+                TEST_IMAP_FOLDER_NAME + AlfrescoImapConst.HIERARCHY_DELIMITER +
+                folderName;
         int contentItemsCount = 3;
         // Create a tree like ALF9361/ALF9361_0/sub_0
         // Mailbox path with default mount point should be like 'Alfresco IMAP/aaa/ALF9361/ALF9361_0/sub_0
         FileInfo localRootFolder = fileFolderService.create(testImapFolderNodeRef, folderName, ContentModel.TYPE_FOLDER);
         List<FileInfo> subFolders = new ArrayList<FileInfo>(10);
-        for(int i = 0; i < 3; i++)
+        for (int i = 0; i < 3; i++)
         {
             String childMailbox = folderName + "_" + i;
             FileInfo subFolder = fileFolderService.create(localRootFolder.getNodeRef(), childMailbox, ContentModel.TYPE_FOLDER);
-            for(int j = 0; j < 3; j++)
+            for (int j = 0; j < 3; j++)
             {
                 String subChildMailbox = "sub_" + j;
                 fileFolderService.create(subFolder.getNodeRef(), subChildMailbox, ContentModel.TYPE_FOLDER);
@@ -186,8 +183,8 @@ public class ImapServiceImplCacheTest extends TestCase
         long uidValidity = folder.getUidValidity();
         assertTrue("UIDVALIDITY wasn't incremented", (uidValidity - uidValidityBefore) > 0);
         // Delete first childMailbox 'ALF9361/ALF9361_0'
-        //System.out.println(" --------------------- DELETE FOLDER --------------------");
-        //System.out.println(" Parent " + localRootFolder.getNodeRef());
+        // System.out.println(" --------------------- DELETE FOLDER --------------------");
+        // System.out.println(" Parent " + localRootFolder.getNodeRef());
         fileFolderService.delete(subFolders.get(0).getNodeRef());
         uidValidityBefore = uidValidity;
         // Try to get deleted child
@@ -202,7 +199,7 @@ public class ImapServiceImplCacheTest extends TestCase
             // expected
         }
         // Try to get deleted sub child. If the cache wasn't invalidated we will get it
-        // But it should be connected to AlfrescoImapFolder.isStale() method. 
+        // But it should be connected to AlfrescoImapFolder.isStale() method.
         // ArsenyKo: I think we should avoid repo API invocation like isStale...
         try
         {
@@ -219,29 +216,29 @@ public class ImapServiceImplCacheTest extends TestCase
         SimpleStoredMessage message = folder.getMessages().get(0);
         AbstractMimeMessage alfrescoMessage = (AbstractMimeMessage) message.getMimeMessage();
         long uid = message.getUid();
-        //System.out.println(" --------------------- DELETE FILE --------------------");
-        //System.out.println(" Parent " + folder.getFolderInfo().getNodeRef());
+        // System.out.println(" --------------------- DELETE FILE --------------------");
+        // System.out.println(" Parent " + folder.getFolderInfo().getNodeRef());
         // Delete a content
         fileFolderService.delete(alfrescoMessage.getMessageInfo().getNodeRef());
         // Get a folder once again. We expect that the folder would be retrieved from the repo,
         // since its' cache should be invalidated
         folder = imapService.getOrCreateMailbox(localUser, mailbox, true, false);
         // Additional check whether messages cache is valid. Messages cache should be recreated
-        //with the new inctance of AlfrescoImapMessage
+        // with the new inctance of AlfrescoImapMessage
         assertTrue("Messages cache is stale", contentItemsCount > folder.getMessageCount());
         long[] uids = folder.getMessageUids();
         Arrays.sort(uids);
         assertFalse("Messages msn cache is stale", Arrays.binarySearch(uids, uid) > 0);
         assertNull("Message is still in the messages cache", folder.getMessage(uid));
-        //System.out.println(" --------------------- THE END --------------------");
+        // System.out.println(" --------------------- THE END --------------------");
         fileFolderService.delete(localRootFolder.getNodeRef());
-        
+
     }
-    
+
     private List<FileInfo> createTestContent(FileInfo parent, int count)
     {
         List<FileInfo> result = new ArrayList<FileInfo>(count);
-        for(int i = 0; i < count; i++)
+        for (int i = 0; i < count; i++)
         {
             FileInfo contentItem = fileFolderService.create(parent.getNodeRef(), "content_" + i, ContentModel.TYPE_CONTENT, ContentModel.ASSOC_CONTAINS);
             ContentWriter contentWriter = contentService.getWriter(contentItem.getNodeRef(), ContentModel.PROP_CONTENT, false);
@@ -250,6 +247,5 @@ public class ImapServiceImplCacheTest extends TestCase
         }
         return result;
     }
-    
 
 }

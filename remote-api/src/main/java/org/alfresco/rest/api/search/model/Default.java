@@ -25,10 +25,10 @@
  */
 package org.alfresco.rest.api.search.model;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.List;
 
 /**
  * POJO class representing the search Defaults
@@ -42,11 +42,11 @@ public class Default
     private final String defaultFieldName;
 
     @JsonCreator
-    public Default(@JsonProperty("textAttributes")  List<String> textAttributes,
-                   @JsonProperty("defaultFTSOperator")  String defaultFTSOperator,
-                   @JsonProperty("defaultFTSFieldOperator")  String defaultFTSFieldOperator,
-                   @JsonProperty("namespace")  String namespace,
-                   @JsonProperty("defaultFieldName")  String defaultFieldName)
+    public Default(@JsonProperty("textAttributes") List<String> textAttributes,
+            @JsonProperty("defaultFTSOperator") String defaultFTSOperator,
+            @JsonProperty("defaultFTSFieldOperator") String defaultFTSFieldOperator,
+            @JsonProperty("namespace") String namespace,
+            @JsonProperty("defaultFieldName") String defaultFieldName)
     {
         this.textAttributes = textAttributes;
         this.defaultFTSOperator = defaultFTSOperator;

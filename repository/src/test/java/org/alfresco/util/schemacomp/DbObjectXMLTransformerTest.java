@@ -25,14 +25,14 @@
  */
 package org.alfresco.util.schemacomp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.columns;
 import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.fk;
 import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.fkeys;
 import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.indexes;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -44,7 +44,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
-
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -52,6 +51,9 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import org.alfresco.util.schemacomp.model.Column;
 import org.alfresco.util.schemacomp.model.ForeignKey;
@@ -62,8 +64,6 @@ import org.alfresco.util.schemacomp.model.Sequence;
 import org.alfresco.util.schemacomp.model.Table;
 import org.alfresco.util.schemacomp.validator.DbValidator;
 import org.alfresco.util.schemacomp.validator.NameValidator;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * Tests for the {@link DbObjectXMLTransformer} class.
@@ -76,10 +76,10 @@ public class DbObjectXMLTransformerTest
     private TransformerHandler xmlOut;
     private Writer writer;
     private boolean outputDumpEnabled = true;
-    
+
     @Before
     public void setUp()
-    {   
+    {
         final SAXTransformerFactory stf = (SAXTransformerFactory) TransformerFactory.newInstance();
         try
         {
@@ -100,14 +100,13 @@ public class DbObjectXMLTransformerTest
         }
         t.setOutputProperty(OutputKeys.INDENT, "yes");
         t.setOutputProperty(OutputKeys.STANDALONE, "no");
-    
+
         writer = new StringWriter();
         xmlOut.setResult(new StreamResult(writer));
-        
-        transformer = new DbObjectXMLTransformer(xmlOut);        
+
+        transformer = new DbObjectXMLTransformer(xmlOut);
     }
-    
-    
+
     @Test
     public void transformColumn() throws IOException
     {
@@ -115,26 +114,25 @@ public class DbObjectXMLTransformerTest
         column.setAutoIncrement(true);
         column.setOrder(2);
         transformer.output(column);
-        
+
         BufferedReader reader = new BufferedReader(new StringReader(writer.toString()));
         dumpOutput();
         assertHasPreamble(reader);
         assertEquals("<column name=\"last_name\" order=\"2\">", reader.readLine());
         assertEquals("  <type>VARCHAR2(100)</type>", reader.readLine());
-        assertEquals("  <nullable>true</nullable>", reader.readLine());        
-        assertEquals("  <autoincrement>true</autoincrement>", reader.readLine());        
+        assertEquals("  <nullable>true</nullable>", reader.readLine());
+        assertEquals("  <autoincrement>true</autoincrement>", reader.readLine());
         assertEquals("</column>", reader.readLine());
     }
-    
-    
+
     @Test
     public void transformForeignKey() throws IOException
     {
-        ForeignKey fk = new ForeignKey(null, "fk_for_some_table", 
-                    "local_column", "target_table", "target_column");
-        
+        ForeignKey fk = new ForeignKey(null, "fk_for_some_table",
+                "local_column", "target_table", "target_column");
+
         transformer.output(fk);
-        
+
         BufferedReader reader = new BufferedReader(new StringReader(writer.toString()));
         dumpOutput();
         assertHasPreamble(reader);
@@ -145,59 +143,57 @@ public class DbObjectXMLTransformerTest
         assertEquals("</foreignkey>", reader.readLine());
     }
 
-    
     @Test
     public void transformIndex() throws IOException
     {
         Index index = new Index(null, "index_name", Arrays.asList("first", "second"));
-        
+
         transformer.output(index);
-        
+
         BufferedReader reader = new BufferedReader(new StringReader(writer.toString()));
         dumpOutput();
         assertHasPreamble(reader);
         assertEquals("<index name=\"index_name\" unique=\"false\">", reader.readLine());
         assertEquals("  <columnnames>", reader.readLine());
         assertEquals("    <columnname>first</columnname>", reader.readLine());
-        assertEquals("    <columnname>second</columnname>", reader.readLine());                
+        assertEquals("    <columnname>second</columnname>", reader.readLine());
         assertEquals("  </columnnames>", reader.readLine());
         assertEquals("</index>", reader.readLine());
     }
-    
-    
+
     @Test
     public void transformPrimaryKey() throws IOException
     {
         PrimaryKey pk = new PrimaryKey(
-                    null,
-                    "pk_name",
-                    Arrays.asList("a_column", "b_column"),
-                    Arrays.asList(2, 1));
-        
+                null,
+                "pk_name",
+                Arrays.asList("a_column", "b_column"),
+                Arrays.asList(2, 1));
+
         transformer.output(pk);
-        
+
         BufferedReader reader = new BufferedReader(new StringReader(writer.toString()));
         dumpOutput();
         assertHasPreamble(reader);
-        assertEquals("<primarykey name=\"pk_name\">", reader.readLine());        
+        assertEquals("<primarykey name=\"pk_name\">", reader.readLine());
         assertEquals("  <columnnames>", reader.readLine());
         assertEquals("    <columnname order=\"2\">a_column</columnname>", reader.readLine());
-        assertEquals("    <columnname order=\"1\">b_column</columnname>", reader.readLine());                
+        assertEquals("    <columnname order=\"1\">b_column</columnname>", reader.readLine());
         assertEquals("  </columnnames>", reader.readLine());
         assertEquals("</primarykey>", reader.readLine());
     }
-    
+
     @Test
     public void transformSchemaNoColumnOrderCheck() throws IOException
     {
         Collection<Column> columns = columns("one VARCHAR2(100)", "two NUMBER(10)");
-        PrimaryKey pk = new PrimaryKey(null, "pk_for_my_table", Arrays.asList("id"), Arrays.asList(1)); 
+        PrimaryKey pk = new PrimaryKey(null, "pk_for_my_table", Arrays.asList("id"), Arrays.asList(1));
         Collection<ForeignKey> fks = fkeys(fk("fk_one", "lc", "tt", "tc"), fk("fk_two", "lc", "tt", "tc"));
         Collection<Index> indexes = indexes("index_one col1 col2", "index_two col3 col4");
-        
+
         Table tableOne = new Table(null, "table_one", columns, pk, fks, indexes);
         Table tableTwo = new Table(null, "table_two", columns, pk, fks, indexes);
-        
+
         Schema schema = new Schema("my_schema", "alf_", 132, false);
         schema.add(tableOne);
         schema.add(tableTwo);
@@ -205,17 +201,17 @@ public class DbObjectXMLTransformerTest
         schema.add(new Sequence(null, "sequence_two"));
         schema.add(new Sequence(null, "sequence_three"));
         schema.setValidators(new ArrayList<DbValidator>());
-        
+
         transformer.output(schema);
-        
+
         BufferedReader reader = new BufferedReader(new StringReader(writer.toString()));
         dumpOutput();
         assertHasPreamble(reader);
         assertEquals("<schema " +
-                     "xmlns=\"http://www.alfresco.org/repo/db-schema\" " + 
-                     "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " + 
-                     "xsi:schemaLocation=\"http://www.alfresco.org/repo/db-schema db-schema.xsd\" " + 
-                     "name=\"my_schema\" dbprefix=\"alf_\" version=\"132\" tablecolumnorder=\"false\">", reader.readLine());
+                "xmlns=\"http://www.alfresco.org/repo/db-schema\" " +
+                "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+                "xsi:schemaLocation=\"http://www.alfresco.org/repo/db-schema db-schema.xsd\" " +
+                "name=\"my_schema\" dbprefix=\"alf_\" version=\"132\" tablecolumnorder=\"false\">", reader.readLine());
         assertEquals("  <objects>", reader.readLine());
         skipUntilEnd("       {table}", reader);
         skipUntilEnd("       {table}", reader);
@@ -225,18 +221,18 @@ public class DbObjectXMLTransformerTest
         assertEquals("  </objects>", reader.readLine());
         assertEquals("</schema>", reader.readLine());
     }
-    
+
     @Test
     public void transformSchemaWithColumnOrderCheck() throws IOException
     {
         Collection<Column> columns = columns("one VARCHAR2(100)", "two NUMBER(10)");
-        PrimaryKey pk = new PrimaryKey(null, "pk_for_my_table", Arrays.asList("id"), Arrays.asList(1)); 
+        PrimaryKey pk = new PrimaryKey(null, "pk_for_my_table", Arrays.asList("id"), Arrays.asList(1));
         Collection<ForeignKey> fks = fkeys(fk("fk_one", "lc", "tt", "tc"), fk("fk_two", "lc", "tt", "tc"));
         Collection<Index> indexes = indexes("index_one col1 col2", "index_two col3 col4");
-        
+
         Table tableOne = new Table(null, "table_one", columns, pk, fks, indexes);
         Table tableTwo = new Table(null, "table_two", columns, pk, fks, indexes);
-        
+
         Schema schema = new Schema("my_schema", "alf_", 132, true);
         schema.add(tableOne);
         schema.add(tableTwo);
@@ -244,17 +240,17 @@ public class DbObjectXMLTransformerTest
         schema.add(new Sequence(null, "sequence_two"));
         schema.add(new Sequence(null, "sequence_three"));
         schema.setValidators(new ArrayList<DbValidator>());
-        
+
         transformer.output(schema);
-        
+
         BufferedReader reader = new BufferedReader(new StringReader(writer.toString()));
         dumpOutput();
         assertHasPreamble(reader);
         assertEquals("<schema " +
-                    "xmlns=\"http://www.alfresco.org/repo/db-schema\" " + 
-                    "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " + 
-                    "xsi:schemaLocation=\"http://www.alfresco.org/repo/db-schema db-schema.xsd\" " + 
-                    "name=\"my_schema\" dbprefix=\"alf_\" version=\"132\" tablecolumnorder=\"true\">", reader.readLine());
+                "xmlns=\"http://www.alfresco.org/repo/db-schema\" " +
+                "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+                "xsi:schemaLocation=\"http://www.alfresco.org/repo/db-schema db-schema.xsd\" " +
+                "name=\"my_schema\" dbprefix=\"alf_\" version=\"132\" tablecolumnorder=\"true\">", reader.readLine());
         assertEquals("  <objects>", reader.readLine());
         skipUntilEnd("       {table}", reader);
         skipUntilEnd("       {table}", reader);
@@ -264,32 +260,32 @@ public class DbObjectXMLTransformerTest
         assertEquals("  </objects>", reader.readLine());
         assertEquals("</schema>", reader.readLine());
     }
-    
+
     @Test
     public void transformSequence() throws IOException
     {
         Sequence sequence = new Sequence(null, "my_sequence");
-        
+
         transformer.output(sequence);
-        
+
         BufferedReader reader = new BufferedReader(new StringReader(writer.toString()));
         dumpOutput();
         assertHasPreamble(reader);
         assertEquals("<sequence name=\"my_sequence\"/>", reader.readLine());
     }
-    
+
     @Test
     public void transformTable() throws IOException
     {
         Collection<Column> columns = columns("one VARCHAR2(100)", "two NUMBER(10)");
-        PrimaryKey pk = new PrimaryKey(null, "pk_for_my_table", Arrays.asList("id"), Arrays.asList(1)); 
+        PrimaryKey pk = new PrimaryKey(null, "pk_for_my_table", Arrays.asList("id"), Arrays.asList(1));
         Collection<ForeignKey> fks = fkeys(fk("fk_one", "lc", "tt", "tc"), fk("fk_two", "lc", "tt", "tc"));
         Collection<Index> indexes = indexes("index_one col1 col2", "index_two col3 col4");
-        
+
         Table table = new Table(null, "my_table", columns, pk, fks, indexes);
-        
+
         transformer.output(table);
-        
+
         BufferedReader reader = new BufferedReader(new StringReader(writer.toString()));
         dumpOutput();
         assertHasPreamble(reader);
@@ -309,19 +305,20 @@ public class DbObjectXMLTransformerTest
         assertEquals("  </indexes>", reader.readLine());
         assertEquals("</table>", reader.readLine());
     }
-    
+
     /**
      * ALF-13979: empty table causes NPE during schema export.
-     * @throws IOException 
+     * 
+     * @throws IOException
      */
     @Test
     public void transformTableWithoutPrimaryKey() throws IOException
     {
         Table table = new Table("my_table");
         assertFalse(table.hasPrimaryKey());
-        
+
         transformer.output(table);
-        
+
         BufferedReader reader = new BufferedReader(new StringReader(writer.toString()));
         dumpOutput();
         assertHasPreamble(reader);
@@ -330,35 +327,35 @@ public class DbObjectXMLTransformerTest
         skipUntilEnd("  {indexes}", reader, true);
         assertEquals("</table>", reader.readLine());
     }
-    
+
     @Test
     public void transformObjectWithValidators() throws IOException
     {
         Collection<Column> columns = columns("one VARCHAR2(100)", "two NUMBER(10)");
-        PrimaryKey pk = new PrimaryKey(null, "pk_for_my_table", Arrays.asList("id"), Arrays.asList(1)); 
+        PrimaryKey pk = new PrimaryKey(null, "pk_for_my_table", Arrays.asList("id"), Arrays.asList(1));
         Collection<ForeignKey> fks = fkeys(fk("fk_one", "lc", "tt", "tc"), fk("fk_two", "lc", "tt", "tc"));
         Collection<Index> indexes = indexes("index_one col1 col2", "index_two col3 col4");
-        
+
         Table table = new Table(null, "my_table", columns, pk, fks, indexes);
-        
+
         NameValidator nameValidator = new NameValidator();
         nameValidator.setPattern(Pattern.compile("match_me_if_you_can"));
         List<DbValidator> validators = new ArrayList<DbValidator>();
         validators.add(nameValidator);
         table.setValidators(validators);
-        
+
         transformer.output(table);
-        
+
         BufferedReader reader = new BufferedReader(new StringReader(writer.toString()));
         dumpOutput();
         assertHasPreamble(reader);
         assertEquals("<table name=\"my_table\">", reader.readLine());
         assertEquals("  <validators>", reader.readLine());
-        assertEquals("    <validator class=\"org.alfresco.util.schemacomp.validator.NameValidator\">", reader.readLine());        
-        assertEquals("      <properties>", reader.readLine());        
-        assertEquals("        <property name=\"pattern\">match_me_if_you_can</property>", reader.readLine());        
-        assertEquals("      </properties>", reader.readLine());        
-        assertEquals("    </validator>", reader.readLine());        
+        assertEquals("    <validator class=\"org.alfresco.util.schemacomp.validator.NameValidator\">", reader.readLine());
+        assertEquals("      <properties>", reader.readLine());
+        assertEquals("        <property name=\"pattern\">match_me_if_you_can</property>", reader.readLine());
+        assertEquals("      </properties>", reader.readLine());
+        assertEquals("    </validator>", reader.readLine());
         assertEquals("  </validators>", reader.readLine());
         assertEquals("  <columns>", reader.readLine());
         skipUntilEnd("       {column}", reader);
@@ -375,12 +372,9 @@ public class DbObjectXMLTransformerTest
         assertEquals("  </indexes>", reader.readLine());
         assertEquals("</table>", reader.readLine());
     }
-    
-    
+
     /**
-     * Ignore lines that are tested elsewhere, e.g. ignore serialized Column objects
-     * in the context of a Table since we only need to know that there was text for a
-     * Column object in the right place - the actual Column text being tested in its own test.
+     * Ignore lines that are tested elsewhere, e.g. ignore serialized Column objects in the context of a Table since we only need to know that there was text for a Column object in the right place - the actual Column text being tested in its own test.
      * <p>
      * Leading and trailing spaces are ignored in the comparison.
      * 
@@ -396,15 +390,11 @@ public class DbObjectXMLTransformerTest
         // {mytag} becomes <mytag .../>
         if (emptyTag)
         {
-            textToFind = textToFind.trim().
-                                replace("{", "<").
-                                replace("}", ".*/>");            
+            textToFind = textToFind.trim().replace("{", "<").replace("}", ".*/>");
         }
         else
         {
-            textToFind = textToFind.trim().
-                                replace("{", "</").
-                                replace("}", ">");
+            textToFind = textToFind.trim().replace("{", "</").replace("}", ">");
         }
         try
         {
@@ -422,7 +412,7 @@ public class DbObjectXMLTransformerTest
         {
             throw new RuntimeException("Unable to skip text whilst looking for: " + textToFind, error);
         }
-            
+
     }
 
     private void skipUntilEnd(String textToFind, BufferedReader reader)

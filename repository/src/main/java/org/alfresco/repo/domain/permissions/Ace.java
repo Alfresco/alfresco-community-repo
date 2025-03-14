@@ -27,7 +27,6 @@ package org.alfresco.repo.domain.permissions;
 
 import org.alfresco.repo.security.permissions.ACEType;
 
-
 /**
  * Entity for <b>alf_access_control_entry</b> persistence.
  * 
@@ -37,10 +36,16 @@ import org.alfresco.repo.security.permissions.ACEType;
 public interface Ace
 {
     public Long getId();
+
     public Long getPermissionId();
+
     public Long getAuthorityId();
+
     public boolean isAllowed();
+
     public Integer getApplies();
+
     public Long getContextId();
+
     public ACEType getAceType();
 }

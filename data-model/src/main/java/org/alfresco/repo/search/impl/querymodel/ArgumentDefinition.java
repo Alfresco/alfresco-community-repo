@@ -34,10 +34,10 @@ import org.alfresco.service.namespace.QName;
 public interface ArgumentDefinition
 {
     public String getName();
-    
+
     public QName getType();
-    
+
     public Multiplicity getMutiplicity();
-    
+
     public boolean isMandatory();
 }

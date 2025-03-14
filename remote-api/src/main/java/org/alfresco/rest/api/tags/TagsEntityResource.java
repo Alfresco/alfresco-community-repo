@@ -28,6 +28,8 @@ package org.alfresco.rest.api.tags;
 import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.Tags;
 import org.alfresco.rest.api.model.Tag;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -38,11 +40,10 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
 
-@EntityResource(name="tags", title = "Tags")
+@EntityResource(name = "tags", title = "Tags")
 public class TagsEntityResource implements EntityResourceAction.Read<Tag>,
-	EntityResourceAction.ReadById<Tag>, EntityResourceAction.Update<Tag>, EntityResourceAction.Create<Tag>, EntityResourceAction.Delete, InitializingBean
+        EntityResourceAction.ReadById<Tag>, EntityResourceAction.Update<Tag>, EntityResourceAction.Create<Tag>, EntityResourceAction.Delete, InitializingBean
 {
     private Tags tags;
 
@@ -51,53 +52,51 @@ public class TagsEntityResource implements EntityResourceAction.Read<Tag>,
         this.tags = tags;
     }
 
-	@Override
+    @Override
     public void afterPropertiesSet()
     {
         ParameterCheck.mandatory("tags", this.tags);
     }
 
-	/**
-	 * Returns a paged list of all currently used tags in the store workspace://SpacesStore for the current tenant.
-	 * GET /tags
-	 */
-	@Override
-    @WebApiDescription(title="A paged list of all tags in the network.")
-	public CollectionWithPagingInfo<Tag> readAll(Parameters parameters)
-	{
-		return tags.getTags(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, parameters);
-	}
+    /**
+     * Returns a paged list of all currently used tags in the store workspace://SpacesStore for the current tenant. GET /tags
+     */
+    @Override
+    @WebApiDescription(title = "A paged list of all tags in the network.")
+    public CollectionWithPagingInfo<Tag> readAll(Parameters parameters)
+    {
+        return tags.getTags(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, parameters);
+    }
 
-	@Override
-    @WebApiDescription(title="Updates a tag by unique Id")
-	public Tag update(String id, Tag entity, Parameters parameters)
-	{
-		return tags.changeTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id, entity, parameters);
-	}
+    @Override
+    @WebApiDescription(title = "Updates a tag by unique Id")
+    public Tag update(String id, Tag entity, Parameters parameters)
+    {
+        return tags.changeTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id, entity, parameters);
+    }
 
-	@Override
-	public Tag readById(String id, Parameters parameters) throws EntityNotFoundException
-	{
-		return tags.getTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id, parameters);
-	}
+    @Override
+    public Tag readById(String id, Parameters parameters) throws EntityNotFoundException
+    {
+        return tags.getTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id, parameters);
+    }
 
-	/**
-	 * POST /tags
-	 */
-	@WebApiDescription(
-		title = "Create an orphan tag",
-		description = "Creates a tag, which is not associated with any node",
-		successStatus = HttpServletResponse.SC_CREATED
-	)
-	@Override
-	public List<Tag> create(List<Tag> tags, Parameters parameters)
-	{
-		return this.tags.createTags(tags, parameters);
-	}
+    /**
+     * POST /tags
+     */
+    @WebApiDescription(
+            title = "Create an orphan tag",
+            description = "Creates a tag, which is not associated with any node",
+            successStatus = HttpServletResponse.SC_CREATED)
+    @Override
+    public List<Tag> create(List<Tag> tags, Parameters parameters)
+    {
+        return this.tags.createTags(tags, parameters);
+    }
 
-	@Override
-	public void delete(String id, Parameters parameters)
-	{
-		tags.deleteTagById(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id);
-	}
+    @Override
+    public void delete(String id, Parameters parameters)
+    {
+        tags.deleteTagById(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id);
+    }
 }

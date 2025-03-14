@@ -25,13 +25,14 @@
  */
 package org.alfresco.rest.requests;
 
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.rest.model.RestTagModelsCollection;
-import org.springframework.http.HttpMethod;
 
 public class Tags extends ModelRequest<Tags>
 {
@@ -84,13 +85,11 @@ public class Tags extends ModelRequest<Tags>
     }
 
     /**
-     * Delete tag.
-     * - DELETE /tags/{tagId}
+     * Delete tag. - DELETE /tags/{tagId}
      */
     public void deleteTag()
     {
-        RestRequest request = RestRequest.
-                simpleRequest(HttpMethod.DELETE, "/tags/{tagId}", tag.getId());
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "/tags/{tagId}", tag.getId());
         restWrapper.processEmptyModel(request);
     }
 }

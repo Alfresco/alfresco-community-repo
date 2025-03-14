@@ -59,7 +59,7 @@ public class LockResourceEntity
     }
 
     /**
-     * @return                  Returns the ID of the namespace that the lock belongs to
+     * @return Returns the ID of the namespace that the lock belongs to
      */
     public Long getQnameNamespaceId()
     {
@@ -67,7 +67,8 @@ public class LockResourceEntity
     }
 
     /**
-     * @param namespaceId       the ID of the namespace that the lock belongs to
+     * @param namespaceId
+     *            the ID of the namespace that the lock belongs to
      */
     public void setQnameNamespaceId(Long namespaceId)
     {
@@ -75,7 +76,7 @@ public class LockResourceEntity
     }
 
     /**
-     * @return                  Returns the lock qualified name localname
+     * @return Returns the lock qualified name localname
      */
     public String getQnameLocalName()
     {
@@ -83,7 +84,8 @@ public class LockResourceEntity
     }
 
     /**
-     * @param qnameLocalName    the lock qualified name localname
+     * @param qnameLocalName
+     *            the lock qualified name localname
      */
     public void setQnameLocalName(String qnameLocalName)
     {

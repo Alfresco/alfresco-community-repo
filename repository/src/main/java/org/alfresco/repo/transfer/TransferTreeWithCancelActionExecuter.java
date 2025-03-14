@@ -54,9 +54,10 @@ public class TransferTreeWithCancelActionExecuter extends ActionExecuterAbstract
     public static final String NAME = "transfer-tree-with-cancel";
     private TransferService transferService;
     private ServiceRegistry serviceRegistry;
-    
+
     /**
-     * @param transferService the transferService to set
+     * @param transferService
+     *            the transferService to set
      */
     public void setTransferService(TransferService transferService)
     {
@@ -69,46 +70,44 @@ public class TransferTreeWithCancelActionExecuter extends ActionExecuterAbstract
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
-     */
+     * 
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef) */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         TransferTarget target = serviceRegistry.getTransactionService().getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionHelper.RetryingTransactionCallback<TransferTarget>()
-        {
-            public TransferTarget execute() throws Throwable
-            {
-                return TransferTestUtil.getTestTarget(transferService);
-            }
-        }, false, true);
-        
+                new RetryingTransactionHelper.RetryingTransactionCallback<TransferTarget>() {
+                    public TransferTarget execute() throws Throwable
+                    {
+                        return TransferTestUtil.getTestTarget(transferService);
+                    }
+                }, false, true);
+
         NodeCrawler crawler = new StandardNodeCrawlerImpl(serviceRegistry);
         crawler.setNodeFinders(new ChildAssociatedNodeFinder(ContentModel.ASSOC_CONTAINS));
         Set<NodeRef> nodes = crawler.crawl(actionedUponNodeRef);
         TransferDefinition td = new TransferDefinition();
         td.setNodes(nodes);
-        transferService.transferAsync(target.getName(), td, new TransferCallback(){
+        transferService.transferAsync(target.getName(), td, new TransferCallback() {
 
             private String transferId;
 
             public void processEvent(TransferEvent event)
             {
-                if (event instanceof TransferEventBegin) 
+                if (event instanceof TransferEventBegin)
                 {
-                    transferId = ((TransferEventBegin)event).getTransferId();
+                    transferId = ((TransferEventBegin) event).getTransferId();
                 }
                 else if (event instanceof TransferEventCommittingStatus)
                 {
                     transferService.cancelAsync(transferId);
                 }
             }
-            
+
         });
     }
 
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-    {
-    }
+    {}
 }

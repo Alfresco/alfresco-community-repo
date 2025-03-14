@@ -33,28 +33,28 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.transfer.NodeCrawler;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
  * @author brian
  * 
- * A node finder that searches for child nodes with the association specified.
+ *         A node finder that searches for child nodes with the association specified.
  * 
- * For example, could be used to find all children with the cm:contains relationship.
+ *         For example, could be used to find all children with the cm:contains relationship.
  * 
- <pre> 
-      NodeCrawler crawler = nodeCrawlerFactory.getNodeCrawler(); 
-      crawler.setNodeFinders(new ChildAssociatedNodeFinder(ContentModel.ASSOC_CONTAINS));
-      Set<NodeRef> crawledNodes = crawler.crawl(rootNode);
- </pre> 
+ *         <pre>
+ * 
+ *         NodeCrawler crawler = nodeCrawlerFactory.getNodeCrawler();
+ *         crawler.setNodeFinders(new ChildAssociatedNodeFinder(ContentModel.ASSOC_CONTAINS));
+ *         Set<NodeRef> crawledNodes = crawler.crawl(rootNode);
+ *         </pre>
+ * 
  * @see org.alfresco.service.cmr.transfer.NodeCrawlerFactory
  * 
  */
@@ -66,8 +66,7 @@ public class ChildAssociatedNodeFinder extends AbstractNodeFinder
     private List<QName> childAssociationTypes = new ArrayList<QName>();
 
     public ChildAssociatedNodeFinder()
-    {
-    }
+    {}
 
     public ChildAssociatedNodeFinder(Set<QName> associationTypeNames)
     {
@@ -105,12 +104,9 @@ public class ChildAssociatedNodeFinder extends AbstractNodeFinder
         this.exclude = exclude;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.service.cmr.transfer.NodeFinder#findFrom(org.alfresco.service.cmr.repository.NodeRef,
-     * org.alfresco.service.ServiceRegistry)
-     */
+     * @see org.alfresco.service.cmr.transfer.NodeFinder#findFrom(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.ServiceRegistry) */
     public Set<NodeRef> findFrom(NodeRef thisNode)
     {
         if (!initialised)
@@ -128,7 +124,8 @@ public class ChildAssociatedNodeFinder extends AbstractNodeFinder
     }
 
     /**
-     * @param thisNode NodeRef
+     * @param thisNode
+     *            NodeRef
      * @return Set<NodeRef>
      */
     private Set<NodeRef> processExcludedSet(NodeRef thisNode)

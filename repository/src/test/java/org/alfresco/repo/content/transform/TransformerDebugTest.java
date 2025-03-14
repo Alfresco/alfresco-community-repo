@@ -25,23 +25,22 @@
  */
 package org.alfresco.repo.content.transform;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.doReturn;
+
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
 import com.google.common.collect.ImmutableMap;
-import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.util.LogAdapter;
-import org.apache.commons.logging.Log;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.util.LogAdapter;
 
 public class TransformerDebugTest
 {
@@ -109,10 +108,8 @@ public class TransformerDebugTest
     @Test
     public void testSingleLevelTransformDebug()
     {
-        String expectedSingleLine =
-                "DEBUG 0 a    bbb  INFO filename1.a 1 KB nn ms transformerA2B -- renditionName1 -- ";
-        String expectedMultiLine =
-                "DEBUG 0               a    bbb  filename1.a 1 KB -- renditionName1 -- transformerA2B\n" +
+        String expectedSingleLine = "DEBUG 0 a    bbb  INFO filename1.a 1 KB nn ms transformerA2B -- renditionName1 -- ";
+        String expectedMultiLine = "DEBUG 0               a    bbb  filename1.a 1 KB -- renditionName1 -- transformerA2B\n" +
                 "DEBUG 0                 option1=\"value1\"\n" +
                 "DEBUG 0                 option2=\"value2\"\n" +
                 "DEBUG 0               workspace://SpacesStore/parent\n" +
@@ -127,10 +124,8 @@ public class TransformerDebugTest
         singleLineLogLevel.set(LogLevel.TRACE);
         multiLineLogLevel.set(LogLevel.TRACE);
 
-        String expectedSingleLine =
-                "DEBUG 0 a    bbb  INFO filename1.a 1 KB nn ms transformerA2B -- renditionName1 -- ";
-        String expectedMultiLine =
-                "TRACE 0               fromUrl1\n" +
+        String expectedSingleLine = "DEBUG 0 a    bbb  INFO filename1.a 1 KB nn ms transformerA2B -- renditionName1 -- ";
+        String expectedMultiLine = "TRACE 0               fromUrl1\n" +
                 "TRACE 0               mimetypeA mimetypeB\n" +
                 "DEBUG 0               a    bbb  filename1.a 1 KB -- renditionName1 -- transformerA2B\n" +
                 "DEBUG 0                 option1=\"value1\"\n" +
@@ -166,10 +161,8 @@ public class TransformerDebugTest
     @Test
     public void testMultiLevelTransformDebug()
     {
-        String expectedSingleLine =
-                "DEBUG 0 a    bbb  INFO filename1.a 1 KB nn ms transformerA2B -- renditionName1 -- ";
-        String expectedMultiLine =
-                "DEBUG 0               a    bbb  filename1.a 1 KB -- renditionName1 -- transformerA2B\n" +
+        String expectedSingleLine = "DEBUG 0 a    bbb  INFO filename1.a 1 KB nn ms transformerA2B -- renditionName1 -- ";
+        String expectedMultiLine = "DEBUG 0               a    bbb  filename1.a 1 KB -- renditionName1 -- transformerA2B\n" +
                 "DEBUG 0                 option1=\"value1\"\n" +
                 "DEBUG 0                 option2=\"value2\"\n" +
                 "DEBUG 0               workspace://SpacesStore/parent\n" +
@@ -186,12 +179,10 @@ public class TransformerDebugTest
         singleLineLogLevel.set(LogLevel.TRACE);
         multiLineLogLevel.set(LogLevel.TRACE);
 
-        String expectedSingleLine =
-                "TRACE 0.1             a    ccc  INFO filename1.a 1 KB nn ms transformerA2C -- renditionName1 -- \n" +
+        String expectedSingleLine = "TRACE 0.1             a    ccc  INFO filename1.a 1 KB nn ms transformerA2C -- renditionName1 -- \n" +
                 "TRACE 0.2             ccc  bbb  INFO filename1.a 1 KB nn ms transformerC2B -- renditionName1 -- \n" +
                 "DEBUG 0 a    bbb  INFO filename1.a 1 KB nn ms transformerA2B -- renditionName1 -- ";
-        String expectedMultiLine =
-                "TRACE 0               fromUrl1\n" +
+        String expectedMultiLine = "TRACE 0               fromUrl1\n" +
                 "TRACE 0               mimetypeA mimetypeB\n" +
                 "DEBUG 0               a    bbb  filename1.a 1 KB -- renditionName1 -- transformerA2B\n" +
                 "DEBUG 0                 option1=\"value1\"\n" +
@@ -252,34 +243,34 @@ public class TransformerDebugTest
     @Test
     public void testGetMimetypeExt()
     {
-        assertEquals(MIMETYPE_A_EXT  +"    ", transformerDebug.getMimetypeExt(MIMETYPE_A));
-        assertEquals(MIMETYPE_B_EXT    +"  ", transformerDebug.getMimetypeExt(MIMETYPE_B));
-        assertEquals(MIMETYPE_DOCX_EXT  +" ", transformerDebug.getMimetypeExt(MIMETYPE_DOCX));
-        assertEquals(MIMETYPE_LONGER_EXT+" ", transformerDebug.getMimetypeExt(MIMETYPE_LONGER)); // not padded to 4 spaces
+        assertEquals(MIMETYPE_A_EXT + "    ", transformerDebug.getMimetypeExt(MIMETYPE_A));
+        assertEquals(MIMETYPE_B_EXT + "  ", transformerDebug.getMimetypeExt(MIMETYPE_B));
+        assertEquals(MIMETYPE_DOCX_EXT + " ", transformerDebug.getMimetypeExt(MIMETYPE_DOCX));
+        assertEquals(MIMETYPE_LONGER_EXT + " ", transformerDebug.getMimetypeExt(MIMETYPE_LONGER)); // not padded to 4 spaces
 
-        assertEquals("unknown"          +" ", transformerDebug.getMimetypeExt("unknown"));       // not padded
-        assertEquals("x"                +" ", transformerDebug.getMimetypeExt("x"));             // not padded
+        assertEquals("unknown" + " ", transformerDebug.getMimetypeExt("unknown")); // not padded
+        assertEquals("x" + " ", transformerDebug.getMimetypeExt("x")); // not padded
     }
 
     @Test
     public void testSpaces()
     {
-        assertEquals("",        transformerDebug.spaces(-1));
-        assertEquals("",        transformerDebug.spaces(0));
-        assertEquals(" ",       transformerDebug.spaces(1));
-        assertEquals("   ",     transformerDebug.spaces(3));
-        assertEquals("     ",   transformerDebug.spaces(5));
+        assertEquals("", transformerDebug.spaces(-1));
+        assertEquals("", transformerDebug.spaces(0));
+        assertEquals(" ", transformerDebug.spaces(1));
+        assertEquals("   ", transformerDebug.spaces(3));
+        assertEquals("     ", transformerDebug.spaces(5));
     }
 
     @Test
     public void testMs()
     {
-        assertEquals("-1 ms",        transformerDebug.ms(-1));
-        assertEquals("0 ms",         transformerDebug.ms(0));
-        assertEquals("1 ms",         transformerDebug.ms(1));
-        assertEquals("2 ms",         transformerDebug.ms(2));
-        assertEquals("123 ms",       transformerDebug.ms(123));
-        assertEquals("1,234 ms",     transformerDebug.ms(1234));
+        assertEquals("-1 ms", transformerDebug.ms(-1));
+        assertEquals("0 ms", transformerDebug.ms(0));
+        assertEquals("1 ms", transformerDebug.ms(1));
+        assertEquals("2 ms", transformerDebug.ms(2));
+        assertEquals("123 ms", transformerDebug.ms(123));
+        assertEquals("1,234 ms", transformerDebug.ms(1234));
         assertEquals("3,600,000 ms", transformerDebug.ms(3600000));
     }
 
@@ -287,41 +278,41 @@ public class TransformerDebugTest
     public void testFileSize()
     {
         assertEquals("unlimited", transformerDebug.fileSize(-1));
-        assertEquals("0 bytes",   transformerDebug.fileSize(0));
-        assertEquals("1 byte",    transformerDebug.fileSize(1));
-        assertEquals("2 bytes",   transformerDebug.fileSize(2));
-        assertEquals("2 KB",      transformerDebug.fileSize(2L*1024));
-        assertEquals("3 MB",      transformerDebug.fileSize(3L*1024*1024));
-        assertEquals("4 GB",      transformerDebug.fileSize(4L*1024*1024*1024));
-        assertEquals("5 TB",      transformerDebug.fileSize(5L*1024*1024*1024*1024));
+        assertEquals("0 bytes", transformerDebug.fileSize(0));
+        assertEquals("1 byte", transformerDebug.fileSize(1));
+        assertEquals("2 bytes", transformerDebug.fileSize(2));
+        assertEquals("2 KB", transformerDebug.fileSize(2L * 1024));
+        assertEquals("3 MB", transformerDebug.fileSize(3L * 1024 * 1024));
+        assertEquals("4 GB", transformerDebug.fileSize(4L * 1024 * 1024 * 1024));
+        assertEquals("5 TB", transformerDebug.fileSize(5L * 1024 * 1024 * 1024 * 1024));
 
-        assertEquals("1.4 KB",    transformerDebug.fileSize(1L*1024 + 511));
-        assertEquals("1.5 KB",    transformerDebug.fileSize(1L*1024 + 512));
-        assertEquals("1.9 KB",    transformerDebug.fileSize(2L*1024 - 1));
+        assertEquals("1.4 KB", transformerDebug.fileSize(1L * 1024 + 511));
+        assertEquals("1.5 KB", transformerDebug.fileSize(1L * 1024 + 512));
+        assertEquals("1.9 KB", transformerDebug.fileSize(2L * 1024 - 1));
 
-        assertEquals("2.9 MB",      transformerDebug.fileSize(3L*1024*1024           - 1));
-        assertEquals("3.9 GB",      transformerDebug.fileSize(4L*1024*1024*1024      - 1));
-        assertEquals("4.9 TB",      transformerDebug.fileSize(5L*1024*1024*1024*1024 - 1));
+        assertEquals("2.9 MB", transformerDebug.fileSize(3L * 1024 * 1024 - 1));
+        assertEquals("3.9 GB", transformerDebug.fileSize(4L * 1024 * 1024 * 1024 - 1));
+        assertEquals("4.9 TB", transformerDebug.fileSize(5L * 1024 * 1024 * 1024 * 1024 - 1));
     }
 
     @Test
     public void testGetRenditionName()
     {
-        assertEquals("",                                 transformerDebug.getRenditionName(null));
-        assertEquals("-- doclib -- ",                    transformerDebug.getRenditionName("doclib"));
-        assertEquals("-- metadataExtract -- ",           transformerDebug.getRenditionName("transform:alfresco-metadata-extract"));
-        assertEquals("-- metadataEmbed -- ",             transformerDebug.getRenditionName("transform:alfresco-metadata-embed"));
+        assertEquals("", transformerDebug.getRenditionName(null));
+        assertEquals("-- doclib -- ", transformerDebug.getRenditionName("doclib"));
+        assertEquals("-- metadataExtract -- ", transformerDebug.getRenditionName("transform:alfresco-metadata-extract"));
+        assertEquals("-- metadataEmbed -- ", transformerDebug.getRenditionName("transform:alfresco-metadata-embed"));
         assertEquals("-- transform:customTransform -- ", transformerDebug.getRenditionName("transform:customTransform"));
     }
 
     @Test
     public void testGetTransformName()
     {
-        assertEquals(null,                        transformerDebug.getTransformName(null));
-        assertEquals(null,                        transformerDebug.getTransformName("doclib"));
+        assertEquals(null, transformerDebug.getTransformName(null));
+        assertEquals(null, transformerDebug.getTransformName("doclib"));
         assertEquals("alfresco-metadata-extract", transformerDebug.getTransformName("transform:alfresco-metadata-extract"));
-        assertEquals("alfresco-metadata-embed",   transformerDebug.getTransformName("transform:alfresco-metadata-embed"));
-        assertEquals("customTransform",           transformerDebug.getTransformName("transform:customTransform"));
+        assertEquals("alfresco-metadata-embed", transformerDebug.getTransformName("transform:alfresco-metadata-embed"));
+        assertEquals("customTransform", transformerDebug.getTransformName("transform:customTransform"));
     }
 
     private enum LogLevel

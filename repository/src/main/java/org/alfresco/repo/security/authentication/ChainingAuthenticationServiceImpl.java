@@ -32,15 +32,7 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 
 /**
- * This class implements a simple chaining authentication service. It chains together other authentication services so
- * that authentication can happen against more than one authentication service. The authentication services it uses are
- * stored as a list. Each authentication service must belong to the same domain. This is checked at configuration time.
- * Authentication will try each authentication service in order. If any allow authentication given the user name and
- * password then the user will be accepted. Additions, deletions and password changes are made to one special
- * authentication service. This service will be tried first for authentication. Users can not be created if they exist
- * in another authentication service. To avoid transactional issues in chaining, the services registered with this
- * service must not have transactional wrappers. If not, errors will mark the transaction for roll back and we can not
- * chain down the list of authentication services.
+ * This class implements a simple chaining authentication service. It chains together other authentication services so that authentication can happen against more than one authentication service. The authentication services it uses are stored as a list. Each authentication service must belong to the same domain. This is checked at configuration time. Authentication will try each authentication service in order. If any allow authentication given the user name and password then the user will be accepted. Additions, deletions and password changes are made to one special authentication service. This service will be tried first for authentication. Users can not be created if they exist in another authentication service. To avoid transactional issues in chaining, the services registered with this service must not have transactional wrappers. If not, errors will mark the transaction for roll back and we can not chain down the list of authentication services.
  * 
  * @author Andy Hind
  */

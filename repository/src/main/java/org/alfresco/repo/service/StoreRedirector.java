@@ -35,7 +35,7 @@ public interface StoreRedirector
      * @return the names of the protocols supported
      */
     public Collection<String> getSupportedStoreProtocols();
-    
+
     /**
      * @return the Store Refs of the stores supported
      */

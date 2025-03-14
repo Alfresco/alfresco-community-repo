@@ -50,29 +50,30 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author David Caruana
  */
-public class StartWorkflowActionExecuter extends ActionExecuterAbstractBase 
+public class StartWorkflowActionExecuter extends ActionExecuterAbstractBase
 {
     public static final String NAME = "start-workflow";
     public static final String PARAM_WORKFLOW_NAME = "workflowName";
     public static final String PARAM_END_START_TASK = "endStartTask";
     public static final String PARAM_START_TASK_TRANSITION = "startTaskTransition";
-    
+
     // action dependencies
     private NamespaceService namespaceService;
     private WorkflowService workflowService;
     private NodeService nodeService;
 
-    
     /**
-     * @param namespaceService NamespaceService
+     * @param namespaceService
+     *            NamespaceService
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
-     * @param nodeService NodeService
+     * @param nodeService
+     *            NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -80,29 +81,28 @@ public class StartWorkflowActionExecuter extends ActionExecuterAbstractBase
     }
 
     /**
-     * @param workflowService WorkflowService
+     * @param workflowService
+     *            WorkflowService
      */
-    public void setWorkflowService(WorkflowService workflowService) 
+    public void setWorkflowService(WorkflowService workflowService)
     {
         this.workflowService = workflowService;
     }
 
-
     /* (non-Javadoc)
-     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#getAdhocPropertiesAllowed()
-     */
+     * 
+     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#getAdhocPropertiesAllowed() */
     @Override
     protected boolean getAdhocPropertiesAllowed()
     {
         return true;
     }
 
-    
     /* (non-Javadoc)
-     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
-     */
+     * 
+     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List) */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_WORKFLOW_NAME, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_WORKFLOW_NAME)));
         paramList.add(new ParameterDefinitionImpl(PARAM_END_START_TASK, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_END_START_TASK)));
@@ -110,23 +110,22 @@ public class StartWorkflowActionExecuter extends ActionExecuterAbstractBase
         // TODO: start task node parameter
     }
 
-
     /* (non-Javadoc)
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
-     */
+     * 
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef) */
     @Override
-    protected void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef) 
+    protected void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {
         // retrieve workflow definition
-        String workflowName = (String)ruleAction.getParameterValue(PARAM_WORKFLOW_NAME);
+        String workflowName = (String) ruleAction.getParameterValue(PARAM_WORKFLOW_NAME);
         WorkflowDefinition def = workflowService.getDefinitionByName(workflowName);
-        
+
         // create workflow package to contain actioned upon node
-        NodeRef workflowPackage = (NodeRef)ruleAction.getParameterValue(WorkflowModel.ASSOC_PACKAGE.toPrefixString(namespaceService));
+        NodeRef workflowPackage = (NodeRef) ruleAction.getParameterValue(WorkflowModel.ASSOC_PACKAGE.toPrefixString(namespaceService));
         workflowPackage = workflowService.createPackage(workflowPackage);
         ChildAssociationRef childAssoc = nodeService.getPrimaryParent(actionedUponNodeRef);
         nodeService.addChild(workflowPackage, actionedUponNodeRef, WorkflowModel.ASSOC_PACKAGE_CONTAINS, childAssoc.getQName());
-        
+
         // build map of workflow start task parameters
         Map<String, Serializable> paramValues = ruleAction.getParameterValues();
         Map<QName, Serializable> workflowParameters = new HashMap<QName, Serializable>();
@@ -152,10 +151,10 @@ public class StartWorkflowActionExecuter extends ActionExecuterAbstractBase
         WorkflowPath path = workflowService.startWorkflow(def.getId(), workflowParameters);
 
         // determine whether to auto-end the start task
-        Boolean endStartTask = (Boolean)ruleAction.getParameterValue(PARAM_END_START_TASK);
-        String startTaskTransition = (String)ruleAction.getParameterValue(PARAM_START_TASK_TRANSITION);
+        Boolean endStartTask = (Boolean) ruleAction.getParameterValue(PARAM_END_START_TASK);
+        String startTaskTransition = (String) ruleAction.getParameterValue(PARAM_START_TASK_TRANSITION);
         endStartTask = (endStartTask == null) ? true : false;
-        
+
         // auto-end the start task with the provided transition (if one)
         if (endStartTask)
         {

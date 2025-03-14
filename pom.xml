@@ -120,8 +120,6 @@
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
         <license-maven-plugin.version>2.4.0</license-maven-plugin.version>
         <spotless-plugin.version>2.44.2</spotless-plugin.version>
-        <!-- Do not match any files by default, but this can be overridden from the command line. -->
-        <spotless-include-list>NO_AUTOMATED_FORMATTING</spotless-include-list>
 
         <dependency.postgresql.version>42.7.5</dependency.postgresql.version>
         <dependency.mysql.version>8.0.30</dependency.mysql.version>
@@ -1156,11 +1154,8 @@
                     <version>${spotless-plugin.version}</version>
                     <configuration>
                         <java>
-                            <includes>
-                                ${spotless-include-list}
-                            </includes>
                             <eclipse>
-                                <file>alfresco-formatter.xml</file>
+                                <file>https://raw.githubusercontent.com/Alfresco/alfresco-community-repo/refs/heads/master/alfresco-formatter.xml</file>
                             </eclipse>
                             <importOrder>
                                 <order>\#java|\#javax|\#jakarta,\#,\#org.alfresco,java|javax|jakarta,,org.alfresco</order>

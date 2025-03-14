@@ -33,8 +33,7 @@ import org.alfresco.repo.virtual.ref.Reference;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Encapsulated node creation parameters needed to produce {@link FilingData}
- * used for node creation in virtual contexts using {@link FilingRule}s.
+ * Encapsulated node creation parameters needed to produce {@link FilingData} used for node creation in virtual contexts using {@link FilingRule}s.
  */
 public class FilingParameters
 {
@@ -51,14 +50,14 @@ public class FilingParameters
     public FilingParameters(Reference parentReference)
     {
         this(parentReference,
-             null,
-             null,
-             null,
-             null);
+                null,
+                null,
+                null,
+                null);
     }
 
     public FilingParameters(Reference parentReference, QName assocTypeQName, QName assocQName, QName nodeTypeQName,
-                Map<QName, Serializable> properties)
+            Map<QName, Serializable> properties)
     {
         super();
         this.parentRef = parentReference;

@@ -43,14 +43,17 @@ public interface IdentifierGenerator
 {
     /**
      * The content type this generator is applicible to.
-     * @return  QName   the type
+     * 
+     * @return QName the type
      */
     QName getType();
 
     /**
      * Generates the next id based on the provided context.
-     * @param context   map of context values
-     * @return String   the next id
+     * 
+     * @param context
+     *            map of context values
+     * @return String the next id
      */
     String generateId(Map<String, Serializable> context);
 }

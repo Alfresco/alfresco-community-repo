@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -56,11 +58,9 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.NeverRunsTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
- * Test checking the behaviour of the MT {@link ContentStore} routing 
+ * Test checking the behaviour of the MT {@link ContentStore} routing
  * 
  * @author Alfresco
  * @since 4.2.1
@@ -87,8 +87,7 @@ public class AbstractTenantRoutingContentStoreTest extends TestCase
 
     public void testGetAllStores() throws Exception
     {
-        final RetryingTransactionCallback<Object> txnWork = new RetryingTransactionCallback<Object>()
-        {
+        final RetryingTransactionCallback<Object> txnWork = new RetryingTransactionCallback<Object>() {
             public Boolean execute() throws Exception
             {
                 // The listener
@@ -149,8 +148,7 @@ public class AbstractTenantRoutingContentStoreTest extends TestCase
             resultSet.close();
         }
         catch (Exception e)
-        {
-        }
+        {}
 
         ResultSet resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, "PATH:\"/app:company_home/cm:Test\"");
         NodeRef node = resultSet.getNodeRef(0);

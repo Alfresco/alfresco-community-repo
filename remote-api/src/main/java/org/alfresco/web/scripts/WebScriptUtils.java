@@ -31,16 +31,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
+import org.springframework.extensions.webscripts.WebScript;
+
 import org.alfresco.repo.jscript.ScriptUtils;
 import org.alfresco.repo.web.scripts.RepositoryContainer;
 import org.alfresco.service.cmr.admin.RepoUsage;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
-import org.springframework.extensions.webscripts.WebScript;
 
 /**
- * Override of the JavaScript API ScriptUtils bean "utilsScript" to provide additional
- * Remote API methods using objects not available to base Repository project.
+ * Override of the JavaScript API ScriptUtils bean "utilsScript" to provide additional Remote API methods using objects not available to base Repository project.
  * <p>
  * See "web-scripts-application-context.xml" for bean definition.
  * 
@@ -51,16 +51,17 @@ import org.springframework.extensions.webscripts.WebScript;
 public class WebScriptUtils extends ScriptUtils
 {
     protected RepositoryContainer repositoryContainer;
-    
+
     public void setRepositoryContainer(RepositoryContainer repositoryContainer)
     {
         this.repositoryContainer = repositoryContainer;
     }
-    
+
     /**
      * Searches for webscript components with the given family name.
      * 
-     * @param family        the family
+     * @param family
+     *            the family
      * 
      * @return An array of webscripts that match the given family name
      */
@@ -79,7 +80,8 @@ public class WebScriptUtils extends ScriptUtils
     /**
      * Searches for webscript components with the given family name accessible to the current user.
      *
-     * @param family        the family
+     * @param family
+     *            the family
      *
      * @return An array of webscripts that match the given family name accessible to the current user
      *
@@ -132,7 +134,7 @@ public class WebScriptUtils extends ScriptUtils
             return "Unknown";
         }
     }
-    
+
     public String getHostName()
     {
         try
@@ -144,17 +146,17 @@ public class WebScriptUtils extends ScriptUtils
             return "Unknown";
         }
     }
-    
+
     public RepoUsage getRestrictions()
     {
         return this.services.getRepoAdminService().getRestrictions();
     }
-    
+
     public RepoUsage getUsage()
     {
         return this.services.getRepoAdminService().getUsage();
     }
-    
+
     /**
      * Gets the list of repository stores
      * 

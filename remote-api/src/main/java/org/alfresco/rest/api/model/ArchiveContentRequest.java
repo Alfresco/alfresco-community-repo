@@ -38,8 +38,7 @@ import java.util.Map;
 public class ArchiveContentRequest
 {
     /**
-     * A map (String-Serializable) of parameters specific for request to archive content.
-     * This object is optional.
+     * A map (String-Serializable) of parameters specific for request to archive content. This object is optional.
      */
     private Map<String, Serializable> archiveParams;
 

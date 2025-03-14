@@ -26,6 +26,7 @@
 package org.alfresco.repo.admin.patch.impl;
 
 import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.admin.patch.AbstractPatch;
 
 /**
@@ -37,11 +38,10 @@ import org.alfresco.repo.admin.patch.AbstractPatch;
 public class NoOpPatch extends AbstractPatch
 {
     private static final String MSG_RESULT = "patch.noOpPatch.result";
-    
+
     public NoOpPatch()
-    {
-    }
-    
+    {}
+
     @Override
     protected String applyInternal() throws Exception
     {

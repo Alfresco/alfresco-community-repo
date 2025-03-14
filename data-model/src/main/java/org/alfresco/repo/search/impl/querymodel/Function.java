@@ -35,11 +35,12 @@ import org.alfresco.service.namespace.QName;
  * @author andyh
  */
 public interface Function
-{   
+{
     /**
      * Evaluation a function
      * 
-     * @param context FunctionEvaluationContext
+     * @param context
+     *            FunctionEvaluationContext
      * @return Serializable
      */
     public Serializable getValue(Map<String, Argument> args, FunctionEvaluationContext context);
@@ -57,19 +58,19 @@ public interface Function
      * @return String
      */
     public String getName();
-    
+
     /**
      * Get the argument Definitions
+     * 
      * @return LinkedHashMap
      */
     public LinkedHashMap<String, ArgumentDefinition> getArgumentDefinitions();
-    
-    
+
     /**
      * Get the argument Definition
+     * 
      * @return ArgumentDefinition
      */
     public ArgumentDefinition getArgumentDefinition(String name);
-    
 
 }

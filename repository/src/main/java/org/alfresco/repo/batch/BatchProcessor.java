@@ -25,18 +25,6 @@
  */
 package org.alfresco.repo.batch;
 
-import org.alfresco.api.AlfrescoPublicApi;
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.node.integrity.IntegrityException;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.util.TraceableThreadFactory;
-import org.alfresco.util.transaction.TransactionListenerAdapter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEventPublisher;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -55,15 +43,21 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEventPublisher;
+
+import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.node.integrity.IntegrityException;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.util.TraceableThreadFactory;
+import org.alfresco.util.transaction.TransactionListenerAdapter;
+
 /**
- * A <code>BatchProcessor</code> manages the running and monitoring of a potentially long-running transactional batch
- * process. It iterates over a collection, and queues jobs that fire a worker on a batch of members. The queued jobs
- * handle progress / error reporting, transaction delineation and retrying. They are processed in parallel by a pool of
- * threads of a configurable size. The job processing is designed to be fault tolerant and will continue in the event of
- * errors. When the batch is complete a summary of the number of errors and the last error stack trace will be logged at
- * ERROR level. Each individual error is logged at WARN level and progress information is logged at INFO level. Through
- * the {@link BatchMonitor} interface, it also supports the real-time monitoring of batch metrics (e.g. over JMX in the
- * Enterprise Edition).
+ * A <code>BatchProcessor</code> manages the running and monitoring of a potentially long-running transactional batch process. It iterates over a collection, and queues jobs that fire a worker on a batch of members. The queued jobs handle progress / error reporting, transaction delineation and retrying. They are processed in parallel by a pool of threads of a configurable size. The job processing is designed to be fault tolerant and will continue in the event of errors. When the batch is complete a summary of the number of errors and the last error stack trace will be logged at ERROR level. Each individual error is logged at WARN level and progress information is logged at INFO level. Through the {@link BatchMonitor} interface, it also supports the real-time monitoring of batch metrics (e.g. over JMX in the Enterprise Edition).
  * 
  * @author dward
  */
@@ -72,7 +66,7 @@ public class BatchProcessor<T> implements BatchMonitor
 {
     /** The factory for all new threads */
     private TraceableThreadFactory threadFactory;
-    
+
     /** The logger to use. */
     private final Log logger;
 
@@ -93,13 +87,13 @@ public class BatchProcessor<T> implements BatchMonitor
 
     /** The number of entries we process at a time in a transaction. */
     private final int batchSize;
-    
+
     /** The current entry id. */
     private String currentEntryId;
 
     /** The number of batches currently executing. */
     private int executingCount;
-    
+
     /** What transactions need to be retried?. We do these single-threaded in order to avoid cross-dependency issues */
     private SortedSet<Integer> retryTxns = new TreeSet<Integer>();
 
@@ -140,7 +134,7 @@ public class BatchProcessor<T> implements BatchMonitor
      *            the logger to use (may be <tt>null</tt>)
      * @param loggingInterval
      *            the number of entries to process before reporting progress
-     *            
+     * 
      * @deprecated Since 3.4, use the {@link BatchProcessWorkProvider} instead of the <tt>Collection</tt>
      */
     public BatchProcessor(
@@ -153,38 +147,39 @@ public class BatchProcessor<T> implements BatchMonitor
             int loggingInterval)
     {
         this(
-                    processName,
-                    retryingTransactionHelper,
-                    new BatchProcessWorkProvider<T>()
+                processName,
+                retryingTransactionHelper,
+                new BatchProcessWorkProvider<T>() {
+                    boolean hasMore = true;
+
+                    @Override
+                    public int getTotalEstimatedWorkSize()
                     {
-                        boolean hasMore = true;
+                        return (int) getTotalEstimatedWorkSizeLong();
+                    }
 
-                        @Override public int getTotalEstimatedWorkSize()
-                        {
-                            return (int) getTotalEstimatedWorkSizeLong();
-                        }
+                    @Override
+                    public long getTotalEstimatedWorkSizeLong()
+                    {
+                        return collection.size();
+                    }
 
-                        @Override public long getTotalEstimatedWorkSizeLong()
+                    public Collection<T> getNextWork()
+                    {
+                        // Only return the collection once
+                        if (hasMore)
                         {
-                            return collection.size();
+                            hasMore = false;
+                            return collection;
                         }
-
-                        public Collection<T> getNextWork()
+                        else
                         {
-                            // Only return the collection once
-                            if (hasMore)
-                            {
-                                hasMore = false;
-                                return collection;
-                            }
-                            else
-                            {
-                                return Collections.emptyList();
-                            }
+                            return Collections.emptyList();
                         }
-                    },
-                    workerThreads, batchSize,
-                    applicationEventPublisher, logger, loggingInterval);
+                    }
+                },
+                workerThreads, batchSize,
+                applicationEventPublisher, logger, loggingInterval);
     }
 
     /**
@@ -206,8 +201,8 @@ public class BatchProcessor<T> implements BatchMonitor
      *            the logger to use (may be <tt>null</tt>)
      * @param loggingInterval
      *            the number of entries to process before reporting progress
-     *            
-     * @since 3.4 
+     * 
+     * @since 3.4
      */
     public BatchProcessor(
             String processName,
@@ -221,7 +216,7 @@ public class BatchProcessor<T> implements BatchMonitor
         this.threadFactory = new TraceableThreadFactory();
         this.threadFactory.setNamePrefix(processName);
         this.threadFactory.setThreadDaemon(true);
-        
+
         this.processName = processName;
         this.retryingTransactionHelper = retryingTransactionHelper;
         this.workProvider = workProvider;
@@ -236,7 +231,7 @@ public class BatchProcessor<T> implements BatchMonitor
             this.logger = logger;
         }
         this.loggingInterval = loggingInterval;
-        
+
         // Let the (enterprise) monitoring side know of our presence
         if (applicationEventPublisher != null)
         {
@@ -287,7 +282,8 @@ public class BatchProcessor<T> implements BatchMonitor
     /**
      * {@inheritDoc}
      */
-    @Deprecated public synchronized int getSuccessfullyProcessedEntries()
+    @Deprecated
+    public synchronized int getSuccessfullyProcessedEntries()
     {
         return Math.toIntExact(this.successfullyProcessedEntries);
     }
@@ -314,7 +310,8 @@ public class BatchProcessor<T> implements BatchMonitor
     /**
      * {@inheritDoc}
      */
-    @Deprecated public synchronized int getTotalErrors()
+    @Deprecated
+    public synchronized int getTotalErrors()
     {
         return Math.toIntExact(this.totalErrors);
     }
@@ -322,7 +319,8 @@ public class BatchProcessor<T> implements BatchMonitor
     /**
      * {@inheritDoc}
      */
-    @Deprecated public int getTotalResults()
+    @Deprecated
+    public int getTotalResults()
     {
         return this.workProvider.getTotalEstimatedWorkSize();
     }
@@ -360,40 +358,31 @@ public class BatchProcessor<T> implements BatchMonitor
     }
 
     /**
-     * Invokes the worker for each entry in the collection, managing transactions and collating success / failure
-     * information.
+     * Invokes the worker for each entry in the collection, managing transactions and collating success / failure information.
      * 
      * @param worker
      *            the worker
      * @param splitTxns
-     *            Can the modifications to Alfresco be split across multiple transactions for maximum performance? If
-     *            <code>true</code>, worker invocations are isolated in separate transactions in batches for
-     *            increased performance. If <code>false</code>, all invocations are performed in the current
-     *            transaction. This is required if calling synchronously (e.g. in response to an authentication event in
-     *            the same transaction).
+     *            Can the modifications to Alfresco be split across multiple transactions for maximum performance? If <code>true</code>, worker invocations are isolated in separate transactions in batches for increased performance. If <code>false</code>, all invocations are performed in the current transaction. This is required if calling synchronously (e.g. in response to an authentication event in the same transaction).
      * @deprecated use {@link #processLong(BatchProcessWorker, boolean)} instead
      * @return the number of invocations
      */
     @SuppressWarnings("serial")
-    @Deprecated public int process(final BatchProcessWorker<T> worker, final boolean splitTxns)
+    @Deprecated
+    public int process(final BatchProcessWorker<T> worker, final boolean splitTxns)
     {
         int count = workProvider.getTotalEstimatedWorkSize();
-        return (int)process(worker, splitTxns, count);
+        return (int) process(worker, splitTxns, count);
 
     }
 
     /**
-     * Invokes the worker for each entry in the collection, managing transactions and collating success / failure
-     * information.
+     * Invokes the worker for each entry in the collection, managing transactions and collating success / failure information.
      *
      * @param worker
      *            the worker
      * @param splitTxns
-     *            Can the modifications to Alfresco be split across multiple transactions for maximum performance? If
-     *            <code>true</code>, worker invocations are isolated in separate transactions in batches for
-     *            increased performance. If <code>false</code>, all invocations are performed in the current
-     *            transaction. This is required if calling synchronously (e.g. in response to an authentication event in
-     *            the same transaction).
+     *            Can the modifications to Alfresco be split across multiple transactions for maximum performance? If <code>true</code>, worker invocations are isolated in separate transactions in batches for increased performance. If <code>false</code>, all invocations are performed in the current transaction. This is required if calling synchronously (e.g. in response to an authentication event in the same transaction).
      * @return the number of invocations
      */
     @SuppressWarnings("serial")
@@ -403,7 +392,6 @@ public class BatchProcessor<T> implements BatchMonitor
         return process(worker, splitTxns, count);
 
     }
-
 
     private long process(final BatchProcessWorker<T> worker, final boolean splitTxns, long count)
     {
@@ -425,32 +413,30 @@ public class BatchProcessor<T> implements BatchMonitor
         }
 
         // Create a thread pool executor with the specified number of threads and a finite blocking queue of jobs
-        ExecutorService executorService = splitTxns && this.workerThreads > 1 ?
-                    new ThreadPoolExecutor(
-                                this.workerThreads, this.workerThreads, 0L, TimeUnit.MILLISECONDS,
-                                new ArrayBlockingQueue<Runnable>(this.workerThreads * this.batchSize * 10)
-                                {
-                                    // Add blocking behaviour to work queue
-                                    @Override
-                                    public boolean offer(Runnable o)
-                                    {
-                                        try
-                                        {
-                                            put(o);
-                                        }
-                                        catch (InterruptedException e)
-                                        {
-                                            return false;
-                                        }
-                                        return true;
-                                    }
+        ExecutorService executorService = splitTxns && this.workerThreads > 1 ? new ThreadPoolExecutor(
+                this.workerThreads, this.workerThreads, 0L, TimeUnit.MILLISECONDS,
+                new ArrayBlockingQueue<Runnable>(this.workerThreads * this.batchSize * 10) {
+                    // Add blocking behaviour to work queue
+                    @Override
+                    public boolean offer(Runnable o)
+                    {
+                        try
+                        {
+                            put(o);
+                        }
+                        catch (InterruptedException e)
+                        {
+                            return false;
+                        }
+                        return true;
+                    }
 
-                                },
-                                threadFactory) : null;
+                },
+                threadFactory) : null;
         try
         {
             Iterator<T> iterator = new WorkProviderIterator<T>(this.workProvider);
-            int id=0;
+            int id = 0;
             List<T> batch = new ArrayList<T>(this.batchSize);
             while (iterator.hasNext())
             {
@@ -486,8 +472,7 @@ public class BatchProcessor<T> implements BatchMonitor
                     executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
                 }
                 catch (InterruptedException e)
-                {
-                }
+                {}
             }
             synchronized (this)
             {
@@ -508,19 +493,18 @@ public class BatchProcessor<T> implements BatchMonitor
                 if (this.totalErrors > 0 && this.logger.isErrorEnabled())
                 {
                     this.logger.error(getProcessName() + ": " + this.totalErrors
-                                            + " error(s) detected. Last error from entry \"" + this.lastErrorEntryId + "\"",
-                                this.lastError);
+                            + " error(s) detected. Last error from entry \"" + this.lastErrorEntryId + "\"",
+                            this.lastError);
                 }
             }
         }
     }
+
     /**
      * Reports the current progress.
      * 
      * @param last
-     *            Have all jobs been processed? If <code>false</code> then progress is only reported after the number of
-     *            entries indicated by {@link #loggingInterval}. If <code>true</code> then progress is reported if this
-     *            is not one of the entries indicated by {@link #loggingInterval}.
+     *            Have all jobs been processed? If <code>false</code> then progress is only reported after the number of entries indicated by {@link #loggingInterval}. If <code>true</code> then progress is reported if this is not one of the entries indicated by {@link #loggingInterval}.
      */
     private synchronized void reportProgress(boolean last)
     {
@@ -532,7 +516,7 @@ public class BatchProcessor<T> implements BatchMonitor
             long totalResults = 0;
             try
             {
-                 totalResults = this.workProvider.getTotalEstimatedWorkSizeLong();
+                totalResults = this.workProvider.getTotalEstimatedWorkSizeLong();
             }
             catch (UnsupportedOperationException uoe)
             {
@@ -542,7 +526,8 @@ public class BatchProcessor<T> implements BatchMonitor
             {
                 message.append(" out of ").append(totalResults).append(". ").append(
                         NumberFormat.getPercentInstance().format(
-                                totalResults == 0 ? 1.0F : (float) processed / totalResults)).append(" complete");
+                                totalResults == 0 ? 1.0F : (float) processed / totalResults))
+                        .append(" complete");
             }
             long duration = System.currentTimeMillis() - this.startTime.getTime();
             if (duration > 0)
@@ -569,10 +554,7 @@ public class BatchProcessor<T> implements BatchMonitor
         public String getIdentifier(T entry);
 
         /**
-         * Callback to allow thread initialization before the work entries are
-         * {@link #process(Object) processed}.  Typically, this will include authenticating
-         * as a valid user and disbling or enabling any system flags that might affect the
-         * entry processing.
+         * Callback to allow thread initialization before the work entries are {@link #process(Object) processed}. Typically, this will include authenticating as a valid user and disbling or enabling any system flags that might affect the entry processing.
          */
         public void beforeProcess() throws Throwable;
 
@@ -587,16 +569,13 @@ public class BatchProcessor<T> implements BatchMonitor
         public void process(T entry) throws Throwable;
 
         /**
-         * Callback to allow thread cleanup after the work entries have been
-         * {@link #process(Object) processed}.
-         * Typically, this will involve cleanup of authentication and resetting any
-         * system flags previously set.
+         * Callback to allow thread cleanup after the work entries have been {@link #process(Object) processed}. Typically, this will involve cleanup of authentication and resetting any system flags previously set.
          * <p/>
          * This call is made regardless of the outcome of the entry processing.
          */
         public void afterProcess() throws Throwable;
     }
-    
+
     /**
      * Adaptor that allows implementations to only implement {@link #process(Object)}
      */
@@ -604,37 +583,37 @@ public class BatchProcessor<T> implements BatchMonitor
     public static abstract class BatchProcessWorkerAdaptor<TT> implements BatchProcessWorker<TT>
     {
         /**
-         * @return  Returns the <code>toString()</code> of the entry
+         * @return Returns the <code>toString()</code> of the entry
          */
         public String getIdentifier(TT entry)
         {
             return entry.toString();
         }
+
         /** No-op */
         public void beforeProcess() throws Throwable
-        {
-        }
+        {}
+
         /** No-op */
         public void afterProcess() throws Throwable
-        {
-        }
+        {}
     }
-    
+
     /**
      * Small iterator that repeatedly gets the next batch of work from a {@link BatchProcessWorkProvider}
-
+     * 
      * @author Derek Hulley
      */
     private static class WorkProviderIterator<T> implements Iterator<T>
     {
         private BatchProcessWorkProvider<T> workProvider;
         private Iterator<T> currentIterator;
-        
+
         private WorkProviderIterator(BatchProcessWorkProvider<T> workProvider)
         {
             this.workProvider = workProvider;
         }
-        
+
         public boolean hasNext()
         {
             boolean hasNext = false;
@@ -650,7 +629,7 @@ public class BatchProcessor<T> implements BatchMonitor
                     // See if there there is any more on this specific iterator
                     hasNext = currentIterator.hasNext();
                 }
-                
+
                 // If we don't have a next (remember that the workProvider is still available)
                 // go and get more results
                 if (!hasNext)
@@ -719,7 +698,7 @@ public class BatchProcessor<T> implements BatchMonitor
         }
 
         private final int id;
-        
+
         /** The worker. */
         private final BatchProcessWorker<T> worker;
 
@@ -743,7 +722,7 @@ public class BatchProcessor<T> implements BatchMonitor
 
         /** The last error entry id. */
         private String txnLastErrorEntryId;
-        
+
         public Object execute() throws Throwable
         {
             reset();
@@ -751,7 +730,7 @@ public class BatchProcessor<T> implements BatchMonitor
             {
                 return null;
             }
-            
+
             // Bind this instance to the transaction
             AlfrescoTransactionSupport.bindListener(this);
 
@@ -785,7 +764,7 @@ public class BatchProcessor<T> implements BatchMonitor
 
             for (T entry : this.batch)
             {
-                this.txnEntryId = this.worker.getIdentifier(entry);                
+                this.txnEntryId = this.worker.getIdentifier(entry);
                 try
                 {
                     this.worker.process(entry);
@@ -817,14 +796,12 @@ public class BatchProcessor<T> implements BatchMonitor
         public void run()
         {
             try
-            {
-            }
+            {}
             catch (Throwable e)
             {
                 BatchProcessor.this.logger.error("Failed to cleanup Worker after processing.", e);
             }
 
-            
             final BatchProcessor<T>.TxnCallback callback = this;
             try
             {
@@ -856,8 +833,9 @@ public class BatchProcessor<T> implements BatchMonitor
                     this.txnErrors++;
                     if (BatchProcessor.this.logger.isWarnEnabled())
                     {
-                        String message = (t instanceof IntegrityException) ? ": Failed on batch commit." : ": Failed to process entry \""
-                                + this.txnEntryId + "\".";
+                        String message = (t instanceof IntegrityException) ? ": Failed on batch commit."
+                                : ": Failed to process entry \""
+                                        + this.txnEntryId + "\".";
                         BatchProcessor.this.logger.warn(getProcessName() + message, t);
                     }
                 }
@@ -942,12 +920,12 @@ public class BatchProcessor<T> implements BatchMonitor
                     BatchProcessor.this.lastError = this.txnLastError;
                     BatchProcessor.this.lastErrorEntryId = this.txnLastErrorEntryId;
                 }
-                
+
                 reset();
-                
+
                 // Make sure we don't wait for a failing transaction
                 BatchProcessor.this.retryTxns.remove(this.id);
-                BatchProcessor.this.notifyAll();                
+                BatchProcessor.this.notifyAll();
             }
         }
 

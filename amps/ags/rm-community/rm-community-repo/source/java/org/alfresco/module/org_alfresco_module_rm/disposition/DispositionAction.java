@@ -41,107 +41,110 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @since 1.0
  */
 public interface DispositionAction
-{    
+{
     /**
-     * @return  the node reference
+     * @return the node reference
      */
     NodeRef getNodeRef();
-    
+
     /**
-     * @return  the disposition action definition
+     * @return the disposition action definition
      */
     DispositionActionDefinition getDispositionActionDefinition();
-    
+
     /**
      * @return the id of the action
      */
     String getId();
-    
+
     /**
      * @return the name of the action
      */
     String getName();
-    
+
     /**
-     * @return the display label for the action 
+     * @return the display label for the action
      */
     String getLabel();
-    
+
     /**
-     * @return  the dispostion action as of eligibility date
+     * @return the dispostion action as of eligibility date
      */
     Date getAsOfDate();
-    
+
     /**
-     * @return  true if the events are complete (ie: enough events have been completed to make the disposition
-     *          action 
+     * @return true if the events are complete (ie: enough events have been completed to make the disposition action
      */
     boolean isEventsEligible();
-    
+
     /**
      * @return the user that started the action
      */
     String getStartedBy();
-    
+
     /**
      * @return when the action was started
      */
     Date getStartedAt();
-    
+
     /**
      * @return the user that completed the action
      */
     String getCompletedBy();
-    
+
     /**
      * @return when the action was completed
      */
     Date getCompletedAt();
-    
+
     /**
      * @return List of events that need to be completed for the action
      */
     List<EventCompletionDetails> getEventCompletionDetails();
-    
+
     /**
      * Get the event completion details for a named event.
      * 
-     * @param eventName event name
-     * @return {@link EventCompletionDetails}   event completion details
+     * @param eventName
+     *            event name
+     * @return {@link EventCompletionDetails} event completion details
      * @since 2.2
      */
     EventCompletionDetails getEventCompletionDetails(String eventName);
-    
+
     /**
-     * Add new completion details to the disposition action based on the provided 
-     * event.
+     * Add new completion details to the disposition action based on the provided event.
      * 
-     * @param event records management event
+     * @param event
+     *            records management event
      * @since 2.2
      */
     void addEventCompletionDetails(RecordsManagementEvent event);
-    
+
     /**
      * Complete an event.
      * <p>
-     * If null is provided, the complete at date will be take as 'now' and the completed by user
-     * as the fully authenticated user.
+     * If null is provided, the complete at date will be take as 'now' and the completed by user as the fully authenticated user.
      * 
-     * @param eventName     event name
-     * @param completedAt   completed at 'date', now if null
-     * @param completedBy   completed by user, authenticated user if null
+     * @param eventName
+     *            event name
+     * @param completedAt
+     *            completed at 'date', now if null
+     * @param completedBy
+     *            completed by user, authenticated user if null
      * @since 2.2
      */
     void completeEvent(String eventName, Date completedAt, String completedBy);
-    
+
     /**
      * Undo the completion of an event.
      * 
-     * @param eventName event name
+     * @param eventName
+     *            event name
      * @since 2.2
      */
     void undoEvent(String eventName);
-    
+
     /**
      * Refresh events against current disposition action definition.
      * <p>

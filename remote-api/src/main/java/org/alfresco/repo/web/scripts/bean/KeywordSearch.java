@@ -32,6 +32,16 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.surf.util.ParameterCheck;
+import org.springframework.extensions.surf.util.URLEncoder;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.web.scripts.RepositoryImageResolver;
 import org.alfresco.service.ServiceRegistry;
@@ -43,16 +53,6 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.SearchLanguageConversion;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.extensions.surf.util.ParameterCheck;
-import org.springframework.extensions.surf.util.URLEncoder;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-
 
 /**
  * Alfresco Keyword (simple) Search Service
@@ -64,7 +64,7 @@ public class KeywordSearch extends DeclarativeWebScript
     // Logger
     private static final Log logger = LogFactory.getLog(KeywordSearch.class);
 
-    // search parameters 
+    // search parameters
     // TODO: allow configuration of search store
     protected static final StoreRef SEARCH_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
     protected static final int DEFAULT_ITEMS_PER_PAGE = 10;
@@ -95,14 +95,14 @@ public class KeywordSearch extends DeclarativeWebScript
     {
         this.serviceRegistry = serviceRegistry;
     }
-    
+
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
         //
         // process arguments
         //
-        
+
         String searchTerms = req.getParameter("q");
         ParameterCheck.mandatoryString("q", searchTerms);
         String startPageArg = req.getParameter("p");
@@ -111,7 +111,7 @@ public class KeywordSearch extends DeclarativeWebScript
         {
             startPage = Integer.valueOf(startPageArg);
         }
-        catch(NumberFormatException e)
+        catch (NumberFormatException e)
         {
             // NOTE: use default startPage
         }
@@ -121,7 +121,7 @@ public class KeywordSearch extends DeclarativeWebScript
         {
             itemsPerPage = Integer.valueOf(itemsPerPageArg);
         }
-        catch(NumberFormatException e)
+        catch (NumberFormatException e)
         {
             // NOTE: use default itemsPerPage
         }
@@ -132,22 +132,22 @@ public class KeywordSearch extends DeclarativeWebScript
             // NOTE: Simple conversion from XML Language Id to Java Locale Id
             locale = new Locale(language.replace("-", "_"));
         }
-        
+
         //
         // execute the search
         //
-        
+
         SearchResult results = search(searchTerms, startPage, itemsPerPage, locale, req);
-        
+
         //
         // create model
         //
-        
+
         Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
         model.put("search", results);
         return model;
     }
-    
+
     /**
      * Execute the search
      */
@@ -155,18 +155,18 @@ public class KeywordSearch extends DeclarativeWebScript
     {
         SearchResult searchResult = null;
         ResultSet results = null;
-        
+
         try
         {
             // construct search statement
-            String[] terms = searchTerms.split(" "); 
-            searchTerms = searchTerms.replaceAll("\"", "&quot;"); 
+            String[] terms = searchTerms.split(" ");
+            searchTerms = searchTerms.replaceAll("\"", "&quot;");
 
-            // Escape special characters in the terms, so that they can't confuse the parser 
-            for (int i=0; i<terms.length; i++) 
-            { 
-                terms[i] = SearchLanguageConversion.escapeLuceneQuery(terms[i]); 
-            } 
+            // Escape special characters in the terms, so that they can't confuse the parser
+            for (int i = 0; i < terms.length; i++)
+            {
+                terms[i] = SearchLanguageConversion.escapeLuceneQuery(terms[i]);
+            }
 
             Map<String, Object> statementModel = new HashMap<String, Object>(7, 1.0f);
             statementModel.put("args", createArgs(req));
@@ -174,7 +174,7 @@ public class KeywordSearch extends DeclarativeWebScript
             Writer queryWriter = new StringWriter(1024);
             renderFormatTemplate(QUERY_FORMAT, statementModel, queryWriter);
             String query = queryWriter.toString();
-            
+
             // execute query
             if (logger.isDebugEnabled())
             {
@@ -192,10 +192,10 @@ public class KeywordSearch extends DeclarativeWebScript
             }
             results = searchService.query(parameters);
             int totalResults = results.length();
-            
+
             if (logger.isDebugEnabled())
                 logger.debug("Results: " + totalResults + " rows (limited: " + results.getResultSetMetaData().getLimitedBy() + ")");
-            
+
             // are we out-of-range
             int totalPages = (totalResults / itemsPerPage);
             totalPages += (totalResults % itemsPerPage != 0) ? 1 : 0;
@@ -220,7 +220,7 @@ public class KeywordSearch extends DeclarativeWebScript
             else
             {
                 searchResult.setTotalPages(totalPages);
-                searchResult.setStartIndex(((startPage -1) * itemsPerPage) + 1);
+                searchResult.setStartIndex(((startPage - 1) * itemsPerPage) + 1);
                 searchResult.setTotalPageItems(Math.min(itemsPerPage, totalResults - searchResult.getStartIndex() + 1));
             }
             SearchTemplateNode[] nodes = new SearchTemplateNode[searchResult.getTotalPageItems()];
@@ -244,12 +244,12 @@ public class KeywordSearch extends DeclarativeWebScript
             {
                 results.close();
             }
-        }        
+        }
     }
 
     /**
      * Search Result
-     *  
+     * 
      * @author davidc
      */
     public static class SearchResult
@@ -264,14 +264,13 @@ public class KeywordSearch extends DeclarativeWebScript
         private int startPage;
         private int startIndex;
         private SearchTemplateNode[] results;
-        
-        
+
         public int getItemsPerPage()
         {
             return itemsPerPage;
         }
-        
-        /*package*/ void setItemsPerPage(int itemsPerPage)
+
+        /* package */ void setItemsPerPage(int itemsPerPage)
         {
             this.itemsPerPage = itemsPerPage;
         }
@@ -281,7 +280,7 @@ public class KeywordSearch extends DeclarativeWebScript
             return results;
         }
 
-        /*package*/ void setResults(SearchTemplateNode[] results)
+        /* package */ void setResults(SearchTemplateNode[] results)
         {
             this.results = results;
         }
@@ -291,7 +290,7 @@ public class KeywordSearch extends DeclarativeWebScript
             return startIndex;
         }
 
-        /*package*/ void setStartIndex(int startIndex)
+        /* package */ void setStartIndex(int startIndex)
         {
             this.startIndex = startIndex;
         }
@@ -301,7 +300,7 @@ public class KeywordSearch extends DeclarativeWebScript
             return startPage;
         }
 
-        /*package*/ void setStartPage(int startPage)
+        /* package */ void setStartPage(int startPage)
         {
             this.startPage = startPage;
         }
@@ -311,7 +310,7 @@ public class KeywordSearch extends DeclarativeWebScript
             return totalPageItems;
         }
 
-        /*package*/ void setTotalPageItems(int totalPageItems)
+        /* package */ void setTotalPageItems(int totalPageItems)
         {
             this.totalPageItems = totalPageItems;
         }
@@ -321,7 +320,7 @@ public class KeywordSearch extends DeclarativeWebScript
             return totalPages;
         }
 
-        /*package*/ void setTotalPages(int totalPages)
+        /* package */ void setTotalPages(int totalPages)
         {
             this.totalPages = totalPages;
         }
@@ -331,7 +330,7 @@ public class KeywordSearch extends DeclarativeWebScript
             return totalResults;
         }
 
-        /*package*/ void setTotalResults(int totalResults)
+        /* package */ void setTotalResults(int totalResults)
         {
             this.totalResults = totalResults;
         }
@@ -341,7 +340,7 @@ public class KeywordSearch extends DeclarativeWebScript
             return searchTerms;
         }
 
-        /*package*/ void setSearchTerms(String searchTerms)
+        /* package */ void setSearchTerms(String searchTerms)
         {
             this.searchTerms = searchTerms;
         }
@@ -350,7 +349,7 @@ public class KeywordSearch extends DeclarativeWebScript
         {
             return locale;
         }
-        
+
         /**
          * @return XML 1.0 Language Identification
          */
@@ -359,7 +358,7 @@ public class KeywordSearch extends DeclarativeWebScript
             return locale.toString().replace('_', '-');
         }
 
-        /*package*/ void setLocale(Locale locale)
+        /* package */ void setLocale(Locale locale)
         {
             this.locale = locale;
         }
@@ -373,14 +372,14 @@ public class KeywordSearch extends DeclarativeWebScript
             return id;
         }
     }
-    
+
     /**
      * Search result row template node
      */
     public class SearchTemplateNode extends TemplateNode
     {
         protected final static String URL = "/api/node/content/{0}/{1}/{2}/{3}";
-        
+
         private static final long serialVersionUID = -1791913270786140012L;
         private float score;
 
@@ -392,7 +391,7 @@ public class KeywordSearch extends DeclarativeWebScript
             super(nodeRef, serviceRegistry, KeywordSearch.this.imageResolver.getImageResolver());
             this.score = score;
         }
-        
+
         /**
          * Gets the result row score
          */
@@ -404,11 +403,11 @@ public class KeywordSearch extends DeclarativeWebScript
         @Override
         public String getUrl()
         {
-            return MessageFormat.format(URL, new Object[] {
-                getNodeRef().getStoreRef().getProtocol(),
-                getNodeRef().getStoreRef().getIdentifier(),
-                getNodeRef().getId(),
-                URLEncoder.encode(getName()) } );
+            return MessageFormat.format(URL, new Object[]{
+                    getNodeRef().getStoreRef().getProtocol(),
+                    getNodeRef().getStoreRef().getIdentifier(),
+                    getNodeRef().getId(),
+                    URLEncoder.encode(getName())});
         }
     }
 }

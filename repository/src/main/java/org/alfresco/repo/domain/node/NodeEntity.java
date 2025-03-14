@@ -45,7 +45,7 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable, Clo
 {
     private static final long serialVersionUID = 1L;
     private boolean locked;
-    
+
     private Long id;
     private Long version;
     private StoreEntity store;
@@ -57,7 +57,7 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable, Clo
     private AuditablePropertiesEntity auditableProperties;
     private String shardKey;
     private Integer explicitShardId;
-    
+
     /**
      * Required default constructor
      */
@@ -65,7 +65,7 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable, Clo
     {
         locked = false;
     }
-    
+
     /**
      * Helper constructor to build the necessary elements to fulfill the {@link #getNodeRef()} query
      */
@@ -77,7 +77,7 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable, Clo
         this.store.setIdentifier(nodeRef.getStoreRef().getIdentifier());
         this.uuid = nodeRef.getId();
     }
-    
+
     /**
      * Helper copy constructor
      */
@@ -94,7 +94,7 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable, Clo
         this.auditableProperties = node.getAuditableProperties();
         this.shardKey = node.getShardKey();
     }
-      
+
     @Override
     public Object clone() throws CloneNotSupportedException
     {
@@ -114,8 +114,10 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable, Clo
     @Override
     public boolean equals(Object obj)
     {
-        if (obj == null) return false;
-        if (!(obj instanceof NodeEntity)) return false;
+        if (obj == null)
+            return false;
+        if (!(obj instanceof NodeEntity))
+            return false;
         NodeEntity that = (NodeEntity) obj;
         return this.id.equals(that.id) && this.version.equals(that.version);
     }
@@ -125,8 +127,8 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable, Clo
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("NodeEntity")
-          .append("[ ID=").append(id)
-          .append(", version=").append(version);
+                .append("[ ID=").append(id)
+                .append(", version=").append(version);
         if (store != null)
         {
             sb.append(", store=").append(store.getProtocol()).append("://").append(store.getIdentifier());
@@ -136,16 +138,16 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable, Clo
             sb.append(", store=").append("null");
         }
         sb.append(", uuid=").append(uuid)
-          .append(", typeQNameId=").append(typeQNameId)
-          .append(", localeId=").append(localeId)
-          .append(", aclId=").append(aclId)
-          .append(", transaction=").append(transaction)
-          .append(", auditProps=").append(auditableProperties)
-          .append(", shardKey=").append(shardKey)
-          .append("]");
+                .append(", typeQNameId=").append(typeQNameId)
+                .append(", localeId=").append(localeId)
+                .append(", aclId=").append(aclId)
+                .append(", transaction=").append(transaction)
+                .append(", auditProps=").append(auditableProperties)
+                .append(", shardKey=").append(shardKey)
+                .append("]");
         return sb.toString();
     }
-    
+
     @Override
     // TODO: Must cache the key
     public NodeVersionKey getNodeVersionKey()
@@ -156,7 +158,7 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable, Clo
         }
         return new NodeVersionKey(id, version);
     }
-    
+
     /**
      * Lock the entity against further updates to prevent accidental modification
      */
@@ -173,7 +175,7 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable, Clo
             throw new IllegalStateException("The NodeEntity has not be filled: " + this);
         }
     }
-    
+
     private synchronized final void checkLock()
     {
         if (locked)
@@ -181,7 +183,7 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable, Clo
             throw new IllegalStateException("The entity is locked against updates: " + this);
         }
     }
-    
+
     public synchronized void incrementVersion()
     {
         checkLock();
@@ -194,13 +196,13 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable, Clo
             this.version++;
         }
     }
-    
+
     @Override
     public NodeRef getNodeRef()
     {
         return new NodeRef(store.getStoreRef(), uuid);
     }
-    
+
     @Override
     public NodeRef.Status getNodeStatus(QNameDAO qnameDAO)
     {
@@ -208,13 +210,13 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable, Clo
         boolean deleted = getDeleted(qnameDAO);
         return new NodeRef.Status(id, nodeRef, transaction.getChangeTxnId(), transaction.getId(), deleted);
     }
-    
+
     @Override
     public Pair<Long, NodeRef> getNodePair()
     {
         return new Pair<Long, NodeRef>(id, getNodeRef());
     }
-    
+
     @Override
     public boolean getDeleted(QNameDAO qnameDAO)
     {
@@ -226,7 +228,7 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable, Clo
         }
         // Now check the type
         Pair<Long, QName> deletedTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_DELETED);
-        return  deletedTypeQNamePair != null &&
+        return deletedTypeQNamePair != null &&
                 deletedTypeQNamePair.getFirst().equals(typeQNameId);
     }
 
@@ -356,9 +358,7 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable, Clo
 
     public synchronized void setExplicitShardId(Integer explicitShardId)
     {
-         this.explicitShardId = explicitShardId;
+        this.explicitShardId = explicitShardId;
     }
-
-
 
 }

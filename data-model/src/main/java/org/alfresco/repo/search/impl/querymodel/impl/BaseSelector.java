@@ -45,7 +45,7 @@ public class BaseSelector implements Selector
     private QName type;
 
     private String alias;
-    
+
     private JoinType joinType = JoinType.NONE;
 
     public BaseSelector(QName type, String alias)
@@ -63,22 +63,20 @@ public class BaseSelector implements Selector
     @Override
     public JoinType getJoinType()
     {
-		return joinType;
-	}
-    
+        return joinType;
+    }
+
     @Override
-  	public void setJoinType(JoinType joinType)
+    public void setJoinType(JoinType joinType)
     {
-  		this.joinType = joinType;
-  	}
+        this.joinType = joinType;
+    }
 
     @Override
     public QName getType()
     {
         return type;
     }
-    
-    
 
     public String toString()
     {
@@ -91,11 +89,9 @@ public class BaseSelector implements Selector
         return builder.toString();
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Source#getSelectorNames()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Source#getSelectorNames() */
     public Map<String, Selector> getSelectors()
     {
         HashMap<String, Selector> answer = new HashMap<String, Selector>();

@@ -32,9 +32,9 @@ import org.alfresco.service.cmr.email.EmailMessage;
 import org.alfresco.service.cmr.email.EmailMessagePart;
 
 /**
- * Implementation EmailMessage interface. 
+ * Implementation EmailMessage interface.
  * 
- * @deprecated - class not used.  
+ * @deprecated - class not used.
  * @author maxim
  * @since 2.2
  */
@@ -47,7 +47,6 @@ public class EmailMessageImpl implements EmailMessage
     private String subject;
     private Date sentDate;
     private EmailMessagePart body;
-    
 
     public EmailMessageImpl(String to, String from, String subject, String body)
     {
@@ -75,37 +74,37 @@ public class EmailMessageImpl implements EmailMessage
         this.sentDate = new Date();
     }
 
-    public String getTo() 
+    public String getTo()
     {
         return to;
     }
 
-    public String getFrom() 
+    public String getFrom()
     {
         return from;
     }
 
-    public String getSubject() 
+    public String getSubject()
     {
         return subject;
     }
-    
-    public List<String> getCC() 
+
+    public List<String> getCC()
     {
         return null;
     }
 
-    public Date getSentDate() 
+    public Date getSentDate()
     {
         return sentDate;
     }
 
-    public EmailMessagePart getBody() 
+    public EmailMessagePart getBody()
     {
         return body;
     }
-    
-    public EmailMessagePart[] getAttachments() 
+
+    public EmailMessagePart[] getAttachments()
     {
         return new EmailMessagePart[0];
     }

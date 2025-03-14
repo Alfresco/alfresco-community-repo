@@ -29,12 +29,12 @@ package org.alfresco.repo.doclink;
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.query.AbstractCannedQuery;
-import org.alfresco.query.CannedQueryParameters;
-import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.query.AbstractCannedQuery;
+import org.alfresco.query.CannedQueryParameters;
+import org.alfresco.repo.domain.query.CannedQueryDAO;
 
 /**
  * Parameter object for {@link GetDoclinkNodesCannedQuery}.
@@ -88,7 +88,7 @@ public class GetDoclinkNodesCannedQuery extends AbstractCannedQuery<Long>
             }
             if (paramBean.getLimit() == nodeIds.size())
             {
-                logger.debug("Node " + paramBean.getParentNodeStringValue()+ " has at least 100,000 link nodes attached. Results have been truncated.");
+                logger.debug("Node " + paramBean.getParentNodeStringValue() + " has at least 100,000 link nodes attached. Results have been truncated.");
             }
         }
 

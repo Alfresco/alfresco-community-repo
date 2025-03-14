@@ -26,35 +26,9 @@
 
 package org.alfresco.rest.api.model.rules;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.ActionConditionImpl;
-import org.alfresco.repo.action.evaluator.CompareMimeTypeEvaluator;
-import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
-import org.alfresco.repo.action.evaluator.HasAspectEvaluator;
-import org.alfresco.repo.action.evaluator.HasTagEvaluator;
-import org.alfresco.repo.action.evaluator.InCategoryEvaluator;
-import org.alfresco.repo.action.evaluator.IsSubTypeEvaluator;
-import org.alfresco.repo.action.evaluator.NoConditionEvaluator;
-import org.alfresco.repo.action.evaluator.compare.ComparePropertyValueOperation;
-import org.alfresco.repo.action.evaluator.compare.ContentPropertyName;
-import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.model.mapper.RestModelMapper;
-import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
-import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.action.ActionCondition;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
-import org.apache.commons.collections.CollectionUtils;
 
 @Experimental
 public class SimpleCondition
@@ -145,7 +119,8 @@ public class SimpleCondition
             return this;
         }
 
-        public SimpleCondition create() {
+        public SimpleCondition create()
+        {
             final SimpleCondition condition = new SimpleCondition();
             condition.setField(field);
             condition.setComparator(comparator);

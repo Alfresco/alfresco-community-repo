@@ -25,14 +25,15 @@
  */
 package org.alfresco.ibatis;
 
-import org.alfresco.metrics.db.DBMetricsReporter;
+import java.sql.Connection;
+
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.TransactionIsolationLevel;
 import org.apache.ibatis.session.defaults.DefaultSqlSessionFactory;
 
-import java.sql.Connection;
+import org.alfresco.metrics.db.DBMetricsReporter;
 
 public class AlfrescoDefaultSqlSessionFactory extends DefaultSqlSessionFactory
 {

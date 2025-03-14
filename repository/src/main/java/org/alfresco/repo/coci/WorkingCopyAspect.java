@@ -57,28 +57,27 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 
 public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, NodeServicePolicies.OnRemoveAspectPolicy, NodeServicePolicies.BeforeArchiveNodePolicy, NodeServicePolicies.OnRestoreNodePolicy
-{    
+{
     private PolicyComponent policyComponent;
     private NodeService nodeService;
     private NodeDAO nodeDAO;
     private LockService lockService;
     private CheckOutCheckInService checkOutCheckInService;
     private BehaviourFilter policyBehaviourFilter;
-    
-    
+
     /**
      * The working copy aspect copy behaviour callback.
      */
     private WorkingCopyAspectCopyBehaviourCallback workingCopyAspectCopyBehaviourCallback = new WorkingCopyAspectCopyBehaviourCallback();
-    
+
     /**
      * Sets the policy component
      */
-    public void setPolicyComponent(PolicyComponent policyComponent) 
+    public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
+
     /**
      * Set the node service
      */
@@ -104,7 +103,8 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
     }
 
     /**
-     * @param checkOutCheckInService            the service dealing with working copies
+     * @param checkOutCheckInService
+     *            the service dealing with working copies
      */
     public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
     {
@@ -112,13 +112,14 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
     }
 
     /**
-     * @param policyBehaviourFilter BehaviourFilter
+     * @param policyBehaviourFilter
+     *            BehaviourFilter
      */
     public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter)
     {
         this.policyBehaviourFilter = policyBehaviourFilter;
     }
-    
+
     /**
      * Initialise method
      */
@@ -137,7 +138,7 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
                 CopyServicePolicies.OnCopyNodePolicy.QNAME,
                 ContentModel.ASPECT_CHECKED_OUT,
                 new JavaBehaviour(this, "getCopyCallback"));
-        
+
         // register beforeArchiveNode class behaviour for the working copy aspect
         this.policyComponent.bindClassBehaviour(
                 NodeServicePolicies.BeforeArchiveNodePolicy.QNAME,
@@ -163,16 +164,17 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
                 new JavaBehaviour(this, "onRemoveAspect"));
 
         this.policyComponent.bindAssociationBehaviour(
-                    NodeServicePolicies.OnDeleteAssociationPolicy.QNAME,
-                    ContentModel.ASPECT_CMIS_CREATED_CHECKEDOUT,
-                    ContentModel.ASSOC_WORKING_COPY_LINK,
-                    new JavaBehaviour(this, "onDeleteCmisCreatedCheckoutWorkingCopyAssociation"));
+                NodeServicePolicies.OnDeleteAssociationPolicy.QNAME,
+                ContentModel.ASPECT_CMIS_CREATED_CHECKEDOUT,
+                ContentModel.ASSOC_WORKING_COPY_LINK,
+                new JavaBehaviour(this, "onDeleteCmisCreatedCheckoutWorkingCopyAssociation"));
     }
-    
+
     /**
      * beforeDeleteNode policy behaviour
      * 
-     * @param nodeRef   the node reference about to be deleted
+     * @param nodeRef
+     *            the node reference about to be deleted
      */
     public void beforeDeleteWorkingCopy(NodeRef nodeRef)
     {
@@ -196,7 +198,8 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
     /**
      * onDeleteAssociation policy behaviour If the node has the aspect ASPECT_CMIS_CREATED_CHECKEDOUT and ASSOC_WORKING_COPY_LINK association is deleted, delete the node. Fix for MNT-14850.
      * 
-     * @param nodeAssocRef ASSOC_WORKING_COPY_LINK association where the source is the checkedOut node and the target is the workingCopy
+     * @param nodeAssocRef
+     *            ASSOC_WORKING_COPY_LINK association where the source is the checkedOut node and the target is the workingCopy
      */
     public void onDeleteCmisCreatedCheckoutWorkingCopyAssociation(AssociationRef nodeAssocRef)
     {
@@ -213,7 +216,7 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
         }
 
     }
-    
+
     /**
      * beforeArchiveNode policy behaviour
      * 
@@ -239,7 +242,7 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
 
                     Long nodeId = nodeDAO.getNodePair(workingCopyNodeRef).getFirst();
 
-                    //get lock properties from checked out node and set them on working copy node in order to be available for restore
+                    // get lock properties from checked out node and set them on working copy node in order to be available for restore
                     String lockOwner = (String) checkedOutNodeProperties.get(ContentModel.PROP_LOCK_OWNER);
                     Date expiryDate = (Date) checkedOutNodeProperties.get(ContentModel.PROP_EXPIRY_DATE);
                     String lockTypeStr = (String) checkedOutNodeProperties.get(ContentModel.PROP_LOCK_TYPE);
@@ -275,7 +278,7 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
                         }
                     }
 
-                    //update working copy node properties
+                    // update working copy node properties
                     nodeService.setProperties(workingCopyNodeRef, workingCopyProperties);
                 }
             }
@@ -285,9 +288,9 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
             }
 
         }
-        
+
     }
-    
+
     /**
      * onRestoreNode policy behaviour
      * 
@@ -300,7 +303,7 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
     {
         NodeRef workingCopyNodeRef = childAssocRef.getChildRef();
 
-        //check that node is working copy 
+        // check that node is working copy
         if (nodeService.hasAspect(workingCopyNodeRef, ContentModel.ASPECT_WORKING_COPY))
         {
             try
@@ -311,7 +314,7 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
 
                 Map<QName, Serializable> workingCopyProperties = nodeService.getProperties(workingCopyNodeRef);
 
-                //get archived lock properties in order to be restored on the original node
+                // get archived lock properties in order to be restored on the original node
                 String lockOwner = (String) workingCopyProperties.get(ContentModel.PROP_ARCHIVED_LOCK_OWNER);
                 workingCopyProperties.remove(ContentModel.PROP_ARCHIVED_LOCK_OWNER);
                 Date expiryDate = (Date) workingCopyProperties.get(ContentModel.PROP_ARCHIVED_EXPIRY_DATE);
@@ -331,10 +334,10 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
                 {
                     AssociationRef targetAssoc = (AssociationRef) targetAssocList.get(0);
                     checkedOutNodeRef = targetAssoc.getSourceRef();
-                    nodeService.createAssociation( targetAssoc.getSourceRef(),targetAssoc.getTargetRef(), ContentModel.ASSOC_ORIGINAL);
+                    nodeService.createAssociation(targetAssoc.getSourceRef(), targetAssoc.getTargetRef(), ContentModel.ASSOC_ORIGINAL);
 
                 }
-                workingCopyProperties.remove( ContentModel.PROP_ARCHIVED_TARGET_ASSOCS);
+                workingCopyProperties.remove(ContentModel.PROP_ARCHIVED_TARGET_ASSOCS);
 
                 ArrayList<AssociationRef> sourceAssocList = (ArrayList<AssociationRef>) workingCopyProperties
                         .get(ContentModel.PROP_ARCHIVED_SOURCE_ASSOCS);
@@ -347,11 +350,11 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
                 }
                 workingCopyProperties.remove(ContentModel.PROP_ARCHIVED_SOURCE_ASSOCS);
 
-                //clean up the archived aspect and properties for working copy node
+                // clean up the archived aspect and properties for working copy node
                 nodeService.removeAspect(workingCopyNodeRef, ContentModel.ASPECT_ARCHIVE_LOCKABLE);
                 nodeService.setProperties(workingCopyNodeRef, workingCopyProperties);
 
-                //restore properties on original node
+                // restore properties on original node
                 nodeService.addAspect(checkedOutNodeRef, ContentModel.ASPECT_LOCKABLE, null);
                 Map<QName, Serializable> checkedOutNodeProperties = nodeService.getProperties(checkedOutNodeRef);
 
@@ -379,7 +382,7 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
     }
 
     /**
-     * @return              Returns CopyBehaviourCallback
+     * @return Returns CopyBehaviourCallback
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
@@ -387,9 +390,7 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
     }
 
     /**
-     * Dual behaviour to ensure that <b>cm:name</b> is not copied if the source node has the
-     * <b>cm:workingCopy</b> aspect, and to prevent the <b>cm:workingCopy</b> aspect from
-     * being carried to the new node.
+     * Dual behaviour to ensure that <b>cm:name</b> is not copied if the source node has the <b>cm:workingCopy</b> aspect, and to prevent the <b>cm:workingCopy</b> aspect from being carried to the new node.
      * 
      * @author Derek Hulley
      * @since 3.2
@@ -413,7 +414,7 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
         }
 
         /**
-         * Allows copy of workingCopy top-level node to be renamed 
+         * Allows copy of workingCopy top-level node to be renamed
          */
         @Override
         public boolean isTopLevelCanBeRenamed(QName classQName, CopyDetails copyDetails)
@@ -448,8 +449,9 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
                     {
                         String oldName = (String) nodeService.getProperty(checkedOutFrom, ContentModel.PROP_NAME);
                         int extIndex = oldName.lastIndexOf('.');
-                        newName = extIndex == -1 ? oldName + "_" + GUID.generate() : oldName.substring(0, extIndex)
-                                + "_" + GUID.generate() + oldName.substring(extIndex);
+                        newName = extIndex == -1 ? oldName + "_" + GUID.generate()
+                                : oldName.substring(0, extIndex)
+                                        + "_" + GUID.generate() + oldName.substring(extIndex);
                     }
                 }
                 else

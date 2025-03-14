@@ -34,10 +34,8 @@ package org.alfresco.rest.rm.community.model.custom;
  */
 public enum CustomDefinitions
 {
-    ATTACHMENT("Attachment"),
-    MESSAGE("Message"),
-    NEXT_VERSION("Next Version"),
-    RENDITION("Rendition");
+    ATTACHMENT("Attachment"), MESSAGE("Message"), NEXT_VERSION("Next Version"), RENDITION("Rendition");
+
     /**
      * The name of custom reference.
      */

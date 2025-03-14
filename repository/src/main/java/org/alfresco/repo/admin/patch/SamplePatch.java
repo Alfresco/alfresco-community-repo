@@ -31,28 +31,27 @@ public class SamplePatch extends AbstractPatch
 {
     public static final String MSG_SUCCESS = "SamplePatch applied successfully";
     public static final String MSG_FAILURE = "SamplePatch failed to apply";
-    
+
     private boolean mustFail;
 
     /**
      * Default constructor for Spring config
      */
     public SamplePatch()
-    {
-    }
-    
+    {}
+
     /**
      * Overrides the base class version to do nothing, i.e. it does not self-register
      */
     @Override
     public void init()
-    {
-    }
-    
+    {}
+
     /**
-     * Helper constructor for some tests.  Default properties are set automatically.
+     * Helper constructor for some tests. Default properties are set automatically.
      * 
-     * @param mustFail true if this instance must always fail to apply
+     * @param mustFail
+     *            true if this instance must always fail to apply
      */
     /* protected */ SamplePatch(boolean mustFail, TransactionService transactionService)
     {
@@ -64,7 +63,7 @@ public class SamplePatch extends AbstractPatch
         setFixesToSchema(1000);
         setTargetSchema(1001);
     }
-    
+
     /**
      * Does nothing
      * 

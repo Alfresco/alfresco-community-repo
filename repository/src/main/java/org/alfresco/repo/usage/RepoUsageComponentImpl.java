@@ -34,6 +34,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.ibatis.IdsEntity;
 import org.alfresco.model.ContentModel;
@@ -53,9 +57,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.DateUtil;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Low-level implementation to answer repository usage queries
@@ -68,35 +69,36 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
     private static final String QUERY_NS = "alfresco.query.usages";
     private static final String QUERY_SELECT_COUNT_PERSONS_NOT_DISABLED = "select_CountPersonsNotDisabled";
     private static final String QUERY_SELECT_COUNT_DOCUMENTS = "select_CountDocuments";
-    
+
     private static Log logger = LogFactory.getLog(RepoUsageComponentImpl.class);
-    
+
     private TransactionService transactionService;
     private AuthorityService authorityService;
     private AttributeService attributeService;
     private DictionaryService dictionaryService;
     private CannedQueryDAO cannedQueryDAO;
     private QNameDAO qnameDAO;
-    
+
     private RepoUsage restrictions;
     private ReadLock restrictionsReadLock;
     private WriteLock restrictionsWriteLock;
     private Set<RestrictionObserver> restrictionObservers = new HashSet<RestrictionObserver>();
-    
+
     /**
      * Defaults
      */
     public RepoUsageComponentImpl()
     {
         this.restrictions = new RepoUsage(null, null, null, LicenseMode.UNKNOWN, null, false);
-        
+
         ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
         restrictionsReadLock = lock.readLock();
         restrictionsWriteLock = lock.writeLock();
     }
 
     /**
-     * @param transactionService        service that tells if the server is read-only or not
+     * @param transactionService
+     *            service that tells if the server is read-only or not
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -104,7 +106,8 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
     }
 
     /**
-     * @param authorityService          service to check for admin rights
+     * @param authorityService
+     *            service to check for admin rights
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
@@ -112,7 +115,8 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
     }
 
     /**
-     * @param attributeService          service used to store usage attributes
+     * @param attributeService
+     *            service used to store usage attributes
      */
     public void setAttributeService(AttributeService attributeService)
     {
@@ -120,7 +124,8 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
     }
 
     /**
-     * @param dictionaryService         component to resolve types and subtypes
+     * @param dictionaryService
+     *            component to resolve types and subtypes
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -128,7 +133,8 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
     }
 
     /**
-     * @param cannedQueryDAO            DAO for executing queries
+     * @param cannedQueryDAO
+     *            DAO for executing queries
      */
     public void setCannedQueryDAO(CannedQueryDAO cannedQueryDAO)
     {
@@ -136,7 +142,8 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
     }
 
     /**
-     * @param qnameDAO                  DAO for getting IDs of QNames
+     * @param qnameDAO
+     *            DAO for getting IDs of QNames
      */
     public void setQnameDAO(QNameDAO qnameDAO)
     {
@@ -148,7 +155,7 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
     {
         restrictionObservers.add(observer);
     }
-    
+
     /**
      * Check that all properties are properly set
      */
@@ -161,7 +168,7 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
         PropertyCheck.mandatory(this, "cannedQueryDAO", cannedQueryDAO);
         PropertyCheck.mandatory(this, "qnameDAO", qnameDAO);
     }
-    
+
     /**
      * Checks that the 'System' user is active in a read-write txn.
      */
@@ -169,18 +176,18 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
     {
         switch (txnStateNeeded)
         {
-            case TXN_READ_WRITE:
-                if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
-                {
-                    throw AlfrescoRuntimeException.create("system.usage.err.no_txn_readwrite");
-                }
-                break;
-            case TXN_READ_ONLY:
-                if (AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_NONE)
-                {
-                    throw AlfrescoRuntimeException.create("system.usage.err.no_txn");
-                }
-                break;
+        case TXN_READ_WRITE:
+            if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
+            {
+                throw AlfrescoRuntimeException.create("system.usage.err.no_txn_readwrite");
+            }
+            break;
+        case TXN_READ_ONLY:
+            if (AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_NONE)
+            {
+                throw AlfrescoRuntimeException.create("system.usage.err.no_txn");
+            }
+            break;
         }
     }
 
@@ -197,9 +204,9 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
         {
             restrictionsWriteLock.unlock();
         }
-        
+
         // Fire observers
-        for(RestrictionObserver observer : restrictionObservers )
+        for (RestrictionObserver observer : restrictionObservers)
         {
             observer.onChangeRestriction(restrictions);
         }
@@ -235,22 +242,22 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
     private boolean updateUsage(UsageType usageType, boolean reset)
     {
         checkTxnState(TxnReadState.TXN_READ_WRITE);
-        
+
         boolean updateUsers = false;
         boolean updateDocuments = false;
         switch (usageType)
         {
-            case USAGE_DOCUMENTS:
-                updateDocuments = true;
-                break;
-            case USAGE_USERS:
-                updateUsers = true;
-                break;
-            case USAGE_ALL:
-                updateUsers = true;
-                updateDocuments = true;
+        case USAGE_DOCUMENTS:
+            updateDocuments = true;
+            break;
+        case USAGE_USERS:
+            updateUsers = true;
+            break;
+        case USAGE_ALL:
+            updateUsers = true;
+            updateDocuments = true;
         }
-        
+
         if (updateUsers && !updateUsers(reset))
         {
             return false;
@@ -259,7 +266,7 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
         {
             return false;
         }
-        
+
         // Done
         if (logger.isDebugEnabled())
         {
@@ -269,7 +276,7 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
         // The update succeeded and the locks held
         return true;
     }
-    
+
     /**
      * Update number of users with appropriate locking
      */
@@ -298,7 +305,7 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
         // Success
         return true;
     }
-    
+
     /**
      * Update number of documents with appropriate locking
      */
@@ -332,7 +339,7 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
     }
 
     /**
-     * Build the usage component.  Protect with a read lock, transaction check and authentication check.
+     * Build the usage component. Protect with a read lock, transaction check and authentication check.
      */
     private RepoUsage getUsageImpl()
     {
@@ -363,7 +370,7 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
         {
             lastUpdate = lastUpdateUsers;
         }
-        
+
         // Combine with current restrictions
         RepoUsage usage = new RepoUsage(
                 lastUpdate,
@@ -396,21 +403,21 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
             restrictionsReadLock.unlock();
         }
     }
-    
+
     /**
      * Calculate and retrieve full status alerts based on the usage and license expiry state.
      * 
-     * @return              Returns the usage status bean
+     * @return Returns the usage status bean
      */
     public RepoUsageStatus getUsageStatus()
     {
         RepoUsage usage = getUsage();
         RepoUsage restrictions = getRestrictions();
-        
+
         RepoUsageLevel level = RepoUsageLevel.OK;
         List<String> warnings = new ArrayList<String>(1);
         List<String> errors = new ArrayList<String>(1);
-        
+
         // Check users
         long usersCurrent = usage.getUsers() == null ? 0L : usage.getUsers();
         long usersMax = restrictions.getUsers() == null ? Long.MAX_VALUE : restrictions.getUsers();
@@ -430,7 +437,7 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
             warnings.add(I18NUtil.getMessage("system.usage.warn.limit_users_approached", usersMax, usersCurrent));
             level = RepoUsageLevel.WARN_ADMIN;
         }
-        
+
         // Check documents
         long documentsCurrent = usage.getDocuments() == null ? 0L : usage.getDocuments();
         long documentsMax = restrictions.getDocuments() == null ? Long.MAX_VALUE : restrictions.getDocuments();
@@ -455,20 +462,20 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
                 level = RepoUsageLevel.WARN_ADMIN;
             }
         }
-        
+
         // Check the license expiration
         Long licenseExpiryDate = restrictions.getLicenseExpiryDate();
         if (licenseExpiryDate != null)
         {
-            //For informational purposes, get the remaining number of days, counting from the beginning of the day of each date (now and expiration date)
+            // For informational purposes, get the remaining number of days, counting from the beginning of the day of each date (now and expiration date)
             int remainingDays = DateUtil.calculateDays(System.currentTimeMillis(), licenseExpiryDate);
             int remainingMills = 0;
             if (remainingDays == 0)
             {
-                //Get exact number of milliseconds between license expiration time and now to see if is expired
+                // Get exact number of milliseconds between license expiration time and now to see if is expired
                 remainingMills = DateUtil.calculateMs(System.currentTimeMillis(), licenseExpiryDate);
             }
-            
+
             if (remainingDays < 0 || remainingMills < 0)
             {
                 errors.add(I18NUtil.getMessage("system.usage.err.limit_license_expired"));
@@ -491,7 +498,7 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
                 }
             }
         }
-        
+
         RepoUsageStatus status = new RepoUsageStatus(restrictions, usage, level, warnings, errors);
         // Done
         if (logger.isDebugEnabled())

@@ -48,11 +48,10 @@ public class NewVirtualReferenceMethod extends AbstractProtocolMethod<Reference>
      * @param templatePath
      * @param actualNodeRef
      * @param vanillaProcessorClasspath
-     * @deprecated In future system paths will be replaced with actual resources
-     *             or string encoded references
+     * @deprecated In future system paths will be replaced with actual resources or string encoded references
      */
     public NewVirtualReferenceMethod(String templateSysPath, String templatePath, NodeRef actualNodeRef,
-                String vanillaProcessorClasspath)
+            String vanillaProcessorClasspath)
     {
         super();
         this.templateSysPath = templateSysPath;
@@ -62,7 +61,7 @@ public class NewVirtualReferenceMethod extends AbstractProtocolMethod<Reference>
     }
 
     public NewVirtualReferenceMethod(NodeRef templateRef, String templatePath, NodeRef actualNodeRef,
-                String vanillaProcessorClasspath)
+            String vanillaProcessorClasspath)
     {
         super();
         this.templateRef = templateRef;
@@ -77,14 +76,14 @@ public class NewVirtualReferenceMethod extends AbstractProtocolMethod<Reference>
         if (templateRef != null)
         {
             return virtualProtocol.newReference(templateRef,
-                                                templatePath,
-                                                actualNodeRef);
+                    templatePath,
+                    actualNodeRef);
         }
         else
         {
             return virtualProtocol.newReference(templateSysPath,
-                                                templatePath,
-                                                actualNodeRef);
+                    templatePath,
+                    actualNodeRef);
         }
     }
 
@@ -94,17 +93,17 @@ public class NewVirtualReferenceMethod extends AbstractProtocolMethod<Reference>
         if (templateRef != null)
         {
             return vanillaProtocol.newReference(vanillaProcessorClasspath,
-                                                templatePath,
-                                                actualNodeRef,
-                                                templateRef);
+                    templatePath,
+                    actualNodeRef,
+                    templateRef);
 
         }
         else
         {
             return vanillaProtocol.newReference(vanillaProcessorClasspath,
-                                                templatePath,
-                                                actualNodeRef,
-                                                templateSysPath);
+                    templatePath,
+                    actualNodeRef,
+                    templateSysPath);
         }
     }
 }

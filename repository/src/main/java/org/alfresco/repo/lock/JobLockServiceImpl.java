@@ -30,6 +30,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.domain.locks.LockDAO;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
@@ -41,8 +44,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TraceableThreadFactory;
 import org.alfresco.util.VmShutdownListener;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  *
@@ -52,45 +53,41 @@ import org.apache.commons.logging.LogFactory;
 public class JobLockServiceImpl implements JobLockService
 {
     private static final String KEY_RESOURCE_LOCKS = "JobLockServiceImpl.Locks";
-    
+
     private static Log logger = LogFactory.getLog(JobLockServiceImpl.class);
-    
+
     private LockDAO lockDAO;
     private RetryingTransactionHelper retryingTransactionHelper;
     private int defaultRetryCount;
     private long defaultRetryWait;
-    
+
     private ScheduledExecutorService scheduler;
     private VmShutdownListener shutdownListener;
-    
+
     /**
      * Stateless listener that does post-transaction cleanup.
      */
     private final LockTransactionListener txnListener;
-    
+
     public JobLockServiceImpl()
     {
         defaultRetryWait = 20;
         defaultRetryCount = 10;
         txnListener = new LockTransactionListener();
-        
+
         TraceableThreadFactory threadFactory = new TraceableThreadFactory();
         threadFactory.setThreadDaemon(false);
         threadFactory.setNamePrefix("JobLockService");
-        
+
         scheduler = Executors.newSingleThreadScheduledExecutor(threadFactory);
-        
+
         shutdownListener = new VmShutdownListener("JobLockService");
     }
 
- 
-    
     /**
-     * Lifecycle method. This method should be called when the JobLockService
-     * is no longer required allowing proper clean up before disposing of the object.
+     * Lifecycle method. This method should be called when the JobLockService is no longer required allowing proper clean up before disposing of the object.
      * <p>
-     * This is mostly used to tell the thread pool to shut itself down
-     * so as to allow the JVM to terminate.
+     * This is mostly used to tell the thread pool to shut itself down so as to allow the JVM to terminate.
      */
     public void shutdown()
     {
@@ -98,12 +95,11 @@ public class JobLockServiceImpl implements JobLockService
         {
             logger.info("shutting down.");
         }
-        
+
         // If we don't tell the thread pool to shutdown, then the JVM won't shutdown.
         scheduler.shutdown();
     }
-    
-    
+
     /**
      * Set the lock DAO
      */
@@ -113,8 +109,7 @@ public class JobLockServiceImpl implements JobLockService
     }
 
     /**
-     * Set the helper that will handle low-level concurrency conditions i.e. that
-     * enforces optimistic locking and deals with stale state issues.
+     * Set the helper that will handle low-level concurrency conditions i.e. that enforces optimistic locking and deals with stale state issues.
      */
     public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
     {
@@ -123,7 +118,9 @@ public class JobLockServiceImpl implements JobLockService
 
     /**
      * Set the maximum number of attempts to make at getting a lock
-     * @param defaultRetryCount         the number of attempts
+     * 
+     * @param defaultRetryCount
+     *            the number of attempts
      */
     public void setDefaultRetryCount(int defaultRetryCount)
     {
@@ -132,7 +129,9 @@ public class JobLockServiceImpl implements JobLockService
 
     /**
      * Set the default time to wait between attempts to acquire a lock
-     * @param defaultRetryWait          the wait time in milliseconds
+     * 
+     * @param defaultRetryWait
+     *            the wait time in milliseconds
      */
     public void setDefaultRetryWait(long defaultRetryWait)
     {
@@ -167,7 +166,7 @@ public class JobLockServiceImpl implements JobLockService
         boolean added = heldLocksTemp.add(lockQName);
         if (!added)
         {
-            // It's a refresh.  Ordering is not important here as we already hold the lock.
+            // It's a refresh. Ordering is not important here as we already hold the lock.
             refreshLock(txnId, lockQName, timeToLive);
         }
         else
@@ -179,9 +178,9 @@ public class JobLockServiceImpl implements JobLockService
                 {
                     logger.debug(
                             "Attempting to acquire ordered lock: \n" +
-                            "   Lock:     " + lockQName + "\n" +
-                            "   TTL:      " + timeToLive + "\n" +
-                            "   Txn:      " + txnId);
+                                    "   Lock:     " + lockQName + "\n" +
+                                    "   TTL:      " + timeToLive + "\n" +
+                                    "   Txn:      " + txnId);
                 }
                 // If it was last in the set, then the order is correct and we use the
                 // full retry behaviour.
@@ -193,9 +192,9 @@ public class JobLockServiceImpl implements JobLockService
                 {
                     logger.debug(
                             "Attempting to acquire UNORDERED lock: \n" +
-                            "   Lock:     " + lockQName + "\n" +
-                            "   TTL:      " + timeToLive + "\n" +
-                            "   Txn:      " + txnId);
+                                    "   Lock:     " + lockQName + "\n" +
+                                    "   TTL:      " + timeToLive + "\n" +
+                                    "   Txn:      " + txnId);
                 }
                 // The lock request is made out of natural order.
                 // Unordered locks do not get any retry behaviour
@@ -217,7 +216,7 @@ public class JobLockServiceImpl implements JobLockService
     {
         return getLock(lockQName, timeToLive, defaultRetryWait, defaultRetryCount);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -229,17 +228,17 @@ public class JobLockServiceImpl implements JobLockService
         // Done
         return lockToken;
     }
-                                              
+
     /**
      * {@inheritDoc}
      * 
-     * @throws LockAcquisitionException on failure
+     * @throws LockAcquisitionException
+     *             on failure
      */
     @Override
     public void refreshLock(final String lockToken, final QName lockQName, final long timeToLive)
     {
-        RetryingTransactionCallback<Object> refreshLockCallback = new RetryingTransactionCallback<Object>()
-        {
+        RetryingTransactionCallback<Object> refreshLockCallback = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 lockDAO.refreshLock(lockQName, lockToken, timeToLive);
@@ -255,9 +254,9 @@ public class JobLockServiceImpl implements JobLockService
             {
                 logger.debug(
                         "Refreshed Lock: \n" +
-                        "   Lock:     " + lockQName + "\n" +
-                        "   TTL:      " + timeToLive + "\n" +
-                        "   Txn:      " + lockToken);
+                                "   Lock:     " + lockQName + "\n" +
+                                "   TTL:      " + timeToLive + "\n" +
+                                "   Txn:      " + lockToken);
             }
         }
         catch (LockAcquisitionException e)
@@ -267,31 +266,33 @@ public class JobLockServiceImpl implements JobLockService
             {
                 logger.debug(
                         "Lock refresh failed: \n" +
-                        "   Lock:     " + lockQName + "\n" +
-                        "   TTL:      " + timeToLive + "\n" +
-                        "   Txn:      " + lockToken + "\n" +
-                        "   Error:    " + e.getMessage());
+                                "   Lock:     " + lockQName + "\n" +
+                                "   TTL:      " + timeToLive + "\n" +
+                                "   Txn:      " + lockToken + "\n" +
+                                "   Error:    " + e.getMessage());
             }
             throw e;
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
     @Override
     public String getLock(QName lockQName, long timeToLive, JobLockRefreshCallback callback)
     {
-        if (lockQName == null) throw new IllegalArgumentException("lock name null");
-        if (callback == null) throw new IllegalArgumentException("callback null");
-        
+        if (lockQName == null)
+            throw new IllegalArgumentException("lock name null");
+        if (callback == null)
+            throw new IllegalArgumentException("callback null");
+
         String lockToken = getLock(lockQName, timeToLive);
         try
         {
             refreshLock(lockToken, lockQName, timeToLive, callback);
             return lockToken;
         }
-        catch (IllegalArgumentException|LockAcquisitionException e)
+        catch (IllegalArgumentException | LockAcquisitionException e)
         {
             this.releaseLockVerify(lockToken, lockQName);
             throw e;
@@ -313,23 +314,22 @@ public class JobLockServiceImpl implements JobLockService
             {
                 logger.debug(
                         "Lock refresh failed: \n" +
-                        "   Lock:     " + lockQName + "\n" +
-                        "   TTL:      " + timeToLive + "\n" +
-                        "   Txn:      " + lockToken + "\n" +
-                        "   Error:    " + "Lock refresh scheduler has shut down.  The VM may be terminating.");
+                                "   Lock:     " + lockQName + "\n" +
+                                "   TTL:      " + timeToLive + "\n" +
+                                "   Txn:      " + lockToken + "\n" +
+                                "   Error:    " + "Lock refresh scheduler has shut down.  The VM may be terminating.");
             }
             // Don't schedule
             throw new LockAcquisitionException(lockQName, lockToken);
         }
-        
+
         final long delay = timeToLive / 2;
         if (delay < 1)
         {
             throw new IllegalArgumentException("Very small timeToLive: " + timeToLive);
         }
         // Our runnable does the callbacks
-        Runnable runnable = new Runnable()
-        {
+        Runnable runnable = new Runnable() {
             @Override
             public void run()
             {
@@ -338,14 +338,14 @@ public class JobLockServiceImpl implements JobLockService
                 {
                     logger.debug(
                             "Initiating timed Lock refresh: \n" +
-                            "   Lock:     " + lockQName + "\n" +
-                            "   TTL:      " + timeToLive + "\n" +
-                            "   Txn:      " + lockToken);
+                                    "   Lock:     " + lockQName + "\n" +
+                                    "   TTL:      " + timeToLive + "\n" +
+                                    "   Txn:      " + lockToken);
                 }
-                
+
                 // First check the VM
                 if (shutdownListener.isVmShuttingDown())
-                {                    
+                {
                     callLockReleased(callback);
                     return;
                 }
@@ -358,15 +358,15 @@ public class JobLockServiceImpl implements JobLockService
                 {
                     logger.error(
                             "Lock isActive check failed: \n" +
-                            "   Lock:     " + lockQName + "\n" +
-                            "   TTL:      " + timeToLive + "\n" +
-                            "   Txn:      " + lockToken,
+                                    "   Lock:     " + lockQName + "\n" +
+                                    "   TTL:      " + timeToLive + "\n" +
+                                    "   Txn:      " + lockToken,
                             e);
                     // The callback must be informed
                     callLockReleased(callback);
                     return;
                 }
-                
+
                 if (!isActive)
                 {
                     // Debug
@@ -374,9 +374,9 @@ public class JobLockServiceImpl implements JobLockService
                     {
                         logger.debug(
                                 "Lock callback is inactive.  Releasing lock: \n" +
-                                "   Lock:     " + lockQName + "\n" +
-                                "   TTL:      " + timeToLive + "\n" +
-                                "   Txn:      " + lockToken);
+                                        "   Lock:     " + lockQName + "\n" +
+                                        "   TTL:      " + timeToLive + "\n" +
+                                        "   Txn:      " + lockToken);
                     }
                     // The callback is no longer active, so we don't need to refresh.
                     // Release the lock in case the initiator did not do it.
@@ -393,7 +393,7 @@ public class JobLockServiceImpl implements JobLockService
                     try
                     {
                         refreshLock(lockToken, lockQName, timeToLive);
-                        // Success.  The callback does not need to know.
+                        // Success. The callback does not need to know.
                         // NB: Reschedule this task
                         scheduler.schedule(this, delay, TimeUnit.MILLISECONDS);
                     }
@@ -408,22 +408,22 @@ public class JobLockServiceImpl implements JobLockService
         // Schedule this
         scheduler.schedule(runnable, delay, TimeUnit.MILLISECONDS);
     }
-    
+
     /**
      * Calls the callback {@link JobLockRefreshCallback#isActive() isActive} with time-check.
      */
     private boolean callIsActive(JobLockRefreshCallback callback, long delay) throws Throwable
     {
         long t1 = System.nanoTime();
-        
+
         boolean isActive = callback.isActive();
-        
+
         long t2 = System.nanoTime();
-        double timeWastedMs = (double)(t2 - t1)/(double)10E6;
+        double timeWastedMs = (double) (t2 - t1) / (double) 10E6;
         if (timeWastedMs > delay || timeWastedMs > 1000L)
         {
-            // The isActive did not come back quickly enough.  There is no point taking longer than
-            // the delay, but in any case 1s to provide a boolean is too much.  This is probably an
+            // The isActive did not come back quickly enough. There is no point taking longer than
+            // the delay, but in any case 1s to provide a boolean is too much. This is probably an
             // indication that the isActive implementation is performing complex state determination,
             // which is specifically referenced in the API doc.
             throw new RuntimeException(
@@ -431,6 +431,7 @@ public class JobLockServiceImpl implements JobLockService
         }
         return isActive;
     }
+
     /**
      * Calls the callback {@link JobLockRefreshCallback#lockReleased()}.
      */
@@ -452,8 +453,7 @@ public class JobLockServiceImpl implements JobLockService
     @Override
     public void releaseLock(final String lockToken, final QName lockQName)
     {
-        RetryingTransactionCallback<Boolean> releaseCallback = new RetryingTransactionCallback<Boolean>()
-        {
+        RetryingTransactionCallback<Boolean> releaseCallback = new RetryingTransactionCallback<Boolean>() {
             public Boolean execute() throws Throwable
             {
                 return lockDAO.releaseLock(lockQName, lockToken, false);
@@ -467,8 +467,7 @@ public class JobLockServiceImpl implements JobLockService
      */
     public boolean releaseLockVerify(final String lockToken, final QName lockQName)
     {
-        RetryingTransactionCallback<Boolean> releaseCallback = new RetryingTransactionCallback<Boolean>()
-        {
+        RetryingTransactionCallback<Boolean> releaseCallback = new RetryingTransactionCallback<Boolean>() {
             public Boolean execute() throws Throwable
             {
                 return lockDAO.releaseLock(lockQName, lockToken, true);
@@ -478,7 +477,8 @@ public class JobLockServiceImpl implements JobLockService
     }
 
     /**
-     * @throws LockAcquisitionException on failure
+     * @throws LockAcquisitionException
+     *             on failure
      */
     private void getLockImpl(final String lockToken, final QName lockQName, final long timeToLive, long retryWait, int retryCount)
     {
@@ -486,9 +486,8 @@ public class JobLockServiceImpl implements JobLockService
         {
             throw new IllegalArgumentException("Job lock retry count cannot be negative: " + retryCount);
         }
-        
-        RetryingTransactionCallback<Object> getLockCallback = new RetryingTransactionCallback<Object>()
-        {
+
+        RetryingTransactionCallback<Object> getLockCallback = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 lockDAO.getLock(lockQName, lockToken, timeToLive);
@@ -508,10 +507,10 @@ public class JobLockServiceImpl implements JobLockService
             {
                 logger.debug(
                         "Acquired Lock: \n" +
-                        "   Lock:     " + lockQName + "\n" +
-                        "   TTL:      " + timeToLive + "\n" +
-                        "   Txn:      " + lockToken + "\n" +
-                        "   Attempts: " + iterations);
+                                "   Lock:     " + lockQName + "\n" +
+                                "   TTL:      " + timeToLive + "\n" +
+                                "   Txn:      " + lockToken + "\n" +
+                                "   Attempts: " + iterations);
             }
         }
         catch (LockAcquisitionException e)
@@ -521,30 +520,29 @@ public class JobLockServiceImpl implements JobLockService
             {
                 logger.debug(
                         "Lock acquisition failed: \n" +
-                        "   Lock:     " + lockQName + "\n" +
-                        "   TTL:      " + timeToLive + "\n" +
-                        "   Txn:      " + lockToken + "\n" +
-                        "   Error:    " + e.getMessage());
+                                "   Lock:     " + lockQName + "\n" +
+                                "   TTL:      " + timeToLive + "\n" +
+                                "   Txn:      " + lockToken + "\n" +
+                                "   Error:    " + e.getMessage());
             }
             throw e;
         }
     }
-    
+
     /**
-     * Does the high-level retrying around the callback.  At least one attempt is made to call the
-     * provided callback.
+     * Does the high-level retrying around the callback. At least one attempt is made to call the provided callback.
      */
     private int doWithRetry(RetryingTransactionCallback<? extends Object> callback, long retryWait, int retryCount)
     {
         int maxAttempts = retryCount > 0 ? retryCount : 1;
         int lockAttempt = 0;
         LockAcquisitionException lastException = null;
-        while (++lockAttempt <= maxAttempts)     // lockAttempt incremented before check i.e. 1 for first check
+        while (++lockAttempt <= maxAttempts) // lockAttempt incremented before check i.e. 1 for first check
         {
             try
             {
                 retryingTransactionHelper.doInTransaction(callback, false, true);
-                // Success.  Clear the exception indicator! 
+                // Success. Clear the exception indicator!
                 lastException = null;
                 break;
             }
@@ -562,9 +560,14 @@ public class JobLockServiceImpl implements JobLockService
                 }
             }
             // Before running again, do a wait
-            synchronized(callback)
+            synchronized (callback)
             {
-                try { callback.wait(retryWait); } catch (InterruptedException e) {}
+                try
+                {
+                    callback.wait(retryWait);
+                }
+                catch (InterruptedException e)
+                {}
             }
         }
         if (lastException == null)
@@ -578,10 +581,9 @@ public class JobLockServiceImpl implements JobLockService
             throw lastException;
         }
     }
-    
+
     /**
-     * Handles the transction synchronization activity, ensuring locks are rolled back as
-     * required.
+     * Handles the transction synchronization activity, ensuring locks are rolled back as required.
      * 
      * @author Derek Hulley
      * @since 3.2
@@ -589,10 +591,7 @@ public class JobLockServiceImpl implements JobLockService
     private class LockTransactionListener extends TransactionListenerAdapter
     {
         /**
-         * Release any open locks with extreme prejudice i.e. the commit will fail if the
-         * locks cannot be released.  The locks are released in a single transaction -
-         * ordering is therefore not important.  Should this fail, the post-commit phase
-         * will do a final cleanup with individual locks.
+         * Release any open locks with extreme prejudice i.e. the commit will fail if the locks cannot be released. The locks are released in a single transaction - ordering is therefore not important. Should this fail, the post-commit phase will do a final cleanup with individual locks.
          */
         @Override
         public void beforeCommit(boolean readOnly)
@@ -605,8 +604,7 @@ public class JobLockServiceImpl implements JobLockService
                 return;
             }
             // Clean up the locks
-            RetryingTransactionCallback<Object> releaseCallback = new RetryingTransactionCallback<Object>()
-            {
+            RetryingTransactionCallback<Object> releaseCallback = new RetryingTransactionCallback<Object>() {
                 public Object execute() throws Throwable
                 {
                     // Any one of the them could fail
@@ -623,9 +621,7 @@ public class JobLockServiceImpl implements JobLockService
         }
 
         /**
-         * This will be called if something went wrong.  It might have been the lock releases, but
-         * it could be anything else as well.  Each remaining lock is released with warnings where
-         * it fails.
+         * This will be called if something went wrong. It might have been the lock releases, but it could be anything else as well. Each remaining lock is released with warnings where it fails.
          */
         @Override
         public void afterRollback()
@@ -640,8 +636,7 @@ public class JobLockServiceImpl implements JobLockService
             // Clean up any remaining locks
             for (final QName lockQName : heldLocks)
             {
-                RetryingTransactionCallback<Object> releaseCallback = new RetryingTransactionCallback<Object>()
-                {
+                RetryingTransactionCallback<Object> releaseCallback = new RetryingTransactionCallback<Object>() {
                     public Object execute() throws Throwable
                     {
                         lockDAO.releaseLock(lockQName, txnId, false);
@@ -658,8 +653,8 @@ public class JobLockServiceImpl implements JobLockService
                     // hope that it expires soon enough
                     logger.warn(
                             "Failed to release a lock in 'afterRollback':\n" +
-                            "   Lock Name:  " + lockQName + "\n" +
-                            "   Lock Token: " + txnId,
+                                    "   Lock Name:  " + lockQName + "\n" +
+                                    "   Lock Token: " + txnId,
                             e);
                 }
             }

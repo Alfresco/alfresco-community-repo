@@ -29,8 +29,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 
-import org.alfresco.repo.domain.control.AbstractControlDAOImpl;
 import org.mybatis.spring.SqlSessionTemplate;
+
+import org.alfresco.repo.domain.control.AbstractControlDAOImpl;
 
 /**
  * iBatis-specific, DB-agnostic implementation for connection controlling DAO.
@@ -44,55 +45,24 @@ public class ControlDAOImpl extends AbstractControlDAOImpl
      * The myBatis-specific template for convenient statement execution.
      */
     protected SqlSessionTemplate template;
-    
-    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
+
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate)
     {
         this.template = sqlSessionTemplate;
     }
 
     public void startBatch()
     {
-        /*
-         * The 'transactions' here are just iBatis internal markers and
-         * don't have any effect other than to let iBatis know that a batch
-         * is possible.
-         */
-        /*
-        SqlMapClient sqlMapClient = template.getSqlMapClient();
-        try
-        {
-            sqlMapClient.startTransaction();
-            sqlMapClient.startBatch();
-        }
-        catch (SQLException e)
-        {
-            throw new RuntimeException("Failed to start DAO batch.", e);
-        }
-        */
+        /* The 'transactions' here are just iBatis internal markers and don't have any effect other than to let iBatis know that a batch is possible. */
+        /* SqlMapClient sqlMapClient = template.getSqlMapClient(); try { sqlMapClient.startTransaction(); sqlMapClient.startBatch(); } catch (SQLException e) { throw new RuntimeException("Failed to start DAO batch.", e); } */
     }
 
     public void executeBatch()
     {
-        /*
-         * The 'transactions' here are just iBatis internal markers and
-         * don't have any effect other than to let iBatis know that a batch
-         * is possible.
-         */
-        /*
-        SqlMapClient sqlMapClient = template.getSqlMapClient();
-        try
-        {
-            sqlMapClient.executeBatch();
-            sqlMapClient.commitTransaction();
-            sqlMapClient.endTransaction();
-        }
-        catch (SQLException e)
-        {
-            throw new RuntimeException("Failed to execute DAO batch.", e);
-        }
-        */
+        /* The 'transactions' here are just iBatis internal markers and don't have any effect other than to let iBatis know that a batch is possible. */
+        /* SqlMapClient sqlMapClient = template.getSqlMapClient(); try { sqlMapClient.executeBatch(); sqlMapClient.commitTransaction(); sqlMapClient.endTransaction(); } catch (SQLException e) { throw new RuntimeException("Failed to execute DAO batch.", e); } */
     }
-    
+
     /**
      * PostgreSQL-specific implementation for control DAO.
      * 
@@ -117,6 +87,7 @@ public class ControlDAOImpl extends AbstractControlDAOImpl
                 throw new RuntimeException("Failed to create SAVEPOINT: " + savepoint, e);
             }
         }
+
         /**
          * Calls through to the {@link Connection#setSavepoint(String) current connection}.
          */
@@ -133,6 +104,7 @@ public class ControlDAOImpl extends AbstractControlDAOImpl
                 throw new RuntimeException("Failed to create SAVEPOINT: " + savepoint, e);
             }
         }
+
         @Override
         public void releaseSavepoint(Savepoint savepoint)
         {

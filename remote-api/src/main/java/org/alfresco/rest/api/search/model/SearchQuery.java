@@ -26,16 +26,17 @@
 
 package org.alfresco.rest.api.search.model;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.search.FacetFormat;
 import org.alfresco.service.cmr.search.GeneralHighlightParameters;
 import org.alfresco.service.cmr.search.IntervalParameters;
 import org.alfresco.service.cmr.search.RangeParameters;
 import org.alfresco.service.cmr.search.StatsRequestParameters;
-
-import java.util.List;
 
 /**
  * POJO class representing the JSON body for a search request
@@ -67,34 +68,34 @@ public class SearchQuery
     private final FacetFormat facetFormat;
 
     public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null, null,
-                null,null, null, null, null,null, null, null, null,
-                null, null, null,null, null,null);
+            null, null, null, null, null, null, null, null, null,
+            null, null, null, null, null, null);
 
     @JsonCreator
     public SearchQuery(@JsonProperty("query") Query query,
-                @JsonProperty("paging") Paging paging,
-                @JsonProperty("includeRequest") Boolean includeRequest,
-                @JsonProperty("include") List<String> include,
-                @JsonProperty("fields") List<String> fields,
-                @JsonProperty("sort") List<SortDef> sort,
-                @JsonProperty("templates") List<Template> templates,
-                @JsonProperty("defaults") Default defaults,
-                @JsonProperty("filterQueries")  List<FilterQuery> filterQueries,
-                @JsonProperty("facetFields") FacetFields facetFields,
-                @JsonProperty("facetQueries")  List<FacetQuery> facetQueries,
-                @JsonProperty("spellcheck") Spelling spellcheck,
-                @JsonProperty("scope") Scope scope,
-                @JsonProperty("limits")Limits limits,
-                @JsonProperty("highlight")GeneralHighlightParameters highlight,
-                @JsonProperty("facetIntervals")IntervalParameters facetIntervals,
-                @JsonProperty("pivots") List<Pivot> pivots,
-                @JsonProperty("stats") List<StatsRequestParameters> stats,
-                @JsonProperty("ranges") List<RangeParameters> ranges,
-                @JsonProperty("localization") Localization localization,
-                @JsonProperty("facetFormat") FacetFormat facetFormat)
+            @JsonProperty("paging") Paging paging,
+            @JsonProperty("includeRequest") Boolean includeRequest,
+            @JsonProperty("include") List<String> include,
+            @JsonProperty("fields") List<String> fields,
+            @JsonProperty("sort") List<SortDef> sort,
+            @JsonProperty("templates") List<Template> templates,
+            @JsonProperty("defaults") Default defaults,
+            @JsonProperty("filterQueries") List<FilterQuery> filterQueries,
+            @JsonProperty("facetFields") FacetFields facetFields,
+            @JsonProperty("facetQueries") List<FacetQuery> facetQueries,
+            @JsonProperty("spellcheck") Spelling spellcheck,
+            @JsonProperty("scope") Scope scope,
+            @JsonProperty("limits") Limits limits,
+            @JsonProperty("highlight") GeneralHighlightParameters highlight,
+            @JsonProperty("facetIntervals") IntervalParameters facetIntervals,
+            @JsonProperty("pivots") List<Pivot> pivots,
+            @JsonProperty("stats") List<StatsRequestParameters> stats,
+            @JsonProperty("ranges") List<RangeParameters> ranges,
+            @JsonProperty("localization") Localization localization,
+            @JsonProperty("facetFormat") FacetFormat facetFormat)
     {
         this.query = query;
-        this.includeRequest = includeRequest==null?false:includeRequest;
+        this.includeRequest = includeRequest == null ? false : includeRequest;
         this.paging = paging;
         this.include = include;
         this.fields = fields;
@@ -140,6 +141,7 @@ public class SearchQuery
     {
         return sort;
     }
+
     public List<Template> getTemplates()
     {
         return templates;

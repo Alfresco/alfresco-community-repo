@@ -37,6 +37,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONObject;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.RuleChain;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -56,7 +64,6 @@ import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -78,18 +85,9 @@ import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule;
 import org.alfresco.util.test.junitrules.TemporaryNodes;
 import org.alfresco.util.test.junitrules.TemporarySites;
-import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
 
 /**
- * Test class for some {@link ForumModel forum model}-related functionality, specifically comments.
- * There is no (fully-featured) "CommentService" or "DiscussionService" and the REST API simply creates the appropriate
- * content structure as required by the forum model.
+ * Test class for some {@link ForumModel forum model}-related functionality, specifically comments. There is no (fully-featured) "CommentService" or "DiscussionService" and the REST API simply creates the appropriate content structure as required by the forum model.
  *
  * @author Neil McErlean
  * @since 4.0
@@ -104,8 +102,9 @@ public class CommentsTest
     public static final AlfrescoPerson TEST_USER1 = new AlfrescoPerson(APP_CONTEXT_INIT, USER_ONE_NAME);
 
     // Tie them together in a static Rule Chain
-    @ClassRule public static RuleChain STATIC_RULE_CHAIN = RuleChain.outerRule(APP_CONTEXT_INIT)
-                                                                    .around(TEST_USER1);
+    @ClassRule
+    public static RuleChain STATIC_RULE_CHAIN = RuleChain.outerRule(APP_CONTEXT_INIT)
+            .around(TEST_USER1);
 
     // A JUnit Rule to run all tests as user1
     public RunAsFullyAuthenticatedRule runAsRule = new RunAsFullyAuthenticatedRule(TEST_USER1);
@@ -115,9 +114,10 @@ public class CommentsTest
     public TemporarySites testSites = new TemporarySites(APP_CONTEXT_INIT);
 
     // Tie them together in a non-static rule chain.
-    @Rule public RuleChain ruleChain = RuleChain.outerRule(runAsRule)
-                                                .around(testSites)
-                                                .around(testNodes);
+    @Rule
+    public RuleChain ruleChain = RuleChain.outerRule(runAsRule)
+            .around(testSites)
+            .around(testNodes);
 
     // Services
     private static BehaviourFilter behaviourFilter;
@@ -141,28 +141,30 @@ public class CommentsTest
     private NodeRef testFolder;
     private List<NodeRef> testDocs;
 
-    @BeforeClass public static void initBasicServices() throws Exception
+    @BeforeClass
+    public static void initBasicServices() throws Exception
     {
-        behaviourFilter = (BehaviourFilter)APP_CONTEXT_INIT.getApplicationContext().getBean("policyBehaviourFilter");
-        contentService = (ContentService)APP_CONTEXT_INIT.getApplicationContext().getBean("ContentService");
-        nodeService = (NodeService)APP_CONTEXT_INIT.getApplicationContext().getBean("NodeService");
-        repositoryHelper = (Repository)APP_CONTEXT_INIT.getApplicationContext().getBean("repositoryHelper");
-        siteService = (SiteService)APP_CONTEXT_INIT.getApplicationContext().getBean("SiteService");
-        transactionHelper = (RetryingTransactionHelper)APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper");
+        behaviourFilter = (BehaviourFilter) APP_CONTEXT_INIT.getApplicationContext().getBean("policyBehaviourFilter");
+        contentService = (ContentService) APP_CONTEXT_INIT.getApplicationContext().getBean("ContentService");
+        nodeService = (NodeService) APP_CONTEXT_INIT.getApplicationContext().getBean("NodeService");
+        repositoryHelper = (Repository) APP_CONTEXT_INIT.getApplicationContext().getBean("repositoryHelper");
+        siteService = (SiteService) APP_CONTEXT_INIT.getApplicationContext().getBean("SiteService");
+        transactionHelper = (RetryingTransactionHelper) APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper");
 
-        authenticationComponent = (AuthenticationComponent)APP_CONTEXT_INIT.getApplicationContext().getBean("authenticationComponent");
-        commentService = (CommentService)APP_CONTEXT_INIT.getApplicationContext().getBean("commentService");
-        authenticationService = (MutableAuthenticationService)APP_CONTEXT_INIT.getApplicationContext().getBean("AuthenticationService");
-        personService = (PersonService)APP_CONTEXT_INIT.getApplicationContext().getBean("PersonService");
-        postDAO = (ActivityPostDAO)APP_CONTEXT_INIT.getApplicationContext().getBean("postDAO");
-        permissionServiceImpl = (PermissionServiceImpl)APP_CONTEXT_INIT.getApplicationContext().getBean("permissionServiceImpl");
-        permissionModelDAO = (ModelDAO)APP_CONTEXT_INIT.getApplicationContext().getBean("permissionsModelDAO");
-        lockService = (LockService)APP_CONTEXT_INIT.getApplicationContext().getBean("lockService");
+        authenticationComponent = (AuthenticationComponent) APP_CONTEXT_INIT.getApplicationContext().getBean("authenticationComponent");
+        commentService = (CommentService) APP_CONTEXT_INIT.getApplicationContext().getBean("commentService");
+        authenticationService = (MutableAuthenticationService) APP_CONTEXT_INIT.getApplicationContext().getBean("AuthenticationService");
+        personService = (PersonService) APP_CONTEXT_INIT.getApplicationContext().getBean("PersonService");
+        postDAO = (ActivityPostDAO) APP_CONTEXT_INIT.getApplicationContext().getBean("postDAO");
+        permissionServiceImpl = (PermissionServiceImpl) APP_CONTEXT_INIT.getApplicationContext().getBean("permissionServiceImpl");
+        permissionModelDAO = (ModelDAO) APP_CONTEXT_INIT.getApplicationContext().getBean("permissionsModelDAO");
+        lockService = (LockService) APP_CONTEXT_INIT.getApplicationContext().getBean("lockService");
 
         COMPANY_HOME = repositoryHelper.getCompanyHome();
     }
 
-    @Before public void createSomeContentForCommentingOn() throws Exception
+    @Before
+    public void createSomeContentForCommentingOn() throws Exception
     {
         // Create some content which we will comment on.
         testSite = testSites.createSite("sitePreset", "testSite", "test site title", "test site description", SiteVisibility.PUBLIC, USER_ONE_NAME);
@@ -177,12 +179,12 @@ public class CommentsTest
     }
 
     // MNT-11667 "createComment" method creates activity for users who are not supposed to see the file
-    @Test public void testMNT11667() throws Exception
+    @Test
+    public void testMNT11667() throws Exception
     {
         try
         {
-            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-            {
+            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -298,126 +300,121 @@ public class CommentsTest
     }
 
     /**
-     * This test method comments on some nodes asserting that the commentCount rollup property
-     * responds correctly to the changing number of comments.
+     * This test method comments on some nodes asserting that the commentCount rollup property responds correctly to the changing number of comments.
      */
-    @Test public void commentOnDocsCheckingCommentCountRollup() throws Exception
+    @Test
+    public void commentOnDocsCheckingCommentCountRollup() throws Exception
     {
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable
             {
-                @Override
-                public Void execute() throws Throwable
+                // All test nodes are uncommented initially.
+                for (NodeRef nr : testDocs)
                 {
-                    // All test nodes are uncommented initially.
-                    for (NodeRef nr : testDocs)
-                    {
-                        assertCommentCountIs(nr, 0);
-                    }
-
-                    // Comment on each node twice
-                    Map<NodeRef, List<NodeRef>> mapDiscussableToComments = new HashMap<NodeRef, List<NodeRef>>();
-
-                    for (NodeRef nr : testDocs)
-                    {
-                        final ArrayList<NodeRef> comments = new ArrayList<NodeRef>();
-                        mapDiscussableToComments.put(nr, comments);
-
-                        comments.add(applyComment(nr, "Test comment 1 " + System.currentTimeMillis()));
-                        Thread.sleep(50); // 50 ms sleep so comments aren't simultaneous.
-
-                        comments.add(applyComment(nr, "Test comment 2 " + System.currentTimeMillis()));
-                        Thread.sleep(50);
-                    }
-
-                    // Check that the rollup comment counts are accurate.
-                    for (NodeRef nr : testDocs)
-                    {
-                        assertCommentCountIs(nr, 2);
-                    }
-
-                    // Remove comments
-                    for (Map.Entry<NodeRef, List<NodeRef>> entry : mapDiscussableToComments.entrySet())
-                    {
-                        for (NodeRef commentNode : entry.getValue())
-                        {
-                            nodeService.deleteNode(commentNode);
-                        }
-                    }
-                    
-                    // All test nodes are uncommented again.
-                    for (NodeRef nr : testDocs)
-                    {
-                        assertCommentCountIs(nr, 0);
-                    }
-                    
-                    return null;
+                    assertCommentCountIs(nr, 0);
                 }
-            });
-    }
-    
-    /**
-     * This test method tests that commented nodes from before Swift have their comment counts correctly rolled up.
-     * Nodes that were commented on in prior versions of Alfresco will not have commentCount rollups -
-     * neither the aspect nor the property defined within it. Alfresco lazily calculates commentCount rollups for these
-     * nodes. So they will appear to have a count of 0 (undefined, really) and will not be given the "(count)" UI decoration.
-     * Then when a comment is added (or removed), the comment count should be recalculated from scratch.
-     */
-    @Test public void testRollupOfPreSwiftNodes() throws Exception
-    {
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
+
+                // Comment on each node twice
+                Map<NodeRef, List<NodeRef>> mapDiscussableToComments = new HashMap<NodeRef, List<NodeRef>>();
+
+                for (NodeRef nr : testDocs)
                 {
-                    assertTrue("Not enough test docs for this test case", testDocs.size() >= 2);
-                    NodeRef node1 = testDocs.get(0);
-                    NodeRef node2 = testDocs.get(1);
+                    final ArrayList<NodeRef> comments = new ArrayList<NodeRef>();
+                    mapDiscussableToComments.put(nr, comments);
 
-                    // We will simulate pre-Swift commenting by temporarily disabling the behaviours that add the aspect & do the rollups.
-                    behaviourFilter.disableBehaviour(ForumModel.TYPE_POST);
+                    comments.add(applyComment(nr, "Test comment 1 " + System.currentTimeMillis()));
+                    Thread.sleep(50); // 50 ms sleep so comments aren't simultaneous.
 
-                    for (NodeRef nr : new NodeRef[]{node1, node2})
-                    {
-                        // All test nodes initially do not have the commentsRollup aspect.
-                        assertFalse("Test node had comments rollup aspect.", nodeService.hasAspect(nr, ForumModel.ASPECT_COMMENTS_ROLLUP));
-                    }
-
-                    // Comment on each node - we need to save one comment noderef in order to delete it later.
-                    NodeRef commentOnNode1 = applyComment(node1, "Hello", true);
-                    applyComment(node1, "Bonjour", true);
-                    applyComment(node2, "Hola", true);
-                    applyComment(node2, "Bout ye?", true);
-
-                    // Check that the rollup comment counts are still not present. And re-enable the behaviours after we check.
-                    for (NodeRef nr : new NodeRef[]{node1, node2})
-                    {
-                        assertFalse("Test node had comments rollup aspect.", nodeService.hasAspect(nr, ForumModel.ASPECT_COMMENTS_ROLLUP));
-                    }
-                    behaviourFilter.enableBehaviour(ForumModel.TYPE_POST);
-
-                    // Now the addition or deletion of a comment, should trigger a recalculation of the comment rollup from scratch.
-                    applyComment(node2, "hello again");
-                    nodeService.deleteNode(commentOnNode1);
-                    assertCommentCountIs(node2, 3);
-                    assertCommentCountIs(node1, 1);
-
-                    return null;
+                    comments.add(applyComment(nr, "Test comment 2 " + System.currentTimeMillis()));
+                    Thread.sleep(50);
                 }
-            });
+
+                // Check that the rollup comment counts are accurate.
+                for (NodeRef nr : testDocs)
+                {
+                    assertCommentCountIs(nr, 2);
+                }
+
+                // Remove comments
+                for (Map.Entry<NodeRef, List<NodeRef>> entry : mapDiscussableToComments.entrySet())
+                {
+                    for (NodeRef commentNode : entry.getValue())
+                    {
+                        nodeService.deleteNode(commentNode);
+                    }
+                }
+
+                // All test nodes are uncommented again.
+                for (NodeRef nr : testDocs)
+                {
+                    assertCommentCountIs(nr, 0);
+                }
+
+                return null;
+            }
+        });
     }
 
     /**
-     *  REPO-2557, ALF-21907
+     * This test method tests that commented nodes from before Swift have their comment counts correctly rolled up. Nodes that were commented on in prior versions of Alfresco will not have commentCount rollups - neither the aspect nor the property defined within it. Alfresco lazily calculates commentCount rollups for these nodes. So they will appear to have a count of 0 (undefined, really) and will not be given the "(count)" UI decoration. Then when a comment is added (or removed), the comment count should be recalculated from scratch.
      */
-    @Test public void testAddingCommentOnLockedNode()
+    @Test
+    public void testRollupOfPreSwiftNodes() throws Exception
+    {
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable
+            {
+                assertTrue("Not enough test docs for this test case", testDocs.size() >= 2);
+                NodeRef node1 = testDocs.get(0);
+                NodeRef node2 = testDocs.get(1);
+
+                // We will simulate pre-Swift commenting by temporarily disabling the behaviours that add the aspect & do the rollups.
+                behaviourFilter.disableBehaviour(ForumModel.TYPE_POST);
+
+                for (NodeRef nr : new NodeRef[]{node1, node2})
+                {
+                    // All test nodes initially do not have the commentsRollup aspect.
+                    assertFalse("Test node had comments rollup aspect.", nodeService.hasAspect(nr, ForumModel.ASPECT_COMMENTS_ROLLUP));
+                }
+
+                // Comment on each node - we need to save one comment noderef in order to delete it later.
+                NodeRef commentOnNode1 = applyComment(node1, "Hello", true);
+                applyComment(node1, "Bonjour", true);
+                applyComment(node2, "Hola", true);
+                applyComment(node2, "Bout ye?", true);
+
+                // Check that the rollup comment counts are still not present. And re-enable the behaviours after we check.
+                for (NodeRef nr : new NodeRef[]{node1, node2})
+                {
+                    assertFalse("Test node had comments rollup aspect.", nodeService.hasAspect(nr, ForumModel.ASPECT_COMMENTS_ROLLUP));
+                }
+                behaviourFilter.enableBehaviour(ForumModel.TYPE_POST);
+
+                // Now the addition or deletion of a comment, should trigger a recalculation of the comment rollup from scratch.
+                applyComment(node2, "hello again");
+                nodeService.deleteNode(commentOnNode1);
+                assertCommentCountIs(node2, 3);
+                assertCommentCountIs(node1, 1);
+
+                return null;
+            }
+        });
+    }
+
+    /**
+     * REPO-2557, ALF-21907
+     */
+    @Test
+    public void testAddingCommentOnLockedNode()
     {
         String user = authenticationComponent.getCurrentUserName();
         final NodeRef testDoc = testDocs.get(0);
         try
         {
             // create user 2 and 3
-            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-            {
+            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -434,8 +431,7 @@ public class CommentsTest
             authenticationComponent.setCurrentUser(USER_ONE_NAME);
 
             // create some comments
-            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-            {
+            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -448,8 +444,7 @@ public class CommentsTest
             authenticationComponent.setCurrentUser(USER_TWO_NAME);
 
             // lock node
-            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-            {
+            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -462,8 +457,7 @@ public class CommentsTest
 
             try
             {
-                transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-                {
+                transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
                     @Override
                     public Void execute() throws Throwable
                     {
@@ -493,8 +487,7 @@ public class CommentsTest
 
             try
             {
-                transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-                {
+                transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
                     @Override
                     public Void execute() throws Throwable
                     {
@@ -523,8 +516,7 @@ public class CommentsTest
             // change to lock owner
             authenticationComponent.setCurrentUser(USER_TWO_NAME);
 
-            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-            {
+            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -540,8 +532,7 @@ public class CommentsTest
             authenticationComponent.setCurrentUser(USER_ONE_NAME);
 
             // unlock node
-            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-            {
+            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -553,43 +544,41 @@ public class CommentsTest
             authenticationComponent.setCurrentUser(user);
         }
     }
-    
+
     /**
-     * This test method tests that nodes whose commentCount is set to -1 have their commentCounts recalculated.
-     * This feature (see ALF-8498) is to allow customers to set their counts to -1 thus triggering a recount for that document.
+     * This test method tests that nodes whose commentCount is set to -1 have their commentCounts recalculated. This feature (see ALF-8498) is to allow customers to set their counts to -1 thus triggering a recount for that document.
      */
-    @Test public void testTriggerCommentRecount() throws Exception
+    @Test
+    public void testTriggerCommentRecount() throws Exception
     {
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable
             {
-                @Override
-                public Void execute() throws Throwable
-                {
-                    NodeRef testDoc = testDocs.get(0);
-                    applyComment(testDoc, "Hello 1");
-                    applyComment(testDoc, "Hello 2");
-                    applyComment(testDoc, "Hello 3");
+                NodeRef testDoc = testDocs.get(0);
+                applyComment(testDoc, "Hello 1");
+                applyComment(testDoc, "Hello 2");
+                applyComment(testDoc, "Hello 3");
 
-                    assertCommentCountIs(testDoc, 3);
+                assertCommentCountIs(testDoc, 3);
 
-                    // We'll cheat and just set it to an arbitrary value.
-                    nodeService.setProperty(testDoc, ForumModel.PROP_COMMENT_COUNT, 42);
+                // We'll cheat and just set it to an arbitrary value.
+                nodeService.setProperty(testDoc, ForumModel.PROP_COMMENT_COUNT, 42);
 
-                    // It should have that value - even though it's wrong.
-                    assertCommentCountIs(testDoc, 42);
+                // It should have that value - even though it's wrong.
+                assertCommentCountIs(testDoc, 42);
 
-                    // Now we'll set it to the trigger value -1.
-                    nodeService.setProperty(testDoc, ForumModel.PROP_COMMENT_COUNT, ForumPostBehaviours.COUNT_TRIGGER_VALUE);
+                // Now we'll set it to the trigger value -1.
+                nodeService.setProperty(testDoc, ForumModel.PROP_COMMENT_COUNT, ForumPostBehaviours.COUNT_TRIGGER_VALUE);
 
-                    // It should have the correct, recalculated value.
-                    assertCommentCountIs(testDoc, 3);
+                // It should have the correct, recalculated value.
+                assertCommentCountIs(testDoc, 3);
 
-                    return null;
-                }
-            });
+                return null;
+            }
+        });
     }
 
-    
     /**
      * This method asserts that the commentCount (rollup) is as specified for the given node.
      */
@@ -600,8 +589,7 @@ public class CommentsTest
         {
             assertTrue("Uncommented node should have EITHER no commentsRollup aspect OR commentCount of zero.",
                     !nodeService.hasAspect(discussableNode, ForumModel.ASPECT_COMMENTS_ROLLUP) ||
-                    (commentCount != null && commentCount.equals(Integer.valueOf(0))
-                            ));
+                            (commentCount != null && commentCount.equals(Integer.valueOf(0))));
         }
         else
         {
@@ -609,20 +597,21 @@ public class CommentsTest
             assertEquals("Wrong comment count", expectedCount, commentCount);
         }
     }
-    
+
     private NodeRef applyComment(NodeRef nr, String comment)
     {
         return applyComment(nr, comment, false);
     }
 
     /**
-     * This method applies the specified comment to the specified node.
-     * As there is no CommentService or DiscussionService, we mimic here what the comments REST API does,
-     * by manually creating the correct content structure using the nodeService. Behaviours will do some
-     * of the work for us. See comments.post.json.js for comparison.
-     * @param nr nodeRef to comment on.
-     * @param comment the text of the comment.
-     * @param suppressRollups if true, commentsRollup aspect will not be added.
+     * This method applies the specified comment to the specified node. As there is no CommentService or DiscussionService, we mimic here what the comments REST API does, by manually creating the correct content structure using the nodeService. Behaviours will do some of the work for us. See comments.post.json.js for comparison.
+     * 
+     * @param nr
+     *            nodeRef to comment on.
+     * @param comment
+     *            the text of the comment.
+     * @param suppressRollups
+     *            if true, commentsRollup aspect will not be added.
      * @return the NodeRef of the fm:post comment node.
      * 
      * @see CommentsTest#testRollupOfPreSwiftNodes() for use of suppressRollups.
@@ -641,7 +630,7 @@ public class CommentsTest
         }
         // Forum node is created automatically by DiscussableAspect behaviour.
         NodeRef forumNode = nodeService.getChildAssocs(nr, ForumModel.ASSOC_DISCUSSION, QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "discussion")).get(0).getChildRef();
-        
+
         final List<ChildAssociationRef> existingTopics = nodeService.getChildAssocs(forumNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Comments"));
         NodeRef topicNode = null;
         if (existingTopics.isEmpty())
@@ -658,7 +647,7 @@ public class CommentsTest
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.setEncoding("UTF-8");
         writer.putContent(comment);
-        
+
         return postNode;
     }
 }

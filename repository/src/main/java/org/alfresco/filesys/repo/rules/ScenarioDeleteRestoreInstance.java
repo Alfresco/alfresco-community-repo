@@ -30,6 +30,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.filesys.repo.ResultCallback;
 import org.alfresco.filesys.repo.rules.commands.CompoundCommand;
@@ -37,147 +39,143 @@ import org.alfresco.filesys.repo.rules.commands.DeleteFileCommand;
 import org.alfresco.filesys.repo.rules.commands.RestoreFileCommand;
 import org.alfresco.filesys.repo.rules.operations.CreateFileOperation;
 import org.alfresco.filesys.repo.rules.operations.DeleteFileOperation;
-import org.alfresco.jlan.server.filesys.NetworkFile;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * This is an instance of a "delete restore shuffle" 
+ * This is an instance of a "delete restore shuffle"
  * 
  * Triggered by a delete of a file followed by a recreate of that same file.
  * 
- * <p> First implemented for MacOS Lion Finder.
+ * <p>
+ * First implemented for MacOS Lion Finder.
  * 
  * <p>
- * Sequence of operations.
- * a) File Deleted
- * b) File Created.  
+ * Sequence of operations. a) File Deleted b) File Created.
  */
 public class ScenarioDeleteRestoreInstance implements ScenarioInstance
 {
     private static Log logger = LogFactory.getLog(ScenarioDeleteRestoreInstance.class);
-    
-    enum InternalState 
+
+    enum InternalState
     {
-        NONE,
-        LOOKING_FOR_CREATE
+        NONE, LOOKING_FOR_CREATE
     }
-       
+
     InternalState internalState = InternalState.NONE;
-    
+
     private Date startTime = new Date();
-    
+
     private String deleteName;
-    
+
     private NodeRef originalNodeRef;
-    
+
     private Ranking ranking;
-    
+
     /**
-     * Timeout in ms.  Default 30 seconds.
+     * Timeout in ms. Default 30 seconds.
      */
     private long timeout = 60000;
-    
+
     private boolean isComplete;
-    
+
     /**
-     * Keep track of deletes that we substitute with a rename
-     * could be more than one if scenarios overlap
+     * Keep track of deletes that we substitute with a rename could be more than one if scenarios overlap
      * 
      * From, TempFileName
      */
     private Map<String, String> deletes = new HashMap<String, String>();
-    
+
     /**
      * Evaluate the next operation
-     * @param operation Operation
+     * 
+     * @param operation
+     *            Operation
      */
     public Command evaluate(Operation operation)
     {
-               
+
         /**
          * Anti-pattern : timeout
          */
         Date now = new Date();
-        if(now.getTime() > startTime.getTime() + getTimeout())
+        if (now.getTime() > startTime.getTime() + getTimeout())
         {
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Instance timed out deleteName:" + deleteName);
                 isComplete = true;
                 return null;
             }
         }
-        
+
         switch (internalState)
         {
-        
-        case NONE:
-            
-            /**
-             * Looking for file being deleted deleted 
 
-             */              
-            if(operation instanceof DeleteFileOperation)
+        case NONE:
+
+            /**
+             * Looking for file being deleted deleted
+             * 
+             */
+            if (operation instanceof DeleteFileOperation)
             {
-                DeleteFileOperation d = (DeleteFileOperation)operation;
-                
+                DeleteFileOperation d = (DeleteFileOperation) operation;
+
                 deleteName = d.getName();
-                               
-                if(logger.isDebugEnabled())
+
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("entering LOOKING_FOR_CREATE state: " + deleteName);
                 }
                 internalState = InternalState.LOOKING_FOR_CREATE;
-                
+
                 ArrayList<Command> commands = new ArrayList<Command>();
                 ArrayList<Command> postCommitCommands = new ArrayList<Command>();
                 ArrayList<Command> postErrorCommands = new ArrayList<Command>();
                 commands.add(new DeleteFileCommand(d.getName(), d.getRootNodeRef(), d.getPath()));
                 postCommitCommands.add(newDeleteFileCallbackCommand());
-                
-                return new CompoundCommand(commands, postCommitCommands, postErrorCommands);  
-                
+
+                return new CompoundCommand(commands, postCommitCommands, postErrorCommands);
+
             }
             else
             {
                 // anything else bomb out
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("State error, expected a DELETE");
                 }
                 isComplete = true;
             }
             break;
-            
+
         case LOOKING_FOR_CREATE:
-            
+
             /**
              * Looking for a create operation of the deleted file
              */
-            if(operation instanceof CreateFileOperation)
+            if (operation instanceof CreateFileOperation)
             {
-                CreateFileOperation c = (CreateFileOperation)operation;
-                
-                if(c.getName().equalsIgnoreCase(deleteName))
+                CreateFileOperation c = (CreateFileOperation) operation;
+
+                if (c.getName().equalsIgnoreCase(deleteName))
                 {
                     isComplete = true;
-                    if(originalNodeRef != null)
+                    if (originalNodeRef != null)
                     {
                         logger.debug("Scenario fires:" + this);
                         return new RestoreFileCommand(c.getName(), c.getRootNodeRef(), c.getPath(), c.getAllocationSize(), originalNodeRef);
                     }
-                    
+
                     return null;
                 }
-            }    
+            }
         }
-        
+
         return null;
     }
-    
+
     @Override
     public boolean isComplete()
     {
@@ -189,12 +187,12 @@ public class ScenarioDeleteRestoreInstance implements ScenarioInstance
     {
         return ranking;
     }
-    
+
     public void setRanking(Ranking ranking)
     {
         this.ranking = ranking;
     }
-    
+
     public String toString()
     {
         return "ScenarioDeleteRestoreShuffleInstance:" + deleteName;
@@ -209,21 +207,20 @@ public class ScenarioDeleteRestoreInstance implements ScenarioInstance
     {
         return timeout;
     }
-    
+
     /**
      * Called for delete file.
      */
     private ResultCallback newDeleteFileCallbackCommand()
     {
-        return new ResultCallback()
-        {
+        return new ResultCallback() {
             @Override
             public void execute(Object result)
             {
-                if(result instanceof NodeRef)
+                if (result instanceof NodeRef)
                 {
                     logger.debug("got node ref of deleted node");
-                    originalNodeRef = (NodeRef)result;
+                    originalNodeRef = (NodeRef) result;
                 }
             }
 
@@ -231,9 +228,8 @@ public class ScenarioDeleteRestoreInstance implements ScenarioInstance
             public TxnReadState getTransactionRequired()
             {
                 return TxnReadState.TXN_NONE;
-            }   
+            }
         };
     }
 
-    
 }

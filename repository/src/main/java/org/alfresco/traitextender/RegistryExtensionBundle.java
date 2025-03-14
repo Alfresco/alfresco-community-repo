@@ -34,8 +34,7 @@ import java.util.Set;
 import org.alfresco.util.ParameterCheck;
 
 /**
- * {@link ExtensionBundle} that supports simple {@link ExtensionPoint} to
- * {@link ExtensionFactory} association registration.
+ * {@link ExtensionBundle} that supports simple {@link ExtensionPoint} to {@link ExtensionFactory} association registration.
  *
  * @author Bogdan Horje
  */
@@ -49,17 +48,14 @@ public class RegistryExtensionBundle implements ExtensionBundle
     public RegistryExtensionBundle(String id)
     {
         ParameterCheck.mandatory("id",
-                                 id);
+                id);
         this.id = id;
     }
 
     /**
-     * Registers an association between the given {@link ExtensionPoint} and
-     * {@link ExtensionFactory}.<br>
-     * At {@link #start(Extender)} time all registered {@link ExtensionPoint}s
-     * will be registered with the given {@link Extender}.<br>
-     * At {@link #stop(Extender)} time all registered {@link ExtensionPoint}s
-     * will be unregistered with the given {@link Extender}.<br>
+     * Registers an association between the given {@link ExtensionPoint} and {@link ExtensionFactory}.<br>
+     * At {@link #start(Extender)} time all registered {@link ExtensionPoint}s will be registered with the given {@link Extender}.<br>
+     * At {@link #stop(Extender)} time all registered {@link ExtensionPoint}s will be unregistered with the given {@link Extender}.<br>
      * 
      * @param point
      * @param factory
@@ -67,7 +63,7 @@ public class RegistryExtensionBundle implements ExtensionBundle
     public <E, C extends E, M extends Trait> void register(ExtensionPoint<E, M> point, ExtensionFactory<C> factory)
     {
         factories.put(point,
-                      factory);
+                factory);
     }
 
     @Override
@@ -77,7 +73,7 @@ public class RegistryExtensionBundle implements ExtensionBundle
         for (Entry<ExtensionPoint<?, ?>, ExtensionFactory<?>> entry : factoryEntries)
         {
             extender.register(entry.getKey(),
-                              entry.getValue());
+                    entry.getValue());
         }
     }
 

@@ -32,6 +32,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -42,14 +45,9 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
 
 /**
- * A method interceptor to clean up node ref properties as they are passed in and out of the node service. For
- * getProperty and getProperies calls invalid node refs are removed from the returned set (they appear to have be
- * cleaned up). For setProperty and setProperties calls invalid node refs are removed and thus not set. It only
- * considers properties of type d:noderef.
+ * A method interceptor to clean up node ref properties as they are passed in and out of the node service. For getProperty and getProperies calls invalid node refs are removed from the returned set (they appear to have be cleaned up). For setProperty and setProperties calls invalid node refs are removed and thus not set. It only considers properties of type d:noderef.
  * 
  * @author andyh
  */
@@ -284,11 +282,12 @@ public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
     }
 
     /**
-     * Remove unknown node ref values Remove unknowen categories - the node will be removed if it does exist and it is
-     * not a category
+     * Remove unknown node ref values Remove unknowen categories - the node will be removed if it does exist and it is not a category
      * 
-     * @param propertyQName QName
-     * @param inboundValue Serializable
+     * @param propertyQName
+     *            QName
+     * @param inboundValue
+     *            Serializable
      * @return Serializable
      */
     private Serializable getValue(QName propertyQName, Serializable inboundValue)

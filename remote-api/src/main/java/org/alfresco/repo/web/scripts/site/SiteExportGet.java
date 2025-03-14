@@ -40,6 +40,14 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.exporter.ACPExportPackageHandler;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
@@ -53,13 +61,6 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.view.ExporterCrawlerParameters;
 import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.Location;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.webscripts.AbstractWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
 
 /**
  * Exports a Site as a zip of ACPs.
@@ -70,46 +71,44 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
 public class SiteExportGet extends AbstractWebScript
 {
     private static final List<String> USERS_NOT_TO_EXPORT = Arrays.asList(
-            new String[] { "admin", "guest" });
-    
+            new String[]{"admin", "guest"});
+
     private SiteService siteService;
     private ExporterService exporterService;
     private MimetypeService mimetypeService;
     private AuthorityService authorityService;
     private ChildApplicationContextManager authenticationContextManager;
-    
+
     @Override
     public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
         // Grab the site
-        String siteName = 
-            req.getServiceMatch().getTemplateVars().get("shortname");
+        String siteName = req.getServiceMatch().getTemplateVars().get("shortname");
         SiteInfo site = siteService.getSite(siteName);
         if (site == null)
         {
             throw new WebScriptException(
-                    Status.STATUS_NOT_FOUND, 
+                    Status.STATUS_NOT_FOUND,
                     "No Site found with that short name");
         }
-        
+
         // Set things up to return them a zip file
         res.setContentType(
                 MimetypeMap.MIMETYPE_ZIP);
-        
+
         res.setHeader(
                 "Content-Disposition",
                 "attachment; fileName=" + siteName + "-export.zip");
-        
+
         ZipOutputStream mainZip = new ZipOutputStream(
                 res.getOutputStream());
-        CloseIgnoringOutputStream outputForNesting = 
-                new CloseIgnoringOutputStream(mainZip); 
-        
+        CloseIgnoringOutputStream outputForNesting = new CloseIgnoringOutputStream(mainZip);
+
         // Export the Site's Contents
         // This includes the site config such as dashboards
         mainZip.putNextEntry(new ZipEntry("Contents.acp"));
         doSiteACPExport(site, outputForNesting);
-        
+
         // Export the person details for the users who are members of the site's groups
         // Also includes the list of their site related groups
         //
@@ -119,8 +118,8 @@ public class SiteExportGet extends AbstractWebScript
         if (peopleNodes.isEmpty())
         {
             mainZip.putNextEntry(new ZipEntry("No_Persons_In_Site.txt"));
-            String text = "Person nodes were not exported because the site does not contain\n"+
-                          "any members other than the built-ins e.g. admin, guest.";
+            String text = "Person nodes were not exported because the site does not contain\n" +
+                    "any members other than the built-ins e.g. admin, guest.";
             outputForNesting.write(text.getBytes("ASCII"));
         }
         else
@@ -128,37 +127,38 @@ public class SiteExportGet extends AbstractWebScript
             mainZip.putNextEntry(new ZipEntry("People.acp"));
             doPeopleACPExport(peopleNodes, site, outputForNesting);
         }
-        
+
         // Export the Site's groups listings
         mainZip.putNextEntry(new ZipEntry("Groups.txt"));
         doGroupExport(site, outputForNesting);
-        
+
         // Export the User (authentication) details for the site users that have user(authenticator) nodes associated
         // Only does this if the repository based authenticator is enabled
         RepositoryAuthenticationDao authenticationDao = null;
-        for(String contextName : authenticationContextManager.getInstanceIds())
+        for (String contextName : authenticationContextManager.getInstanceIds())
         {
             ApplicationContext ctx = authenticationContextManager.getApplicationContext(contextName);
-            try 
+            try
             {
-                authenticationDao = (RepositoryAuthenticationDao)
-                    ctx.getBean(RepositoryAuthenticationDao.class);
-            } catch(NoSuchBeanDefinitionException e) {}
+                authenticationDao = (RepositoryAuthenticationDao) ctx.getBean(RepositoryAuthenticationDao.class);
+            }
+            catch (NoSuchBeanDefinitionException e)
+            {}
         }
         List<NodeRef> userNodes = getUserNodesInSiteGroup(site, authenticationDao);
-        //authenticationDao is initialized only when using a repository-based authentication subsystem
+        // authenticationDao is initialized only when using a repository-based authentication subsystem
         if (authenticationDao == null)
         {
             mainZip.putNextEntry(new ZipEntry("Users_Skipped_As_Wrong_Authentication.txt"));
-            String text = "Users were not exported because the Authentication\n"+
-                          "Subsystem you are using is not repository based";
+            String text = "Users were not exported because the Authentication\n" +
+                    "Subsystem you are using is not repository based";
             outputForNesting.write(text.getBytes("ASCII"));
         }
         else if (userNodes.isEmpty())
         {
             mainZip.putNextEntry(new ZipEntry("No_Users_In_Site.txt"));
-            String text = "User nodes were not exported because the site does not contain\n"+
-                          "any members other than the built-ins e.g. admin, guest.";
+            String text = "User nodes were not exported because the site does not contain\n" +
+                    "any members other than the built-ins e.g. admin, guest.";
             outputForNesting.write(text.getBytes("ASCII"));
         }
         else
@@ -166,11 +166,11 @@ public class SiteExportGet extends AbstractWebScript
             mainZip.putNextEntry(new ZipEntry("Users.acp"));
             doUserACPExport(userNodes, site, outputForNesting);
         }
-        
+
         // Finish up
         mainZip.close();
     }
-    
+
     protected void doSiteACPExport(SiteInfo site, CloseIgnoringOutputStream writeTo) throws IOException
     {
         // Build the parameters
@@ -179,18 +179,18 @@ public class SiteExportGet extends AbstractWebScript
         parameters.setCrawlChildNodes(true);
         parameters.setCrawlSelf(true);
         parameters.setCrawlContent(true);
-        
+
         // And the export handler
         ACPExportPackageHandler handler = new ACPExportPackageHandler(
                 writeTo,
                 new File(site.getShortName() + ".xml"),
                 new File(site.getShortName()),
                 mimetypeService);
-        
+
         // Do the export
         exporterService.exportView(handler, parameters, null);
     }
-    
+
     protected void doPeopleACPExport(final List<NodeRef> peopleNodes, SiteInfo site, CloseIgnoringOutputStream writeTo) throws IOException
     {
         if (!peopleNodes.isEmpty())
@@ -201,35 +201,36 @@ public class SiteExportGet extends AbstractWebScript
             parameters.setCrawlChildNodes(true);
             parameters.setCrawlSelf(true);
             parameters.setCrawlContent(true);
-            
+
             // And the export handler
             ACPExportPackageHandler handler = new ACPExportPackageHandler(
                     writeTo,
                     new File(site.getShortName() + "-people.xml"),
                     new File(site.getShortName() + "-people"),
                     mimetypeService);
-            
+
             // Do the export
             exporterService.exportView(handler, parameters, null);
         }
     }
-    
+
     /**
      * Gets the NodeRefs for cm:person nodes in the specified site - excluding admin, guest.
+     * 
      * @since 4.1.5
      */
     private List<NodeRef> getPersonNodesInSiteGroup(SiteInfo site)
     {
         // Find the root group
         String siteGroup = AbstractSiteWebScript.buildSiteGroup(site);
-        
+
         // Now get all people in the child groups
         Set<String> siteUsers = authorityService.getContainedAuthorities(
                 AuthorityType.USER, siteGroup, false);
-        
+
         // Turn these all into NodeRefs
         List<NodeRef> peopleNodes = new ArrayList<NodeRef>(siteUsers.size());
-        for (String authority : siteUsers) 
+        for (String authority : siteUsers)
         {
             if (!USERS_NOT_TO_EXPORT.contains(authority))
             {
@@ -238,61 +239,63 @@ public class SiteExportGet extends AbstractWebScript
         }
         return peopleNodes;
     }
-    
+
     /**
      * Returns the user nodes (authentication nodes) if the authenticationDao exists
+     * 
      * @param site
      * @param authenticationDao
      * @return
      */
-    private List<NodeRef> getUserNodesInSiteGroup(SiteInfo site, RepositoryAuthenticationDao authenticationDao) {
-          List<NodeRef> userNodes = new ArrayList<NodeRef>();
-          if(authenticationDao == null) 
-          {
-              return userNodes;
-          }
-          
-          // Identify all the users
-          String siteGroup = AbstractSiteWebScript.buildSiteGroup(site);
-          Set<String> siteUsers = authorityService.getContainedAuthorities(
-                  AuthorityType.USER, siteGroup, false);
-          
-          for (String user : siteUsers)
-          {
-              if (USERS_NOT_TO_EXPORT.contains(user))
-              {
-                  // Don't export these core users like admin
-              }
-              else 
-              {
-                  NodeRef userNodeRef = authenticationDao.getUserOrNull(user);
-                  if(userNodeRef != null)
-                  {
-                      userNodes.add(userNodeRef);
-                  }
-              }
-          }
-          return userNodes;
+    private List<NodeRef> getUserNodesInSiteGroup(SiteInfo site, RepositoryAuthenticationDao authenticationDao)
+    {
+        List<NodeRef> userNodes = new ArrayList<NodeRef>();
+        if (authenticationDao == null)
+        {
+            return userNodes;
+        }
+
+        // Identify all the users
+        String siteGroup = AbstractSiteWebScript.buildSiteGroup(site);
+        Set<String> siteUsers = authorityService.getContainedAuthorities(
+                AuthorityType.USER, siteGroup, false);
+
+        for (String user : siteUsers)
+        {
+            if (USERS_NOT_TO_EXPORT.contains(user))
+            {
+                // Don't export these core users like admin
+            }
+            else
+            {
+                NodeRef userNodeRef = authenticationDao.getUserOrNull(user);
+                if (userNodeRef != null)
+                {
+                    userNodes.add(userNodeRef);
+                }
+            }
+        }
+        return userNodes;
     }
-    
+
     protected void doGroupExport(SiteInfo site, CloseIgnoringOutputStream writeTo) throws IOException
     {
         // Find the root group
         String siteGroup = AbstractSiteWebScript.buildSiteGroup(site);
-        
+
         // Get all the child groups of the site (but not children of them)
         Set<String> siteGroups = authorityService.getContainedAuthorities(
-              AuthorityType.GROUP, siteGroup, true);
-        
+                AuthorityType.GROUP, siteGroup, true);
+
         // For each group, get all the people
         // (Flattens any intermediate groups)
         // Then, invert it to get the groups per person
-        Map<String,List<String>> memberships = new HashMap<String, List<String>>();
-        for(String group : siteGroups)
+        Map<String, List<String>> memberships = new HashMap<String, List<String>>();
+        for (String group : siteGroups)
         {
             Set<String> groupUsers = authorityService.getContainedAuthorities(
-                  AuthorityType.USER, group, false);
-            
+                    AuthorityType.USER, group, false);
+
             for (String user : groupUsers)
             {
                 if (!USERS_NOT_TO_EXPORT.contains(user))
@@ -305,15 +308,15 @@ public class SiteExportGet extends AbstractWebScript
                 }
             }
         }
-        
+
         // Do a simple text based export
-        //   user=group1,group2
+        // user=group1,group2
         PrintWriter out = new PrintWriter(new OutputStreamWriter(writeTo, "UTF-8"));
         for (String user : memberships.keySet())
         {
             out.print(user);
             out.print('=');
-            
+
             boolean first = true;
             for (String group : memberships.get(user))
             {
@@ -331,7 +334,7 @@ public class SiteExportGet extends AbstractWebScript
         }
         out.close();
     }
-    
+
     protected void doUserACPExport(List<NodeRef> userNodes, SiteInfo site,
             CloseIgnoringOutputStream writeTo) throws IOException
     {
@@ -341,18 +344,18 @@ public class SiteExportGet extends AbstractWebScript
         parameters.setCrawlChildNodes(true);
         parameters.setCrawlSelf(true);
         parameters.setCrawlContent(true);
-        
+
         // And the export handler
         ACPExportPackageHandler handler = new ACPExportPackageHandler(
                 writeTo,
                 new File(site.getShortName() + "-users.xml"),
                 new File(site.getShortName() + "-users"),
                 mimetypeService);
-        
+
         // Do the export
         exporterService.exportView(handler, parameters, null);
     }
-    
+
     protected static class CloseIgnoringOutputStream extends FilterOutputStream
     {
         public CloseIgnoringOutputStream(OutputStream out)
@@ -367,27 +370,27 @@ public class SiteExportGet extends AbstractWebScript
             flush();
         }
     }
-    
+
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
     }
-    
+
     public void setExporterService(ExporterService exporterService)
     {
         this.exporterService = exporterService;
     }
-    
+
     public void setMimetypeService(MimetypeService mimetypeService)
     {
         this.mimetypeService = mimetypeService;
     }
-    
+
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
     }
-    
+
     public void setAuthenticationContextManager(ChildApplicationContextManager authenticationContextManager)
     {
         this.authenticationContextManager = authenticationContextManager;

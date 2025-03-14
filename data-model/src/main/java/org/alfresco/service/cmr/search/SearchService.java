@@ -38,11 +38,9 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 
 /**
- * This encapsulates the execution of search against different indexing
- * mechanisms.
+ * This encapsulates the execution of search against different indexing mechanisms.
  * 
- * Canned queries have been translated into the query string by this stage.
- * Handling of parameterisation is left to the implementation.
+ * Canned queries have been translated into the query string by this stage. Handling of parameterisation is left to the implementation.
  * 
  * @author Andy hind
  * 
@@ -82,15 +80,14 @@ public interface SearchService
     String LANGUAGE_SOLR_SQL = "solr-sql";
 
     /**
-     * Search against a store. Pulls back all attributes on each node. Does not
-     * allow parameterisation.
+     * Search against a store. Pulls back all attributes on each node. Does not allow parameterisation.
      * 
-     * @param store -
-     *            the store against which to search
-     * @param language -
-     *            the query language
-     * @param query -
-     *            the query string - which may include parameters
+     * @param store
+     *            - the store against which to search
+     * @param language
+     *            - the query language
+     * @param query
+     *            - the query string - which may include parameters
      * @return Returns the query results
      */
     @Auditable(parameters = {"store", "language", "query"})
@@ -99,31 +96,29 @@ public interface SearchService
     /**
      * Search against a store.
      * 
-     * @param store -
-     *            the store against which to search
-     * @param language -
-     *            the query language
-     * @param query -
-     *            the query string - which may include parameters
-     * @param queryParameterDefinitions -
-     *            query parameter definitions - the default value is used for
-     *            the value.
+     * @param store
+     *            - the store against which to search
+     * @param language
+     *            - the query language
+     * @param query
+     *            - the query string - which may include parameters
+     * @param queryParameterDefinitions
+     *            - query parameter definitions - the default value is used for the value.
      * @return Returns the query results
      */
     @Auditable(parameters = {"store", "language", "query", "queryParameterDefinitions"})
     ResultSet query(StoreRef store, String language, String query,
-                    QueryParameterDefinition[] queryParameterDefinitions);
+            QueryParameterDefinition[] queryParameterDefinitions);
 
-    
     /**
      * Execute a canned query
      * 
-     * @param store -
-     *            the store against which to search
-     * @param queryId -
-     *            the query identifier
-     * @param queryParameters -
-     *            parameterisation for the canned query
+     * @param store
+     *            - the store against which to search
+     * @param queryId
+     *            - the query identifier
+     * @param queryParameters
+     *            - parameterisation for the canned query
      * @return Returns the query results
      */
     @Auditable(parameters = {"store", "queryId", "queryParameters"})
@@ -139,106 +134,101 @@ public interface SearchService
     /**
      * Select nodes using an xpath expression.
      * 
-     * @param contextNodeRef -
-     *            the context node for relative expressions etc
-     * @param xpath -
-     *            the xpath string to evaluate
-     * @param parameters -
-     *            parameters to bind in to the xpath expression, may be null for no parameters
-     * @param namespacePrefixResolver -
-     *            prefix to namespace mappings
-     * @param followAllParentLinks -
-     *            if false ".." follows only the primary parent links, if true
-     *            it follows all
+     * @param contextNodeRef
+     *            - the context node for relative expressions etc
+     * @param xpath
+     *            - the xpath string to evaluate
+     * @param parameters
+     *            - parameters to bind in to the xpath expression, may be null for no parameters
+     * @param namespacePrefixResolver
+     *            - prefix to namespace mappings
+     * @param followAllParentLinks
+     *            - if false ".." follows only the primary parent links, if true it follows all
      * @return a list of the node refs of the selected nodes
      */
     @Auditable(
-            
+
             parameters = {"contextNodeRef", "xpath", "parameters", "namespacePrefixResolver", "followAllParentLinks"},
-            recordable = {true,             true,    true,         false,                     true})
+            recordable = {true, true, true, false, true})
     List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters,
-                              NamespacePrefixResolver namespacePrefixResolver, boolean followAllParentLinks)
+            NamespacePrefixResolver namespacePrefixResolver, boolean followAllParentLinks)
             throws InvalidNodeRefException, XPathException;
 
     /**
      * Select nodes using an xpath expression.
      * 
-     * @param contextNodeRef -
-     *            the context node for relative expressions etc
-     * @param xpath -
-     *            the xpath string to evaluate
-     * @param parameters -
-     *            parameters to bind in to the xpath expression, may be null for no parameters
-     * @param namespacePrefixResolver -
-     *            prefix to namespace mappings
-     * @param followAllParentLinks -
-     *            if false ".." follows only the primary parent links, if true
-     *            it follows all
-     * @param language -
-     *            the xpath variant
+     * @param contextNodeRef
+     *            - the context node for relative expressions etc
+     * @param xpath
+     *            - the xpath string to evaluate
+     * @param parameters
+     *            - parameters to bind in to the xpath expression, may be null for no parameters
+     * @param namespacePrefixResolver
+     *            - prefix to namespace mappings
+     * @param followAllParentLinks
+     *            - if false ".." follows only the primary parent links, if true it follows all
+     * @param language
+     *            - the xpath variant
      * @return a list of all the node refs of the selected nodes
      */
     @Auditable(
-            
+
             parameters = {"contextNodeRef", "xpath", "parameters", "namespacePrefixResolver", "followAllParentLinks", "language"},
-            recordable = {true,             true,    true,         false,                     true,                   true})
+            recordable = {true, true, true, false, true, true})
     List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters,
-                              NamespacePrefixResolver namespacePrefixResolver, boolean followAllParentLinks, String language)
+            NamespacePrefixResolver namespacePrefixResolver, boolean followAllParentLinks, String language)
             throws InvalidNodeRefException, XPathException;
 
     /**
      * Select properties using an xpath expression
      * 
-     * @param contextNodeRef -
-     *            the context node for relative expressions etc
-     * @param xpath -
-     *            the xpath string to evaluate
-     * @param parameters -
-     *            parameters to bind in to the xpath expression
-     * @param namespacePrefixResolver -
-     *            prefix to namespace mappings
-     * @param followAllParentLinks -
-     *            if false ".." follows only the primary parent links, if true
-     *            it follows all
+     * @param contextNodeRef
+     *            - the context node for relative expressions etc
+     * @param xpath
+     *            - the xpath string to evaluate
+     * @param parameters
+     *            - parameters to bind in to the xpath expression
+     * @param namespacePrefixResolver
+     *            - prefix to namespace mappings
+     * @param followAllParentLinks
+     *            - if false ".." follows only the primary parent links, if true it follows all
      * @return a list of property values
      */
     @Auditable(
-            
+
             parameters = {"contextNodeRef", "xpath", "parameters", "namespacePrefixResolver", "followAllParentLinks"},
-            recordable = {true,             true,    true,         false,                     true})
+            recordable = {true, true, true, false, true})
     List<Serializable> selectProperties(NodeRef contextNodeRef, String xpath,
-                                        QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
-                                        boolean followAllParentLinks) throws InvalidNodeRefException, XPathException;
+            QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
+            boolean followAllParentLinks) throws InvalidNodeRefException, XPathException;
 
     /**
      * Select properties using an xpath expression
      * 
-     * @param contextNodeRef -
-     *            the context node for relative expressions etc
-     * @param xpath -
-     *            the xpath string to evaluate
-     * @param parameters -
-     *            parameters to bind in to the xpath expression
-     * @param namespacePrefixResolver -
-     *            prefix to namespace mappings
-     * @param followAllParentLinks -
-     *            if false ".." follows only the primary parent links, if true
-     *            it follows all
-     * @param language -
-     *            the xpath variant
+     * @param contextNodeRef
+     *            - the context node for relative expressions etc
+     * @param xpath
+     *            - the xpath string to evaluate
+     * @param parameters
+     *            - parameters to bind in to the xpath expression
+     * @param namespacePrefixResolver
+     *            - prefix to namespace mappings
+     * @param followAllParentLinks
+     *            - if false ".." follows only the primary parent links, if true it follows all
+     * @param language
+     *            - the xpath variant
      * @return a list of property values
      */
     @Auditable(
-            
+
             parameters = {"contextNodeRef", "xpath", "parameters", "namespacePrefixResolver", "followAllParentLinks", "language"},
-            recordable = {true,             true,     true,        false,                     true,                   true})
+            recordable = {true, true, true, false, true, true})
     List<Serializable> selectProperties(NodeRef contextNodeRef, String xpath,
-                                        QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
-                                        boolean followAllParentLinks, String language) throws InvalidNodeRefException, XPathException;
+            QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
+            boolean followAllParentLinks, String language) throws InvalidNodeRefException, XPathException;
 
     /**
-     * Search for string pattern in both the node text (if present) and node
-     * properties
+     * Search for string pattern in both the node text (if present) and node properties
      * 
      * @param nodeRef
      *            the node to get
@@ -251,10 +241,9 @@ public interface SearchService
     @Auditable(parameters = {"nodeRef", "propertyQName", "googleLikePattern"})
     boolean contains(NodeRef nodeRef, QName propertyQName, String googleLikePattern)
             throws InvalidNodeRefException;
-    
+
     /**
-     * Search for string pattern in both the node text (if present) and node
-     * properties
+     * Search for string pattern in both the node text (if present) and node properties
      * 
      * @param nodeRef
      *            the node to get
@@ -269,8 +258,7 @@ public interface SearchService
             throws InvalidNodeRefException;
 
     /**
-     * Search for string pattern in both the node text (if present) and node
-     * properties
+     * Search for string pattern in both the node text (if present) and node properties
      * 
      * @param nodeRef
      *            the node to get
@@ -278,8 +266,8 @@ public interface SearchService
      *            the name of the property (mandatory)
      * @param sqlLikePattern
      *            a SQL-like pattern to search for
-     * @param includeFTS -
-     *            include full text search matches in the like test
+     * @param includeFTS
+     *            - include full text search matches in the like test
      * @return Returns true if the pattern could be found
      */
     @Auditable(parameters = {"nodeRef", "propertyQName", "sqlLikePattern", "includeFTS"})

@@ -41,8 +41,8 @@ public class NoConditionEvaluator extends ActionConditionEvaluatorAbstractBase
     /**
      * Evaluator constants
      */
-    public static final String NAME = "no-condition";     
-    
+    public static final String NAME = "no-condition";
+
     /**
      * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase#evaluateImpl(org.alfresco.service.cmr.action.ActionCondition, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -55,7 +55,7 @@ public class NoConditionEvaluator extends ActionConditionEvaluatorAbstractBase
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         // No parameters to add
     }

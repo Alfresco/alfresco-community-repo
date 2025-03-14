@@ -25,26 +25,15 @@
  */
 package org.alfresco.schedule;
 
-import org.alfresco.repo.lock.JobLockService;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
+import org.alfresco.repo.lock.JobLockService;
+
 /**
  * 
- * This class should be extended any time a scheduled job needs to be
- * implemented to be executed using
- * {@link org.alfresco.repo.lock.JobLockService JobLockService}. It makes the
- * cluster aware locking of the job transparent to the implementation. On the
- * job's spring {@link org.quartz.JobExecutionContext JobExecutionContext} it
- * will still always have to be passed as parameter the
- * {@link org.alfresco.repo.lock.JobLockService jobLockService}. The name to be
- * used for locking of the job is optional, if none is passed a name will be
- * composed using the simple name of the implementation class. In general if it
- * may make sense to have more than one job setup using the same class you
- * should always use a different name on each
- * {@link org.quartz.JobExecutionContext JobExecutionContext} to differentiate
- * the jobs, unless you want the lock to be shared between the different instances.
+ * This class should be extended any time a scheduled job needs to be implemented to be executed using {@link org.alfresco.repo.lock.JobLockService JobLockService}. It makes the cluster aware locking of the job transparent to the implementation. On the job's spring {@link org.quartz.JobExecutionContext JobExecutionContext} it will still always have to be passed as parameter the {@link org.alfresco.repo.lock.JobLockService jobLockService}. The name to be used for locking of the job is optional, if none is passed a name will be composed using the simple name of the implementation class. In general if it may make sense to have more than one job setup using the same class you should always use a different name on each {@link org.quartz.JobExecutionContext JobExecutionContext} to differentiate the jobs, unless you want the lock to be shared between the different instances.
  * <p/>
  * The only method to be implemented when extending this class is {@link #executeJob(JobExecutionContext)}.
  * 
@@ -73,12 +62,12 @@ public abstract class AbstractScheduledLockedJob extends QuartzJobBean
     }
 
     /**
-     * This is the method that should be implemented by any extension of the
-     * abstract class. It won't need to worry about any lockings of the job and
-     * can focus only on its specific task.
+     * This is the method that should be implemented by any extension of the abstract class. It won't need to worry about any lockings of the job and can focus only on its specific task.
      * 
-     * @param jobContext                context of the execution for retrieving services, etc
-     * @throws JobExecutionException    if a job fails to execute
+     * @param jobContext
+     *            context of the execution for retrieving services, etc
+     * @throws JobExecutionException
+     *             if a job fails to execute
      */
     public abstract void executeJob(JobExecutionContext jobContext) throws JobExecutionException;
 }

@@ -36,6 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.descriptor.DescriptorServiceImpl.BaseDescriptor;
@@ -54,8 +57,6 @@ import org.alfresco.service.license.LicenseException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Manages persistence and retrieval of Descriptors whose meta-data are retrieved from the repository stores.
@@ -209,16 +210,16 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
                 props.put(ContentModel.PROP_SYS_VERSION_BUILD, serverDescriptor.getVersionBuild());
                 props.put(ContentModel.PROP_SYS_VERSION_SCHEMA, serverDescriptor.getSchema());
                 props.put(ContentModel.PROP_SYS_LICENSE_MODE, licenseMode);
-                
+
                 // Aspect index control - stop the search system getting involved with licenses.
                 props.put(ContentModel.PROP_IS_CONTENT_INDEXED, false);
                 props.put(ContentModel.PROP_IS_INDEXED, false);
-            
+
                 this.nodeService.addProperties(currentDescriptorNodeRef, props);
 
                 // ALF-726: v3.1.x Content Cleaner Job needs to be ported to v3.2
-                // In order to migrate properly, this property needs to be d:content.  We will rewrite the property with the
-                // license update code.  There is no point attempting to rewrite the property here.
+                // In order to migrate properly, this property needs to be d:content. We will rewrite the property with the
+                // license update code. There is no point attempting to rewrite the property here.
                 final Serializable value = this.nodeService.getProperty(
                         currentDescriptorNodeRef,
                         ContentModel.PROP_SYS_VERSION_EDITION);
@@ -277,7 +278,7 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
             {
                 logger.debug("getLicenseKey: descriptorRef=" + descriptorRef);
             }
-            
+
             final ContentReader reader = this.contentService.getReader(
                     descriptorRef,
                     ContentModel.PROP_SYS_VERSION_EDITION);
@@ -313,7 +314,7 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
                 if (logger.isDebugEnabled())
                 {
                     // reader should never be null. An exception is thrown by getReader if it is.
-                    logger.debug("getLicenseKey: reader " + (reader == null ? "is null" : " file does "+(exists ? "" : "NOT ") + "exist"));
+                    logger.debug("getLicenseKey: reader " + (reader == null ? "is null" : " file does " + (exists ? "" : "NOT ") + "exist"));
                 }
             }
         }
@@ -337,7 +338,7 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
             }
             throw e;
         }
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("getLicenseKey: key " + (key == null ? "is null" : "length=" + key.length));
@@ -416,8 +417,7 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
                 descriptorNodeRef = nodeRefs.get(0);
             }
             else if (nodeRefs.size() == 0)
-            {
-            }
+            {}
             else if (nodeRefs.size() > 1)
             {
                 if (RepositoryDescriptorDAOImpl.logger.isDebugEnabled())

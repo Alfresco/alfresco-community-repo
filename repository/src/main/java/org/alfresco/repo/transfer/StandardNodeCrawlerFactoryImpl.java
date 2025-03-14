@@ -33,12 +33,12 @@ import org.alfresco.service.cmr.transfer.NodeCrawlerFactory;
 public class StandardNodeCrawlerFactoryImpl implements NodeCrawlerFactory
 {
     private ServiceRegistry serviceRegistry;
-    
+
     public StandardNodeCrawlerFactoryImpl(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
     }
-    
+
     public NodeCrawler getNodeCrawler()
     {
         return new StandardNodeCrawlerImpl(serviceRegistry);

@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.api.groups.GroupsEntityResource;
 import org.alfresco.rest.framework.resource.EmbeddedEntityResource;
 import org.alfresco.rest.framework.resource.UniqueId;
@@ -35,7 +36,8 @@ public class SiteGroup implements Comparable<SiteGroup>
     private String role;
     private String id; // group id (aka authority name)
 
-    public SiteGroup() {}
+    public SiteGroup()
+    {}
 
     public SiteGroup(String id, String role)
     {

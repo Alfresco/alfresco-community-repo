@@ -28,19 +28,19 @@ package org.alfresco.opencmis.mapping;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.chemistry.opencmis.commons.PropertyIds;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.dictionary.CMISPropertyLuceneBuilder;
 import org.alfresco.opencmis.dictionary.PropertyLuceneBuilderMapping;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
-import org.apache.chemistry.opencmis.commons.PropertyIds;
-import org.springframework.beans.factory.InitializingBean;
-
 
 /**
  * Lucene Builder mappings for built-in CMIS properties
- *  
+ * 
  * @author davidc
  */
 public class RuntimePropertyLuceneBuilderMapping implements PropertyLuceneBuilderMapping, InitializingBean
@@ -51,7 +51,8 @@ public class RuntimePropertyLuceneBuilderMapping implements PropertyLuceneBuilde
     private Map<String, CMISPropertyLuceneBuilder> luceneBuilders = new HashMap<String, CMISPropertyLuceneBuilder>();
 
     /**
-     * @param cmisDictionaryService cmisDictionaryService
+     * @param cmisDictionaryService
+     *            cmisDictionaryService
      */
     public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
     {
@@ -59,13 +60,14 @@ public class RuntimePropertyLuceneBuilderMapping implements PropertyLuceneBuilde
     }
 
     /**
-     * @param dictionaryService dictionaryService
+     * @param dictionaryService
+     *            dictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     @Override
     public void afterPropertiesSet()
     {
@@ -98,7 +100,7 @@ public class RuntimePropertyLuceneBuilderMapping implements PropertyLuceneBuilde
         registerPropertyLuceneBuilder(PropertyIds.ALLOWED_CHILD_OBJECT_TYPE_IDS, new NotSupportedLuceneBuilder());
         registerPropertyLuceneBuilder(PropertyIds.SOURCE_ID, new NotSupportedLuceneBuilder());
         registerPropertyLuceneBuilder(PropertyIds.TARGET_ID, new NotSupportedLuceneBuilder());
-        
+
         registerPropertyLuceneBuilder("alfcmis:nodeRef", new NotSupportedLuceneBuilder());
     }
 
@@ -107,18 +109,20 @@ public class RuntimePropertyLuceneBuilderMapping implements PropertyLuceneBuilde
     {
         return luceneBuilders.get(propertyId);
     }
-    
+
     @Override
     public CMISPropertyLuceneBuilder createDirectPropertyLuceneBuilder(QName propertyName)
     {
         return new DirectLuceneBuilder(dictionaryService, propertyName);
     }
-    
+
     /**
      * Register pre-defined Property Accessor
      * 
-     * @param name String
-     * @param luceneBuilder CMISPropertyLuceneBuilder
+     * @param name
+     *            String
+     * @param luceneBuilder
+     *            CMISPropertyLuceneBuilder
      */
     private void registerPropertyLuceneBuilder(String name, CMISPropertyLuceneBuilder luceneBuilder)
     {

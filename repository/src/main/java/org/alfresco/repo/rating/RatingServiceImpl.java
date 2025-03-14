@@ -33,6 +33,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.rating.traitextender.RatingServiceExtension;
@@ -49,80 +52,77 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
+import org.alfresco.traitextender.AJProxyTrait;
 import org.alfresco.traitextender.Extend;
 import org.alfresco.traitextender.ExtendedTrait;
 import org.alfresco.traitextender.Extensible;
-import org.alfresco.traitextender.AJProxyTrait;
 import org.alfresco.traitextender.Trait;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /*
  * @author Neil McErlean
  * @since 3.4
  */
-public class RatingServiceImpl implements RatingService, Extensible 
+public class RatingServiceImpl implements RatingService, Extensible
 {
     private static final Log log = LogFactory.getLog(RatingServiceImpl.class);
     private RatingSchemeRegistry schemeRegistry;
-    
+
     // Injected services
     private DictionaryService dictionaryService;
     private NodeService nodeService;
     private BehaviourFilter behaviourFilter;
-    
+
     public final ExtendedTrait<RatingServiceTrait> ratingServiceTrait;
-    
+
     public RatingServiceImpl()
     {
-        ratingServiceTrait=new ExtendedTrait<RatingServiceTrait>(AJProxyTrait.create(this, RatingServiceTrait.class));
+        ratingServiceTrait = new ExtendedTrait<RatingServiceTrait>(AJProxyTrait.create(this, RatingServiceTrait.class));
     }
-    
+
     private RatingNamingConventionsUtil ratingNamingConventions;
-    
+
     public void setRatingSchemeRegistry(RatingSchemeRegistry schemeRegistry)
     {
         this.schemeRegistry = schemeRegistry;
     }
-    
+
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
     }
-    
+
     public void setRollupNamingConventions(RatingNamingConventionsUtil namingConventions)
     {
         this.ratingNamingConventions = namingConventions;
     }
-    
-    @Extend(traitAPI=RatingServiceTrait.class,extensionAPI=RatingServiceExtension.class)
+
+    @Extend(traitAPI = RatingServiceTrait.class, extensionAPI = RatingServiceExtension.class)
     public Map<String, RatingScheme> getRatingSchemes()
     {
         // This is already an unmodifiable Map.
         return schemeRegistry.getRatingSchemes();
     }
-    
-    @Extend(traitAPI=RatingServiceTrait.class,extensionAPI=RatingServiceExtension.class)
+
+    @Extend(traitAPI = RatingServiceTrait.class, extensionAPI = RatingServiceExtension.class)
     public RatingScheme getRatingScheme(String ratingSchemeName)
     {
         return schemeRegistry.getRatingSchemes().get(ratingSchemeName);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rating.RatingService#applyRating(org.alfresco.service.cmr.repository.NodeRef, float, java.lang.String)
-     */
-    @Extend(traitAPI=RatingServiceTrait.class,extensionAPI=RatingServiceExtension.class)
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rating.RatingService#applyRating(org.alfresco.service.cmr.repository.NodeRef, float, java.lang.String) */
+    @Extend(traitAPI = RatingServiceTrait.class, extensionAPI = RatingServiceExtension.class)
     public void applyRating(final NodeRef targetNode, final float rating,
             final String ratingSchemeName) throws RatingServiceException
     {
@@ -132,9 +132,8 @@ public class RatingServiceImpl implements RatingService, Extensible
         {
             throw new RatingServiceException("Users can't rate their own content for scheme " + ratingSchemeName);
         }
-        
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() 
-        {
+
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
             public Void doWork() throws Exception
             {
                 applyRating(targetNode, rating, ratingSchemeName, currentUser);
@@ -142,7 +141,7 @@ public class RatingServiceImpl implements RatingService, Extensible
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     /**
      * This method checks if the current fully authenticated user is the cm:creator of the specified node.
      */
@@ -160,12 +159,12 @@ public class RatingServiceImpl implements RatingService, Extensible
         {
             StringBuilder msg = new StringBuilder();
             msg.append("Applying rating ")
-               .append(rating).append(" in scheme ")
-               .append(ratingSchemeName).append(" as user ")
-               .append(userName).append(" on ").append(targetNode);
+                    .append(rating).append(" in scheme ")
+                    .append(ratingSchemeName).append(" as user ")
+                    .append(userName).append(" on ").append(targetNode);
             log.debug(msg.toString());
         }
-        
+
         // Sanity check the rating scheme being used and the rating being applied.
         final RatingScheme ratingScheme = this.getRatingScheme(ratingSchemeName);
         if (ratingScheme == null)
@@ -176,14 +175,13 @@ public class RatingServiceImpl implements RatingService, Extensible
         {
             throw new RatingServiceException("Rating " + rating + " violates range for " + ratingScheme);
         }
-        
+
         // To support rolling up rating totals, counts etc, we use aspects named by convention.
         // Before we start writing data into the db, we'll check that an aspect has been defined
-        //   with the expected name.
+        // with the expected name.
         QName rollupAspectName = ratingNamingConventions.getRollupAspectNameFor(ratingScheme);
         final boolean rollupAspectIsDefined = dictionaryService.getAspect(rollupAspectName) != null;
 
-        
         // Ensure that the application of a rating does not cause updates
         // to the modified, modifier properties on the rated node.
         if (nodeService.hasAspect(targetNode, ContentModel.ASPECT_RATEABLE) == false)
@@ -193,13 +191,13 @@ public class RatingServiceImpl implements RatingService, Extensible
             {
                 // Add the cm:rateable aspect if it's not there already.
                 nodeService.addAspect(targetNode, ContentModel.ASPECT_RATEABLE, null);
-                
+
                 // We'll also add the rollup aspect specific for this rating scheme - if one has been defined in the content model.
                 if (rollupAspectIsDefined)
                 {
                     nodeService.addAspect(targetNode, rollupAspectName, null);
                 }
-                
+
             }
             finally
             {
@@ -215,7 +213,7 @@ public class RatingServiceImpl implements RatingService, Extensible
         if (myRatingChildren.isEmpty())
         {
             // There are no previous ratings from this user/scheme combination, so we create a new cm:rating child node.
-            
+
             Map<QName, Serializable> ratingProps = new HashMap<QName, Serializable>();
             ratingProps.put(ContentModel.PROP_RATING_SCORE, rating);
             ratingProps.put(ContentModel.PROP_RATED_AT, new Date());
@@ -235,15 +233,15 @@ public class RatingServiceImpl implements RatingService, Extensible
         {
             // There are previous ratings by this user/ratingScheme combination.
             NodeRef myPreviousRatingsNode = myRatingChildren.get(0).getChildRef();
-            
+
             Map<QName, Serializable> ratingProps = new HashMap<QName, Serializable>();
             ratingProps.put(ContentModel.PROP_RATING_SCHEME, ratingSchemeName);
             ratingProps.put(ContentModel.PROP_RATING_SCORE, rating);
             ratingProps.put(ContentModel.PROP_RATED_AT, new Date());
-            
+
             nodeService.setProperties(myPreviousRatingsNode, ratingProps);
         }
-        
+
         // Now that we have applied the rating, we need to recalculate the rollup properties.
         recalculateRatingRollups(targetNode, ratingScheme);
     }
@@ -265,13 +263,13 @@ public class RatingServiceImpl implements RatingService, Extensible
                     Serializable s = rollupAlgorithm.recalculate(targetNode);
                     QName rollupPropertyName = ratingNamingConventions.getRollupPropertyNameFor(ratingScheme, rollupAlgorithm.getRollupName());
                     nodeService.setProperty(targetNode, rollupPropertyName, s);
-                    
+
                     if (!rollupAspect.getProperties().containsKey(rollupPropertyName) && log.isDebugEnabled())
                     {
                         StringBuilder msg = new StringBuilder();
                         msg.append("Rating property rollup property ").append(rollupPropertyName)
-                           .append(" on aspect " ).append(rollupAspectName)
-                           .append(" is not defined in the content model.");
+                                .append(" on aspect ").append(rollupAspectName)
+                                .append(" is not defined in the content model.");
                         log.debug(msg.toString());
                     }
                 }
@@ -287,35 +285,33 @@ public class RatingServiceImpl implements RatingService, Extensible
             {
                 StringBuilder msg = new StringBuilder();
                 msg.append("Rating property rollup aspect ").append(rollupAspectName)
-                   .append(" is not defined in the content model & therefore the rollup was not persisted.");
+                        .append(" is not defined in the content model & therefore the rollup was not persisted.");
                 log.debug(msg.toString());
             }
         }
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rating.RatingService#getRatingByCurrentUser(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-     */
-    @Extend(traitAPI=RatingServiceTrait.class,extensionAPI=RatingServiceExtension.class)
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rating.RatingService#getRatingByCurrentUser(org.alfresco.service.cmr.repository.NodeRef, java.lang.String) */
+    @Extend(traitAPI = RatingServiceTrait.class, extensionAPI = RatingServiceExtension.class)
     public Rating getRatingByCurrentUser(NodeRef targetNode, String ratingSchemeName)
     {
         String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
         return this.getRating(targetNode, ratingSchemeName, currentUser);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rating.RatingService#getRatingsByCurrentUser(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Extend(traitAPI=RatingServiceTrait.class,extensionAPI=RatingServiceExtension.class)
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rating.RatingService#getRatingsByCurrentUser(org.alfresco.service.cmr.repository.NodeRef) */
+    @Extend(traitAPI = RatingServiceTrait.class, extensionAPI = RatingServiceExtension.class)
     public List<Rating> getRatingsByCurrentUser(NodeRef targetNode)
     {
         final String fullyAuthenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
-        
+
         List<ChildAssociationRef> children = getRatingNodeChildren(targetNode, null, fullyAuthenticatedUser);
         List<Rating> result = new ArrayList<Rating>(children.size());
-        
+
         for (ChildAssociationRef child : children)
         {
             result.add(convertNodeRefToRating(fullyAuthenticatedUser, child.getChildRef()));
@@ -325,43 +321,49 @@ public class RatingServiceImpl implements RatingService, Extensible
 
     /**
      * This method gets the rating for the specified node, in the specified scheme by the specified user.
-     * @param targetNode the node whose rating we are looking for.
-     * @param ratingSchemeName the rating scheme name in which we are looking for a rating.
-     * @param user the user name of the user whose rating we are looking for.
+     * 
+     * @param targetNode
+     *            the node whose rating we are looking for.
+     * @param ratingSchemeName
+     *            the rating scheme name in which we are looking for a rating.
+     * @param user
+     *            the user name of the user whose rating we are looking for.
      * @return the {@link Rating} if there is one.
      */
     private Rating getRating(NodeRef targetNode, String ratingSchemeName, String user)
     {
         List<ChildAssociationRef> ratingChildren = getRatingNodeChildren(targetNode, ratingSchemeName, user);
-        
+
         // If there are none, return null
         if (ratingChildren.isEmpty())
         {
             return null;
         }
-        
+
         // Take the node pertaining to the current user & scheme.
         ChildAssociationRef ratingNodeAssoc = ratingChildren.get(0);
-        
+
         return convertNodeRefToRating(user, ratingNodeAssoc.getChildRef());
     }
 
     /**
-     * This method converts a NodeRef (which must be an instance of a cm:rating node)
-     * into a {@link Rating} object.
-     * @param user String
-     * @param ratingNode NodeRef
+     * This method converts a NodeRef (which must be an instance of a cm:rating node) into a {@link Rating} object.
+     * 
+     * @param user
+     *            String
+     * @param ratingNode
+     *            NodeRef
      * @return Rating
      */
     private Rating convertNodeRefToRating(String user, NodeRef ratingNode)
     {
         Map<QName, Serializable> properties = nodeService.getProperties(ratingNode);
-        
-        String existingRatingScheme = (String)properties.get(ContentModel.PROP_RATING_SCHEME);
 
-        Float existingRatingScore = (Float)properties.get(ContentModel.PROP_RATING_SCORE);
-        Date existingRatingDate = (Date)properties.get(ContentModel.PROP_RATED_AT);
-        
+        String existingRatingScheme = (String) properties.get(ContentModel.PROP_RATING_SCHEME);
+
+        Float existingRatingScore = (Float) properties.get(ContentModel.PROP_RATING_SCORE);
+        Date existingRatingDate = (Date) properties.get(ContentModel.PROP_RATED_AT);
+
         Rating result = new Rating(getRatingScheme(existingRatingScheme),
                 existingRatingScore,
                 user,
@@ -369,11 +371,10 @@ public class RatingServiceImpl implements RatingService, Extensible
         return result;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rating.RatingService#removeRatingByCurrentUser(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-     */
-    @Extend(traitAPI=RatingServiceTrait.class,extensionAPI=RatingServiceExtension.class)
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rating.RatingService#removeRatingByCurrentUser(org.alfresco.service.cmr.repository.NodeRef, java.lang.String) */
+    @Extend(traitAPI = RatingServiceTrait.class, extensionAPI = RatingServiceExtension.class)
     public Rating removeRatingByCurrentUser(NodeRef targetNode,
             String ratingScheme)
     {
@@ -390,30 +391,29 @@ public class RatingServiceImpl implements RatingService, Extensible
         }
         ChildAssociationRef child = ratingChildren.get(0);
         Map<QName, Serializable> properties = nodeService.getProperties(child.getChildRef());
-        
+
         Rating result = null;
         // If the rating is for the specified scheme delete it.
         // Get the scheme name and check it.
         if (ratingSchemeName.equals(properties.get(ContentModel.PROP_RATING_SCHEME)))
         {
             Float score = (Float) properties.get(ContentModel.PROP_RATING_SCORE);
-            Date date = (Date)properties.get(ContentModel.PROP_RATED_AT);
-            
+            Date date = (Date) properties.get(ContentModel.PROP_RATED_AT);
+
             nodeService.deleteNode(child.getChildRef());
-            
+
             recalculateRatingRollups(targetNode, getRatingScheme(ratingSchemeName));
 
             result = new Rating(getRatingScheme(ratingSchemeName), score, user, date);
         }
-        
+
         return result;
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rating.RatingService#getTotalRating(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-     */
-    @Extend(traitAPI=RatingServiceTrait.class,extensionAPI=RatingServiceExtension.class)
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rating.RatingService#getTotalRating(org.alfresco.service.cmr.repository.NodeRef, java.lang.String) */
+    @Extend(traitAPI = RatingServiceTrait.class, extensionAPI = RatingServiceExtension.class)
     public float getTotalRating(NodeRef targetNode, String ratingSchemeName)
     {
         Serializable result = this.getRatingRollup(targetNode, ratingSchemeName, RatingTotalRollupAlgorithm.ROLLUP_NAME);
@@ -421,20 +421,20 @@ public class RatingServiceImpl implements RatingService, Extensible
         {
             result = Float.valueOf(0f);
         }
-        
-        return (Float)result;
+
+        return (Float) result;
     }
-    
-    @Extend(traitAPI=RatingServiceTrait.class,extensionAPI=RatingServiceExtension.class)
+
+    @Extend(traitAPI = RatingServiceTrait.class, extensionAPI = RatingServiceExtension.class)
     public float getAverageRating(NodeRef targetNode, String ratingSchemeName)
     {
         float totalRating = getTotalRating(targetNode, ratingSchemeName);
         int ratingCount = getRatingsCount(targetNode, ratingSchemeName);
-        
-        return ratingCount == 0 ? -1 : Float.valueOf(totalRating / (float)ratingCount);
+
+        return ratingCount == 0 ? -1 : Float.valueOf(totalRating / (float) ratingCount);
     }
 
-    @Extend(traitAPI=RatingServiceTrait.class,extensionAPI=RatingServiceExtension.class)
+    @Extend(traitAPI = RatingServiceTrait.class, extensionAPI = RatingServiceExtension.class)
     public int getRatingsCount(NodeRef targetNode, String ratingSchemeName)
     {
         Serializable result = this.getRatingRollup(targetNode, ratingSchemeName, RatingCountRollupAlgorithm.ROLLUP_NAME);
@@ -442,15 +442,14 @@ public class RatingServiceImpl implements RatingService, Extensible
         {
             result = Integer.valueOf(0);
         }
-        
-        return (Integer)result;
+
+        return (Integer) result;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rating.RatingService#getRatingRollup(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String)
-     */
-    @Extend(traitAPI=RatingServiceTrait.class,extensionAPI=RatingServiceExtension.class)
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rating.RatingService#getRatingRollup(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String) */
+    @Extend(traitAPI = RatingServiceTrait.class, extensionAPI = RatingServiceExtension.class)
     public Serializable getRatingRollup(NodeRef targetNode, String ratingSchemeName, String ratingRollupName)
     {
         RatingScheme scheme = schemeRegistry.getRatingSchemes().get(ratingSchemeName);
@@ -458,7 +457,7 @@ public class RatingServiceImpl implements RatingService, Extensible
         {
             throw new RatingServiceException("Cannot retrieve rollup. Unrecognized rating scheme " + ratingSchemeName);
         }
-        
+
         QName rollupAspectName = ratingNamingConventions.getRollupAspectNameFor(scheme);
 
         Serializable result = null;
@@ -468,18 +467,19 @@ public class RatingServiceImpl implements RatingService, Extensible
             QName rollupPropertyName = ratingNamingConventions.getRollupPropertyNameFor(scheme, ratingRollupName);
             result = nodeService.getProperty(targetNode, rollupPropertyName);
         }
-        
+
         return result;
     }
 
     /**
-     * This method gets all the cm:rating child nodes of the specified targetNode that
-     * have been applied by the specified user in the specified rating scheme.
+     * This method gets all the cm:rating child nodes of the specified targetNode that have been applied by the specified user in the specified rating scheme.
      * 
-     * @param targetNode the target node under which the cm:rating nodes reside.
-     * @param user the user name of the user whose ratings are sought, <code>null</code>
-     *             for all users.
-     * @param ratingSchemeName the name of the rating scheme, <code>null</code> for all schemes.
+     * @param targetNode
+     *            the target node under which the cm:rating nodes reside.
+     * @param user
+     *            the user name of the user whose ratings are sought, <code>null</code> for all users.
+     * @param ratingSchemeName
+     *            the name of the rating scheme, <code>null</code> for all schemes.
      * @return List<ChildAssociationRef>
      */
     List<ChildAssociationRef> getRatingNodeChildren(NodeRef targetNode,
@@ -490,10 +490,12 @@ public class RatingServiceImpl implements RatingService, Extensible
 
         return results;
     }
-    
+
     /**
      * This method returns a {@link Rating} object for the specified cm:rating node.
-     * @param ratingNode NodeRef
+     * 
+     * @param ratingNode
+     *            NodeRef
      * @return Rating
      */
     Rating getRatingFrom(NodeRef ratingNode)
@@ -502,17 +504,17 @@ public class RatingServiceImpl implements RatingService, Extensible
         // It will be the same user for all ratings in this node.
         ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(ratingNode);
         String appliedBy = parentAssoc.getQName().getLocalName();
-        
+
         Map<QName, Serializable> properties = nodeService.getProperties(ratingNode);
-        
-        final String schemeName = (String)properties.get(ContentModel.PROP_RATING_SCHEME);
-        final Float score = (Float)properties.get(ContentModel.PROP_RATING_SCORE);
-        final Date ratedAt = (Date)properties.get(ContentModel.PROP_RATED_AT);
+
+        final String schemeName = (String) properties.get(ContentModel.PROP_RATING_SCHEME);
+        final Float score = (Float) properties.get(ContentModel.PROP_RATING_SCORE);
+        final Date ratedAt = (Date) properties.get(ContentModel.PROP_RATED_AT);
         RatingScheme scheme = getRatingScheme(schemeName);
         Rating result = new Rating(scheme, score, appliedBy, ratedAt);
         return result;
     }
-    
+
     @Override
     public <M extends Trait> ExtendedTrait<M> getTrait(Class<? extends M> traitAPI)
     {

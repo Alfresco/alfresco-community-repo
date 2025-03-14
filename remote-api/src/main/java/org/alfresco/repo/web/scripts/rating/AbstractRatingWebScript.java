@@ -26,20 +26,19 @@
 package org.alfresco.repo.web.scripts.rating;
 
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import org.alfresco.service.cmr.rating.RatingService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * This class is an abstract base class for the various webscript controllers in the
- * RatingService.
+ * This class is an abstract base class for the various webscript controllers in the RatingService.
  * 
  * @author Neil McErlean
  * @since 3.4
@@ -52,7 +51,7 @@ public abstract class AbstractRatingWebScript extends DeclarativeWebScript
     protected static final String RATED_NODE = "ratedNode";
     protected static final String NODE_REF = "nodeRef";
     protected static final String RATINGS = "ratings";
-    
+
     protected static final String AVERAGE_RATINGS = "averageRatings";
     protected static final String RATINGS_TOTALS = "ratingsTotals";
     protected static final String RATINGS_COUNTS = "ratingsCounts";
@@ -64,7 +63,8 @@ public abstract class AbstractRatingWebScript extends DeclarativeWebScript
     /**
      * Sets the node service instance
      * 
-     * @param nodeService the node service to set
+     * @param nodeService
+     *            the node service to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -74,7 +74,8 @@ public abstract class AbstractRatingWebScript extends DeclarativeWebScript
     /**
      * Sets the rating service instance
      * 
-     * @param ratingService the rating service to set
+     * @param ratingService
+     *            the rating service to set
      */
     public void setRatingService(RatingService ratingService)
     {

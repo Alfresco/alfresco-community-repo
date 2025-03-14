@@ -25,34 +25,34 @@
  */
 package org.alfresco.repo.rendition2;
 
+import static org.junit.Assert.assertEquals;
+
+import static org.alfresco.repo.content.MimetypeMap.MIMETYPE_IMAGE_JPEG;
+import static org.alfresco.repo.content.MimetypeMap.MIMETYPE_IMAGE_PNG;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
+
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.content.transform.swf.SWFTransformationOptions;
 import org.alfresco.service.cmr.repository.CropSourceOptions;
 import org.alfresco.service.cmr.repository.PagedSourceOptions;
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.alfresco.repo.content.MimetypeMap.MIMETYPE_IMAGE_JPEG;
-import static org.alfresco.repo.content.MimetypeMap.MIMETYPE_IMAGE_PNG;
-import static org.junit.Assert.assertEquals;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TransformationOptionsConverterTest
 {
     /**
-     * The toString of a basic TransformationOptions. Used in testing where the conversion back to the original does not
-     * result in the same Java sub class, as there are no meaningful properties set.
+     * The toString of a basic TransformationOptions. Used in testing where the conversion back to the original does not result in the same Java sub class, as there are no meaningful properties set.
      */
     private static final String TO_STRING_OF_UNSET_TRANSFORMATION_OPTIONS = "{maxSourceSizeKBytes=-1, pageLimit=-1, use=null, timeoutMs=-1, " +
             "maxPages=-1, contentReaderNodeRef=null, sourceContentProperty=null, readLimitKBytes=-1, " +
@@ -60,12 +60,11 @@ public class TransformationOptionsConverterTest
 
     private TransformationOptionsConverter converter;
 
-    private static final String[] DISCARD_OPTIONS = new String[]
-            {
-                "autoOrient", "false",
-                "maintainAspectRatio", "true",
-                "allowEnlargement", "true"
-            };
+    private static final String[] DISCARD_OPTIONS = new String[]{
+            "autoOrient", "false",
+            "maintainAspectRatio", "true",
+            "allowEnlargement", "true"
+    };
 
     @Before
     public void setUp() throws Exception
@@ -79,8 +78,8 @@ public class TransformationOptionsConverterTest
     }
 
     private void assertConverterToMapAndBack(TransformationOptions oldOptions, String sourceMimetype,
-                                             String targetMimetype, String expectedOldOptionsToString,
-                                             String expectedArgs)
+            String targetMimetype, String expectedOldOptionsToString,
+            String expectedArgs)
     {
         String sortedOldOptions = getSortedOptions(oldOptions, sourceMimetype, targetMimetype);
         assertEquals("oldOptions was not set up correctly", expectedOldOptionsToString, oldOptions.toString());
@@ -106,8 +105,7 @@ public class TransformationOptionsConverterTest
     private static String getSortedOptions(Map<String, String> options)
     {
         final List<String> list = new ArrayList<>();
-        options.entrySet().forEach(e->
-        {
+        options.entrySet().forEach(e -> {
             if (e.getValue() != null)
             {
                 list.add(e.getKey() + '=' + e.getValue() + ' ');
@@ -120,9 +118,9 @@ public class TransformationOptionsConverterTest
     {
         // Discards options that are ignored by the transformer if passed in.
         Map<String, String> options2 = new HashMap<>(options1);
-        for (int i = 0; i < DISCARD_OPTIONS.length; i+=2)
+        for (int i = 0; i < DISCARD_OPTIONS.length; i += 2)
         {
-            options2.remove(DISCARD_OPTIONS[i], DISCARD_OPTIONS[i+1]);
+            options2.remove(DISCARD_OPTIONS[i], DISCARD_OPTIONS[i + 1]);
         }
         return options2;
     }
@@ -130,9 +128,9 @@ public class TransformationOptionsConverterTest
     private static String getSortedOptions(String[] args)
     {
         final List<String> list = new ArrayList<>();
-        for (int i=0; i<args.length; i+=2)
+        for (int i = 0; i < args.length; i += 2)
         {
-            if (args[i+1] != null)
+            if (args[i + 1] != null)
             {
                 list.add(args[i] + "=" + args[i + 1] + ' ');
             }
@@ -144,7 +142,7 @@ public class TransformationOptionsConverterTest
     {
         StringBuilder sb = new StringBuilder();
         Collections.sort(list);
-        list.forEach(a->sb.append(a));
+        list.forEach(a -> sb.append(a));
         return sb.toString();
     }
 
@@ -172,8 +170,7 @@ public class TransformationOptionsConverterTest
                         "resizeHeight=30 " +
                         "resizeWidth=20 " +
                         "startPage=0 " +
-                        "timeout=-1 "
-        );
+                        "timeout=-1 ");
     }
 
     @Test
@@ -185,8 +182,7 @@ public class TransformationOptionsConverterTest
         assertConverterToMapAndBack(oldOptions, MIMETYPE_IMAGE_JPEG, MIMETYPE_IMAGE_PNG,
                 "ImageTransformationOptions [commandOptions=, resizeOptions=null, autoOrient=true]]",
                 "autoOrient=true " +
-                        "timeout=-1 "
-        );
+                        "timeout=-1 ");
     }
 
     @Test
@@ -198,8 +194,7 @@ public class TransformationOptionsConverterTest
 
         assertConverterToMapAndBack(oldOptions, MIMETYPE_IMAGE_JPEG, MIMETYPE_IMAGE_PNG,
                 "ImageTransformationOptions [commandOptions=, resizeOptions=null, autoOrient=false]]",
-                        "timeout=-1 "
-        );
+                "timeout=-1 ");
     }
 
     @Test
@@ -213,8 +208,7 @@ public class TransformationOptionsConverterTest
         assertConverterToMapAndBack(oldOptions, MIMETYPE_IMAGE_JPEG, MIMETYPE_IMAGE_JPEG,
                 "ImageTransformationOptions [commandOptions=, resizeOptions=null, autoOrient=false]]",
                 "alphaRemove=true " +
-                        "timeout=-1 "
-        );
+                        "timeout=-1 ");
     }
 
     @Test
@@ -232,8 +226,7 @@ public class TransformationOptionsConverterTest
                         "[height=-1, width=-1, xOffset=0, yOffset=0, isPercentageCrop=false, gravity=null]} ]",
                 "cropXOffset=0 " +
                         "cropYOffset=0 " +
-                        "timeout=-1 "
-        );
+                        "timeout=-1 ");
     }
 
     @Test
@@ -253,8 +246,7 @@ public class TransformationOptionsConverterTest
                 "cropGravity=North " +
                         "cropXOffset=0 " +
                         "cropYOffset=0 " +
-                        "timeout=-1 "
-        );
+                        "timeout=-1 ");
     }
 
     @Test
@@ -276,8 +268,7 @@ public class TransformationOptionsConverterTest
                         "cropWidth=30 " +
                         "cropXOffset=0 " +
                         "cropYOffset=0 " +
-                        "timeout=-1 "
-        );
+                        "timeout=-1 ");
     }
 
     @Test
@@ -297,8 +288,7 @@ public class TransformationOptionsConverterTest
                 "cropPercentage=true " +
                         "cropXOffset=0 " +
                         "cropYOffset=0 " +
-                        "timeout=-1 "
-        );
+                        "timeout=-1 ");
     }
 
     @Test
@@ -318,8 +308,7 @@ public class TransformationOptionsConverterTest
                         "[height=-1, width=-1, xOffset=20, yOffset=59, isPercentageCrop=false, gravity=null]} ]",
                 "cropXOffset=20 " +
                         "cropYOffset=59 " +
-                        "timeout=-1 "
-        );
+                        "timeout=-1 ");
     }
 
     @Test
@@ -335,8 +324,7 @@ public class TransformationOptionsConverterTest
                 "ImageTransformationOptions [commandOptions=, " +
                         "resizeOptions=ImageResizeOptions [width=-1, height=-1, maintainAspectRatio=true, " +
                         "percentResize=false, resizeToThumbnail=false, allowEnlargement=true], autoOrient=false]]",
-                        "timeout=-1 "
-        );
+                "timeout=-1 ");
     }
 
     @Test
@@ -354,8 +342,7 @@ public class TransformationOptionsConverterTest
                         "resizeOptions=ImageResizeOptions [width=-1, height=-1, maintainAspectRatio=true, " +
                         "percentResize=false, resizeToThumbnail=false, allowEnlargement=false], autoOrient=false]]",
                 "allowEnlargement=false " +
-                        "timeout=-1 "
-        );
+                        "timeout=-1 ");
     }
 
     @Test
@@ -373,8 +360,7 @@ public class TransformationOptionsConverterTest
                         "resizeOptions=ImageResizeOptions [width=-1, height=-1, maintainAspectRatio=false, " +
                         "percentResize=false, resizeToThumbnail=false, allowEnlargement=true], autoOrient=false]]",
                 "maintainAspectRatio=false " +
-                        "timeout=-1 "
-        );
+                        "timeout=-1 ");
     }
 
     @Test
@@ -394,8 +380,7 @@ public class TransformationOptionsConverterTest
                         "percentResize=false, resizeToThumbnail=false, allowEnlargement=false], autoOrient=false]]",
                 "allowEnlargement=false " +
                         "maintainAspectRatio=false " +
-                "timeout=-1 "
-        );
+                        "timeout=-1 ");
     }
 
     @Test
@@ -417,8 +402,7 @@ public class TransformationOptionsConverterTest
                 "allowEnlargement=false " +
                         "maintainAspectRatio=false " +
                         "thumbnail=true " +
-                        "timeout=-1 "
-        );
+                        "timeout=-1 ");
     }
 
     @Test
@@ -442,8 +426,7 @@ public class TransformationOptionsConverterTest
                         "maintainAspectRatio=false " +
                         "resizeHeight=15 " +
                         "resizeWidth=18 " +
-                        "timeout=-1 "
-        );
+                        "timeout=-1 ");
     }
 
     @Test
@@ -465,8 +448,7 @@ public class TransformationOptionsConverterTest
                 "allowEnlargement=false " +
                         "maintainAspectRatio=false " +
                         "resizePercentage=true " +
-                        "timeout=-1 "
-        );
+                        "timeout=-1 ");
     }
 
     @Test
@@ -485,8 +467,7 @@ public class TransformationOptionsConverterTest
                         "resizeOptions=null, autoOrient=false], " +
                         "sourceOptions={ PagedSourceOptionsPagedSourceOptions {1, 1}} ]",
                 "endPage=0 startPage=0 " +
-                        "timeout=-1 "
-        );
+                        "timeout=-1 ");
     }
 
     @Test
@@ -505,8 +486,7 @@ public class TransformationOptionsConverterTest
                         "contentWriterNodeRef=null, pageLimit=-1, flashVersion=9, timeoutMs=-1, maxPages=-1, " +
                         "sourceContentProperty=null, targetContentProperty=null, includeEmbedded=null, readLimitTimeMs=-1}",
                 "flashVersion=9 " +
-                        "timeout=-1 "
-        ); // SWFTransformationOptions are not used by ImageMagickContentTransformerWorker
+                        "timeout=-1 "); // SWFTransformationOptions are not used by ImageMagickContentTransformerWorker
     }
 
     @Test
@@ -518,7 +498,7 @@ public class TransformationOptionsConverterTest
 
         Map<String, String> newOptions = new HashMap<>();
         newOptions.put("thumbnail", "true");
-        newOptions.put("resizeWidth","960");
+        newOptions.put("resizeWidth", "960");
         newOptions.put("autoOrient", "true");
         newOptions.put("resizeHeight", "960");
         newOptions.put("allowEnlargement", "true");
@@ -529,14 +509,14 @@ public class TransformationOptionsConverterTest
         String sortedOldOptions = getSortedOptions(oldOptions, sourceMimetype, targetMimetype);
         if (sortedOldOptions.endsWith("timeout=-1 "))
         {
-            sortedOldOptions = sortedOldOptions.substring(0, sortedOldOptions.length()-"timeout=-1 ".length());
+            sortedOldOptions = sortedOldOptions.substring(0, sortedOldOptions.length() - "timeout=-1 ".length());
         }
 
         assertEquals("Maps are different", sortedNewOptions, sortedOldOptions);
     }
 
     // ImageTransformationOptions [commandOptions=, resizeOptions=ImageResizeOptions [width=20, height=30, maintainAspectRatio=true, percentResize=false,
-    //                            resizeToThumbnail=false, allowEnlargement=true], autoOrient=true], sourceOptions={ PagedSourceOptionsPagedSourceOptions {1, 1}} ]
+    // resizeToThumbnail=false, allowEnlargement=true], autoOrient=true], sourceOptions={ PagedSourceOptionsPagedSourceOptions {1, 1}} ]
     @Test
     public void testResize()
     {
@@ -562,8 +542,7 @@ public class TransformationOptionsConverterTest
                         "resizeHeight=30 " +
                         "resizeWidth=20 " +
                         "startPage=0 " +
-                        "timeout=-1 "
-        );
+                        "timeout=-1 ");
     }
 
     @Test

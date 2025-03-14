@@ -30,6 +30,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
 
@@ -42,7 +43,8 @@ import org.apache.ibatis.type.TypeHandler;
 public class ByteArrayTypeHandler implements TypeHandler
 {
     /**
-     * @throws DeserializationException if the object could not be deserialized
+     * @throws DeserializationException
+     *             if the object could not be deserialized
      */
     public Object getResult(ResultSet rs, String columnName) throws SQLException
     {
@@ -50,7 +52,7 @@ public class ByteArrayTypeHandler implements TypeHandler
         try
         {
             byte[] bytes = rs.getBytes(columnName);
-            if(bytes != null && !rs.wasNull())
+            if (bytes != null && !rs.wasNull())
             {
                 ret = bytes;
             }
@@ -69,7 +71,7 @@ public class ByteArrayTypeHandler implements TypeHandler
         try
         {
             byte[] bytes = rs.getBytes(columnIndex);
-            if(bytes != null && !rs.wasNull())
+            if (bytes != null && !rs.wasNull())
             {
                 ret = bytes;
             }
@@ -91,7 +93,7 @@ public class ByteArrayTypeHandler implements TypeHandler
         {
             try
             {
-                ps.setBytes(i, (byte[])parameter);
+                ps.setBytes(i, (byte[]) parameter);
             }
             catch (Throwable e)
             {
@@ -99,24 +101,22 @@ public class ByteArrayTypeHandler implements TypeHandler
             }
         }
     }
-    
-    public Object getResult(CallableStatement cs, int columnIndex) throws SQLException 
+
+    public Object getResult(CallableStatement cs, int columnIndex) throws SQLException
     {
         throw new UnsupportedOperationException("Unsupported");
     }
 
     /**
-     * @return          Returns the value given
+     * @return Returns the value given
      */
     public Object valueOf(String s)
     {
         return s;
     }
-    
+
     /**
-     * Marker exception to allow deserialization issues to be dealt with by calling code.
-     * If this exception remains uncaught, it will be very difficult to find and rectify
-     * the data issue.
+     * Marker exception to allow deserialization issues to be dealt with by calling code. If this exception remains uncaught, it will be very difficult to find and rectify the data issue.
      * 
      * @author sglover
      * @since 5.0
@@ -130,12 +130,10 @@ public class ByteArrayTypeHandler implements TypeHandler
             super(cause);
         }
     }
-    
+
     /**
-     * Marker exception to allow serialization issues to be dealt with by calling code.
-     * Unlike with {@link DeserializationException deserialization}, it is not important
-     * to handle this exception neatly.
-     *   
+     * Marker exception to allow serialization issues to be dealt with by calling code. Unlike with {@link DeserializationException deserialization}, it is not important to handle this exception neatly.
+     * 
      * @author sglover
      * @since 5.0
      */

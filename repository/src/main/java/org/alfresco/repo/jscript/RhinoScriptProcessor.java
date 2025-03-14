@@ -37,6 +37,18 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import net.sf.acegisecurity.AuthenticationException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ContextFactory;
+import org.mozilla.javascript.ImporterTopLevel;
+import org.mozilla.javascript.Script;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.WrapFactory;
+import org.mozilla.javascript.WrappedException;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.FileCopyUtils;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -54,19 +66,6 @@ import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptProcessor;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.ContextFactory;
-import org.mozilla.javascript.ImporterTopLevel;
-import org.mozilla.javascript.Script;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptableObject;
-import org.mozilla.javascript.Undefined;
-import org.mozilla.javascript.WrapFactory;
-import org.mozilla.javascript.WrappedException;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.FileCopyUtils;
 
 /**
  * Implementation of the ScriptProcessor using the Rhino JavaScript library.
@@ -76,40 +75,40 @@ import org.springframework.util.FileCopyUtils;
 public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcessor, ScriptResourceLoader, InitializingBean
 {
     private static final Log logger = LogFactory.getLog(RhinoScriptProcessor.class);
-    private static final Log callLogger = LogFactory.getLog(RhinoScriptProcessor.class.getName()+".calls");
-    
+    private static final Log callLogger = LogFactory.getLog(RhinoScriptProcessor.class.getName() + ".calls");
+
     private static final String PATH_CLASSPATH = "classpath:";
-    
+
     /** Wrap Factory */
     private static final WrapFactory wrapFactory = new RhinoWrapFactory();
-    
+
     /** Sandbox Wrap Factory */
     private static final SandboxWrapFactory sandboxFactory = new SandboxWrapFactory();
-    
+
     /** Base Value Converter */
     private final ValueConverter valueConverter = new ValueConverter();
-    
+
     /** Store into which to resolve cm:name based script paths */
     private StoreRef storeRef;
-    
+
     /** Store root path to resolve cm:name based scripts path from */
     private String storePath;
-    
+
     /** Pre initialized secure scope object. */
     private Scriptable secureScope;
-    
+
     /** Pre initialized non secure scope object. */
     private Scriptable nonSecureScope;
-    
+
     /** Flag to enable or disable runtime script compliation */
     private boolean compile = true;
-    
+
     /** Flag to enable the sharing of sealed root scopes between scripts executions */
     private boolean shareSealedScopes = true;
-    
+
     /** Cache of runtime compiled script instances */
     private final Map<String, Script> scriptCache = new ConcurrentHashMap<String, Script>(256);
-    
+
     /** Rhino optimization level */
     private int optimizationLevel = -1;
 
@@ -131,32 +130,35 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     /**
      * Set the default store reference
      * 
-     * @param   storeRef    The default store reference
+     * @param storeRef
+     *            The default store reference
      */
     public void setStoreUrl(String storeRef)
     {
         this.storeRef = new StoreRef(storeRef);
     }
-    
+
     /**
-     * @param storePath     The store path to set.
+     * @param storePath
+     *            The store path to set.
      */
     public void setStorePath(String storePath)
     {
         this.storePath = storePath;
     }
-    
+
     /**
-     * @param compile   the compile flag to set
+     * @param compile
+     *            the compile flag to set
      */
     public void setCompile(boolean compile)
     {
         this.compile = compile;
     }
-    
+
     /**
-     * @param shareSealedScopes true to allow sharing of sealed scopes between script executions - set to
-     * false to disable this feature and ensure that a new scope is created for each executed script.
+     * @param shareSealedScopes
+     *            true to allow sharing of sealed scopes between script executions - set to false to disable this feature and ensure that a new scope is created for each executed script.
      */
     public void setShareSealedScopes(boolean shareSealedScopes)
     {
@@ -215,7 +217,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     {
         this.scriptCache.clear();
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.repository.ScriptProcessor#execute(org.alfresco.service.cmr.repository.ScriptLocation, java.util.Map)
      */
@@ -234,20 +236,20 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             {
                 if (logger.isDebugEnabled())
                     logger.debug("Resolving and compiling script path: " + path);
-                
+
                 // retrieve script content and resolve imports
                 ByteArrayOutputStream os = new ByteArrayOutputStream();
-                FileCopyUtils.copy(location.getInputStream(), os);  // both streams are closed
+                FileCopyUtils.copy(location.getInputStream(), os); // both streams are closed
                 byte[] bytes = os.toByteArray();
                 String source = new String(bytes, "UTF-8");
                 source = resolveScriptImports(new String(bytes));
-                
+
                 // compile the script and cache the result
                 Context cx = Context.enter();
                 try
                 {
                     script = cx.compileString(source, location.toString(), 1, null);
-                    
+
                     // We do not worry about more than one user thread compiling the same script.
                     // If more than one request thread compiles the same script and adds it to the
                     // cache that does not matter - the results will be the same. Therefore we
@@ -264,12 +266,12 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
                     Context.exit();
                 }
             }
-            
+
             String debugScriptName = null;
             if (callLogger.isDebugEnabled())
             {
                 int i = path.lastIndexOf('/');
-                debugScriptName = (i != -1) ? path.substring(i+1) : path;
+                debugScriptName = (i != -1) ? path.substring(i + 1) : path;
             }
             return executeScriptImpl(script, model, location.isSecure(), debugScriptName);
         }
@@ -278,15 +280,15 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             throw new ScriptException("Failed to execute script '" + location.toString() + "': " + err.getMessage(), err);
         }
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.repository.ScriptProcessor#execute(java.lang.String, java.util.Map)
      */
     public Object execute(String location, Map<String, Object> model)
-    {        
+    {
         return execute(new ClasspathScriptLocation(location), model);
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.repository.ScriptProcessor#execute(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.util.Map)
      */
@@ -298,7 +300,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             {
                 throw new AlfrescoRuntimeException("Script Node does not exist: " + nodeRef);
             }
-            
+
             if (contentProp == null)
             {
                 contentProp = ContentModel.PROP_CONTENT;
@@ -308,7 +310,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             {
                 throw new AlfrescoRuntimeException("Script Node content not found: " + nodeRef);
             }
-            
+
             // compile the script based on the node content
             Script script;
             Context cx = Context.enter();
@@ -320,7 +322,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             {
                 Context.exit();
             }
-            
+
             return executeScriptImpl(script, model, false, nodeRef.toString());
         }
         catch (Throwable err)
@@ -365,48 +367,48 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
 
     /**
      * Resolve the imports in the specified script. Supported include directives are of the following form:
+     * 
      * <pre>
      * &lt;import resource="classpath:alfresco/includeme.js"&gt;
      * &lt;import resource="workspace://SpacesStore/6f73de1b-d3b4-11db-80cb-112e6c2ea048"&gt;
      * &lt;import resource="/Company Home/Data Dictionary/Scripts/includeme.js"&gt;
      * </pre>
-     * Either a classpath resource, NodeRef or cm:name path based script can be includes. Multiple includes
-     * of the same script are dealt with correctly and nested includes of scripts is fully supported.
+     * 
+     * Either a classpath resource, NodeRef or cm:name path based script can be includes. Multiple includes of the same script are dealt with correctly and nested includes of scripts is fully supported.
      * <p>
-     * Note that for performance reasons the script import directive syntax and placement in the file
-     * is very strict. The import lines <i>must</i> always be first in the file - even before any comments.
-     * Immediately that the script service detects a non-import line it will assume the rest of the
-     * file is executable script and no longer attempt to search for any further import directives. Therefore
-     * all imports should be at the top of the script, one following the other, in the correct syntax and with
-     * no comments present - the only separators valid between import directives is white space.
+     * Note that for performance reasons the script import directive syntax and placement in the file is very strict. The import lines <i>must</i> always be first in the file - even before any comments. Immediately that the script service detects a non-import line it will assume the rest of the file is executable script and no longer attempt to search for any further import directives. Therefore all imports should be at the top of the script, one following the other, in the correct syntax and with no comments present - the only separators valid between import directives is white space.
      * 
-     * @param script        The script content to resolve imports in
+     * @param script
+     *            The script content to resolve imports in
      * 
-     * @return a valid script with all nested includes resolved into a single script instance 
+     * @return a valid script with all nested includes resolved into a single script instance
      */
     private String resolveScriptImports(String script)
     {
         return ScriptResourceHelper.resolveScriptImports(script, this, logger);
     }
-    
+
     /**
      * Load a script content from the specific resource path.
-     *  
-     * @param resource      Resources can be of the form:
-     * <pre>
+     * 
+     * @param resource
+     *            Resources can be of the form:
+     * 
+     *            <pre>
      * classpath:alfresco/includeme.js
      * workspace://SpacesStore/6f73de1b-d3b4-11db-80cb-112e6c2ea048
      * /Company Home/Data Dictionary/Scripts/includeme.js
-     * </pre>
+     *            </pre>
      * 
      * @return the content from the resource, null if not recognised format
      * 
-     * @throws AlfrescoRuntimeException on any IO or ContentIO error
+     * @throws AlfrescoRuntimeException
+     *             on any IO or ContentIO error
      */
     public String loadScriptResource(String resource)
     {
         String result = null;
-        
+
         if (resource.startsWith(PATH_CLASSPATH))
         {
             try
@@ -429,7 +431,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
                     throw new AlfrescoRuntimeException("Unable to load included script classpath resource: " + resource);
                 }
                 ByteArrayOutputStream os = new ByteArrayOutputStream();
-                FileCopyUtils.copy(stream, os);  // both streams are closed
+                FileCopyUtils.copy(stream, os); // both streams are closed
                 byte[] bytes = os.toByteArray();
                 // create the string from the byte[] using encoding if necessary
                 result = new String(bytes, "UTF-8");
@@ -477,7 +479,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             {
                 scriptRef = new NodeRef(resource);
             }
-            
+
             // load from NodeRef default content property
             try
             {
@@ -493,38 +495,41 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
                 throw new AlfrescoRuntimeException("Unable to load included script repository resource: " + resource);
             }
         }
-        
+
         return result;
     }
-    
+
     /**
-     * Execute the supplied script content. Adds the default data model and custom configured root
-     * objects into the root scope for access by the script.
+     * Execute the supplied script content. Adds the default data model and custom configured root objects into the root scope for access by the script.
      * 
-     * @param script        The script to execute.
-     * @param model         Data model containing objects to be added to the root scope.
-     * @param secure        True if the script is considered secure and may access java.* libs directly
-     * @param debugScriptName To identify the script in debug messages.
+     * @param script
+     *            The script to execute.
+     * @param model
+     *            Data model containing objects to be added to the root scope.
+     * @param secure
+     *            True if the script is considered secure and may access java.* libs directly
+     * @param debugScriptName
+     *            To identify the script in debug messages.
      * 
      * @return result of the script execution, can be null.
      * 
      * @throws AlfrescoRuntimeException
      */
     private Object executeScriptImpl(Script script, Map<String, Object> model, boolean secure, String debugScriptName)
-        throws AlfrescoRuntimeException
+            throws AlfrescoRuntimeException
     {
         Scriptable scope = null;
 
         long startTime = 0;
         if (callLogger.isDebugEnabled())
         {
-            callLogger.debug(debugScriptName+" Start");
+            callLogger.debug(debugScriptName + " Start");
             startTime = System.nanoTime();
         }
-        
+
         // Convert the model
         model = convertToRhinoModel(model);
-        
+
         Context cx = Context.enter();
         try
         {
@@ -546,61 +551,61 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             {
                 scope = initScope(cx, secure, false);
             }
-            
+
             // there's always a model, if only to hold the util objects
             if (model == null)
             {
                 model = new HashMap<String, Object>();
             }
-            
+
             // add the global scripts
-            for (ProcessorExtension ex : this.processorExtensions.values()) 
+            for (ProcessorExtension ex : this.processorExtensions.values())
             {
                 model.put(ex.getExtensionName(), ex);
             }
-            
+
             // insert supplied object model into root of the default scope
             for (String key : model.keySet())
             {
-            	try
-            	{
-	                // set the root scope on appropriate objects
-	                // this is used to allow native JS object creation etc.
-	                Object obj = model.get(key);
-	                if (obj instanceof Scopeable)
-	                {
-	                    ((Scopeable)obj).setScope(scope);
-	                }
-	                
-	                // convert/wrap each object to JavaScript compatible
-	                Object jsObject = Context.javaToJS(obj, scope);
-	                
-	                // insert into the root scope ready for access by the script
-	                ScriptableObject.putProperty(scope, key, jsObject);
-            	}
-            	catch(AuthenticationException e)
-            	{
-            		// ok, log and don't add to the root scope
-            		logger.info("Unable to add " + key + " to root scope: ", e);
-            	}
+                try
+                {
+                    // set the root scope on appropriate objects
+                    // this is used to allow native JS object creation etc.
+                    Object obj = model.get(key);
+                    if (obj instanceof Scopeable)
+                    {
+                        ((Scopeable) obj).setScope(scope);
+                    }
+
+                    // convert/wrap each object to JavaScript compatible
+                    Object jsObject = Context.javaToJS(obj, scope);
+
+                    // insert into the root scope ready for access by the script
+                    ScriptableObject.putProperty(scope, key, jsObject);
+                }
+                catch (AuthenticationException e)
+                {
+                    // ok, log and don't add to the root scope
+                    logger.info("Unable to add " + key + " to root scope: ", e);
+                }
             }
-            
+
             // execute the script and return the result
             Object result = script.exec(cx, scope);
-            
-            // extract java object result if wrapped by Rhino 
+
+            // extract java object result if wrapped by Rhino
             return valueConverter.convertValueForJava(result);
         }
         catch (WrappedException w)
         {
             if (callLogger.isDebugEnabled())
             {
-                callLogger.debug(debugScriptName+" Exception", w);
+                callLogger.debug(debugScriptName + " Exception", w);
             }
             Throwable err = w.getWrappedException();
             if (err instanceof RuntimeException)
             {
-                throw (RuntimeException)err;
+                throw (RuntimeException) err;
             }
             throw new AlfrescoRuntimeException(err.getMessage(), err);
         }
@@ -608,7 +613,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         {
             if (callLogger.isDebugEnabled())
             {
-                callLogger.debug(debugScriptName+" Exception", err);
+                callLogger.debug(debugScriptName + " Exception", err);
             }
             throw new AlfrescoRuntimeException(err.getMessage(), err);
         }
@@ -619,7 +624,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
                 unsetScope(model, scope);
             }
             Context.exit();
-            
+
             if (callLogger.isDebugEnabled())
             {
                 long endTime = System.nanoTime();
@@ -640,40 +645,40 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             }
         }
     }
-    
+
     /**
      * Converts the passed model into a Rhino model
      * 
-     * @param model     the model
+     * @param model
+     *            the model
      * 
      * @return Map the converted model
      */
     private Map<String, Object> convertToRhinoModel(Map<String, Object> model)
     {
-    	Map<String, Object> newModel = null;
-    	if (model != null)
-    	{
-	        newModel = new HashMap<String, Object>(model.size());
-	        for (Map.Entry<String, Object> entry : model.entrySet())
-	        {
-	            if (entry.getValue() instanceof NodeRef)
-	            {
-	                newModel.put(entry.getKey(), new ScriptNode((NodeRef)entry.getValue(), this.services));
-	            }
-	            else
-	            {
-	                newModel.put(entry.getKey(), entry.getValue());
-	            }
-	        }
-    	}
-    	else
-    	{
-    		newModel = new HashMap<String, Object>(1, 1.0f);
-    	}
+        Map<String, Object> newModel = null;
+        if (model != null)
+        {
+            newModel = new HashMap<String, Object>(model.size());
+            for (Map.Entry<String, Object> entry : model.entrySet())
+            {
+                if (entry.getValue() instanceof NodeRef)
+                {
+                    newModel.put(entry.getKey(), new ScriptNode((NodeRef) entry.getValue(), this.services));
+                }
+                else
+                {
+                    newModel.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+        else
+        {
+            newModel = new HashMap<String, Object>(1, 1.0f);
+        }
         return newModel;
     }
 
-    
     /**
      * Rhino script value wrapper
      */
@@ -683,10 +688,10 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         {
             return super.wrapAsJavaObject(cx, scope, javaObject, staticType);
         }
-        
-    	/* (non-Javadoc)
-    	 * @see org.mozilla.javascript.WrapFactory#wrapAsJavaObject(org.mozilla.javascript.Context, org.mozilla.javascript.Scriptable, java.lang.Object, java.lang.Class)
-    	 */
+
+        /* (non-Javadoc)
+         * 
+         * @see org.mozilla.javascript.WrapFactory#wrapAsJavaObject(org.mozilla.javascript.Context, org.mozilla.javascript.Scriptable, java.lang.Object, java.lang.Class) */
         public Scriptable wrapAsJavaObject(Context cx, Scriptable scope, Object javaObject, Class<?> staticType)
         {
             if (javaObject instanceof Map && !(javaObject instanceof ScriptableHashMap))
@@ -696,16 +701,15 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             return wrapBasicJavaObject(cx, scope, javaObject, staticType);
         }
     }
-    
+
     /**
-     * A {@link WrapFactory} that ensures {@link org.mozilla.javascript.NativeJavaObject} instances are of the
-     * {@link SandboxNativeJavaObject} variety.
+     * A {@link WrapFactory} that ensures {@link org.mozilla.javascript.NativeJavaObject} instances are of the {@link SandboxNativeJavaObject} variety.
      */
     private static class SandboxWrapFactory extends RhinoWrapFactory
     {
         /* (non-Javadoc)
-         * @see org.mozilla.javascript.WrapFactory#wrapAsJavaObject(org.mozilla.javascript.Context, org.mozilla.javascript.Scriptable, java.lang.Object, java.lang.Class)
-         */
+         * 
+         * @see org.mozilla.javascript.WrapFactory#wrapAsJavaObject(org.mozilla.javascript.Context, org.mozilla.javascript.Scriptable, java.lang.Object, java.lang.Class) */
         @Override
         protected Scriptable wrapBasicJavaObject(Context cx, Scriptable scope, Object javaObject, Class<?> staticType)
         {
@@ -713,11 +717,9 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         }
 
     }
-    
+
     /**
-     * Pre initializes two scope objects (one secure and one not) with the standard objects preinitialised.
-     * This saves on very expensive calls to reinitialize a new scope on every web script execution. See
-     * http://www.mozilla.org/rhino/scopes.html
+     * Pre initializes two scope objects (one secure and one not) with the standard objects preinitialised. This saves on very expensive calls to reinitialize a new scope on every web script execution. See http://www.mozilla.org/rhino/scopes.html
      * 
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
@@ -737,7 +739,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         {
             Context.exit();
         }
-        
+
         // Initialize the non-secure scope
         cx = Context.enter();
         try
@@ -750,18 +752,16 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             Context.exit();
         }
     }
-    
+
     /**
-     * Initializes a scope for script execution. The easiest way to embed Rhino is just to create a new scope this
-     * way whenever you need one. However, initStandardObjects() is an expensive method to call and it allocates a
-     * fair amount of memory.
+     * Initializes a scope for script execution. The easiest way to embed Rhino is just to create a new scope this way whenever you need one. However, initStandardObjects() is an expensive method to call and it allocates a fair amount of memory.
      * 
-     * @param cx        the thread execution context
-     * @param secure    Do we consider the script secure? When <code>false</code> this ensures the script may not
-     *                  access insecure java.* libraries or import any other classes for direct access - only the
-     *                  configured root host objects will be available to the script writer.
-     * @param sealed    Should the scope be sealed, making it immutable? This should be <code>true</code> if a scope
-     *                  is to be reused.
+     * @param cx
+     *            the thread execution context
+     * @param secure
+     *            Do we consider the script secure? When <code>false</code> this ensures the script may not access insecure java.* libraries or import any other classes for direct access - only the configured root host objects will be available to the script writer.
+     * @param sealed
+     *            Should the scope be sealed, making it immutable? This should be <code>true</code> if a scope is to be reused.
      * @return the scope object
      */
     protected Scriptable initScope(Context cx, boolean secure, boolean sealed)
@@ -890,8 +890,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     }
 
     /**
-     * If script is considered secure no limits will be applied, otherwise, the limits are enabled and the script can be
-     * interrupted in case a limit has been reached.
+     * If script is considered secure no limits will be applied, otherwise, the limits are enabled and the script can be interrupted in case a limit has been reached.
      *
      * @param cx
      *            the Rhino scope

@@ -25,15 +25,16 @@
  */
 package org.alfresco.repo.attributes;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+
 /**
  * Cleanup job to initiate cleaning of unused values from the alf_prop_xxx tables.
- *  
+ * 
  * @author Matt Ward
  */
 public class PropTablesCleanupJob implements Job

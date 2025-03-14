@@ -48,7 +48,7 @@ public class FilingData
     private Map<QName, Serializable> properties;
 
     public FilingData(NodeRef filingNodeRef, QName assocTypeQName, QName assocQName, QName nodeTypeQName,
-                Set<QName> aspects, Map<QName, Serializable> properties)
+            Set<QName> aspects, Map<QName, Serializable> properties)
     {
         super();
         this.filingNodeRef = filingNodeRef;

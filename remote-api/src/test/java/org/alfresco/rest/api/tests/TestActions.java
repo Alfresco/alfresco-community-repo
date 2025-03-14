@@ -25,6 +25,31 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsFirst;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.Collections;
+import java.util.EmptyStackException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.ibatis.RetryingCallbackHelper;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
@@ -46,29 +71,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.Collections;
-import java.util.EmptyStackException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import static java.util.Comparator.comparing;
-import static java.util.Comparator.naturalOrder;
-import static java.util.Comparator.nullsFirst;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 public class TestActions extends AbstractBaseApiTest
 {
@@ -93,7 +95,7 @@ public class TestActions extends AbstractBaseApiTest
         accountsIt = getTestFixture().getNetworksIt();
         account1 = accountsIt.next();
         account1PersonIt = account1.getPersonIds().iterator();
-        
+
         // Capture authentication pre-test, so we can restore it again afterwards.
         AuthenticationUtil.pushAuthentication();
     }
@@ -106,18 +108,18 @@ public class TestActions extends AbstractBaseApiTest
         {
             AuthenticationUtil.popAuthentication();
         }
-        catch(EmptyStackException e)
+        catch (EmptyStackException e)
         {
             // Nothing to do.
         }
     }
-    
+
     @Override
     public String getScope()
     {
         return "public";
     }
-    
+
     @Test
     public void canGetActionDefinitions() throws PublicApiException
     {
@@ -126,7 +128,7 @@ public class TestActions extends AbstractBaseApiTest
 
         {
             ListResponse<ActionDefinition> actionDefs = actions.getActionDefinitions(emptyParams, 200);
-            
+
             assertNotNull("Action definition list should not be null", actionDefs);
             assertFalse("Action definition list should not be empty", actionDefs.getList().isEmpty());
 
@@ -135,8 +137,7 @@ public class TestActions extends AbstractBaseApiTest
             assertEquals(Paging.DEFAULT_SKIP_COUNT, actionDefs.getPaging().getSkipCount().intValue());
 
             // Check ActionDefinition fields
-            List<ActionDefinition> actionDefinitions = actionDefs.getList().stream().
-                    filter(ad -> ad.getName().equals("add-features")).collect(Collectors.toList());
+            List<ActionDefinition> actionDefinitions = actionDefs.getList().stream().filter(ad -> ad.getName().equals("add-features")).collect(Collectors.toList());
             assertEquals(1, actionDefinitions.size());
 
             ActionDefinition action = actionDefinitions.get(0);
@@ -160,23 +161,15 @@ public class TestActions extends AbstractBaseApiTest
 
         checkBasicPagingAndSorting(
                 // Expected
-                () -> actionService.getActionDefinitions().
-                        stream().
-                        sorted(comparing(org.alfresco.service.cmr.action.ActionDefinition::getName)).
-                        map(ParameterizedItemDefinition::getName).
-                        collect(Collectors.toList()),
+                () -> actionService.getActionDefinitions().stream().sorted(comparing(org.alfresco.service.cmr.action.ActionDefinition::getName)).map(ParameterizedItemDefinition::getName).collect(Collectors.toList()),
                 // Actual results
                 paging -> actions.getActionDefinitions(createParams(paging, null), 200));
 
         // Explicit sorting by title
         checkSorting(
                 // Expected
-                () -> actionService.getActionDefinitions().
-                        stream().
-                        sorted(comparing(org.alfresco.service.cmr.action.ActionDefinition::getTitle,
-                                nullsFirst(naturalOrder()))).
-                        map(act -> new Pair<>(act.getName(), act.getTitle())).
-                        collect(Collectors.toList()),
+                () -> actionService.getActionDefinitions().stream().sorted(comparing(org.alfresco.service.cmr.action.ActionDefinition::getTitle,
+                        nullsFirst(naturalOrder()))).map(act -> new Pair<>(act.getName(), act.getTitle())).collect(Collectors.toList()),
                 // Actual results
                 (paging, orderBy) -> actions.getActionDefinitions(createParams(paging, orderBy), 200),
                 "title");
@@ -184,16 +177,12 @@ public class TestActions extends AbstractBaseApiTest
         // Explicit sorting by name
         checkSorting(
                 // Expected
-                () -> actionService.getActionDefinitions().
-                        stream().
-                        sorted(comparing(org.alfresco.service.cmr.action.ActionDefinition::getName,
-                                nullsFirst(naturalOrder()))).
-                        map(act -> new Pair<>(act.getName(), act.getTitle())).
-                        collect(Collectors.toList()),
+                () -> actionService.getActionDefinitions().stream().sorted(comparing(org.alfresco.service.cmr.action.ActionDefinition::getName,
+                        nullsFirst(naturalOrder()))).map(act -> new Pair<>(act.getName(), act.getTitle())).collect(Collectors.toList()),
                 // Actual results
                 (paging, orderBy) -> actions.getActionDefinitions(createParams(paging, orderBy), 200),
                 "name");
-        
+
         // Badly formed request -> 400
         {
             PublicApiClient.Paging paging = getPaging(0, -1); // -1 is not acceptable
@@ -206,14 +195,14 @@ public class TestActions extends AbstractBaseApiTest
             actions.getActionDefinitions(emptyParams, 401);
         }
     }
-    
+
     @Test
     public void canGetActionDefinition() throws PublicApiException
     {
         final String person1 = account1PersonIt.next();
         publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1));
-        
-        ActionDefinition actionDef = actions.getActionDefinition("add-features",200);
+
+        ActionDefinition actionDef = actions.getActionDefinition("add-features", 200);
 
         assertNotNull("Action definition should not be null", actionDef);
 
@@ -235,17 +224,17 @@ public class TestActions extends AbstractBaseApiTest
         assertEquals(false, paramDefs.isMultiValued());
         assertEquals("ac-aspects", paramDefs.getParameterConstraintName());
 
-        // Non-existing actionDefinitionId  -> 404
+        // Non-existing actionDefinitionId -> 404
         {
-            actions.getActionDefinition("some-text",404);
+            actions.getActionDefinition("some-text", 404);
         }
-        
+
         // Unauthorized -> 401
         {
             publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1, "invalid-password"));
             actions.getActionDefinition(null, 401);
         }
-        
+
     }
 
     @Test
@@ -253,7 +242,7 @@ public class TestActions extends AbstractBaseApiTest
     {
         final String person1 = account1PersonIt.next();
         publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1));
-        
+
         // Get the actions available on the -my- node-ref alias
         {
             ListResponse<ActionDefinition> actionDefs = actions.getActionDefinitionsForNode("-my-", emptyParams, 200);
@@ -266,8 +255,7 @@ public class TestActions extends AbstractBaseApiTest
             assertEquals(Paging.DEFAULT_SKIP_COUNT, actionDefs.getPaging().getSkipCount().intValue());
 
             // Check ActionDefinition fields
-            List<ActionDefinition> actionDefinitions = actionDefs.getList().stream().
-                    filter(ad -> ad.getName().equals("add-features")).collect(Collectors.toList());
+            List<ActionDefinition> actionDefinitions = actionDefs.getList().stream().filter(ad -> ad.getName().equals("add-features")).collect(Collectors.toList());
             assertEquals(1, actionDefinitions.size());
 
             ActionDefinition action = actionDefinitions.get(0);
@@ -290,11 +278,11 @@ public class TestActions extends AbstractBaseApiTest
         }
 
         AuthenticationUtil.setFullyAuthenticatedUser(person1);
-        
+
         // Get the actions for a "checked out" node - there should be a "check-in" action present.
         // Inspect the fields, to make sure that they're all there. Especially applicableTypes, as
         // this isn't available on any of the actions that appear for the "-my-" alias in the test above.
-        {   
+        {
             NodeRef nodeForCheckout = nodeService.createNode(
                     new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, getMyNodeId()),
                     ContentModel.ASSOC_CONTAINS,
@@ -303,13 +291,11 @@ public class TestActions extends AbstractBaseApiTest
             CheckOutCheckInService coci = applicationContext.getBean("CheckOutCheckInService", CheckOutCheckInService.class);
             coci.checkout(nodeForCheckout);
 
-            ListResponse<ActionDefinition> actionDefs =
-                    actions.getActionDefinitionsForNode(nodeForCheckout.getId(), emptyParams, 200);
+            ListResponse<ActionDefinition> actionDefs = actions.getActionDefinitionsForNode(nodeForCheckout.getId(), emptyParams, 200);
 
-            List<ActionDefinition> actionDefinitions = actionDefs.getList().stream().
-                    filter(ad -> ad.getName().equals("check-in")).collect(Collectors.toList());
+            List<ActionDefinition> actionDefinitions = actionDefs.getList().stream().filter(ad -> ad.getName().equals("check-in")).collect(Collectors.toList());
             assertEquals(1, actionDefinitions.size());
-            
+
             ActionDefinition action = actionDefinitions.get(0);
             assertEquals("check-in", action.getId());
             assertEquals("check-in", action.getName());
@@ -321,7 +307,7 @@ public class TestActions extends AbstractBaseApiTest
             assertEquals(false, action.isTrackStatus());
             // Parameter definitions
             assertEquals(2, action.getParameterDefinitions().size());
-            //    "description"
+            // "description"
             ActionDefinition.ParameterDefinition paramDefs = action.getParameterDefinitions().get(0);
             assertEquals(CheckInActionExecuter.PARAM_DESCRIPTION, paramDefs.getName());
             assertEquals("d:text", paramDefs.getType());
@@ -329,7 +315,7 @@ public class TestActions extends AbstractBaseApiTest
             assertEquals("Description", paramDefs.getDisplayLabel());
             assertEquals(false, paramDefs.isMultiValued());
             assertEquals(null, paramDefs.getParameterConstraintName());
-            //    "minorChange"
+            // "minorChange"
             paramDefs = action.getParameterDefinitions().get(1);
             assertEquals(CheckInActionExecuter.PARAM_MINOR_CHANGE, paramDefs.getName());
             assertEquals("d:boolean", paramDefs.getType());
@@ -345,12 +331,12 @@ public class TestActions extends AbstractBaseApiTest
                 ContentModel.ASSOC_CONTAINS,
                 QName.createQName("test", "test-node"),
                 ContentModel.TYPE_CONTENT).getChildRef();
-        
+
         // Get the actions available using a specific node ID
         {
-            
+
             ListResponse<ActionDefinition> actionDefs = actions.getActionDefinitionsForNode(validNode.getId(), emptyParams, 200);
-            
+
             assertNotNull("Action definition list should not be null", actionDefs);
             assertFalse("Action definition list should not be empty", actionDefs.getList().isEmpty());
         }
@@ -358,58 +344,44 @@ public class TestActions extends AbstractBaseApiTest
         // Basic/default paging and sorting
         checkBasicPagingAndSorting(
                 // Expected
-                () -> actionService.getActionDefinitions(validNode).
-                        stream().
-                        sorted(comparing(org.alfresco.service.cmr.action.ActionDefinition::getName)).
-                        map(ParameterizedItemDefinition::getName).
-                        collect(Collectors.toList()),
+                () -> actionService.getActionDefinitions(validNode).stream().sorted(comparing(org.alfresco.service.cmr.action.ActionDefinition::getName)).map(ParameterizedItemDefinition::getName).collect(Collectors.toList()),
                 // Actual results
                 paging -> actions.getActionDefinitionsForNode(validNode.getId(), createParams(paging, null), 200));
 
         // Test explicit sorting by title
         checkSorting(
                 // Expected
-                () -> actionService.getActionDefinitions(validNode).
-                        stream().
-                        sorted(comparing(org.alfresco.service.cmr.action.ActionDefinition::getTitle,
-                                nullsFirst(naturalOrder()))).
-                        map(act -> new Pair<>(act.getName(), act.getTitle())).
-                        collect(Collectors.toList()),
+                () -> actionService.getActionDefinitions(validNode).stream().sorted(comparing(org.alfresco.service.cmr.action.ActionDefinition::getTitle,
+                        nullsFirst(naturalOrder()))).map(act -> new Pair<>(act.getName(), act.getTitle())).collect(Collectors.toList()),
                 // Actual results
-                (paging, orderBy) ->
-                        actions.getActionDefinitionsForNode(validNode.getId(), createParams(paging, orderBy), 200),
+                (paging, orderBy) -> actions.getActionDefinitionsForNode(validNode.getId(), createParams(paging, orderBy), 200),
                 "title");
-        
+
         // Test explicit sorting by name
         checkSorting(
                 // Expected
-                () -> actionService.getActionDefinitions(validNode).
-                        stream().
-                        sorted(comparing(org.alfresco.service.cmr.action.ActionDefinition::getName,
-                                nullsFirst(naturalOrder()))).
-                        map(act -> new Pair<>(act.getName(), act.getTitle())).
-                        collect(Collectors.toList()),
+                () -> actionService.getActionDefinitions(validNode).stream().sorted(comparing(org.alfresco.service.cmr.action.ActionDefinition::getName,
+                        nullsFirst(naturalOrder()))).map(act -> new Pair<>(act.getName(), act.getTitle())).collect(Collectors.toList()),
                 // Actual results
-                (paging, orderBy) ->
-                        actions.getActionDefinitionsForNode(validNode.getId(), createParams(paging, orderBy), 200),
+                (paging, orderBy) -> actions.getActionDefinitionsForNode(validNode.getId(), createParams(paging, orderBy), 200),
                 "name");
-        
+
         // Badly formed request -> 400
         {
             PublicApiClient.Paging paging = getPaging(0, -1); // -1 is not acceptable
             actions.getActionDefinitionsForNode(validNode.getId(), createParams(paging, null), 400);
         }
-        
+
         // Non-existent node ID
         {
             NodeRef nodeRef = new NodeRef(
                     StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
                     "750a2867-ecfa-478c-8343-fa0e39d27be3");
             assertFalse("Test pre-requisite: node must not exist", nodeService.exists(nodeRef));
-            
+
             actions.getActionDefinitionsForNode(nodeRef.getId(), emptyParams, 404);
         }
-        
+
         // Unauthorized -> 401
         {
             publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1, "invalid-password"));
@@ -418,8 +390,7 @@ public class TestActions extends AbstractBaseApiTest
     }
 
     /**
-     * We could use {@link java.util.function.Function}, but that makes things messy
-     * when wanting to throw a checked exception, as the public API methods do.
+     * We could use {@link java.util.function.Function}, but that makes things messy when wanting to throw a checked exception, as the public API methods do.
      */
     @FunctionalInterface
     private interface CheckedFunction<T, U, V extends Exception>
@@ -432,7 +403,7 @@ public class TestActions extends AbstractBaseApiTest
     {
         V apply(T t, U u) throws W;
     }
-    
+
     private void checkBasicPagingAndSorting(
             Supplier<List<String>> expectedNamesFun,
             CheckedFunction<PublicApiClient.Paging, ListResponse<ActionDefinition>, PublicApiException> actionsFun)
@@ -450,9 +421,7 @@ public class TestActions extends AbstractBaseApiTest
 
         // ActionService and the REST API return very different types, so mapping both lists
         // to Strings to make a simple comparison easy.
-        List<String> actionNames = actionDefs.getList().stream().
-                map(ActionDefinition::getName).
-                collect(Collectors.toList());
+        List<String> actionNames = actionDefs.getList().stream().map(ActionDefinition::getName).collect(Collectors.toList());
 
         // Check the whole lists match
         assertEquals(expectedNames, actionNames);
@@ -483,8 +452,8 @@ public class TestActions extends AbstractBaseApiTest
             assertEquals(expectedNames.size(), (int) actionDefs.getPaging().getTotalItems());
             assertTrue(actionDefs.getPaging().getHasMoreItems());
 
-            // Get a 'page' consisting of just the last item, regardless of pageSize 
-            paging = getPaging(expectedNames.size()-1, pageSize);
+            // Get a 'page' consisting of just the last item, regardless of pageSize
+            paging = getPaging(expectedNames.size() - 1, pageSize);
             actionDefs = actionsFun.apply(paging);
             assertEquals(1, actionDefs.getList().size());
             assertEquals(1L, (long) actionDefs.getPaging().getCount());
@@ -492,7 +461,7 @@ public class TestActions extends AbstractBaseApiTest
             assertFalse(actionDefs.getPaging().getHasMoreItems());
         }
     }
-    
+
     private void checkSorting(
             Supplier<List<Pair<String, String>>> expectedFun,
             CheckedBiFunction<PublicApiClient.Paging, Map<String, String>, ListResponse<ActionDefinition>, PublicApiException> actionsFun,
@@ -510,9 +479,7 @@ public class TestActions extends AbstractBaseApiTest
         Map<String, String> orderBy = Collections.singletonMap("orderBy", sortField);
         ListResponse<ActionDefinition> actionDefs = actionsFun.apply(paging, orderBy);
 
-        List<Pair<String, String>> retrievedActions = actionDefs.getList().stream().
-                map(act -> new Pair<>(act.getName(), act.getTitle())).
-                collect(Collectors.toList());
+        List<Pair<String, String>> retrievedActions = actionDefs.getList().stream().map(act -> new Pair<>(act.getName(), act.getTitle())).collect(Collectors.toList());
 
         // Check the whole lists match
         assertEquals(expectedActions, retrievedActions);
@@ -521,20 +488,16 @@ public class TestActions extends AbstractBaseApiTest
         orderBy = Collections.singletonMap("orderBy", sortField + " asc");
         actionDefs = actionsFun.apply(paging, orderBy);
 
-        retrievedActions = actionDefs.getList().stream().
-                map(act -> new Pair<>(act.getName(), act.getTitle())).
-                collect(Collectors.toList());
+        retrievedActions = actionDefs.getList().stream().map(act -> new Pair<>(act.getName(), act.getTitle())).collect(Collectors.toList());
 
         // Check the whole lists match
         assertEquals(expectedActions, retrievedActions);
-        
+
         // Descending sort order
         orderBy = Collections.singletonMap("orderBy", sortField + " desc");
         actionDefs = actionsFun.apply(paging, orderBy);
 
-        retrievedActions = actionDefs.getList().stream().
-                map(act -> new Pair<>(act.getName(), act.getTitle())).
-                collect(Collectors.toList());
+        retrievedActions = actionDefs.getList().stream().map(act -> new Pair<>(act.getName(), act.getTitle())).collect(Collectors.toList());
 
         // Check the whole lists match
         Collections.reverse(expectedActions);
@@ -545,11 +508,9 @@ public class TestActions extends AbstractBaseApiTest
         paging = getPaging(pageSize, pageSize);
         actionDefs = actionsFun.apply(paging, orderBy);
 
-        retrievedActions = actionDefs.getList().stream().
-                map(act -> new Pair<>(act.getName(), act.getTitle())).
-                collect(Collectors.toList());
+        retrievedActions = actionDefs.getList().stream().map(act -> new Pair<>(act.getName(), act.getTitle())).collect(Collectors.toList());
 
-        assertEquals(expectedActions.subList(pageSize, pageSize*2), retrievedActions);
+        assertEquals(expectedActions.subList(pageSize, pageSize * 2), retrievedActions);
     }
 
     @Test
@@ -622,8 +583,7 @@ public class TestActions extends AbstractBaseApiTest
             RetryingCallbackHelper retryingCallbackHelper = new RetryingCallbackHelper();
             retryingCallbackHelper.setRetryWaitMs(500);
 
-            RetryingCallbackHelper.RetryingCallback retryingCallback = new RetryingCallbackHelper.RetryingCallback()
-            {
+            RetryingCallbackHelper.RetryingCallback retryingCallback = new RetryingCallbackHelper.RetryingCallback() {
                 @Override
                 public Void execute() throws Throwable
                 {

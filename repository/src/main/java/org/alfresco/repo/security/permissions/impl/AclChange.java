@@ -35,7 +35,10 @@ import org.alfresco.repo.security.permissions.ACLType;
 public interface AclChange
 {
     public Long getBefore();
+
     public Long getAfter();
+
     public ACLType getTypeAfter();
+
     public ACLType getTypeBefore();
 }

@@ -28,8 +28,7 @@ package org.alfresco.service.cmr.repository;
 import org.alfresco.api.AlfrescoPublicApi;
 
 /**
- * Listens for notifications w.r.t. content.  This includes receiving notifications
- * of the opening and closing of the content streams.
+ * Listens for notifications w.r.t. content. This includes receiving notifications of the opening and closing of the content streams.
  * 
  * @author Derek Hulley
  */

@@ -26,12 +26,14 @@
 package org.alfresco.repo.util;
 
 import java.util.Objects;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Schedules a callback to a post-commit phase.
@@ -50,9 +52,10 @@ public class PostTxnCallbackScheduler
     }
 
     /**
-     * @param callback The callback to be scheduled in a post-commit phase
-     * @param uniqueId The unique id of the callback. Consecutive requests to schedule the callback with the same id
-     *                will overwrite the previously scheduled one.
+     * @param callback
+     *            The callback to be scheduled in a post-commit phase
+     * @param uniqueId
+     *            The unique id of the callback. Consecutive requests to schedule the callback with the same id will overwrite the previously scheduled one.
      */
     public void scheduleRendition(RetryingTransactionHelper.RetryingTransactionCallback callback, String uniqueId)
     {

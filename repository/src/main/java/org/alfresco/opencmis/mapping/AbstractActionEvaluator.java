@@ -25,9 +25,10 @@
  */
 package org.alfresco.opencmis.mapping;
 
+import org.apache.chemistry.opencmis.commons.enums.Action;
+
 import org.alfresco.opencmis.dictionary.CMISActionEvaluator;
 import org.alfresco.service.ServiceRegistry;
-import org.apache.chemistry.opencmis.commons.enums.Action;
 
 /**
  * Base class for all action evaluators
@@ -43,8 +44,10 @@ public abstract class AbstractActionEvaluator implements CMISActionEvaluator
     /**
      * Construct
      * 
-     * @param serviceRegistry ServiceRegistry
-     * @param action Action
+     * @param serviceRegistry
+     *            ServiceRegistry
+     * @param action
+     *            Action
      */
     protected AbstractActionEvaluator(ServiceRegistry serviceRegistry, Action action)
     {
@@ -60,11 +63,9 @@ public abstract class AbstractActionEvaluator implements CMISActionEvaluator
         return serviceRegistry;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.opencmis.CMISActionEvaluator#getAction()
-     */
+     * @see org.alfresco.opencmis.CMISActionEvaluator#getAction() */
     public Action getAction()
     {
         return action;

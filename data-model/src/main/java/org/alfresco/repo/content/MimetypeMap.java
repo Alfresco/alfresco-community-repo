@@ -25,16 +25,22 @@
  */
 package org.alfresco.repo.content;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.alfresco.repo.content.encoding.ContentCharsetFinder;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.FileContentReader;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.util.ConfigFileFinder;
-import org.alfresco.util.ConfigScheduler;
-import org.alfresco.util.PropertyCheck;
-import org.alfresco.util.ShutdownIndicator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.tika.config.TikaConfig;
@@ -51,47 +57,40 @@ import org.springframework.extensions.config.ConfigLookupContext;
 import org.springframework.extensions.config.ConfigService;
 import org.springframework.extensions.config.element.GenericConfigElement;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
+import org.alfresco.repo.content.encoding.ContentCharsetFinder;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.FileContentReader;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.util.ConfigFileFinder;
+import org.alfresco.util.ConfigScheduler;
+import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.ShutdownIndicator;
 
 /**
- * Provides a bidirectional mapping between well-known mimetypes and the
- * registered file extensions. All mimetypes and extensions are stored and
- * handled as lowercase.
+ * Provides a bidirectional mapping between well-known mimetypes and the registered file extensions. All mimetypes and extensions are stored and handled as lowercase.
  * 
  * @author Derek Hulley
  */
 public class MimetypeMap implements MimetypeService
 {
     public static final String PREFIX_APPLICATION = "application/";
-    
+
     public static final String PREFIX_AUDIO = "audio/";
-    
+
     public static final String PREFIX_IMAGE = "image/";
-    
+
     public static final String PREFIX_MESSAGE = "message/";
-    
+
     public static final String PREFIX_MODEL = "model/";
-    
+
     public static final String PREFIX_MULTIPART = "multipart/";
-    
+
     public static final String PREFIX_TEXT = "text/";
-    
+
     public static final String PREFIX_VIDEO = "video/";
 
     public static final String EXTENSION_BINARY = "bin";
-    
+
     public static final String MACOS_RESOURCE_FORK_FILE_NAME_PREFIX = "._";
 
     public static final String MIMETYPE_MULTIPART_ALTERNATIVE = "multipart/alternative";
@@ -221,8 +220,8 @@ public class MimetypeMap implements MimetypeService
     public static final String MIMETYPE_APPLICATION_ILLUSTRATOR = "application/illustrator";
 
     public static final String MIMETYPE_APPLICATION_PHOTOSHOP = "image/vnd.adobe.photoshop";
-    
-    //Encrypted office document
+
+    // Encrypted office document
     public static final String MIMETYPE_ENCRYPTED_OFFICE = "application/x-tika-ooxml-protected";
 
     // Open Document
@@ -313,7 +312,7 @@ public class MimetypeMap implements MimetypeService
 
     public static final String MIMETYPE_IWORK_PAGES = "application/vnd.apple.pages";
 
-    //MACOS
+    // MACOS
     public static final String MIMETYPE_APPLEFILE = "application/applefile";
 
     // WordPerfect
@@ -396,7 +395,7 @@ public class MimetypeMap implements MimetypeService
         public String toString()
         {
             int mimetypeCount = mimetypes.size();
-            return "(mimetypes: "+mimetypeCount+" from XML: "+xmlCount+" from JSON: "+(mimetypeCount-xmlCount)+" files: "+fileCount+")";
+            return "(mimetypes: " + mimetypeCount + " from XML: " + xmlCount + " from JSON: " + (mimetypeCount - xmlCount) + " files: " + fileCount + ")";
         }
     }
 
@@ -450,8 +449,7 @@ public class MimetypeMap implements MimetypeService
         }
     }
 
-    private ConfigScheduler<Data> configScheduler = new ConfigScheduler(this)
-    {
+    private ConfigScheduler<Data> configScheduler = new ConfigScheduler(this) {
         @Override
         public boolean readConfig() throws IOException
         {
@@ -487,8 +485,7 @@ public class MimetypeMap implements MimetypeService
      * @since 2.1
      */
     public MimetypeMap()
-    {
-    }
+    {}
 
     @Deprecated
     public MimetypeMap(ConfigService configService)
@@ -504,7 +501,8 @@ public class MimetypeMap implements MimetypeService
     }
 
     /**
-     * @param configService the config service to use to read mimetypes from
+     * @param configService
+     *            the config service to use to read mimetypes from
      */
     public void setConfigService(ConfigService configService)
     {
@@ -530,7 +528,8 @@ public class MimetypeMap implements MimetypeService
     /**
      * Injects the TikaConfig to use
      * 
-     * @param tikaConfig The Tika Config to use
+     * @param tikaConfig
+     *            The Tika Config to use
      */
     public void setTikaConfig(TikaConfig tikaConfig)
     {
@@ -579,8 +578,7 @@ public class MimetypeMap implements MimetypeService
             {
                 PropertyCheck.mandatory(this, "initialAndOnErrorCronExpression", initialAndOnErrorCronExpression);
             }
-            jsonConfigFileFinder = new ConfigFileFinder(jsonObjectMapper)
-            {
+            jsonConfigFileFinder = new ConfigFileFinder(jsonObjectMapper) {
                 @Override
                 protected void readJson(JsonNode jsonNode, String readFromMessage, String baseUrl) throws IOException
                 {
@@ -631,7 +629,7 @@ public class MimetypeMap implements MimetypeService
                     }
                     catch (IllegalArgumentException e)
                     {
-                        logger.error("Error reading "+readFromMessage+" "+e.getMessage());
+                        logger.error("Error reading " + readFromMessage + " " + e.getMessage());
                     }
                 }
             };
@@ -791,9 +789,9 @@ public class MimetypeMap implements MimetypeService
     /**
      * Get the file extension associated with the mimetype.
      * 
-     * @param mimetype a valid mimetype
-     * @return Returns the default extension for the mimetype. Returns the
-     *         {@link #MIMETYPE_BINARY binary} mimetype extension.
+     * @param mimetype
+     *            a valid mimetype
+     * @return Returns the default extension for the mimetype. Returns the {@link #MIMETYPE_BINARY binary} mimetype extension.
      * 
      * @see #MIMETYPE_BINARY
      * @see #EXTENSION_BINARY
@@ -808,16 +806,16 @@ public class MimetypeMap implements MimetypeService
     /**
      * Get the mimetype for the specified extension
      * 
-     * @param extension a valid file extension
-     * @return Returns a valid mimetype if found, or {@link #MIMETYPE_BINARY
-     *         binary} as default.
+     * @param extension
+     *            a valid file extension
+     * @return Returns a valid mimetype if found, or {@link #MIMETYPE_BINARY binary} as default.
      */
     @Override
     public String getMimetype(String extension)
     {
         return getMimetype(extension, MIMETYPE_BINARY);
     }
-    
+
     /**
      * Get the mimetype for the specified extension or returns the supplied default if unknown.
      */
@@ -871,7 +869,7 @@ public class MimetypeMap implements MimetypeService
         Data data = getData();
         return data.textMimetypes.contains(mimetype);
     }
-    
+
     /**
      * Use Apache Tika to try to guess the type of the file.
      * 
@@ -884,22 +882,22 @@ public class MimetypeMap implements MimetypeService
         {
             if (reader != null)
             {
-    	        if (reader instanceof FileContentReader)
-    	        {
-    	            try
-    	            {
-    	                inp = TikaInputStream.get(((FileContentReader) reader).getFile());
-    	            }
-    	            catch (FileNotFoundException e)
-    	            {
-    	                logger.warn("No backing file found for ContentReader " + e);
-    	                return null;
-    	            }
-    	        }
-    	        else
-    	        {
-    	        	inp = TikaInputStream.get(reader.getContentInputStream());
-    	        }
+                if (reader instanceof FileContentReader)
+                {
+                    try
+                    {
+                        inp = TikaInputStream.get(((FileContentReader) reader).getFile());
+                    }
+                    catch (FileNotFoundException e)
+                    {
+                        logger.warn("No backing file found for ContentReader " + e);
+                        return null;
+                    }
+                }
+                else
+                {
+                    inp = TikaInputStream.get(reader.getContentInputStream());
+                }
             }
             return detectType(filename, inp);
         }
@@ -921,10 +919,10 @@ public class MimetypeMap implements MimetypeService
 
     private MediaType detectType(String filename, InputStream input)
     {
-    	TikaInputStream inp = null;
+        TikaInputStream inp = null;
         if (input != null)
         {
-        	inp = TikaInputStream.get(input);
+            inp = TikaInputStream.get(input);
         }
         return detectType(filename, inp);
     }
@@ -939,14 +937,14 @@ public class MimetypeMap implements MimetypeService
         Metadata metadata = new Metadata();
         if (filename != null)
         {
-            //"resourceName"
+            // "resourceName"
             metadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, filename);
         }
 
         InputStream inp = null;
         if (input != null)
         {
-        	inp = TikaInputStream.get(input);
+            inp = TikaInputStream.get(input);
         }
 
         MediaType type;
@@ -984,20 +982,19 @@ public class MimetypeMap implements MimetypeService
     {
         if (filename != null && type != null)
         {
-            String[] detectedAndPossibleTypes = new String[]
-            {
-                MIMETYPE_PDF, MIMETYPE_APPLICATION_ILLUSTRATOR,
-                MIMETYPE_APPLICATION_PS, MIMETYPE_APPLICATION_EPS
+            String[] detectedAndPossibleTypes = new String[]{
+                    MIMETYPE_PDF, MIMETYPE_APPLICATION_ILLUSTRATOR,
+                    MIMETYPE_APPLICATION_PS, MIMETYPE_APPLICATION_EPS
             };
 
-            for (int i=detectedAndPossibleTypes.length-1; i>=0; i-=2)
+            for (int i = detectedAndPossibleTypes.length - 1; i >= 0; i -= 2)
             {
-                String detectedType = detectedAndPossibleTypes[i-1];
+                String detectedType = detectedAndPossibleTypes[i - 1];
                 if (detectedType.equals(type.toString()))
                 {
                     String possibleType = detectedAndPossibleTypes[i];
                     String extension = getExtension(possibleType);
-                    if (filename.endsWith("."+extension))
+                    if (filename.endsWith("." + extension))
                     {
                         type = MediaType.parse(possibleType);
                         break;
@@ -1009,13 +1006,9 @@ public class MimetypeMap implements MimetypeService
     }
 
     /**
-     * Use Apache Tika to check if the mime type of the document really matches
-     * what it claims to be. This is typically used when a transformation or
-     * metadata extractions fails, and you want to know if someone has renamed a
-     * file and consequently it has the wrong mime type.
+     * Use Apache Tika to check if the mime type of the document really matches what it claims to be. This is typically used when a transformation or metadata extractions fails, and you want to know if someone has renamed a file and consequently it has the wrong mime type.
      * 
-     * @return Null if the mime type seems ok, otherwise the mime type it
-     *         probably is
+     * @return Null if the mime type seems ok, otherwise the mime type it probably is
      */
     public String getMimetypeIfNotMatches(ContentReader reader)
     {
@@ -1027,7 +1020,10 @@ public class MimetypeMap implements MimetypeService
         }
 
         // Is it a good match?
-        if (type.toString().equals(reader.getMimetype())) { return null; }
+        if (type.toString().equals(reader.getMimetype()))
+        {
+            return null;
+        }
 
         // Is it close?
         MediaType claimed = MediaType.parse(reader.getMimetype());
@@ -1037,15 +1033,15 @@ public class MimetypeMap implements MimetypeService
             // Probably close enough
             return null;
         }
-        
+
         // Check through known aliases of the type
         SortedSet<MediaType> aliases = tikaConfig.getMediaTypeRegistry().getAliases(type);
         for (MediaType alias : aliases)
         {
             String aliasType = alias.toString();
-            if (aliasType.equals(claimed.toString())) 
+            if (aliasType.equals(claimed.toString()))
             {
-                return null; 
+                return null;
             }
         }
 
@@ -1054,8 +1050,7 @@ public class MimetypeMap implements MimetypeService
     }
 
     /**
-     * Takes a guess at the mimetype based exclusively on the file extension,
-     * which can (and often is) wrong...
+     * Takes a guess at the mimetype based exclusively on the file extension, which can (and often is) wrong...
      * 
      * @see #MIMETYPE_BINARY
      */
@@ -1081,9 +1076,7 @@ public class MimetypeMap implements MimetypeService
     }
 
     /**
-     * Uses Tika to try to identify the mimetype of the file, falling back on
-     * {@link #guessMimetype(String)} for an extension based one if Tika can't
-     * help.
+     * Uses Tika to try to identify the mimetype of the file, falling back on {@link #guessMimetype(String)} for an extension based one if Tika can't help.
      */
     public String guessMimetype(String filename, ContentReader reader)
     {
@@ -1102,9 +1095,7 @@ public class MimetypeMap implements MimetypeService
     }
 
     /**
-     * Uses Tika to try to identify the mimetype of the file, falling back on
-     * {@link #guessMimetype(String)} for an extension based one if Tika can't
-     * help.
+     * Uses Tika to try to identify the mimetype of the file, falling back on {@link #guessMimetype(String)} for an extension based one if Tika can't help.
      */
     public String guessMimetype(String filename, InputStream input)
     {
@@ -1112,13 +1103,16 @@ public class MimetypeMap implements MimetypeService
         String filenameGuess = guessMimetype(filename);
 
         // If Tika doesn't know what the type is, or file is password protected, go with the filename one
-        if (type == null || MediaType.OCTET_STREAM.equals(type) || MIMETYPE_ENCRYPTED_OFFICE.equals(type.toString())) { return filenameGuess; }
+        if (type == null || MediaType.OCTET_STREAM.equals(type) || MIMETYPE_ENCRYPTED_OFFICE.equals(type.toString()))
+        {
+            return filenameGuess;
+        }
 
         // If Tika has supplied a very generic type, go with the filename one,
         // as it's probably a custom Text or XML format known only to Alfresco
-        if ((MediaType.TEXT_PLAIN.equals(type) || MediaType.APPLICATION_XML.equals(type)) && (! filenameGuess.equals(MIMETYPE_BINARY)))
-        { 
-            return filenameGuess; 
+        if ((MediaType.TEXT_PLAIN.equals(type) || MediaType.APPLICATION_XML.equals(type)) && (!filenameGuess.equals(MIMETYPE_BINARY)))
+        {
+            return filenameGuess;
         }
 
         // Alfresco doesn't support mimetype parameters
@@ -1143,7 +1137,10 @@ public class MimetypeMap implements MimetypeService
         for (MediaType alias : aliases)
         {
             String aliasType = alias.toString();
-            if (data.mimetypes.contains(aliasType)) { return aliasType; }
+            if (data.mimetypes.contains(aliasType))
+            {
+                return aliasType;
+            }
         }
 
         // If we get here, then Tika has identified something that
@@ -1152,10 +1149,12 @@ public class MimetypeMap implements MimetypeService
                 + " which Alfresco doesn't know about. Consider " + " adding that type to your configuration");
         return tikaType;
     }
-    
+
     /**
      * Returns a collection of mimetypes ordered by extension.
-     * @param extension to restrict the collection to one entry
+     * 
+     * @param extension
+     *            to restrict the collection to one entry
      */
     public Collection<String> getMimetypes(String extension)
     {
@@ -1182,18 +1181,20 @@ public class MimetypeMap implements MimetypeService
 
     /**
      * Copies and sorts the supplied mimetypes by their file extensions
-     * @param mimetypes to be sorted
+     * 
+     * @param mimetypes
+     *            to be sorted
      * @return a new List of sorted mimetypes
      */
     private Collection<String> sortMimetypesByExt(Collection<String> mimetypes)
     {
         List<String> result = new ArrayList<String>(mimetypes);
-        for (int i=result.size()-1; i>= 0; i--)
+        for (int i = result.size() - 1; i >= 0; i--)
         {
             result.set(i, getExtension(result.get(i)));
         }
         Collections.sort(result);
-        for (int i=result.size()-1; i>= 0; i--)
+        for (int i = result.size() - 1; i >= 0; i--)
         {
             result.set(i, getMimetype(result.get(i)));
         }

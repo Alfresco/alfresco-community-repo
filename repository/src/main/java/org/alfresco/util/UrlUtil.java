@@ -26,9 +26,9 @@
 
 package org.alfresco.util;
 
-import org.alfresco.repo.admin.SysAdminParams;
-
 import java.util.regex.Pattern;
+
+import org.alfresco.repo.admin.SysAdminParams;
 
 /**
  * Alfresco URL related utility functions.
@@ -41,11 +41,11 @@ public class UrlUtil
     public static final Pattern PATTERN = Pattern.compile("\\$\\{shareUrl\\}");
     // ${alfrescoUrl} placeholder
     public static final Pattern REPO_PATTERN = Pattern.compile("\\$\\{alfrescoUrl\\}");
+
     /**
-     * Builds up the Url to Alfresco based on the settings in the 
-     *  {@link SysAdminParams}. 
-     * @return Alfresco Url such as https://col.ab.or.ate/alfresco/
-     *  or http://localhost:8080/alfresco/
+     * Builds up the Url to Alfresco based on the settings in the {@link SysAdminParams}.
+     * 
+     * @return Alfresco Url such as https://col.ab.or.ate/alfresco/ or http://localhost:8080/alfresco/
      */
     public static String getAlfrescoUrl(SysAdminParams sysAdminParams)
     {
@@ -55,12 +55,11 @@ public class UrlUtil
                 sysAdminParams.getAlfrescoPort(),
                 sysAdminParams.getAlfrescoContext());
     }
-    
+
     /**
-     * Builds up the Url to Share based on the settings in the 
-     *  {@link SysAdminParams}. 
-     * @return Alfresco Url such as https://col.ab.or.ate/share/
-     *  or http://localhost:8081/share/
+     * Builds up the Url to Share based on the settings in the {@link SysAdminParams}.
+     * 
+     * @return Alfresco Url such as https://col.ab.or.ate/share/ or http://localhost:8081/share/
      */
     public static String getShareUrl(SysAdminParams sysAdminParams)
     {
@@ -71,17 +70,15 @@ public class UrlUtil
                 sysAdminParams.getShareContext());
     }
 
-
     public static String getApiExplorerUrl(SysAdminParams sysAdminParams)
     {
         return getApiExplorerUrl(sysAdminParams, "", "");
     }
 
     /**
-     * Builds URL to Api-Explorer based on the request only if the URL property is not provided
-     *  {@link SysAdminParams}.
-     * @return Rest-Api Url such as https://col.ab.or.ate/api-explorer/
-     *  or http://localhost:8082/api-explorer/
+     * Builds URL to Api-Explorer based on the request only if the URL property is not provided {@link SysAdminParams}.
+     * 
+     * @return Rest-Api Url such as https://col.ab.or.ate/api-explorer/ or http://localhost:8082/api-explorer/
      */
     public static String getApiExplorerUrl(SysAdminParams sysAdminParams, String requestURL, String requestURI)
     {
@@ -91,7 +88,7 @@ public class UrlUtil
         }
         if (!requestURI.isEmpty() && !requestURL.isEmpty())
         {
-            return requestURL.replace(requestURI,"/api-explorer");
+            return requestURL.replace(requestURI, "/api-explorer");
         }
         return "";
     }
@@ -99,17 +96,18 @@ public class UrlUtil
     /**
      * Replaces the share url placeholder, namely {@literal ${shareUrl}}, with <b>share</b> url.
      *
-     * @param value          the string value which contains the share url placeholder
-     * @param sysAdminParams the {@code SysAdminParams} object
-     * @return if the given {@code value} contains share url placeholder,
-     * the placeholder is replaced with share url; otherwise, the given {@code value} is simply returned
+     * @param value
+     *            the string value which contains the share url placeholder
+     * @param sysAdminParams
+     *            the {@code SysAdminParams} object
+     * @return if the given {@code value} contains share url placeholder, the placeholder is replaced with share url; otherwise, the given {@code value} is simply returned
      */
     public static String replaceShareUrlPlaceholder(String value, SysAdminParams sysAdminParams)
     {
         if (value != null)
         {
             return PATTERN.matcher(value).replaceAll(
-                        getShareUrl(sysAdminParams));
+                    getShareUrl(sysAdminParams));
         }
         return value;
     }

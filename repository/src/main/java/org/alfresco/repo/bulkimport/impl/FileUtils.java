@@ -34,14 +34,14 @@ import java.nio.file.Path;
  * 
  * @since 4.0
  *
- * TODO move to core project
+ *        TODO move to core project
  */
 public class FileUtils
 {
     public static String getFileName(final File file)
     {
         String result = null;
-     
+
         if (file != null)
         {
             try
@@ -53,14 +53,14 @@ public class FileUtils
                 result = file.toString();
             }
         }
-        
-        return(result);
+
+        return (result);
     }
-    
+
     public static String getFileName(final Path path)
     {
         String result = null;
-     
+
         if (path != null)
         {
             try
@@ -72,7 +72,7 @@ public class FileUtils
                 result = path.toString();
             }
         }
-        
+
         return result;
     }
 }

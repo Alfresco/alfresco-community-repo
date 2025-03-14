@@ -28,7 +28,6 @@ package org.alfresco.repo.search;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 
-
 /**
  * Iterate over the rows in a ResultSet
  * 
@@ -53,10 +52,10 @@ public abstract class AbstractResultSetRowIterator implements ResultSetRowIterat
     private int max;
 
     /**
-     * Create an iterator over the result set. Follows stadard ListIterator
-     * conventions
+     * Create an iterator over the result set. Follows stadard ListIterator conventions
      * 
-     * @param resultSet ResultSet
+     * @param resultSet
+     *            ResultSet
      */
     public AbstractResultSetRowIterator(ResultSet resultSet)
     {
@@ -65,19 +64,12 @@ public abstract class AbstractResultSetRowIterator implements ResultSetRowIterat
         this.max = resultSet.length();
     }
 
-    
-    
     public ResultSet getResultSet()
     {
         return resultSet;
     }
-    
 
-
-
-    /*
-     * ListIterator implementation
-     */
+    /* ListIterator implementation */
     public boolean hasNext()
     {
         return position < (max - 1);
@@ -94,14 +86,14 @@ public abstract class AbstractResultSetRowIterator implements ResultSetRowIterat
     }
 
     abstract public ResultSetRow next();
-    
+
     protected int moveToNextPosition()
     {
         return ++position;
     }
 
     abstract public ResultSetRow previous();
-    
+
     protected int moveToPreviousPosition()
     {
         return --position;
@@ -117,9 +109,7 @@ public abstract class AbstractResultSetRowIterator implements ResultSetRowIterat
         return position - 1;
     }
 
-    /*
-     * Mutation is not supported
-     */
+    /* Mutation is not supported */
 
     public void remove()
     {

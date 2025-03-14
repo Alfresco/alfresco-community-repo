@@ -44,15 +44,15 @@ public class NodeParametersEntity extends NodeParameters
 {
     private List<Long> includeTypeIds;
     private List<Long> excludeTypeIds;
-    
+
     private List<Long> includeAspectIds;
     private List<Long> excludeAspectIds;
-    
+
     private Long originalIdPropQNameId;
     private Long shardPropertyQNameId;
 
     private String shardPropertyType;
-    
+
     /**
      * Public constructor, but not generally useful
      */
@@ -61,7 +61,7 @@ public class NodeParametersEntity extends NodeParameters
         Pair<Long, QName> qnamePair = qnameDAO.getQName(ContentModel.PROP_ORIGINAL_ID);
         this.setOriginalIdPropQNameId(qnamePair == null ? Long.valueOf(-1) : qnamePair.getFirst());
     }
-    
+
     /**
      * Construct from higher-level parameters
      */
@@ -78,7 +78,7 @@ public class NodeParametersEntity extends NodeParameters
 
         this.setStoreIdentifier(params.getStoreIdentifier());
         this.setStoreProtocol(params.getStoreProtocol());
-                
+
         // Translate the QNames, if provided
         if (params.getIncludeNodeTypes() != null)
         {
@@ -91,7 +91,7 @@ public class NodeParametersEntity extends NodeParameters
             Set<Long> qnamesIds = qnameDAO.convertQNamesToIds(params.getExcludeNodeTypes(), false);
             this.setExcludeTypeIds(new ArrayList<Long>(qnamesIds));
         }
-        
+
         if (params.getExcludeAspects() != null)
         {
             Set<Long> qnamesIds = qnameDAO.convertQNamesToIds(params.getExcludeAspects(), false);
@@ -104,7 +104,7 @@ public class NodeParametersEntity extends NodeParameters
             this.setIncludeAspectIds(new ArrayList<Long>(qnamesIds));
         }
     }
-        
+
     public void setOriginalIdPropQNameId(Long originalIdPropQNameId)
     {
         this.originalIdPropQNameId = originalIdPropQNameId;
@@ -159,7 +159,7 @@ public class NodeParametersEntity extends NodeParameters
     {
         this.excludeTypeIds = excludeTypeIds;
     }
-    
+
     public boolean isIncludeNodesTable()
     {
         return (getFromNodeId() != null || getToNodeId() != null || getIncludeTypeIds() != null || getExcludeTypeIds() != null || getIncludeAspectIds() != null || getExcludeAspectIds() != null);
@@ -175,12 +175,13 @@ public class NodeParametersEntity extends NodeParameters
         this.shardPropertyQNameId = shardPropertyQNameId;
     }
 
-
-    public String getShardPropertyType() {
+    public String getShardPropertyType()
+    {
         return shardPropertyType;
     }
 
-    public void setShardPropertyType(String shardPropertyType) {
+    public void setShardPropertyType(String shardPropertyType)
+    {
         this.shardPropertyType = shardPropertyType;
     }
 }

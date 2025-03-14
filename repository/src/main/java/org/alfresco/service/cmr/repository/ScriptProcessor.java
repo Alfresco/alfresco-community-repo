@@ -36,52 +36,63 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  */
 public interface ScriptProcessor extends Processor
-{    
+{
     /**
      * Execute script
      * 
-     * @param location  the location of the script 
-     * @param model     context model
-     * @return Object   the result of the script
+     * @param location
+     *            the location of the script
+     * @param model
+     *            context model
+     * @return Object the result of the script
      */
     public Object execute(ScriptLocation location, Map<String, Object> model);
-    
+
     /**
      * Execute script
      * 
-     * @param nodeRef       the script node reference
-     * @param contentProp   the content property of the script
-     * @param model         the context model
-     * @return Object       the result of the script
+     * @param nodeRef
+     *            the script node reference
+     * @param contentProp
+     *            the content property of the script
+     * @param model
+     *            the context model
+     * @return Object the result of the script
      */
     public Object execute(NodeRef nodeRef, QName contentProp, Map<String, Object> model);
-    
-    /** 
+
+    /**
      * Execute script
      * 
-     * @param location  the classpath string locating the script
-     * @param model     the context model
-     * @return Object   the result of the script
+     * @param location
+     *            the classpath string locating the script
+     * @param model
+     *            the context model
+     * @return Object the result of the script
      */
     public Object execute(String location, Map<String, Object> model);
-    
+
     /**
      * Execute script string
      * 
-     * @param script    the script string
-     * @param model     the context model
-     * @return Object   the result of the script 
+     * @param script
+     *            the script string
+     * @param model
+     *            the context model
+     * @return Object the result of the script
      */
     public Object executeString(String script, Map<String, Object> model);
 
     /**
      * Execute script string
      *
-     * @param script    the script string
-     * @param model     the context model
-     * @param secure    the flag that indicates if string is considered secure to be executed, i.e., it will have 
-     *                  access to the full execution context instead of being executed in a sandbox context
-     * @return Object   the result of the script
+     * @param script
+     *            the script string
+     * @param model
+     *            the context model
+     * @param secure
+     *            the flag that indicates if string is considered secure to be executed, i.e., it will have access to the full execution context instead of being executed in a sandbox context
+     * @return Object the result of the script
      */
     public Object executeString(String script, Map<String, Object> model, boolean secure);
 

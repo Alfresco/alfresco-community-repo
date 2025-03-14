@@ -34,6 +34,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.springframework.beans.factory.BeanNameAware;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -45,13 +48,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.springframework.beans.factory.BeanNameAware;
 
 /**
- * This patch creates a new "Records Management Behavior Scripts" folder and moves existing behavior scripts from the old "Records Management Scripts" folder to the new folder.
- * This is to compensate for any non-behavior RM scripts so that they can live in the old "Records Management Scripts" folder for its intended purpose and be picked up by the
- * execute script rule action.
+ * This patch creates a new "Records Management Behavior Scripts" folder and moves existing behavior scripts from the old "Records Management Scripts" folder to the new folder. This is to compensate for any non-behavior RM scripts so that they can live in the old "Records Management Scripts" folder for its intended purpose and be picked up by the execute script rule action.
  *
  * @author Craig Tan
  * @since 2.1
@@ -80,7 +79,8 @@ public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements Be
     private FileFolderService fileFolderService;
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -88,7 +88,8 @@ public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements Be
     }
 
     /**
-     * @param fileFolderService file folder service
+     * @param fileFolderService
+     *            file folder service
      */
     public void setFileFolderService(FileFolderService fileFolderService)
     {
@@ -135,13 +136,11 @@ public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements Be
         if (nodeService.exists(OLD_BEHAVIOR_SCRIPTS_FOLDER))
         {
             // run the following code as System
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
-            {
+            AuthenticationUtil.runAs(new RunAsWork<Object>() {
                 @SuppressWarnings("deprecation")
                 public Object doWork()
                 {
-                    RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-                    {
+                    RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
                         public Void execute() throws Throwable
                         {
                             // Update the description of the old Scripts folder.

@@ -27,8 +27,12 @@ package org.alfresco.repo.web.scripts.workflow;
 
 import java.io.Serializable;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.workflow.WorkflowConstants;
@@ -36,10 +40,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Web Script implementation of delete or cancel workflow instance.
@@ -50,7 +50,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class WorkflowInstanceDelete extends AbstractWorkflowWebscript
 {
     public static final String PARAM_FORCED = "forced";
-    
+
     @Override
     protected Map<String, Object> buildModel(WorkflowModelBuilder modelBuilder, WebScriptRequest req, Status status, Cache cache)
     {
@@ -58,7 +58,7 @@ public class WorkflowInstanceDelete extends AbstractWorkflowWebscript
 
         // getting workflow instance id from request parameters
         String workflowInstanceId = params.get("workflow_instance_id");
-        
+
         // determine if instance should be cancelled or deleted
         boolean forced = getForced(req);
 
@@ -72,16 +72,16 @@ public class WorkflowInstanceDelete extends AbstractWorkflowWebscript
             {
                 workflowService.cancelWorkflow(workflowInstanceId);
             }
-            
+
             return null;
         }
         else
         {
-            throw new WebScriptException(HttpServletResponse.SC_FORBIDDEN, "Failed to " + 
-                        (forced ? "delete" : "cancel") + " workflow instance with id: " + workflowInstanceId);
+            throw new WebScriptException(HttpServletResponse.SC_FORBIDDEN, "Failed to " +
+                    (forced ? "delete" : "cancel") + " workflow instance with id: " + workflowInstanceId);
         }
     }
-    
+
     private boolean getForced(WebScriptRequest req)
     {
         String forced = req.getParameter(PARAM_FORCED);
@@ -100,32 +100,31 @@ public class WorkflowInstanceDelete extends AbstractWorkflowWebscript
         // Defaults to false.
         return false;
     }
-    
+
     /**
-     * Determines if the current user can cancel or delete the
-     * workflow instance with the given id. Throws a WebscriptException
-     * with status-code 404 if workflow-instance to delete wasn't found.
+     * Determines if the current user can cancel or delete the workflow instance with the given id. Throws a WebscriptException with status-code 404 if workflow-instance to delete wasn't found.
      * 
-     * @param instanceId The id of the workflow instance to check
+     * @param instanceId
+     *            The id of the workflow instance to check
      * @return true if the user can end the workflow, false otherwise
      */
     private boolean canUserEndWorkflow(String instanceId)
     {
         boolean canEnd = false;
-        
+
         // get the initiator
-        WorkflowInstance wi = workflowService.getWorkflowById(instanceId);  
-        
+        WorkflowInstance wi = workflowService.getWorkflowById(instanceId);
+
         if (wi == null)
         {
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, 
-                        "The workflow instance to delete/cancel with id " + instanceId + " doesn't exist: ");
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND,
+                    "The workflow instance to delete/cancel with id " + instanceId + " doesn't exist: ");
         }
-        
+
         String currentUserName = authenticationService.getCurrentUserName();
-        
+
         // ALF-17405: Admin can always delete/cancel workflows, regardless of the initiator
-        if(authorityService.isAdminAuthority(currentUserName))
+        if (authorityService.isAdminAuthority(currentUserName))
         {
             canEnd = true;
         }
@@ -141,12 +140,7 @@ public class WorkflowInstanceDelete extends AbstractWorkflowWebscript
             }
             else
             {
-                /*
-                 * Fix for MNT-14411 : Re-created user can't cancel created task.
-                 * If owner value can't be found on workflow properties
-                 * because initiator nodeRef no longer exists get owner from
-                 * initiatorhome nodeRef owner property.
-                 */
+                /* Fix for MNT-14411 : Re-created user can't cancel created task. If owner value can't be found on workflow properties because initiator nodeRef no longer exists get owner from initiatorhome nodeRef owner property. */
                 WorkflowTask startTask = workflowService.getStartTask(wi.getId());
                 Map<QName, Serializable> props = startTask.getProperties();
                 ownerName = (String) props.get(ContentModel.PROP_OWNER);

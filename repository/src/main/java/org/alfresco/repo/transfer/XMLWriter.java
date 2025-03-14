@@ -35,17 +35,17 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.alfresco.service.namespace.NamespaceException;
-import org.alfresco.service.namespace.NamespacePrefixResolver;
-import org.alfresco.service.namespace.QName;
 import org.dom4j.io.OutputFormat;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import org.alfresco.service.namespace.NamespaceException;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.QName;
+
 /**
- * A simple class whose primary purpose is to wrap the fairly unfriendly interface presented by 
- * the dom4j XMLWriter with one that is simpler to use.
+ * A simple class whose primary purpose is to wrap the fairly unfriendly interface presented by the dom4j XMLWriter with one that is simpler to use.
  * 
  * @author Brian
  *
@@ -77,7 +77,7 @@ public class XMLWriter
         }
         catch (SAXException e)
         {
-            //Can't happen
+            // Can't happen
         }
 
     }
@@ -100,7 +100,7 @@ public class XMLWriter
         }
         catch (SAXException e)
         {
-            //Can't happen
+            // Can't happen
         }
     }
 
@@ -112,7 +112,7 @@ public class XMLWriter
         }
         catch (SAXException e)
         {
-            //Can't happen
+            // Can't happen
         }
     }
 
@@ -125,7 +125,7 @@ public class XMLWriter
         }
         catch (SAXException e)
         {
-            //Can't happen
+            // Can't happen
         }
     }
 
@@ -138,7 +138,7 @@ public class XMLWriter
         }
         catch (SAXException e)
         {
-            //Can't happen
+            // Can't happen
         }
     }
 
@@ -154,7 +154,7 @@ public class XMLWriter
         }
         catch (SAXException e)
         {
-            //Can't actually happen
+            // Can't actually happen
         }
     }
 
@@ -175,7 +175,6 @@ public class XMLWriter
         attrs.addAttribute(name.getNamespaceURI(), name.getLocalName(), name.toPrefixString(prefixResolver), "int",
                 Integer.toString(value));
     }
-    
 
     /**
      * A local namespace prefix resolver class that allows the XMLWriter interface to be simplified to use proper QNames

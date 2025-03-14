@@ -26,27 +26,27 @@
 
 package org.alfresco.rest.api.categories;
 
-import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+
+import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.alfresco.rest.api.Categories;
-import org.alfresco.rest.api.model.Category;
-import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import org.alfresco.rest.api.Categories;
+import org.alfresco.rest.api.model.Category;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubcategoriesRelationTest
@@ -73,7 +73,7 @@ public class SubcategoriesRelationTest
         given(categoriesMock.createSubcategories(any(), any(), any())).willCallRealMethod();
         given(categoriesMock.createSubcategories(any(), any(), any(), any())).willReturn(List.of(category));
 
-        //when
+        // when
         List<Category> categories = objectUnderTest.create(PARENT_CATEGORY_ID, categoriesToCreate, parametersMock);
 
         then(categoriesMock).should().createSubcategories(STORE_REF_WORKSPACE_SPACESSTORE, PARENT_CATEGORY_ID, categoriesToCreate, parametersMock);
@@ -81,12 +81,13 @@ public class SubcategoriesRelationTest
     }
 
     @Test
-    public void testGetCategoryChildren() {
+    public void testGetCategoryChildren()
+    {
         final List<Category> categoryChildren = getCategories(3);
         given(categoriesMock.getCategoryChildren(any(), any())).willCallRealMethod();
         given(categoriesMock.getCategoryChildren(any(), any(), any())).willReturn(categoryChildren);
 
-        //when
+        // when
         final CollectionWithPagingInfo<Category> returnedChildren = objectUnderTest.readAll(PARENT_CATEGORY_ID, parametersMock);
 
         then(categoriesMock).should().getCategoryChildren(STORE_REF_WORKSPACE_SPACESSTORE, PARENT_CATEGORY_ID, parametersMock);
@@ -96,11 +97,11 @@ public class SubcategoriesRelationTest
     private List<Category> getCategories(final int count)
     {
         return IntStream.range(0, count)
-            .mapToObj(i -> Category.builder().name(SUBCATEGORY_NAME_PREFIX + "-" + i)
-                .parentId(PARENT_CATEGORY_ID)
-                .hasChildren(false)
-                .id(CATEGORY_ID + "-" + i)
-                .create())
-            .collect(Collectors.toList());
+                .mapToObj(i -> Category.builder().name(SUBCATEGORY_NAME_PREFIX + "-" + i)
+                        .parentId(PARENT_CATEGORY_ID)
+                        .hasChildren(false)
+                        .id(CATEGORY_ID + "-" + i)
+                        .create())
+                .collect(Collectors.toList());
     }
 }

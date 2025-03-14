@@ -25,26 +25,28 @@
  */
 package org.alfresco.rest.tags;
 
-import static org.alfresco.utility.data.RandomData.getRandomName;
-import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.OK;
 
+import static org.alfresco.utility.data.RandomData.getRandomName;
+import static org.alfresco.utility.report.log.Step.STEP;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.rest.model.RestTagModelsCollection;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class CreateTagsTests extends RestTest
 {
@@ -66,7 +68,7 @@ public class CreateTagsTests extends RestTest
     /**
      * Verify if tag does not exist in the system, create one as admin and check if now it's there.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS})
     public void testCreateSingleTag()
     {
         STEP("Create single tag as admin");
@@ -75,7 +77,7 @@ public class CreateTagsTests extends RestTest
 
         restClient.assertStatusCodeIs(CREATED);
         createdTag.assertThat().field(FIELD_TAG).is(tagModel.getTag())
-            .assertThat().field(FIELD_ID).isNotEmpty();
+                .assertThat().field(FIELD_ID).isNotEmpty();
 
         STEP("Verify that tag does exist in the system");
         RestTagModel tag = restClient.authenticateUser(admin).withCoreAPI().getTag(createdTag);
@@ -86,27 +88,26 @@ public class CreateTagsTests extends RestTest
     /**
      * Create multiple orphan tags.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS})
     public void testCreateMultipleTags()
     {
         STEP("Create several tags as admin");
         final List<RestTagModel> tagModels = IntStream.range(0, 3)
-            .mapToObj(i -> createTagModelWithName(getRandomName(TAG_NAME_PREFIX + "-" + i).toLowerCase()))
-            .collect(Collectors.toList());
+                .mapToObj(i -> createTagModelWithName(getRandomName(TAG_NAME_PREFIX + "-" + i).toLowerCase()))
+                .collect(Collectors.toList());
         final RestTagModelsCollection createdTags = restClient.authenticateUser(admin).withCoreAPI().createTags(tagModels);
 
         restClient.assertStatusCodeIs(CREATED);
         IntStream.range(0, tagModels.size())
-            .forEach(i -> createdTags.getEntries().get(i).onModel()
-                .assertThat().field(FIELD_TAG).is(tagModels.get(i).getTag())
-                .assertThat().field(FIELD_ID).isNotEmpty()
-            );
+                .forEach(i -> createdTags.getEntries().get(i).onModel()
+                        .assertThat().field(FIELD_TAG).is(tagModels.get(i).getTag())
+                        .assertThat().field(FIELD_ID).isNotEmpty());
     }
 
     /**
      * Verify that tag name's case will be lowered.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS})
     public void testCreateSingleTag_usingUppercaseName()
     {
         STEP("Create single tag as admin using uppercase name");
@@ -115,22 +116,21 @@ public class CreateTagsTests extends RestTest
 
         restClient.assertStatusCodeIs(CREATED);
         createdTag.assertThat().field(FIELD_TAG).is(tagModel.getTag().toLowerCase())
-            .assertThat().field(FIELD_ID).isNotEmpty();
+                .assertThat().field(FIELD_ID).isNotEmpty();
     }
 
     /**
      * Try to create few tags including repeating ones. Repeated tags should be omitted.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS})
     public void testCreateMultipleTags_withRepeatedName()
     {
         STEP("Create models of tags");
         final String repeatedTagName = getRandomName(TAG_NAME_PREFIX).toLowerCase();
         final List<RestTagModel> tagModels = List.of(
-            createTagModelWithName(repeatedTagName),
-            createTagModelWithName(getRandomName(TAG_NAME_PREFIX).toLowerCase()),
-            createTagModelWithName(repeatedTagName)
-        );
+                createTagModelWithName(repeatedTagName),
+                createTagModelWithName(getRandomName(TAG_NAME_PREFIX).toLowerCase()),
+                createTagModelWithName(repeatedTagName));
 
         STEP("Create several tags skipping repeating names");
         final RestTagModelsCollection createdTags = restClient.authenticateUser(admin).withCoreAPI().createTags(tagModels);
@@ -138,13 +138,13 @@ public class CreateTagsTests extends RestTest
         restClient.assertStatusCodeIs(CREATED);
         createdTags.assertThat().entriesListCountIs(2);
         createdTags.assertThat().entriesListContains(FIELD_TAG, tagModels.get(0).getTag())
-            .and().entriesListContains(FIELD_TAG, tagModels.get(1).getTag());
+                .and().entriesListContains(FIELD_TAG, tagModels.get(1).getTag());
     }
 
     /**
      * Try to create a tag as a common user and expect 403 (Forbidden)
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS})
     public void testCreateTag_asUser()
     {
         STEP("Try to create single tag as a common user and expect 403");
@@ -157,7 +157,7 @@ public class CreateTagsTests extends RestTest
     /**
      * Try to call create tag API passing empty list and expect 400 (Bad Request)
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS})
     public void testCreateTags_passingEmptyList()
     {
         STEP("Pass empty list while creating tags and expect 400");
@@ -169,7 +169,7 @@ public class CreateTagsTests extends RestTest
     /**
      * Try to create a tag, which already exists in the system and expect 409 (Conflict)
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS})
     public void testCreateTag_usingAlreadyExistingTagName()
     {
         STEP("Create some tag in the system");
@@ -182,14 +182,14 @@ public class CreateTagsTests extends RestTest
         restClient.authenticateUser(admin).withCoreAPI().createSingleTag(alreadyExistingTag);
 
         restClient
-            .assertStatusCodeIs(CONFLICT)
-            .assertLastError().containsSummary("Duplicate child name not allowed: " + alreadyExistingTag.getTag().toLowerCase());
+                .assertStatusCodeIs(CONFLICT)
+                .assertLastError().containsSummary("Duplicate child name not allowed: " + alreadyExistingTag.getTag().toLowerCase());
     }
 
     /**
      * Verify if count field is 0 for newly created tags.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS})
     public void testCreateTag_includingCount()
     {
         STEP("Create single tag as admin including count and verify if it is 0");
@@ -198,8 +198,8 @@ public class CreateTagsTests extends RestTest
 
         restClient.assertStatusCodeIs(CREATED);
         createdTag.assertThat().field(FIELD_TAG).is(tagModel.getTag())
-            .assertThat().field(FIELD_ID).isNotEmpty()
-            .assertThat().field(FIELD_COUNT).is(0);
+                .assertThat().field(FIELD_ID).isNotEmpty()
+                .assertThat().field(FIELD_COUNT).is(0);
     }
 
     private RestTagModel prepareOrphanTagWithRandomName()

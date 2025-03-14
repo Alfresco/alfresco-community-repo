@@ -1,5 +1,11 @@
 package org.alfresco.cmis;
 
+import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.FileModel;
@@ -8,15 +14,8 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisUnauthorizedException;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Created by Claudia Agache on 9/28/2016.
@@ -41,9 +40,9 @@ public class AddObjectToFolderTests extends CmisTest
                 .addUsersWithRolesToSite(testSite, UserRole.SiteContributor, UserRole.SiteCollaborator, UserRole.SiteConsumer);
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.SANITY,
             description = "Verify site manager is able to add document object to folder with CMIS")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = {TestGroup.SANITY, TestGroup.CMIS})
     public void siteManagerShouldAddFileToFolder() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -53,11 +52,11 @@ public class AddObjectToFolderTests extends CmisTest
                 .and().assertThat().existsInRepo()
                 .and().assertThat().objectIdIs(sourceFile.getNodeRef());
     }
-    
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is not able to add folder object to folder with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisInvalidArgumentException.class,
-            expectedExceptionsMessageRegExp="Object is not a document!*")
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisInvalidArgumentException.class,
+            expectedExceptionsMessageRegExp = "Object is not a document!*")
     public void siteManagerShouldNotAddFolderToFolder() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -66,10 +65,10 @@ public class AddObjectToFolderTests extends CmisTest
                 .createFolder(folderToAdd).assertThat().existsInRepo()
                 .then().addDocumentToFolder(folderToAdd, true);
     }
-    
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is not able to add file a document object in more than one folder in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisObjectNotFoundException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisObjectNotFoundException.class)
     public void siteManagerShouldNotAddInvalidFileToFolder() throws Exception
     {
         FileModel randomFile = FileModel.getRandomFileModel(FileType.HTML);
@@ -78,10 +77,10 @@ public class AddObjectToFolderTests extends CmisTest
                 .usingResource(randomFile)
                 .addDocumentToFolder(destinationFolder, true);
     }
-    
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is not able to add folder object to folder with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisObjectNotFoundException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisObjectNotFoundException.class)
     public void siteManagerShouldNotAddInvalidFolderToFolder() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -91,10 +90,10 @@ public class AddObjectToFolderTests extends CmisTest
                 .createFile(sourceFile).assertThat().existsInRepo()
                 .then().addDocumentToFolder(randomFolder, true);
     }
-    
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is able to add PWC document to folder with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteManagerShouldAddPWCFileToFolder() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -105,10 +104,10 @@ public class AddObjectToFolderTests extends CmisTest
                 .and().assertThat().existsInRepo()
                 .and().assertThat().documentIsCheckedOut();
     }
-    
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is able to add document object to folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS})
     public void siteManagerCanAddDocumentWithVersionsToFolderWithTrueAllVersions() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -121,10 +120,10 @@ public class AddObjectToFolderTests extends CmisTest
                 .and().assertThat().documentHasVersion(1.2);
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is not able to add document object to folder")
-    @Test(groups = { "bug-atom-REPO-5383", TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions=CmisInvalidArgumentException.class,
-            expectedExceptionsMessageRegExp="Only allVersions=true supported!*")
+    @Test(groups = {"bug-atom-REPO-5383", TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS}, expectedExceptions = CmisInvalidArgumentException.class,
+            expectedExceptionsMessageRegExp = "Only allVersions=true supported!*")
     public void siteManagerCannotAddDocumentToFolderWithFalseAllVersions() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -134,10 +133,10 @@ public class AddObjectToFolderTests extends CmisTest
                 .and().assertThat().documentHasVersion(1.1)
                 .then().addDocumentToFolder(destinationFolder, false);
     }
-    
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site collaborator is able to add document object to folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void collaboratorCanAddFileToFolderCreatedByHimself() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -148,10 +147,10 @@ public class AddObjectToFolderTests extends CmisTest
                 .and().assertThat().existsInRepo()
                 .and().assertThat().objectIdIs(sourceFile.getNodeRef());
     }
-    
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site collaborator is able to add document object created by manager to folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void collaboratorCanAddFileToFolderCreatedByManager() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -162,10 +161,10 @@ public class AddObjectToFolderTests extends CmisTest
                 .then().addDocumentToFolder(destinationFolder, true)
                 .and().assertThat().existsInRepo();
     }
-    
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor is able to add document object to folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void contributorCanAddFileToFolderCreatedByHimself() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -176,10 +175,10 @@ public class AddObjectToFolderTests extends CmisTest
                 .and().assertThat().existsInRepo()
                 .and().assertThat().objectIdIs(sourceFile.getNodeRef());
     }
-    
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor is able to add document object created by manager to folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void contributorCanAddFileToFolderCreatedByManager() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -190,9 +189,9 @@ public class AddObjectToFolderTests extends CmisTest
                 .and().assertThat().existsInRepo();
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site consumer is able to add document object created by manager to folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void consumerCanAddFileToFolderCreatedByManager() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -202,9 +201,9 @@ public class AddObjectToFolderTests extends CmisTest
                 .then().addDocumentToFolder(destinationFolder, true);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify non invited user is not able to delete parent folder with multiple children in private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotDeleteFolderTreeInPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(testUser).createPrivateRandomSite();
@@ -217,4 +216,3 @@ public class AddObjectToFolderTests extends CmisTest
                 .then().addDocumentToFolder(destinationFolder, true);
     }
 }
-

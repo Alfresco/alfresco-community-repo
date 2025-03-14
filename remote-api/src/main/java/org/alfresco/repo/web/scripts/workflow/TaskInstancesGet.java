@@ -34,8 +34,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
@@ -44,12 +50,6 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskQuery.OrderBy;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ModelUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Webscript impelementation to return workflow task instances.
@@ -82,31 +82,31 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
 
         // authority is not included into filters list as it will be taken into account before filtering
         String authority = getAuthority(req);
-        
+
         if (authority == null)
         {
             // ALF-11036 fix, if authority argument is omitted the tasks for the current user should be returned.
             authority = authenticationService.getCurrentUserName();
         }
-        
+
         // state is also not included into filters list, for the same reason
         WorkflowTaskState state = getState(req);
-        
+
         // look for a workflow instance id
         String workflowInstanceId = params.get(VAR_WORKFLOW_INSTANCE_ID);
-        
+
         // determine if pooledTasks should be included, when appropriate i.e. when an authority is supplied
         Boolean pooledTasksOnly = getPooledTasks(req);
-        
+
         // get list of properties to include in the response
         List<String> properties = getProperties(req);
-        
+
         // get filter param values
         filters.put(PARAM_PRIORITY, req.getParameter(PARAM_PRIORITY));
         filters.put(PARAM_PROPERTY, req.getParameter(PARAM_PROPERTY));
         processDateFilter(req, PARAM_DUE_BEFORE, filters);
         processDateFilter(req, PARAM_DUE_AFTER, filters);
-        
+
         String excludeParam = req.getParameter(PARAM_EXCLUDE);
         if (excludeParam != null && excludeParam.length() > 0)
         {
@@ -123,12 +123,12 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
             taskQuery.setProcessId(workflowInstanceId);
             taskQuery.setTaskState(state);
             taskQuery.setOrderBy(new OrderBy[]{OrderBy.TaskDue_Asc});
-            
+
             if (authority != null)
             {
                 taskQuery.setActorId(authority);
             }
-            
+
             allTasks = workflowService.queryTasks(taskQuery);
         }
         else
@@ -138,7 +138,7 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
             {
                 state = WorkflowTaskState.IN_PROGRESS;
             }
-            
+
             // no workflow instance id is present so get all tasks
             if (authority != null)
             {
@@ -166,7 +166,7 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
                     allTasks.addAll(tasks);
                     allTasks.addAll(pooledTasks);
                 }
-                
+
                 // sort tasks by due date
                 Collections.sort(allTasks, taskComparator);
             }
@@ -176,16 +176,16 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
                 WorkflowTaskQuery taskQuery = new WorkflowTaskQuery();
                 taskQuery.setTaskState(state);
                 taskQuery.setActive(null);
-                taskQuery.setOrderBy(new OrderBy[] { OrderBy.TaskDue_Asc });
+                taskQuery.setOrderBy(new OrderBy[]{OrderBy.TaskDue_Asc});
                 allTasks = workflowService.queryTasks(taskQuery);
             }
         }
-        
+
         int maxItems = getIntParameter(req, PARAM_MAX_ITEMS, DEFAULT_MAX_ITEMS);
         int skipCount = getIntParameter(req, PARAM_SKIP_COUNT, DEFAULT_SKIP_COUNT);
         int totalCount = 0;
         ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
-        
+
         // Filter results
         for (WorkflowTask task : allTasks)
         {
@@ -193,7 +193,7 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
             {
                 // Total-count needs to be based on matching tasks only, so we can't just use allTasks.size() for this
                 totalCount++;
-                if(totalCount > skipCount && (maxItems < 0 || maxItems > results.size()))
+                if (totalCount > skipCount && (maxItems < 0 || maxItems > results.size()))
                 {
                     // Only build the actual detail if it's in the range of items we need. This will
                     // drastically improve performance over paging after building the model
@@ -201,16 +201,16 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
                 }
             }
         }
-        
+
         Map<String, Object> model = new HashMap<String, Object>();
         model.put("taskInstances", results);
-        
+
         if (maxItems != DEFAULT_MAX_ITEMS || skipCount != DEFAULT_SKIP_COUNT)
         {
             // maxItems or skipCount parameter was provided so we need to include paging into response
             model.put("paging", ModelUtil.buildPaging(totalCount, maxItems == DEFAULT_MAX_ITEMS ? totalCount : maxItems, skipCount));
         }
-        
+
         // create and return results, paginated if necessary
         return model;
     }
@@ -218,7 +218,8 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
     /**
      * Retrieves the list of property names to include in the response.
      * 
-     * @param req The WebScript request
+     * @param req
+     *            The WebScript request
      * @return List of property names
      */
     private List<String> getProperties(WebScriptRequest req)
@@ -230,30 +231,32 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
         }
         return null;
     }
-    
+
     /**
      * Retrieves the pooledTasks parameter.
      * 
-     * @param req The WebScript request
+     * @param req
+     *            The WebScript request
      * @return null if not present, Boolean object otherwise
      */
     private Boolean getPooledTasks(WebScriptRequest req)
     {
         Boolean result = null;
         String includePooledTasks = req.getParameter(PARAM_POOLED_TASKS);
-        
+
         if (includePooledTasks != null)
         {
             result = Boolean.valueOf(includePooledTasks);
         }
-        
+
         return result;
     }
-    
+
     /**
      * Gets the specified {@link WorkflowTaskState}, null if not requested
      * 
-     * @param req WebScriptRequest
+     * @param req
+     *            WebScriptRequest
      * @return WorkflowTaskState
      */
     private WorkflowTaskState getState(WebScriptRequest req)
@@ -271,13 +274,15 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
                 throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
             }
         }
-        
+
         return null;
     }
 
     /**
      * Returns the specified authority. If no authority is specified then returns the current Fully Authenticated user.
-     * @param req WebScriptRequest
+     * 
+     * @param req
+     *            WebScriptRequest
      * @return String
      */
     private String getAuthority(WebScriptRequest req)
@@ -293,8 +298,10 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
     /**
      * Determine if the given task should be included in the response.
      * 
-     * @param task The task to check
-     * @param filters The list of filters the task must match to be included
+     * @param task
+     *            The task to check
+     * @param filters
+     *            The list of filters the task must match to be included
      * @return true if the task matches and should therefore be returned
      */
     private boolean matches(WorkflowTask task, Map<String, Object> filters)
@@ -311,7 +318,7 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
             {
                 if (key.equals(PARAM_EXCLUDE))
                 {
-                    ExcludeFilter excludeFilter = (ExcludeFilter)filterValue;
+                    ExcludeFilter excludeFilter = (ExcludeFilter) filterValue;
                     String type = task.getDefinition().getMetadata().getName().toPrefixString(this.namespaceService);
                     if (excludeFilter.isMatch(type))
                     {
@@ -321,7 +328,7 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
                 }
                 else if (key.equals(PARAM_DUE_BEFORE))
                 {
-                    Date dueDate = (Date)task.getProperties().get(WorkflowModel.PROP_DUE_DATE);
+                    Date dueDate = (Date) task.getProperties().get(WorkflowModel.PROP_DUE_DATE);
 
                     if (!isDateMatchForFilter(dueDate, filterValue, true))
                     {
@@ -331,7 +338,7 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
                 }
                 else if (key.equals(PARAM_DUE_AFTER))
                 {
-                    Date dueDate = (Date)task.getProperties().get(WorkflowModel.PROP_DUE_DATE);
+                    Date dueDate = (Date) task.getProperties().get(WorkflowModel.PROP_DUE_DATE);
 
                     if (!isDateMatchForFilter(dueDate, filterValue, false))
                     {
@@ -347,7 +354,7 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
                         break;
                     }
                 }
-                else if(key.equals(PARAM_PROPERTY))
+                else if (key.equals(PARAM_PROPERTY))
                 {
                     int propQNameEnd = filterValue.toString().indexOf('/');
                     if (propQNameEnd < 1)
@@ -406,16 +413,16 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
         @Override
         public int compare(WorkflowTask o1, WorkflowTask o2)
         {
-            Date date1 = (Date)o1.getProperties().get(WorkflowModel.PROP_DUE_DATE);
-            Date date2 = (Date)o2.getProperties().get(WorkflowModel.PROP_DUE_DATE);
-            
+            Date date1 = (Date) o1.getProperties().get(WorkflowModel.PROP_DUE_DATE);
+            Date date2 = (Date) o2.getProperties().get(WorkflowModel.PROP_DUE_DATE);
+
             long time1 = date1 == null ? Long.MAX_VALUE : date1.getTime();
             long time2 = date2 == null ? Long.MAX_VALUE : date2.getTime();
-            
+
             long result = time1 - time2;
-            
+
             return (result > 0) ? 1 : (result < 0 ? -1 : 0);
         }
-        
+
     }
 }

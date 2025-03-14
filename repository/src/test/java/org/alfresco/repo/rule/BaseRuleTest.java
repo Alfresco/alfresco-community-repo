@@ -31,6 +31,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.After;
+import org.junit.Before;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
@@ -50,9 +54,6 @@ import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
-import org.junit.After;
-import org.junit.Before;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Base class for rule service test.
@@ -95,7 +96,7 @@ public abstract class BaseRuleTest extends BaseSpringTest
     protected NodeService nodeService;
     protected ContentService contentService;
     protected RuleService ruleService;
-	protected ConfigurableService configService;
+    protected ConfigurableService configService;
     protected AuthenticationComponent authenticationComponent;
 
     /**
@@ -123,15 +124,15 @@ public abstract class BaseRuleTest extends BaseSpringTest
                 .getBean("contentService");
         this.ruleService = (RuleService) this.applicationContext
                 .getBean("ruleService");
-        this.configService = (ConfigurableService)this.applicationContext
-        		.getBean("ConfigurableService");
-        this.actionService = (ActionService)this.applicationContext.getBean("actionService");
-        this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
-        this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
+        this.configService = (ConfigurableService) this.applicationContext
+                .getBean("ConfigurableService");
+        this.actionService = (ActionService) this.applicationContext.getBean("actionService");
+        this.transactionService = (TransactionService) this.applicationContext.getBean("transactionComponent");
+        this.authenticationComponent = (AuthenticationComponent) this.applicationContext.getBean("authenticationComponent");
 
-        //authenticationComponent.setSystemUserAsCurrentUser();
+        // authenticationComponent.setSystemUserAsCurrentUser();
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
-        
+
         // Get the rule type
         this.ruleType = this.ruleService.getRuleType(RULE_TYPE_NAME);
 
@@ -147,7 +148,7 @@ public abstract class BaseRuleTest extends BaseSpringTest
                 QName.createQName("{test}testnode"),
                 ContentModel.TYPE_CONTAINER).getChildRef();
     }
-    
+
     @After
     public void after()
     {
@@ -156,21 +157,21 @@ public abstract class BaseRuleTest extends BaseSpringTest
 
     protected void addRulesAspect()
     {
-    	// Make the node actionable
-    	this.configService.makeConfigurable(this.nodeRef);
-    	this.nodeService.addAspect(this.nodeRef, RuleModel.ASPECT_RULES, null); 
+        // Make the node actionable
+        this.configService.makeConfigurable(this.nodeRef);
+        this.nodeService.addAspect(this.nodeRef, RuleModel.ASPECT_RULES, null);
     }
 
     protected Rule createTestRule()
     {
         return createTestRule(false);
     }
-    
+
     protected Rule createTestRule(boolean isAppliedToChildren)
     {
         return createTestRule(isAppliedToChildren, TITLE);
     }
-    
+
     protected Rule createTestRule(boolean isAppliedToChildren, String title)
     {
         // Rule properties
@@ -179,24 +180,24 @@ public abstract class BaseRuleTest extends BaseSpringTest
 
         Map<String, Serializable> actionProps = new HashMap<String, Serializable>();
         actionProps.put(ACTION_PROP_NAME_1, ACTION_PROP_VALUE_1);
-        
+
         List<String> ruleTypes = new ArrayList<String>(1);
         ruleTypes.add(this.ruleType.getName());
-        
+
         // Create the action
         Action action = this.actionService.createAction(CONDITION_DEF_NAME);
         action.setParameterValues(conditionProps);
-        
+
         ActionCondition actionCondition = this.actionService.createActionCondition(CONDITION_DEF_NAME);
         actionCondition.setParameterValues(conditionProps);
         action.addActionCondition(actionCondition);
-        
+
         // Create the rule
         Rule rule = new Rule();
         rule.setRuleTypes(ruleTypes);
         rule.setTitle(title);
         rule.setDescription(DESCRIPTION);
-        rule.applyToChildren(isAppliedToChildren);        
+        rule.applyToChildren(isAppliedToChildren);
         rule.setAction(action);
 
         return rule;
@@ -211,7 +212,7 @@ public abstract class BaseRuleTest extends BaseSpringTest
 
         Action ruleAction = rule.getAction();
         assertNotNull(ruleAction);
-        
+
         // Check conditions
         List<ActionCondition> ruleConditions = ruleAction.getActionConditions();
         assertNotNull(ruleConditions);

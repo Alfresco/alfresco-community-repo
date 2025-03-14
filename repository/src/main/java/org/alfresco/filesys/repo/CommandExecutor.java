@@ -34,14 +34,15 @@ import org.alfresco.jlan.server.filesys.TreeConnection;
 /**
  * The Command Executor - executes commands!
  */
-public interface CommandExecutor 
+public interface CommandExecutor
 {
     /**
      * Execute the command.
+     * 
      * @param command
      * 
-     * @return an object for return or null if there is no return value. 
-     * @throws IOException 
+     * @return an object for return or null if there is no return value.
+     * @throws IOException
      */
     public Object execute(SrvSession sess, TreeConnection tree, Command command) throws IOException;
 }

@@ -28,9 +28,7 @@ package org.alfresco.repo.virtual.ref;
 
 /**
  * Hash encoded reference string parser.<br>
- * Delegates to {@link VirtualHashReferenceParser},
- * {@link VanillaHashReferenceParser} or {@link NodeHashReferenceParser} for
- * custom protocol parsing.
+ * Delegates to {@link VirtualHashReferenceParser}, {@link VanillaHashReferenceParser} or {@link NodeHashReferenceParser} for custom protocol parsing.
  */
 public class HashReferenceParser implements ReferenceParser, HashEncodingArtefact
 {
@@ -50,7 +48,7 @@ public class HashReferenceParser implements ReferenceParser, HashEncodingArtefac
         HashStore cpStore = HashStoreConfiguration.getInstance().getClasspathHashStore();
 
         nodeReferenceParser = new NodeHashReferenceParser(cpStore,
-                                                          this);
+                this);
 
         virtualReferenceParser = new VirtualHashReferenceParser(cpStore);
 
@@ -62,7 +60,7 @@ public class HashReferenceParser implements ReferenceParser, HashEncodingArtefac
     {
         String[] tokens = referenceString.split("-");
         Cursor c = new Cursor(tokens,
-                              0);
+                0);
 
         return parse(c);
     }

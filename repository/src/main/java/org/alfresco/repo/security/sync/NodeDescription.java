@@ -61,7 +61,7 @@ public class NodeDescription
     public NodeDescription(String sourceId)
     {
         this.sourceId = sourceId;
-    }        
+    }
 
     /**
      * Gets an identifier for the node for monitoring purposes. Should help trace where the node originated from.

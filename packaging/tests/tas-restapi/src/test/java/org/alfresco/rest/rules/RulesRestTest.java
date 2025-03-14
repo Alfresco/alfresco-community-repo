@@ -26,8 +26,9 @@
 
 package org.alfresco.rest.rules;
 
-import org.alfresco.rest.RestTest;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import org.alfresco.rest.RestTest;
 
 public class RulesRestTest extends RestTest
 {

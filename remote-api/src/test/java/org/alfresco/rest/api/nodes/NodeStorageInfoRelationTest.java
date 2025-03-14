@@ -26,7 +26,23 @@
 
 package org.alfresco.rest.api.nodes;
 
+import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Map;
+import jakarta.servlet.http.HttpServletResponse;
+
 import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
 import org.alfresco.rest.api.ContentStorageInformation;
 import org.alfresco.rest.api.model.ArchiveContentRequest;
 import org.alfresco.rest.api.model.ContentStorageInfo;
@@ -35,21 +51,6 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-
-import jakarta.servlet.http.HttpServletResponse;
-import java.util.Map;
-
-import static org.junit.Assert.assertThrows;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NodeStorageInfoRelationTest extends TestCase
@@ -67,7 +68,6 @@ public class NodeStorageInfoRelationTest extends TestCase
 
     @InjectMocks
     private NodeStorageInfoRelation objectUnderTest;
-
 
     @Test
     public void shouldProperlyReturnStorageInfo()

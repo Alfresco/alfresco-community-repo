@@ -27,6 +27,13 @@ package org.alfresco.repo.web.scripts.preference;
 
 import java.math.BigDecimal;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -34,12 +41,6 @@ import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
  * Unit test to test preference Web Script API
@@ -202,7 +203,7 @@ public class PreferenceServiceTest extends BaseWebScriptTest
         String[] body = {
                 "{\"org\":{\"alfresco\":{\"share\":{\"forum\":{\"summary\":{\"dashlet\":{\"component-1-5\":{\"topics\":\"mine\"}}}}}}}}",
                 "{\"org\":{\"alfresco\":{\"share\":{\"forum\":{\"summary\":{\"dashlet\":{\"component-2-5\":{\"topics\":\"mine\"}}}}}}}}",
-                "{\"org\":{\"alfresco\":{\"share\":{\"forum\":{\"summary\":{\"dashlet\":{\"component-2-5\":{\"history\":\"1\"}}}}}}}}" 
+                "{\"org\":{\"alfresco\":{\"share\":{\"forum\":{\"summary\":{\"dashlet\":{\"component-2-5\":{\"history\":\"1\"}}}}}}}}"
         };
 
         Thread[] threads = new Thread[NUM_THREADS];

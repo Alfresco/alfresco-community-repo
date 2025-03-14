@@ -39,7 +39,8 @@ public class SolrFacetConfigException extends AlfrescoRuntimeException
     /**
      * Constructor
      * 
-     * @param msgId message id
+     * @param msgId
+     *            message id
      */
     public SolrFacetConfigException(String msgId)
     {
@@ -49,8 +50,10 @@ public class SolrFacetConfigException extends AlfrescoRuntimeException
     /**
      * Constructor
      * 
-     * @param msgId message id
-     * @param msgParams message params
+     * @param msgId
+     *            message id
+     * @param msgParams
+     *            message params
      */
     public SolrFacetConfigException(String msgId, Object[] msgParams)
     {
@@ -60,8 +63,10 @@ public class SolrFacetConfigException extends AlfrescoRuntimeException
     /**
      * Constructor
      * 
-     * @param msgId message id
-     * @param cause causing exception
+     * @param msgId
+     *            message id
+     * @param cause
+     *            causing exception
      */
     public SolrFacetConfigException(String msgId, Throwable cause)
     {
@@ -71,9 +76,12 @@ public class SolrFacetConfigException extends AlfrescoRuntimeException
     /**
      * Constructor
      * 
-     * @param msgId message id
-     * @param msgParams message params
-     * @param cause causing exception
+     * @param msgId
+     *            message id
+     * @param msgParams
+     *            message params
+     * @param cause
+     *            causing exception
      */
     public SolrFacetConfigException(String msgId, Object[] msgParams, Throwable cause)
     {

@@ -39,20 +39,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
-import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.repo.tenant.TenantUtil;
-import org.alfresco.repo.web.scripts.BaseWebScriptTest.PatchMethod;
-import org.alfresco.rest.api.tests.TestFixture;
-import org.alfresco.rest.api.tests.client.AuthenticatedHttp.HttpRequestCallback;
-import org.alfresco.rest.framework.Api;
-import org.alfresco.rest.framework.Api.SCOPE;
-import org.alfresco.rest.framework.core.ResourceInspector;
-import org.alfresco.rest.framework.resource.EntityResource;
-import org.alfresco.rest.framework.resource.RelationshipResource;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.Pair;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
@@ -77,10 +63,23 @@ import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.web.scripts.BaseWebScriptTest.PatchMethod;
+import org.alfresco.rest.api.tests.TestFixture;
+import org.alfresco.rest.api.tests.client.AuthenticatedHttp.HttpRequestCallback;
+import org.alfresco.rest.framework.Api;
+import org.alfresco.rest.framework.Api.SCOPE;
+import org.alfresco.rest.framework.core.ResourceInspector;
+import org.alfresco.rest.framework.resource.EntityResource;
+import org.alfresco.rest.framework.resource.RelationshipResource;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.Pair;
+
 /**
- * A http client for talking to the rest apis. The caller can pass in a rest api
- * implementation class to the http method (get, post, put, delete supported)
- * and the url will be generated.
+ * A http client for talking to the rest apis. The caller can pass in a rest api implementation class to the http method (get, post, put, delete supported) and the url will be generated.
  *
  * @author steveglover
  */
@@ -95,7 +94,7 @@ public class PublicApiHttpClient
     private static final String PUBLICAPI_CMIS_URL = "{0}://{1}:{2}{3}{4}{5}/{6}/cmis/versions/{7}/{8}";
     private static final String PUBLICAPI_CMIS_URL_SUFFIX = "{0}/{1}/cmis/versions/{2}/{3}";
     private static final String ATOM_PUB_URL = "{0}://{1}:{2}{3}cmisatom";
-    
+
     private String scheme = "http";
     private String host = TestFixture.HOST;
     private int port = TestFixture.PORT;
@@ -143,11 +142,11 @@ public class PublicApiHttpClient
         StringBuilder url = new StringBuilder();
         if (repositoryId == null)
         {
-            url.append(MessageFormat.format(ATOM_PUB_URL, new Object[] { scheme, host, String.valueOf(port), contextPath }));
+            url.append(MessageFormat.format(ATOM_PUB_URL, new Object[]{scheme, host, String.valueOf(port), contextPath}));
         }
         else
         {
-            url.append(MessageFormat.format(ATOM_PUB_URL, new Object[] { scheme, host, String.valueOf(port), contextPath }));
+            url.append(MessageFormat.format(ATOM_PUB_URL, new Object[]{scheme, host, String.valueOf(port), contextPath}));
             url.append("/");
             url.append(repositoryId);
         }
@@ -167,12 +166,12 @@ public class PublicApiHttpClient
         if (networkId == null)
         {
             url.append(MessageFormat.format(PUBLICAPI_CMIS_SERVICE_URL,
-                        new Object[] { scheme, host, String.valueOf(port), contextPath, servletName, version, binding.toString().toLowerCase() }));
+                    new Object[]{scheme, host, String.valueOf(port), contextPath, servletName, version, binding.toString().toLowerCase()}));
         }
         else
         {
-            url.append(MessageFormat.format(PUBLICAPI_CMIS_URL, new Object[] { scheme, host, String.valueOf(port), contextPath, servletName,
-                        networkId, "public", version, binding.toString().toLowerCase() }));
+            url.append(MessageFormat.format(PUBLICAPI_CMIS_URL, new Object[]{scheme, host, String.valueOf(port), contextPath, servletName,
+                    networkId, "public", version, binding.toString().toLowerCase()}));
         }
 
         if (operation != null)
@@ -188,7 +187,7 @@ public class PublicApiHttpClient
     {
         StringBuilder url = new StringBuilder();
 
-        url.append(MessageFormat.format(PUBLICAPI_CMIS_URL_SUFFIX, new Object[] { networkId, "public", version, binding.toString().toLowerCase() }));
+        url.append(MessageFormat.format(PUBLICAPI_CMIS_URL_SUFFIX, new Object[]{networkId, "public", version, binding.toString().toLowerCase()}));
 
         if (operation != null)
         {
@@ -215,8 +214,7 @@ public class PublicApiHttpClient
     }
 
     public void init()
-    {
-    }
+    {}
 
     private void log(String msg)
     {
@@ -239,8 +237,7 @@ public class PublicApiHttpClient
         {
             final long start = System.currentTimeMillis();
 
-            final HttpRequestCallback<HttpResponse> callback = new HttpRequestCallback<HttpResponse>()
-            {
+            final HttpRequestCallback<HttpResponse> callback = new HttpRequestCallback<HttpResponse>() {
                 @Override
                 public HttpResponse onCallSuccess(HttpMethod method) throws Exception
                 {
@@ -301,7 +298,7 @@ public class PublicApiHttpClient
     }
 
     public HttpResponse get(final Class<?> c, final RequestContext rq, final Object entityId, final Object relationshipEntityId,
-                Map<String, String> params) throws IOException
+            Map<String, String> params) throws IOException
     {
         RestApiEndpoint endpoint = new RestApiEndpoint(c, rq.getNetworkId(), entityId, relationshipEntityId, params);
         String url = endpoint.getUrl();
@@ -311,19 +308,19 @@ public class PublicApiHttpClient
     }
 
     public HttpResponse get(final RequestContext rq, String scope, final String entityCollectionName, final Object entityId,
-                final String relationCollectionName, final Object relationshipEntityId, Map<String, String> params) throws IOException
+            final String relationCollectionName, final Object relationshipEntityId, Map<String, String> params) throws IOException
     {
         return get(rq, scope, 1, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, params, null);
     }
 
     public HttpResponse get(final RequestContext rq, String scope, final String entityCollectionName, final Object entityId,
-                            final String relationCollectionName, final Object relationshipEntityId, Map<String, String> params, Map<String, String> headers) throws IOException
+            final String relationCollectionName, final Object relationshipEntityId, Map<String, String> params, Map<String, String> headers) throws IOException
     {
         return get(rq, scope, 1, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, params, headers);
     }
 
     public HttpResponse get(final RequestContext rq, final String scope, final int version, final String entityCollectionName, final Object entityId,
-                final String relationCollectionName, final Object relationshipEntityId, Map<String, String> params, Map<String, String> headers) throws IOException
+            final String relationCollectionName, final Object relationshipEntityId, Map<String, String> params, Map<String, String> headers) throws IOException
     {
         if (headers == null)
         {
@@ -331,7 +328,7 @@ public class PublicApiHttpClient
         }
 
         RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, version, entityCollectionName, entityId, relationCollectionName,
-                    relationshipEntityId, params);
+                relationshipEntityId, params);
         String url = endpoint.getUrl();
 
         GetMethod req = new GetMethod(url);
@@ -345,16 +342,16 @@ public class PublicApiHttpClient
     }
 
     public HttpResponse get(final RequestContext rq, String scope, String password, final String entityCollectionName, final Object entityId,
-                final String relationCollectionName, final Object relationshipEntityId, Map<String, String> params) throws IOException
+            final String relationCollectionName, final Object relationshipEntityId, Map<String, String> params) throws IOException
     {
         return get(rq, scope, 1, password, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, params);
     }
 
     public HttpResponse get(final RequestContext rq, final String scope, final int version, final String password, final String entityCollectionName, final Object entityId,
-                final String relationCollectionName, final Object relationshipEntityId, Map<String, String> params) throws IOException
+            final String relationCollectionName, final Object relationshipEntityId, Map<String, String> params) throws IOException
     {
         RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, version, entityCollectionName, entityId, relationCollectionName,
-                    relationshipEntityId, params);
+                relationshipEntityId, params);
         String url = endpoint.getUrl();
 
         GetMethod req = new GetMethod(url);
@@ -380,7 +377,7 @@ public class PublicApiHttpClient
     }
 
     public HttpResponse post(final Class<?> c, final RequestContext rq, final Object entityId, final Object relationshipEntityId, final String body)
-                throws IOException
+            throws IOException
     {
         RestApiEndpoint endpoint = new RestApiEndpoint(c, rq.getNetworkId(), entityId, relationshipEntityId, null);
         String url = endpoint.getUrl();
@@ -453,7 +450,7 @@ public class PublicApiHttpClient
     }
 
     public HttpResponse get(final RequestContext rq, Binding cmisBinding, String version, String cmisOperation, Map<String, String> parameters)
-                throws IOException
+            throws IOException
     {
         RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), cmisBinding, version, cmisOperation, parameters);
         String url = endpoint.getUrl();
@@ -508,7 +505,7 @@ public class PublicApiHttpClient
     }
 
     public HttpResponse post(final RequestContext rq, final String scope, final String entityCollectionName, final Object entityId,
-                final String relationCollectionName, final Object relationshipEntityId, final String body) throws IOException
+            final String relationCollectionName, final Object relationshipEntityId, final String body) throws IOException
     {
         return post(rq, scope, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, body, "application/json");
     }
@@ -520,7 +517,7 @@ public class PublicApiHttpClient
     }
 
     public HttpResponse post(final RequestContext rq, final String scope, final String entityCollectionName, final Object entityId,
-                final String relationCollectionName, final Object relationshipEntityId, final String body, String contentType) throws IOException
+            final String relationCollectionName, final Object relationshipEntityId, final String body, String contentType) throws IOException
     {
         return post(rq, scope, 1, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, body, contentType);
     }
@@ -532,10 +529,10 @@ public class PublicApiHttpClient
     }
 
     public HttpResponse post(final RequestContext rq, final String scope, final int version, final String entityCollectionName, final Object entityId,
-                final String relationCollectionName, final Object relationshipEntityId, final String body, String contentType, final Map<String, String> params) throws IOException
+            final String relationCollectionName, final Object relationshipEntityId, final String body, String contentType, final Map<String, String> params) throws IOException
     {
         RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, version, entityCollectionName, entityId, relationCollectionName,
-                    relationshipEntityId, params);
+                relationshipEntityId, params);
         String url = endpoint.getUrl();
 
         PostMethod req = new PostMethod(url.toString());
@@ -552,13 +549,13 @@ public class PublicApiHttpClient
     }
 
     public HttpResponse post(final RequestContext rq, final String scope, final String entityCollectionName, final Object entityId,
-                             final String relationCollectionName, final Object relationshipEntityId, final byte[] body, String contentType) throws IOException
+            final String relationCollectionName, final Object relationshipEntityId, final byte[] body, String contentType) throws IOException
     {
         return post(rq, scope, 1, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, body, contentType);
     }
 
     public HttpResponse post(final RequestContext rq, final String scope, final int version, final String entityCollectionName, final Object entityId,
-                             final String relationCollectionName, final Object relationshipEntityId, final byte[] body, String contentType) throws IOException
+            final String relationCollectionName, final Object relationshipEntityId, final byte[] body, String contentType) throws IOException
     {
         RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, version, entityCollectionName, entityId, relationCollectionName,
                 relationshipEntityId, null);
@@ -587,16 +584,16 @@ public class PublicApiHttpClient
     }
 
     public HttpResponse delete(final RequestContext rq, final String scope, final String entityCollectionName, final Object entityId,
-                final String relationCollectionName, final Object relationshipEntityId) throws IOException
+            final String relationCollectionName, final Object relationshipEntityId) throws IOException
     {
         return delete(rq, scope, 1, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, null);
     }
 
     public HttpResponse delete(final RequestContext rq, final String scope, final int version, final String entityCollectionName, final Object entityId,
-                final String relationCollectionName, final Object relationshipEntityId, final Map<String, String> params) throws IOException
+            final String relationCollectionName, final Object relationshipEntityId, final Map<String, String> params) throws IOException
     {
         RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, version, entityCollectionName, entityId, relationCollectionName,
-                    relationshipEntityId, params);
+                relationshipEntityId, params);
         String url = endpoint.getUrl();
 
         DeleteMethod req = new DeleteMethod(url);
@@ -604,7 +601,7 @@ public class PublicApiHttpClient
     }
 
     public HttpResponse put(final Class<?> c, final RequestContext rq, final Object entityId, final Object relationshipEntityId, final String body)
-                throws IOException
+            throws IOException
     {
         RestApiEndpoint endpoint = new RestApiEndpoint(c, rq.getNetworkId(), entityId, relationshipEntityId, null);
         String url = endpoint.getUrl();
@@ -619,16 +616,16 @@ public class PublicApiHttpClient
     }
 
     public HttpResponse put(final RequestContext rq, final String scope, final String entityCollectionName, final Object entityId,
-                final String relationCollectionName, final Object relationshipEntityId, final String body, final Map<String, String> params) throws IOException
+            final String relationCollectionName, final Object relationshipEntityId, final String body, final Map<String, String> params) throws IOException
     {
         return put(rq, scope, 1, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, body, params);
     }
 
     public HttpResponse put(final RequestContext rq, final String scope, final int version, final String entityCollectionName, final Object entityId,
-                final String relationCollectionName, final Object relationshipEntityId, final String body, Map<String, String> params) throws IOException
+            final String relationCollectionName, final Object relationshipEntityId, final String body, Map<String, String> params) throws IOException
     {
         RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, version, entityCollectionName, entityId, relationCollectionName,
-                    relationshipEntityId, params);
+                relationshipEntityId, params);
         String url = endpoint.getUrl();
 
         PutMethod req = new PutMethod(url);
@@ -641,11 +638,11 @@ public class PublicApiHttpClient
     }
 
     public HttpResponse putBinary(final RequestContext rq, final String scope, final int version, final String entityCollectionName,
-                final Object entityId, final String relationCollectionName, final Object relationshipEntityId, final BinaryPayload payload,
-                final Map<String, String> params) throws IOException
+            final Object entityId, final String relationCollectionName, final Object relationshipEntityId, final BinaryPayload payload,
+            final Map<String, String> params) throws IOException
     {
         RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, version, entityCollectionName, entityId, relationCollectionName,
-                    relationshipEntityId, params);
+                relationshipEntityId, params);
         String url = endpoint.getUrl();
 
         PutMethod req = new PutMethod(url);
@@ -662,10 +659,7 @@ public class PublicApiHttpClient
         return submitRequest(requestBuilder.getHttpMethod(), requestBuilder.getRequestContext());
     }
 
-    /*
-     * Encapsulates information relating to a rest api end point, generating and
-     * encoding urls based on the rest api implementation class.
-     */
+    /* Encapsulates information relating to a rest api end point, generating and encoding urls based on the rest api implementation class. */
     private class RestApiEndpoint
     {
         private String url;
@@ -673,7 +667,7 @@ public class PublicApiHttpClient
         RestApiEndpoint(String url, Map<String, String> params) throws IOException
         {
             StringBuilder sb = new StringBuilder(
-                        MessageFormat.format(INDEX_URL, new Object[] { scheme, host, String.valueOf(port), contextPath, servletName }));
+                    MessageFormat.format(INDEX_URL, new Object[]{scheme, host, String.valueOf(port), contextPath, servletName}));
             if (url != null)
             {
                 sb.append(url);
@@ -686,8 +680,8 @@ public class PublicApiHttpClient
 
         RestApiEndpoint(String tenantDomain, String url, Map<String, String> params) throws IOException
         {
-            StringBuilder sb = new StringBuilder(MessageFormat.format(OLD_BASE_URL, new Object[] { scheme, host, String.valueOf(port), contextPath,
-                        servletName, tenantDomain == null ? TenantUtil.DEFAULT_TENANT : tenantDomain }));
+            StringBuilder sb = new StringBuilder(MessageFormat.format(OLD_BASE_URL, new Object[]{scheme, host, String.valueOf(port), contextPath,
+                    servletName, tenantDomain == null ? TenantUtil.DEFAULT_TENANT : tenantDomain}));
             sb.append("/");
             sb.append(url);
 
@@ -697,7 +691,7 @@ public class PublicApiHttpClient
         }
 
         RestApiEndpoint(Class<?> resourceClass, String tenantDomain, Object collectionEntityId, Object relationEntityId, Map<String, String> params)
-                    throws IOException
+                throws IOException
         {
             StringBuilder sb = new StringBuilder();
 
@@ -712,8 +706,8 @@ public class PublicApiHttpClient
 
             Pair<String, String> relationshipCollectionInfo = getRelationCollectionInfo(resourceClass);
 
-            sb.append(MessageFormat.format(BASE_URL, new Object[] { scheme, host, String.valueOf(port), contextPath, servletName,
-                        tenantDomain == null ? TenantUtil.DEFAULT_TENANT : tenantDomain, scope.toString(), name, version }));
+            sb.append(MessageFormat.format(BASE_URL, new Object[]{scheme, host, String.valueOf(port), contextPath, servletName,
+                    tenantDomain == null ? TenantUtil.DEFAULT_TENANT : tenantDomain, scope.toString(), name, version}));
 
             if (relationshipCollectionInfo != null)
             {
@@ -785,13 +779,13 @@ public class PublicApiHttpClient
         }
 
         RestApiEndpoint(String tenantDomain, String scope, int version, String collectionName, Object collectionEntityId, String relationName,
-                    Object relationEntityId, Map<String, String> params) throws IOException
+                Object relationEntityId, Map<String, String> params) throws IOException
         {
             this(tenantDomain, scope, apiName, version, collectionName, collectionEntityId, relationName, relationEntityId, params);
         }
 
         RestApiEndpoint(String tenantDomain, String scope, String apiName, int version, String collectionName, Object collectionEntityId,
-                    String relationName, Object relationEntityId, Map<String, String> params) throws IOException
+                String relationName, Object relationEntityId, Map<String, String> params) throws IOException
         {
             StringBuilder sb = new StringBuilder();
 
@@ -806,7 +800,7 @@ public class PublicApiHttpClient
             }
 
             sb.append(MessageFormat.format(BASE_URL,
-                        new Object[] { scheme, host, String.valueOf(port), contextPath, servletName, tenantDomain, scope, apiName, version }));
+                    new Object[]{scheme, host, String.valueOf(port), contextPath, servletName, tenantDomain, scope, apiName, version}));
 
             if (collectionName != null)
             {
@@ -836,7 +830,7 @@ public class PublicApiHttpClient
         }
 
         RestApiEndpoint(String tenantDomain, String scope, String collectionName, Object collectionEntityId, String relationName,
-                    Object relationEntityId, Map<String, String> params) throws IOException
+                Object relationEntityId, Map<String, String> params) throws IOException
         {
             this(tenantDomain, scope, 1, collectionName, collectionEntityId, relationName, relationEntityId, params);
         }
@@ -1198,8 +1192,8 @@ public class PublicApiHttpClient
         public GetMethod getHttpMethod() throws IOException
         {
             RestApiEndpoint endpoint = new RestApiEndpoint(getRequestContext().getNetworkId(),
-                        getScope(), getApiName(), getVersion(), getEntityCollectionName(),
-                        getEntityId(), getRelationCollectionName(), getRelationshipEntityId(), getParams());
+                    getScope(), getApiName(), getVersion(), getEntityCollectionName(),
+                    getEntityId(), getRelationCollectionName(), getRelationshipEntityId(), getParams());
             String url = endpoint.getUrl();
 
             GetMethod req = new GetMethod(url);
@@ -1214,8 +1208,8 @@ public class PublicApiHttpClient
         public DeleteMethod getHttpMethod() throws IOException
         {
             RestApiEndpoint endpoint = new RestApiEndpoint(getRequestContext().getNetworkId(),
-                        getScope(), getApiName(), getVersion(), getEntityCollectionName(),
-                        getEntityId(), getRelationCollectionName(), getRelationshipEntityId(), getParams());
+                    getScope(), getApiName(), getVersion(), getEntityCollectionName(),
+                    getEntityId(), getRelationCollectionName(), getRelationshipEntityId(), getParams());
             String url = endpoint.getUrl();
 
             DeleteMethod req = new DeleteMethod(url);
@@ -1271,8 +1265,8 @@ public class PublicApiHttpClient
         public PostMethod getHttpMethod() throws IOException
         {
             RestApiEndpoint endpoint = new RestApiEndpoint(getRequestContext().getNetworkId(),
-                        getScope(), getApiName(), getVersion(), getEntityCollectionName(),
-                        getEntityId(), getRelationCollectionName(), getRelationshipEntityId(), getParams());
+                    getScope(), getApiName(), getVersion(), getEntityCollectionName(),
+                    getEntityId(), getRelationCollectionName(), getRelationshipEntityId(), getParams());
             String url = endpoint.getUrl();
 
             PostMethod req = new PostMethod(url.toString());
@@ -1320,8 +1314,8 @@ public class PublicApiHttpClient
         public PutMethod getHttpMethod() throws IOException
         {
             RestApiEndpoint endpoint = new RestApiEndpoint(getRequestContext().getNetworkId(),
-                        getScope(), getApiName(), getVersion(), getEntityCollectionName(),
-                        getEntityId(), getRelationCollectionName(), getRelationshipEntityId(), getParams());
+                    getScope(), getApiName(), getVersion(), getEntityCollectionName(),
+                    getEntityId(), getRelationCollectionName(), getRelationshipEntityId(), getParams());
             String url = endpoint.getUrl();
 
             PutMethod req = new PutMethod(url);
@@ -1333,7 +1327,7 @@ public class PublicApiHttpClient
             else if (binaryPayload != null)
             {
                 BinaryRequestEntity requestEntity = new BinaryRequestEntity(binaryPayload.getFile(), binaryPayload.getMimeType(),
-                            binaryPayload.getCharset());
+                        binaryPayload.getCharset());
                 req.setRequestEntity(requestEntity);
             }
             setRequestHeaderIfAny(req);

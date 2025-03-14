@@ -29,13 +29,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.search.SearchTrackingComponent;
-import org.alfresco.repo.solr.AclChangeSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.repo.search.SearchTrackingComponent;
+import org.alfresco.repo.solr.AclChangeSet;
 
 /**
  * Support for SOLR: Track ACL Change Sets
@@ -47,7 +48,7 @@ public class AclChangeSetsGet extends DeclarativeWebScript
     protected static final Log logger = LogFactory.getLog(AclChangeSetsGet.class);
 
     private SearchTrackingComponent searchTrackingComponent;
-    
+
     public void setSearchTrackingComponent(SearchTrackingComponent searchTrackingComponent)
     {
         this.searchTrackingComponent = searchTrackingComponent;
@@ -66,30 +67,29 @@ public class AclChangeSetsGet extends DeclarativeWebScript
         Long toId = (toIdParam == null ? null : Long.valueOf(toIdParam));
         Long toTime = (toTimeParam == null ? null : Long.valueOf(toTimeParam));
         int maxResults = (maxResultsParam == null ? 1024 : Integer.valueOf(maxResultsParam));
-        
+
         List<AclChangeSet> changesets = searchTrackingComponent.getAclChangeSets(fromId, fromTime, toId, toTime, maxResults);
-        
+
         Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
         model.put("aclChangeSets", changesets);
 
         Long maxChangeSetCommitTime = searchTrackingComponent.getMaxChangeSetCommitTime();
-        if(maxChangeSetCommitTime != null)
+        if (maxChangeSetCommitTime != null)
         {
             model.put("maxChangeSetCommitTime", maxChangeSetCommitTime);
         }
-        
+
         Long maxChangeSetId = searchTrackingComponent.getMaxChangeSetId();
-        if(maxChangeSetId != null)
+        if (maxChangeSetId != null)
         {
             model.put("maxChangeSetId", maxChangeSetId);
         }
 
-        
         if (logger.isDebugEnabled())
         {
             logger.debug("Result: \n\tRequest: " + req + "\n\tModel: " + model);
         }
-        
+
         return model;
     }
 }

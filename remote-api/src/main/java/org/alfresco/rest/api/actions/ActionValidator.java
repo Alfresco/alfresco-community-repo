@@ -43,8 +43,8 @@ public interface ActionValidator
     void validate(Action action);
 
     /**
-     * Returns priority of validator (applied to bulk validation in @see {@link org.alfresco.rest.api.impl.mapper.rules.RestRuleActionModelMapper})
-     * The lower number, the higher priority is set for the validator.
+     * Returns priority of validator (applied to bulk validation in @see {@link org.alfresco.rest.api.impl.mapper.rules.RestRuleActionModelMapper}) The lower number, the higher priority is set for the validator.
+     * 
      * @return priority expressed as int
      */
     int getPriority();
@@ -54,7 +54,8 @@ public interface ActionValidator
      *
      * @return indicator for all defined action definition ids
      */
-    default List<String> getActionDefinitionIds() {
+    default List<String> getActionDefinitionIds()
+    {
         return List.of(ALL_ACTIONS);
     }
 }

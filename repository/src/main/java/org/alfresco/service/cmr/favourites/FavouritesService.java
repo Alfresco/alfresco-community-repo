@@ -48,47 +48,47 @@ import org.alfresco.util.Pair;
  */
 public interface FavouritesService
 {
-	/*
-	 * Supported favourite types.
-	 */
+    /* Supported favourite types. */
     public static enum Type
     {
-    	// Note: ordered
-    	FILE, FOLDER, SITE;
-    	
-    	public static Set<Type> ALL_FILTER_TYPES;
-    	
-    	static
-    	{
-    		ALL_FILTER_TYPES = new HashSet<Type>();
-    		ALL_FILTER_TYPES.add(FILE);
-    		ALL_FILTER_TYPES.add(FOLDER);
-    		ALL_FILTER_TYPES.add(SITE);
-    		ALL_FILTER_TYPES = Collections.unmodifiableSet(ALL_FILTER_TYPES);
-    	}
+        // Note: ordered
+        FILE, FOLDER, SITE;
+
+        public static Set<Type> ALL_FILTER_TYPES;
+
+        static
+        {
+            ALL_FILTER_TYPES = new HashSet<Type>();
+            ALL_FILTER_TYPES.add(FILE);
+            ALL_FILTER_TYPES.add(FOLDER);
+            ALL_FILTER_TYPES.add(SITE);
+            ALL_FILTER_TYPES = Collections.unmodifiableSet(ALL_FILTER_TYPES);
+        }
     };
 
-	public enum SortFields { username, type, createdAt, title };
+    public enum SortFields
+    {
+        username, type, createdAt, title
+    };
 
-	/*
-	 * Default ordering is (userName ASC, type ASC, createdAt DESC)
-	 */
-	@SuppressWarnings("unchecked")
-	public static List<Pair<FavouritesService.SortFields, Boolean>> DEFAULT_SORT_PROPS = Arrays.asList(
-			new Pair<FavouritesService.SortFields, Boolean>(FavouritesService.SortFields.username, Boolean.TRUE),
-			new Pair<FavouritesService.SortFields, Boolean>(FavouritesService.SortFields.type, Boolean.TRUE),
-			new Pair<FavouritesService.SortFields, Boolean>(FavouritesService.SortFields.createdAt, Boolean.FALSE));
+    /* Default ordering is (userName ASC, type ASC, createdAt DESC) */
+    @SuppressWarnings("unchecked")
+    public static List<Pair<FavouritesService.SortFields, Boolean>> DEFAULT_SORT_PROPS = Arrays.asList(
+            new Pair<FavouritesService.SortFields, Boolean>(FavouritesService.SortFields.username, Boolean.TRUE),
+            new Pair<FavouritesService.SortFields, Boolean>(FavouritesService.SortFields.type, Boolean.TRUE),
+            new Pair<FavouritesService.SortFields, Boolean>(FavouritesService.SortFields.createdAt, Boolean.FALSE));
 
     Type getType(NodeRef nodeRef);
-    
+
     /**
      * Add the entity identified by nodeRef as a favourite for user "userName".
      * 
-     * If the nodeRef is already favourited, the favourite entity is returned. No
-     * information regarding the favourite e.g. createdAt is updated.
+     * If the nodeRef is already favourited, the favourite entity is returned. No information regarding the favourite e.g. createdAt is updated.
      * 
-     * @param userName String
-     * @param nodeRef NodeRef
+     * @param userName
+     *            String
+     * @param nodeRef
+     *            NodeRef
      * @return PersonFavourite
      */
     @Auditable(parameters = {"userName", "nodeRef"})
@@ -97,8 +97,10 @@ public interface FavouritesService
     /**
      * Is the entity identified by nodeRef a favourite document of user "userName".
      * 
-     * @param userName String
-     * @param nodeRef NodeRef
+     * @param userName
+     *            String
+     * @param nodeRef
+     *            NodeRef
      * @return boolean
      */
     @Auditable(parameters = {"userName", "nodeRef"})
@@ -107,28 +109,34 @@ public interface FavouritesService
     /**
      * Remove the document identified by nodeRef as a favourite for user "userName".
      * 
-     * @param userName String
-     * @param nodeRef NodeRef
+     * @param userName
+     *            String
+     * @param nodeRef
+     *            NodeRef
      * @return boolean
      */
     @Auditable(parameters = {"userName", "nodeRef"})
     boolean removeFavourite(String userName, NodeRef nodeRef);
-    
+
     /**
      * A paged list of favourites for user "userName".
      * 
-     * @param userName String
-     * @param pagingRequest PagingRequest
+     * @param userName
+     *            String
+     * @param pagingRequest
+     *            PagingRequest
      */
     @Auditable(parameters = {"userName", "types", "pagingRequest"})
     PagingResults<PersonFavourite> getPagedFavourites(String userName, Set<Type> types,
-    		List<Pair<FavouritesService.SortFields, Boolean>> sortProps, PagingRequest pagingRequest);
+            List<Pair<FavouritesService.SortFields, Boolean>> sortProps, PagingRequest pagingRequest);
 
     /**
      * Get a specific favourite for user "userName".
      * 
-     * @param userName String
-     * @param nodeRef NodeRef
+     * @param userName
+     *            String
+     * @param nodeRef
+     *            NodeRef
      * @return PersonFavourite
      */
     @Auditable(parameters = {"userName", "nodeRef"})

@@ -27,14 +27,18 @@ package org.alfresco.repo.web.scripts.workflow;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.util.StringUtils;
 
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
@@ -43,11 +47,6 @@ import org.alfresco.service.cmr.workflow.WorkflowInstanceQuery;
 import org.alfresco.service.cmr.workflow.WorkflowInstanceQuery.DatePosition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.util.StringUtils;
 
 /**
  * Java backed implementation for REST API to retrieve workflow instances.
@@ -69,7 +68,7 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
     public static final String PARAM_DEFINITION_NAME = "definitionName";
     public static final String PARAM_DEFINITION_ID = "definitionId";
     public static final String VAR_DEFINITION_ID = "workflow_definition_id";
-    
+
     public static final QName QNAME_INITIATOR = QName.createQName(NamespaceService.DEFAULT_URI, "initiator");
 
     private WorkflowInstanceDueAscComparator workflowComparator = new WorkflowInstanceDueAscComparator();
@@ -83,7 +82,7 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
 
         // state is not included into filters list as it will be taken into account before filtering
         WorkflowState state = getState(req);
-        
+
         // get filter param values
         Map<QName, Object> filters = new HashMap<QName, Object>(9);
 
@@ -92,13 +91,13 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
 
         if (req.getParameter(PARAM_PRIORITY) != null)
             filters.put(WorkflowModel.PROP_WORKFLOW_PRIORITY, req.getParameter(PARAM_PRIORITY));
-        
+
         String excludeParam = req.getParameter(PARAM_EXCLUDE);
         if (excludeParam != null && excludeParam.length() > 0)
         {
             workflowInstanceQuery.setExcludedDefinitions(Arrays.asList(StringUtils.tokenizeToStringArray(excludeParam, ",")));
         }
-        
+
         // process all the date related parameters
         Map<DatePosition, Date> dateParams = new HashMap<DatePosition, Date>();
         Date dueBefore = getDateFromRequest(req, PARAM_DUE_BEFORE);
@@ -122,7 +121,7 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
         {
             filters.put(WorkflowModel.PROP_WORKFLOW_DUE_DATE, dateParams);
         }
-                    
+
         workflowInstanceQuery.setStartBefore(getDateFromRequest(req, PARAM_STARTED_BEFORE));
         workflowInstanceQuery.setStartAfter(getDateFromRequest(req, PARAM_STARTED_AFTER));
         workflowInstanceQuery.setEndBefore(getDateFromRequest(req, PARAM_COMPLETED_BEFORE));
@@ -134,7 +133,7 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
         {
             workflowDefinitionId = req.getParameter(PARAM_DEFINITION_ID);
         }
-                    
+
         // default workflow state to ACTIVE if not supplied
         if (state == null)
         {
@@ -145,7 +144,7 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
         workflowInstanceQuery.setCustomProps(filters);
 
         List<WorkflowInstance> workflows = new ArrayList<WorkflowInstance>();
-        
+
         int total = 0;
         // MNT-9074 My Tasks fails to render if tasks quantity is excessive
         int maxItems = getIntParameter(req, PARAM_MAX_ITEMS, DEFAULT_MAX_ITEMS);
@@ -157,36 +156,36 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
              * If we are searching by workflow definition name then there may be many workflow definition instances.
              */
             int workingSkipCount = skipCount;
-            
+
             /**
              * Yes there could be multiple process definitions with that definition name
              */
             String definitionName = req.getParameter(PARAM_DEFINITION_NAME);
-  
+
             List<WorkflowDefinition> defs = workflowService.getAllDefinitionsByName(definitionName);
-            
+
             int itemsToQuery = maxItems;
-            
-            for(WorkflowDefinition def : defs)
+
+            for (WorkflowDefinition def : defs)
             {
                 workflowDefinitionId = def.getId();
                 workflowInstanceQuery.setWorkflowDefinitionId(workflowDefinitionId);
-                if(maxItems < 0 || itemsToQuery > 0)
-                {               
+                if (maxItems < 0 || itemsToQuery > 0)
+                {
                     workflows.addAll(workflowService.getWorkflows(workflowInstanceQuery, itemsToQuery, workingSkipCount));
                 }
-                if(maxItems > 0)
+                if (maxItems > 0)
                 {
                     itemsToQuery = maxItems - workflows.size();
                 }
-                
+
                 total += (int) workflowService.countWorkflows(workflowInstanceQuery);
-                
-                if(workingSkipCount > 0)
+
+                if (workingSkipCount > 0)
                 {
                     workingSkipCount = skipCount - total;
-                    
-                    if(workingSkipCount < 0)
+
+                    if (workingSkipCount < 0)
                     {
                         workingSkipCount = 0;
                     }
@@ -203,31 +202,32 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
                 workflowInstanceQuery.setWorkflowDefinitionId(workflowDefinitionId);
             }
             workflows.addAll(workflowService.getWorkflows(workflowInstanceQuery, maxItems, skipCount));
-        
+
             total = (int) workflowService.countWorkflows(workflowInstanceQuery);
         }
-        
+
         List<Map<String, Object>> results = new ArrayList<Map<String, Object>>(total);
-        
-        // init empty list 
+
+        // init empty list
         results.addAll(Arrays.asList((Map<String, Object>[]) new Map[total]));
 
         for (WorkflowInstance workflow : workflows)
         {
             // set to special index
             results.set(skipCount, modelBuilder.buildSimple(workflow));
-            
+
             skipCount++;
         }
-        
+
         // create and return results, paginated if necessary
         return createResultModel(req, "workflowInstances", results);
     }
-    
+
     /**
      * Gets the specified {@link WorkflowState}, null if not requested.
      * 
-     * @param req The WebScript request
+     * @param req
+     *            The WebScript request
      * @return The workflow state or null if not requested
      */
     private WorkflowState getState(WebScriptRequest req)
@@ -245,7 +245,7 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
                 throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
             }
         }
-        
+
         return null;
     }
 
@@ -268,7 +268,7 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
 
         return null;
     }
-    
+
     /**
      * Comparator to sort workflow instances by due date in ascending order.
      */
@@ -279,14 +279,14 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
         {
             Date date1 = o1.getDueDate();
             Date date2 = o2.getDueDate();
-            
+
             long time1 = date1 == null ? Long.MAX_VALUE : date1.getTime();
             long time2 = date2 == null ? Long.MAX_VALUE : date2.getTime();
-            
+
             long result = time1 - time2;
-            
+
             return (result > 0) ? 1 : (result < 0 ? -1 : 0);
         }
-        
+
     }
 }

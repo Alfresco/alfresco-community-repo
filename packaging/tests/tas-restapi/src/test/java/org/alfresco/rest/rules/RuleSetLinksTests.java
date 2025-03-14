@@ -25,14 +25,18 @@
  */
 package org.alfresco.rest.rules;
 
-import static org.alfresco.utility.constants.UserRole.SiteConsumer;
-import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
+
+import static org.alfresco.utility.constants.UserRole.SiteConsumer;
+import static org.alfresco.utility.report.log.Step.STEP;
+
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.model.RestRuleModel;
@@ -45,9 +49,6 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Tests for /nodes/{nodeId}/rule-set-links.
@@ -286,7 +287,7 @@ public class RuleSetLinksTests extends RulesRestTest
         STEP("Assert link result is 400");
         restClient.assertStatusCodeIs(BAD_REQUEST)
                 .assertLastError().containsSummary(
-                "Unable to link to a rule set because the folder has pre-existing rules or is already linked to a rule set.");
+                        "Unable to link to a rule set because the folder has pre-existing rules or is already linked to a rule set.");
     }
 
     /**
@@ -365,14 +366,14 @@ public class RuleSetLinksTests extends RulesRestTest
     /**
      * Check we get an error when trying to link to a rule set that we can't view.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void linkToRuleSetWithoutPermission()
     {
         STEP("Use admin to create a private site with a folder containing a rule.");
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
         FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
         restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet()
-                  .createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
+                .createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
 
         STEP("Use a normal user to try to link to the rule.");
         FolderModel publicFolder = dataContent.usingUser(user).usingSite(site).createFolder();
@@ -386,14 +387,14 @@ public class RuleSetLinksTests extends RulesRestTest
     /**
      * Check we are able to link to a rule set with only read permission.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void linkToRuleSetWithOnlyReadPermission()
     {
         STEP("Use admin to create a private site with a folder containing a rule.");
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
         FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
         restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet()
-                  .createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
+                .createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
 
         STEP("Add the normal user as a consumer.");
         dataUser.usingAdmin().addUserToSite(user, privateSite, SiteConsumer);
@@ -442,7 +443,7 @@ public class RuleSetLinksTests extends RulesRestTest
         restClient.assertStatusCodeIs(NO_CONTENT);
 
         STEP("GET the rule set and isLinkedTo field.");
-        RestRuleSetModel ruleSet =  restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder)
+        RestRuleSetModel ruleSet = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder)
                 .include("isLinkedTo", "linkedToBy", "owningFolder")
                 .getDefaultRuleSet();
 
@@ -468,7 +469,7 @@ public class RuleSetLinksTests extends RulesRestTest
 
         STEP("Assert unlink result");
         restClient.assertStatusCodeIs(BAD_REQUEST)
-                  .assertLastError().containsSummary("NodeId of a rule set is expected!");
+                .assertLastError().containsSummary("NodeId of a rule set is expected!");
     }
 
     /**
@@ -476,7 +477,7 @@ public class RuleSetLinksTests extends RulesRestTest
      *
      * DELETE /nodes/{folderNodeId}/rule-set-links/{ruleSetId}
      */
-    //TODO This test may need to be modified once ACS-3616 is done
+    // TODO This test may need to be modified once ACS-3616 is done
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void unlinkUsingRandomId()
     {
@@ -494,14 +495,14 @@ public class RuleSetLinksTests extends RulesRestTest
     /**
      * Check we cannot unlink from a rule set that we can't view.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void unlinkFromRuleSetWithoutPermission()
     {
         STEP("Use admin to create a private site with a folder containing a rule.");
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
         FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
         restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet()
-                  .createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
+                .createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
 
         STEP("Add the user as a consumer.");
         dataUser.usingAdmin().addUserToSite(user, privateSite, SiteConsumer);
@@ -525,14 +526,14 @@ public class RuleSetLinksTests extends RulesRestTest
     /**
      * Check we can unlink from a rule set if we only have read permission for it.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void unlinkFromRuleSetWithOnlyReadPermission()
     {
         STEP("Use admin to create a private site with a folder containing a rule.");
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
         FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
         restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet()
-                  .createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
+                .createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
 
         STEP("Add the user as a consumer.");
         dataUser.usingAdmin().addUserToSite(user, privateSite, SiteConsumer);

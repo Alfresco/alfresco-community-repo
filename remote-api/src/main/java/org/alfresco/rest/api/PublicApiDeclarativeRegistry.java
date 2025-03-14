@@ -33,6 +33,14 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.webscripts.*;
+import org.springframework.extensions.webscripts.Description.FormatStyle;
+import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
+import org.springframework.extensions.webscripts.Description.RequiredTransaction;
+import org.springframework.extensions.webscripts.Description.TransactionCapability;
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceWithMetadata;
@@ -43,13 +51,6 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.ResourceAction;
 import org.alfresco.rest.framework.tools.ApiAssistant;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.extensions.webscripts.*;
-import org.springframework.extensions.webscripts.Description.FormatStyle;
-import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
-import org.springframework.extensions.webscripts.Description.RequiredTransaction;
-import org.springframework.extensions.webscripts.Description.TransactionCapability;
-import org.springframework.http.HttpMethod;
 
 /**
  *
@@ -86,10 +87,10 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
         super.setContainer(container);
         this.container = container;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.Registry#findWebScript(java.lang.String, java.lang.String)
-     */
+     * 
+     * @see org.alfresco.web.scripts.Registry#findWebScript(java.lang.String, java.lang.String) */
     public Match findWebScript(String method, String uri)
     {
         Match match;
@@ -132,53 +133,53 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
 
                     switch (rwm.getMetaData().getType())
                     {
-                        case ENTITY:
-                            if (StringUtils.isNotBlank(entityId))
+                    case ENTITY:
+                        if (StringUtils.isNotBlank(entityId))
+                        {
+                            if (EntityResourceAction.ReadById.class.isAssignableFrom(rwm.getResource().getClass()))
                             {
-                                if (EntityResourceAction.ReadById.class.isAssignableFrom(rwm.getResource().getClass()))
-                                {
-                                    resAction = EntityResourceAction.ReadById.class;
-                                }
+                                resAction = EntityResourceAction.ReadById.class;
                             }
-                            else
+                        }
+                        else
+                        {
+                            if (EntityResourceAction.Read.class.isAssignableFrom(rwm.getResource().getClass()))
                             {
-                                if (EntityResourceAction.Read.class.isAssignableFrom(rwm.getResource().getClass()))
-                                {
-                                    resAction = EntityResourceAction.Read.class;
-                                }
+                                resAction = EntityResourceAction.Read.class;
                             }
-                            break;
-                        case PROPERTY:
-                            if (StringUtils.isNotBlank(entityId))
+                        }
+                        break;
+                    case PROPERTY:
+                        if (StringUtils.isNotBlank(entityId))
+                        {
+                            if (BinaryResourceAction.Read.class.isAssignableFrom(rwm.getResource().getClass()))
                             {
-                                if (BinaryResourceAction.Read.class.isAssignableFrom(rwm.getResource().getClass()))
-                                {
-                                    resAction = BinaryResourceAction.Read.class;
-                                }
-                                else if (RelationshipResourceBinaryAction.Read.class.isAssignableFrom(rwm.getResource().getClass()))
-                                {
-                                    resAction = RelationshipResourceBinaryAction.Read.class;
-                                }
+                                resAction = BinaryResourceAction.Read.class;
                             }
-                            break;
-                        case RELATIONSHIP:
-                            if (StringUtils.isNotBlank(relationshipId))
+                            else if (RelationshipResourceBinaryAction.Read.class.isAssignableFrom(rwm.getResource().getClass()))
                             {
-                                if (RelationshipResourceAction.ReadById.class.isAssignableFrom(rwm.getResource().getClass()))
-                                {
-                                    resAction = RelationshipResourceAction.ReadById.class;
-                                }
+                                resAction = RelationshipResourceBinaryAction.Read.class;
                             }
-                            else
+                        }
+                        break;
+                    case RELATIONSHIP:
+                        if (StringUtils.isNotBlank(relationshipId))
+                        {
+                            if (RelationshipResourceAction.ReadById.class.isAssignableFrom(rwm.getResource().getClass()))
                             {
-                                if (RelationshipResourceAction.Read.class.isAssignableFrom(rwm.getResource().getClass()))
-                                {
-                                    resAction = RelationshipResourceAction.Read.class;
-                                }
+                                resAction = RelationshipResourceAction.ReadById.class;
                             }
-                            break;
-                        default:
-                            break;
+                        }
+                        else
+                        {
+                            if (RelationshipResourceAction.Read.class.isAssignableFrom(rwm.getResource().getClass()))
+                            {
+                                resAction = RelationshipResourceAction.Read.class;
+                            }
+                        }
+                        break;
+                    default:
+                        break;
                     }
 
                     final boolean noAuth = (resAction != null && rwm.getMetaData().isNoAuth(resAction));
@@ -202,31 +203,31 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
                     Boolean noAuth = null;
                     switch (rwm.getMetaData().getType())
                     {
-                        case ENTITY:
-                            if (EntityResourceAction.Create.class.isAssignableFrom(rwm.getResource().getClass()))
-                            {
-                                resAction = EntityResourceAction.Create.class;
-                            }
-                            else if (EntityResourceAction.CreateWithResponse.class.isAssignableFrom(rwm.getResource().getClass()))
-                            {
-                                resAction = EntityResourceAction.CreateWithResponse.class;
-                            }
-                            break;
-                        case RELATIONSHIP:
-                            if (RelationshipResourceAction.Create.class.isAssignableFrom(rwm.getResource().getClass()))
-                            {
-                                resAction = RelationshipResourceAction.Create.class;
-                            }
-                            else if (RelationshipResourceAction.CreateWithResponse.class.isAssignableFrom(rwm.getResource().getClass()))
-                            {
-                                resAction = RelationshipResourceAction.CreateWithResponse.class;
-                            }
-                            break;
-                        case OPERATION:
-                            noAuth = rwm.getMetaData().isNoAuth(null);
-                            break;
-                        default:
-                            break;
+                    case ENTITY:
+                        if (EntityResourceAction.Create.class.isAssignableFrom(rwm.getResource().getClass()))
+                        {
+                            resAction = EntityResourceAction.Create.class;
+                        }
+                        else if (EntityResourceAction.CreateWithResponse.class.isAssignableFrom(rwm.getResource().getClass()))
+                        {
+                            resAction = EntityResourceAction.CreateWithResponse.class;
+                        }
+                        break;
+                    case RELATIONSHIP:
+                        if (RelationshipResourceAction.Create.class.isAssignableFrom(rwm.getResource().getClass()))
+                        {
+                            resAction = RelationshipResourceAction.Create.class;
+                        }
+                        else if (RelationshipResourceAction.CreateWithResponse.class.isAssignableFrom(rwm.getResource().getClass()))
+                        {
+                            resAction = RelationshipResourceAction.CreateWithResponse.class;
+                        }
+                        break;
+                    case OPERATION:
+                        noAuth = rwm.getMetaData().isNoAuth(null);
+                        break;
+                    default:
+                        break;
                     }
 
                     if (noAuth == null)
@@ -248,7 +249,7 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
 
         if (match == null)
         {
-            throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[] {uri});
+            throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[]{uri});
         }
         return match;
     }
@@ -269,8 +270,7 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
     private Match overrideMatch(final Match match)
     {
         // TODO is there a better way (to dynamically override "requiredAuthentication") or handle noAuth check earlier ?
-        WebScript noAuthWebScriptWrapper = new WebScript()
-        {
+        WebScript noAuthWebScriptWrapper = new WebScript() {
             @Override
             public void init(Container container, Description description)
             {
@@ -281,8 +281,7 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
             public Description getDescription()
             {
                 final Description d = match.getWebScript().getDescription();
-                return new Description()
-                {
+                return new Description() {
                     @Override
                     public String getStorePath()
                     {
@@ -480,7 +479,7 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
         serviceDesc.setRequiredTransactionParameters(transactionParameters);
         serviceDesc.setFormatStyle(FormatStyle.argument);
         serviceDesc.setDefaultFormat("json");
-        serviceDesc.setUris(new String[] { name });
+        serviceDesc.setUris(new String[]{name});
         webScript.init(container, serviceDesc);
     }
 
@@ -491,4 +490,3 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
         initWebScript(getNetworkWebScript, "network");
     }
 }
-

@@ -27,6 +27,11 @@ package org.alfresco;
 
 import java.lang.reflect.Field;
 
+import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -35,28 +40,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.transaction.TransactionService;
-
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.AbstractApplicationContext;
-
-import junit.framework.TestCase;
 
 /**
- * A unit test that verifies it's possible to start up the main
- *  Alfresco context, stop it, start a different context,
- *  stop that, and finally return to the main context.
- * To do a basic check of if the repository works, use
- *  {@link RepositoryStartupTest}. 
- * This test allows you to verify that your context
- *  is able to shut down cleanly, as well as that the
- *  minimal context is able to do the same.
- *  
- * As this test opens and closes lots of contexts, 
- *  it is rather slow....
+ * A unit test that verifies it's possible to start up the main Alfresco context, stop it, start a different context, stop that, and finally return to the main context. To do a basic check of if the repository works, use {@link RepositoryStartupTest}. This test allows you to verify that your context is able to shut down cleanly, as well as that the minimal context is able to do the same.
+ * 
+ * As this test opens and closes lots of contexts, it is rather slow....
  * 
  * @author Nick Burch
  */
@@ -72,128 +63,122 @@ public class RepositoryStartStopTest extends TestCase
         // Ensure there's nothing kicking about
         ApplicationContextHelper.closeApplicationContext();
     }
-    
+
     public void tearDown() throws Exception
     {
         AuthenticationUtil.clearCurrentSecurityContext();
     }
-    
+
     /**
-     * Checks that the ApplicationContext cache on the
-     *  ApplicationContextHelper is empty
+     * Checks that the ApplicationContext cache on the ApplicationContextHelper is empty
      */
-    public static void assertNoCachedApplicationContext() throws Exception {
-       Field instanceF = BaseApplicationContextHelper.class.getDeclaredField("instance");
-       instanceF.setAccessible(true);
-       assertNull( 
-             "Instance cache on ApplicationContextHelper was populated instead of empty",
-             instanceF.get(null)
-       );
+    public static void assertNoCachedApplicationContext() throws Exception
+    {
+        Field instanceF = BaseApplicationContextHelper.class.getDeclaredField("instance");
+        instanceF.setAccessible(true);
+        assertNull(
+                "Instance cache on ApplicationContextHelper was populated instead of empty",
+                instanceF.get(null));
     }
-    
-    private ApplicationContext getMinimalContext() {
-       ApplicationContextHelper.setUseLazyLoading(false);
-       ApplicationContextHelper.setNoAutoStart(true);
-       return ApplicationContextHelper.getApplicationContext(
-            new String[] { "classpath:alfresco/minimal-context.xml" }
-       );
+
+    private ApplicationContext getMinimalContext()
+    {
+        ApplicationContextHelper.setUseLazyLoading(false);
+        ApplicationContextHelper.setNoAutoStart(true);
+        return ApplicationContextHelper.getApplicationContext(
+                new String[]{"classpath:alfresco/minimal-context.xml"});
     }
-    private ApplicationContext getFullContext() {
-       ApplicationContextHelper.setUseLazyLoading(false);
-       ApplicationContextHelper.setNoAutoStart(false);
-       return ApplicationContextHelper.getApplicationContext(
-            new String[] { "classpath:alfresco/application-context.xml" }
-       );
+
+    private ApplicationContext getFullContext()
+    {
+        ApplicationContextHelper.setUseLazyLoading(false);
+        ApplicationContextHelper.setNoAutoStart(false);
+        return ApplicationContextHelper.getApplicationContext(
+                new String[]{"classpath:alfresco/application-context.xml"});
     }
-    
+
     /**
-     * Tests that we can open a context, use
-     *  it, and then close it again without error
+     * Tests that we can open a context, use it, and then close it again without error
      */
     public void testOpenClose() throws Exception
     {
-       assertNoCachedApplicationContext();
-       
-       ApplicationContext ctx = getMinimalContext();
-       
-       assertNotNull(ctx);
-       doTestBasicWriteOperations(ctx);
-       
-       ApplicationContextHelper.closeApplicationContext();
-       
-       assertNoCachedApplicationContext();
+        assertNoCachedApplicationContext();
+
+        ApplicationContext ctx = getMinimalContext();
+
+        assertNotNull(ctx);
+        doTestBasicWriteOperations(ctx);
+
+        ApplicationContextHelper.closeApplicationContext();
+
+        assertNoCachedApplicationContext();
     }
-    
+
     /**
-     * Using a minimal no-autostart context:
-     *  Test that we can bring up and close down
-     *  a context twice without error, using it
-     *  when running. 
+     * Using a minimal no-autostart context: Test that we can bring up and close down a context twice without error, using it when running.
      */
     public void testOpenCloseOpenCloseNoAutostart() throws Exception
     {
-       assertNoCachedApplicationContext();
+        assertNoCachedApplicationContext();
 
-       // Open it, and use it
-       ApplicationContext ctx = getMinimalContext();
-       assertNotNull(ctx);
-       doTestBasicWriteOperations(ctx);
-       
-       // Close it down
-       ApplicationContextHelper.closeApplicationContext();
-       assertNoCachedApplicationContext();
-       
-       // Re-open it, we get a fresh copy
-       ApplicationContext ctx2 = getMinimalContext();
-       assertNotNull(ctx2);
-       doTestBasicWriteOperations(ctx2);
-       assertNotSame(ctx, ctx2);
-       
-       // Ask for it again, will be no change this time
-       ctx = getMinimalContext();
-       assertEquals(ctx, ctx2);
-       
-       // And finally close it
-       ApplicationContextHelper.closeApplicationContext();
-       assertNoCachedApplicationContext();
+        // Open it, and use it
+        ApplicationContext ctx = getMinimalContext();
+        assertNotNull(ctx);
+        doTestBasicWriteOperations(ctx);
+
+        // Close it down
+        ApplicationContextHelper.closeApplicationContext();
+        assertNoCachedApplicationContext();
+
+        // Re-open it, we get a fresh copy
+        ApplicationContext ctx2 = getMinimalContext();
+        assertNotNull(ctx2);
+        doTestBasicWriteOperations(ctx2);
+        assertNotSame(ctx, ctx2);
+
+        // Ask for it again, will be no change this time
+        ctx = getMinimalContext();
+        assertEquals(ctx, ctx2);
+
+        // And finally close it
+        ApplicationContextHelper.closeApplicationContext();
+        assertNoCachedApplicationContext();
     }
-    
+
     /**
-     * Using a full autostarting context:
-     *  Test that we can bring up and close down
-     *  a context twice without error, using it
-     *  when running. 
+     * Using a full autostarting context: Test that we can bring up and close down a context twice without error, using it when running.
      */
     public void testOpenCloseOpenCloseFull() throws Exception
     {
-       assertNoCachedApplicationContext();
+        assertNoCachedApplicationContext();
 
-       // Open it, and use it
-       ApplicationContext ctx = getFullContext();
-       assertNotNull(ctx);
-       doTestBasicWriteOperations(ctx);
-       
-       // Close it down
-       ApplicationContextHelper.closeApplicationContext();
-       assertNoCachedApplicationContext();
-       
-       // Re-open it, we get a fresh copy
-       ApplicationContext ctx2 = getFullContext();
-       assertNotNull(ctx2);
-       doTestBasicWriteOperations(ctx2);
-       
-       // Ask for it again, will be no change this time
-       ctx = getFullContext();
-       assertEquals(ctx, ctx2);
-       
-       // And finally close it
-       ApplicationContextHelper.closeApplicationContext();
-       assertNoCachedApplicationContext();
+        // Open it, and use it
+        ApplicationContext ctx = getFullContext();
+        assertNotNull(ctx);
+        doTestBasicWriteOperations(ctx);
+
+        // Close it down
+        ApplicationContextHelper.closeApplicationContext();
+        assertNoCachedApplicationContext();
+
+        // Re-open it, we get a fresh copy
+        ApplicationContext ctx2 = getFullContext();
+        assertNotNull(ctx2);
+        doTestBasicWriteOperations(ctx2);
+
+        // Ask for it again, will be no change this time
+        ctx = getFullContext();
+        assertEquals(ctx, ctx2);
+
+        // And finally close it
+        ApplicationContextHelper.closeApplicationContext();
+        assertNoCachedApplicationContext();
     }
 
     /**
      *
      * Enable test after this issue is resolved: https://issues.alfresco.com/jira/browse/REPO-4176
+     * 
      * @throws Exception
      */
     public void ignoreTestFullContextRefresh() throws Exception
@@ -207,7 +192,7 @@ public class RepositoryStartStopTest extends TestCase
         doTestBasicWriteOperations(ctx);
 
         // Refresh it, shouldn't break anything
-        ((AbstractApplicationContext)ctx).refresh();
+        ((AbstractApplicationContext) ctx).refresh();
         assertNotNull(ctx);
         doTestBasicWriteOperations(ctx);
 
@@ -215,77 +200,70 @@ public class RepositoryStartStopTest extends TestCase
         ApplicationContextHelper.closeApplicationContext();
         assertNoCachedApplicationContext();
     }
-    
-    /**
-     * Tests that we can open a context, use it,
-     *  close it, and open a different one.
-     * Does this by opening and closing contexts
-     *  4 different times, sometimes full ones,
-     *  sometimes minimal ones with no autostart.
-     */
-    public void testOpenCloseRepeatedly() throws Exception {
-       assertNoCachedApplicationContext();
 
-       // Open the minimal one and test
-       ApplicationContext ctx = getMinimalContext();
-       assertNotNull(ctx);
-       doTestBasicWriteOperations(ctx);
-       
-       // Close
-       ApplicationContextHelper.closeApplicationContext();
-       assertNoCachedApplicationContext();
-       
-       
-       // Now open the full one
-       ctx = getFullContext();
-       assertNotNull(ctx);
-       doTestBasicWriteOperations(ctx);
-       
-       // Ask for it again, will get the same thing
-       ApplicationContext ctxSav = ctx;
-       ctx = getFullContext();
-       assertEquals(ctx, ctxSav);
-       
-       // Close it
-       ApplicationContextHelper.closeApplicationContext();
-       assertNoCachedApplicationContext();
-       
-       
-       // Back to the minimal one
-       ctx = getMinimalContext();
-       assertNotNull(ctx);
-       doTestBasicWriteOperations(ctx);
-       
-       // Close
-       ApplicationContextHelper.closeApplicationContext();
-       assertNoCachedApplicationContext();
-       
-       
-       // And finally we want the full one again
-       ctx = getFullContext();
-       assertNotNull(ctx);
-       doTestBasicWriteOperations(ctx);
-       
-       // Close and we're done
-       ApplicationContextHelper.closeApplicationContext();
-       assertNoCachedApplicationContext();
+    /**
+     * Tests that we can open a context, use it, close it, and open a different one. Does this by opening and closing contexts 4 different times, sometimes full ones, sometimes minimal ones with no autostart.
+     */
+    public void testOpenCloseRepeatedly() throws Exception
+    {
+        assertNoCachedApplicationContext();
+
+        // Open the minimal one and test
+        ApplicationContext ctx = getMinimalContext();
+        assertNotNull(ctx);
+        doTestBasicWriteOperations(ctx);
+
+        // Close
+        ApplicationContextHelper.closeApplicationContext();
+        assertNoCachedApplicationContext();
+
+        // Now open the full one
+        ctx = getFullContext();
+        assertNotNull(ctx);
+        doTestBasicWriteOperations(ctx);
+
+        // Ask for it again, will get the same thing
+        ApplicationContext ctxSav = ctx;
+        ctx = getFullContext();
+        assertEquals(ctx, ctxSav);
+
+        // Close it
+        ApplicationContextHelper.closeApplicationContext();
+        assertNoCachedApplicationContext();
+
+        // Back to the minimal one
+        ctx = getMinimalContext();
+        assertNotNull(ctx);
+        doTestBasicWriteOperations(ctx);
+
+        // Close
+        ApplicationContextHelper.closeApplicationContext();
+        assertNoCachedApplicationContext();
+
+        // And finally we want the full one again
+        ctx = getFullContext();
+        assertNotNull(ctx);
+        doTestBasicWriteOperations(ctx);
+
+        // Close and we're done
+        ApplicationContextHelper.closeApplicationContext();
+        assertNoCachedApplicationContext();
     }
-    
+
     public void doTestBasicWriteOperations(ApplicationContext ctx) throws Exception
     {
         // Grab the beans we need
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
-       
+
         // So we can write test nodes
         AuthenticationUtil.setRunAsUserSystem();
-        
+
         // Check it looks fine
         assertFalse("The transaction is read-only - further unit tests are pointless.", transactionService.isReadOnly());
-        
+
         // A basic write operation on a node
-        RetryingTransactionCallback<Void> addPropertyCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> addPropertyCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 NodeService nodeService = serviceRegistry.getNodeService();
@@ -295,7 +273,7 @@ public class RepositoryStartStopTest extends TestCase
                 return null;
             }
         };
-        
+
         // Now do a write operation, and ensure it worked
         writeTestWorked = false;
         transactionService.getRetryingTransactionHelper().doInTransaction(addPropertyCallback, false, true);

@@ -27,6 +27,10 @@ package org.alfresco.util.schemacomp.validator;
 
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.schemacomp.DbProperty;
@@ -34,10 +38,6 @@ import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.ValidationResult;
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.Index;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
-
 
 /**
  * Validates columns names in a Index using a regular expression pattern.
@@ -56,8 +56,8 @@ public class IndexColumnsValidator extends NameValidator
             throw new AlfrescoRuntimeException("IndexColumnsValidator could be used only in context of index object but was: " + target.toString());
         }
 
-        List<String> referenceColumnNames = ((Index)reference).getColumnNames();
-        List<String> targetColumnNames = ((Index)target).getColumnNames();
+        List<String> referenceColumnNames = ((Index) reference).getColumnNames();
+        List<String> targetColumnNames = ((Index) target).getColumnNames();
 
         for (int i = 0; i < targetColumnNames.size(); i++)
         {
@@ -81,7 +81,7 @@ public class IndexColumnsValidator extends NameValidator
                 }
             }
         }
-        
+
         if (targetColumnNames.size() != referenceColumnNames.size())
         {
             if (log.isDebugEnabled())
@@ -100,7 +100,7 @@ public class IndexColumnsValidator extends NameValidator
             }
         }
     }
-    
+
     @Override
     public boolean validates(String fieldName)
     {

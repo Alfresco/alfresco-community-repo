@@ -99,354 +99,354 @@ public class MockedTestServiceRegistry implements ServiceRegistry
     private final PersonService personService = mock(PersonService.class);
     private final MutableAuthenticationService authenticationService = mock(MutableAuthenticationService.class);
     private final NamespaceService namespaceService = mock(NamespaceService.class);
-    
+
     @Override
     public boolean isServiceProvided(QName service)
     {
         // A mock response
         return false;
     }
-    
+
     @Override
     public WorkflowService getWorkflowService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public NotificationService getNotificationService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public VersionService getVersionService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public TransactionService getTransactionService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public ThumbnailService getThumbnailService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public TemplateService getTemplateService()
     {
         return this.templateService;
     }
-    
+
     @Override
     public TaggingService getTaggingService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public SiteService getSiteService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public Collection<QName> getServices()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public Object getService(QName service)
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public SearchService getSearchService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public ScriptService getScriptService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public RuleService getRuleService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public RetryingTransactionHelper getRetryingTransactionHelper()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public PublicServiceAccessService getPublicServiceAccessService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public PersonService getPersonService()
     {
         return personService;
     }
-    
+
     @Override
     public PermissionService getPermissionService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public OwnableService getOwnableService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public NodeService getNodeService()
     {
         return nodeService;
     }
-    
+
     @Override
     public NamespaceService getNamespaceService()
     {
         // A mock response
         return namespaceService;
     }
-    
+
     @Override
     public MultilingualContentService getMultilingualContentService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public MimetypeService getMimetypeService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public LockService getLockService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public JobLockService getJobLockService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public InvitationService getInvitationService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public ImporterService getImporterService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public ImapService getImapService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public FormService getFormService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public RenditionService getRenditionService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public RatingService getRatingService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public NodeLocatorService getNodeLocatorService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public CalendarService getCalendarService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public FileFolderService getFileFolderService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public ExporterService getExporterService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public EditionService getEditionService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public DictionaryService getDictionaryService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public DescriptorService getDescriptorService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public CopyService getCopyService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public ContentService getContentService()
     {
         // A mock response
         return contentService;
     }
-    
+
     @Override
     public ContentFilterLanguagesService getContentFilterLanguagesService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public CheckOutCheckInService getCheckOutCheckInService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public CategoryService getCategoryService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public CMISQueryService getCMISQueryService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public CMISDictionaryService getCMISDictionaryService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public AuthorityService getAuthorityService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public MutableAuthenticationService getAuthenticationService()
     {
         // A mock response
         return authenticationService;
     }
-    
+
     @Override
     public AuditService getAuditService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public AttributeService getAttributeService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public ActionService getActionService()
     {
         // A mock response
         return actionService;
     }
-    
+
     @Override
     public RepoAdminService getRepoAdminService()
     {
@@ -489,7 +489,6 @@ public class MockedTestServiceRegistry implements ServiceRegistry
         return null;
     }
 
-
     @Override
     public ModuleService getModuleService()
     {
@@ -505,12 +504,12 @@ public class MockedTestServiceRegistry implements ServiceRegistry
     }
 
     @Override
-    public DocumentLinkService getDocumentLinkService() 
+    public DocumentLinkService getDocumentLinkService()
     {
         // A mock response
         return null;
     }
-    
+
     @Override
     public PolicyComponent getPolicyComponent()
     {

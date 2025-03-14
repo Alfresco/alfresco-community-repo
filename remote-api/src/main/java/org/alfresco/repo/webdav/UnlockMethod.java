@@ -26,7 +26,6 @@
 package org.alfresco.repo.webdav;
 
 import java.util.Set;
-
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
@@ -50,8 +49,7 @@ public class UnlockMethod extends WebDAVMethod
      * Default constructor
      */
     public UnlockMethod()
-    {
-    }
+    {}
 
     /**
      * Return the lock token of an existing lock
@@ -95,8 +93,8 @@ public class UnlockMethod extends WebDAVMethod
                 catch (IndexOutOfBoundsException e)
                 {
                     logger.warn("Failed to parse If header: " + strLockTokenHeader);
-	            }
-	        }
+                }
+            }
         }
         // If there is no token this is a bad request so send an error back
         if (m_strLockToken == null)
@@ -166,9 +164,9 @@ public class UnlockMethod extends WebDAVMethod
             throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED);
         }
 
-        NodeRef nodeRef = lockNodeInfo.getNodeRef();        
+        NodeRef nodeRef = lockNodeInfo.getNodeRef();
         LockInfo lockInfo = getDAVLockService().getLockInfo(nodeRef);
-        
+
         if (lockInfo == null)
         {
             if (logger.isDebugEnabled())
@@ -178,8 +176,7 @@ public class UnlockMethod extends WebDAVMethod
             // Node is not locked
             throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED);
         }
-        
-        
+
         if (!lockInfo.isLocked())
         {
             if (logger.isDebugEnabled())
@@ -204,7 +201,7 @@ public class UnlockMethod extends WebDAVMethod
             String currentUser = getAuthenticationService().getCurrentUserName();
             if (currentUser.equals(lockInfo.getOwner()))
             {
-            	try
+                try
                 {
                     getDAVLockService().unlock(nodeRef);
                 }
@@ -212,11 +209,11 @@ public class UnlockMethod extends WebDAVMethod
                 {
                     throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED, e);
                 }
-    
+
                 // Indicate that the unlock was successful
-                m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);            
+                m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);
                 removeNoContentAspect(nodeRef);
-    
+
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Unlock token=" + getLockToken() + " Successful");

@@ -28,12 +28,10 @@ package org.alfresco.service.cmr.workflow;
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 
-
 /**
  * Workflow Task Definition Data Object.
  * 
- * Represents meta-data for a Workflow Task.  The meta-data is described in terms
- * of the Alfresco Data Dictionary.
+ * Represents meta-data for a Workflow Task. The meta-data is described in terms of the Alfresco Data Dictionary.
  * 
  * @author davidc
  */
@@ -47,7 +45,7 @@ public class WorkflowTaskDefinition
     /** Workflow Node this task created from */
     @Deprecated
     public WorkflowNode node;
-    
+
     /** Task Metadata */
     @Deprecated
     public TypeDefinition metadata;
@@ -66,7 +64,7 @@ public class WorkflowTaskDefinition
     {
         return id;
     }
-    
+
     /**
      * @return the metadata
      */
@@ -74,7 +72,7 @@ public class WorkflowTaskDefinition
     {
         return metadata;
     }
-    
+
     /**
      * @return the node
      */
@@ -82,10 +80,10 @@ public class WorkflowTaskDefinition
     {
         return node;
     }
-    
+
     /**
      * 
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
     @Override
     public String toString()

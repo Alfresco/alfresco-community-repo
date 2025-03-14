@@ -38,19 +38,19 @@ import org.alfresco.service.namespace.QName;
 public class HasAspectCapabilityCondition extends AbstractCapabilityCondition
 {
     private String aspectName;
-    
+
     private NamespaceService namespaceService;
-    
+
     public void setAspectName(String aspectName)
     {
         this.aspectName = aspectName;
     }
-    
+
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -63,7 +63,7 @@ public class HasAspectCapabilityCondition extends AbstractCapabilityCondition
             QName aspect = QName.createQName(aspectName, namespaceService);
             result = nodeService.hasAspect(nodeRef, aspect);
         }
-        
+
         return result;
     }
 

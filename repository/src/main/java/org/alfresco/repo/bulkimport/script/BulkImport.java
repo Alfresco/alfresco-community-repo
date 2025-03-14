@@ -42,30 +42,31 @@ import org.alfresco.repo.processor.BaseProcessorExtension;
  */
 public class BulkImport extends BaseProcessorExtension
 {
-	private ContentStoreMapProvider storeMapProvider;
-	private volatile List<String> storeNamesList;
+    private ContentStoreMapProvider storeMapProvider;
+    private volatile List<String> storeNamesList;
 
-	public void setStoreMapProvider(ContentStoreMapProvider storeMapProvider)
-	{
-		this.storeMapProvider = storeMapProvider;
-	}
+    public void setStoreMapProvider(ContentStoreMapProvider storeMapProvider)
+    {
+        this.storeMapProvider = storeMapProvider;
+    }
 
-	/**
-	 * Get a list of the currently registered content stores, from the configured {@link ContentStoreMapProvider}.
-	 * @return the {@link List} of store names
-	 */
-	public List<String> getStoreNames()
-	{
-		if(storeNamesList == null)
-		{
-			synchronized(this)
-			{
-				Set<String> storeNamesSet = storeMapProvider.getStoreMap().keySet();
-				if(storeNamesList == null)
-					storeNamesList = Collections.unmodifiableList(new ArrayList<String>(storeNamesSet));
-			}
-			
-		}
-		return storeNamesList;
-	}
+    /**
+     * Get a list of the currently registered content stores, from the configured {@link ContentStoreMapProvider}.
+     * 
+     * @return the {@link List} of store names
+     */
+    public List<String> getStoreNames()
+    {
+        if (storeNamesList == null)
+        {
+            synchronized (this)
+            {
+                Set<String> storeNamesSet = storeMapProvider.getStoreMap().keySet();
+                if (storeNamesList == null)
+                    storeNamesList = Collections.unmodifiableList(new ArrayList<String>(storeNamesSet));
+            }
+
+        }
+        return storeNamesList;
+    }
 }

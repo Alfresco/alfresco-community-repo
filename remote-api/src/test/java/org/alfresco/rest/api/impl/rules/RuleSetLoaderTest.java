@@ -25,6 +25,10 @@
  */
 package org.alfresco.rest.api.impl.rules;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+
 import static org.alfresco.rest.api.impl.rules.RuleSetLoader.INCLUSION_TYPE;
 import static org.alfresco.rest.api.impl.rules.RuleSetLoader.INHERITED_BY;
 import static org.alfresco.rest.api.impl.rules.RuleSetLoader.IS_INHERITED;
@@ -35,19 +39,10 @@ import static org.alfresco.rest.api.model.rules.InclusionType.INHERITED;
 import static org.alfresco.rest.api.model.rules.InclusionType.LINKED;
 import static org.alfresco.rest.api.model.rules.InclusionType.OWNED;
 import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
 
 import java.util.List;
 
 import junit.framework.TestCase;
-import org.alfresco.rest.api.model.rules.RuleSet;
-import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.rule.RuleService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,9 +50,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.alfresco.rest.api.model.rules.RuleSet;
+import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.rule.RuleService;
+
 /** Unit tests for {@link RuleSetLoader}. */
 @Experimental
-@RunWith (MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 public class RuleSetLoaderTest extends TestCase
 {
     private static final String FOLDER_ID = "dummy-folder-id";

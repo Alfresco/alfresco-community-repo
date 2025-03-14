@@ -36,8 +36,12 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.List;
 import java.util.Set;
-
 import jakarta.transaction.UserTransaction;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
 
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -54,15 +58,11 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.TempFileProvider;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
 
 public class ExportSourceImporter implements ImporterJobSPI
 {
     private static Log logger = LogFactory.getLog(ExportSourceImporter.class);
-    
+
     private ImporterService importerService;
 
     private ExportSource exportSource;
@@ -153,16 +153,16 @@ public class ExportSourceImporter implements ImporterJobSPI
                 logger.debug("clear all children");
                 List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(storeRef), path, null,
                         namespacePrefixResolver, false);
-                
+
                 for (NodeRef ref : refs)
                 {
-                    if(logger.isDebugEnabled())
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("clear node ref" + ref);
                     }
                     for (ChildAssociationRef car : nodeService.getChildAssocs(ref))
                     {
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
                             logger.debug("delete child" + car.getChildRef());
                         }
@@ -241,8 +241,7 @@ public class ExportSourceImporter implements ImporterJobSPI
         return xmlWriter;
     }
 
-    private static ImporterBinding REPLACE_BINDING = new ImporterBinding()
-    {
+    private static ImporterBinding REPLACE_BINDING = new ImporterBinding() {
         @Override
         public UUID_BINDING getUUIDBinding()
         {

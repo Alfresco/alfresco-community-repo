@@ -29,14 +29,15 @@ package org.alfresco.repo.forms.processor.workflow;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.AbstractFilter;
 import org.alfresco.repo.workflow.PropertyValueSizeIsMoreMaxLengthException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 public class WorkflowFormFilter<ItemType, PersistType> extends AbstractFilter<ItemType, PersistType> implements InitializingBean
 {
@@ -44,7 +45,7 @@ public class WorkflowFormFilter<ItemType, PersistType> extends AbstractFilter<It
     private static final String PROP_BPM_COMMENT = "prop_bpm_comment";
 
     private int maxLengthBpmCommentProperty = 4000;
-    
+
     private int maxLengthBpmCommentProperty_oldPropertyName = -1;
 
     private static final Log LOGGER = LogFactory.getLog(WorkflowFormFilter.class);
@@ -56,20 +57,20 @@ public class WorkflowFormFilter<ItemType, PersistType> extends AbstractFilter<It
 
     public void setMaxLengthBpmCommentProperty_oldPropertyName(int maxLengthBpmCommentProperty_oldPropertyName)
     {
-		this.maxLengthBpmCommentProperty_oldPropertyName = maxLengthBpmCommentProperty_oldPropertyName;
-	}
+        this.maxLengthBpmCommentProperty_oldPropertyName = maxLengthBpmCommentProperty_oldPropertyName;
+    }
 
-	@Override
-	public void afterPropertiesSet() throws Exception
-	{
-		if(maxLengthBpmCommentProperty_oldPropertyName != -1)
-		{
-			LOGGER.warn("Config property system.workflow.jbpm.comment.property.max.length is deprecated. Please use system.workflow.comment.property.max.length instead.");
-			maxLengthBpmCommentProperty = maxLengthBpmCommentProperty_oldPropertyName;
-		}
-	}
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        if (maxLengthBpmCommentProperty_oldPropertyName != -1)
+        {
+            LOGGER.warn("Config property system.workflow.jbpm.comment.property.max.length is deprecated. Please use system.workflow.comment.property.max.length instead.");
+            maxLengthBpmCommentProperty = maxLengthBpmCommentProperty_oldPropertyName;
+        }
+    }
 
-	@Override
+    @Override
     public void beforeGenerate(ItemType item, List<String> fields, List<String> forcedFields, Form form, Map<String, Object> context)
     {
         // TODO Auto-generated method stub

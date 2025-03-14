@@ -28,13 +28,13 @@ package org.alfresco.repo.importer;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.view.ImporterProgress;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 
 /**
  * Import Progress that provides import metrics.
@@ -50,30 +50,29 @@ public class ImportTimerProgress implements ImporterProgress
     private long nodeLinkedCount = 0;
     private long aspectAdded = 0;
     private long permissionCount = 0;
-    
+
     private Log logger = LogFactory.getLog(ImportTimerProgress.class);;
-    
+
     /**
      * Construct
      */
     public ImportTimerProgress()
-    {
-    }
+    {}
 
     /**
      * Construct
      * 
-     * @param logger Log
+     * @param logger
+     *            Log
      */
     public ImportTimerProgress(Log logger)
     {
         this.logger = logger;
     }
-    
-    /*
-     *  (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ImporterProgress#started()
-     */
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.view.ImporterProgress#started() */
     public void started()
     {
         start = new Date();
@@ -83,15 +82,14 @@ public class ImportTimerProgress implements ImporterProgress
         nodeLinkedCount = 0;
         aspectAdded = 0;
         permissionCount = 0;
-        
+
         if (logger.isDebugEnabled())
             logger.debug("Import started at " + start + " (" + start.getTime() + ")");
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ImporterProgress#completed()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.view.ImporterProgress#completed() */
     public void completed()
     {
         if (logger.isDebugEnabled())
@@ -102,10 +100,9 @@ public class ImportTimerProgress implements ImporterProgress
         }
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ImporterProgress#error(java.lang.Throwable)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.view.ImporterProgress#error(java.lang.Throwable) */
     public void error(Throwable e)
     {
         if (logger.isDebugEnabled())
@@ -118,64 +115,59 @@ public class ImportTimerProgress implements ImporterProgress
         }
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ImporterProgress#nodeCreated(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.view.ImporterProgress#nodeCreated(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName) */
     public void nodeCreated(NodeRef nodeRef, NodeRef parentRef, QName assocName, QName childName)
     {
         nodeCreateCount++;
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ImporterProgress#nodeLinked(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.view.ImporterProgress#nodeLinked(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName) */
     public void nodeLinked(NodeRef nodeRef, NodeRef parentRef, QName assocName, QName childName)
     {
         nodeLinkedCount++;
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ImporterProgress#contentCreated(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.view.ImporterProgress#contentCreated(org.alfresco.service.cmr.repository.NodeRef, java.lang.String) */
     public void contentCreated(NodeRef nodeRef, String sourceUrl)
     {
         contentCount++;
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ImporterProgress#propertySet(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.Serializable)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.view.ImporterProgress#propertySet(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.Serializable) */
     public void propertySet(NodeRef nodeRef, QName property, Serializable value)
     {
         propCount++;
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ImporterProgress#permissionSet(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.security.AccessPermission)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.view.ImporterProgress#permissionSet(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.security.AccessPermission) */
     public void permissionSet(NodeRef nodeRef, AccessPermission permission)
     {
         permissionCount++;
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ImporterProgress#aspectAdded(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.view.ImporterProgress#aspectAdded(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
     public void aspectAdded(NodeRef nodeRef, QName aspect)
     {
         aspectAdded++;
     }
 
     /**
-     * Dump statistics 
+     * Dump statistics
      * 
-     * @param end Date
+     * @param end
+     *            Date
      */
     private void dumpStats(Date end)
     {
@@ -190,5 +182,5 @@ public class ImportTimerProgress implements ImporterProgress
             logger.debug(" Permissions set: " + permissionCount);
         }
     }
-    
+
 }

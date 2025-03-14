@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
 import org.alfresco.repo.node.integrity.IntegrityException;
@@ -70,7 +72,6 @@ import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Node Versions - version history
@@ -93,7 +94,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
     {
         this.directAccessUrlHelper = directAccessUrlHelper;
     }
-    
+
     @Override
     public void afterPropertiesSet()
     {
@@ -107,11 +108,12 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
     {
         this.behaviourFilter = behaviourFilter;
     }
-    
+
     /**
      * List version history
      *
-     * @param nodeId String id of (live) node
+     * @param nodeId
+     *            String id of (live) node
      */
     @Override
     @WebApiDescription(title = "Return version history as a paged list of version node infos")
@@ -123,7 +125,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
 
         Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
         List<String> includeParam = parameters.getInclude();
-        
+
         List<Node> collection = null;
         if (vh != null)
         {
@@ -135,7 +137,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
                 collection.add(node);
             }
         }
-        
+
         return listPage(collection, parameters.getPaging());
     }
 
@@ -153,17 +155,17 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
         if (props != null)
         {
             // special case (as per Version2Service)
-            props.put("cm:"+Version2Model.PROP_VERSION_TYPE, v.getVersionProperty(Version2Model.PROP_VERSION_TYPE));
+            props.put("cm:" + Version2Model.PROP_VERSION_TYPE, v.getVersionProperty(Version2Model.PROP_VERSION_TYPE));
         }
 
-        //Don't show parentId, createdAt, createdByUser
+        // Don't show parentId, createdAt, createdByUser
         aNode.setParentId(null);
         aNode.setCreated(null);
         aNode.setCreatedByUser(null);
     }
 
     @Override
-    @WebApiDescription(title="Get version node info", description = "Return metadata for a specific version node")
+    @WebApiDescription(title = "Get version node info", description = "Return metadata for a specific version node")
     public Node readById(String nodeId, String versionId, Parameters parameters)
     {
         Version version = findVersion(nodeId, versionId);
@@ -175,11 +177,11 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
             return node;
         }
 
-        throw new EntityNotFoundException(nodeId+"-"+versionId);
+        throw new EntityNotFoundException(nodeId + "-" + versionId);
     }
 
     @WebApiDescription(title = "Download version content", description = "Download version content")
-    @BinaryProperties({ "content" })
+    @BinaryProperties({"content"})
     @Override
     public BinaryResource readProperty(String nodeId, String versionId, Parameters parameters)
     {
@@ -191,12 +193,12 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
             return nodes.getContent(versionNodeRef, parameters, true); // TODO should we record version downloads ?
         }
 
-        throw new EntityNotFoundException(nodeId+"-"+versionId);
+        throw new EntityNotFoundException(nodeId + "-" + versionId);
     }
 
     @Operation("revert")
     @WebApiDescription(title = "Revert Version",
-            description="Reverts (ie. promotes) specified version to become a new, most recent, version",
+            description = "Reverts (ie. promotes) specified version to become a new, most recent, version",
             successStatus = HttpServletResponse.SC_OK)
     public Node revertById(String nodeId, String versionId, VersionOptions versionOptions, Parameters parameters, WithResponse withResponse)
     {
@@ -224,7 +226,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
                 versionProperties.put(VersionModel.PROP_DESCRIPTION, versionComment);
             }
 
-            //cancel editing if we want to revert
+            // cancel editing if we want to revert
             if (sr.getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
             {
                 nodeRef = cociService.cancelCheckout(nodeRef);
@@ -245,7 +247,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
             return node;
         }
 
-        throw new EntityNotFoundException(nodeId+"-"+versionId);
+        throw new EntityNotFoundException(nodeId + "-" + versionId);
     }
 
     @Override
@@ -269,25 +271,9 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
         {
             // attempt to delete last version - we do not yet support this (see REPO-835 & REPO-834)
             // note: alternatively, the client can remove the "cm:versionable" aspect (if permissions allow) to clear the version history and disable versioning
-            throw new IntegrityException("Cannot delete last version (did you mean to disable versioning instead ?) ["+nodeId+","+versionId+"]", null);
-            
-            /*
-            if (props.get(ContentModel.PROP_VERSION_TYPE) != null)
-            {
-                // minor fix up to versionable aspect - ie. remove versionType
-                behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
-                behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
-                try
-                {
-                    sr.getNodeService().removeProperty(nodeRef, ContentModel.PROP_VERSION_TYPE);
-                }
-                finally
-                {
-                    behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
-                    behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
-                }
-            }
-            */
+            throw new IntegrityException("Cannot delete last version (did you mean to disable versioning instead ?) [" + nodeId + "," + versionId + "]", null);
+
+            /* if (props.get(ContentModel.PROP_VERSION_TYPE) != null) { // minor fix up to versionable aspect - ie. remove versionType behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE); behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE); try { sr.getNodeService().removeProperty(nodeRef, ContentModel.PROP_VERSION_TYPE); } finally { behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE); behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE); } } */
         }
     }
 
@@ -295,7 +281,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
     {
         NodeRef nodeRef = nodes.validateOrLookupNode(nodeId);
         VersionHistory vh = versionService.getVersionHistory(nodeRef);
-        if (vh != null) 
+        if (vh != null)
         {
             return vh.getVersion(versionLabelId);
         }
@@ -303,9 +289,9 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
     }
 
     @Operation("request-direct-access-url")
-    @WebApiParam (name = "directAccessUrlRequest", title = "Request direct access url", description = "Options for direct access url request", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
+    @WebApiParam(name = "directAccessUrlRequest", title = "Request direct access url", description = "Options for direct access url request", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
     @WebApiDescription(title = "Request content url",
-            description="Generates a direct access URL.",
+            description = "Generates a direct access URL.",
             successStatus = HttpServletResponse.SC_OK)
     public DirectAccessUrl requestContentDirectUrl(String nodeId, String versionId, DirectAccessUrlRequest directAccessUrlRequest, Parameters parameters, WithResponse withResponse)
     {
@@ -328,6 +314,6 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
             }
             return directAccessUrl;
         }
-        throw new EntityNotFoundException(nodeId+"-"+versionId);
+        throw new EntityNotFoundException(nodeId + "-" + versionId);
     }
 }

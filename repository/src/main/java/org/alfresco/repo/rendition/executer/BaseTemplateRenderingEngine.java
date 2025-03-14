@@ -34,6 +34,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -43,18 +47,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.search.SearchService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * This abstract class forms a basis for all rendering engines that are built
- * around the Template Service.<br>
- * A template must be specified either as a {@link String} using the
- * PARAM_TEMPLATE parameter, as a {@link NodeRef} using the PARAM_TEMPLATE_NODE
- * parameter or as a file path location using the PARAM_TEMPLATE_PATH parameter.
- * The RenderingEngine reads from these parameters with the following priority:
- * PARAM_TEMPLATE > PARAM_TEMPLATE_NODE > PARAM_TEMPLATE_PATH.
+ * This abstract class forms a basis for all rendering engines that are built around the Template Service.<br>
+ * A template must be specified either as a {@link String} using the PARAM_TEMPLATE parameter, as a {@link NodeRef} using the PARAM_TEMPLATE_NODE parameter or as a file path location using the PARAM_TEMPLATE_PATH parameter. The RenderingEngine reads from these parameters with the following priority: PARAM_TEMPLATE > PARAM_TEMPLATE_NODE > PARAM_TEMPLATE_PATH.
  * 
  * @author Brian Remmington
  * @since 3.3
@@ -67,47 +63,33 @@ public abstract class BaseTemplateRenderingEngine extends AbstractRenderingEngin
     private static final Log log = LogFactory.getLog(BaseTemplateRenderingEngine.class);
 
     /**
-     * This optional {@link Map}<{@link String}, {@link Serializable}> parameter
-     * can be used to pass additional arguments to the templating engine when processing a
-     * template. 
+     * This optional {@link Map}<{@link String}, {@link Serializable}> parameter can be used to pass additional arguments to the templating engine when processing a template.
      */
     public static final String PARAM_MODEL = "model";
 
     /**
-     * This optional {@link String} parameter specifies the template in a simple
-     * {@link String} format.<br>
-     * If this parameter is set the Rendering Engine will
-     * use it in preference to templates specified by either the
-     * PARAM_TEMPLATE_NODE or the PARAM_TEMPLATE_PATH parameters.
+     * This optional {@link String} parameter specifies the template in a simple {@link String} format.<br>
+     * If this parameter is set the Rendering Engine will use it in preference to templates specified by either the PARAM_TEMPLATE_NODE or the PARAM_TEMPLATE_PATH parameters.
      */
     public static final String PARAM_TEMPLATE = "template_string";
 
     /**
-     * This optional {@link NodeRef} parameter specifies a node containing the
-     * template to be processed.<br>
-     * If a value is specified for PARAM_TEMPLATE then this parameter will be
-     * ignored.<br>
-     * If a value is specified for this parameter it will be used in preference
-     * to values specified for the PARAM_TEMPLATE_PATH parameter.
+     * This optional {@link NodeRef} parameter specifies a node containing the template to be processed.<br>
+     * If a value is specified for PARAM_TEMPLATE then this parameter will be ignored.<br>
+     * If a value is specified for this parameter it will be used in preference to values specified for the PARAM_TEMPLATE_PATH parameter.
      */
     public static final String PARAM_TEMPLATE_NODE = "template_node";
 
     /**
-     * This optional {@link String} parameter specifies a file path location for
-     * the template to be processed.<br>
-     * If a value is specified for PARAM_TEMPLATE or PARAM_TEMPLATE_NODE then this parameter will be
-     * ignored.<br>
+     * This optional {@link String} parameter specifies a file path location for the template to be processed.<br>
+     * If a value is specified for PARAM_TEMPLATE or PARAM_TEMPLATE_NODE then this parameter will be ignored.<br>
      */
     public static final String PARAM_TEMPLATE_PATH = "template_path";
 
     private TemplateService templateService;
     private SearchService searchService;
 
-    /*
-     * @see org.alfresco.repo.rendition.executer.AbstractRenderingEngine#render(org
-     * .alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rendition.RenditionDefinition,
-     * org.alfresco.service.cmr.repository.ContentReader, org.alfresco.service.cmr.repository.ChildAssociationRef)
-     */
+    /* @see org.alfresco.repo.rendition.executer.AbstractRenderingEngine#render(org .alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rendition.RenditionDefinition, org.alfresco.service.cmr.repository.ContentReader, org.alfresco.service.cmr.repository.ChildAssociationRef) */
     @Override
     protected void render(RenderingContext context)
     {
@@ -163,7 +145,6 @@ public abstract class BaseTemplateRenderingEngine extends AbstractRenderingEngin
         }
     }
 
-    
     private void throwTemplateParamsNotFoundException()
     {
         StringBuilder msg = new StringBuilder("This action requires that either the ");
@@ -197,28 +178,27 @@ public abstract class BaseTemplateRenderingEngine extends AbstractRenderingEngin
     }
 
     /**
-     * Create the model that will be passed to the template service for rendering
-     * with the appropriate template.
-     * @param context The context of the rendering request
+     * Create the model that will be passed to the template service for rendering with the appropriate template.
+     * 
+     * @param context
+     *            The context of the rendering request
      * @return The model that is to be passed to the template service
      */
     protected abstract Object buildModel(RenderingContext context);
 
     /**
-     * Get the type of template that is to be used. This identifies the name of the template
-     * processor that should be used, such as "freemarker" or "xslt".
+     * Get the type of template that is to be used. This identifies the name of the template processor that should be used, such as "freemarker" or "xslt".
+     * 
      * @return String
      */
     protected abstract String getTemplateType();
 
     /**
-     * This method gets the parameter definition display label from the properties file.
-     * It looks first for a property whose key has a fixed rendition service-specific
-     * prefix and if that gets null, it then delegates to the standard bean name-based
-     * approach.
+     * This method gets the parameter definition display label from the properties file. It looks first for a property whose key has a fixed rendition service-specific prefix and if that gets null, it then delegates to the standard bean name-based approach.
      * 
-     * @param paramName  the name of the parameter
-     * @return           the display label of the parameter
+     * @param paramName
+     *            the name of the parameter
+     * @return the display label of the parameter
      */
     @Override
     protected String getParamDisplayLabel(String paramName)
@@ -226,7 +206,7 @@ public abstract class BaseTemplateRenderingEngine extends AbstractRenderingEngin
         // First we try to get the message using a common prefix for all template-based rendering engines.
         final String commonPropertiesPrefix = "baseTemplateRenderingAction";
         String message = I18NUtil.getMessage(commonPropertiesPrefix + "." + paramName + "." + DISPLAY_LABEL);
-        
+
         // And if that doesn't work we delegate to the superclass.
         if (message == null)
         {
@@ -235,10 +215,9 @@ public abstract class BaseTemplateRenderingEngine extends AbstractRenderingEngin
         return message;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.rendition.executer.AbstractRenderingEngine#getParameterDefinitions()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.rendition.executer.AbstractRenderingEngine#getParameterDefinitions() */
     @Override
     protected Collection<ParameterDefinition> getParameterDefinitions()
     {

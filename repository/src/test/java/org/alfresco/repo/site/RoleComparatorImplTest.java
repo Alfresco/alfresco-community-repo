@@ -35,43 +35,39 @@ import java.util.TreeSet;
 
 import junit.framework.TestCase;
 
-
-public class RoleComparatorImplTest extends TestCase 
+public class RoleComparatorImplTest extends TestCase
 {
-	public void testRoleComparator()
-	{
-		Map<String, Integer> rolePrecedence = new HashMap<String, Integer>();
-		rolePrecedence.put("SiteManager", 4);
-		rolePrecedence.put("SiteCollaborator", 3);
-		rolePrecedence.put("SiteContributor", 2);
-		rolePrecedence.put("SiteConsumer", 1);
-		Comparator<String> roleComparator = new RoleComparatorImpl(rolePrecedence);
-		
-		
+    public void testRoleComparator()
+    {
+        Map<String, Integer> rolePrecedence = new HashMap<String, Integer>();
+        rolePrecedence.put("SiteManager", 4);
+        rolePrecedence.put("SiteCollaborator", 3);
+        rolePrecedence.put("SiteContributor", 2);
+        rolePrecedence.put("SiteConsumer", 1);
+        Comparator<String> roleComparator = new RoleComparatorImpl(rolePrecedence);
+
         List<String> roles = new ArrayList<String>();
-        roles.add("SiteConsumer");       
+        roles.add("SiteConsumer");
         assertEquals("SiteConsumer", sort(roles, roleComparator));
-        roles.add("SiteConsumer");       
+        roles.add("SiteConsumer");
         assertEquals("SiteConsumer", sort(roles, roleComparator));
-        roles.add("SiteContributor");       
+        roles.add("SiteContributor");
         assertEquals("SiteContributor", sort(roles, roleComparator));
-        roles.add("SiteConsumer"); 
+        roles.add("SiteConsumer");
         assertEquals("SiteContributor", sort(roles, roleComparator));
-        roles.add("SiteManager"); 
+        roles.add("SiteManager");
         assertEquals("SiteManager", sort(roles, roleComparator));
-        roles.add("SiteCollaborator"); 
+        roles.add("SiteCollaborator");
         assertEquals("SiteManager", sort(roles, roleComparator));
-	}
-		
-	
-	
+    }
+
     private String sort(List<String> list, Comparator comparator)
     {
-        	SortedSet<String> sortedRoles = new TreeSet<String>(comparator);
-        	for (String role : list)
-        	{
-        		sortedRoles.add(role);
-        	}
-        	return sortedRoles.first();
+        SortedSet<String> sortedRoles = new TreeSet<String>(comparator);
+        for (String role : list)
+        {
+            sortedRoles.add(role);
+        }
+        return sortedRoles.first();
     }
 }

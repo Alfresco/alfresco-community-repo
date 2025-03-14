@@ -35,9 +35,12 @@ public abstract class BaseDynamicArgument extends BaseArgument implements Dynami
 {
 
     /**
-     * @param name String
-     * @param queryable boolean
-     * @param orderable boolean
+     * @param name
+     *            String
+     * @param queryable
+     *            boolean
+     * @param orderable
+     *            boolean
      */
     public BaseDynamicArgument(String name, boolean queryable, boolean orderable)
     {

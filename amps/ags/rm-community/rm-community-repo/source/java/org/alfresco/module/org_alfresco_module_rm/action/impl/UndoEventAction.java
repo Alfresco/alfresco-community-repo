@@ -52,7 +52,7 @@ public class UndoEventAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        String eventName = (String)action.getParameterValue(PARAM_EVENT_NAME);
+        String eventName = (String) action.getParameterValue(PARAM_EVENT_NAME);
 
         if (this.getNodeService().hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE))
         {

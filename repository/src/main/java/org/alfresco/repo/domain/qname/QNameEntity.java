@@ -28,7 +28,7 @@ package org.alfresco.repo.domain.qname;
 import org.alfresco.util.EqualsHelper;
 
 /**
- * Entity for <b>alf_qname</b> persistence. 
+ * Entity for <b>alf_qname</b> persistence.
  * 
  * @author Derek Hulley
  * @since 3.4
@@ -42,20 +42,19 @@ public class QNameEntity
     private Long version;
     private Long namespaceId;
     private String localName;
-    
+
     public QNameEntity()
-    {
-    }
-    
+    {}
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("QNameEntity")
-          .append("[ id=").append(id)
-          .append(", nsId=").append(namespaceId)
-          .append(", localName=").append(localName)
-          .append("]");
+                .append("[ id=").append(id)
+                .append(", nsId=").append(namespaceId)
+                .append(", localName=").append(localName)
+                .append("]");
         return sb.toString();
     }
 
@@ -70,29 +69,32 @@ public class QNameEntity
             this.version++;
         }
     }
-    
+
     public Long getId()
     {
         return id;
     }
+
     public void setId(Long id)
     {
         this.id = id;
     }
-    
+
     public Long getVersion()
     {
         return version;
     }
+
     public void setVersion(Long version)
     {
         this.version = version;
     }
-    
+
     public Long getNamespaceId()
     {
         return namespaceId;
     }
+
     public void setNamespaceId(Long namespaceId)
     {
         this.namespaceId = namespaceId;
@@ -102,6 +104,7 @@ public class QNameEntity
     {
         return localName;
     }
+
     public void setLocalName(String localName)
     {
         this.localName = localName;
@@ -121,6 +124,7 @@ public class QNameEntity
             return localName;
         }
     }
+
     /**
      * Convenience setter to interpret the {@link #EMPTY_LOCALNAME_SUBSTITUTE}
      */

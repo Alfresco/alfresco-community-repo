@@ -26,8 +26,7 @@
 package org.alfresco.repo.content.transform;
 
 /**
- * A management interface for monitoring Content Transformer configuration
- * and statistics.
+ * A management interface for monitoring Content Transformer configuration and statistics.
  * 
  * @author Alan Davis
  */
@@ -40,35 +39,40 @@ public interface TransformerConfigMBean
 
     /**
      * Lists all possible transformations sorted by source and then target mimetype extension.
-     * @param sourceExtension to be checked. If null all source mimetypes are included.
-     * @param targetExtension to be checked. If null all target mimetypes are included.
+     * 
+     * @param sourceExtension
+     *            to be checked. If null all source mimetypes are included.
+     * @param targetExtension
+     *            to be checked. If null all target mimetypes are included.
      */
     public String getTransformationsByExtension(String sourceExtension, String targetExtension);
-    
+
     /**
      * Returns the last n entries in the transformation log.
      */
     public String[] getTransformationLog(int n);
-    
+
     /**
      * Returns the last n entries in the transformation debug log.
      */
     public String[] getTransformationDebugLog(int n);
-    
+
     /**
-     * Transforms a small test file from one mimetype to another and then shows the debug of the
-     * transform, which would indicate if it was successful or even if it was possible.
-     * @param sourceExtension used to identify the mimetype
-     * @param targetExtension used to identify the mimetype
+     * Transforms a small test file from one mimetype to another and then shows the debug of the transform, which would indicate if it was successful or even if it was possible.
+     * 
+     * @param sourceExtension
+     *            used to identify the mimetype
+     * @param targetExtension
+     *            used to identify the mimetype
      * @return Text indicating if the transform was possible and any debug
      */
     public String testTransform(String sourceExtension, String targetExtension);
-    
+
     /**
      * Lists the extensions of available test files.
      */
     public String[] getTestFileExtensionsAndMimetypes();
-    
+
     /**
      * Returns a description of each method and its parameters.
      */

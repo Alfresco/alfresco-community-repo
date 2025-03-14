@@ -26,6 +26,14 @@
 package org.alfresco.repo.rule.ruletrigger;
 
 import java.util.Random;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -39,12 +47,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.test.context.transaction.TestTransaction;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Rule trigger test
@@ -67,7 +69,7 @@ public class RuleTriggerTest extends BaseSpringTest
 
     private NodeService nodeService;
     private ContentService contentService;
-    
+
     private StoreRef testStoreRef;
     private NodeRef rootNodeRef;
 
@@ -77,13 +79,13 @@ public class RuleTriggerTest extends BaseSpringTest
         ServiceRegistry serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
         this.nodeService = serviceRegistry.getNodeService();
         this.contentService = serviceRegistry.getContentService();
-        
+
         AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
-        
+
         this.testStoreRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         this.rootNodeRef = this.nodeService.getRootNode(this.testStoreRef);
     }
-    
+
     @After
     public void after()
     {
@@ -95,14 +97,14 @@ public class RuleTriggerTest extends BaseSpringTest
     {
         TestRuleType ruleType = createTestRuleType(ON_CREATE_NODE_TRIGGER);
         assertFalse(ruleType.rulesTriggered);
-        
+
         // Try and trigger the type
         this.nodeService.createNode(
                 this.rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER);
-        
+
         // Check to see if the rule type has been triggered
         assertTrue(ruleType.rulesTriggered);
     }
@@ -113,17 +115,17 @@ public class RuleTriggerTest extends BaseSpringTest
         TestRuleType ruleType = createTestRuleType(ON_CREATE_NODE_TRIGGER);
         assertFalse(ruleType.rulesTriggered);
 
-        //Try and trigger the type
+        // Try and trigger the type
         this.nodeService.createNode(
-                this.rootNodeRef, 
+                this.rootNodeRef,
                 ForumModel.ASSOC_DISCUSSION,
-                ForumModel.ASSOC_DISCUSSION, 
+                ForumModel.ASSOC_DISCUSSION,
                 ForumModel.TYPE_POST);
-        
-        //Check to see if the rule type has been triggered
+
+        // Check to see if the rule type has been triggered
         assertFalse(ruleType.rulesTriggered);
     }
- 
+
     @Test
     public void testOnUpdateNodeTrigger()
     {
@@ -132,35 +134,35 @@ public class RuleTriggerTest extends BaseSpringTest
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER).getChildRef();
-        
+
         TestRuleType ruleType = createTestRuleType(ON_UPDATE_NODE_TRIGGER);
         assertFalse(ruleType.rulesTriggered);
-        
+
         // Try and trigger the type
         this.nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, "nameChanged");
-        
+
         // Check to see if the rule type has been triggered
-        assertTrue(ruleType.rulesTriggered);        
+        assertTrue(ruleType.rulesTriggered);
     }
-    
-//    public void testOnDeleteNodeTrigger()
-//    {
-//        NodeRef nodeRef = this.nodeService.createNode(
-//                this.rootNodeRef,
-//                ContentModel.ASSOC_CHILDREN,
-//                ContentModel.ASSOC_CHILDREN,
-//                ContentModel.TYPE_CONTAINER).getChildRef();
-//        
-//        TestRuleType ruleType = createTestRuleType(ON_DELETE_NODE_TRIGGER);
-//        assertFalse(ruleType.rulesTriggered);
-//        
-//        // Try and trigger the type
-//        this.nodeService.deleteNode(nodeRef);
-//        
-//        // Check to see if the rule type has been triggered
-//        assertTrue(ruleType.rulesTriggered);        
-//    }
-    
+
+    // public void testOnDeleteNodeTrigger()
+    // {
+    // NodeRef nodeRef = this.nodeService.createNode(
+    // this.rootNodeRef,
+    // ContentModel.ASSOC_CHILDREN,
+    // ContentModel.ASSOC_CHILDREN,
+    // ContentModel.TYPE_CONTAINER).getChildRef();
+    //
+    // TestRuleType ruleType = createTestRuleType(ON_DELETE_NODE_TRIGGER);
+    // assertFalse(ruleType.rulesTriggered);
+    //
+    // // Try and trigger the type
+    // this.nodeService.deleteNode(nodeRef);
+    //
+    // // Check to see if the rule type has been triggered
+    // assertTrue(ruleType.rulesTriggered);
+    // }
+
     @Test
     public void testOnCreateChildAssociationTrigger()
     {
@@ -174,21 +176,21 @@ public class RuleTriggerTest extends BaseSpringTest
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER).getChildRef();
-        
+
         TestRuleType ruleType = createTestRuleType(ON_CREATE_CHILD_ASSOCIATION_TRIGGER);
         assertFalse(ruleType.rulesTriggered);
-        
+
         // Try and trigger the type
         this.nodeService.addChild(
-                nodeRef, 
+                nodeRef,
                 nodeRef2,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN);
-        
+
         // Check to see if the rule type has been triggered
-        assertTrue(ruleType.rulesTriggered);        
+        assertTrue(ruleType.rulesTriggered);
     }
-    
+
     @Test
     public void testOnDeleteChildAssociationTrigger()
     {
@@ -203,21 +205,21 @@ public class RuleTriggerTest extends BaseSpringTest
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER).getChildRef();
         this.nodeService.addChild(
-                nodeRef, 
+                nodeRef,
                 nodeRef2,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN);
-        
+
         TestRuleType ruleType = createTestRuleType(ON_DELETE_CHILD_ASSOCIATION_TRIGGER);
         assertFalse(ruleType.rulesTriggered);
-        
+
         // Try and trigger the type
         this.nodeService.removeChild(nodeRef, nodeRef2);
-        
+
         // Check to see if the rule type has been triggered
-        assertTrue(ruleType.rulesTriggered);        
+        assertTrue(ruleType.rulesTriggered);
     }
-    
+
     @Test
     public void testOnCreateAssociationTrigger()
     {
@@ -231,17 +233,17 @@ public class RuleTriggerTest extends BaseSpringTest
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER).getChildRef();
-        
+
         TestRuleType ruleType = createTestRuleType(ON_CREATE_ASSOCIATION_TRIGGER);
         assertFalse(ruleType.rulesTriggered);
-        
+
         // Try and trigger the type
         this.nodeService.createAssociation(nodeRef, nodeRef2, ContentModel.ASSOC_CHILDREN);
-        
+
         // Check to see if the rule type has been triggered
         assertTrue(ruleType.rulesTriggered);
     }
-    
+
     @Test
     public void testOnCreateOriginalAssociationTrigger()
     {
@@ -255,17 +257,17 @@ public class RuleTriggerTest extends BaseSpringTest
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER).getChildRef();
-        
+
         TestRuleType ruleType = createTestRuleType(ON_CREATE_ASSOCIATION_TRIGGER);
         assertFalse(ruleType.rulesTriggered);
-        
+
         // Try and trigger the type
         this.nodeService.createAssociation(nodeRef, nodeRef2, ContentModel.ASSOC_ORIGINAL);
-        
+
         // Check to see if the rule type has been triggered
         assertFalse(ruleType.rulesTriggered);
     }
-    
+
     @Test
     public void testOnDeleteAssociationTrigger()
     {
@@ -280,17 +282,17 @@ public class RuleTriggerTest extends BaseSpringTest
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER).getChildRef();
         this.nodeService.createAssociation(nodeRef, nodeRef2, ContentModel.ASSOC_CHILDREN);
-        
+
         TestRuleType ruleType = createTestRuleType(ON_DELETE_ASSOCIATION_TRIGGER);
         assertFalse(ruleType.rulesTriggered);
-        
+
         // Try and trigger the type
         this.nodeService.removeAssociation(nodeRef, nodeRef2, ContentModel.ASSOC_CHILDREN);
-        
+
         // Check to see if the rule type has been triggered
-        assertTrue(ruleType.rulesTriggered);        
+        assertTrue(ruleType.rulesTriggered);
     }
-    
+
     @Test
     public void testOnContentCreateTrigger()
     {
@@ -302,7 +304,7 @@ public class RuleTriggerTest extends BaseSpringTest
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTENT).getChildRef();
-        
+
         assertTrue(nodeCreate.rulesTriggered);
 
         // Terminate the transaction
@@ -312,16 +314,16 @@ public class RuleTriggerTest extends BaseSpringTest
 
         TestRuleType contentCreate = createTestRuleType(ON_CONTENT_CREATE_TRIGGER);
         assertFalse(contentCreate.rulesTriggered);
-        
+
         // Try and trigger the type
         ContentWriter contentWriter = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
         contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         contentWriter.setEncoding("UTF-8");
         contentWriter.putContent("some content");
-        
+
         // Check to see if the rule type has been triggered
         assertTrue(contentCreate.rulesTriggered);
-        
+
         // Try and trigger the type (again)
         contentCreate.rulesTriggered = false;
         assertFalse(contentCreate.rulesTriggered);
@@ -329,11 +331,11 @@ public class RuleTriggerTest extends BaseSpringTest
         contentWriter2.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         contentWriter2.setEncoding("UTF-8");
         contentWriter2.putContent("some content");
-        
+
         // Check to see if the rule type has been triggered
         assertFalse(contentCreate.rulesTriggered);
     }
-    
+
     @Test
     public void testOnContentUpdateTrigger()
     {
@@ -347,22 +349,22 @@ public class RuleTriggerTest extends BaseSpringTest
                 ContentModel.TYPE_CONTENT).getChildRef();
 
         assertTrue(nodeCreate.rulesTriggered);
-        
+
         TestRuleType contentCreate = createTestRuleType(ON_CONTENT_CREATE_TRIGGER);
         TestRuleType contentUpdate = createTestRuleType(ON_PROPERTY_UPDATE_TRIGGER);
         assertFalse(contentCreate.rulesTriggered);
         assertFalse(contentUpdate.rulesTriggered);
-        
+
         // Try and trigger the type
         ContentWriter contentWriter = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
         contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         contentWriter.setEncoding("UTF-8");
         contentWriter.putContent("some content");
-        
+
         // Check to see if the rule type has been triggered
         assertTrue(contentCreate.rulesTriggered);
         assertFalse(contentUpdate.rulesTriggered);
-        
+
         // Try and trigger the type (again)
         contentCreate.rulesTriggered = false;
         assertFalse(contentCreate.rulesTriggered);
@@ -370,25 +372,25 @@ public class RuleTriggerTest extends BaseSpringTest
         contentWriter2.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         contentWriter2.setEncoding("UTF-8");
         contentWriter2.putContent("more content some content");
-        
+
         // Check to see if the rule type has been triggered
         assertTrue(contentCreate.rulesTriggered);
         assertFalse(
                 "Content update must not fire if the content was created in the same txn.",
                 contentUpdate.rulesTriggered);
-        
+
         // Terminate the transaction
         TestTransaction.flagForCommit();
         TestTransaction.end();
         TestTransaction.start();
         contentCreate.rulesTriggered = false;
-        
+
         // Try and trigger the type (again)
         ContentWriter contentWriter3 = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
         contentWriter3.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         contentWriter3.setEncoding("UTF-8");
         contentWriter3.putContent("Yet content some content");
-        
+
         // Check to see if the rule type has been triggered
         assertFalse(
                 "Content create should not be fired on an update in a new txn",
@@ -397,7 +399,7 @@ public class RuleTriggerTest extends BaseSpringTest
                 "Content update must not fire if the content was created in the same txn.",
                 contentUpdate.rulesTriggered);
     }
-    
+
     @Test
     public void testOnMoveNodeTrigger()
     {
@@ -417,7 +419,6 @@ public class RuleTriggerTest extends BaseSpringTest
                 ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER).getChildRef();
 
-        
         TestRuleType ruleType = createTestRuleType(ON_MOVE_NODE_TRIGGER);
         assertFalse(ruleType.rulesTriggered);
 
@@ -428,19 +429,20 @@ public class RuleTriggerTest extends BaseSpringTest
         assertTrue(ruleType.rulesTriggered);
         assertEquals(3, ruleType.triggerCount);
     }
+
     @Test
     public void testOnPropertyUpdateRuleTrigger()
     {
         NodeRef nodeRef1 = this.nodeService.createNode(this.rootNodeRef,
-                    ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN,
-                    ContentModel.TYPE_CONTAINER).getChildRef();
+                ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_CONTAINER).getChildRef();
 
         ContentWriter contentWriter = this.contentService.getWriter(nodeRef1, ContentModel.PROP_CONTENT, true);
         contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         contentWriter.setEncoding("UTF-8");
         contentWriter.putContent("some content");
 
-        Random rand=new Random();
+        Random rand = new Random();
         this.nodeService.setProperty(nodeRef1, ContentModel.PROP_CASCADE_CRC, rand.nextLong());
         // Terminate the transaction
         TestTransaction.flagForCommit();
@@ -451,19 +453,19 @@ public class RuleTriggerTest extends BaseSpringTest
         this.nodeService.setProperty(nodeRef1, ContentModel.PROP_CASCADE_CRC, rand.nextLong());
 
         assertFalse(contentUpdate.rulesTriggered);
-        assertEquals("trigger count not matching",0,contentUpdate.triggerCount);
+        assertEquals("trigger count not matching", 0, contentUpdate.triggerCount);
 
     }
 
     private TestRuleType createTestRuleType(String ruleTriggerName)
     {
-        RuleTrigger ruleTrigger = (RuleTrigger)this.applicationContext.getBean(ruleTriggerName);
+        RuleTrigger ruleTrigger = (RuleTrigger) this.applicationContext.getBean(ruleTriggerName);
         assertNotNull(ruleTrigger);
         TestRuleType ruleType = new TestRuleType();
         ruleTrigger.registerRuleType(ruleType);
         return ruleType;
     }
-    
+
     private class TestRuleType implements RuleType
     {
         public boolean rulesTriggered = false;

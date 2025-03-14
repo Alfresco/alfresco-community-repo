@@ -43,8 +43,9 @@ public class FileUtils
     /**
      * Helper method to convert a stream to a string.
      *
-     * @param is input stream
-     * @return {@link String}   string
+     * @param is
+     *            input stream
+     * @return {@link String} string
      * @throws IOException
      */
     public static String convertStreamToString(InputStream is) throws IOException

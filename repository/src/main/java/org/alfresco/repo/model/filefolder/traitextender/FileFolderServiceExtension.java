@@ -43,18 +43,18 @@ public interface FileFolderServiceExtension
     List<FileInfo> list(NodeRef contextNodeRef);
 
     PagingResults<FileInfo> list(NodeRef contextNodeRef, boolean files, boolean folders, String pattern,
-                Set<QName> ignoreQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
+            Set<QName> ignoreQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
 
     PagingResults<FileInfo> list(NodeRef contextNodeRef, boolean files, boolean folders, Set<QName> ignoreQNames,
-                List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
+            List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
 
     PagingResults<FileInfo> list(NodeRef rootNodeRef, Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames,
-                List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
+            List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
 
     List<FileInfo> search(NodeRef contextNodeRef, String namePattern, boolean includeSubFolders);
 
     List<FileInfo> search(NodeRef contextNodeRef, String namePattern, boolean fileSearch, boolean folderSearch,
-                boolean includeSubFolders);
+            boolean includeSubFolders);
 
     FileInfo rename(NodeRef sourceNodeRef, String newName) throws FileExistsException, FileNotFoundException;
 }

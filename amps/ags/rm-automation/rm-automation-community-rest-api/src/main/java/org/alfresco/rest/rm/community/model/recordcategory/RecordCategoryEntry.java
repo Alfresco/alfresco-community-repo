@@ -27,12 +27,11 @@
 package org.alfresco.rest.rm.community.model.recordcategory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import org.alfresco.rest.core.RestModels;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
-
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 /**
  * POJO for file plan entry

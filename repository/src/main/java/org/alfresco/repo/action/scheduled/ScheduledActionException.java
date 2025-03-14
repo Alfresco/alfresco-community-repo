@@ -43,7 +43,8 @@ public class ScheduledActionException extends AlfrescoRuntimeException
     /**
      * Exception generated from scheduled actions
      * 
-     * @param msgId String
+     * @param msgId
+     *            String
      */
     public ScheduledActionException(String msgId)
     {
@@ -53,8 +54,10 @@ public class ScheduledActionException extends AlfrescoRuntimeException
     /**
      * Exception generated from scheduled actions
      * 
-     * @param msgId String
-     * @param msgParams Object[]
+     * @param msgId
+     *            String
+     * @param msgParams
+     *            Object[]
      */
     public ScheduledActionException(String msgId, Object[] msgParams)
     {
@@ -64,8 +67,10 @@ public class ScheduledActionException extends AlfrescoRuntimeException
     /**
      * Exception generated from scheduled actions
      * 
-     * @param msgId String
-     * @param cause Throwable
+     * @param msgId
+     *            String
+     * @param cause
+     *            Throwable
      */
     public ScheduledActionException(String msgId, Throwable cause)
     {
@@ -75,9 +80,12 @@ public class ScheduledActionException extends AlfrescoRuntimeException
     /**
      * Exception generated from scheduled actions
      * 
-     * @param msgId String
-     * @param msgParams Object[]
-     * @param cause Throwable
+     * @param msgId
+     *            String
+     * @param msgParams
+     *            Object[]
+     * @param cause
+     *            Throwable
      */
     public ScheduledActionException(String msgId, Object[] msgParams, Throwable cause)
     {

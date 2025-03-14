@@ -30,9 +30,16 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.Set;
-
 import jakarta.transaction.SystemException;
 import jakarta.transaction.UserTransaction;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -48,13 +55,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.testing.category.PerformanceTests;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Site service unit test that targets HUGE numbers of sites
@@ -67,62 +67,49 @@ public class SiteServiceTestHuge
     private enum Allocation
     {
         /**
-         * Allocate source (groups) to target (sites) on a round robin basis
-         * until all targets (sites) have been allocated a single source (group).
+         * Allocate source (groups) to target (sites) on a round robin basis until all targets (sites) have been allocated a single source (group).
          * 
-         * Some source (groups) might have been allocated to more than one target
-         * (site) or none at all.
+         * Some source (groups) might have been allocated to more than one target (site) or none at all.
          **/
         ROUND_ROBIN_TO_TARGET,
-        
+
         /**
-         * Allocate source (users) to target (groups) on a round robin basis
-         * until all source (users) have been allocated a target (group).
+         * Allocate source (users) to target (groups) on a round robin basis until all source (users) have been allocated a target (group).
          * 
-         * Some target (groups) might have been allocated to more than one source
-         * (user) or none at all.
+         * Some target (groups) might have been allocated to more than one source (user) or none at all.
          **/
         ROUND_ROBIN_FROM_SOURCE,
-        
+
         /**
-         * Allocate source (users) to target (groups) on a round robin basis
-         * until all source (users) AND all target (groups) have been allocated
-         * to at least one a target (group) or one source (user).
+         * Allocate source (users) to target (groups) on a round robin basis until all source (users) AND all target (groups) have been allocated to at least one a target (group) or one source (user).
          * 
-         * If there are more target (groups) than source (users)
-         * then some source (users) will be in more than one target (group).
+         * If there are more target (groups) than source (users) then some source (users) will be in more than one target (group).
          * 
-         * If there are more source (users) than target (groups) then some
-         * target (groups) will contain more than one source (user).
+         * If there are more source (users) than target (groups) then some target (groups) will contain more than one source (user).
          **/
         ROUND_ROBIN_BOTH,
-        
+
         /**
-         * Allocate all source (users) to each target (group).
-         * OR
-         * Allocate all source (users) to each target (site).
-         * OR
-         * Allocate all source (groups) to each target (site).
+         * Allocate all source (users) to each target (group). OR Allocate all source (users) to each target (site). OR Allocate all source (groups) to each target (site).
          **/
         ALL_TO_EACH,
-        
+
         /** No allocation **/
         NONE
     }
 
     private enum OnFailure
     {
-        GIVE_UP,
-        KEEP_GOING
+        GIVE_UP, KEEP_GOING
     }
-    
+
     // Standard numbers of users, groups and sites
     private static final int NUM_USERS = 100;
     private static final int NUM_GROUPS = 60;
     private static int NUM_SITES = 60000;
-    
+
     private static final String ADMIN_USER = "admin";
-    
+
     // Max times in ms for various activities
     private static final long SECOND = 1000;
     private static final long FIVE_SECONDS = SECOND * 5;
@@ -134,33 +121,33 @@ public class SiteServiceTestHuge
     private static final long MAX_DELETE_USER_MS = FIVE_SECONDS;
     private static final long MAX_DELETE_GROUP_MS = FIVE_SECONDS;
     private static final long MAX_DELETE_SITE_MS = FIVE_SECONDS;
-    
+
     private static final long MAX_USER_TO_GROUP_MS = FIVE_SECONDS;
     private static final long MAX_USER_TO_SITE_MS = FIVE_SECONDS;
     private static final long MAX_GROUP_TO_SITE_MS = FIVE_SECONDS;
 
-    // Used to save having to check if users, groups and sites exist if already created by this test. 
+    // Used to save having to check if users, groups and sites exist if already created by this test.
     private static int usersCreated = 0;
     private static int groupsCreated = 0;
     private static int sitesCreated = 0;
 
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-    private static TransactionService transactionService = (TransactionService)ctx.getBean("TransactionService");
-    private static AuthenticationComponent authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
-    private static MutableAuthenticationService authenticationService = (MutableAuthenticationService)ctx.getBean("authenticationService");
-    private static PersonService personService = (PersonService)ctx.getBean("PersonService");
-    private static AuthorityService authorityService = (AuthorityService)ctx.getBean("AuthorityService");
-    private static SiteService siteService = (SiteService)ctx.getBean("SiteService"); // Big 'S'
-    
+    private static TransactionService transactionService = (TransactionService) ctx.getBean("TransactionService");
+    private static AuthenticationComponent authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+    private static MutableAuthenticationService authenticationService = (MutableAuthenticationService) ctx.getBean("authenticationService");
+    private static PersonService personService = (PersonService) ctx.getBean("PersonService");
+    private static AuthorityService authorityService = (AuthorityService) ctx.getBean("AuthorityService");
+    private static SiteService siteService = (SiteService) ctx.getBean("SiteService"); // Big 'S'
+
     private static String logFilename;
     private static PrintStream log;
-   
+
     @BeforeClass
     public static void setUpBeforeClass() throws Exception
     {
         logFilename = "sites.log";
     }
-    
+
     @AfterClass
     public static void tearDownClass()
     {
@@ -181,7 +168,7 @@ public class SiteServiceTestHuge
     {
         authenticationComponent.clearCurrentSecurityContext();
     }
-    
+
     private void log(String msg) throws Exception
     {
         System.out.println(msg);
@@ -196,7 +183,7 @@ public class SiteServiceTestHuge
     }
 
     // ------------------ main test helper methods --------------------
-    
+
     private void createAndAllocate(int userCount, int groupCount, int siteCount,
             Allocation usersToGroups, Allocation usersToSites, Allocation groupsToSites)
             throws Exception
@@ -205,7 +192,7 @@ public class SiteServiceTestHuge
         allocateUsersToGroupsAndSites(userCount, groupCount, siteCount, usersToGroups,
                 usersToSites, groupsToSites);
     }
-    
+
     private void createUsersGroupsAndSites(int userCount, int groupCount, int siteCount)
             throws Exception
     {
@@ -219,12 +206,12 @@ public class SiteServiceTestHuge
             throws Exception
     {
         if ((usersToGroups == Allocation.ALL_TO_EACH &&
-             usersToSites == Allocation.NONE &&
-             groupsToSites == Allocation.ROUND_ROBIN_TO_TARGET)
-            ||
-            (usersToGroups == Allocation.NONE &&
-             usersToSites == Allocation.ALL_TO_EACH &&
-             groupsToSites == Allocation.NONE))
+                usersToSites == Allocation.NONE &&
+                groupsToSites == Allocation.ROUND_ROBIN_TO_TARGET)
+                ||
+                (usersToGroups == Allocation.NONE &&
+                        usersToSites == Allocation.ALL_TO_EACH &&
+                        groupsToSites == Allocation.NONE))
         {
             allocateUsersToGroups(userCount, groupCount, usersToGroups);
             allocateUsersToSites(userCount, siteCount, usersToSites);
@@ -238,17 +225,17 @@ public class SiteServiceTestHuge
 
     private void addMoreSites(int sitesToAdd, OnFailure onFailureAction) throws Exception
     {
-        log("\n\n ADD "+sitesToAdd+" MORE SITES AND ADD A GROUP TO EACH");
+        log("\n\n ADD " + sitesToAdd + " MORE SITES AND ADD A GROUP TO EACH");
         Allocation groupsToSites = Allocation.ROUND_ROBIN_TO_TARGET;
         int sitesAlreadyCreated = sitesCreated;
         int siteCount = sitesAlreadyCreated + sitesToAdd;
-        
+
         long ms = System.currentTimeMillis();
         createSites(siteCount, NUM_USERS, sitesAlreadyCreated, OnFailure.GIVE_UP);
         allocateGroupsToSites(NUM_GROUPS, siteCount, groupsToSites, NUM_USERS, sitesAlreadyCreated, OnFailure.KEEP_GOING);
-        assertTime("Add more sites", sitesAlreadyCreated+1, sitesToAdd, ms, MAX_CREATE_SITE_MS+MAX_GROUP_TO_SITE_MS, onFailureAction, sitesToAdd);
+        assertTime("Add more sites", sitesAlreadyCreated + 1, sitesToAdd, ms, MAX_CREATE_SITE_MS + MAX_GROUP_TO_SITE_MS, onFailureAction, sitesToAdd);
     }
-    
+
     private void assertTime(String what, int id1, int id2, long start, long max) throws Exception
     {
         assertTime(what, id1, id2, start, max, OnFailure.GIVE_UP, 1);
@@ -256,26 +243,26 @@ public class SiteServiceTestHuge
 
     private void assertTime(String what, int id1, int id2, long start, long max, OnFailure onFailureAction, int blockSize) throws Exception
     {
-        long ms = (System.currentTimeMillis() - start)/blockSize;
-        
-        String msg = what+","+id1+(id2 > 0 ? ","+id2 : "")+","+ms+",ms"+((blockSize == 1) ? "" : " average for,"+blockSize);
+        long ms = (System.currentTimeMillis() - start) / blockSize;
+
+        String msg = what + "," + id1 + (id2 > 0 ? "," + id2 : "") + "," + ms + ",ms" + ((blockSize == 1) ? "" : " average for," + blockSize);
         log(msg);
         if (ms > max && onFailureAction == OnFailure.GIVE_UP)
         {
-            fail(msg+" is longer than "+max);
+            fail(msg + " is longer than " + max);
         }
     }
 
     // ------------------ create N --------------------
-    
+
     // Creates users and removes extra ones
     private void createUsers(int userCount) throws Exception
     {
-        for (int userId=1; ; userId++)
+        for (int userId = 1;; userId++)
         {
             String userName = getUserName(userId);
             boolean exists = (userId <= usersCreated) || personService.personExists(userName);
-            
+
             if (userId <= userCount)
             {
                 if (!exists)
@@ -298,16 +285,16 @@ public class SiteServiceTestHuge
         }
         usersCreated = userCount;
     }
-    
+
     // Creates groups and removes extra ones
     private void createGroups(int groupCount) throws Exception
     {
-        for (int groupId=1; ; groupId++)
+        for (int groupId = 1;; groupId++)
         {
             String groupName = getGroupName(groupId);
             String groupAuthorityName = authorityService.getName(AuthorityType.GROUP, groupName);
             boolean exists = (groupId <= groupsCreated) || authorityService.authorityExists(groupAuthorityName);
-            
+
             if (groupId <= groupCount)
             {
                 if (!exists)
@@ -330,22 +317,22 @@ public class SiteServiceTestHuge
         }
         groupsCreated = groupCount;
     }
-    
+
     // Creates sites and removes extra ones
     private void createSites(int siteCount, int userCount, int sitesAlreadyCreated, OnFailure onFailureAction) throws Exception
     {
-        for (int siteId=sitesAlreadyCreated+1; ; siteId++)
+        for (int siteId = sitesAlreadyCreated + 1;; siteId++)
         {
             String siteName = getSiteName(siteId);
             boolean exists = (siteId <= sitesCreated) || siteService.getSite(siteName) != null;
-            
+
             if (siteId <= siteCount)
             {
                 if (!exists)
                 {
                     String siteOwnerUserName = getSiteOwnerUserName(siteId, userCount);
                     creatSite(siteId, siteOwnerUserName, onFailureAction);
-               }
+                }
             }
             else
             {
@@ -367,7 +354,7 @@ public class SiteServiceTestHuge
 
     private void deleteSites(int fromSiteId, int toSiteId, OnFailure onFailureAction) throws Exception
     {
-        log("\n\n TIDY UP: DELETE SITES "+fromSiteId+" TO "+toSiteId);
+        log("\n\n TIDY UP: DELETE SITES " + fromSiteId + " TO " + toSiteId);
         for (int siteId = fromSiteId; siteId <= toSiteId; siteId++)
         {
             try
@@ -379,11 +366,11 @@ public class SiteServiceTestHuge
                 // move on
             }
         }
-        sitesCreated = fromSiteId-1;
+        sitesCreated = fromSiteId - 1;
     }
 
     // ------------------ create 1 --------------------
-    
+
     private void createUser(String userName) throws Exception
     {
         UserTransaction txn = transactionService.getUserTransaction();
@@ -395,7 +382,7 @@ public class SiteServiceTestHuge
 
             PropertyMap ppOne = new PropertyMap(4);
             ppOne.put(ContentModel.PROP_USERNAME, userName);
-            ppOne.put(ContentModel.PROP_FIRSTNAME, userName.substring(0, userName.length()-4));
+            ppOne.put(ContentModel.PROP_FIRSTNAME, userName.substring(0, userName.length() - 4));
             ppOne.put(ContentModel.PROP_LASTNAME, "user");
             ppOne.put(ContentModel.PROP_EMAIL, userName + "@email.com");
             ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
@@ -410,7 +397,7 @@ public class SiteServiceTestHuge
             throw e;
         }
     }
-    
+
     private void createGroup(String groupName) throws Exception
     {
         UserTransaction txn = transactionService.getUserTransaction();
@@ -428,7 +415,7 @@ public class SiteServiceTestHuge
             throw e;
         }
     }
-    
+
     private void creatSite(int siteId, String doAsUser, OnFailure onFailureAction) throws Exception
     {
         String siteName = getSiteName(siteId);
@@ -436,7 +423,7 @@ public class SiteServiceTestHuge
         creatSite(siteName, doAsUser);
         assertTime("Create site", siteId, -1, ms, MAX_CREATE_SITE_MS, onFailureAction, 1);
     }
-    
+
     private void creatSite(String siteName, String doAsUser) throws Exception
     {
         String currentUser = authenticationComponent.getCurrentUserName();
@@ -452,11 +439,11 @@ public class SiteServiceTestHuge
                 String sitePreset = "site-dashboard";
                 siteService.createSite(sitePreset, siteName, "Title for " + siteName, "Description for "
                         + siteName, SiteVisibility.PUBLIC);
-                
+
                 // TODO Should do the following rather than the createContainers - not sure how
-//              Map<String, String> tokens = new HashMap<String, String>();
-//              tokens.put("siteid", siteName);
-//              presetsManager.constructPreset(tokens, tokens);
+                // Map<String, String> tokens = new HashMap<String, String>();
+                // tokens.put("siteid", siteName);
+                // presetsManager.constructPreset(tokens, tokens);
                 siteService.createContainer(siteName, "documentLibrary", ContentModel.TYPE_FOLDER, null);
                 siteService.createContainer(siteName, "links", ContentModel.TYPE_FOLDER, null);
             }
@@ -470,8 +457,7 @@ public class SiteServiceTestHuge
                 txn.rollback();
             }
             catch (Exception e2)
-            {
-            }
+            {}
             throw e;
         }
         finally
@@ -479,7 +465,7 @@ public class SiteServiceTestHuge
             authenticationComponent.setCurrentUser(currentUser);
         }
     }
-    
+
     // ------------------ delete 1 --------------------
 
     private void deleteUser(String userName) throws Exception
@@ -499,7 +485,7 @@ public class SiteServiceTestHuge
             throw e;
         }
     }
-    
+
     private void deleteGroup(String groupName) throws Exception
     {
         UserTransaction txn = transactionService.getUserTransaction();
@@ -518,7 +504,7 @@ public class SiteServiceTestHuge
             throw e;
         }
     }
-    
+
     private void deleteSite(int siteId, String doAsUser, OnFailure onFailureAction) throws Exception
     {
         String siteName = getSiteName(siteId);
@@ -526,7 +512,7 @@ public class SiteServiceTestHuge
         deleteSite(siteName, doAsUser);
         assertTime("Delete site", siteId, -1, ms, MAX_DELETE_SITE_MS, onFailureAction, 1);
     }
-    
+
     private void deleteSite(String siteName, String doAsUser) throws Exception
     {
         String currentUser = authenticationComponent.getCurrentUserName();
@@ -548,18 +534,17 @@ public class SiteServiceTestHuge
                 txn.rollback();
             }
             catch (Exception e2)
-            {
-            }
+            {}
             throw e;
         }
         finally
         {
             authenticationComponent.setCurrentUser(currentUser);
         }
-    }   
-    
+    }
+
     // ------------------ allocate N --------------------
-    
+
     private void allocateUsersToGroups(int userCount, int groupCount, Allocation allocation)
             throws Exception
     {
@@ -572,7 +557,7 @@ public class SiteServiceTestHuge
                 {
                     txn.begin();
                     Set<String> existingAuthorities = authorityService.getContainingAuthoritiesInZone(AuthorityType.GROUP,
-					        getUserName(userId), AuthorityService.ZONE_APP_DEFAULT, null, -1);
+                            getUserName(userId), AuthorityService.ZONE_APP_DEFAULT, null, -1);
                     for (int groupId = 1; groupId <= groupCount; groupId++)
                     {
                         if (!existingAuthorities.contains(authorityService.getName(AuthorityType.GROUP,
@@ -603,7 +588,7 @@ public class SiteServiceTestHuge
                 iterations = groupCount;
                 groupIncrement = userCount;
             }
-            int i=0;
+            int i = 0;
             OUTER: while (i < iterations)
             {
                 for (int userId = 1; userId <= userCount; userId++)
@@ -638,7 +623,7 @@ public class SiteServiceTestHuge
             }
         }
     }
-    
+
     private void allocateUsersToSites(int userCount, int siteCount, Allocation allocation)
             throws Exception
     {
@@ -656,7 +641,7 @@ public class SiteServiceTestHuge
         {
             boolean sourceEnd = (allocation == Allocation.ROUND_ROBIN_TO_TARGET);
             boolean targetEnd = (allocation == Allocation.ROUND_ROBIN_FROM_SOURCE);
-            for (int siteId = 1, userId = 1; ; siteId++, userId++)
+            for (int siteId = 1, userId = 1;; siteId++, userId++)
             {
                 if (userId > userCount)
                 {
@@ -676,7 +661,7 @@ public class SiteServiceTestHuge
             }
         }
     }
-    
+
     private void allocateGroupsToSites(int groupCount, int siteCount, Allocation allocation, int userCount,
             int sitesAlreadyCreated, OnFailure onFailureAction) throws Exception
     {
@@ -684,7 +669,7 @@ public class SiteServiceTestHuge
         {
             for (int groupId = 1; groupId <= groupCount; groupId++)
             {
-                for (int siteId = sitesAlreadyCreated+1; siteId <= siteCount; siteId++)
+                for (int siteId = sitesAlreadyCreated + 1; siteId <= siteCount; siteId++)
                 {
                     String doAsUser = getSiteOwnerUserName(siteId, userCount);
                     allocateGroupToSite(groupId, siteId, userCount, doAsUser, onFailureAction);
@@ -696,7 +681,7 @@ public class SiteServiceTestHuge
             boolean sourceEnd = (allocation == Allocation.ROUND_ROBIN_TO_TARGET);
             boolean targetEnd = (allocation == Allocation.ROUND_ROBIN_FROM_SOURCE);
             int startGroupId = sitesAlreadyCreated % groupCount + 1;
-            for (int siteId = sitesAlreadyCreated+1, groupId = startGroupId; ; siteId++, groupId++)
+            for (int siteId = sitesAlreadyCreated + 1, groupId = startGroupId;; siteId++, groupId++)
             {
                 if (groupId > groupCount)
                 {
@@ -717,7 +702,7 @@ public class SiteServiceTestHuge
             }
         }
     }
-    
+
     private void allocateUserToGroup(int userId, int groupId) throws Exception
     {
         String userName = getUserName(userId);
@@ -745,7 +730,7 @@ public class SiteServiceTestHuge
             // Already allocated.
         }
     }
-    
+
     private int getNextSiteToAddGroupTo(int firstSiteIdToCheck) throws Exception
     {
         String userName = getUserName(1);
@@ -754,28 +739,28 @@ public class SiteServiceTestHuge
         for (; siteId <= NUM_SITES; siteId++)
         {
             String siteName = getSiteName(siteId);
-            String groupName = "GROUP_site_"+siteName;
+            String groupName = "GROUP_site_" + siteName;
             if (!existingAuthorities.contains(groupName))
             {
                 break;
             }
         }
-        log("Next site to add group to is "+siteId);
+        log("Next site to add group to is " + siteId);
         return siteId;
     }
-    
+
     private void allocateGroupToSite(int firstSiteId, int userCount, String doAsUser, OnFailure onFailureAction, int blockSize) throws Exception
     {
         String currentUser = authenticationComponent.getCurrentUserName();
         UserTransaction txn = transactionService.getUserTransaction();
         long ms1 = System.currentTimeMillis();
-        
+
         try
         {
             if (doAsUser != null)
                 authenticationComponent.setCurrentUser(doAsUser);
             txn.begin();
-            for (int siteId = firstSiteId; siteId < firstSiteId+blockSize; siteId++)
+            for (int siteId = firstSiteId; siteId < firstSiteId + blockSize; siteId++)
             {
                 try
                 {
@@ -807,13 +792,13 @@ public class SiteServiceTestHuge
             authenticationComponent.setCurrentUser(currentUser);
         }
     }
-    
+
     private void allocateGroupToSite(int siteId, int userCount, String doAsUser, OnFailure onFailureAction) throws Exception
     {
-        int groupId = (siteId-1) % NUM_GROUPS + 1;
+        int groupId = (siteId - 1) % NUM_GROUPS + 1;
         allocateGroupToSite(groupId, siteId, userCount, doAsUser, onFailureAction);
     }
-    
+
     private void allocateGroupToSite(int groupId, int siteId, int userCount, String doAsUser, OnFailure onFailureAction) throws Exception
     {
         try
@@ -832,19 +817,19 @@ public class SiteServiceTestHuge
     }
 
     // ------------------ allocate 1 --------------------
-    
+
     private void allocateUserToGroup(String userName, String groupName) throws Exception
     {
         String groupAuthorityName = authorityService.getName(AuthorityType.GROUP, groupName);
         authorityService.addAuthority(groupAuthorityName, userName);
     }
-    
+
     private void allocateUserToSite(String userName, String siteName, String doAsUser)
             throws Exception
     {
         setSiteMembership(userName, siteName, doAsUser);
     }
-    
+
     private void allocateGroupToSite(String groupName, String siteName, String doAsUser)
             throws Exception
     {
@@ -879,80 +864,80 @@ public class SiteServiceTestHuge
     }
 
     // ------------------ names --------------------
-    
+
     private String getUserName(int userId)
     {
         return getName("user", userId);
     }
-    
+
     private String getGroupName(int groupId)
     {
         return getName("group", groupId);
     }
-    
+
     private String getSiteName(int siteId)
     {
         return getName("site", siteId);
     }
-    
+
     private String getName(String prefix, int id)
     {
         return new StringBuilder(prefix).append(id).toString();
     }
-    
+
     private String getSiteOwnerUserName(int siteId, int userCount)
     {
-        int ownerId = (siteId-1)%userCount+1;
+        int ownerId = (siteId - 1) % userCount + 1;
         return getUserName(ownerId);
     }
-        
+
     // ------------------ Original Tests --------------------
-    
-//    @Test
-//    public void testSingleGroup() throws Exception
-//    {
-//        Allocation usersToGroups = Allocation.ALL_TO_EACH;
-//        Allocation usersToSites = Allocation.NONE;
-//        Allocation groupsToSites = Allocation.ROUND_ROBIN_TO_TARGET;
-//
-//        createAndAllocate(NUM_USERS, NUM_GROUPS, NUM_SITES, usersToGroups, usersToSites, groupsToSites);
-//    }
 
-//  @Test
-//  public void testMultipleGroups() throws Exception
-//  {
-//      Allocation usersToGroups = Allocation.ALL_TO_EACH;
-//      Allocation usersToSites = Allocation.NONE;
-//      Allocation groupsToSites = Allocation.ROUND_ROBIN_TO_TARGET;
-//      
-//      createAndAllocate(NUM_USERS, NUM_GROUPS, NUM_SITES, usersToGroups, usersToSites, groupsToSites);
-//  }
+    // @Test
+    // public void testSingleGroup() throws Exception
+    // {
+    // Allocation usersToGroups = Allocation.ALL_TO_EACH;
+    // Allocation usersToSites = Allocation.NONE;
+    // Allocation groupsToSites = Allocation.ROUND_ROBIN_TO_TARGET;
+    //
+    // createAndAllocate(NUM_USERS, NUM_GROUPS, NUM_SITES, usersToGroups, usersToSites, groupsToSites);
+    // }
 
-//  @Test
-//  public void testNoGroups() throws Exception
-//  {
-//      Allocation usersToGroups = Allocation.NONE;
-//      Allocation usersToSites = Allocation.ALL_TO_EACH;
-//      Allocation groupsToSites = Allocation.NONE;
-//      
-//      createAndAllocate(NUM_USERS, NUM_GROUPS, NUM_SITES, usersToGroups, usersToSites, groupsToSites);
-//  }
+    // @Test
+    // public void testMultipleGroups() throws Exception
+    // {
+    // Allocation usersToGroups = Allocation.ALL_TO_EACH;
+    // Allocation usersToSites = Allocation.NONE;
+    // Allocation groupsToSites = Allocation.ROUND_ROBIN_TO_TARGET;
+    //
+    // createAndAllocate(NUM_USERS, NUM_GROUPS, NUM_SITES, usersToGroups, usersToSites, groupsToSites);
+    // }
+
+    // @Test
+    // public void testNoGroups() throws Exception
+    // {
+    // Allocation usersToGroups = Allocation.NONE;
+    // Allocation usersToSites = Allocation.ALL_TO_EACH;
+    // Allocation groupsToSites = Allocation.NONE;
+    //
+    // createAndAllocate(NUM_USERS, NUM_GROUPS, NUM_SITES, usersToGroups, usersToSites, groupsToSites);
+    // }
 
     // ------------------ Initial Data Load Tests --------------------
 
-//  @Test
-//  public void testInitClearDownAll() throws Exception
-//  {
-//      createUsersGroupsAndSites(0, 0, 0);
-//  }
+    // @Test
+    // public void testInitClearDownAll() throws Exception
+    // {
+    // createUsersGroupsAndSites(0, 0, 0);
+    // }
 
-//    @Test
-//    public void testInitCreateUsersAndGroups() throws Exception
-//    {
-//        createUsers(NUM_USERS);
-//        createGroups(NUM_GROUPS);
-//        allocateUsersToGroups(NUM_USERS, NUM_GROUPS, Allocation.ALL_TO_EACH);
-//    }
+    // @Test
+    // public void testInitCreateUsersAndGroups() throws Exception
+    // {
+    // createUsers(NUM_USERS);
+    // createGroups(NUM_GROUPS);
+    // allocateUsersToGroups(NUM_USERS, NUM_GROUPS, Allocation.ALL_TO_EACH);
+    // }
 
     @Test
     public void testInit() throws Exception
@@ -980,21 +965,21 @@ public class SiteServiceTestHuge
         String restart = System.getProperty("restart");
         String action = System.getProperty("action");
         logFilename = System.getProperty("log", "sites.log");
-        
+
         boolean usersOnly = "usersOnly".equalsIgnoreCase(action);
         boolean sites = "sites".equalsIgnoreCase(action);
         boolean groups = "groups".equalsIgnoreCase(action);
         boolean test = "test".equalsIgnoreCase(action);
 
         if ((usersOnly && (from != null || to != null || restart != null)) ||
-            (!usersOnly && (from == null || to == null || (action != null && !sites && !groups && !test))))
+                (!usersOnly && (from == null || to == null || (action != null && !sites && !groups && !test))))
         {
             System.err.println(
                     "Usage: -Dfrom=<fromSiteId> -Dto=<toSiteId>                     [ -Dlog=<logFilename> ]\n" +
-                    "       -Daction=usersOnly                                      [ -Dlog=<logFilename> ]\n" +
-                    "       -Daction=sites      -Dfrom=<fromSiteId> -Dto=<toSiteId> [ -Dlog=<logFilename> ] [ -Drestart=<restartAtSiteId> ]\n" +
-                    "       -Daction=groups     -Dfrom=<fromSiteId> -Dto=<toSiteId> [ -Dlog=<logFilename> ] [ -Drestart=<restartAtSiteId> ]" +
-                    "       -Daction=test       -Dfrom=<fromSiteId> -Dto=<toSiteId> [ -Dlog=<logFilename> ] ");
+                            "       -Daction=usersOnly                                      [ -Dlog=<logFilename> ]\n" +
+                            "       -Daction=sites      -Dfrom=<fromSiteId> -Dto=<toSiteId> [ -Dlog=<logFilename> ] [ -Drestart=<restartAtSiteId> ]\n" +
+                            "       -Daction=groups     -Dfrom=<fromSiteId> -Dto=<toSiteId> [ -Dlog=<logFilename> ] [ -Drestart=<restartAtSiteId> ]" +
+                            "       -Daction=test       -Dfrom=<fromSiteId> -Dto=<toSiteId> [ -Dlog=<logFilename> ] ");
         }
         else
         {
@@ -1049,43 +1034,42 @@ public class SiteServiceTestHuge
             }
         }
     }
-    
+
     /**
      * Simplify running unit test from the command line.
      * 
-     * set SITE_CPATH=%TOMCAT_HOME%/lib/*;%TOMCAT_HOME%/endorsed/*;%TOMCAT_HOME%/webapps/alfresco/WEB-INF/lib/*;%TOMCAT_HOME%/webapps/alfresco/WEB-INF/classes;%TOMCAT_HOME%/shared/classes;
-     * java -Xmx2048m -XX:MaxPermSize=512M -classpath %SITE_CPATH% org.alfresco.repo.site.SiteServiceTestHuge ...
+     * set SITE_CPATH=%TOMCAT_HOME%/lib/*;%TOMCAT_HOME%/endorsed/*;%TOMCAT_HOME%/webapps/alfresco/WEB-INF/lib/*;%TOMCAT_HOME%/webapps/alfresco/WEB-INF/classes;%TOMCAT_HOME%/shared/classes; java -Xmx2048m -XX:MaxPermSize=512M -classpath %SITE_CPATH% org.alfresco.repo.site.SiteServiceTestHuge ...
      */
     public static void main(String args[])
     {
         org.junit.runner.JUnitCore.main(SiteServiceTestHuge.class.getName());
     }
-    
+
     // ------------------ Tests Once Data Is Loaded --------------------
-    
-//    @Test
-//    public void testAdding1000SitesInBlocksOf100() throws Exception
-//    {
-//        usersCreated = NUM_USERS;
-//        groupsCreated = NUM_GROUPS;
-//        sitesCreated = NUM_SITES;
-//
-//        deleteSites(NUM_SITES+1, NUM_SITES+1000, OnFailure.KEEP_GOING);
-//        
-//        for (int i=1; i<=10; i++)
-//        {
-//            addMoreSites(100, OnFailure.GIVE_UP);
-//        }
-//        
-//        deleteSites(NUM_SITES+1, NUM_SITES+1000, OnFailure.KEEP_GOING);
-//    }
-    
-//    @Test
-//    public void testAdding4SitesAndDelete() throws Exception
-//    {
-//        testAddingSitesAndDelete(NUM_SITES + 1, NUM_SITES + 100);
-//    }
-    
+
+    // @Test
+    // public void testAdding1000SitesInBlocksOf100() throws Exception
+    // {
+    // usersCreated = NUM_USERS;
+    // groupsCreated = NUM_GROUPS;
+    // sitesCreated = NUM_SITES;
+    //
+    // deleteSites(NUM_SITES+1, NUM_SITES+1000, OnFailure.KEEP_GOING);
+    //
+    // for (int i=1; i<=10; i++)
+    // {
+    // addMoreSites(100, OnFailure.GIVE_UP);
+    // }
+    //
+    // deleteSites(NUM_SITES+1, NUM_SITES+1000, OnFailure.KEEP_GOING);
+    // }
+
+    // @Test
+    // public void testAdding4SitesAndDelete() throws Exception
+    // {
+    // testAddingSitesAndDelete(NUM_SITES + 1, NUM_SITES + 100);
+    // }
+
     public void testAddingSitesAndDelete(int fromSiteId, int toSiteId) throws Exception
     {
         usersCreated = NUM_USERS;

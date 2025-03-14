@@ -28,6 +28,7 @@ package org.alfresco.service.cmr.lock;
 import java.text.MessageFormat;
 
 import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -39,7 +40,7 @@ public class UnableToAquireLockException extends RuntimeException
      * Serial version UID
      */
     private static final long serialVersionUID = 3258689892710889781L;
-    
+
     /**
      * Error message
      */

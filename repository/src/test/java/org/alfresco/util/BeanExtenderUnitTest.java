@@ -62,13 +62,19 @@ public class BeanExtenderUnitTest
     private static final String BEAN_NAME = GUID.generate();
     private static final String EXTENDING_BEAN_NAME = GUID.generate();
 
-    @Mock private ConfigurableListableBeanFactory mockedBeanFactory;
-    @Mock private BeanDefinition mockedBeanDefinition;
-    @Mock private BeanDefinition mockedExtendingBeanDefinition;
-    @Mock private MutablePropertyValues mockedPropertyValuesBean;
-    @Mock private MutablePropertyValues mockedPropertyValuesExtendingBean;
+    @Mock
+    private ConfigurableListableBeanFactory mockedBeanFactory;
+    @Mock
+    private BeanDefinition mockedBeanDefinition;
+    @Mock
+    private BeanDefinition mockedExtendingBeanDefinition;
+    @Mock
+    private MutablePropertyValues mockedPropertyValuesBean;
+    @Mock
+    private MutablePropertyValues mockedPropertyValuesExtendingBean;
 
-    @InjectMocks private BeanExtender beanExtender;
+    @InjectMocks
+    private BeanExtender beanExtender;
 
     /** expected exception rule */
     @Rule
@@ -86,8 +92,7 @@ public class BeanExtenderUnitTest
     }
 
     /**
-     * given that the bean name is not set, ensure that an Illegal Argument
-     * exception is thrown.
+     * given that the bean name is not set, ensure that an Illegal Argument exception is thrown.
      */
     @Test
     public void beanNameNotSet()
@@ -105,8 +110,7 @@ public class BeanExtenderUnitTest
     }
 
     /**
-     * given that the extending bean name is not set, ensure that an illegal
-     * argument exception is thrown.
+     * given that the extending bean name is not set, ensure that an illegal argument exception is thrown.
      */
     @Test
     public void extendingBeanNameNotSet()
@@ -165,8 +169,7 @@ public class BeanExtenderUnitTest
     }
 
     /**
-     * given that a different class name has been set on the extending bean ensure it is
-     * set correctly on the origional bean
+     * given that a different class name has been set on the extending bean ensure it is set correctly on the origional bean
      */
     @Test
     public void beanClassNameSet()
@@ -204,8 +207,7 @@ public class BeanExtenderUnitTest
     }
 
     /**
-     * given that new property values have been set on the extending bean ensure that they
-     * are correctly set on the original bean.
+     * given that new property values have been set on the extending bean ensure that they are correctly set on the original bean.
      */
     @Test
     public void beanPropertyValuesSet()

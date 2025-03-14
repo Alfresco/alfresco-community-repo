@@ -42,9 +42,7 @@ import org.alfresco.service.namespace.QName;
 public interface PermissionService
 {
     /**
-     * Prefixes used for authorities of type role. This is intended for external roles, e.g. those set by ACEGI
-     * implementations It is only used for admin at the moment - which is done outside the usual permission assignments
-     * at the moment. It could be a dynamic authority.
+     * Prefixes used for authorities of type role. This is intended for external roles, e.g. those set by ACEGI implementations It is only used for admin at the moment - which is done outside the usual permission assignments at the moment. It could be a dynamic authority.
      */
     public static final String ROLE_PREFIX = "ROLE_";
 
@@ -94,11 +92,10 @@ public interface PermissionService
     String EDITOR_SVC_AUTHORITY = "ROLE_EDITOR_SERVICE_ACCOUNT";
 
     /**
-     * A convenient set of service account authorities to simplify checks
-     * for whether a given authority is a service account authority or not.
+     * A convenient set of service account authorities to simplify checks for whether a given authority is a service account authority or not.
      */
     Set<String> SVC_AUTHORITIES_SET = Set.of(ADMIN_SVC_AUTHORITY, COLLABORATOR_SVC_AUTHORITY,
-                                             EDITOR_SVC_AUTHORITY);
+            EDITOR_SVC_AUTHORITY);
 
     /**
      * The permission for all - not defined in the model. Repsected in the code.
@@ -182,7 +179,7 @@ public interface PermissionService
      */
     @Auditable
     public String getOwnerAuthority();
-    
+
     /**
      * Get the All Authorities
      *
@@ -202,27 +199,27 @@ public interface PermissionService
     /**
      * Get all the AccessPermissions that are granted/denied to the current authentication for the given node
      *
-     * @param nodeRef -
-     *            the reference to the node
+     * @param nodeRef
+     *            - the reference to the node
      * @return the set of allowed permissions
      */
-    @Auditable(parameters = { "nodeRef" })
+    @Auditable(parameters = {"nodeRef"})
     public Set<AccessPermission> getPermissions(NodeRef nodeRef);
 
     /**
      * Get all the AccessPermissions that are set for anyone for the given node
      *
-     * @param nodeRef -
-     *            the reference to the node
+     * @param nodeRef
+     *            - the reference to the node
      * @return the set of allowed permissions
      */
-    @Auditable(parameters = { "nodeRef" })
+    @Auditable(parameters = {"nodeRef"})
     public Set<AccessPermission> getAllSetPermissions(NodeRef nodeRef);
 
     /**
      * Get the permissions that can be set for a given node
      */
-    @Auditable(parameters = { "nodeRef" })
+    @Auditable(parameters = {"nodeRef"})
     public Set<String> getSettablePermissions(NodeRef nodeRef);
 
     /**
@@ -230,61 +227,61 @@ public interface PermissionService
      *
      * @return - set of permissions
      */
-    @Auditable(parameters = { "type" })
+    @Auditable(parameters = {"type"})
     public Set<String> getSettablePermissions(QName type);
 
     /**
-     * Check that the given authentication has a particular permission for the given node. (The default behaviour is to
-     * inherit permissions)
+     * Check that the given authentication has a particular permission for the given node. (The default behaviour is to inherit permissions)
      *
      * @return - access status
      */
-    @Auditable(parameters = { "nodeRef", "permission" })
+    @Auditable(parameters = {"nodeRef", "permission"})
     public AccessStatus hasPermission(NodeRef nodeRef, String permission);
 
     /**
      * Check if read permission is allowed on an acl (optimised)
      *
-     * caveats:
-     * doesn't take into account dynamic authorities/groups
-     * doesn't take into account node types/aspects for permissions
+     * caveats: doesn't take into account dynamic authorities/groups doesn't take into account node types/aspects for permissions
      * 
-     * @param nodeRef -
-     *            the reference to the node
+     * @param nodeRef
+     *            - the reference to the node
      * @return access status
      */
-    @Auditable(parameters = { "nodeRef" })
+    @Auditable(parameters = {"nodeRef"})
     public AccessStatus hasReadPermission(NodeRef nodeRef);
 
     /**
      * Get the readers associated with a given ACL
      * 
-     * @param aclId                 the low-level ACL ID
-     * @return                      set of authorities with read permission on the ACL
+     * @param aclId
+     *            the low-level ACL ID
+     * @return set of authorities with read permission on the ACL
      */
-    @Auditable(parameters = { "aclId" })
+    @Auditable(parameters = {"aclId"})
     public Set<String> getReaders(Long aclId);
-    
+
     /**
      * Get the denied authorities associated with a given ACL
      * 
-     * @param aclId                 the low-level ACL ID
-     * @return                      set of authorities denied permission on the ACL
+     * @param aclId
+     *            the low-level ACL ID
+     * @return set of authorities denied permission on the ACL
      */
-    @Auditable(parameters = { "aclId" })
+    @Auditable(parameters = {"aclId"})
     public Set<String> getReadersDenied(Long aclId);
-    
+
     /**
      * Check if a permission is allowed on an acl.
+     * 
      * @return the access status
      */
-    @Auditable(parameters = { "aclID", "context", "permission" })
+    @Auditable(parameters = {"aclID", "context", "permission"})
     public AccessStatus hasPermission(Long aclID, PermissionContext context, String permission);
 
     /**
      * Delete all the permission assigned to the node
      */
-    @Auditable(parameters = { "nodeRef" })
+    @Auditable(parameters = {"nodeRef"})
     public void deletePermissions(NodeRef nodeRef);
 
     /**
@@ -293,16 +290,16 @@ public interface PermissionService
      * @param authority
      *            (if null then this will match all authorities)
      */
-    @Auditable(parameters = { "nodeRef", "authority" })
+    @Auditable(parameters = {"nodeRef", "authority"})
     public void clearPermission(NodeRef nodeRef, String authority);
 
     /**
      * Find and delete a access control entry by node, authentication and permission. It is possible to delete
      * <ol>
-     * <li> a specific permission;
-     * <li> all permissions for an authority (if the permission is null);
-     * <li> entries for all authorities that have a specific permission (if the authority is null); and
-     * <li> all permissions set for the node (if both the permission and authority are null).
+     * <li>a specific permission;
+     * <li>all permissions for an authority (if the permission is null);
+     * <li>entries for all authorities that have a specific permission (if the authority is null); and
+     * <li>all permissions set for the node (if both the permission and authority are null).
      * </ol>
      *
      * @param nodeRef
@@ -312,79 +309,78 @@ public interface PermissionService
      * @param permission
      *            the entry permission (if null then this will match all permissions)
      */
-    @Auditable(parameters = { "nodeRef", "authority", "permission" })
+    @Auditable(parameters = {"nodeRef", "authority", "permission"})
     public void deletePermission(NodeRef nodeRef, String authority, String permission);
 
     /**
      * Set a specific permission on a node.
      */
-    @Auditable(parameters = { "nodeRef", "authority", "permission", "allow" })
+    @Auditable(parameters = {"nodeRef", "authority", "permission", "allow"})
     public void setPermission(NodeRef nodeRef, String authority, String permission, boolean allow);
 
     /**
      * Set the global inheritance behaviour for permissions on a node.
      */
-    @Auditable(parameters = { "nodeRef", "inheritParentPermissions" })
+    @Auditable(parameters = {"nodeRef", "inheritParentPermissions"})
     public void setInheritParentPermissions(NodeRef nodeRef, boolean inheritParentPermissions);
 
     /**
-    * Set the global inheritance behavior for permissions on a node. If the operation takes 
-    * too long and asyncCall parameter set accordingly, fixed ACLs method will be asynchronously called.
-    * 
-    * @param nodeRef                           node for which inheritance will be set.
-    * @param inheritParentPermissions          <tt>true</tt> to inherit parent permissions, <tt>false</tt> otherwise.
-    * @param asyncCall                         <tt>true</tt> if fixed ACLs should be asynchronously set when operation execution takes too long,
-    *                                          <tt>false</tt> to execute synchronously regardless of execution time.
-    */
-    @Auditable(parameters = { "nodeRef", "inheritParentPermissions", "asyncCall" })
+     * Set the global inheritance behavior for permissions on a node. If the operation takes too long and asyncCall parameter set accordingly, fixed ACLs method will be asynchronously called.
+     * 
+     * @param nodeRef
+     *            node for which inheritance will be set.
+     * @param inheritParentPermissions
+     *            <tt>true</tt> to inherit parent permissions, <tt>false</tt> otherwise.
+     * @param asyncCall
+     *            <tt>true</tt> if fixed ACLs should be asynchronously set when operation execution takes too long, <tt>false</tt> to execute synchronously regardless of execution time.
+     */
+    @Auditable(parameters = {"nodeRef", "inheritParentPermissions", "asyncCall"})
     public void setInheritParentPermissions(NodeRef nodeRef, boolean inheritParentPermissions, boolean asyncCall);
 
     /**
      * Return the global inheritance behaviour for permissions on a node.
      */
-    @Auditable(parameters = { "nodeRef" })
+    @Auditable(parameters = {"nodeRef"})
     public boolean getInheritParentPermissions(NodeRef nodeRef);
 
-   
     /**
      * Add a permission mask to a store
      */
-    @Auditable(parameters = { "storeRef", "authority", "permission", "allow" })
+    @Auditable(parameters = {"storeRef", "authority", "permission", "allow"})
     public void setPermission(StoreRef storeRef, String authority, String permission, boolean allow);
-    
+
     /**
      * Remove part of a permission mask on a store
      */
-    @Auditable(parameters = { "storeRef", "authority", "permission" })
+    @Auditable(parameters = {"storeRef", "authority", "permission"})
     public void deletePermission(StoreRef storeRef, String authority, String permission);
-    
+
     /**
-     * Clear all permission masks for an authority on a store 
+     * Clear all permission masks for an authority on a store
      */
-    @Auditable(parameters = { "storeRef", "authority" })
+    @Auditable(parameters = {"storeRef", "authority"})
     public void clearPermission(StoreRef storeRef, String authority);
-    
+
     /**
      * Remove all permission mask on a store
      */
-    @Auditable(parameters = { "storeRef" })
+    @Auditable(parameters = {"storeRef"})
     public void deletePermissions(StoreRef storeRef);
-    
-    
+
     /**
      * Get all the AccessPermissions that are set for anyone for the given node
      *
-     * @param storeRef -
-     *            the reference to the store
+     * @param storeRef
+     *            - the reference to the store
      * @return the set of allowed permissions
      */
-    @Auditable(parameters = { "storeRef" })
+    @Auditable(parameters = {"storeRef"})
     public Set<AccessPermission> getAllSetPermissions(StoreRef storeRef);
-    
+
     /**
      * Get the set of authorities for currently authenticated user
      * 
-     * @return              a set of authorities applying to the currently-authenticated user
+     * @return a set of authorities applying to the currently-authenticated user
      */
     public Set<String> getAuthorisations();
 }

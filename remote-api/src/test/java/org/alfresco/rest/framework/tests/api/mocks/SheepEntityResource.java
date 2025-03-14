@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.framework.tests.api.mocks;
 
+import org.springframework.extensions.webscripts.Status;
+
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.WebApiParameters;
@@ -33,23 +35,20 @@ import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.springframework.extensions.webscripts.Status;
 
-@EntityResource(name=SheepEntityResource.ENTITY_KEY,title="Sheep")
-public class SheepEntityResource implements EntityResourceAction.Read<Sheep>,EntityResourceAction.ReadById<Sheep>, 
+@EntityResource(name = SheepEntityResource.ENTITY_KEY, title = "Sheep")
+public class SheepEntityResource implements EntityResourceAction.Read<Sheep>, EntityResourceAction.ReadById<Sheep>,
         EntityResourceAction.Update<Sheep>, EntityResourceAction.Delete, EntityResourceAction.DeleteSet
 {
     public static final String ENTITY_KEY = "sheep";
 
     @Override
     public void delete(String id, Parameters parameters)
-    {
-    }
+    {}
 
     @Override
     public void deleteSet(Parameters parameters)
-    {
-    }
+    {}
 
     @Override
     public Sheep update(String id, Sheep entity, Parameters parameters)
@@ -66,10 +65,10 @@ public class SheepEntityResource implements EntityResourceAction.Read<Sheep>,Ent
     @Override
     @WebApiDescription(title = "Gets all the Sheep", successStatus = Status.STATUS_ACCEPTED)
     @WebApiParameters({
-                @WebApiParam(name = "siteId", title = "Site id", description="What ever."),
-                @WebApiParam(name = "who", title = "Who", kind=ResourceParameter.KIND.HTTP_HEADER),
-                @WebApiParam(name = "body", title = "aintnobody", kind=ResourceParameter.KIND.HTTP_BODY_OBJECT),
-                @WebApiParam(name = "requiredParam", title = "",required=true, kind=ResourceParameter.KIND.QUERY_STRING)})
+            @WebApiParam(name = "siteId", title = "Site id", description = "What ever."),
+            @WebApiParam(name = "who", title = "Who", kind = ResourceParameter.KIND.HTTP_HEADER),
+            @WebApiParam(name = "body", title = "aintnobody", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT),
+            @WebApiParam(name = "requiredParam", title = "", required = true, kind = ResourceParameter.KIND.QUERY_STRING)})
     public CollectionWithPagingInfo<Sheep> readAll(Parameters params)
     {
         return CollectionWithPagingInfo.asPagedCollection(new Sheep("paged"));

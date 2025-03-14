@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.TestCase;
-
 import org.junit.Test;
 
 public class ProtocolTest extends TestCase
@@ -53,29 +52,29 @@ public class ProtocolTest extends TestCase
         p2 = new ResourceParameter(new ClasspathResource("/r/p.js"));
 
         parameters = Arrays.asList(p1,
-                                   p2);
+                p2);
         r = new Reference(Encodings.PLAIN.encoding,
-                          Protocols.VIRTUAL.protocol,
-                          new ClasspathResource("/a/b/c.class"),
-                          parameters);
+                Protocols.VIRTUAL.protocol,
+                new ClasspathResource("/a/b/c.class"),
+                parameters);
     }
 
     @Test
     public void testGetParameter() throws Exception
     {
         Parameter tp1 = protocol.getParameter(r,
-                                              0);
+                0);
         assertEquals(p1,
-                     tp1);
+                tp1);
         Parameter tp2 = protocol.getParameter(r,
-                                              1);
+                1);
         assertEquals(p2,
-                     tp2);
+                tp2);
 
         try
         {
             protocol.getParameter(r,
-                                  -1);
+                    -1);
             fail("Out of bounds!");
         }
         catch (IndexOutOfBoundsException e)
@@ -86,7 +85,7 @@ public class ProtocolTest extends TestCase
         try
         {
             protocol.getParameter(r,
-                                  2);
+                    2);
             fail("Out of bounds!");
         }
         catch (IndexOutOfBoundsException e)
@@ -100,17 +99,17 @@ public class ProtocolTest extends TestCase
     {
         final StringParameter newParameter = new StringParameter("rep1");
         Reference rr1 = protocol.replaceParameter(r,
-                                                  0,
-                                                  newParameter);
+                0,
+                newParameter);
         assertEquals(newParameter,
-                     protocol.getParameter(rr1,
-                                           0));
+                protocol.getParameter(rr1,
+                        0));
 
         try
         {
             protocol.replaceParameter(r,
-                                      2,
-                                      newParameter);
+                    2,
+                    newParameter);
             fail("Out of bounds!");
         }
         catch (IndexOutOfBoundsException e)
@@ -124,51 +123,50 @@ public class ProtocolTest extends TestCase
     {
         final StringParameter newParameter = new StringParameter("rep1");
         Reference rr1 = protocol.addParameter(r,
-                                              newParameter);
+                newParameter);
         assertEquals(newParameter,
-                     protocol.getParameter(rr1,
-                                           2));
+                protocol.getParameter(rr1,
+                        2));
 
     }
 
     @Test
     public void testDispatch() throws Exception
     {
-        boolean sccess = protocol.dispatch(new ProtocolMethod<Boolean>()
-                                           {
+        boolean sccess = protocol.dispatch(new ProtocolMethod<Boolean>() {
 
-                                               @Override
-                                               public Boolean execute(VanillaProtocol vanillaProtocol,
-                                                           Reference reference) throws ProtocolMethodException
-                                               {
-                                                   fail("Invalid dispatch");
-                                                   return false;
-                                               }
+            @Override
+            public Boolean execute(VanillaProtocol vanillaProtocol,
+                    Reference reference) throws ProtocolMethodException
+            {
+                fail("Invalid dispatch");
+                return false;
+            }
 
-                                               @Override
-                                               public Boolean execute(VirtualProtocol virtualProtocol,
-                                                           Reference reference) throws ProtocolMethodException
-                                               {
-                                                   fail("Invalid dispatch");
-                                                   return false;
-                                               }
+            @Override
+            public Boolean execute(VirtualProtocol virtualProtocol,
+                    Reference reference) throws ProtocolMethodException
+            {
+                fail("Invalid dispatch");
+                return false;
+            }
 
-                                               @Override
-                                               public Boolean execute(NodeProtocol protocol, Reference reference)
-                                                           throws ProtocolMethodException
-                                               {
-                                                   fail("Invalid dispatch");
-                                                   return false;
-                                               }
+            @Override
+            public Boolean execute(NodeProtocol protocol, Reference reference)
+                    throws ProtocolMethodException
+            {
+                fail("Invalid dispatch");
+                return false;
+            }
 
-                                               @Override
-                                               public Boolean execute(Protocol protocol, Reference reference)
-                                                           throws ProtocolMethodException
-                                               {
-                                                   return true;
-                                               }
-                                           },
-                                           r);
+            @Override
+            public Boolean execute(Protocol protocol, Reference reference)
+                    throws ProtocolMethodException
+            {
+                return true;
+            }
+        },
+                r);
 
         assertTrue(sccess);
     }

@@ -33,8 +33,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
 import javax.crypto.SealedObject;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
 import org.alfresco.repo.batch.BatchProcessor;
@@ -54,23 +59,15 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
- * Re-encrypts encryptable repository properties using a new set of encryption keys.
- * Decrypts the repository properties using the default encryptor, falling back to
- * a backup decryptor (using the old encryption keys) if necessary, and then re-encrypts
- * the properties.
+ * Re-encrypts encryptable repository properties using a new set of encryption keys. Decrypts the repository properties using the default encryptor, falling back to a backup decryptor (using the old encryption keys) if necessary, and then re-encrypts the properties.
  * 
  * Can run in one of two ways:
  * 
  * <ul>
- * <li> during bootstrap.
- * <li> by using JMX (available only to Enterprise). In this case, the system can stay running while the re-encryption takes place.
+ * <li>during bootstrap.
+ * <li>by using JMX (available only to Enterprise). In this case, the system can stay running while the re-encryption takes place.
  * </ul>
  * 
  * @since 4.0
@@ -82,9 +79,9 @@ public class ReEncryptor implements ApplicationContextAware
     private NodeDAO nodeDAO;
     private DictionaryDAO dictionaryDAO;
     private QNameDAO qnameDAO;
-    
+
     private MetadataEncryptor metadataEncryptor;
-    
+
     private ApplicationContext applicationContext;
     private TransactionService transactionService;
     private RetryingTransactionHelper transactionHelper;
@@ -92,7 +89,7 @@ public class ReEncryptor implements ApplicationContextAware
     private int numThreads;
     private int chunkSize;
     private boolean splitTxns = true;
-    
+
     private static final QName LOCK = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "OrphanReaper");
     private JobLockService jobLockService;
 
@@ -104,7 +101,7 @@ public class ReEncryptor implements ApplicationContextAware
         this.transactionService = transactionService;
         this.transactionHelper = transactionService.getRetryingTransactionHelper();
     }
-    
+
     public void setMetadataEncryptor(MetadataEncryptor metadataEncryptor)
     {
         this.metadataEncryptor = metadataEncryptor;
@@ -114,12 +111,12 @@ public class ReEncryptor implements ApplicationContextAware
     {
         return metadataEncryptor;
     }
-    
+
     public void setJobLockService(JobLockService jobLockService)
     {
         this.jobLockService = jobLockService;
     }
-    
+
     public void setNumThreads(int numThreads)
     {
         this.numThreads = numThreads;
@@ -182,11 +179,10 @@ public class ReEncryptor implements ApplicationContextAware
     protected void reEncryptProperties(final List<NodePropertyEntity> properties, final String lockToken)
     {
         final Iterator<NodePropertyEntity> it = properties.iterator();
-        
+
         // TODO use BatchProcessWorkerAdaptor?
-        
-        BatchProcessor.BatchProcessWorker<NodePropertyEntity> worker = new BatchProcessor.BatchProcessWorker<NodePropertyEntity>()
-        {
+
+        BatchProcessor.BatchProcessWorker<NodePropertyEntity> worker = new BatchProcessor.BatchProcessWorker<NodePropertyEntity>() {
             public String getIdentifier(NodePropertyEntity entity)
             {
                 return String.valueOf(entity.getNodeId());
@@ -198,17 +194,16 @@ public class ReEncryptor implements ApplicationContextAware
             }
 
             public void afterProcess() throws Throwable
-            {
-            }
+            {}
 
             public void process(final NodePropertyEntity entity) throws Throwable
             {
                 NodePropertyValue nodePropValue = entity.getValue();
                 // TODO check that we have the correct type i.e. can be cast to Serializable
                 Serializable value = nodePropValue.getSerializableValue();
-                if(value instanceof SealedObject)
+                if (value instanceof SealedObject)
                 {
-                    SealedObject sealed = (SealedObject)value;
+                    SealedObject sealed = (SealedObject) value;
 
                     NodePropertyKey propertyKey = entity.getKey();
                     QName propertyQName = qnameDAO.getQName(propertyKey.getQnameId()).getSecond();
@@ -218,7 +213,7 @@ public class ReEncryptor implements ApplicationContextAware
 
                     // ...and then re-encrypt. The new key will be used.
                     Serializable resealed = metadataEncryptor.encrypt(propertyQName, decrypted);
-                    
+
                     // TODO update resealed using batch update?
                     // does the node DAO do batch updating?
                     nodeDAO.setNodeProperties(entity.getNodeId(), Collections.singletonMap(propertyQName, resealed));
@@ -233,8 +228,7 @@ public class ReEncryptor implements ApplicationContextAware
             }
         };
 
-        BatchProcessWorkProvider<NodePropertyEntity> provider = new BatchProcessWorkProvider<NodePropertyEntity>()
-        {
+        BatchProcessWorkProvider<NodePropertyEntity> provider = new BatchProcessWorkProvider<NodePropertyEntity>() {
             @Override
             public int getTotalEstimatedWorkSize()
             {
@@ -252,10 +246,10 @@ public class ReEncryptor implements ApplicationContextAware
             {
                 List<NodePropertyEntity> sublist = new ArrayList<NodePropertyEntity>(chunkSize);
 
-                synchronized(it)
+                synchronized (it)
                 {
                     int count = 0;
-                    while(it.hasNext() && count < chunkSize)
+                    while (it.hasNext() && count < chunkSize)
                     {
                         sublist.add(it.next());
                         count++;
@@ -280,7 +274,7 @@ public class ReEncryptor implements ApplicationContextAware
      */
     public int bootstrapReEncrypt() throws MissingKeyException
     {
-        if(!metadataEncryptor.backupKeyAvailable(KeyProvider.ALIAS_METADATA))
+        if (!metadataEncryptor.backupKeyAvailable(KeyProvider.ALIAS_METADATA))
         {
             throw new MissingKeyException("Backup key store is either not present or does not contain a metadata encryption key");
         }
@@ -288,26 +282,23 @@ public class ReEncryptor implements ApplicationContextAware
     }
 
     /**
-     * Re-encrypt by decrypting using the configured keystore and encrypting using a keystore configured using the provided new key store parameters.
-     * Called from e.g. JMX.
+     * Re-encrypt by decrypting using the configured keystore and encrypting using a keystore configured using the provided new key store parameters. Called from e.g. JMX.
      * 
      * Assumes that the main key store has been already been reloaded.
      * 
-     * Note: it is the responsibility of the end user to ensure that the underlying keystores have been set up appropriately
-     * i.e. the old key store is backed up to the location defined by the property '${dir.keystore}/backup-keystore' and the new
-     * key store replaces it. This can be done while the repository is running.
+     * Note: it is the responsibility of the end user to ensure that the underlying keystores have been set up appropriately i.e. the old key store is backed up to the location defined by the property '${dir.keystore}/backup-keystore' and the new key store replaces it. This can be done while the repository is running.
      */
     public int reEncrypt() throws MissingKeyException
     {
-        if(!metadataEncryptor.keyAvailable(KeyProvider.ALIAS_METADATA))
+        if (!metadataEncryptor.keyAvailable(KeyProvider.ALIAS_METADATA))
         {
             throw new MissingKeyException("Main key store is either not present or does not contain a metadata encryption key");
         }
-        if(!metadataEncryptor.backupKeyAvailable(KeyProvider.ALIAS_METADATA))
+        if (!metadataEncryptor.backupKeyAvailable(KeyProvider.ALIAS_METADATA))
         {
             throw new MissingKeyException("Backup key store is either not present or does not contain a metadata encryption key");
         }
-        
+
         int numProps = reEncryptImpl();
         return numProps;
     }
@@ -315,8 +306,7 @@ public class ReEncryptor implements ApplicationContextAware
     protected int reEncryptImpl()
     {
         // Take out a re-encryptor lock
-        RetryingTransactionCallback<String> txnWork = new RetryingTransactionCallback<String>()
-        {
+        RetryingTransactionCallback<String> txnWork = new RetryingTransactionCallback<String>() {
             public String execute() throws Exception
             {
                 String lockToken = getLock(20000L);
@@ -325,7 +315,7 @@ public class ReEncryptor implements ApplicationContextAware
         };
 
         String lockToken = transactionService.getRetryingTransactionHelper().doInTransaction(txnWork, false, true);
-        if(lockToken == null)
+        if (lockToken == null)
         {
             logger.warn("Can't get lock. Assume multiple re-encryptors ...");
             return 0;
@@ -334,7 +324,7 @@ public class ReEncryptor implements ApplicationContextAware
         // get encrypted properties
         Collection<PropertyDefinition> propertyDefs = dictionaryDAO.getPropertiesOfDataType(DataTypeDefinition.ENCRYPTED);
         Set<QName> qnames = new HashSet<QName>();
-        for(PropertyDefinition propDef : propertyDefs)
+        for (PropertyDefinition propDef : propertyDefs)
         {
             qnames.add(propDef.getName());
         }
@@ -342,7 +332,7 @@ public class ReEncryptor implements ApplicationContextAware
         // TODO use callback mechanism, or select based on set of nodes?
         List<NodePropertyEntity> properties = nodeDAO.selectNodePropertiesByTypes(qnames);
 
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
             logger.debug("Found " + properties.size() + " properties to re-encrypt...");
         }
@@ -350,7 +340,7 @@ public class ReEncryptor implements ApplicationContextAware
         // reencrypt these properties TODO don't call if num props == 0
         reEncryptProperties(properties, lockToken);
 
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
             logger.debug("...done re-encrypting.");
         }

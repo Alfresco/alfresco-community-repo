@@ -41,20 +41,18 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 /**
- * A factory bean, normally used in conjunction with {@link ChildApplicationContextFactory} allowing selected
- * interfaces in a child application context to be proxied by a bean in the parent application context. This allows
- * 'hot-swapping' and reconfiguration of entire subsystems.
+ * A factory bean, normally used in conjunction with {@link ChildApplicationContextFactory} allowing selected interfaces in a child application context to be proxied by a bean in the parent application context. This allows 'hot-swapping' and reconfiguration of entire subsystems.
  */
 public class SubsystemProxyFactory extends ProxyFactoryBean implements ApplicationContextAware
 {
     private static final long serialVersionUID = -4186421942840611218L;
-    
+
     /** The source application context factory. */
     private ApplicationContextFactory sourceApplicationContextFactory;
     private String sourceApplicationContextFactoryName;
-    
+
     private ApplicationContext applicationContext;
-    
+
     /** An optional bean name to look up in the source application context **/
     private String sourceBeanName;
 
@@ -62,15 +60,14 @@ public class SubsystemProxyFactory extends ProxyFactoryBean implements Applicati
     private ApplicationContext context;
     private Object sourceBean;
     private Object defaultBean;
-    private Map <Class<?>, Object> typedBeans = new HashMap<Class<?>, Object>(7);
+    private Map<Class<?>, Object> typedBeans = new HashMap<Class<?>, Object>(7);
 
     /**
      * Instantiates a new managed subsystem proxy factory.
      */
     public SubsystemProxyFactory()
     {
-        addAdvisor(new DefaultPointcutAdvisor(new MethodInterceptor()
-        {
+        addAdvisor(new DefaultPointcutAdvisor(new MethodInterceptor() {
             public Object invoke(MethodInvocation mi) throws Throwable
             {
                 Method method = mi.getMethod();
@@ -96,7 +93,6 @@ public class SubsystemProxyFactory extends ProxyFactoryBean implements Applicati
         setTargetClass(getObjectType());
     }
 
-
     /**
      * Sets the source application context factory by name.
      * 
@@ -118,7 +114,7 @@ public class SubsystemProxyFactory extends ProxyFactoryBean implements Applicati
     {
         this.sourceApplicationContextFactory = sourceApplicationContextFactory;
     }
-    
+
     private ApplicationContextFactory getSourceApplicationContextFactory()
     {
         if (sourceApplicationContextFactory != null)
@@ -130,13 +126,14 @@ public class SubsystemProxyFactory extends ProxyFactoryBean implements Applicati
             try
             {
                 return applicationContext.getBean(sourceApplicationContextFactoryName, ApplicationContextFactory.class);
-            } catch (NoSuchBeanDefinitionException e)
+            }
+            catch (NoSuchBeanDefinitionException e)
             {
                 return null;
             }
         }
     }
-    
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
@@ -144,8 +141,7 @@ public class SubsystemProxyFactory extends ProxyFactoryBean implements Applicati
     }
 
     /**
-     * Sets an optional bean name to target all calls to in the source application context. If not set, an appropriate
-     * bean is looked up based on method class.
+     * Sets an optional bean name to target all calls to in the source application context. If not set, an appropriate bean is looked up based on method class.
      * 
      * @param sourceBeanName
      *            the sourceBeanName to set
@@ -154,10 +150,9 @@ public class SubsystemProxyFactory extends ProxyFactoryBean implements Applicati
     {
         this.sourceBeanName = sourceBeanName;
     }
-    
+
     /**
-     * Sets an optional default bean to be used if the target bean is not found. Generally used when a subsystem does not
-     * exist.
+     * Sets an optional default bean to be used if the target bean is not found. Generally used when a subsystem does not exist.
      * 
      * @param defaultBean
      *            the defaultBean to set
@@ -166,7 +161,7 @@ public class SubsystemProxyFactory extends ProxyFactoryBean implements Applicati
     {
         this.defaultBean = defaultBean;
     }
-    
+
     // Bring our cached copies of the source beans in line with the application context factory, using a RW lock to
     // ensure consistency
     protected Object locateBean(MethodInvocation mi)
@@ -197,7 +192,7 @@ public class SubsystemProxyFactory extends ProxyFactoryBean implements Applicati
                 }
                 if (this.sourceBean == null)
                 {
-                    Method method = mi.getMethod();                
+                    Method method = mi.getMethod();
                     Class<?> type = method.getDeclaringClass();
                     Object bean = this.typedBeans.get(type);
                     if (bean == null)

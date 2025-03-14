@@ -31,7 +31,7 @@ import org.alfresco.rest.framework.resource.EntityResource;
 /**
  * Retention schedule entity resource
  */
-@EntityResource(name="retention-schedules", title = "Retention Schedule")
+@EntityResource(name = "retention-schedules", title = "Retention Schedule")
 public class RetentionScheduleEntityResource
 {
 

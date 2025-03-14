@@ -29,6 +29,9 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASPECTNAMES;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASSOCIATION;
@@ -41,8 +44,17 @@ import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_PROPERTIES;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_CMIS_ALFRESCO;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_FTS_ALFRESCO;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_LUCENE;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import org.alfresco.rest.api.search.context.SearchRequestContext;
 import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.impl.StoreMapper;
@@ -75,15 +87,6 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.search.StatsRequestParameters;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 
 /**
  * Tests the SearchMapper class
@@ -116,8 +119,8 @@ public class SearchMapperTests
         SearchParameters searchParameters = searchMapper.toSearchParameters(ResultMapperTests.EMPTY_PARAMS, minimalQuery(), searchRequest);
         assertNotNull(searchParameters);
 
-        //Test defaults
-        assertEquals("There should be only 1 default store", 1,searchParameters.getStores().size());
+        // Test defaults
+        assertEquals("There should be only 1 default store", 1, searchParameters.getStores().size());
         assertEquals("workspaces store is the default", StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, searchParameters.getStores().get(0));
         assertEquals(LimitBy.FINAL_SIZE, searchParameters.getLimitBy());
         assertEquals(100, searchParameters.getLimit());
@@ -132,17 +135,18 @@ public class SearchMapperTests
         SearchParameters searchParameters = new SearchParameters();
         try
         {
-            searchMapper.fromQuery(searchParameters, new Query(null,null, null));
+            searchMapper.fromQuery(searchParameters, new Query(null, null, null));
             fail();
-        } catch (IllegalArgumentException iae)
+        }
+        catch (IllegalArgumentException iae)
         {
             assertTrue(iae.getLocalizedMessage().contains("query is a mandatory parameter"));
         }
 
-        Query q = new Query(null,"hello", null);
+        Query q = new Query(null, "hello", null);
 
         searchMapper.fromQuery(searchParameters, q);
-        //Default
+        // Default
         assertEquals(LANGUAGE_FTS_ALFRESCO, searchParameters.getLanguage());
 
         q = new Query("world", "hello", null);
@@ -151,10 +155,11 @@ public class SearchMapperTests
         {
             searchMapper.fromQuery(searchParameters, q);
             fail();
-        } catch (InvalidArgumentException iae)
+        }
+        catch (InvalidArgumentException iae)
         {
             assertNotNull(iae);
-            //world is not a valid language type
+            // world is not a valid language type
         }
 
         q = new Query("afts", "hello", null);
@@ -180,21 +185,20 @@ public class SearchMapperTests
     public void fromPaging() throws Exception
     {
         SearchParameters searchParameters = new SearchParameters();
-        //Doesn't error
+        // Doesn't error
         searchMapper.fromPaging(searchParameters, null);
 
         Paging paging = Paging.DEFAULT;
         searchMapper.fromPaging(searchParameters, paging);
-        assertEquals(searchParameters.getLimit(),paging.getMaxItems());
-        assertEquals(searchParameters.getSkipCount(),paging.getSkipCount());
+        assertEquals(searchParameters.getLimit(), paging.getMaxItems());
+        assertEquals(searchParameters.getSkipCount(), paging.getSkipCount());
     }
-
 
     @Test
     public void fromSort() throws Exception
     {
         SearchParameters searchParameters = new SearchParameters();
-        //Doesn't error
+        // Doesn't error
         searchMapper.fromSort(searchParameters, null);
 
         try
@@ -204,30 +208,29 @@ public class SearchMapperTests
         }
         catch (InvalidArgumentException iae)
         {
-            //wrongenum is illegal
+            // wrongenum is illegal
             assertNotNull(iae);
         }
 
         searchMapper.fromSort(searchParameters, Arrays.asList(new SortDef("FIELD", "my", true), new SortDef("SCORE", null, false), new SortDef("DOCUMENT", null, true)));
-        assertEquals(3 , searchParameters.getSortDefinitions().size());
-        searchParameters.getSortDefinitions().forEach(sortDefinition ->
-        {
+        assertEquals(3, searchParameters.getSortDefinitions().size());
+        searchParameters.getSortDefinitions().forEach(sortDefinition -> {
             switch (sortDefinition.getSortType())
             {
-                case FIELD:
-                    assertEquals("my", sortDefinition.getField());
-                    assertEquals(true, sortDefinition.isAscending());
-                    break;
-                case SCORE:
-                    assertNull(sortDefinition.getField());
-                    assertEquals(false, sortDefinition.isAscending());
-                    break;
-                case DOCUMENT:
-                    assertNull(sortDefinition.getField());
-                    assertEquals(true, sortDefinition.isAscending());
-                    break;
-                default:
-                    fail("Invalid sortDefinition");
+            case FIELD:
+                assertEquals("my", sortDefinition.getField());
+                assertEquals(true, sortDefinition.isAscending());
+                break;
+            case SCORE:
+                assertNull(sortDefinition.getField());
+                assertEquals(false, sortDefinition.isAscending());
+                break;
+            case DOCUMENT:
+                assertNull(sortDefinition.getField());
+                assertEquals(true, sortDefinition.isAscending());
+                break;
+            default:
+                fail("Invalid sortDefinition");
             }
         });
 
@@ -240,58 +243,57 @@ public class SearchMapperTests
         }
         catch (InvalidArgumentException iae)
         {
-            //You can't specify SORT when using the CMIS language
+            // You can't specify SORT when using the CMIS language
             assertNotNull(iae);
         }
     }
-
 
     @Test
     public void fromTemplate() throws Exception
     {
         SearchParameters searchParameters = new SearchParameters();
-        //Doesn't error
+        // Doesn't error
         searchMapper.fromTemplate(searchParameters, null);
 
         searchMapper.fromTemplate(searchParameters, Arrays.asList(new Template("hedge", "hog"), new Template("king", "kong"), new Template("bish", "bash")));
-        assertEquals(3 ,searchParameters.getQueryTemplates().size());
-        assertEquals("hog" ,searchParameters.getQueryTemplates().get("hedge"));
-        assertEquals("kong" ,searchParameters.getQueryTemplates().get("king"));
-        assertEquals("bash" ,searchParameters.getQueryTemplates().get("bish"));
+        assertEquals(3, searchParameters.getQueryTemplates().size());
+        assertEquals("hog", searchParameters.getQueryTemplates().get("hedge"));
+        assertEquals("kong", searchParameters.getQueryTemplates().get("king"));
+        assertEquals("bash", searchParameters.getQueryTemplates().get("bish"));
     }
 
     @Test
     public void fromDefaults() throws Exception
     {
         SearchParameters searchParameters = new SearchParameters();
-        //Doesn't error
+        // Doesn't error
         searchMapper.fromDefault(searchParameters, null);
-        searchMapper.fromDefault(searchParameters, new Default(null,null,null,null,null));
+        searchMapper.fromDefault(searchParameters, new Default(null, null, null, null, null));
 
-        searchMapper.fromDefault(searchParameters, new Default(null,"AND",null,null,null));
+        searchMapper.fromDefault(searchParameters, new Default(null, "AND", null, null, null));
         assertEquals("AND", searchParameters.getDefaultFTSOperator().toString());
 
-        searchMapper.fromDefault(searchParameters, new Default(null, null, "or", null,null));
+        searchMapper.fromDefault(searchParameters, new Default(null, null, "or", null, null));
         assertEquals("OR", searchParameters.getDefaultFTSFieldOperator().toString());
 
         try
         {
-            searchMapper.fromDefault(searchParameters, new Default(null, null, "ELSE", null,null));
+            searchMapper.fromDefault(searchParameters, new Default(null, null, "ELSE", null, null));
             fail();
         }
         catch (IllegalArgumentException iae)
         {
-            //ELSE is illegal
+            // ELSE is illegal
             assertNotNull(iae);
         }
 
-        searchMapper.fromDefault(searchParameters, new Default(null, null, null, "nspa","dfn"));
+        searchMapper.fromDefault(searchParameters, new Default(null, null, null, "nspa", "dfn"));
         assertEquals("nspa", searchParameters.getNamespace());
         assertEquals("dfn", searchParameters.getDefaultFieldName());
 
-        assertEquals(0 , searchParameters.getTextAttributes().size());
-        searchMapper.fromDefault(searchParameters, new Default(Arrays.asList("sausage", "mash"), null, null, null,null));
-        assertEquals(2 , searchParameters.getTextAttributes().size());
+        assertEquals(0, searchParameters.getTextAttributes().size());
+        searchMapper.fromDefault(searchParameters, new Default(Arrays.asList("sausage", "mash"), null, null, null, null));
+        assertEquals(2, searchParameters.getTextAttributes().size());
         assertTrue(searchParameters.getTextAttributes().contains("sausage"));
         assertTrue(searchParameters.getTextAttributes().contains("mash"));
     }
@@ -299,18 +301,17 @@ public class SearchMapperTests
     @Test
     public void searchParameterIncludesValidation_validInclude_shouldReturnSuccessfulValidation()
     {
-        searchMapper.validateInclude(Arrays.asList(PARAM_INCLUDE_ALLOWABLEOPERATIONS,PARAM_INCLUDE_ASPECTNAMES,
+        searchMapper.validateInclude(Arrays.asList(PARAM_INCLUDE_ALLOWABLEOPERATIONS, PARAM_INCLUDE_ASPECTNAMES,
                 PARAM_INCLUDE_ISLINK, PARAM_INCLUDE_PATH, PARAM_INCLUDE_PROPERTIES,
                 PARAM_INCLUDE_ASSOCIATION, PARAM_INCLUDE_ISLOCKED, PARAM_INCLUDE_PERMISSIONS, PARAM_INCLUDE_ISFAVORITE));
     }
 
-    
     @Test
     public void searchParameterIncludesValidation_invalidInclude_shouldThrowInvalidArgumentException() throws Exception
     {
         try
         {
-            searchMapper.validateInclude(Arrays.asList(PARAM_INCLUDE_ALLOWABLEOPERATIONS,PARAM_INCLUDE_ASPECTNAMES,
+            searchMapper.validateInclude(Arrays.asList(PARAM_INCLUDE_ALLOWABLEOPERATIONS, PARAM_INCLUDE_ASPECTNAMES,
                     PARAM_INCLUDE_ISLINK, PARAM_INCLUDE_PATH, "notValid",
                     PARAM_INCLUDE_ASSOCIATION, PARAM_INCLUDE_ISLOCKED));
             fail();
@@ -319,9 +320,9 @@ public class SearchMapperTests
         {
             assertNotNull(exception);
         }
-        
+
     }
-    
+
     @Test
     public void validateInclude() throws Exception
     {
@@ -332,8 +333,8 @@ public class SearchMapperTests
         }
         catch (InvalidArgumentException iae)
         {
-           //Sausage is illegal
-           assertNotNull(iae);
+            // Sausage is illegal
+            assertNotNull(iae);
         }
 
         searchMapper.validateInclude(null);
@@ -345,7 +346,7 @@ public class SearchMapperTests
         }
         catch (InvalidArgumentException iae)
         {
-            //Case sensitive
+            // Case sensitive
             assertNotNull(iae);
         }
 
@@ -356,12 +357,12 @@ public class SearchMapperTests
     public void fromFilterQuery() throws Exception
     {
         SearchParameters searchParameters = new SearchParameters();
-        //Doesn't error
+        // Doesn't error
 
         searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("hedgehog", null, null), new FilterQuery("king", null, null)));
-        assertEquals(2 ,searchParameters.getFilterQueries().size());
-        assertEquals("hedgehog" ,searchParameters.getFilterQueries().get(0));
-        assertEquals("king" ,searchParameters.getFilterQueries().get(1));
+        assertEquals(2, searchParameters.getFilterQueries().size());
+        assertEquals("hedgehog", searchParameters.getFilterQueries().get(0));
+        assertEquals("king", searchParameters.getFilterQueries().get(1));
 
         searchParameters = new SearchParameters();
         searchParameters.setLanguage(SearchService.LANGUAGE_CMIS_ALFRESCO);
@@ -372,7 +373,7 @@ public class SearchMapperTests
         }
         catch (InvalidArgumentException iae)
         {
-            //You can't specify FilterQuery when using the CMIS language
+            // You can't specify FilterQuery when using the CMIS language
             assertNotNull(iae);
         }
 
@@ -384,66 +385,66 @@ public class SearchMapperTests
         }
         catch (IllegalArgumentException iae)
         {
-            //You can't specify FilterQuery when using the CMIS language
+            // You can't specify FilterQuery when using the CMIS language
             assertNotNull(iae);
         }
 
         searchParameters = new SearchParameters();
         searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{!afts}description:xyz", Arrays.asList("desc1", "desc2"), null)));
-        assertEquals("{!afts tag=desc1,desc2 }description:xyz" ,searchParameters.getFilterQueries().get(0));
+        assertEquals("{!afts tag=desc1,desc2 }description:xyz", searchParameters.getFilterQueries().get(0));
         searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{!afts}description:xyz", Arrays.asList("desc1"), null)));
-        assertEquals("{!afts tag=desc1 }description:xyz" ,searchParameters.getFilterQueries().get(1));
+        assertEquals("{!afts tag=desc1 }description:xyz", searchParameters.getFilterQueries().get(1));
         searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("description:xyz", Arrays.asList("desc1"), null)));
-        assertEquals("{!afts tag=desc1 }description:xyz" ,searchParameters.getFilterQueries().get(2));
+        assertEquals("{!afts tag=desc1 }description:xyz", searchParameters.getFilterQueries().get(2));
         searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{!afts} description:xyz", Arrays.asList("desc1"), null)));
-        assertEquals("{!afts tag=desc1 } description:xyz" ,searchParameters.getFilterQueries().get(3));
+        assertEquals("{!afts tag=desc1 } description:xyz", searchParameters.getFilterQueries().get(3));
         searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery(" {!afts cake} description:xyz", Arrays.asList("desc1"), null)));
-        assertEquals("{!afts tag=desc1 cake} description:xyz" ,searchParameters.getFilterQueries().get(4));
+        assertEquals("{!afts tag=desc1 cake} description:xyz", searchParameters.getFilterQueries().get(4));
         searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{!afts tag=desc1}description:xyz", Arrays.asList("desc1"), null)));
-        assertEquals("{!afts tag=desc1}description:xyz" ,searchParameters.getFilterQueries().get(5));
+        assertEquals("{!afts tag=desc1}description:xyz", searchParameters.getFilterQueries().get(5));
         searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("created:2011", Arrays.asList("desc1"), null)));
-        assertEquals("{!afts tag=desc1 }created:2011" ,searchParameters.getFilterQueries().get(6));
+        assertEquals("{!afts tag=desc1 }created:2011", searchParameters.getFilterQueries().get(6));
         searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("=cm:name:cabbage", Arrays.asList("desc1"), null)));
-        assertEquals("{!afts tag=desc1 }=cm:name:cabbage" ,searchParameters.getFilterQueries().get(7));
+        assertEquals("{!afts tag=desc1 }=cm:name:cabbage", searchParameters.getFilterQueries().get(7));
         searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{http://www.alfresco.org/model/content/1.0}title:workflow", null, null)));
-        assertEquals("{http://www.alfresco.org/model/content/1.0}title:workflow" ,searchParameters.getFilterQueries().get(8));
+        assertEquals("{http://www.alfresco.org/model/content/1.0}title:workflow", searchParameters.getFilterQueries().get(8));
         searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{http://www.alfresco.org/model/content/1.0}title:workflow", Arrays.asList("desc1"), null)));
-        assertEquals("{!afts tag=desc1 }{http://www.alfresco.org/model/content/1.0}title:workflow" ,searchParameters.getFilterQueries().get(9));
+        assertEquals("{!afts tag=desc1 }{http://www.alfresco.org/model/content/1.0}title:workflow", searchParameters.getFilterQueries().get(9));
         searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{!afts} description:xyz", Arrays.asList("desc1", "desc2"), null)));
-        assertEquals("{!afts tag=desc1,desc2 }description:xyz" ,searchParameters.getFilterQueries().get(0));
+        assertEquals("{!afts tag=desc1,desc2 }description:xyz", searchParameters.getFilterQueries().get(0));
         searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{ !afts } description:xyz", Arrays.asList("desc1", "desc2"), null)));
-        assertEquals("{!afts tag=desc1,desc2 }description:xyz" ,searchParameters.getFilterQueries().get(0));
+        assertEquals("{!afts tag=desc1,desc2 }description:xyz", searchParameters.getFilterQueries().get(0));
 
-        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery(null, Arrays.asList("desc1"),  Arrays.asList("cm:name:cabbage", "cm:creator:bob"))));
-        assertEquals("{!afts tag=desc1 }cm:name:cabbage OR cm:creator:bob" ,searchParameters.getFilterQueries().get(12));
-        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery(null, null,  Arrays.asList("cm:name:cabbage", "cm:creator:bob"))));
-        assertEquals("cm:name:cabbage OR cm:creator:bob" ,searchParameters.getFilterQueries().get(13));
-        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery(null, null,  Arrays.asList("cm:name:cabbage"))));
-        assertEquals("cm:name:cabbage" ,searchParameters.getFilterQueries().get(14));
-        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("created:2011", null,  Arrays.asList("cm:name:cabbage"))));
-        assertEquals("Single query should take precident over multiple queries ORed together.","created:2011" ,searchParameters.getFilterQueries().get(15));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery(null, Arrays.asList("desc1"), Arrays.asList("cm:name:cabbage", "cm:creator:bob"))));
+        assertEquals("{!afts tag=desc1 }cm:name:cabbage OR cm:creator:bob", searchParameters.getFilterQueries().get(12));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery(null, null, Arrays.asList("cm:name:cabbage", "cm:creator:bob"))));
+        assertEquals("cm:name:cabbage OR cm:creator:bob", searchParameters.getFilterQueries().get(13));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery(null, null, Arrays.asList("cm:name:cabbage"))));
+        assertEquals("cm:name:cabbage", searchParameters.getFilterQueries().get(14));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("created:2011", null, Arrays.asList("cm:name:cabbage"))));
+        assertEquals("Single query should take precident over multiple queries ORed together.", "created:2011", searchParameters.getFilterQueries().get(15));
     }
 
     @Test
     public void fromFacetQuery() throws Exception
     {
         SearchParameters searchParameters = new SearchParameters();
-        //Doesn't error
+        // Doesn't error
         searchMapper.fromFacetQuery(searchParameters, null);
 
-        searchMapper.fromFacetQuery(searchParameters, Arrays.asList(new FacetQuery("ping", null,null), new FacetQuery("pong", "table",null)));
-        assertEquals(2 ,searchParameters.getFacetQueries().size());
-        assertEquals("{!afts key='ping'}ping" ,searchParameters.getFacetQueries().get(0));
-        assertEquals("{!afts key='table'}pong" ,searchParameters.getFacetQueries().get(1));
+        searchMapper.fromFacetQuery(searchParameters, Arrays.asList(new FacetQuery("ping", null, null), new FacetQuery("pong", "table", null)));
+        assertEquals(2, searchParameters.getFacetQueries().size());
+        assertEquals("{!afts key='ping'}ping", searchParameters.getFacetQueries().get(0));
+        assertEquals("{!afts key='table'}pong", searchParameters.getFacetQueries().get(1));
 
         try
         {
-            searchMapper.fromFacetQuery(searchParameters, Arrays.asList(new FacetQuery("ping", null,null),new FacetQuery("{!afts}pang", "tennis",null)));
+            searchMapper.fromFacetQuery(searchParameters, Arrays.asList(new FacetQuery("ping", null, null), new FacetQuery("{!afts}pang", "tennis", null)));
             fail();
         }
         catch (InvalidArgumentException iae)
         {
-            //Cannot start with afts
+            // Cannot start with afts
             assertNotNull(iae);
         }
     }
@@ -452,7 +453,7 @@ public class SearchMapperTests
     public void fromSpelling() throws Exception
     {
         SearchParameters searchParameters = new SearchParameters();
-        //Doesn't error
+        // Doesn't error
         searchMapper.fromSpellCheck(searchParameters, null);
         assertFalse(searchParameters.isSpellCheck());
 
@@ -463,18 +464,18 @@ public class SearchMapperTests
         }
         catch (InvalidArgumentException iae)
         {
-            //Can't be null
+            // Can't be null
             assertNotNull(iae);
         }
 
-        //Now set search term first
+        // Now set search term first
         searchParameters.setSearchTerm("fred");
         searchMapper.fromSpellCheck(searchParameters, new Spelling(null));
-        assertEquals("fred",searchParameters.getSearchTerm());
+        assertEquals("fred", searchParameters.getSearchTerm());
 
-        //Now query replaces userQuery (search term)
+        // Now query replaces userQuery (search term)
         searchMapper.fromSpellCheck(searchParameters, new Spelling("favourit"));
-        assertEquals("favourit",searchParameters.getSearchTerm());
+        assertEquals("favourit", searchParameters.getSearchTerm());
         assertTrue(searchParameters.isSpellCheck());
     }
 
@@ -485,12 +486,12 @@ public class SearchMapperTests
         searchMapper.setDefaults(searchParameters);
         SearchRequestContext searchRequestContext = SearchRequestContext.from(minimalQuery());
 
-        //Doesn't error, has default store
+        // Doesn't error, has default store
         searchMapper.fromScope(searchParameters, null, searchRequestContext);
-        assertEquals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,searchParameters.getStores().get(0));
+        assertEquals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, searchParameters.getStores().get(0));
 
         searchMapper.fromScope(searchParameters, new Scope(null), searchRequestContext);
-        assertEquals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,searchParameters.getStores().get(0));
+        assertEquals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, searchParameters.getStores().get(0));
 
         try
         {
@@ -499,20 +500,20 @@ public class SearchMapperTests
         }
         catch (InvalidArgumentException iae)
         {
-            //Must be a valid store ref
+            // Must be a valid store ref
             assertNotNull(iae);
         }
 
         searchMapper.fromScope(searchParameters, new Scope(Arrays.asList(StoreMapper.DELETED, StoreMapper.LIVE_NODES, StoreMapper.VERSIONS)),
-                    searchRequestContext);
-        assertEquals(3 ,searchParameters.getStores().size());
-        assertEquals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE.toString(),searchParameters.getStores().get(0).toString());
-        assertEquals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.toString(),searchParameters.getStores().get(1).toString());
-        assertEquals(StoreMapper.STORE_REF_VERSION2_SPACESSTORE.toString(),searchParameters.getStores().get(2).toString());
+                searchRequestContext);
+        assertEquals(3, searchParameters.getStores().size());
+        assertEquals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE.toString(), searchParameters.getStores().get(0).toString());
+        assertEquals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.toString(), searchParameters.getStores().get(1).toString());
+        assertEquals(StoreMapper.STORE_REF_VERSION2_SPACESSTORE.toString(), searchParameters.getStores().get(2).toString());
 
         searchMapper.fromScope(searchParameters, new Scope(Arrays.asList(StoreMapper.HISTORY)), searchRequestContext);
-        assertEquals(1 ,searchParameters.getStores().size());
-        assertEquals(StoreMapper.STORE_REF_HISTORY.toString(),searchParameters.getStores().get(0).toString());
+        assertEquals(1, searchParameters.getStores().size());
+        assertEquals(StoreMapper.STORE_REF_HISTORY.toString(), searchParameters.getStores().get(0).toString());
 
         try
         {
@@ -521,10 +522,9 @@ public class SearchMapperTests
         }
         catch (InvalidArgumentException iae)
         {
-            //Must be a valid scope with history
+            // Must be a valid scope with history
             assertNotNull(iae);
         }
-
 
         try
         {
@@ -533,7 +533,7 @@ public class SearchMapperTests
         }
         catch (InvalidArgumentException iae)
         {
-            //Must be a valid scope with history
+            // Must be a valid scope with history
             assertNotNull(iae);
         }
 
@@ -544,7 +544,7 @@ public class SearchMapperTests
         }
         catch (InvalidArgumentException iae)
         {
-            //Must be a valid scope with history
+            // Must be a valid scope with history
             assertNotNull(iae);
         }
     }
@@ -553,60 +553,62 @@ public class SearchMapperTests
     public void fromTimezone() throws Exception
     {
         SearchParameters searchParameters = new SearchParameters();
-        //Doesn't error
+        // Doesn't error
         searchMapper.fromLocalization(searchParameters, null);
         searchMapper.fromLocalization(searchParameters, new Localization("", null));
 
         try
         {
-            searchMapper.fromLocalization(searchParameters,  new Localization("nonsense", null));
-            fail();
-        } catch (IllegalArgumentException iae)
-        {
-            assertTrue(iae.getLocalizedMessage().contains( "Invalid timezone"));
-        }
-
-        try
-        {
-            searchMapper.fromLocalization(searchParameters,  new Localization("GMT+25", null));
-            fail();
-        } catch (IllegalArgumentException iae)
-        {
-            assertTrue(iae.getLocalizedMessage().contains("Invalid timezone"));
-        }
-
-        searchMapper.fromLocalization(searchParameters,  new Localization("America/New_York", null));
-        assertEquals("America/New_York", searchParameters.getTimezone());
-        searchMapper.fromLocalization(searchParameters,  new Localization("America/Denver", null));
-        assertEquals("America/Denver", searchParameters.getTimezone());
-        searchMapper.fromLocalization(searchParameters,  new Localization("America/Los_Angeles", null));
-        assertEquals("America/Los_Angeles", searchParameters.getTimezone());
-        searchMapper.fromLocalization(searchParameters,  new Localization("Europe/Madrid", null));
-        assertEquals("Europe/Madrid", searchParameters.getTimezone());
-        searchMapper.fromLocalization(searchParameters,  new Localization("GMT+1", null));
-        assertEquals("GMT+01:00", searchParameters.getTimezone());
-        searchMapper.fromLocalization(searchParameters,  new Localization("GMT+01:00", null));
-        assertEquals("GMT+01:00", searchParameters.getTimezone());
-        searchMapper.fromLocalization(searchParameters,  new Localization("GMT-9", null));
-        assertEquals("GMT-09:00", searchParameters.getTimezone());
-        searchMapper.fromLocalization(searchParameters,  new Localization("GMT+08:00", null));
-        assertEquals("GMT+08:00", searchParameters.getTimezone());
-        searchMapper.fromLocalization(searchParameters,  new Localization("GMT-12:00", null));
-        assertEquals("GMT-12:00", searchParameters.getTimezone());
-
-        try
-        {
-            searchMapper.fromLocalization(searchParameters,  new Localization("UTC+5", null));
+            searchMapper.fromLocalization(searchParameters, new Localization("nonsense", null));
             fail();
         }
         catch (IllegalArgumentException iae)
         {
-            assertTrue("UTC is not support by java.util.timezone",iae.getLocalizedMessage().contains("Incompatible timezoneId"));
+            assertTrue(iae.getLocalizedMessage().contains("Invalid timezone"));
         }
 
         try
         {
-            searchMapper.fromLocalization(searchParameters,  new Localization("UTC+06:00", null));
+            searchMapper.fromLocalization(searchParameters, new Localization("GMT+25", null));
+            fail();
+        }
+        catch (IllegalArgumentException iae)
+        {
+            assertTrue(iae.getLocalizedMessage().contains("Invalid timezone"));
+        }
+
+        searchMapper.fromLocalization(searchParameters, new Localization("America/New_York", null));
+        assertEquals("America/New_York", searchParameters.getTimezone());
+        searchMapper.fromLocalization(searchParameters, new Localization("America/Denver", null));
+        assertEquals("America/Denver", searchParameters.getTimezone());
+        searchMapper.fromLocalization(searchParameters, new Localization("America/Los_Angeles", null));
+        assertEquals("America/Los_Angeles", searchParameters.getTimezone());
+        searchMapper.fromLocalization(searchParameters, new Localization("Europe/Madrid", null));
+        assertEquals("Europe/Madrid", searchParameters.getTimezone());
+        searchMapper.fromLocalization(searchParameters, new Localization("GMT+1", null));
+        assertEquals("GMT+01:00", searchParameters.getTimezone());
+        searchMapper.fromLocalization(searchParameters, new Localization("GMT+01:00", null));
+        assertEquals("GMT+01:00", searchParameters.getTimezone());
+        searchMapper.fromLocalization(searchParameters, new Localization("GMT-9", null));
+        assertEquals("GMT-09:00", searchParameters.getTimezone());
+        searchMapper.fromLocalization(searchParameters, new Localization("GMT+08:00", null));
+        assertEquals("GMT+08:00", searchParameters.getTimezone());
+        searchMapper.fromLocalization(searchParameters, new Localization("GMT-12:00", null));
+        assertEquals("GMT-12:00", searchParameters.getTimezone());
+
+        try
+        {
+            searchMapper.fromLocalization(searchParameters, new Localization("UTC+5", null));
+            fail();
+        }
+        catch (IllegalArgumentException iae)
+        {
+            assertTrue("UTC is not support by java.util.timezone", iae.getLocalizedMessage().contains("Incompatible timezoneId"));
+        }
+
+        try
+        {
+            searchMapper.fromLocalization(searchParameters, new Localization("UTC+06:00", null));
             fail();
         }
         catch (IllegalArgumentException iae)
@@ -619,7 +621,7 @@ public class SearchMapperTests
     public void fromLocales() throws Exception
     {
         SearchParameters searchParameters = new SearchParameters();
-        //Doesn't error
+        // Doesn't error
         searchMapper.fromLocalization(searchParameters, null);
         searchMapper.fromLocalization(searchParameters, new Localization(null, null));
         List<String> testLocales = new ArrayList<>();
@@ -634,7 +636,7 @@ public class SearchMapperTests
             assertTrue(iae.getLocalizedMessage().contains("Invalid locale"));
         }
 
-        //Unfortunately this isn't validated, language can be anything.
+        // Unfortunately this isn't validated, language can be anything.
         searchMapper.fromLocalization(searchParameters, new Localization(null, Arrays.asList("NOTTHIS")));
 
         searchParameters = new SearchParameters();
@@ -674,75 +676,77 @@ public class SearchMapperTests
     public void fromFacetFields() throws Exception
     {
         SearchParameters searchParameters = new SearchParameters();
-        //Doesn't error
+        // Doesn't error
         searchMapper.fromFacetFields(searchParameters, null);
 
         try
         {
             searchMapper.fromFacetFields(searchParameters, new FacetFields(null));
             fail();
-        } catch (IllegalArgumentException iae)
+        }
+        catch (IllegalArgumentException iae)
         {
             assertTrue(iae.getLocalizedMessage().contains("facetFields facets is a mandatory parameter"));
         }
 
         try
         {
-            searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField(null,null,null,null,null,null,null,null,null,null,null))));
+            searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField(null, null, null, null, null, null, null, null, null, null, null))));
             fail();
-        } catch (IllegalArgumentException iae)
+        }
+        catch (IllegalArgumentException iae)
         {
             assertTrue(iae.getLocalizedMessage().contains("facetFields facet field is a mandatory parameter"));
         }
 
-        searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield",null,null,null,null,null,null,null,null,null,null))));
-        assertEquals(1 ,searchParameters.getFieldFacets().size());
+        searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield", null, null, null, null, null, null, null, null, null, null))));
+        assertEquals(1, searchParameters.getFieldFacets().size());
         FieldFacet ff = searchParameters.getFieldFacets().get(0);
 
-        //Check defaults
-        //assertEquals(true, ff.getMissing());
+        // Check defaults
+        // assertEquals(true, ff.getMissing());
         assertNull(ff.getLimitOrNull());
         assertEquals(0, ff.getOffset());
         assertEquals(1, ff.getMinCount());
         assertFalse(ff.isCountDocsMissingFacetField());
         assertEquals(0, ff.getEnumMethodCacheMinDF());
 
-//        assertEquals("{key='myfield'}myfield" ,ff.getField());
+        // assertEquals("{key='myfield'}myfield" ,ff.getField());
 
         searchParameters = new SearchParameters();
-        searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield","mylabel","myprefix",null,null,null,null,null,null,null,null))));
+        searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield", "mylabel", "myprefix", null, null, null, null, null, null, null, null))));
 
         ff = searchParameters.getFieldFacets().get(0);
-//        assertEquals("{key='mylabel'}myfield" ,ff.getField());
-        assertEquals("myprefix" ,ff.getPrefix());
+        // assertEquals("{key='mylabel'}myfield" ,ff.getField());
+        assertEquals("myprefix", ff.getPrefix());
 
         try
         {
-            searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield",null,null,"badsort",null,null,null,null,null,null,null))));
+            searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield", null, null, "badsort", null, null, null, null, null, null, null))));
             fail();
         }
         catch (InvalidArgumentException iae)
         {
-            //Sort is an enum
+            // Sort is an enum
             assertNotNull(iae);
         }
 
         try
         {
-            searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield",null,null, null,"badmethod",null,null,null,null,null,null))));
+            searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield", null, null, null, "badmethod", null, null, null, null, null, null))));
             fail();
         }
         catch (InvalidArgumentException iae)
         {
-            //Method is an enum
+            // Method is an enum
             assertNotNull(iae);
         }
 
         searchParameters = new SearchParameters();
-        searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield",null,null,"INDEX","ENUM",null,null,null,null,null,null))));
+        searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield", null, null, "INDEX", "ENUM", null, null, null, null, null, null))));
         ff = searchParameters.getFieldFacets().get(0);
-        assertEquals("INDEX" ,ff.getSort().toString());
-        assertEquals("ENUM" ,ff.getMethod().toString());
+        assertEquals("INDEX", ff.getSort().toString());
+        assertEquals("ENUM", ff.getMethod().toString());
     }
 
     @Test
@@ -802,9 +806,9 @@ public class SearchMapperTests
     public void fromHighlight() throws Exception
     {
         SearchParameters searchParameters = new SearchParameters();
-        List<FieldHighlightParameters> fields = Arrays.asList(new FieldHighlightParameters("desc",50,100,false,"@","#"), new FieldHighlightParameters("title",55,105,true,"*","¿"));
+        List<FieldHighlightParameters> fields = Arrays.asList(new FieldHighlightParameters("desc", 50, 100, false, "@", "#"), new FieldHighlightParameters("title", 55, 105, true, "*", "¿"));
         GeneralHighlightParameters highlightParameters = new GeneralHighlightParameters(5, 10, false, "{", "}", 20, true, fields);
-        searchMapper.fromHighlight(searchParameters,highlightParameters);
+        searchMapper.fromHighlight(searchParameters, highlightParameters);
         assertEquals(searchParameters.getHighlight(), highlightParameters);
     }
 
@@ -815,11 +819,11 @@ public class SearchMapperTests
         searchMapper.fromStats(searchParameters, null);
 
         List<StatsRequestParameters> statsRequestParameters = new ArrayList<>(1);
-        statsRequestParameters.add(new StatsRequestParameters(null, null, null, null, null,null, null, null, null,null, null, null,null, null, null, null));
+        statsRequestParameters.add(new StatsRequestParameters(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null));
 
         try
         {
-          searchMapper.fromStats(searchParameters, statsRequestParameters);
+            searchMapper.fromStats(searchParameters, statsRequestParameters);
         }
         catch (IllegalArgumentException iae)
         {
@@ -827,29 +831,29 @@ public class SearchMapperTests
         }
 
         statsRequestParameters.clear();
-        statsRequestParameters.add(new StatsRequestParameters("cm:content", "myLabel", null, null,null, null, null, null,null, null, null, null,null, null, null, null));
+        statsRequestParameters.add(new StatsRequestParameters("cm:content", "myLabel", null, null, null, null, null, null, null, null, null, null, null, null, null, null));
         searchMapper.fromStats(searchParameters, statsRequestParameters);
-        assertEquals(1 ,searchParameters.getStats().size());
+        assertEquals(1, searchParameters.getStats().size());
 
         statsRequestParameters.clear();
-        statsRequestParameters.add(new StatsRequestParameters("cm:content", "myLabel", Arrays.asList(3.4f, 12f, 10f), null, null,null, null, null, null,null, null, null,null, null, null, null));
+        statsRequestParameters.add(new StatsRequestParameters("cm:content", "myLabel", Arrays.asList(3.4f, 12f, 10f), null, null, null, null, null, null, null, null, null, null, null, null, null));
         searchMapper.fromStats(searchParameters, statsRequestParameters);
-        assertEquals(1 ,searchParameters.getStats().size());
+        assertEquals(1, searchParameters.getStats().size());
 
         statsRequestParameters.clear();
-        statsRequestParameters.add(new StatsRequestParameters("cm:content", "myLabel", Arrays.asList(-3.4f), null, null,null, null, null, null,null, null, null,null, null, null, null));
+        statsRequestParameters.add(new StatsRequestParameters("cm:content", "myLabel", Arrays.asList(-3.4f), null, null, null, null, null, null, null, null, null, null, null, null, null));
 
         try
         {
-          searchMapper.fromStats(searchParameters, statsRequestParameters);
+            searchMapper.fromStats(searchParameters, statsRequestParameters);
         }
         catch (IllegalArgumentException iae)
         {
-          assertTrue(iae.getLocalizedMessage().contains("Invalid percentile -3.4"));
+            assertTrue(iae.getLocalizedMessage().contains("Invalid percentile -3.4"));
         }
 
         statsRequestParameters.clear();
-        statsRequestParameters.add(new StatsRequestParameters("cm:content", "myLabel", Arrays.asList(101f),null, null,null, null, null, null,null, null,  null,null, null, null, null));
+        statsRequestParameters.add(new StatsRequestParameters("cm:content", "myLabel", Arrays.asList(101f), null, null, null, null, null, null, null, null, null, null, null, null, null));
 
         try
         {
@@ -861,7 +865,7 @@ public class SearchMapperTests
         }
 
         statsRequestParameters.clear();
-        statsRequestParameters.add(new StatsRequestParameters("cm:content", "myLabel", null, null,null, null, null, null,null, null, null, null,null, true, 12f, null));
+        statsRequestParameters.add(new StatsRequestParameters("cm:content", "myLabel", null, null, null, null, null, null, null, null, null, null, null, true, 12f, null));
         try
         {
             searchMapper.fromStats(searchParameters, statsRequestParameters);
@@ -872,10 +876,10 @@ public class SearchMapperTests
         }
 
         statsRequestParameters.clear();
-        statsRequestParameters.add(new StatsRequestParameters("cm:content", "myLabel", null, null,null, null, null, null,null, null, null, null,null, null, 12f, null));
+        statsRequestParameters.add(new StatsRequestParameters("cm:content", "myLabel", null, null, null, null, null, null, null, null, null, null, null, null, 12f, null));
         searchMapper.fromStats(searchParameters, statsRequestParameters);
-        //cardinality is ignored if not true
-        assertEquals(1 ,searchParameters.getStats().size());
+        // cardinality is ignored if not true
+        assertEquals(1, searchParameters.getStats().size());
 
     }
 
@@ -886,15 +890,15 @@ public class SearchMapperTests
         searchMapper.fromPivot(searchParameters, null, null, null, null, null);
 
         List<FacetField> facets = new ArrayList<>(1);
-        facets.add(new FacetField("myfield",null,null,null,null,null,null,null,null,null,null));
-        facets.add(new FacetField("yourfield",null,null,null,null,null,null,null,null,null,null));
+        facets.add(new FacetField("myfield", null, null, null, null, null, null, null, null, null, null));
+        facets.add(new FacetField("yourfield", null, null, null, null, null, null, null, null, null, null));
         FacetFields ff = new FacetFields(facets);
-        searchMapper.fromFacetFields(searchParameters,ff);
+        searchMapper.fromFacetFields(searchParameters, ff);
         searchMapper.fromPivot(searchParameters, null, ff, null, null, null);
-        assertEquals(2 ,searchParameters.getFieldFacets().size());
-        assertEquals(0 ,searchParameters.getPivots().size());
+        assertEquals(2, searchParameters.getFieldFacets().size());
+        assertEquals(0, searchParameters.getPivots().size());
 
-        //Handle unknown pivot.
+        // Handle unknown pivot.
         searchParameters = new SearchParameters();
 
         try
@@ -904,7 +908,7 @@ public class SearchMapperTests
         }
         catch (IllegalArgumentException iae)
         {
-            //"bob" doesn't refer to a field facet
+            // "bob" doesn't refer to a field facet
             assertNotNull(iae);
         }
 
@@ -920,9 +924,9 @@ public class SearchMapperTests
 
         SearchRequestContext searchRequestContext = SearchRequestContext.from(minimalQuery());
 
-        //"bob" doesn't refer to a field facet but its the last one so needs to refer to a stat
-        StatsRequestParameters bobf = new StatsRequestParameters("bob", null, null, null,null, null, null, null,null, null, null, null,null, null, null, null);
-        StatsRequestParameters bobL = new StatsRequestParameters("creator", "bob", null, null,null, null, null, null,null, null, null, null,null, null, null, null);
+        // "bob" doesn't refer to a field facet but its the last one so needs to refer to a stat
+        StatsRequestParameters bobf = new StatsRequestParameters("bob", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+        StatsRequestParameters bobL = new StatsRequestParameters("creator", "bob", null, null, null, null, null, null, null, null, null, null, null, null, null, null);
         try
         {
             searchMapper.fromPivot(searchParameters, Arrays.asList(bobf), ff, null, Arrays.asList(new Pivot("bob", null)), searchRequestContext);
@@ -930,89 +934,89 @@ public class SearchMapperTests
         }
         catch (InvalidArgumentException iae)
         {
-            //"bob" refers to a stat but it can't be at the root pivot, it needs to be nested
+            // "bob" refers to a stat but it can't be at the root pivot, it needs to be nested
             assertNotNull(iae);
         }
 
         searchMapper.fromPivot(searchParameters, Arrays.asList(bobf), ff, null, Arrays.asList(new Pivot("yourfield", Arrays.asList(new Pivot("bob", null)))), searchRequestContext);
-        assertEquals(1 ,searchParameters.getPivots().size());
+        assertEquals(1, searchParameters.getPivots().size());
 
         try
         {
             searchMapper.fromPivot(searchParameters, null, ff, null,
-                        Arrays.asList(new Pivot("ken", null),new Pivot("bob", null)), searchRequestContext);
+                    Arrays.asList(new Pivot("ken", null), new Pivot("bob", null)), searchRequestContext);
             fail();
         }
         catch (InvalidArgumentException iae)
         {
-            //"ken" doesn't refer to a field facet and its not the last one
+            // "ken" doesn't refer to a field facet and its not the last one
             assertNotNull(iae);
         }
 
         searchParameters = new SearchParameters();
 
         searchMapper.fromPivot(searchParameters, null, ff, null, Arrays.asList(new Pivot("myfield", null)), searchRequestContext);
-        searchMapper.fromFacetFields(searchParameters,ff);
-        //Moved from a field facet to a pivot
-        assertEquals(0 ,searchParameters.getFieldFacets().size());
-        assertEquals(1 ,searchParameters.getPivots().size());
-        assertEquals("myfield" ,searchParameters.getPivots().get(0).get(0));
+        searchMapper.fromFacetFields(searchParameters, ff);
+        // Moved from a field facet to a pivot
+        assertEquals(0, searchParameters.getFieldFacets().size());
+        assertEquals(1, searchParameters.getPivots().size());
+        assertEquals("myfield", searchParameters.getPivots().get(0).get(0));
 
         searchParameters = new SearchParameters();
         try
         {
             searchMapper.fromPivot(searchParameters, Arrays.asList(bobf), ff, null,
-                        Arrays.asList(new Pivot("bob", Arrays.asList(new Pivot("hope", null)))), searchRequestContext);
+                    Arrays.asList(new Pivot("bob", Arrays.asList(new Pivot("hope", null)))), searchRequestContext);
             fail();
         }
         catch (InvalidArgumentException iae)
         {
-            //"bob" doesn't refer to a field facet or stat
+            // "bob" doesn't refer to a field facet or stat
             assertNotNull(iae);
         }
 
         searchRequestContext = SearchRequestContext.from(minimalQuery());
         facets = new ArrayList<>(1);
-        facets.add(new FacetField("king",null,null,null,null,null,null,null,null,null,null));
+        facets.add(new FacetField("king", null, null, null, null, null, null, null, null, null, null));
         ff = new FacetFields(facets);
         searchMapper.fromPivot(searchParameters, Arrays.asList(bobf), ff, null,
-                    Arrays.asList(new Pivot("king", Arrays.asList(new Pivot("bob", null)))), searchRequestContext);
-        assertEquals(1 ,searchParameters.getPivots().size());
-        assertEquals(2 ,searchParameters.getPivots().get(0).size());
-        assertEquals("king" ,searchParameters.getPivots().get(0).get(0));
-        assertEquals("bob" ,searchParameters.getPivots().get(0).get(1));
+                Arrays.asList(new Pivot("king", Arrays.asList(new Pivot("bob", null)))), searchRequestContext);
+        assertEquals(1, searchParameters.getPivots().size());
+        assertEquals(2, searchParameters.getPivots().get(0).size());
+        assertEquals("king", searchParameters.getPivots().get(0).get(0));
+        assertEquals("bob", searchParameters.getPivots().get(0).get(1));
 
         searchRequestContext = SearchRequestContext.from(minimalQuery());
         searchParameters = new SearchParameters();
         facets = new ArrayList<>(1);
-        facets.add(new FacetField("king",null,null,null,null,null,null,null,null,null,null));
-        facets.add(new FacetField("kong",null,null,null,null,null,null,null,null,null,null));
-        facets.add(new FacetField("kang",null,null,null,null,null,null,null,null,null,null));
+        facets.add(new FacetField("king", null, null, null, null, null, null, null, null, null, null));
+        facets.add(new FacetField("kong", null, null, null, null, null, null, null, null, null, null));
+        facets.add(new FacetField("kang", null, null, null, null, null, null, null, null, null, null));
         ff = new FacetFields(facets);
         searchMapper.fromPivot(searchParameters, Arrays.asList(bobf), ff, null,
-                    Arrays.asList(new Pivot("king", Arrays.asList(new Pivot("bob", null))), new Pivot("kong", null)), searchRequestContext);
-        assertEquals(2 ,searchParameters.getPivots().size());
-        assertEquals(2 ,searchParameters.getPivots().get(0).size());
-        assertEquals("king" ,searchParameters.getPivots().get(0).get(0));
-        assertEquals("bob" ,searchParameters.getPivots().get(0).get(1));
-        assertEquals("kong" ,searchParameters.getPivots().get(1).get(0));
+                Arrays.asList(new Pivot("king", Arrays.asList(new Pivot("bob", null))), new Pivot("kong", null)), searchRequestContext);
+        assertEquals(2, searchParameters.getPivots().size());
+        assertEquals(2, searchParameters.getPivots().get(0).size());
+        assertEquals("king", searchParameters.getPivots().get(0).get(0));
+        assertEquals("bob", searchParameters.getPivots().get(0).get(1));
+        assertEquals("kong", searchParameters.getPivots().get(1).get(0));
 
         searchRequestContext = SearchRequestContext.from(minimalQuery());
         searchParameters = new SearchParameters();
         List<RangeParameters> rangeParams = new ArrayList<RangeParameters>();
         facets = new ArrayList<>(2);
-        facets.add(new FacetField("king",null,null,null,null,null,null,null,null,null,null));
-        facets.add(new FacetField("kong",null,null,null,null,null,null,null,null,null,null));
+        facets.add(new FacetField("king", null, null, null, null, null, null, null, null, null, null));
+        facets.add(new FacetField("kong", null, null, null, null, null, null, null, null, null, null));
         ff = new FacetFields(facets);
-        rangeParams.add(new RangeParameters("content.size", "0", "100000", "1000",true,null,null,"hope",null));
+        rangeParams.add(new RangeParameters("content.size", "0", "100000", "1000", true, null, null, "hope", null));
         searchMapper.fromPivot(searchParameters, Arrays.asList(bobf), ff, rangeParams,
-                    Arrays.asList(new Pivot("king", Arrays.asList(new Pivot("bob", null))), new Pivot("kong", Arrays.asList(new Pivot("hope", null)))), searchRequestContext);
-        assertEquals(2 ,searchParameters.getPivots().size());
-        assertEquals(2 ,searchParameters.getPivots().get(0).size());
-        assertEquals("king" ,searchParameters.getPivots().get(0).get(0));
-        assertEquals("bob"  ,searchParameters.getPivots().get(0).get(1));
-        assertEquals("kong" ,searchParameters.getPivots().get(1).get(0));
-        assertEquals("hope" ,searchParameters.getPivots().get(1).get(1));
+                Arrays.asList(new Pivot("king", Arrays.asList(new Pivot("bob", null))), new Pivot("kong", Arrays.asList(new Pivot("hope", null)))), searchRequestContext);
+        assertEquals(2, searchParameters.getPivots().size());
+        assertEquals(2, searchParameters.getPivots().get(0).size());
+        assertEquals("king", searchParameters.getPivots().get(0).get(0));
+        assertEquals("bob", searchParameters.getPivots().get(0).get(1));
+        assertEquals("kong", searchParameters.getPivots().get(1).get(0));
+        assertEquals("hope", searchParameters.getPivots().get(1).get(1));
 
     }
 
@@ -1028,13 +1032,13 @@ public class SearchMapperTests
         }
         catch (IllegalArgumentException iae)
         {
-            //intervals is required
+            // intervals is required
             assertNotNull(iae);
         }
 
-        Set<IntervalSet> intervalSets = new HashSet(Arrays.asList(new IntervalSet(null,"1", null, null, null)));
+        Set<IntervalSet> intervalSets = new HashSet(Arrays.asList(new IntervalSet(null, "1", null, null, null)));
         List<Interval> intervalList = Arrays.asList(new Interval(null, "bob", null));
-        intervalParameters = new IntervalParameters(intervalSets,intervalList);
+        intervalParameters = new IntervalParameters(intervalSets, intervalList);
 
         try
         {
@@ -1043,12 +1047,12 @@ public class SearchMapperTests
         }
         catch (IllegalArgumentException iae)
         {
-            //facetIntervals intervals field is required
+            // facetIntervals intervals field is required
             assertNotNull(iae);
         }
 
         intervalList = Arrays.asList(new Interval("aFileld", "bob", null));
-        intervalParameters = new IntervalParameters(intervalSets,intervalList);
+        intervalParameters = new IntervalParameters(intervalSets, intervalList);
         try
         {
             searchMapper.fromFacetIntervals(searchParameters, intervalParameters);
@@ -1056,12 +1060,12 @@ public class SearchMapperTests
         }
         catch (IllegalArgumentException iae)
         {
-            //set start is required
+            // set start is required
             assertNotNull(iae);
         }
 
-        intervalSets = new HashSet(Arrays.asList(new IntervalSet("1",null, null, null, true)));
-        intervalParameters = new IntervalParameters(intervalSets,intervalList);
+        intervalSets = new HashSet(Arrays.asList(new IntervalSet("1", null, null, null, true)));
+        intervalParameters = new IntervalParameters(intervalSets, intervalList);
 
         try
         {
@@ -1070,17 +1074,17 @@ public class SearchMapperTests
         }
         catch (IllegalArgumentException iae)
         {
-            //set end is required
+            // set end is required
             assertNotNull(iae);
         }
 
-        intervalSets =  new HashSet<>();
+        intervalSets = new HashSet<>();
         intervalSets.add(new IntervalSet("0", "3", "bob", null, null));
-        intervalSets.add(new IntervalSet("30", "50", "bill", true,true));
+        intervalSets.add(new IntervalSet("30", "50", "bill", true, true));
         Set<IntervalSet> anIntervalSet = new HashSet<>();
         anIntervalSet.add(new IntervalSet("1", "10", "bert", false, false));
         intervalList = Arrays.asList(new Interval("cm:price", "Price", null), new Interval("cm:price", "Price", anIntervalSet));
-        intervalParameters = new IntervalParameters(intervalSets,intervalList);
+        intervalParameters = new IntervalParameters(intervalSets, intervalList);
 
         try
         {
@@ -1089,35 +1093,35 @@ public class SearchMapperTests
         }
         catch (InvalidArgumentException iae)
         {
-            //duplicate labels
+            // duplicate labels
             assertNotNull(iae);
         }
 
         intervalList = Arrays.asList(new Interval("cm:price", "Prices", null), new Interval("cm:price", "Pricey", anIntervalSet));
-        intervalParameters = new IntervalParameters(intervalSets,intervalList);
+        intervalParameters = new IntervalParameters(intervalSets, intervalList);
         searchMapper.fromFacetIntervals(searchParameters, intervalParameters);
         assertEquals(searchParameters.getInterval(), intervalParameters);
 
     }
+
     @Test
     public void facetFormatV2()
     {
         Query query = new Query("afts", "a*", "");
         SearchQuery sq = new SearchQuery(query, null, null, null, null, null, null, null,
-                    null, null, null, null, null, null, null, null,
-                    null, null,null, null,FacetFormat.V2);
+                null, null, null, null, null, null, null, null,
+                null, null, null, null, FacetFormat.V2);
 
         SearchRequestContext searchRequestContext = SearchRequestContext.from(sq);
         SearchParameters searchParameters = searchMapper.toSearchParameters(ResultMapperTests.EMPTY_PARAMS, sq, searchRequestContext);
         assertNotNull(searchParameters);
 
-        //Test defaults
-        assertEquals("There should be only 1 default store", 1,searchParameters.getStores().size());
+        // Test defaults
+        assertEquals("There should be only 1 default store", 1, searchParameters.getStores().size());
         assertEquals("workspaces store is the default", StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, searchParameters.getStores().get(0));
         assertEquals(LimitBy.FINAL_SIZE, searchParameters.getLimitBy());
         assertEquals(100, searchParameters.getLimit());
 
-        
     }
 
     @Test
@@ -1125,7 +1129,7 @@ public class SearchMapperTests
     {
         SearchParameters searchParameters = new SearchParameters();
         List<RangeParameters> rangeParams = new ArrayList<RangeParameters>();
-        rangeParams.add(new RangeParameters(null, null, null, null,false,null,null,null,null));
+        rangeParams.add(new RangeParameters(null, null, null, null, false, null, null, null, null));
         try
         {
             searchMapper.fromRange(searchParameters, rangeParams);
@@ -1136,33 +1140,33 @@ public class SearchMapperTests
             assertNotNull(iae);
         }
         rangeParams.clear();
-        rangeParams.add(new RangeParameters("content.size", "0", "100000", "1000",true,null,null,null,null));
+        rangeParams.add(new RangeParameters("content.size", "0", "100000", "1000", true, null, null, null, null));
         searchMapper.fromRange(searchParameters, rangeParams);
         assertEquals(searchParameters.getRanges(), rangeParams);
-        
+
         rangeParams.clear();
         List<String> includes = new ArrayList<String>();
         includes.add("lower");
         List<String> other = new ArrayList<String>();
         includes.add("before");
-        
-        rangeParams.add(new RangeParameters("content.size", "0", "100000", "1000",true, other,includes,null,null));
+
+        rangeParams.add(new RangeParameters("content.size", "0", "100000", "1000", true, other, includes, null, null));
         searchMapper.fromRange(searchParameters, rangeParams);
         assertEquals(searchParameters.getRanges(), rangeParams);
-        
-        //Assert multiple ranges
+
+        // Assert multiple ranges
         rangeParams.add(new RangeParameters("created", "2015-09-29T10:45:15.729Z", "2016-09-29T10:45:15.729Z", "+100DAY", true, other, includes, null, null));
         searchMapper.fromRange(searchParameters, rangeParams);
         assertEquals(searchParameters.getRanges(), rangeParams);
-        assertEquals(2,searchParameters.getRanges().size());
+        assertEquals(2, searchParameters.getRanges().size());
     }
-    
+
     private SearchQuery minimalQuery()
     {
         Query query = new Query("cmis", "foo", "");
         SearchQuery sq = new SearchQuery(query, null, null, null, null, null, null, null,
-                    null, null, null, null, null, null, null, null,
-                    null, null,null, null,null);
+                null, null, null, null, null, null, null, null,
+                null, null, null, null, null);
         return sq;
     }
 

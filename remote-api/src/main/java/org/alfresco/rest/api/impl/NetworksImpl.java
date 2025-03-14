@@ -47,66 +47,66 @@ import org.alfresco.rest.framework.resource.parameters.Paging;
  */
 public class NetworksImpl implements Networks
 {
-	private People people;
-	private NetworksService networksService;
-	
-	public void setPeople(People people)
-	{
-		this.people = people;
-	}
+    private People people;
+    private NetworksService networksService;
 
-	public void setNetworksService(NetworksService networksService)
-	{
-		this.networksService = networksService;
-	}
-
-	public Network validateNetwork(String networkId)
+    public void setPeople(People people)
     {
-		org.alfresco.repo.tenant.Network network = networksService.getNetwork(networkId);
-		if(network == null)
-		{
-			throw new EntityNotFoundException(networkId);
-		}
-		Network restNetwork = new NetworkImpl(network);
-		return restNetwork;
+        this.people = people;
     }
-	
+
+    public void setNetworksService(NetworksService networksService)
+    {
+        this.networksService = networksService;
+    }
+
+    public Network validateNetwork(String networkId)
+    {
+        org.alfresco.repo.tenant.Network network = networksService.getNetwork(networkId);
+        if (network == null)
+        {
+            throw new EntityNotFoundException(networkId);
+        }
+        Network restNetwork = new NetworkImpl(network);
+        return restNetwork;
+    }
+
     private PersonNetwork getPersonNetwork(org.alfresco.repo.tenant.Network network)
     {
-		Network restNetwork = new NetworkImpl(network);
-		PersonNetwork personNetwork = new PersonNetwork(network.getIsHomeNetwork(), restNetwork);
-		return personNetwork;
+        Network restNetwork = new NetworkImpl(network);
+        PersonNetwork personNetwork = new PersonNetwork(network.getIsHomeNetwork(), restNetwork);
+        return personNetwork;
     }
-    
+
     public Network getNetwork(String networkId)
     {
-    	Network network = validateNetwork(networkId);
-    	return network;
+        Network network = validateNetwork(networkId);
+        return network;
     }
-    
+
     public PersonNetwork getNetwork(String personId, String networkId)
     {
-    	// check that personId is the current user
-    	personId = people.validatePerson(personId, true);
-    	Network network = validateNetwork(networkId);
+        // check that personId is the current user
+        personId = people.validatePerson(personId, true);
+        Network network = validateNetwork(networkId);
 
-    	org.alfresco.repo.tenant.Network tenantNetwork = networksService.getNetwork(network.getId());
-		PersonNetwork personNetwork = getPersonNetwork(tenantNetwork);
-		return personNetwork;
+        org.alfresco.repo.tenant.Network tenantNetwork = networksService.getNetwork(network.getId());
+        PersonNetwork personNetwork = getPersonNetwork(tenantNetwork);
+        return personNetwork;
     }
 
-	public CollectionWithPagingInfo<PersonNetwork> getNetworks(String personId, Paging paging)
+    public CollectionWithPagingInfo<PersonNetwork> getNetworks(String personId, Paging paging)
     {
-    	// check that personId is the current user
-    	personId = people.validatePerson(personId, true);
+        // check that personId is the current user
+        personId = people.validatePerson(personId, true);
 
-    	PagingResults<org.alfresco.repo.tenant.Network> networks = networksService.getNetworks(Util.getPagingRequest(paging));
-    	List<PersonNetwork> ret = new ArrayList<PersonNetwork>(networks.getPage().size());
-    	for(org.alfresco.repo.tenant.Network network : networks.getPage())
-		{
-    		PersonNetwork personNetwork = getPersonNetwork(network);
-    		ret.add(personNetwork);
-		}
-    	return CollectionWithPagingInfo.asPaged(paging, ret, networks.hasMoreItems(), networks.getTotalResultCount().getFirst());
+        PagingResults<org.alfresco.repo.tenant.Network> networks = networksService.getNetworks(Util.getPagingRequest(paging));
+        List<PersonNetwork> ret = new ArrayList<PersonNetwork>(networks.getPage().size());
+        for (org.alfresco.repo.tenant.Network network : networks.getPage())
+        {
+            PersonNetwork personNetwork = getPersonNetwork(network);
+            ret.add(personNetwork);
+        }
+        return CollectionWithPagingInfo.asPaged(paging, ret, networks.hasMoreItems(), networks.getTotalResultCount().getFirst());
     }
 }

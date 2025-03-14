@@ -81,17 +81,21 @@ public class DirectAccessUrl implements Serializable
         this.fileName = fileName;
     }
 
-    @Override public boolean equals(Object obj)
+    @Override
+    public boolean equals(Object obj)
     {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+        if (this == obj)
+            return true;
+        if (obj == null || getClass() != obj.getClass())
+            return false;
 
         DirectAccessUrl that = (DirectAccessUrl) obj;
         return Objects.equals(fileName, that.fileName) && attachment == that.attachment && Objects.equals(contentUrl,
                 that.contentUrl) && Objects.equals(expiryTime, that.expiryTime);
     }
 
-    @Override public int hashCode()
+    @Override
+    public int hashCode()
     {
         return Objects.hash(contentUrl, expiryTime, attachment, fileName);
     }

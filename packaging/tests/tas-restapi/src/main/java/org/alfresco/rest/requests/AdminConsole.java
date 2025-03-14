@@ -25,14 +25,15 @@
  */
 package org.alfresco.rest.requests;
 
+import io.restassured.RestAssured;
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.RestWrapper;
-import org.springframework.http.HttpMethod;
 
-import io.restassured.RestAssured;
-
-public class AdminConsole extends ModelRequest<AdminConsole> {
+public class AdminConsole extends ModelRequest<AdminConsole>
+{
 
     public AdminConsole(RestWrapper restWrapper)
     {

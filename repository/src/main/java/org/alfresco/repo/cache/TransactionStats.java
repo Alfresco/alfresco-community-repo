@@ -39,25 +39,21 @@ import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 public class TransactionStats
 {
     private Map<OpType, SummaryStatistics> timings = new HashMap<>();
-    
+
     /**
      * Cache operation type.
      */
     public enum OpType
     {
-        GET_HIT,
-        GET_MISS,
-        PUT,
-        REMOVE,
-        CLEAR
+        GET_HIT, GET_MISS, PUT, REMOVE, CLEAR
     }
-    
+
     public long getCount(OpType op)
     {
         SummaryStatistics stats = getTimings(op);
         return stats.getN();
     }
-    
+
     public SummaryStatistics getTimings(OpType op)
     {
         SummaryStatistics opTimings = timings.get(op);
@@ -68,9 +64,9 @@ public class TransactionStats
         }
         return opTimings;
     }
-    
+
     public void record(long start, long end, OpType op)
-    {   
+    {
         if (end < start)
         {
             throw new IllegalArgumentException("End time [" + end + "] occurs before start time [" + start + "].");

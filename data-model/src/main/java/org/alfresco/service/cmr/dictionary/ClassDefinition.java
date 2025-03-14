@@ -43,7 +43,7 @@ import org.alfresco.service.namespace.QName;
 public interface ClassDefinition
 {
     /**
-     * @return  defining model
+     * @return defining model
      */
     public ModelDefinition getModel();
 
@@ -51,7 +51,7 @@ public interface ClassDefinition
      * @return the qualified name of the class
      */
     public QName getName();
-    
+
     /**
      * @deprecated The problem identified in MNT-413 will still exist
      */
@@ -61,37 +61,35 @@ public interface ClassDefinition
      * @deprecated The problem identified in MNT-413 will still exist
      */
     public String getDescription();
-    
+
     /**
-     * @return the human-readable class title 
+     * @return the human-readable class title
      */
     public String getTitle(MessageLookup messageLookup);
-    
+
     /**
-     * @return the human-readable class description 
+     * @return the human-readable class description
      */
     public String getDescription(MessageLookup messageLookup);
-    
+
     /**
-     * @return  the super class (or null, if this is the root)
+     * @return the super class (or null, if this is the root)
      */
     public QName getParentName();
-    
+
     /**
      * @return true => aspect, false => type
      */
     public boolean isAspect();
-    
+
     /**
-     * @return Return <code>true</code> if the type should be archived on delete, <code>false</code> if it should be
-     *         deleted or <code>null</code> if not defined.
+     * @return Return <code>true</code> if the type should be archived on delete, <code>false</code> if it should be deleted or <code>null</code> if not defined.
      */
     public Boolean getArchive();
-    
+
     /**
      * 
-     * @return Return <code>true</code> if the type should be included in supertypes queries, <code>false</code> if not
-     *         deleted or <code>null</code> if not defined.
+     * @return Return <code>true</code> if the type should be included in supertypes queries, <code>false</code> if not deleted or <code>null</code> if not defined.
      */
     public Boolean getIncludedInSuperTypeQuery();
 
@@ -99,12 +97,12 @@ public interface ClassDefinition
      * @return the properties of the class, including inherited properties
      */
     public Map<QName, PropertyDefinition> getProperties();
-    
+
     /**
      * @return a map containing the default property values, including inherited properties
      */
     public Map<QName, Serializable> getDefaultValues();
-    
+
     /**
      * Fetch all associations for which this is a source type, including child associations.
      * 
@@ -112,17 +110,16 @@ public interface ClassDefinition
      * @see ChildAssociationDefinition
      */
     public Map<QName, AssociationDefinition> getAssociations();
-    
+
     /**
      * @return true => this class supports child associations
      */
     public boolean isContainer();
-    
+
     /**
      * Fetch only child associations for which this is a source type.
      *
-     * @return all child associations applicable to this type, including those
-     *         inherited from super types
+     * @return all child associations applicable to this type, including those inherited from super types
      */
     public Map<QName, ChildAssociationDefinition> getChildAssociations();
 
@@ -132,28 +129,29 @@ public interface ClassDefinition
      * @return the associations including inherited ones
      */
     // TODO: public Map<QName, AssociationDefinition> getTargetAssociations();
-    
+
     /**
-     * @return  the default aspects associated with this type
+     * @return the default aspects associated with this type
      */
     public List<AspectDefinition> getDefaultAspects();
-    
+
     /**
-     * @return  the set of default aspects names associated with this type
+     * @return the set of default aspects names associated with this type
      */
     public Set<QName> getDefaultAspectNames();
-    
+
     /**
-     * @param inherited include default aspects inherited from super types
-     * @return  the default aspects
+     * @param inherited
+     *            include default aspects inherited from super types
+     * @return the default aspects
      */
     public List<AspectDefinition> getDefaultAspects(boolean inherited);
-    
+
     /**
      * Get the parent class definition
      * 
      * @return ClassDefinition
      */
     public ClassDefinition getParentClassDefinition();
-    
+
 }

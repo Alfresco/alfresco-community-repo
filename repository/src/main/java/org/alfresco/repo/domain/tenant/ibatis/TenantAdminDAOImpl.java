@@ -29,10 +29,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.mybatis.spring.SqlSessionTemplate;
+
 import org.alfresco.repo.domain.tenant.AbstractTenantAdminDAOImpl;
 import org.alfresco.repo.domain.tenant.TenantEntity;
 import org.alfresco.repo.domain.tenant.TenantQueryEntity;
-import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * iBatis-specific implementation of the TenantAdmin DAO.
@@ -47,15 +48,14 @@ public class TenantAdminDAOImpl extends AbstractTenantAdminDAOImpl
     private static final String SELECT_TENANTS = "alfresco.tenants.select_Tenants";
     private static final String UPDATE_TENANT = "alfresco.tenants.update_Tenant";
     private static final String DELETE_TENANT = "alfresco.tenants.delete_Tenant";
-    
+
     private SqlSessionTemplate template;
-    
-    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
+
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate)
     {
         this.template = sqlSessionTemplate;
     }
-    
-    
+
     @Override
     protected TenantEntity createTenantEntity(TenantEntity entity)
     {
@@ -63,16 +63,16 @@ public class TenantAdminDAOImpl extends AbstractTenantAdminDAOImpl
         template.insert(INSERT_TENANT, entity);
         return entity;
     }
-    
+
     @Override
     protected TenantEntity getTenantEntity(String tenantDomain)
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("tenantDomain", tenantDomain);
-        
+
         return template.selectOne(SELECT_TENANT, params);
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
     protected List<TenantEntity> getTenantEntities(Boolean enabled)
@@ -81,21 +81,21 @@ public class TenantAdminDAOImpl extends AbstractTenantAdminDAOImpl
         entity.setEnabled(enabled);
         return template.selectList(SELECT_TENANTS, entity);
     }
-    
+
     @Override
     protected int updateTenantEntity(TenantEntity tenantEntity)
     {
         tenantEntity.incrementVersion();
-        
+
         return template.update(UPDATE_TENANT, tenantEntity);
     }
-    
+
     @Override
     protected int deleteTenantEntity(String tenantDomain)
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("tenantDomain", tenantDomain);
-        
+
         return template.delete(DELETE_TENANT, params);
     }
 }

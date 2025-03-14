@@ -29,12 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.quartz.Job;
@@ -47,13 +41,19 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.transaction.TransactionService;
+
 /**
  * Abstract action support.
  * 
  * Each action applies to a set of nodes.
  * 
- * These actions may be executed in one overall transaction or one individual transaction. If actions are in individual transactions an error may halt subsequent execution or
- * processing can try and invoke the action for each node.
+ * These actions may be executed in one overall transaction or one individual transaction. If actions are in individual transactions an error may halt subsequent execution or processing can try and invoke the action for each node.
  * 
  * @author Andy Hind
  */
@@ -74,20 +74,21 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
         /**
          * Run Each action in an isolated transaction
          */
-        ISOLATED_TRANSACTIONS, 
+        ISOLATED_TRANSACTIONS,
         /**
          * Run each action in anisolated transaction, but stop at the first failure
          */
-        UNTIL_FIRST_FAILURE, 
+        UNTIL_FIRST_FAILURE,
         /**
-         * Run in one big transaction. Any failure rolls the whole lot b ack 
+         * Run in one big transaction. Any failure rolls the whole lot b ack
          */
         ONE_TRANSACTION;
 
         /**
          * Generate a mode from a string.
          * 
-         * @param transactionModeString String
+         * @param transactionModeString
+         *            String
          * @return - the transaction mode.
          */
         public static TransactionMode getTransactionMode(String transactionModeString)
@@ -124,7 +125,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
         /**
          * If failure occurs run the comensating actions.
          */
-        RUN_COMPENSATING_ACTIONS_ON_FAILURE, 
+        RUN_COMPENSATING_ACTIONS_ON_FAILURE,
         /**
          * Ignore compensating actions
          */
@@ -133,7 +134,8 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
         /**
          * Parse a string to a compensating action mode - used in reading the config.
          * 
-         * @param compensatingActionModeString String
+         * @param compensatingActionModeString
+         *            String
          * @return - the compensating action mode.
          */
         public static CompensatingActionMode getCompensatingActionMode(String compensatingActionModeString)
@@ -156,39 +158,25 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
         }
     }
 
-    /*
-     * Key used to pass the action in the quartz job definition
-     */
+    /* Key used to pass the action in the quartz job definition */
     private static final String ACTION_JOB_DATA_MAP_KEY = "Action";
 
-    /*
-     * The Action service.
-     */
+    /* The Action service. */
     private ActionService actionService;
 
-    /*
-     * The user in whose name the action will run.
-     */
+    /* The user in whose name the action will run. */
     private String runAsUser;
 
-    /*
-     * The template definition of the action.
-     */
+    /* The template definition of the action. */
     private TemplateActionDefinition templateActionDefinition;
 
-    /*
-     * The transaction mode in which all the nodes found by this sceduled action will be treated.
-     */
+    /* The transaction mode in which all the nodes found by this sceduled action will be treated. */
     private TransactionMode transactionMode = TransactionMode.ISOLATED_TRANSACTIONS;
 
-    /*
-     * Control if compensating actions will be used. The default is not to apply compensating actions.
-     */
+    /* Control if compensating actions will be used. The default is not to apply compensating actions. */
     private CompensatingActionMode compensatingActionMode = CompensatingActionMode.IGNORE;
 
-    /*
-     * The transaction service
-     */
+    /* The transaction service */
     private TransactionService transactionService;
 
     /**
@@ -212,7 +200,8 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Set the user in whose name to run the action.
      * 
-     * @param runAsUser String
+     * @param runAsUser
+     *            String
      */
     public void setRunAsUser(String runAsUser)
     {
@@ -221,6 +210,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
 
     /**
      * Get the template definition.
+     * 
      * @return - the template action definition
      */
     public TemplateActionDefinition getTemplateActionDefinition()
@@ -231,7 +221,8 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Set the action service - IOC.
      * 
-     * @param actionService ActionService
+     * @param actionService
+     *            ActionService
      */
     public void setActionService(ActionService actionService)
     {
@@ -251,7 +242,8 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Set the behaviour for compensating actiions.
      * 
-     * @param compensatingActionModeString String
+     * @param compensatingActionModeString
+     *            String
      */
     public void setCompensatingActionMode(String compensatingActionModeString)
     {
@@ -261,7 +253,8 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Set transactional behaviour.
      * 
-     * @param transactionModeString String
+     * @param transactionModeString
+     *            String
      */
     public void setTransactionMode(String transactionModeString)
     {
@@ -281,7 +274,8 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Set the transactions service - IOC.
      * 
-     * @param transactionService TransactionService
+     * @param transactionService
+     *            TransactionService
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -290,7 +284,9 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
 
     /**
      * Set the template action that is used to generate the real action for each node.
-     * @param templateActionDefinition TemplateActionDefinition
+     * 
+     * @param templateActionDefinition
+     *            TemplateActionDefinition
      */
     public void setTemplateActionDefinition(TemplateActionDefinition templateActionDefinition)
     {
@@ -320,8 +316,9 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Register with teh scheduler.
      * 
-     * @param scheduler Scheduler
-     * @throws SchedulerException 
+     * @param scheduler
+     *            Scheduler
+     * @throws SchedulerException
      */
     public void register(Scheduler scheduler) throws SchedulerException
     {
@@ -353,7 +350,8 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Generate the actual action for the given node from the action template.
      * 
-     * @param nodeRef NodeRef
+     * @param nodeRef
+     *            NodeRef
      * @return - the action to execute.
      */
     public abstract Action getAction(NodeRef nodeRef);
@@ -386,8 +384,9 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
         /**
          * Execute the job
          * 
-         * @param ctx JobExecutionContext
-         * @throws JobExecutionException 
+         * @param ctx
+         *            JobExecutionContext
+         * @throws JobExecutionException
          * 
          */
         public void execute(JobExecutionContext ctx) throws JobExecutionException
@@ -396,8 +395,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
                     .getJobDataMap().get(ACTION_JOB_DATA_MAP_KEY);
 
             // Run as the required user
-            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-            {
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
                 public Object doWork()
                 {
                     // Get the list of nodes
@@ -454,7 +452,8 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
                 /**
                  * Apply the action to all nodes in one overall transaction
                  * 
-                 * @param nodes List<NodeRef>
+                 * @param nodes
+                 *            List<NodeRef>
                  */
                 public void runTransactionalActions(final List<NodeRef> nodes)
                 {
@@ -463,8 +462,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
                     try
                     {
                         abstractScheduledAction.getTransactionService().getRetryingTransactionHelper().doInTransaction(
-                                new RetryingTransactionCallback<Object>()
-                                {
+                                new RetryingTransactionCallback<Object>() {
                                     public Object execute() throws Exception
                                     {
                                         // Build the full list of compensating actions
@@ -518,16 +516,19 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
                  * 
                  * These are always in their own transaction. We try to run all compensating actions.
                  * 
-                 * @param runCompensatingActions boolean
-                 * @param rethrow boolean
-                 * @param t Throwable
+                 * @param runCompensatingActions
+                 *            boolean
+                 * @param rethrow
+                 *            boolean
+                 * @param t
+                 *            Throwable
                  */
                 private void doCompensation(boolean runCompensatingActions, boolean rethrow, Throwable t)
                 {
                     // If the error triggers compensation, and they should be processed.
                     if (runCompensatingActions && (t instanceof CompensatingActionException))
                     {
-                        CompensatingActionException cae = (CompensatingActionException)t;
+                        CompensatingActionException cae = (CompensatingActionException) t;
                         for (Pair<Action, NodeRef> pair : cae.getCompensatingActions())
                             if ((pair != null) && (pair.getFirst() != null) && (pair.getSecond() != null))
                             {
@@ -552,7 +553,8 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
                 /**
                  * Run a single transaction in its own tx
                  * 
-                 * @param nodeRef NodeRef
+                 * @param nodeRef
+                 *            NodeRef
                  */
                 public void runTransactionalAction(final NodeRef nodeRef)
                 {
@@ -562,8 +564,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
                     try
                     {
                         abstractScheduledAction.getTransactionService().getRetryingTransactionHelper().doInTransaction(
-                                new RetryingTransactionCallback<Object>()
-                                {
+                                new RetryingTransactionCallback<Object>() {
                                     public Object execute() throws Exception
                                     {
                                         // try action - failure triggers compensation
@@ -603,7 +604,8 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
                 /**
                  * Manage running a compensating action and chaining all its compensating actions until done
                  * 
-                 * @param pair Pair<Action, NodeRef>
+                 * @param pair
+                 *            Pair<Action, NodeRef>
                  */
                 public void runTransactionalCompensatingAction(final Pair<Action, NodeRef> pair)
                 {
@@ -612,8 +614,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
                     try
                     {
                         abstractScheduledAction.getTransactionService().getRetryingTransactionHelper().doInTransaction(
-                                new RetryingTransactionCallback<Object>()
-                                {
+                                new RetryingTransactionCallback<Object>() {
                                     public Object execute() throws Exception
                                     {
                                         try
@@ -654,8 +655,8 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
      * Simple class to hold to related objects
      * 
      * @author Andy Hind
-     * @param <FIRST> 
-     * @param <SECOND> 
+     * @param <FIRST>
+     * @param <SECOND>
      */
     public static class Pair<FIRST, SECOND>
     {
@@ -683,7 +684,8 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Support method to translate exceptions to runtime exceptions.
      * 
-     * @param t Throwable
+     * @param t
+     *            Throwable
      * @return - the exception as a wrapped RuntimeException.
      */
     private static Object throwRuntimeException(Throwable t)

@@ -25,10 +25,6 @@
  */
 package org.alfresco.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.logging.Log;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -49,9 +45,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.logging.Log;
+
 /**
- * Used to find configuration files as resources from the jar file or from some external location. The path supplied
- * to {@link #readFiles(String, Log)} may be a directory name. Normally used by ConfigScheduler.
+ * Used to find configuration files as resources from the jar file or from some external location. The path supplied to {@link #readFiles(String, Log)} may be a directory name. Normally used by ConfigScheduler.
  *
  * @author adavis
  */
@@ -92,7 +91,7 @@ public abstract class ConfigFileFinder
             {
                 // Try reading resources from disk
                 Iterator<URL> pathUrls = getClass().getClassLoader().getResources(path).asIterator();
-                while(pathUrls.hasNext())
+                while (pathUrls.hasNext())
                 {
                     URL url = pathUrls.next();
                     if (url != null)
@@ -111,12 +110,12 @@ public abstract class ConfigFileFinder
 
             if (!somethingRead.get())
             {
-                log.debug("No config read from "+path);
+                log.debug("No config read from " + path);
             }
         }
         catch (IOException | URISyntaxException e)
         {
-            log.error("Error reading from "+path, e);
+            log.error("Error reading from " + path, e);
             successReadingConfig.set(false);
         }
         return successReadingConfig.get();
@@ -134,7 +133,7 @@ public abstract class ConfigFileFinder
             {
                 final String name = entries.nextElement().getName();
                 if ((name.startsWith(prefix) && name.length() > prefix.length()) ||
-                    (name.equals(path)))
+                        (name.equals(path)))
                 {
                     names.add(name);
                 }
@@ -189,7 +188,7 @@ public abstract class ConfigFileFinder
     }
 
     private void readFromReader(AtomicBoolean successReadingConfig, AtomicBoolean somethingRead,
-                               Reader reader, String readFrom, String path, String baseUrl, Log log)
+            Reader reader, String readFrom, String path, String baseUrl, Log log)
     {
         somethingRead.set(true);
         boolean success = readFile(reader, readFrom, path, null, log);
@@ -223,7 +222,7 @@ public abstract class ConfigFileFinder
         }
         catch (Exception e)
         {
-            log.error("Error reading "+path, e);
+            log.error("Error reading " + path, e);
             successReadingConfig = false;
         }
         return successReadingConfig;

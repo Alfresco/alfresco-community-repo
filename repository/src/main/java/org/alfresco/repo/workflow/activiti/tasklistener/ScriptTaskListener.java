@@ -32,6 +32,7 @@ import java.util.Map.Entry;
 
 import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.delegate.TaskListener;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
@@ -41,14 +42,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptService;
 
 /**
- * A {@link TaskListener} that runs the script against the {@link ScriptService}. 
+ * A {@link TaskListener} that runs the script against the {@link ScriptService}.
  * 
- * The script that is executed can be set using field 'script'. A non-default 
- * script-processor can be set in the field 'scriptProcessor'. Optionally, you can run 
- * the script as a different user than the default by setting the field 'runAs'. 
- * By default, the user this script is executed with is the task's assignee. If no 
- * assignee is set, the current logged-in user is used. If no user is currently logged in
- * (eg. flow triggered by timer) the system user will be used instead.
+ * The script that is executed can be set using field 'script'. A non-default script-processor can be set in the field 'scriptProcessor'. Optionally, you can run the script as a different user than the default by setting the field 'runAs'. By default, the user this script is executed with is the task's assignee. If no assignee is set, the current logged-in user is used. If no user is currently logged in (eg. flow triggered by timer) the system user will be used instead.
  * 
  * @author Frederik Heremans
  * @since 3.4.e
@@ -56,9 +52,9 @@ import org.alfresco.service.cmr.repository.ScriptService;
 public class ScriptTaskListener extends ActivitiScriptBase implements TaskListener
 {
     private static final long serialVersionUID = 1L;
-    
+
     private static final String TASK_BINDING_NAME = "task";
-    
+
     @Override
     public void notify(DelegateTask delegateTask)
     {
@@ -67,19 +63,18 @@ public class ScriptTaskListener extends ActivitiScriptBase implements TaskListen
             String scriptString = getStringValue(script, delegateTask);
             String scriptProcessorName = getStringValue(scriptProcessor, delegateTask);
             String runAsUser = getStringValue(runAs, delegateTask);
-            
-            
+
             // Make sure there is an authenticated user for the current thread, so when
             // the script is executed using no 'runAs' from a job-executor thread, the task's assignee
             // will be the authenticated user.
             boolean clearAuthenticationContext = checkFullyAuthenticatedUser(delegateTask);
-            
+
             // Get all activiti-defined objects
             Map<String, Object> scriptModel = getInputMap(delegateTask, runAsUser);
-            
-            // Add core alfresco objects to the input-map 
+
+            // Add core alfresco objects to the input-map
             getServiceRegistry().getScriptService().buildCoreModel(scriptModel);
-            
+
             try
             {
                 Object scriptOutput = executeScript(scriptString, scriptModel, scriptProcessorName, runAsUser);
@@ -105,10 +100,10 @@ public class ScriptTaskListener extends ActivitiScriptBase implements TaskListen
         }
     }
 
-    protected Map<String, Object> getInputMap(DelegateTask delegateTask, String runAsUser) 
+    protected Map<String, Object> getInputMap(DelegateTask delegateTask, String runAsUser)
     {
         HashMap<String, Object> scriptModel = new HashMap<String, Object>(1);
-        
+
         // Add current logged-in user and it's user home
         ActivitiScriptNode personNode = getPersonNode(runAsUser);
         if (personNode != null)
@@ -121,14 +116,14 @@ public class ScriptTaskListener extends ActivitiScriptBase implements TaskListen
                 scriptModel.put(USERHOME_BINDING_NAME, new ActivitiScriptNode(userHomeNode, registry));
             }
         }
-        
+
         // Add activiti-specific objects
         scriptModel.put(TASK_BINDING_NAME, delegateTask);
         scriptModel.put(EXECUTION_BINDING_NAME, delegateTask.getExecution());
-        
+
         // Add all workflow variables to model
         Map<String, Object> variables = delegateTask.getExecution().getVariables();
-        
+
         for (Entry<String, Object> varEntry : variables.entrySet())
         {
             scriptModel.put(varEntry.getKey(), varEntry.getValue());
@@ -137,12 +132,13 @@ public class ScriptTaskListener extends ActivitiScriptBase implements TaskListen
     }
 
     /**
-     * Checks a valid Fully Authenticated User is set.
-     * If none is set then attempts to set the task assignee as the Fully Authenticated User.
-     * @param delegateTask the delegate task
+     * Checks a valid Fully Authenticated User is set. If none is set then attempts to set the task assignee as the Fully Authenticated User.
+     * 
+     * @param delegateTask
+     *            the delegate task
      * @return <code>true</code> if the Fully Authenticated User was changed, otherwise <code>false</code>.
      */
-    private boolean checkFullyAuthenticatedUser(final DelegateTask delegateTask) 
+    private boolean checkFullyAuthenticatedUser(final DelegateTask delegateTask)
     {
         if (AuthenticationUtil.getFullyAuthenticatedUser() == null)
         {

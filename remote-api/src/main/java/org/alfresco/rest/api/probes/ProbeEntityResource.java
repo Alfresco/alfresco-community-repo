@@ -26,6 +26,9 @@
 
 package org.alfresco.rest.api.probes;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.alfresco.repo.admin.RepoHealthChecker;
 import org.alfresco.rest.api.discovery.DiscoveryApiWebscript;
 import org.alfresco.rest.api.model.Probe;
@@ -37,14 +40,13 @@ import org.alfresco.rest.framework.core.exceptions.ServiceUnavailableException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * An implementation of an Entity Resource for Probes.
  */
-@EntityResource(name = "probes", title = "Probes") public class ProbeEntityResource
-            implements EntityResourceAction.ReadById<Probe>
+@EntityResource(name = "probes", title = "Probes")
+public class ProbeEntityResource
+        implements EntityResourceAction.ReadById<Probe>
 {
     public static final long CHECK_PERIOD = 10 * 1000; // Maximum of only one checkResult every 10 seconds.
 
@@ -70,26 +72,29 @@ import org.slf4j.LoggerFactory;
     }
 
     /**
-     * Returns a status code of 200 for okay. The probe contains little information for security reasons.
-     * Note: does *not* require authenticated access, so limits the amount of work performed to avoid a DDOS.
+     * Returns a status code of 200 for okay. The probe contains little information for security reasons. Note: does *not* require authenticated access, so limits the amount of work performed to avoid a DDOS.
      */
-    @Override @WebApiDescription(title = "Get probe status", description = "Returns 200 if valid") @WebApiParam(name = "probeName", title = "The probe's name") @WebApiNoAuth public Probe readById(
-                  String name, Parameters parameters)
+    @Override
+    @WebApiDescription(title = "Get probe status", description = "Returns 200 if valid")
+    @WebApiParam(name = "probeName", title = "The probe's name")
+    @WebApiNoAuth
+    public Probe readById(
+            String name, Parameters parameters)
     {
         ProbeType probeType = ProbeType.fromString(name);
         Probe probeResponse = null;
 
         switch (probeType)
         {
-            case LIVE:
-                probeResponse = liveProbe;
-                break;
-            case READY:
-                String message = doReadyCheck();
-                probeResponse = new Probe(message);
-                break;
-            case UNKNOWN:
-                throw new InvalidArgumentException("Bad probe name");
+        case LIVE:
+            probeResponse = liveProbe;
+            break;
+        case READY:
+            String message = doReadyCheck();
+            probeResponse = new Probe(message);
+            break;
+        case UNKNOWN:
+            throw new InvalidArgumentException("Bad probe name");
         }
 
         return probeResponse;

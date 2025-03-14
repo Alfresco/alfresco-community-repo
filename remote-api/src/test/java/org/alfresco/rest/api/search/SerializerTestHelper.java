@@ -28,21 +28,22 @@ package org.alfresco.rest.api.search;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringReader;
+
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.extensions.surf.util.Content;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper.Writer;
 import org.alfresco.rest.framework.jacksonextensions.RestJsonModule;
 import org.alfresco.rest.framework.tools.RequestReader;
-import org.springframework.extensions.surf.util.Content;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.StringReader;
 
 /**
  * Sets up an parses a valid JSON request.
@@ -55,34 +56,34 @@ public class SerializerTestHelper implements RequestReader
     JacksonHelper jsonHelper;
 
     public static final String JSON = "{ \"query\": {\"query\": \"g*\",\"userQuery\": \"great\",\"language\": \"afts\"}, "
-                + "\"paging\": {\"maxItems\": \"99\",\"skipCount\": \"4\"},"
-                + "\"includeRequest\": true,"
-                + "\"sort\": {\"type\": \"FIELD\",\"field\": \"cm:title\",\"ascending\": \"true\"},"
-                + "\"templates\": [{\"name\": \"mytemp\",\"template\": \"ATEMP\"}, {\"name\": \"yourtemp\",\"template\": \"%cm:content\"}],"
-                + "\"defaults\": {\"namespace\": \"namesp\",\"defaultFieldName\": \"myfield\",\"defaultFTSOperator\": \"AND\", \"textAttributes\": [\"roy\", \"king\"]},"
-                + "\"filterQueries\": [{\"query\": \"myquery\",\"tags\": [\"tag1\", \"tag2\"]},{\"query\": \"myquery2\"}],"
-                + "\"facetFields\": {\"facets\": [{\"field\": \"cm:creator\",\"prefix\": \"myquery2\",\"sort\": \"COUNT\",\"missing\": \"false\"}, {\"field\": \"modifier\",\"label\": \"mylabel\",\"method\": \"FC\",\"mincount\": \"5\"}, {\"field\": \"owner\",\"label\": \"ownerLabel\"}]},"
-                + "\"facetQueries\": [{\"query\": \"cm:created:bob\",\"label\": \"small\"}],"
-                + "\"pivots\": [{\"key\": \"mylabel\"}],"
-                + "\"ranges\": [{\"field\": \"content.size\",\"start\": \"0\",\"end\": \"300\",\"gap\": \"100\",\"include\":[\"lower\"]}],"
-                + "\"facetIntervals\": {\"sets\": [{ \"label\": \"king\", \"start\": \"1\", \"end\": \"2\",\"startInclusive\": true,\"endInclusive\": false}]"
-                + ",\"intervals\": [{\"field\": \"cm:creator\",\"label\": \"creator\","
-                + "\"sets\": [{\"label\": \"last\",\"start\": \"a\",\"end\": \"b\",\"startInclusive\": false}]"
-                + "},"
-                + "{\"label\":\"TheCreated\",\"field\":\"cm:created\",\"sets\":[{\"label\":\"lastYear\",\"start\":\"2016\",\"end\":\"2017\",\"endInclusive\":false},{\"label\":\"currentYear\",\"start\":\"NOW/YEAR\",\"end\":\"NOW/YEAR+1YEAR\"},{\"label\":\"earlier\",\"start\":\"*\",\"end\":\"2016\",\"endInclusive\":false}]}"
-                + "]},"
-                + "\"stats\": [{\"field\": \"cm:creator\", \"label\": \"mylabel\"}],"
-                + "\"spellcheck\": {\"query\": \"alfrezco\"},"
-                + "\"limits\": {\"permissionEvaluationCount\": \"2000\",\"permissionEvaluationTime\": \"5000\"},"
-                + "\"scope\": { \"locations\": [\"nodes\"]},"
-                + "\"fields\": [\"id\", \"name\"],"
-                + "\"highlight\": {\"prefix\": \"[\",\"postfix\": \"]\",\"snippetCount\": \"20\","
-                + "\"fragmentSize\": \"10\",\"mergeContiguous\": \"true\",\"maxAnalyzedChars\": \"40\", \"usePhraseHighlighter\": \"true\","
-                + "\"fields\": [ "
-                +" {\"field\": \"my\", \"snippetCount\": \"23\", \"fragmentSize\": \"5\", \"mergeContiguous\": \"true\", \"prefix\": \"?\", \"postfix\": \"¡\"  }, "
-                +" {\"field\": \"your\", \"snippetCount\": \"3\", \"fragmentSize\": \"15\", \"mergeContiguous\": \"false\", \"prefix\": \"(\", \"postfix\": \")\"  } "
-                + " ]" + " },"
-                + "\"include\": [\"aspectNames\", \"properties\"]}";
+            + "\"paging\": {\"maxItems\": \"99\",\"skipCount\": \"4\"},"
+            + "\"includeRequest\": true,"
+            + "\"sort\": {\"type\": \"FIELD\",\"field\": \"cm:title\",\"ascending\": \"true\"},"
+            + "\"templates\": [{\"name\": \"mytemp\",\"template\": \"ATEMP\"}, {\"name\": \"yourtemp\",\"template\": \"%cm:content\"}],"
+            + "\"defaults\": {\"namespace\": \"namesp\",\"defaultFieldName\": \"myfield\",\"defaultFTSOperator\": \"AND\", \"textAttributes\": [\"roy\", \"king\"]},"
+            + "\"filterQueries\": [{\"query\": \"myquery\",\"tags\": [\"tag1\", \"tag2\"]},{\"query\": \"myquery2\"}],"
+            + "\"facetFields\": {\"facets\": [{\"field\": \"cm:creator\",\"prefix\": \"myquery2\",\"sort\": \"COUNT\",\"missing\": \"false\"}, {\"field\": \"modifier\",\"label\": \"mylabel\",\"method\": \"FC\",\"mincount\": \"5\"}, {\"field\": \"owner\",\"label\": \"ownerLabel\"}]},"
+            + "\"facetQueries\": [{\"query\": \"cm:created:bob\",\"label\": \"small\"}],"
+            + "\"pivots\": [{\"key\": \"mylabel\"}],"
+            + "\"ranges\": [{\"field\": \"content.size\",\"start\": \"0\",\"end\": \"300\",\"gap\": \"100\",\"include\":[\"lower\"]}],"
+            + "\"facetIntervals\": {\"sets\": [{ \"label\": \"king\", \"start\": \"1\", \"end\": \"2\",\"startInclusive\": true,\"endInclusive\": false}]"
+            + ",\"intervals\": [{\"field\": \"cm:creator\",\"label\": \"creator\","
+            + "\"sets\": [{\"label\": \"last\",\"start\": \"a\",\"end\": \"b\",\"startInclusive\": false}]"
+            + "},"
+            + "{\"label\":\"TheCreated\",\"field\":\"cm:created\",\"sets\":[{\"label\":\"lastYear\",\"start\":\"2016\",\"end\":\"2017\",\"endInclusive\":false},{\"label\":\"currentYear\",\"start\":\"NOW/YEAR\",\"end\":\"NOW/YEAR+1YEAR\"},{\"label\":\"earlier\",\"start\":\"*\",\"end\":\"2016\",\"endInclusive\":false}]}"
+            + "]},"
+            + "\"stats\": [{\"field\": \"cm:creator\", \"label\": \"mylabel\"}],"
+            + "\"spellcheck\": {\"query\": \"alfrezco\"},"
+            + "\"limits\": {\"permissionEvaluationCount\": \"2000\",\"permissionEvaluationTime\": \"5000\"},"
+            + "\"scope\": { \"locations\": [\"nodes\"]},"
+            + "\"fields\": [\"id\", \"name\"],"
+            + "\"highlight\": {\"prefix\": \"[\",\"postfix\": \"]\",\"snippetCount\": \"20\","
+            + "\"fragmentSize\": \"10\",\"mergeContiguous\": \"true\",\"maxAnalyzedChars\": \"40\", \"usePhraseHighlighter\": \"true\","
+            + "\"fields\": [ "
+            + " {\"field\": \"my\", \"snippetCount\": \"23\", \"fragmentSize\": \"5\", \"mergeContiguous\": \"true\", \"prefix\": \"?\", \"postfix\": \"¡\"  }, "
+            + " {\"field\": \"your\", \"snippetCount\": \"3\", \"fragmentSize\": \"15\", \"mergeContiguous\": \"false\", \"prefix\": \"(\", \"postfix\": \")\"  } "
+            + " ]" + " },"
+            + "\"include\": [\"aspectNames\", \"properties\"]}";
 
     public SerializerTestHelper()
     {
@@ -123,17 +124,17 @@ public class SerializerTestHelper implements RequestReader
     public String writeResponse(final Object respons) throws IOException
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        jsonHelper.withWriter(out, new Writer()
-        {
+        jsonHelper.withWriter(out, new Writer() {
             @Override
             public void writeContents(JsonGenerator generator, ObjectMapper objectMapper)
-                        throws JsonGenerationException, JsonMappingException, IOException
+                    throws JsonGenerationException, JsonMappingException, IOException
             {
                 objectMapper.writeValue(generator, respons);
             }
         });
         return out.toString();
     }
+
     public Object searchSQLQueryFromJson(String query, Class<?> classz) throws IOException
     {
         Content content = mock(Content.class);

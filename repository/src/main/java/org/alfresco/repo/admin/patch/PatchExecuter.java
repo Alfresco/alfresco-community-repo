@@ -28,18 +28,18 @@ package org.alfresco.repo.admin.patch;
 import java.util.Date;
 import java.util.List;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+
 /**
- * This component is responsible for ensuring that patches are applied
- * at the appropriate time.
+ * This component is responsible for ensuring that patches are applied at the appropriate time.
  * 
  * @author Derek Hulley
  */
@@ -51,13 +51,14 @@ public class PatchExecuter extends AbstractLifecycleBean
     private static final String MSG_NOT_EXECUTED = "patch.executer.not_executed";
     private static final String MSG_EXECUTED = "patch.executer.executed";
     private static final String MSG_FAILED = "patch.executer.failed";
-    
+
     private static Log logger = LogFactory.getLog(PatchExecuter.class);
-    
+
     private PatchService patchService;
 
     /**
-     * @param patchService the server that actually executes the patches
+     * @param patchService
+     *            the server that actually executes the patches
      */
     public void setPatchService(PatchService patchService)
     {
@@ -69,23 +70,23 @@ public class PatchExecuter extends AbstractLifecycleBean
      */
     public void applyOutstandingPatches()
     {
-        // Apply patches even if we are in read only mode.   The system may not work safely otherwise.
-        
+        // Apply patches even if we are in read only mode. The system may not work safely otherwise.
+
         if (!patchService.validatePatches())
         {
             logger.warn(I18NUtil.getMessage(MSG_SYSTEM_READ_ONLY));
             return;
         }
-        
+
         logger.info(I18NUtil.getMessage(MSG_CHECKING));
-        
-        Date before = new Date(System.currentTimeMillis() - 60000L);  // 60 seconds ago
+
+        Date before = new Date(System.currentTimeMillis() - 60000L); // 60 seconds ago
         boolean applySucceeded = patchService.applyOutstandingPatches();
-        Date after = new Date(System .currentTimeMillis() + 20000L);  // 20 seconds ahead
-        
+        Date after = new Date(System.currentTimeMillis() + 20000L); // 20 seconds ahead
+
         // get all the patches executed in the time
         List<AppliedPatch> appliedPatches = patchService.getPatches(before, after);
-        
+
         // don't report anything if nothing was done
         if (applySucceeded && appliedPatches.size() == 0)
         {
@@ -110,7 +111,7 @@ public class PatchExecuter extends AbstractLifecycleBean
                 {
                     allPassed = false;
                     logger.error(I18NUtil.getMessage(MSG_FAILED, patchInfo.getId(), patchInfo.getReport()));
-               }
+                }
             }
             // generate an error if there was a failure
             if (!allPassed || !applySucceeded)
@@ -123,8 +124,7 @@ public class PatchExecuter extends AbstractLifecycleBean
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        RunAsWork<Void> runPatches = new RunAsWork<Void>()
-        {
+        RunAsWork<Void> runPatches = new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {

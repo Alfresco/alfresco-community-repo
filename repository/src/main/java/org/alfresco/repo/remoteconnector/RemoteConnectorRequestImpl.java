@@ -30,9 +30,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.cmr.remoteconnector.RemoteConnectorRequest;
-import org.alfresco.service.cmr.remoteconnector.RemoteConnectorService;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
@@ -44,9 +41,12 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.remoteconnector.RemoteConnectorRequest;
+import org.alfresco.service.cmr.remoteconnector.RemoteConnectorService;
+
 /**
- * Helper wrapper around a Remote Request, to be performed by the
- *  {@link RemoteConnectorService}.
+ * Helper wrapper around a Remote Request, to be performed by the {@link RemoteConnectorService}.
  * 
  * @author Nick Burch
  * @since 4.0.2
@@ -54,28 +54,30 @@ import org.apache.commons.httpclient.methods.StringRequestEntity;
 public class RemoteConnectorRequestImpl implements RemoteConnectorRequest
 {
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
-    
+
     private final String url;
     private final String methodName;
     private final HttpMethodBase method;
     private final List<Header> headers = new ArrayList<Header>();
     private RequestEntity requestBody;
-    
+
     public RemoteConnectorRequestImpl(String url, String methodName)
     {
         this(url, buildHttpClientMethod(url, methodName));
     }
+
     public RemoteConnectorRequestImpl(String url, Class<? extends HttpMethodBase> method)
     {
         this(url, buildHttpClientMethod(url, method));
     }
+
     private RemoteConnectorRequestImpl(String url, HttpMethodBase method)
     {
         this.url = url;
         this.method = method;
         this.methodName = method.getName();
     }
-    
+
     protected static HttpMethodBase buildHttpClientMethod(String url, String method)
     {
         if ("GET".equals(method))
@@ -98,8 +100,9 @@ public class RemoteConnectorRequestImpl implements RemoteConnectorRequest
         {
             return new TestingMethod(url);
         }
-        throw new UnsupportedOperationException("Method '"+method+"' not supported");
+        throw new UnsupportedOperationException("Method '" + method + "' not supported");
     }
+
     protected static HttpMethodBase buildHttpClientMethod(String url, Class<? extends HttpMethodBase> method)
     {
         HttpMethodBase request = null;
@@ -107,42 +110,45 @@ public class RemoteConnectorRequestImpl implements RemoteConnectorRequest
         {
             request = method.getConstructor(String.class).newInstance(url);
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             throw new AlfrescoRuntimeException("HttpClient broken", e);
         }
         return request;
     }
-    
+
     public String getURL()
     {
         return url;
     }
+
     public String getMethod()
     {
         return methodName;
     }
+
     public HttpMethodBase getMethodInstance()
     {
         return method;
     }
-    
+
     public String getContentType()
     {
         for (Header hdr : headers)
         {
-            if (HEADER_CONTENT_TYPE.equals( hdr.getName() ))
+            if (HEADER_CONTENT_TYPE.equals(hdr.getName()))
             {
                 return hdr.getValue();
             }
         }
         return null;
     }
+
     public void setContentType(String contentType)
     {
         for (Header hdr : headers)
         {
-            if (HEADER_CONTENT_TYPE.equals( hdr.getName() ))
+            if (HEADER_CONTENT_TYPE.equals(hdr.getName()))
             {
                 hdr.setValue(contentType);
                 return;
@@ -150,44 +156,52 @@ public class RemoteConnectorRequestImpl implements RemoteConnectorRequest
         }
         headers.add(new Header(HEADER_CONTENT_TYPE, contentType));
     }
-    
+
     public RequestEntity getRequestBody()
     {
         return requestBody;
     }
+
     public void setRequestBody(String body)
     {
         try
         {
             requestBody = new StringRequestEntity(body, getContentType(), "UTF-8");
         }
-        catch (UnsupportedEncodingException e) {} // Can't occur
+        catch (UnsupportedEncodingException e)
+        {} // Can't occur
     }
+
     public void setRequestBody(byte[] body)
     {
         requestBody = new ByteArrayRequestEntity(body);
     }
+
     public void setRequestBody(InputStream body)
     {
         requestBody = new InputStreamRequestEntity(body);
     }
+
     public void setRequestBody(RequestEntity body)
     {
         requestBody = body;
     }
-    
+
     public Header[] getRequestHeaders()
     {
         return headers.toArray(new Header[headers.size()]);
     }
+
     public void addRequestHeader(Header header)
     {
-        addRequestHeaders(new Header[] {header});
+        addRequestHeaders(new Header[]{header});
     }
+
     public void addRequestHeader(String name, String value)
     {
-        addRequestHeader(new Header(name,value));
+        addRequestHeader(new Header(name, value));
     }
+
     public void addRequestHeaders(Header[] headers)
     {
         for (Header newHdr : headers)
@@ -196,12 +210,12 @@ public class RemoteConnectorRequestImpl implements RemoteConnectorRequest
             Header existingHdr = null;
             for (Header hdr : this.headers)
             {
-                if (newHdr.getName().equals( hdr.getName() ))
+                if (newHdr.getName().equals(hdr.getName()))
                 {
                     existingHdr = hdr;
                 }
             }
-            
+
             // Update or add as needed
             if (existingHdr != null)
             {
@@ -213,20 +227,19 @@ public class RemoteConnectorRequestImpl implements RemoteConnectorRequest
             }
         }
     }
-    
+
     /**
-     * An HttpClient Method implementation for the method "TESTING",
-     *  which we use in certain unit tests
+     * An HttpClient Method implementation for the method "TESTING", which we use in certain unit tests
      */
     private static class TestingMethod extends GetMethod
     {
         private static final String METHOD_NAME = "TESTING";
-        
+
         private TestingMethod(String url)
         {
             super(url);
         }
-        
+
         @Override
         public String getName()
         {

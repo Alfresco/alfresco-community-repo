@@ -41,8 +41,7 @@ import org.springframework.util.ResourceUtils;
 public class SpringKeyResourceLoader implements KeyResourceLoader, ApplicationContextAware
 {
     /**
-     * The application context might not be available, in which case the usual URL
-     * loading is used.
+     * The application context might not be available, in which case the usual URL loading is used.
      */
     private ApplicationContext applicationContext;
 
@@ -51,10 +50,9 @@ public class SpringKeyResourceLoader implements KeyResourceLoader, ApplicationCo
     {
         this.applicationContext = applicationContext;
     }
-    
+
     /**
-     * Helper method to switch between application context resource loading or
-     * simpler current classloader resource loading.
+     * Helper method to switch between application context resource loading or simpler current classloader resource loading.
      */
     private InputStream getSafeInputStream(String location)
     {
@@ -98,7 +96,7 @@ public class SpringKeyResourceLoader implements KeyResourceLoader, ApplicationCo
 
             return is;
         }
-        catch (IOException e) 
+        catch (IOException e)
         {
             return null;
         }
@@ -145,11 +143,16 @@ public class SpringKeyResourceLoader implements KeyResourceLoader, ApplicationCo
                 }
                 finally
                 {
-                    try { is.close(); } catch (Throwable e) {}
+                    try
+                    {
+                        is.close();
+                    }
+                    catch (Throwable e)
+                    {}
                 }
             }
         }
-        catch(FileNotFoundException e)
+        catch (FileNotFoundException e)
         {
             return null;
         }

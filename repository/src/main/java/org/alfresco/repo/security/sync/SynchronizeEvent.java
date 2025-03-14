@@ -29,12 +29,12 @@ import org.springframework.context.ApplicationEvent;
 
 public class SynchronizeEvent extends ApplicationEvent
 {
- 
+
     public SynchronizeEvent(Object source)
     {
         super(source);
     }
-    
+
     /**
      * 
      */

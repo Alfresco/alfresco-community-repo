@@ -33,29 +33,32 @@ import org.alfresco.error.AlfrescoRuntimeException;
  */
 public class CategoryServiceException extends AlfrescoRuntimeException
 {
-	/**
-	 * Serial version UID
-	 */
-	private static final long serialVersionUID = 3257571687441467958L;
+    /**
+     * Serial version UID
+     */
+    private static final long serialVersionUID = 3257571687441467958L;
 
-	/**
-	 * Construtor
-	 *
-	 * @param message 	the message string
-	 */
-	public CategoryServiceException(String message)
-	{
-		super(message);
-	}
+    /**
+     * Construtor
+     *
+     * @param message
+     *            the message string
+     */
+    public CategoryServiceException(String message)
+    {
+        super(message);
+    }
 
-	/**
-	 * Constructor
-	 *
-	 * @param message	the message string
-	 * @param source	the source exception
-	 */
-	public CategoryServiceException(String message, Throwable source)
-	{
-		super(message, source);
-	}
+    /**
+     * Constructor
+     *
+     * @param message
+     *            the message string
+     * @param source
+     *            the source exception
+     */
+    public CategoryServiceException(String message, Throwable source)
+    {
+        super(message, source);
+    }
 }

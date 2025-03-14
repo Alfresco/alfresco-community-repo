@@ -42,22 +42,18 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  * @since 2.2
  */
-@BehaviourBean
-(
-   defaultType = "rma:vitalRecord"
-)
+@BehaviourBean(
+        defaultType = "rma:vitalRecord")
 public class VitalRecordAspect extends BaseBehaviourBean
 {
     /**
      * Copy callback for vital record
      */
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            policy = "alf:getCopyCallback"
-    )
+            policy = "alf:getCopyCallback")
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
         return new DoNothingCopyBehaviourCallback();
-    }   
+    }
 }

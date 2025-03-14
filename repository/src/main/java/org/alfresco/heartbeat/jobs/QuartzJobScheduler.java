@@ -25,11 +25,12 @@
  */
 package org.alfresco.heartbeat.jobs;
 
-import org.alfresco.heartbeat.HBBaseDataCollector;
-import org.alfresco.heartbeat.datasender.HBDataSenderService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.quartz.*;
+
+import org.alfresco.heartbeat.HBBaseDataCollector;
+import org.alfresco.heartbeat.datasender.HBDataSenderService;
 
 public abstract class QuartzJobScheduler implements HeartBeatJobScheduler
 {
@@ -71,9 +72,10 @@ public abstract class QuartzJobScheduler implements HeartBeatJobScheduler
 
     /**
      * This method is called when a job is being scheduled by this scheduler for the given collector. <br>
-     * The job is scheduled using the {@link Job} returned from {@link #getHeartBeatJobClass()}
-     * and the job map returned from this method, therefor the job map should provide what the job needs to execute.
-     * @param collector The collector whose job is being scheduled.
+     * The job is scheduled using the {@link Job} returned from {@link #getHeartBeatJobClass()} and the job map returned from this method, therefor the job map should provide what the job needs to execute.
+     * 
+     * @param collector
+     *            The collector whose job is being scheduled.
      * @return The job map returned from this method will be used to build up {@link JobDetail} for the job that is being scheduled.
      */
     protected abstract JobDataMap getJobDetailMap(HBBaseDataCollector collector);
@@ -104,7 +106,8 @@ public abstract class QuartzJobScheduler implements HeartBeatJobScheduler
                 .withSchedule(CronScheduleBuilder.cronSchedule(cronExpression))
                 .build();
 
-        try{
+        try
+        {
             // Ensure the job wasn't already scheduled in an earlier retry of this transaction
             scheduler.unscheduleJob(cronTrigger.getKey());
             scheduler.scheduleJob(jobDetail, cronTrigger);

@@ -26,26 +26,24 @@
 
 package org.alfresco.rest.api.categories;
 
-import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willCallRealMethod;
 
-import java.util.List;
+import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 
-import org.alfresco.rest.api.Categories;
-import org.alfresco.rest.api.model.Category;
-import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import org.alfresco.rest.api.Categories;
+import org.alfresco.rest.api.model.Category;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CategoriesEntityResourceTest
@@ -68,7 +66,7 @@ public class CategoriesEntityResourceTest
         given(categoriesMock.getCategoryById(any(), any())).willCallRealMethod();
         given(categoriesMock.getCategoryById(any(), any(), any())).willReturn(categoryMock);
 
-        //when
+        // when
         final Category category = objectUnderTest.readById(CATEGORY_ID, parametersMock);
 
         then(categoriesMock).should().getCategoryById(STORE_REF_WORKSPACE_SPACESSTORE, CATEGORY_ID, parametersMock);

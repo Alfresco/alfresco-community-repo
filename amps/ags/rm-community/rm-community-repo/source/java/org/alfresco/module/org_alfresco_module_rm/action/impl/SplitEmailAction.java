@@ -38,13 +38,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import jakarta.mail.MessagingException;
 import jakarta.mail.Multipart;
 import jakarta.mail.Part;
 import jakarta.mail.internet.ContentType;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeUtility;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.util.FileCopyUtils;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -63,10 +67,6 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.util.FileCopyUtils;
 
 /**
  * Split Email Action
@@ -105,7 +105,8 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
     /**
      * Sets the relationship service instance
      *
-     * @param relationshipService The relationship service instance
+     * @param relationshipService
+     *            The relationship service instance
      */
     public void setRelationshipService(RelationshipService relationshipService)
     {
@@ -139,8 +140,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
     }
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
@@ -163,7 +163,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
                  * Check whether the email message has already been split - do nothing if it has already been split
                  */
                 List<AssociationRef> refs = getNodeService().getTargetAssocs(actionedUponNodeRef, ImapModel.ASSOC_IMAP_ATTACHMENT);
-                if(refs.size() > 0)
+                if (refs.size() > 0)
                 {
                     if (logger.isDebugEnabled())
                     {
@@ -183,7 +183,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
                     Object content = mimeMessage.getContent();
                     if (content instanceof Multipart)
                     {
-                        Multipart multipart = (Multipart)content;
+                        Multipart multipart = (Multipart) content;
 
                         for (int i = 0, n = multipart.getCount(); i < n; i++)
                         {
@@ -199,7 +199,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
                 {
                     throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NO_READ_MIME_MESSAGE, e.toString()), e);
                 }
-           }
+            }
             else
             {
                 throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_EMAIL_DECLARED, actionedUponNodeRef.toString()));
@@ -213,8 +213,11 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
 
     /**
      * Create attachment from Mime Message Part
-     * @param messageNodeRef - the node ref of the mime message
-     * @param parentNodeRef - the node ref of the parent folder
+     * 
+     * @param messageNodeRef
+     *            - the node ref of the mime message
+     * @param parentNodeRef
+     *            - the node ref of the parent folder
      * @param part
      * @throws MessagingException
      * @throws IOException
@@ -235,8 +238,8 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
         }
 
         Map<QName, Serializable> messageProperties = getNodeService().getProperties(messageNodeRef);
-        String messageTitle = (String)messageProperties.get(ContentModel.PROP_NAME);
-        if(messageTitle == null)
+        String messageTitle = (String) messageProperties.get(ContentModel.PROP_NAME);
+        if (messageTitle == null)
         {
             messageTitle = fileName;
         }
@@ -255,10 +258,10 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
          * Create an attachment node in the same folder as the message
          */
         ChildAssociationRef attachmentRef = getNodeService().createNode(parentNodeRef,
-                        ContentModel.ASSOC_CONTAINS,
-                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, fileName),
-                        ContentModel.TYPE_CONTENT,
-                        docProps);
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, fileName),
+                ContentModel.TYPE_CONTENT,
+                docProps);
 
         /**
          * Write the content into the new attachment node
@@ -273,7 +276,6 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
          */
         createRMReference(messageNodeRef, attachmentRef.getChildRef());
 
-
     }
 
     /**
@@ -281,8 +283,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
      */
     private void createRMReference(final NodeRef parentRef, final NodeRef childRef)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork()
             {

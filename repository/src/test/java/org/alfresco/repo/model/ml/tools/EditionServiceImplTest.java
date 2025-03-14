@@ -34,6 +34,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.experimental.categories.Category;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -44,7 +46,6 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.junit.experimental.categories.Category;
 
 /**
  * Edition Service test cases
@@ -55,12 +56,12 @@ import org.junit.experimental.categories.Category;
 @Category(OwnJVMTestsCategory.class)
 public class EditionServiceImplTest extends AbstractMultilingualTestCases
 {
-    private static String  FRENCH_CONTENT   = "FRENCH_CONTENT";
-    private static String  CHINESE_CONTENT  = "CHINESE_CONTENT";
-    private static String  JAPANESE_CONTENT = "JAPANESE_CONTENT";
+    private static String FRENCH_CONTENT = "FRENCH_CONTENT";
+    private static String CHINESE_CONTENT = "CHINESE_CONTENT";
+    private static String JAPANESE_CONTENT = "JAPANESE_CONTENT";
 
     private ContentService contentService;
-    
+
     @Override
     protected void setUp() throws Exception
     {
@@ -84,17 +85,13 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
 
         checkFirstVersion(mlContainerNodeRef);
 
-        /*
-         * at the creation (1.0)
-         */
+        /* at the creation (1.0) */
 
         Version rootEdition = editionService.getEditions(mlContainerNodeRef).getAllVersions().iterator().next();
         // Ensure that the version label is 1.0
         assertTrue("The edition label would be 1.0 and not " + rootEdition.getVersionLabel(), rootEdition.getVersionLabel().equals("1.0"));
 
-        /*
-         * default (1.1)
-         */
+        /* default (1.1) */
 
         pivot = editionService.createEdition(pivot, versionProperties);
         editions = new ArrayList<Version>(editionService.getEditions(mlContainerNodeRef).getAllVersions());
@@ -102,9 +99,7 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
         // Ensure that the version label is 1.1
         assertTrue("The edition label would be 1.1 and not " + firstEdition.getVersionLabel(), firstEdition.getVersionLabel().equals("1.1"));
 
-        /*
-         * major (2.0)
-         */
+        /* major (2.0) */
 
         versionProperties = new HashMap<String, Serializable>();
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
@@ -114,9 +109,7 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
         // Ensure that the version label is 2.0
         assertTrue("The edition label would be 2.0 and not " + secondEdition.getVersionLabel(), secondEdition.getVersionLabel().equals("2.0"));
 
-        /*
-         * minor (2.1)
-         */
+        /* minor (2.1) */
 
         versionProperties = new HashMap<String, Serializable>();
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
@@ -187,7 +180,7 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
 
     }
 
-    //ALF-6275
+    // ALF-6275
     public void testEditionServiceWithContent()
     {
         // create a mlContainer with some content
@@ -241,35 +234,33 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
         modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "1.4" + "-" + "0.2");
         checkContentVersionValuesForEditions(mlContainerNodeRef);
 
-
         japaneseContentNodeRef = multilingualContentService.getTranslationForLocale(mlContainerNodeRef, Locale.JAPANESE);
         HashMap<String, Serializable> versionProperties = new HashMap<String, Serializable>();
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
         japaneseContentNodeRef = editionService.createEdition(japaneseContentNodeRef, versionProperties);
 
-         Collection<Version> editions = editionService.getEditions(mlContainerNodeRef).getAllVersions();
-         Version secondEdition = editions.iterator().next();
-         // Ensure that the version label is 2.0
-         assertTrue("The edition label would be 2.0 and not " + secondEdition.getVersionLabel(), secondEdition
-          .getVersionLabel().equals("2.0"));
-         frenchContentNodeRef = createContent(FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "1.0" + "-1.0");
-         modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "1.0" + "-" + "1.1");
-         checkContentVersionValuesForEditions(mlContainerNodeRef);
+        Collection<Version> editions = editionService.getEditions(mlContainerNodeRef).getAllVersions();
+        Version secondEdition = editions.iterator().next();
+        // Ensure that the version label is 2.0
+        assertTrue("The edition label would be 2.0 and not " + secondEdition.getVersionLabel(), secondEdition
+                .getVersionLabel().equals("2.0"));
+        frenchContentNodeRef = createContent(FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "1.0" + "-1.0");
+        modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "1.0" + "-" + "1.1");
+        checkContentVersionValuesForEditions(mlContainerNodeRef);
 
-         frenchContentNodeRef = multilingualContentService.getTranslationForLocale(mlContainerNodeRef, Locale.FRENCH);
+        frenchContentNodeRef = multilingualContentService.getTranslationForLocale(mlContainerNodeRef, Locale.FRENCH);
 
-         versionProperties = new HashMap<String, Serializable>();
-         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
-         frenchContentNodeRef = editionService.createEdition(frenchContentNodeRef, versionProperties);
+        versionProperties = new HashMap<String, Serializable>();
+        versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+        frenchContentNodeRef = editionService.createEdition(frenchContentNodeRef, versionProperties);
 
-          editions = editionService.getEditions(mlContainerNodeRef).getAllVersions();
-          secondEdition = editions.iterator().next();
-          // Ensure that the version label is 3.0
-          assertTrue("The edition label would be 3.0 and not " + secondEdition.getVersionLabel(), secondEdition
-           .getVersionLabel().equals("3.0"));
-          modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "3.0" + "-" + "0.2");
-          checkContentVersionValuesForEditions(mlContainerNodeRef);
-
+        editions = editionService.getEditions(mlContainerNodeRef).getAllVersions();
+        secondEdition = editions.iterator().next();
+        // Ensure that the version label is 3.0
+        assertTrue("The edition label would be 3.0 and not " + secondEdition.getVersionLabel(), secondEdition
+                .getVersionLabel().equals("3.0"));
+        modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "3.0" + "-" + "0.2");
+        checkContentVersionValuesForEditions(mlContainerNodeRef);
 
     }
 
@@ -300,8 +291,8 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
 
     private NodeRef createMLContainerWithContent()
     {
-        NodeRef chineseContentNodeRef  = createContent(CHINESE_CONTENT + "_1.0");
-        NodeRef frenchContentNodeRef   = createContent(FRENCH_CONTENT + "_1.0");
+        NodeRef chineseContentNodeRef = createContent(CHINESE_CONTENT + "_1.0");
+        NodeRef frenchContentNodeRef = createContent(FRENCH_CONTENT + "_1.0");
         NodeRef japaneseContentNodeRef = createContent(JAPANESE_CONTENT + "_1.0");
 
         multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
@@ -310,7 +301,7 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
 
         return multilingualContentService.getTranslationContainer(chineseContentNodeRef);
     }
-    
+
     private void checkContentVersionValuesForEditions(NodeRef mlContainerNodeRef)
     {
         // the convention applied for this test is that the content MUST end up with
@@ -427,16 +418,16 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
                 // get pivot language of the current versionned edition
                 // This is not the current/head edition
                 Version nextEditionVersion = editionHistory.getSuccessors(editionVersion).iterator().next();
-                
-                //get Next verion label
+
+                // get Next verion label
                 String nextEditionLabel = nextEditionVersion.getVersionLabel();
                 System.out.println("Edition:" + editionLabel + " Next edition label:" + nextEditionLabel);
                 // get the translations of the version
                 List<VersionHistory> versionTranslations = editionService.getVersionedTranslations(editionVersion);
                 // iterate on versionTranslations (all languages)
 
-                //strange that we have to go to the next edition to find the current pivot language.
-                //maybe there is a reason for that but not logical logical
+                // strange that we have to go to the next edition to find the current pivot language.
+                // maybe there is a reason for that but not logical logical
                 dumpFrozenMetaData(editionVersion);
                 Locale editionPivotlanguage = (Locale) (editionService.getVersionedMetadatas(editionVersion)
                         .get(ContentModel.PROP_LOCALE));
@@ -510,8 +501,8 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
 
         }
     }
-    private 
-    NodeRef createMLContainerWithContent(String editionSuffix)
+
+    private NodeRef createMLContainerWithContent(String editionSuffix)
     {
         NodeRef chineseContentNodeRef = createContent(CHINESE_CONTENT + "-" + Locale.CHINESE + "-" + editionSuffix
                 + "-1.0");
@@ -526,35 +517,34 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
 
         return multilingualContentService.getTranslationContainer(chineseContentNodeRef);
     }
-    
+
     private void modifyContent(NodeRef nodeRef, String value)
     {
         ContentWriter contentWriter = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
         contentWriter.putContent(value);
     }
-    
+
     private void dumpFrozenMetaData(Version editionVersion)
     {
         System.out.println("---------------------------------------------------");
-        //Get current version label
+        // Get current version label
         System.out.println("Version Label: " + editionVersion.getVersionLabel());
         System.out.println("---------------------------------------------------");
-        //Map<QName,Serializable> mapOfFrozenProps = editionService.getVersionedMetadatas(editionVersion);
-        Map<String,Serializable> mapOfFrozenProps = editionVersion.getVersionProperties();
-        if(mapOfFrozenProps == null )
+        // Map<QName,Serializable> mapOfFrozenProps = editionService.getVersionedMetadatas(editionVersion);
+        Map<String, Serializable> mapOfFrozenProps = editionVersion.getVersionProperties();
+        if (mapOfFrozenProps == null)
         {
             System.out.println("Nul... ");
             return;
         }
 
-        for(String  q: mapOfFrozenProps.keySet())
+        for (String q : mapOfFrozenProps.keySet())
         {
-            String val = mapOfFrozenProps.get(q)==null?"null":mapOfFrozenProps.get(q).toString();
-            System.out.println("QName:" + q + ":" +  val);
+            String val = mapOfFrozenProps.get(q) == null ? "null" : mapOfFrozenProps.get(q).toString();
+            System.out.println("QName:" + q + ":" + val);
         }
     }
 
-    
     /**
      * Parse the content to extract the local,edition lablel,version label
      *
@@ -575,10 +565,10 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
         }
 
     }
-    
+
     protected NodeRef createContent(String name)
     {
-        NodeRef contentNodeRef = fileFolderService.create(folderNodeRef, name+".txt", ContentModel.TYPE_CONTENT).getNodeRef();
+        NodeRef contentNodeRef = fileFolderService.create(folderNodeRef, name + ".txt", ContentModel.TYPE_CONTENT).getNodeRef();
         // add some content
         ContentWriter contentWriter = fileFolderService.getWriter(contentNodeRef);
         contentWriter.putContent(name);

@@ -36,6 +36,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import junit.framework.TestCase;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.MiscContextTestSuite;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -48,7 +49,6 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
-import org.springframework.context.ApplicationContext;
 
 /**
  * @see org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter
@@ -68,7 +68,7 @@ public class MappingMetadataExtracterTest extends TestCase
         extracter.register();
         reader = new FileContentReader(AbstractContentTransformerTest.loadQuickTestFile("txt"));
         reader.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        
+
         destination = new HashMap<QName, Serializable>(7);
         destination.put(DummyMappingMetadataExtracter.QNAME_A1, JunkValue.INSTANCE);
         destination.put(DummyMappingMetadataExtracter.QNAME_A2, "");
@@ -81,43 +81,41 @@ public class MappingMetadataExtracterTest extends TestCase
         assertNotNull(extracter);
         assertTrue("Extracter not initialized.", extracter.initCheck);
     }
-    
+
     /** Test the new alfresco/metadata properties location */
     public void testSetUpPropertiesLocationMetadata()
     {
-        DummyPropertiesInMetadataLocationMappingMetadataExtracter metadataLocationExtracter = 
-                new DummyPropertiesInMetadataLocationMappingMetadataExtracter();
+        DummyPropertiesInMetadataLocationMappingMetadataExtracter metadataLocationExtracter = new DummyPropertiesInMetadataLocationMappingMetadataExtracter();
         metadataLocationExtracter.register();
         assertNotNull("Extracter not initialized.", metadataLocationExtracter.getMapping());
-        assertNotNull("Mapping not found", 
+        assertNotNull("Mapping not found",
                 metadataLocationExtracter.getMapping().get(DummyMappingMetadataExtracter.PROP_A));
     }
-    
+
     /** Test that the old package-based properties location still works */
     public void testSetUpPropertiesLocationPackage()
     {
-        DummyPropertiesInPackageLocationMappingMetadataExtracter packageLocationExtracter = 
-                new DummyPropertiesInPackageLocationMappingMetadataExtracter();
+        DummyPropertiesInPackageLocationMappingMetadataExtracter packageLocationExtracter = new DummyPropertiesInPackageLocationMappingMetadataExtracter();
         packageLocationExtracter.register();
         assertNotNull("Extracter not initialized.", packageLocationExtracter.getMapping());
-        assertNotNull("Mapping not found", 
+        assertNotNull("Mapping not found",
                 packageLocationExtracter.getMapping().get(DummyMappingMetadataExtracter.PROP_A));
     }
-    
+
     /** Test that an extract with missing location throws the correct error */
     public void testSetUpPropertiesMissing()
     {
-        DummyPropertiesMissingMappingMetadataExtracter propertiesMissingExtracter = 
-                new DummyPropertiesMissingMappingMetadataExtracter();
+        DummyPropertiesMissingMappingMetadataExtracter propertiesMissingExtracter = new DummyPropertiesMissingMappingMetadataExtracter();
         try
         {
             propertiesMissingExtracter.register();
-        } catch (AlfrescoRuntimeException e)
+        }
+        catch (AlfrescoRuntimeException e)
         {
             assertTrue(e.getMessage().contains("alfresco/metadata/"));
         }
     }
-    
+
     public void testDefaultExtract() throws Exception
     {
         destination.clear();
@@ -128,7 +126,7 @@ public class MappingMetadataExtracterTest extends TestCase
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_B));
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_IMG));
     }
-    
+
     public void testPropertyMappingOverride() throws Exception
     {
         Properties props = new Properties();
@@ -143,11 +141,11 @@ public class MappingMetadataExtracterTest extends TestCase
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_A1));
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_A2));
     }
-    
+
     public void testPropertyMappingGlobalOverride() throws Exception
     {
-        String propertyPrefix = AbstractMappingMetadataExtracter.PROPERTY_PREFIX_METADATA + 
-                DummyMappingMetadataExtracter.EXTRACTER_NAME + 
+        String propertyPrefix = AbstractMappingMetadataExtracter.PROPERTY_PREFIX_METADATA +
+                DummyMappingMetadataExtracter.EXTRACTER_NAME +
                 AbstractMappingMetadataExtracter.PROPERTY_COMPONENT_EXTRACT;
 
         ApplicationContext ctx = MiscContextTestSuite.getMinimalContext();
@@ -158,16 +156,16 @@ public class MappingMetadataExtracterTest extends TestCase
         globalProperties.setProperty(
                 propertyPrefix + DummyMappingMetadataExtracter.PROP_A,
                 " my:a1, my:a2, my:c ");
-        
+
         extracter.setApplicationContext(ctx);
-        
+
         extracter.register();
         // Only mapped 'a'
         destination.clear();
         extracter.extract(reader, destination);
         assertEquals(DummyMappingMetadataExtracter.VALUE_A, destination.get(DummyMappingMetadataExtracter.QNAME_C));
     }
-    
+
     public void testPropertyMappingMerge() throws Exception
     {
         Properties props = new Properties();
@@ -184,7 +182,7 @@ public class MappingMetadataExtracterTest extends TestCase
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_B));
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_IMG));
     }
-    
+
     public void testPropertyMappingDisable() throws Exception
     {
         Properties props = new Properties();
@@ -200,7 +198,7 @@ public class MappingMetadataExtracterTest extends TestCase
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_B));
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_IMG));
     }
-    
+
     public void testPropertyMappingOverrideExtra() throws Exception
     {
         Properties props = new Properties();
@@ -217,7 +215,7 @@ public class MappingMetadataExtracterTest extends TestCase
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_C));
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_D));
     }
-    
+
     public void testOverwritePolicyEager()
     {
         extracter.setOverwritePolicy(OverwritePolicy.EAGER);
@@ -228,19 +226,19 @@ public class MappingMetadataExtracterTest extends TestCase
         assertEquals(DummyMappingMetadataExtracter.VALUE_B, destination.get(DummyMappingMetadataExtracter.QNAME_B));
         assertEquals(DummyMappingMetadataExtracter.VALUE_IMG, destination.get(DummyMappingMetadataExtracter.QNAME_IMG));
     }
-    
+
     public void testOverwritePolicyPragmatic()
     {
         extracter.setOverwritePolicy(OverwritePolicy.PRAGMATIC);
-        
+
         // Put some values in to start with
         destination.put(DummyMappingMetadataExtracter.QNAME_C, "Will not change");
         destination.put(DummyMappingMetadataExtracter.QNAME_IMG, "Will be changed");
-        
+
         // Extract
         extracter.extract(reader, destination);
         assertEquals(5, destination.size());
-        
+
         // Check the values as extracted
         assertEquals(JunkValue.INSTANCE, destination.get(DummyMappingMetadataExtracter.QNAME_A1));
         assertEquals(DummyMappingMetadataExtracter.VALUE_A, destination.get(DummyMappingMetadataExtracter.QNAME_A2));
@@ -248,29 +246,29 @@ public class MappingMetadataExtracterTest extends TestCase
 
         // Normal values not changed
         assertEquals("Will not change", destination.get(DummyMappingMetadataExtracter.QNAME_C));
-        
+
         // Media parts are always overridden
         assertEquals(DummyMappingMetadataExtracter.VALUE_IMG, destination.get(DummyMappingMetadataExtracter.QNAME_IMG));
     }
-    
+
     public void testOverwritePolicyPrudent()
     {
         extracter.setOverwritePolicy(OverwritePolicy.PRUDENT);
-        
+
         // Add a media property, won't be changed
         destination.put(DummyMappingMetadataExtracter.QNAME_IMG, "Won't be changed");
-        
+
         // Extract and check
         extracter.extract(reader, destination);
         assertEquals(4, destination.size());
         assertEquals(JunkValue.INSTANCE, destination.get(DummyMappingMetadataExtracter.QNAME_A1));
         assertEquals(DummyMappingMetadataExtracter.VALUE_A, destination.get(DummyMappingMetadataExtracter.QNAME_A2));
         assertEquals(DummyMappingMetadataExtracter.VALUE_B, destination.get(DummyMappingMetadataExtracter.QNAME_B));
-        
+
         // Media behaves the same as the others
         assertEquals("Won't be changed", destination.get(DummyMappingMetadataExtracter.QNAME_IMG));
     }
-    
+
     public void testOverwritePolicyCautious()
     {
         extracter.setOverwritePolicy(OverwritePolicy.CAUTIOUS);
@@ -280,7 +278,7 @@ public class MappingMetadataExtracterTest extends TestCase
         assertEquals("", destination.get(DummyMappingMetadataExtracter.QNAME_A2));
         assertEquals(null, destination.get(DummyMappingMetadataExtracter.QNAME_B));
     }
-    
+
     /**
      * @see <a href="https://issues.alfresco.com/jira/browse/MNT-13919">MNT-13919</a>
      */
@@ -288,14 +286,14 @@ public class MappingMetadataExtracterTest extends TestCase
     {
         DummyMetadataEmbedder embedder = new DummyMetadataEmbedder();
         Map<QName, Serializable> propertiesToEmbed = new HashMap<QName, Serializable>();
-        
+
         // make a writer for the target of the embed, we won't actually use it
         File targetFile = TempFileProvider.createTempFile(
                 getClass().getSimpleName() + "_" + getName() + "_embed",
                 ".txt");
         FileContentWriter writer = new FileContentWriter(targetFile);
         writer.setMimetype(DummyMetadataEmbedder.MIMETYPE_EMBEDDABLE);
-        
+
         try
         {
             embedder.embed(propertiesToEmbed, reader, writer);
@@ -319,15 +317,17 @@ public class MappingMetadataExtracterTest extends TestCase
             }
         }
     }
-    
+
     /**
      * A spoofed-up extracter that extracts the following:
+     * 
      * <pre>
      * <b>a:</b>  - A        -->  my:a1, my:a2
      * <b>b:</b>  - B        -->  my:b
      * <b>c:</b>  - C
      * <b>d:</b>  - D
      * </pre>
+     * 
      * @author Derek Hulley
      */
     public static class DummyMappingMetadataExtracter extends AbstractMappingMetadataExtracter
@@ -343,7 +343,7 @@ public class MappingMetadataExtracterTest extends TestCase
         public static final String VALUE_C = "CCC";
         public static final String VALUE_D = "DDD";
         public static final String VALUE_IMG = "IMAGE";
-        
+
         public static final String EXTRACTER_NAME = "extracter.Dummy";
         public static final String NAMESPACE_MY = "http://DummyMappingMetadataExtracter";
         public static final QName QNAME_A1 = QName.createQName(NAMESPACE_MY, "a1");
@@ -352,7 +352,7 @@ public class MappingMetadataExtracterTest extends TestCase
         public static final QName QNAME_B = QName.createQName(NAMESPACE_MY, "b");
         public static final QName QNAME_C = QName.createQName(NAMESPACE_MY, "c");
         public static final QName QNAME_D = QName.createQName(NAMESPACE_MY, "d");
-        public static final QName QNAME_E = QName.createQName(NAMESPACE_MY, "e");   // not extracted
+        public static final QName QNAME_E = QName.createQName(NAMESPACE_MY, "e"); // not extracted
         public static final QName QNAME_IMG = QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "test");
         private static final Set<String> MIMETYPES;
         static
@@ -361,17 +361,17 @@ public class MappingMetadataExtracterTest extends TestCase
             MIMETYPES.add(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             MIMETYPES.add(MimetypeMap.MIMETYPE_XML);
         }
-        
+
         Map<String, Set<QName>> defaultMapping;
         private boolean initCheck;
-        
+
         public DummyMappingMetadataExtracter()
         {
             super(MIMETYPES);
             initCheck = false;
             setBeanName(EXTRACTER_NAME);
         }
-        
+
         @Override
         protected void init()
         {
@@ -379,9 +379,9 @@ public class MappingMetadataExtracterTest extends TestCase
             defaultMapping.put(PROP_A, new HashSet<QName>(Arrays.asList(QNAME_A1, QNAME_A2)));
             defaultMapping.put(PROP_B, new HashSet<QName>(Arrays.asList(QNAME_B)));
             defaultMapping.put(PROP_IMG, new HashSet<QName>(Arrays.asList(QNAME_IMG)));
-            
+
             initCheck = true;
-            
+
             super.init();
         }
 
@@ -390,12 +390,12 @@ public class MappingMetadataExtracterTest extends TestCase
         {
             return defaultMapping;
         }
-        
+
         @Override
         protected Map<String, Serializable> extractRaw(ContentReader reader)
         {
             reader.getContentString();
-            
+
             Map<String, Serializable> ret = new HashMap<String, Serializable>(7);
             ret.put(PROP_A, VALUE_A);
             ret.put(PROP_B, VALUE_B);
@@ -405,7 +405,7 @@ public class MappingMetadataExtracterTest extends TestCase
             return ret;
         }
     }
-    
+
     public static class DummyPropertiesInPackageLocationMappingMetadataExtracter extends AbstractMappingMetadataExtracter
     {
         @Override
@@ -414,7 +414,7 @@ public class MappingMetadataExtracterTest extends TestCase
             return null;
         }
     }
-    
+
     public static class DummyPropertiesInMetadataLocationMappingMetadataExtracter extends AbstractMappingMetadataExtracter
     {
         @Override
@@ -423,7 +423,7 @@ public class MappingMetadataExtracterTest extends TestCase
             return null;
         }
     }
-    
+
     public static class DummyPropertiesMissingMappingMetadataExtracter extends AbstractMappingMetadataExtracter
     {
         @Override
@@ -432,29 +432,28 @@ public class MappingMetadataExtracterTest extends TestCase
             return null;
         }
     }
-    
+
     private static class JunkValue implements Serializable
     {
         private static final JunkValue INSTANCE = new JunkValue();
         private static final long serialVersionUID = 1L;
     }
-    
+
     /**
-     * Mock metadata embedder which has a set of supported embed mimetypes different than
-     * the supported extract mimetypes.
+     * Mock metadata embedder which has a set of supported embed mimetypes different than the supported extract mimetypes.
      */
     private class DummyMetadataEmbedder extends AbstractMappingMetadataExtracter
     {
         private static final String MIMETYPE_EXTRACTABLE = "extractableMimetype";
         private static final String MIMETYPE_EMBEDDABLE = "embeddableMimetype";
-        
+
         public DummyMetadataEmbedder()
         {
-            super(Collections.singleton(MIMETYPE_EXTRACTABLE), 
+            super(Collections.singleton(MIMETYPE_EXTRACTABLE),
                     Collections.singleton(MIMETYPE_EMBEDDABLE));
             init();
         }
-        
+
         @Override
         protected Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
         {

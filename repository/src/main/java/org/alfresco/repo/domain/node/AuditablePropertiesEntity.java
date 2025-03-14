@@ -41,8 +41,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 
 /**
- * Class holding properties associated with the <b>cm:auditable</b> aspect.
- * This aspect is common enough to warrant direct inclusion on the <b>Node</b> entity.
+ * Class holding properties associated with the <b>cm:auditable</b> aspect. This aspect is common enough to warrant direct inclusion on the <b>Node</b> entity.
  * 
  * @author Derek Hulley
  * @since 3.4
@@ -60,19 +59,20 @@ public class AuditablePropertiesEntity implements Serializable
         auditablePropertyQNames.add(ContentModel.PROP_MODIFIED);
         auditablePropertyQNames.add(ContentModel.PROP_ACCESSED);
     }
-    
+
     /**
-     * @return          Returns the <tt>QName</tt>s of the <b>cm:auditable</b> properties
+     * @return Returns the <tt>QName</tt>s of the <b>cm:auditable</b> properties
      */
     public static Set<QName> getAuditablePropertyQNames()
     {
         return auditablePropertyQNames;
     }
-    
+
     /**
      * 
-     * @param qnames    the property names to check
-     * @return          Returns <tt>true</tt> if the set contains a <b>cm:auditable</b> property
+     * @param qnames
+     *            the property names to check
+     * @return Returns <tt>true</tt> if the set contains a <b>cm:auditable</b> property
      */
     public static boolean hasAuditableProperty(Set<QName> qnames)
     {
@@ -85,18 +85,19 @@ public class AuditablePropertiesEntity implements Serializable
         }
         return false;
     }
-    
+
     /**
-     * @return          Returns <tt>true</tt> if the property belongs to the <b>cm:auditable</b> aspect
+     * @return Returns <tt>true</tt> if the property belongs to the <b>cm:auditable</b> aspect
      */
     public static boolean isAuditableProperty(QName qname)
     {
         return auditablePropertyQNames.contains(qname);
     }
-    
+
     /**
-     * @param typeQName             a node type
-     * @return                      <tt>true</tt> if the type given has the <b>cm:auditable</b> aspect by default
+     * @param typeQName
+     *            a node type
+     * @return <tt>true</tt> if the type given has the <b>cm:auditable</b> aspect by default
      */
     public static boolean hasAuditableAspect(QName typeQName, DictionaryService dictionaryService)
     {
@@ -107,18 +108,18 @@ public class AuditablePropertiesEntity implements Serializable
         }
         return typeDef.getDefaultAspectNames().contains(ContentModel.ASPECT_AUDITABLE);
     }
-    
+
     private boolean locked;
-    
+
     private String auditCreator;
     private String auditCreated;
     private String auditModifier;
     private String auditModified;
     private String auditAccessed;
-    
+
     // Cached value for faster comparisons when updating modification time
     private long auditModifiedTime = -1L;
-    
+
     /**
      * Default constructor with all <tt>null</tt> values.
      */
@@ -126,7 +127,7 @@ public class AuditablePropertiesEntity implements Serializable
     {
         locked = false;
     }
-    
+
     /**
      * Copy constructor to create an unlocked instance
      */
@@ -140,20 +141,20 @@ public class AuditablePropertiesEntity implements Serializable
         this.auditAccessed = that.auditAccessed;
         this.auditModifiedTime = that.auditModifiedTime;
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("AuditablePropertiesEntity")
-          .append("[ auditCreator=").append(auditCreator)
-          .append(", auditCreated=").append(auditCreated)
-          .append(", auditModifier=").append(auditModifier)
-          .append(", auditModified=").append(auditModified)
-          .append("]");
+                .append("[ auditCreator=").append(auditCreator)
+                .append(", auditCreated=").append(auditCreated)
+                .append(", auditModifier=").append(auditModifier)
+                .append(", auditModified=").append(auditModified)
+                .append("]");
         return sb.toString();
     }
-    
+
     /**
      * Lock the entity against further updates to prevent accidental modification
      */
@@ -161,7 +162,7 @@ public class AuditablePropertiesEntity implements Serializable
     {
         locked = true;
     }
-    
+
     private synchronized final void checkLock()
     {
         if (locked)
@@ -169,10 +170,11 @@ public class AuditablePropertiesEntity implements Serializable
             throw new IllegalStateException("The entity is locked against updates: " + this);
         }
     }
-    
+
     /**
-     * @param qname         the property name
-     * @return              Returns the value of the <b>cm:auditable</b> property or <tt>null</tt>
+     * @param qname
+     *            the property name
+     * @return Returns the value of the <b>cm:auditable</b> property or <tt>null</tt>
      */
     public Serializable getAuditableProperty(QName qname)
     {
@@ -202,9 +204,9 @@ public class AuditablePropertiesEntity implements Serializable
             return null;
         }
     }
-    
+
     /**
-     * @return          Returns a <tt>Map</tt> of auditable properties
+     * @return Returns a <tt>Map</tt> of auditable properties
      */
     public Map<QName, Serializable> getAuditableProperties()
     {
@@ -236,25 +238,24 @@ public class AuditablePropertiesEntity implements Serializable
         }
         return properties;
     }
-    
+
     /**
-     * Set all <b>cm:auditable</b> parameters as required.  Where possible, the creation and modification data
-     * will be shared so as to reduce data duplication.
+     * Set all <b>cm:auditable</b> parameters as required. Where possible, the creation and modification data will be shared so as to reduce data duplication.
      * 
-     * @param user      the username; <tt>null</tt> to use the
-     *                  {@link AuthenticationUtil#getFullyAuthenticatedUser() fully-authenticated user}
-     * @param date      the creation or modification date; <tt>null</tt> to use the current system time
-     * @param force     <tt>true</tt> to force the values to overwrite any pre-existing values
-     * @param modifiedDateToleranceMs   the number of milliseconds' to tolerate before updating the
-     *                  modification date.
-     *                  Setting this to 1000L (say) will mean that the modification time will not be
-     *                  changed if the existing value is withing 1000 ms of the new time.
-     * @return          Returns <tt>true</tt> if there were any changes made, otherwise <tt>false</tt>
+     * @param user
+     *            the username; <tt>null</tt> to use the {@link AuthenticationUtil#getFullyAuthenticatedUser() fully-authenticated user}
+     * @param date
+     *            the creation or modification date; <tt>null</tt> to use the current system time
+     * @param force
+     *            <tt>true</tt> to force the values to overwrite any pre-existing values
+     * @param modifiedDateToleranceMs
+     *            the number of milliseconds' to tolerate before updating the modification date. Setting this to 1000L (say) will mean that the modification time will not be changed if the existing value is withing 1000 ms of the new time.
+     * @return Returns <tt>true</tt> if there were any changes made, otherwise <tt>false</tt>
      */
     public boolean setAuditValues(String user, Date date, boolean force, long modifiedDateToleranceMs)
     {
         checkLock();
-        
+
         // Get a user if we need
         if (user == null)
         {
@@ -269,13 +270,13 @@ public class AuditablePropertiesEntity implements Serializable
         {
             date = new Date();
         }
-        
+
         String dateStr = DefaultTypeConverter.INSTANCE.convert(String.class, date);
         long dateTime = date.getTime();
 
         // Need to know if anything changed
         boolean changed = false;
-        
+
         // Always set cm:creator and cm:created
         if (force || auditCreator == null)
         {
@@ -305,21 +306,23 @@ public class AuditablePropertiesEntity implements Serializable
     }
 
     /**
-     * Set all <b>cm:auditable</b> parameters as required, giving precedence to the supplied
-     * property map.
+     * Set all <b>cm:auditable</b> parameters as required, giving precedence to the supplied property map.
      * 
-     * @param user          the username
-     * @param date          the creation or modification date
-     * @param properties    the properties to override the user and date
-     * @return              Returns <tt>true</tt> if there were any changes made, otherwise <tt>false</tt>
+     * @param user
+     *            the username
+     * @param date
+     *            the creation or modification date
+     * @param properties
+     *            the properties to override the user and date
+     * @return Returns <tt>true</tt> if there were any changes made, otherwise <tt>false</tt>
      */
     public boolean setAuditValues(String user, Date date, Map<QName, Serializable> properties)
     {
         checkLock();
-        
+
         // Need to know if anything changed
         boolean changed = false;
-        
+
         if (properties.containsKey(ContentModel.PROP_CREATOR))
         {
             String auditCreatorNew = DefaultTypeConverter.INSTANCE.convert(
@@ -397,10 +400,10 @@ public class AuditablePropertiesEntity implements Serializable
             {
                 date = new Date();
             }
-            
+
             String dateStr = DefaultTypeConverter.INSTANCE.convert(String.class, date);
             long dateTime = date.getTime();
-    
+
             if (auditCreator == null)
             {
                 auditCreator = user;
@@ -422,7 +425,7 @@ public class AuditablePropertiesEntity implements Serializable
         // Done
         return changed;
     }
-    
+
     /**
      * For persistance use
      */
@@ -483,8 +486,7 @@ public class AuditablePropertiesEntity implements Serializable
     }
 
     /**
-     * For internal use.  Provides access to the time (<tt>long</tt>) for the
-     * {@link #getAuditModified() auditModified} property.
+     * For internal use. Provides access to the time (<tt>long</tt>) for the {@link #getAuditModified() auditModified} property.
      */
     private long getAuditModifiedTime()
     {
@@ -505,16 +507,14 @@ public class AuditablePropertiesEntity implements Serializable
     }
 
     /**
-     * @param modifiedDateToleranceMs   the number of milliseconds' to tolerate before updating the
-     *                  modification date.
-     *                  Setting this to 1000L (say) will mean that the modification time will not be
-     *                  changed if the existing value is withing 1000 ms of the new time.
-     * @return          Returns <tt>true</tt> if there were any changes made, otherwise <tt>false</tt>
+     * @param modifiedDateToleranceMs
+     *            the number of milliseconds' to tolerate before updating the modification date. Setting this to 1000L (say) will mean that the modification time will not be changed if the existing value is withing 1000 ms of the new time.
+     * @return Returns <tt>true</tt> if there were any changes made, otherwise <tt>false</tt>
      */
     public boolean setAuditModified(Date date, long modifiedDateToleranceMs)
     {
         checkLock();
-        
+
         long dateTime = date.getTime();
         long lastModTime = getAuditModifiedTime();
         boolean changed = false;

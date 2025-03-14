@@ -32,6 +32,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.ibatis.session.RowBounds;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.EmptyPagingResults;
@@ -42,7 +44,6 @@ import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.repo.domain.activities.ActivityFeedQueryEntity;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.util.Pair;
-import org.apache.ibatis.session.RowBounds;
 
 public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFeedDAO
 {
@@ -50,7 +51,7 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
 
     private TenantService tenantService;
     private int fetchBatchSize = DEFAULT_FETCH_BATCH_SIZE;
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
@@ -67,7 +68,7 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
         Long id = activityFeed.getId();
         return (id != null ? id : -1);
     }
-    
+
     @Override
     public int deleteFeedEntries(Integer maxIdRange) throws SQLException
     {
@@ -75,9 +76,9 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
         Long maxId = template.selectOne("alfresco.activities.select_activity_feed_entries_max_id");
         if (maxId == null)
         {
-            return 0;       // This happens when there are no entries
+            return 0; // This happens when there are no entries
         }
-        Long minId = maxId - maxIdRange + 1;        // The delete leaves the ID we pass in
+        Long minId = maxId - maxIdRange + 1; // The delete leaves the ID we pass in
         if (minId <= 0)
         {
             return 0;
@@ -90,53 +91,53 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
     {
         return template.delete("alfresco.activities.delete_activity_feed_entries_older_than_date", keepDate);
     }
-    
+
     @Override
     public int deleteSiteFeedEntries(String siteId) throws SQLException
     {
         ActivityFeedEntity params = new ActivityFeedEntity();
         params.setSiteNetwork(siteId);
-        
+
         return template.delete("alfresco.activities.delete_activity_feed_for_site_entries", params);
     }
-    
+
     @Override
     public int deleteSiteFeedEntries(String siteId, Date keepDate) throws SQLException
     {
-        
+
         ActivityFeedEntity params = new ActivityFeedEntity();
         params.setSiteNetwork(siteId);
         params.setPostDate(keepDate);
-        
+
         return template.delete("alfresco.activities.delete_activity_feed_for_site_entries_older_than_date", params);
     }
-    
+
     @Override
     public int deleteUserFeedEntries(String feedUserId, Date keepDate) throws SQLException
     {
         ActivityFeedEntity params = new ActivityFeedEntity();
         params.setFeedUserId(feedUserId);
         params.setPostDate(keepDate);
-        
+
         return template.delete("alfresco.activities.delete_activity_feed_for_feeduser_entries_older_than_date", params);
     }
-    
+
     @Override
     public int deleteUserFeedEntries(String feedUserId) throws SQLException
     {
         ActivityFeedEntity params = new ActivityFeedEntity();
         params.setFeedUserId(feedUserId);
-        
+
         return template.delete("alfresco.activities.delete_activity_feed_for_feeduser_entries", params);
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
     public List<ActivityFeedEntity> selectUserFeedsToClean(int maxFeedSize) throws SQLException
     {
         ActivityFeedQueryEntity params = new ActivityFeedQueryEntity();
         params.setMaxFeedSize(maxFeedSize);
-        
+
         return template.selectList("alfresco.activities.select_activity_user_feeds_greater_than_max", params);
     }
 
@@ -145,12 +146,12 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
     {
         ActivityFeedQueryEntity params = new ActivityFeedQueryEntity();
         params.setFeedUserId(feedUserId);
-        
+
         if (minFeedId > -1)
         {
             params.setMinId(minFeedId);
         }
-        
+
         if (siteId != null)
         {
             if (excludeThisUser && excludeOtherUsers)
@@ -176,7 +177,7 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
         else
         {
             // all sites
-            
+
             if (excludeThisUser && excludeOtherUsers)
             {
                 // effectively NOOP - return empty feed
@@ -202,37 +203,37 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
         // belts-and-braces
         throw new AlfrescoRuntimeException("Unexpected: invalid arguments");
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
     public List<ActivityFeedEntity> selectSiteFeedsToClean(int maxFeedSize) throws SQLException
     {
         ActivityFeedQueryEntity params = new ActivityFeedQueryEntity();
         params.setMaxFeedSize(maxFeedSize);
-        
+
         return template.selectList("alfresco.activities.select_activity_site_feeds_greater_than_max", params);
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
     public List<ActivityFeedEntity> selectUserFeedEntries(String feedUserId, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, int maxFeedSize) throws SQLException
     {
         ActivityFeedQueryEntity params = new ActivityFeedQueryEntity();
         params.setFeedUserId(feedUserId);
-        
+
         if (minFeedId > -1)
         {
             params.setMinId(minFeedId);
         }
-        
+
         int rowLimit = maxFeedSize < 0 ? RowBounds.NO_ROW_LIMIT : maxFeedSize;
         RowBounds rowBounds = new RowBounds(RowBounds.NO_ROW_OFFSET, rowLimit);
-        
+
         if (siteId != null)
         {
             // given site
             params.setSiteNetwork(siteId);
-            
+
             if (excludeThisUser && excludeOtherUsers)
             {
                 // effectively NOOP - return empty feed
@@ -257,7 +258,7 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
         else
         {
             // all sites
-            
+
             if (excludeThisUser && excludeOtherUsers)
             {
                 // effectively NOOP - return empty feed
@@ -279,7 +280,7 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
                 return template.selectList("alfresco.activities.select.select_activity_feed_for_feeduser_me", params, rowBounds);
             }
         }
-        
+
         // belts-and-braces
         throw new AlfrescoRuntimeException("Unexpected: invalid arguments");
     }
@@ -288,13 +289,12 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
     {
         int maxItems = pagingRequest.getMaxItems();
         final boolean hasMoreItems = feedEntries.size() > maxItems;
-        if(hasMoreItems)
+        if (hasMoreItems)
         {
             feedEntries.remove(feedEntries.size() - 1);
         }
 
-        return new PagingResults<ActivityFeedEntity>()
-        {
+        return new PagingResults<ActivityFeedEntity>() {
             @Override
             public List<ActivityFeedEntity> getPage()
             {
@@ -302,7 +302,7 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
             }
 
             @Override
-            public boolean hasMoreItems() 
+            public boolean hasMoreItems()
             {
                 return hasMoreItems;
             }
@@ -320,10 +320,8 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
             }
         };
     }
-    
-    /*
-     * Get a paged list of activities, filtering out those activities that do not belong to the network "networkId".
-     */
+
+    /* Get a paged list of activities, filtering out those activities that do not belong to the network "networkId". */
     @SuppressWarnings("unchecked")
     private List<ActivityFeedEntity> filterByNetwork(String networkId, String siteId, String sql, ActivityFeedQueryEntity params, PagingRequest pagingRequest)
     {
@@ -351,14 +349,14 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
             feedEntries = template.selectList(sql, params, rowBounds);
             Iterator<ActivityFeedEntity> feedEntriesIt = feedEntries.iterator();
 
-            while(feedEntriesIt.hasNext() && numAddedItems < expectedMaxItems)
+            while (feedEntriesIt.hasNext() && numAddedItems < expectedMaxItems)
             {
                 ActivityFeedEntity activityFeedEntry = feedEntriesIt.next();
-                
-                if(siteId == null)
+
+                if (siteId == null)
                 {
                     // note: pending requirements for THOR-224, for now assume all activities are within context of site and filter by current tenant
-                    if(!networkId.equals(tenantService.getDomain(activityFeedEntry.getSiteNetwork())))
+                    if (!networkId.equals(tenantService.getDomain(activityFeedEntry.getSiteNetwork())))
                     {
                         continue;
                     }
@@ -366,9 +364,9 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
 
                 numMatchingItems++;
 
-                if(skipping)
+                if (skipping)
                 {
-                    if(numMatchingItems > expectedSkipCount)
+                    if (numMatchingItems > expectedSkipCount)
                     {
                         skipping = false;
                     }
@@ -379,13 +377,12 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
                 }
 
                 ret.add(activityFeedEntry);
-                
+
                 numAddedItems++;
             }
 
             skipCount += feedEntries.size();
-        }
-        while(feedEntries != null && feedEntries.size() > 0 && numAddedItems < expectedMaxItems);
+        } while (feedEntries != null && feedEntries.size() > 0 && numAddedItems < expectedMaxItems);
 
         return ret;
     }
@@ -395,7 +392,7 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
     {
         ActivityFeedQueryEntity params = new ActivityFeedQueryEntity();
         params.setFeedUserId(feedUserId);
-        
+
         if (minFeedId > -1)
         {
             params.setMinId(minFeedId);
@@ -405,7 +402,7 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
         {
             // given site
             params.setSiteNetwork(siteId);
-            
+
             if (excludeThisUser && excludeOtherUsers)
             {
                 // effectively NOOP - return empty feed
@@ -430,7 +427,7 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
         else
         {
             // all sites
-            
+
             if (excludeThisUser && excludeOtherUsers)
             {
                 // effectively NOOP - return empty feed
@@ -473,10 +470,10 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
     {
         ActivityFeedQueryEntity params = new ActivityFeedQueryEntity();
         params.setSiteNetwork(siteId);
-        
+
         int rowLimit = maxFeedSize < 0 ? RowBounds.NO_ROW_LIMIT : maxFeedSize;
         RowBounds rowBounds = new RowBounds(RowBounds.NO_ROW_OFFSET, rowLimit);
-        
+
         // for given site
         return template.selectList("alfresco.activities.select.select_activity_feed_for_site", params, rowBounds);
     }

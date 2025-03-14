@@ -43,14 +43,13 @@ public class TestTransferManifestProcessor implements TransferManifestProcessor
     private Map<NodeRef, TransferManifestNode> nodes = new HashMap<NodeRef, TransferManifestNode>();
 
     public void endTransferManifest()
-    {
-    }
+    {}
 
     public void processTransferManifestNode(TransferManifestNormalNode node)
     {
         nodes.put(node.getNodeRef(), node);
     }
-    
+
     public void processTransferManifestNode(TransferManifestDeletedNode node)
     {
         nodes.put(node.getNodeRef(), node);
@@ -62,8 +61,7 @@ public class TestTransferManifestProcessor implements TransferManifestProcessor
     }
 
     public void startTransferManifest()
-    {
-    }
+    {}
 
     void setHeader(TransferManifestHeader header)
     {
@@ -75,12 +73,12 @@ public class TestTransferManifestProcessor implements TransferManifestProcessor
         return header;
     }
 
-    void setNodes( Map<NodeRef, TransferManifestNode> nodes)
+    void setNodes(Map<NodeRef, TransferManifestNode> nodes)
     {
         this.nodes = nodes;
     }
 
-    Map<NodeRef, TransferManifestNode>  getNodes()
+    Map<NodeRef, TransferManifestNode> getNodes()
     {
         return nodes;
     }

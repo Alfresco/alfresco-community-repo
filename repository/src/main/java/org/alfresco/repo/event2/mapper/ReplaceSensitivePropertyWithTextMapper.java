@@ -25,16 +25,16 @@
  */
 package org.alfresco.repo.event2.mapper;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.event2.shared.QNameMatcher;
-import org.alfresco.repo.transfer.TransferModel;
-import org.alfresco.service.namespace.QName;
-
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.event2.shared.QNameMatcher;
+import org.alfresco.repo.transfer.TransferModel;
+import org.alfresco.service.namespace.QName;
 
 public class ReplaceSensitivePropertyWithTextMapper implements PropertyMapper
 {
@@ -42,8 +42,7 @@ public class ReplaceSensitivePropertyWithTextMapper implements PropertyMapper
             ContentModel.PROP_PASSWORD,
             ContentModel.PROP_SALT,
             ContentModel.PROP_PASSWORD_HASH,
-            TransferModel.PROP_PASSWORD
-    );
+            TransferModel.PROP_PASSWORD);
     private static final String DEFAULT_REPLACEMENT_TEXT = "SENSITIVE_DATA_REMOVED";
 
     private final QNameMatcher qNameMatcher;
@@ -60,6 +59,7 @@ public class ReplaceSensitivePropertyWithTextMapper implements PropertyMapper
                 .filter(userInput -> !userInput.contains("${"))
                 .orElse(DEFAULT_REPLACEMENT_TEXT);
     }
+
     @Override
     public Serializable map(QName propertyQName, Serializable value)
     {

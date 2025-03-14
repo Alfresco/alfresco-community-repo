@@ -32,20 +32,19 @@ import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.cmr.site.SiteInfo;
 
 /**
- * Holds properties pertaining to an invitation that has been sent out by a Site Manager (Inviter)
- * to another person (Invitee) to join his/her Site
+ * Holds properties pertaining to an invitation that has been sent out by a Site Manager (Inviter) to another person (Invitee) to join his/her Site
  * 
  * @author glen dot johnson at alfresco dot com
  */
 public class InviteInfo implements Serializable
 {
     private static final long serialVersionUID = -4514253998906200208L;
-    
+
     // invitation statuses
     public static final String INVITATION_STATUS_PENDING = "pending";
     public static final String INVITATION_STATUS_ACCEPTED = "accepted";
     public static final String INVITATION_STATUS_REJECTED = "rejected";
-    
+
     // private instances to hold property values
     private String invitationStatus;
     private String inviterUserName;
@@ -57,10 +56,10 @@ public class InviteInfo implements Serializable
     private SiteInfo siteInfo;
     private Date sentInviteDate;
     private String inviteId;
-    
+
     public InviteInfo(String invitationStatus, String inviterUserName, TemplateNode inviterPerson,
-                String inviteeUserName, TemplateNode inviteePerson, String role,
-                String siteShortName, SiteInfo siteInfo, Date sentInviteDate, String inviteId)
+            String inviteeUserName, TemplateNode inviteePerson, String role,
+            String siteShortName, SiteInfo siteInfo, Date sentInviteDate, String inviteId)
     {
         this.invitationStatus = invitationStatus;
         this.inviterUserName = inviterUserName;
@@ -73,7 +72,7 @@ public class InviteInfo implements Serializable
         this.sentInviteDate = sentInviteDate;
         this.inviteId = inviteId;
     }
-    
+
     /**
      * Gets the inviter user name
      * 
@@ -168,5 +167,5 @@ public class InviteInfo implements Serializable
     {
         return siteInfo;
     }
-    
+
 }

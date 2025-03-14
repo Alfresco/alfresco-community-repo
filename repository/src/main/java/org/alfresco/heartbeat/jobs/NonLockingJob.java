@@ -25,10 +25,8 @@
  */
 package org.alfresco.heartbeat.jobs;
 
-import org.alfresco.heartbeat.HBBaseDataCollector;
-import org.alfresco.heartbeat.datasender.HBData;
-import org.alfresco.heartbeat.datasender.HBDataSenderService;
-import org.alfresco.util.ParameterCheck;
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.quartz.Job;
@@ -36,12 +34,16 @@ import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
-import java.util.List;
+import org.alfresco.heartbeat.HBBaseDataCollector;
+import org.alfresco.heartbeat.datasender.HBData;
+import org.alfresco.heartbeat.datasender.HBDataSenderService;
+import org.alfresco.util.ParameterCheck;
 
 /**
  *
- *  This Heartbeat job collects data and passes it to the {@link HBDataSenderService}.
- *  @author eknizat
+ * This Heartbeat job collects data and passes it to the {@link HBDataSenderService}.
+ * 
+ * @author eknizat
  */
 public class NonLockingJob implements Job
 {
@@ -58,8 +60,8 @@ public class NonLockingJob implements Job
         final HBBaseDataCollector collector = (HBBaseDataCollector) dataMap.get(COLLECTOR_KEY);
         final HBDataSenderService hbDataSenderService = (HBDataSenderService) dataMap.get(DATA_SENDER_SERVICE_KEY);
 
-        ParameterCheck.mandatory( COLLECTOR_KEY, collector);
-        ParameterCheck.mandatory( DATA_SENDER_SERVICE_KEY, hbDataSenderService);
+        ParameterCheck.mandatory(COLLECTOR_KEY, collector);
+        ParameterCheck.mandatory(DATA_SENDER_SERVICE_KEY, hbDataSenderService);
 
         try
         {

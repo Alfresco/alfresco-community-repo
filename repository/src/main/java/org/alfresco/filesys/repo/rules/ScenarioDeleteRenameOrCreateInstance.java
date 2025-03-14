@@ -28,6 +28,9 @@ package org.alfresco.filesys.repo.rules;
 import java.util.ArrayList;
 import java.util.Date;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.filesys.repo.ResultCallback;
 import org.alfresco.filesys.repo.rules.commands.CloseFileCommand;
 import org.alfresco.filesys.repo.rules.commands.CompoundCommand;
@@ -41,19 +44,13 @@ import org.alfresco.filesys.repo.rules.operations.MoveFileOperation;
 import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * First case of this is Mac Mountain Lion Preview application.
- * and then a new copy of the file put into place.
+ * First case of this is Mac Mountain Lion Preview application. and then a new copy of the file put into place.
  * 
- * a) DeleteOnClose fileA
- * b) Close fileA
- * c) Rename whatever fileA
+ * a) DeleteOnClose fileA b) Close fileA c) Rename whatever fileA
  * 
- * a) Delete fileA
- * b)Rename File~ to File
+ * a) Delete fileA b)Rename File~ to File
  * 
  * This rule will kick in and ...
  * 
@@ -61,188 +58,180 @@ import org.apache.commons.logging.LogFactory;
 class ScenarioDeleteRenameOrCreateInstance implements ScenarioInstance
 {
     private static Log logger = LogFactory.getLog(ScenarioDeleteRenameOrCreateInstance.class);
-      
+
     private Date startTime = new Date();
-    
+
     /**
-     * Timeout in ms.  Default 30 seconds.
+     * Timeout in ms. Default 30 seconds.
      */
     private long timeout = 30000;
-    
+
     private boolean isComplete = false;
-    
+
     private Ranking ranking = Ranking.HIGH;
-    
+
     private NodeRef originalNodeRef = null;
-    
+
     enum InternalState
     {
-        NONE,
-        INITIALISED
-    } ;
-    
+        NONE, INITIALISED
+    };
+
     InternalState state = InternalState.NONE;
-    
+
     String name;
-    
+
     /**
      * Evaluate the next operation
+     * 
      * @param operation
      */
     public Command evaluate(Operation operation)
-    {                
+    {
         /**
          * Anti-pattern : timeout
          */
         Date now = new Date();
-        if(now.getTime() > startTime.getTime() + getTimeout())
+        if (now.getTime() > startTime.getTime() + getTimeout())
         {
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Instance timed out");
             }
             isComplete = true;
             return null;
         }
-        
+
         switch (state)
         {
-            case NONE:
-                if(operation instanceof CloseFileOperation)
+        case NONE:
+            if (operation instanceof CloseFileOperation)
+            {
+                CloseFileOperation c = (CloseFileOperation) operation;
+                this.name = c.getName();
+                logger.debug("New scenario initialised for file " + name);
+                state = InternalState.INITIALISED;
+
+                ArrayList<Command> commands = new ArrayList<Command>();
+                ArrayList<Command> postCommitCommands = new ArrayList<Command>();
+                ArrayList<Command> postErrorCommands = new ArrayList<Command>();
+                commands.add(new CloseFileCommand(c.getName(), c.getNetworkFile(), c.getRootNodeRef(), c.getPath()));
+                postCommitCommands.add(newDeleteFileCallbackCommand());
+                return new CompoundCommand(commands, postCommitCommands, postErrorCommands);
+            }
+            if (operation instanceof DeleteFileOperation)
+            {
+                DeleteFileOperation c = (DeleteFileOperation) operation;
+                this.name = c.getName();
+                logger.debug("New scenario initialised for file " + name);
+                state = InternalState.INITIALISED;
+
+                ArrayList<Command> commands = new ArrayList<Command>();
+                ArrayList<Command> postCommitCommands = new ArrayList<Command>();
+                ArrayList<Command> postErrorCommands = new ArrayList<Command>();
+                commands.add(new DeleteFileCommand(c.getName(), c.getRootNodeRef(), c.getPath()));
+                postCommitCommands.add(newDeleteFileCallbackCommand());
+                return new CompoundCommand(commands, postCommitCommands, postErrorCommands);
+            }
+            break;
+
+        case INITIALISED:
+
+            if (operation instanceof CreateFileOperation)
+            {
+                CreateFileOperation c = (CreateFileOperation) operation;
+
+                if (c.getName().equalsIgnoreCase(name))
                 {
-                    CloseFileOperation c = (CloseFileOperation)operation;
-                    this.name = c.getName();
-                    logger.debug("New scenario initialised for file " + name);
-                    state = InternalState.INITIALISED;
-                    
-                    ArrayList<Command> commands = new ArrayList<Command>();
-                    ArrayList<Command> postCommitCommands = new ArrayList<Command>();
-                    ArrayList<Command> postErrorCommands = new ArrayList<Command>();
-                    commands.add(new CloseFileCommand(c.getName(), c.getNetworkFile(), c.getRootNodeRef(), c.getPath()));
-                    postCommitCommands.add(newDeleteFileCallbackCommand());
-                    return new CompoundCommand(commands, postCommitCommands, postErrorCommands);  
-                }
-                if(operation instanceof DeleteFileOperation)
-                {
-                    DeleteFileOperation c = (DeleteFileOperation)operation;
-                    this.name = c.getName();
-                    logger.debug("New scenario initialised for file " + name);
-                    state = InternalState.INITIALISED;
-                    
-                    ArrayList<Command> commands = new ArrayList<Command>();
-                    ArrayList<Command> postCommitCommands = new ArrayList<Command>();
-                    ArrayList<Command> postErrorCommands = new ArrayList<Command>();
-                    commands.add(new DeleteFileCommand(c.getName(), c.getRootNodeRef(), c.getPath()));
-                    postCommitCommands.add(newDeleteFileCallbackCommand());
-                    return new CompoundCommand(commands, postCommitCommands, postErrorCommands);  
-                }
-                break;
-                
-                
-            case INITIALISED:
-                
-                if(operation instanceof CreateFileOperation)
-                {
-                    CreateFileOperation c = (CreateFileOperation)operation;
-                    
-                    if(c.getName().equalsIgnoreCase(name))
+                    isComplete = true;
+                    if (originalNodeRef != null)
                     {
+                        logger.debug("Delete create shuffle fire!:" + this);
+                        return new RestoreFileCommand(c.getName(), c.getRootNodeRef(), c.getPath(), c.getAllocationSize(), originalNodeRef);
+                    }
+                    return null;
+                }
+            }
+
+            if (operation instanceof RenameFileOperation)
+            {
+                RenameFileOperation r = (RenameFileOperation) operation;
+                if (name.equals(r.getTo()))
+                {
+                    logger.debug("Delete Rename shuffle - fire!");
+
+                    if (originalNodeRef != null)
+                    {
+                        /**
+                         * Shuffle is as follows a) Copy content from File to File~ b) Delete File c) Rename File~ to File
+                         */
+                        ArrayList<Command> commands = new ArrayList<Command>();
+                        RestoreFileCommand r1 = new RestoreFileCommand(r.getTo(), r.getRootNodeRef(), r.getToPath(), 0, originalNodeRef);
+                        CopyContentCommand copyContent = new CopyContentCommand(r.getFrom(), r.getTo(), r.getRootNodeRef(), r.getFromPath(), r.getToPath());
+                        DeleteFileCommand d1 = new DeleteFileCommand(r.getFrom(), r.getRootNodeRef(), r.getFromPath());
+
+                        commands.add(r1);
+                        commands.add(copyContent);
+                        commands.add(d1);
+                        logger.debug("Scenario complete");
                         isComplete = true;
-                        if(originalNodeRef != null)
-                        {
-                            logger.debug("Delete create shuffle fire!:" + this);
-                            return new RestoreFileCommand(c.getName(), c.getRootNodeRef(), c.getPath(), c.getAllocationSize(), originalNodeRef);
-                        }   
+                        return new CompoundCommand(commands);
+                    }
+                    else
+                    {
+                        logger.debug("Scenario complete");
+                        isComplete = true;
                         return null;
                     }
-                }    
-                
-                if(operation instanceof RenameFileOperation)
+                }
+            }
+
+            if (operation instanceof MoveFileOperation)
+            {
+                MoveFileOperation r = (MoveFileOperation) operation;
+                if (name.equals(r.getTo()))
                 {
-                    RenameFileOperation r = (RenameFileOperation)operation;
-                    if(name.equals(r.getTo()))
+                    logger.debug("Delete Rename shuffle - fire!");
+
+                    if (originalNodeRef != null)
                     {
-                        logger.debug("Delete Rename shuffle - fire!");
-                       
-                        if(originalNodeRef != null)
-                        {
-                            /**
-                             * Shuffle is as follows
-                             * a) Copy content from File to File~
-                             * b) Delete File
-                             * c) Rename File~ to File
-                             */
-                            ArrayList<Command> commands = new ArrayList<Command>();
-                            RestoreFileCommand r1 = new RestoreFileCommand(r.getTo(), r.getRootNodeRef(), r.getToPath(), 0, originalNodeRef);
-                            CopyContentCommand copyContent = new CopyContentCommand(r.getFrom(), r.getTo(), r.getRootNodeRef(), r.getFromPath(), r.getToPath());
-                            DeleteFileCommand d1 = new DeleteFileCommand(r.getFrom(), r.getRootNodeRef(), r.getFromPath()); 
-                        
-                            commands.add(r1);
-                            commands.add(copyContent);
-                            commands.add(d1);
-                            logger.debug("Scenario complete");
-                            isComplete = true;
-                            return new CompoundCommand(commands);
-                        }
-                        else
-                        {
-                            logger.debug("Scenario complete");
-                            isComplete = true;
-                            return null;
-                        }
+                        /**
+                         * Shuffle is as follows a) Copy content from File to File~ b) Delete File c) Rename File~ to File
+                         */
+                        ArrayList<Command> commands = new ArrayList<Command>();
+                        RestoreFileCommand r1 = new RestoreFileCommand(r.getTo(), r.getRootNodeRef(), r.getToPath(), 0, originalNodeRef);
+                        CopyContentCommand copyContent = new CopyContentCommand(r.getFrom(), r.getTo(), r.getRootNodeRef(), r.getFromPath(), r.getToPath());
+                        DeleteFileCommand d1 = new DeleteFileCommand(r.getFrom(), r.getRootNodeRef(), r.getFromPath());
+
+                        commands.add(r1);
+                        commands.add(copyContent);
+                        commands.add(d1);
+                        logger.debug("Scenario complete");
+                        isComplete = true;
+                        return new CompoundCommand(commands);
+                    }
+                    else
+                    {
+                        logger.debug("Scenario complete");
+                        isComplete = true;
+                        return null;
                     }
                 }
-                
-                
-                if(operation instanceof MoveFileOperation)
-                {
-                    MoveFileOperation r = (MoveFileOperation)operation;
-                    if(name.equals(r.getTo()))
-                    {
-                        logger.debug("Delete Rename shuffle - fire!");
-                       
-                        if(originalNodeRef != null)
-                        {
-                            /**
-                             * Shuffle is as follows
-                             * a) Copy content from File to File~
-                             * b) Delete File
-                             * c) Rename File~ to File
-                             */
-                            ArrayList<Command> commands = new ArrayList<Command>();
-                            RestoreFileCommand r1 = new RestoreFileCommand(r.getTo(), r.getRootNodeRef(), r.getToPath(), 0, originalNodeRef);
-                            CopyContentCommand copyContent = new CopyContentCommand(r.getFrom(), r.getTo(), r.getRootNodeRef(), r.getFromPath(), r.getToPath());
-                            DeleteFileCommand d1 = new DeleteFileCommand(r.getFrom(), r.getRootNodeRef(), r.getFromPath()); 
-                        
-                            commands.add(r1);
-                            commands.add(copyContent);
-                            commands.add(d1);
-                            logger.debug("Scenario complete");
-                            isComplete = true;
-                            return new CompoundCommand(commands);
-                        }
-                        else
-                        {
-                            logger.debug("Scenario complete");
-                            isComplete = true;
-                            return null;
-                        }
-                    }
-                }
+            }
         }
-             
+
         return null;
     }
-    
+
     @Override
     public boolean isComplete()
     {
         return isComplete;
     }
-    
+
     public String toString()
     {
-        return "ScenarioDeleteRenameOrCreate name:" + name ;
+        return "ScenarioDeleteRenameOrCreate name:" + name;
     }
 
     public void setTimeout(long timeout)
@@ -254,32 +243,31 @@ class ScenarioDeleteRenameOrCreateInstance implements ScenarioInstance
     {
         return timeout;
     }
-    
+
     @Override
     public Ranking getRanking()
     {
         return ranking;
     }
-    
+
     public void setRanking(Ranking ranking)
     {
         this.ranking = ranking;
     }
-    
+
     /**
      * Called for delete file.
      */
     private ResultCallback newDeleteFileCallbackCommand()
     {
-        return new ResultCallback()
-        {
+        return new ResultCallback() {
             @Override
             public void execute(Object result)
             {
-                if(result instanceof NodeRef)
+                if (result instanceof NodeRef)
                 {
                     logger.debug("got node ref of deleted node");
-                    originalNodeRef = (NodeRef)result;
+                    originalNodeRef = (NodeRef) result;
                 }
             }
 
@@ -287,9 +275,8 @@ class ScenarioDeleteRenameOrCreateInstance implements ScenarioInstance
             public TxnReadState getTransactionRequired()
             {
                 return TxnReadState.TXN_NONE;
-            }   
+            }
         };
     }
 
 }
-

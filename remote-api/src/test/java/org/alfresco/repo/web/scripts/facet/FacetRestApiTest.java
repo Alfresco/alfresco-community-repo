@@ -31,6 +31,16 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetService;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetServiceImpl;
@@ -45,15 +55,6 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.collections.CollectionUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
  * This class tests the ReST API of the {@link SolrFacetService}.
@@ -64,60 +65,61 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  */
 public class FacetRestApiTest extends BaseWebScriptTest
 {
-    private static final String SEARCH_ADMIN_USER     = "searchAdmin";
+    private static final String SEARCH_ADMIN_USER = "searchAdmin";
     private static final String NON_SEARCH_ADMIN_USER = "nonSearchAdmin";
 
     private static final String FACETS = "facets";
-    
-    private final static String GET_ALL_FACETABLE_PROPERTIES_URL      = "/api/facet/facetable-properties";
+
+    private final static String GET_ALL_FACETABLE_PROPERTIES_URL = "/api/facet/facetable-properties";
     private final static String GET_SPECIFIC_FACETABLE_PROPERTIES_URL = "/api/facet/classes/{classname}/facetable-properties";
-    private final static String GET_FACETS_URL       = "/api/facet/facet-config";
+    private final static String GET_FACETS_URL = "/api/facet/facet-config";
     private final static String PUT_FACET_URL_FORMAT = "/api/facet/facet-config/{0}?relativePos={1}";
-    private final static String POST_FACETS_URL      = GET_FACETS_URL;
-    private final static String PUT_FACETS_URL       = GET_FACETS_URL;
+    private final static String POST_FACETS_URL = GET_FACETS_URL;
+    private final static String PUT_FACETS_URL = GET_FACETS_URL;
 
     private MutableAuthenticationService authenticationService;
-    private AuthorityService             authorityService;
-    private PersonService                personService;
-    private RetryingTransactionHelper    transactionHelper;
+    private AuthorityService authorityService;
+    private PersonService personService;
+    private RetryingTransactionHelper transactionHelper;
     private List<String> filters = new ArrayList<String>();
 
-    @Override protected void setUp() throws Exception
+    @Override
+    protected void setUp() throws Exception
     {
         super.setUp();
         authenticationService = getServer().getApplicationContext().getBean("AuthenticationService", MutableAuthenticationService.class);
-        authorityService      = getServer().getApplicationContext().getBean("AuthorityService", AuthorityService.class);
-        personService         = getServer().getApplicationContext().getBean("PersonService", PersonService.class);
-        transactionHelper     = getServer().getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
+        authorityService = getServer().getApplicationContext().getBean("AuthorityService", AuthorityService.class);
+        personService = getServer().getApplicationContext().getBean("PersonService", PersonService.class);
+        transactionHelper = getServer().getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
 
         AuthenticationUtil.clearCurrentSecurityContext();
         // Create test users. TODO Create these users @BeforeClass or at a testsuite scope.
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override public Void doWork() throws Exception
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
+            @Override
+            public Void doWork() throws Exception
             {
                 createUser(SEARCH_ADMIN_USER);
                 createUser(NON_SEARCH_ADMIN_USER);
 
-                if ( !authorityService.getContainingAuthorities(AuthorityType.GROUP,
-                                                                SEARCH_ADMIN_USER,
-                                                                true)
-                                    .contains(SolrFacetServiceImpl.GROUP_ALFRESCO_SEARCH_ADMINISTRATORS_AUTHORITY))
+                if (!authorityService.getContainingAuthorities(AuthorityType.GROUP,
+                        SEARCH_ADMIN_USER,
+                        true)
+                        .contains(SolrFacetServiceImpl.GROUP_ALFRESCO_SEARCH_ADMINISTRATORS_AUTHORITY))
                 {
                     authorityService.addAuthority(SolrFacetServiceImpl.GROUP_ALFRESCO_SEARCH_ADMINISTRATORS_AUTHORITY,
-                                                  SEARCH_ADMIN_USER);
+                            SEARCH_ADMIN_USER);
                 }
                 return null;
             }
         });
     }
 
-    @Override public void tearDown() throws Exception
+    @Override
+    public void tearDown() throws Exception
     {
         super.tearDown();
 
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -126,12 +128,11 @@ public class FacetRestApiTest extends BaseWebScriptTest
             }
         }, SEARCH_ADMIN_USER);
 
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override public Void doWork() throws Exception
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
+            @Override
+            public Void doWork() throws Exception
             {
-                transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-                {
+                transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
                     public Void execute() throws Throwable
                     {
                         deleteUser(SEARCH_ADMIN_USER);
@@ -161,8 +162,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
         filter.put("sortBy", "ALPHABETICALLY");
 
         // Non-Search-Admin tries to create a filter
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -173,8 +173,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
         }, NON_SEARCH_ADMIN_USER);
 
         // Search-Admin creates a filter
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -185,8 +184,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
         }, SEARCH_ADMIN_USER);
 
         // Non-Search-Admin tries to modify the filter
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -205,9 +203,9 @@ public class FacetRestApiTest extends BaseWebScriptTest
 
     public void testNonSearchAdminUserCanGetFacets() throws Exception
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
-            @Override public Void doWork() throws Exception
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
+            @Override
+            public Void doWork() throws Exception
             {
                 Response response = sendRequest(new GetRequest(GET_FACETS_URL), 200);
                 JSONObject jsonRsp = new JSONObject(new JSONTokener(response.getContentAsString()));
@@ -220,9 +218,9 @@ public class FacetRestApiTest extends BaseWebScriptTest
 
     public void testSearchAdminCanGetFacets() throws Exception
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
-            @Override public Void doWork() throws Exception
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
+            @Override
+            public Void doWork() throws Exception
             {
                 Response rsp = sendRequest(new GetRequest(GET_FACETS_URL), 200);
 
@@ -230,7 +228,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
                 JSONObject jsonRsp = new JSONObject(new JSONTokener(contentAsString));
 
                 // FIXME The JSON payload should be contained within a 'data' object.
-                JSONArray facetsArray = (JSONArray)jsonRsp.get(FACETS);
+                JSONArray facetsArray = (JSONArray) jsonRsp.get(FACETS);
                 assertNotNull("JSON 'facets' array was null", facetsArray);
 
                 // We'll not add any further assertions on the JSON content. If we've
@@ -242,16 +240,16 @@ public class FacetRestApiTest extends BaseWebScriptTest
 
     public void testSearchAdminReordersFacets() throws Exception
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
-            @Override public Void doWork() throws Exception
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
+            @Override
+            public Void doWork() throws Exception
             {
                 // get the existing facets.
                 Response rsp = sendRequest(new GetRequest(GET_FACETS_URL), 200);
 
                 JSONObject jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
 
-                final JSONArray facetsArray = (JSONArray)jsonRsp.get(FACETS);
+                final JSONArray facetsArray = (JSONArray) jsonRsp.get(FACETS);
                 assertNotNull("JSON 'facets' array was null", facetsArray);
 
                 System.out.println("Received " + facetsArray.length() + " facets");
@@ -265,16 +263,15 @@ public class FacetRestApiTest extends BaseWebScriptTest
 
                 final String lastIndexId = idsIndexes.get(idsIndexes.size() - 1);
                 final String url = PUT_FACET_URL_FORMAT.replace("{0}", lastIndexId)
-                                                       .replace("{1}", "-1");
+                        .replace("{1}", "-1");
                 rsp = sendRequest(new PutRequest(url, "", "application/json"), 200);
-
 
                 // Now get the facets back and we should see that one has moved.
                 rsp = sendRequest(new GetRequest(GET_FACETS_URL), 200);
 
                 jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
 
-                JSONArray newfacetsArray = (JSONArray)jsonRsp.get(FACETS);
+                JSONArray newfacetsArray = (JSONArray) jsonRsp.get(FACETS);
                 assertNotNull("JSON 'facets' array was null", newfacetsArray);
 
                 System.out.println("Received " + newfacetsArray.length() + " facets");
@@ -292,8 +289,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
 
     public void testDefaultValues() throws Exception
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -311,7 +307,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
                 filter_one.put("sortBy", "ALPHABETICALLY");
 
                 // Post the filter
-                Response response = sendRequest(new PostRequest(POST_FACETS_URL, filter_one.toString(),"application/json"), 200);
+                Response response = sendRequest(new PostRequest(POST_FACETS_URL, filter_one.toString(), "application/json"), 200);
 
                 // Retrieve the created filter
                 response = sendRequest(new GetRequest(GET_FACETS_URL + "/" + filterNameOne), 200);
@@ -342,7 +338,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
                 filter_two.put("minFilterValueLength", 4);
                 filter_two.put("sortBy", "ALPHABETICALLY");
                 filter_two.put("scope", "SCOPED_SITES");
-                List<String> expectedValues = Arrays.asList(new String[] { "sit1", "site2", "site3" });
+                List<String> expectedValues = Arrays.asList(new String[]{"sit1", "site2", "site3"});
                 filter_two.put("scopedSites", expectedValues);
                 filter_two.put("isEnabled", true);
 
@@ -369,8 +365,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
 
     public void testFacetCustomProperties() throws Exception
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -397,14 +392,14 @@ public class FacetRestApiTest extends BaseWebScriptTest
                 // 2nd custom prop
                 JSONObject multipleValue = new JSONObject();
                 multipleValue.put("name", "multipleValueTest");
-                List<String> expectedValues = Arrays.asList(new String[] { "sit1", "site2", "site3" });
+                List<String> expectedValues = Arrays.asList(new String[]{"sit1", "site2", "site3"});
                 multipleValue.put("value", expectedValues);
                 customProp.put("multipleValueTest", multipleValue);
 
                 filter.put("customProperties", customProp);
 
                 // Post the filter
-                Response response = sendRequest(new PostRequest(POST_FACETS_URL, filter.toString(),"application/json"), 200);
+                Response response = sendRequest(new PostRequest(POST_FACETS_URL, filter.toString(), "application/json"), 200);
                 // Retrieve the created filter
                 response = sendRequest(new GetRequest(GET_FACETS_URL + "/" + filterName), 200);
                 JSONObject jsonRsp = new JSONObject(new JSONTokener(response.getContentAsString()));
@@ -443,8 +438,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
         filter.put("minFilterValueLength", 4);
         filter.put("sortBy", "ALPHABETICALLY");
 
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -455,8 +449,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
         }, SEARCH_ADMIN_USER);
 
         // Admin tries to change the FilterID value
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -473,8 +466,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
         }, SEARCH_ADMIN_USER);
 
         // Admin tries to create a filter with a duplicate FilterID
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -486,8 +478,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
         }, SEARCH_ADMIN_USER);
 
         // Admin tries to create a filter with a malicious FilterID
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -515,7 +506,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
         }, SEARCH_ADMIN_USER);
 
     }
-    
+
     /** The REST API should accept both 'cm:name' and '{http://www.alfresco.org/model/content/1.0}name' forms of filter IDs. */
     public void testCreateFacetWithLongFormQnameFilterId() throws Exception
     {
@@ -531,9 +522,8 @@ public class FacetRestApiTest extends BaseWebScriptTest
         filter.put("hitThreshold", 1);
         filter.put("minFilterValueLength", 4);
         filter.put("sortBy", "ALPHABETICALLY");
-        
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -543,7 +533,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
             }
         }, SEARCH_ADMIN_USER);
     }
-    
+
     public void testUpdateSingleValue() throws Exception
     {
         // Build the Filter object
@@ -568,8 +558,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
         customProp.put("blockIncludeFacetRequest", blockIncludeRequest);
         filter.put("customProperties", customProp);
 
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -580,8 +569,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
         }, SEARCH_ADMIN_USER);
 
         // Admin updates displayName and facetQName in 2 put requests
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -643,7 +631,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
                 jsonRsp = new JSONObject(new JSONTokener(response.getContentAsString()));
 
                 // Now see if the facetQName and its side-effect have been persisted
-                assertEquals("{http://www.alfresco.org/model/content/1.0}testModifiedValue",jsonRsp.getString("facetQName"));
+                assertEquals("{http://www.alfresco.org/model/content/1.0}testModifiedValue", jsonRsp.getString("facetQName"));
                 assertNull("Custom properties should have been deleted.", jsonRsp.opt("customProperties"));
                 // Make sure the rest of values haven't been changed
                 assertEquals(filterName, jsonRsp.getString("filterID"));
@@ -661,55 +649,55 @@ public class FacetRestApiTest extends BaseWebScriptTest
             }
         }, SEARCH_ADMIN_USER);
     }
-    
+
     public void testGetAllFacetableProperties() throws Exception
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
-            @Override public Void doWork() throws Exception
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
+            @Override
+            public Void doWork() throws Exception
             {
                 final Response rsp = sendRequest(new GetRequest(GET_ALL_FACETABLE_PROPERTIES_URL), 200);
-                
+
                 // For now, we'll only perform limited testing of the response as we primarily
                 // want to know that the GET call succeeded and that it correctly identified
                 // *some* facetable properties.
                 JSONObject jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
-                
+
                 JSONObject data = jsonRsp.getJSONObject("data");
                 JSONArray properties = data.getJSONArray(FacetablePropertiesGet.PROPERTIES_KEY);
-                
+
                 final int arbitraryLimit = 25;
                 assertTrue("Expected 'many' properties, but found 'not very many'", properties.length() > arbitraryLimit);
-                
+
                 return null;
             }
         }, SEARCH_ADMIN_USER);
     }
-    
+
     public void testGetFacetablePropertiesForSpecificContentClasses() throws Exception
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
-            @Override public Void doWork() throws Exception
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
+            @Override
+            public Void doWork() throws Exception
             {
                 final Response rsp = sendRequest(new GetRequest(GET_SPECIFIC_FACETABLE_PROPERTIES_URL.replace("{classname}", "cm:content")), 200);
-                
+
                 // For now, we'll only perform limited testing of the response as we primarily
                 // want to know that the GET call succeeded and that it correctly identified
                 // *some* facetable properties.
                 JSONObject jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
-                
+
                 JSONObject data = jsonRsp.getJSONObject("data");
                 JSONArray properties = data.getJSONArray(FacetablePropertiesGet.PROPERTIES_KEY);
-                
+
                 final int arbitraryLimit = 100;
                 assertTrue("Expected 'not very many' properties, but found 'many'", properties.length() < arbitraryLimit);
-                
+
                 return null;
             }
         }, SEARCH_ADMIN_USER);
     }
-    
+
     private List<String> getListFromJsonArray(JSONArray facetsArray) throws JSONException
     {
         List<String> result = new ArrayList<>();
@@ -733,12 +721,12 @@ public class FacetRestApiTest extends BaseWebScriptTest
 
     private void createUser(String userName)
     {
-        if (! authenticationService.authenticationExists(userName))
+        if (!authenticationService.authenticationExists(userName))
         {
             authenticationService.createAuthentication(userName, "PWD".toCharArray());
         }
 
-        if (! personService.personExists(userName))
+        if (!personService.personExists(userName))
         {
             PropertyMap ppOne = new PropertyMap(4);
             ppOne.put(ContentModel.PROP_USERNAME, userName);

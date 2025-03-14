@@ -26,8 +26,12 @@
 
 package org.alfresco.repo.search.impl.solr.facet;
 
+import static org.junit.Assert.*;
+
 import java.util.List;
 import java.util.Set;
+
+import org.junit.*;
 
 import org.alfresco.repo.search.impl.solr.facet.handler.FacetLabel;
 import org.alfresco.repo.search.impl.solr.facet.handler.FacetLabelDisplayHandler;
@@ -36,9 +40,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.TemporarySites;
-import org.junit.*;
-
-import static org.junit.Assert.*;
 
 /**
  * This class contains tests for the class <code>{@link SolrFacetHelper}</code> and <code>{@link FacetLabelDisplayHandler}</code>.
@@ -70,7 +71,7 @@ public class SolrFacetQueriesDisplayHandlersTest
      * Perform pre-test initialization.
      *
      * @throws Exception
-     *         if the initialization fails for some reason
+     *             if the initialization fails for some reason
      *
      */
     @Before
@@ -83,7 +84,7 @@ public class SolrFacetQueriesDisplayHandlersTest
      * Perform post-test clean-up.
      *
      * @throws Exception
-     *         if the clean-up fails for some reason
+     *             if the clean-up fails for some reason
      *
      */
     @After
@@ -102,22 +103,22 @@ public class SolrFacetQueriesDisplayHandlersTest
     public void testCreateFacetQueryFromSearchQuery() throws Exception
     {
         String searchQueryWithCreatedDate = "query=(test  AND ({http://www.alfresco.org/model/content/1.0}created:(\"NOW/DAY-7DAYS\"..\"NOW/DAY+1DAY\" ))"
-                    + " AND (+TYPE:\"cm:content\" OR +TYPE:\"cm:folder\")) AND -TYPE:\"cm:thumbnail\" AND"
-                    + " -TYPE:\"cm:failedThumbnail\" AND -TYPE:\"cm:rating\" AND -TYPE:\"st:site\" AND"
-                    + " -ASPECT:\"st:siteContainer\" AND -ASPECT:\"sys:hidden\" AND"
-                    + " -cm:creator:system, stores=[workspace://SpacesStore]";
+                + " AND (+TYPE:\"cm:content\" OR +TYPE:\"cm:folder\")) AND -TYPE:\"cm:thumbnail\" AND"
+                + " -TYPE:\"cm:failedThumbnail\" AND -TYPE:\"cm:rating\" AND -TYPE:\"st:site\" AND"
+                + " -ASPECT:\"st:siteContainer\" AND -ASPECT:\"sys:hidden\" AND"
+                + " -cm:creator:system, stores=[workspace://SpacesStore]";
 
         String result = helper.createFacetQueriesFromSearchQuery("{http://www.alfresco.org/model/content/1.0}created", searchQueryWithCreatedDate);
         assertNotNull(result);
         assertEquals("@{http://www.alfresco.org/model/content/1.0}created:[NOW/DAY-7DAYS TO NOW/DAY+1DAY]", result);
 
         String searchQueryWithCreatedAndModifiedDate = "query=(test  AND ({http://www.alfresco.org/model/content/1.0}created:(\"NOW/DAY-7DAYS\"..\"NOW/DAY+1DAY\" ) AND ({http://www.alfresco.org/model/content/1.0}modified:(\"NOW/DAY-1DAY\"..\"NOW/DAY+1DAY\" ))"
-                    + " AND (+TYPE:\"cm:content\" OR +TYPE:\"cm:folder\")) AND -TYPE:\"cm:thumbnail\" AND"
-                    + " -TYPE:\"cm:failedThumbnail\" AND -TYPE:\"cm:rating\" AND -TYPE:\"st:site\" AND"
-                    + " -ASPECT:\"st:siteContainer\" AND -ASPECT:\"sys:hidden\" AND"
-                    + " -cm:creator:system, stores=[workspace://SpacesStore]";
+                + " AND (+TYPE:\"cm:content\" OR +TYPE:\"cm:folder\")) AND -TYPE:\"cm:thumbnail\" AND"
+                + " -TYPE:\"cm:failedThumbnail\" AND -TYPE:\"cm:rating\" AND -TYPE:\"st:site\" AND"
+                + " -ASPECT:\"st:siteContainer\" AND -ASPECT:\"sys:hidden\" AND"
+                + " -cm:creator:system, stores=[workspace://SpacesStore]";
 
-        String[] fields = { "{http://www.alfresco.org/model/content/1.0}created", "{http://www.alfresco.org/model/content/1.0}modified" };
+        String[] fields = {"{http://www.alfresco.org/model/content/1.0}created", "{http://www.alfresco.org/model/content/1.0}modified"};
 
         result = helper.createFacetQueriesFromSearchQuery(fields[0], searchQueryWithCreatedAndModifiedDate);
         assertNotNull(result);
@@ -207,7 +208,7 @@ public class SolrFacetQueriesDisplayHandlersTest
     @Test
     public void testGetMimetypeDisplayHandler() throws Exception
     {
-         // Mimetype handler
+        // Mimetype handler
         FacetLabelDisplayHandler mimeTypeHandler = displayHandlerRegistry.getDisplayHandler("@{http://www.alfresco.org/model/content/1.0}content.mimetype");
         assertNotNull(mimeTypeHandler);
         FacetLabel mimetype = mimeTypeHandler.getDisplayLabel("someMimetype123");
@@ -231,27 +232,27 @@ public class SolrFacetQueriesDisplayHandlersTest
         FacetLabelDisplayHandler dateBucketeHandler = displayHandlerRegistry.getDisplayHandler(createdDateField);
         assertNotNull(dateBucketeHandler);
 
-        FacetLabel dateLabel = dateBucketeHandler.getDisplayLabel(createdDateField+":[NOW/DAY-1DAY TO NOW/DAY+1DAY]");
+        FacetLabel dateLabel = dateBucketeHandler.getDisplayLabel(createdDateField + ":[NOW/DAY-1DAY TO NOW/DAY+1DAY]");
         assertNotNull(dateLabel);
         assertEquals("faceted-search.date.one-day.label", dateLabel.getLabel());
         assertEquals("Yesterday date bucket should have a sorting index of 0.", 0, dateLabel.getLabelIndex());
 
-        dateLabel = dateBucketeHandler.getDisplayLabel(createdDateField+":[NOW/DAY-7DAYS TO NOW/DAY+1DAY]");
+        dateLabel = dateBucketeHandler.getDisplayLabel(createdDateField + ":[NOW/DAY-7DAYS TO NOW/DAY+1DAY]");
         assertNotNull(dateLabel);
         assertEquals("faceted-search.date.one-week.label", dateLabel.getLabel());
         assertEquals("Last week date bucket should have a sorting index of 1.", 1, dateLabel.getLabelIndex());
 
-        dateLabel = dateBucketeHandler.getDisplayLabel(createdDateField+":[NOW/DAY-1MONTH TO NOW/DAY+1DAY]");
+        dateLabel = dateBucketeHandler.getDisplayLabel(createdDateField + ":[NOW/DAY-1MONTH TO NOW/DAY+1DAY]");
         assertNotNull(dateLabel);
         assertEquals("faceted-search.date.one-month.label", dateLabel.getLabel());
         assertEquals("Last month date bucket should have a sorting index of 2.", 2, dateLabel.getLabelIndex());
 
-        dateLabel = dateBucketeHandler.getDisplayLabel(createdDateField+":[NOW/DAY-6MONTHS TO NOW/DAY+1DAY]");
+        dateLabel = dateBucketeHandler.getDisplayLabel(createdDateField + ":[NOW/DAY-6MONTHS TO NOW/DAY+1DAY]");
         assertNotNull(dateLabel);
         assertEquals("faceted-search.date.six-months.label", dateLabel.getLabel());
         assertEquals("Last 6 months date bucket should have a sorting index of 3.", 3, dateLabel.getLabelIndex());
 
-        dateLabel = dateBucketeHandler.getDisplayLabel(createdDateField+":[NOW/DAY-1YEAR TO NOW/DAY+1DAY]");
+        dateLabel = dateBucketeHandler.getDisplayLabel(createdDateField + ":[NOW/DAY-1YEAR TO NOW/DAY+1DAY]");
         assertNotNull(dateLabel);
         assertEquals("faceted-search.date.one-year.label", dateLabel.getLabel());
         assertEquals("Last year date bucket should have a sorting index of 4.", 4, dateLabel.getLabelIndex());
@@ -277,7 +278,6 @@ public class SolrFacetQueriesDisplayHandlersTest
         int medium = MB;
         int large = 16 * MB;
         int huge = 128 * MB;
-
 
         FacetLabel sizeLabel = contentSizeBucketeHandler.getDisplayLabel(contentSizeField + ":[0 TO " + tiny + "]");
         assertNotNull(sizeLabel);
@@ -309,7 +309,7 @@ public class SolrFacetQueriesDisplayHandlersTest
         assertEquals("faceted-search.size.over128.label", sizeLabel.getLabel());
         assertEquals("over128MB size bucket should have a sorting index of 5.", 5, sizeLabel.getLabelIndex());
     }
-    
+
     /**
      * Site title display handler test.
      *
@@ -324,7 +324,7 @@ public class SolrFacetQueriesDisplayHandlersTest
 
         FacetLabelDisplayHandler siteHandler = displayHandlerRegistry.getDisplayHandler("SITE");
         assertNotNull(siteHandler);
-        
+
         String randomSiteName = "randomSiteName" + System.currentTimeMillis();
         FacetLabel name = siteHandler.getDisplayLabel(randomSiteName);
         assertNotNull(name);

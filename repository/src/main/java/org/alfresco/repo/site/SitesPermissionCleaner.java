@@ -44,9 +44,7 @@ import org.alfresco.service.cmr.security.PublicServiceAccessService;
 import org.alfresco.service.cmr.site.SiteInfo;
 
 /**
- * This class handles the permissions cleanup which is sometimes necessary after a node has been moved
- * or copied between sites. It removes any permissions that pertain to the former site that may be present
- * on the relocated node.
+ * This class handles the permissions cleanup which is sometimes necessary after a node has been moved or copied between sites. It removes any permissions that pertain to the former site that may be present on the relocated node.
  * 
  * @author Neil Mc Erlean
  * @since 3.5.0
@@ -57,47 +55,46 @@ public class SitesPermissionCleaner
     private PermissionService permissionService;
     private PublicServiceAccessService publicServiceAccessService;
     private SiteServiceImpl siteServiceImpl;
-    
+
     private AclDAO aclDAO;
     private NodeDAO nodeDAO;
     private TenantService tenantService;
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
     }
-    
+
     public void setSiteServiceImpl(SiteServiceImpl siteServiceImpl)
     {
         this.siteServiceImpl = siteServiceImpl;
     }
-    
+
     public void setPublicServiceAccessService(PublicServiceAccessService publicServiceAccessService)
     {
         this.publicServiceAccessService = publicServiceAccessService;
     }
-    
+
     public void setAclDAO(AclDAO aclDAO)
     {
         this.aclDAO = aclDAO;
     }
-    
+
     public void setNodeDAO(NodeDAO nodeDAO)
     {
         this.nodeDAO = nodeDAO;
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-    
-    
+
     public void cleanSitePermissions(final NodeRef targetNode, SiteInfo containingSite)
     {
         if (!nodeDAO.exists(targetNode))
@@ -134,9 +131,9 @@ public class SitesPermissionCleaner
 
                 // If it's a group site permission for a site other than the current site
                 if (authority.startsWith(PermissionService.GROUP_PREFIX) &&
-                        // And it's not GROUP_EVERYONE
+                // And it's not GROUP_EVERYONE
                         !authority.startsWith(PermissionService.ALL_AUTHORITIES) && !authority.startsWith(thisSiteGroupPrefix) &&
-                        //  And if the current user has permissions to do it
+                        // And if the current user has permissions to do it
                         publicServiceAccessService.hasAccess("PermissionService", "clearPermission", targetNode, authority) == AccessStatus.ALLOWED)
                 {
                     // Then remove it.
@@ -147,8 +144,7 @@ public class SitesPermissionCleaner
                 {
                     // The site manager from the new site, where this node was moved to, has to have permission to this node
                     String siteManagerAuthority = thisSiteGroupPrefix + "_" + SiteModel.SITE_MANAGER;
-                    AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-                    {
+                    AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
                         public Void doWork() throws Exception
                         {
                             permissionService.setPermission(targetNode, siteManagerAuthority, SiteModel.SITE_MANAGER, true);

@@ -42,12 +42,16 @@ public class ResourceOperation
     private final String description;
     private final List<ResourceParameter> parameters;
     private final int successStatus;
-    
+
     /**
-     * @param httpMethod HttpMethod
-     * @param title String
-     * @param description String
-     * @param successStatus HTTP status
+     * @param httpMethod
+     *            HttpMethod
+     * @param title
+     *            String
+     * @param description
+     *            String
+     * @param successStatus
+     *            HTTP status
      */
     public ResourceOperation(HttpMethod httpMethod, String title, String description, List<ResourceParameter> parameters, int successStatus)
     {

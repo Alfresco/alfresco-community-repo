@@ -44,21 +44,21 @@ import org.alfresco.service.namespace.QName;
 public class IntegrityEventTest extends TestCase
 {
     private static final String NAMESPACE = "http://test";
-    
+
     private NodeRef nodeRef;
     private QName typeQName;
     private QName qname;
     private IntegrityEvent event;
-    
+
     public void setUp() throws Exception
     {
         nodeRef = new NodeRef("workspace://protocol/ID123");
         typeQName = QName.createQName(NAMESPACE, "SomeTypeQName");
         qname = QName.createQName(NAMESPACE, "qname");
-        
+
         event = new TestIntegrityEvent(null, null, nodeRef, typeQName, qname);
     }
-    
+
     public void testSetFunctionality() throws Exception
     {
         Set<IntegrityEvent> set = new HashSet<IntegrityEvent>(5);
@@ -67,7 +67,7 @@ public class IntegrityEventTest extends TestCase
         added = set.add(new TestIntegrityEvent(null, null, nodeRef, typeQName, qname));
         assertFalse(added);
     }
-    
+
     private static class TestIntegrityEvent extends AbstractIntegrityEvent
     {
         public TestIntegrityEvent(

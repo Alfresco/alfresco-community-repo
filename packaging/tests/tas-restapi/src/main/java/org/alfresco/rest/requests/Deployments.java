@@ -25,12 +25,13 @@
  */
 package org.alfresco.rest.requests;
 
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestDeploymentModel;
 import org.alfresco.rest.model.RestDeploymentModelsCollection;
-import org.springframework.http.HttpMethod;
 
 /**
  * Created by Claudia Agache on 10/4/2016.
@@ -61,7 +62,7 @@ public class Deployments extends ModelRequest<Deployments>
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "deployments?{parameters}", restWrapper.getParameters());
         return restWrapper.processModels(RestDeploymentModelsCollection.class, request);
     }
-    
+
     /**
      * Delete the specified deployment from Alfresco using DELETE call on "/deployments/{deploymentId}"
      *

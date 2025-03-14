@@ -48,7 +48,7 @@ public class IgnoreConstraint extends VirtualQueryConstraintDecorator
     private Set<QName> ignoreTypeNames;
 
     public IgnoreConstraint(VirtualQueryConstraint decoratedConstraint, Set<QName> ignoreTypeQNames,
-                Set<QName> ignoreAspectQNames)
+            Set<QName> ignoreAspectQNames)
     {
         super(decoratedConstraint);
         this.ignoreAspectQNames = ignoreAspectQNames;
@@ -57,17 +57,17 @@ public class IgnoreConstraint extends VirtualQueryConstraintDecorator
 
     @Override
     protected SearchParameters applyDecorations(ActualEnvironment environment, SearchParameters searchParameters,
-                VirtualQuery query)
+            VirtualQuery query)
     {
         if ((ignoreAspectQNames != null && !ignoreAspectQNames.isEmpty())
-                    || (ignoreTypeNames != null && !ignoreTypeNames.isEmpty()))
+                || (ignoreTypeNames != null && !ignoreTypeNames.isEmpty()))
         {
 
             if (SearchService.LANGUAGE_FTS_ALFRESCO.equals(searchParameters.getLanguage()))
             {
                 SearchParameters searchParametersCopy = searchParameters.copy();
                 return applyFTSDecorations(searchParametersCopy,
-                                           environment.getNamespacePrefixResolver());
+                        environment.getNamespacePrefixResolver());
             }
             else
             {

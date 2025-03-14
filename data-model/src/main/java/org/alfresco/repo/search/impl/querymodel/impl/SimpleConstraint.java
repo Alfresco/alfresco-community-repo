@@ -37,9 +37,10 @@ public class SimpleConstraint extends BaseConstraint
         super();
         setOccur(occur);
     }
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.Constraint#evaluate()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.Constraint#evaluate() */
     @Override
     public boolean evaluate()
     {

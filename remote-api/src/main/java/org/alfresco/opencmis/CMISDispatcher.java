@@ -38,5 +38,5 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
  */
 public interface CMISDispatcher
 {
-	public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException;
+    public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException;
 }

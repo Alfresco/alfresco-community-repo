@@ -25,6 +25,9 @@
  */
 package org.alfresco.repo.dictionary;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
@@ -32,8 +35,6 @@ import org.alfresco.util.cache.AbstractAsynchronouslyRefreshedCache;
 import org.alfresco.util.cache.RefreshableCacheEvent;
 import org.alfresco.util.cache.RefreshableCacheListener;
 import org.alfresco.util.cache.RefreshableCacheRefreshedEvent;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Asynchronously refreshed cache for dictionary models.
@@ -54,8 +55,7 @@ public class CompiledModelsCache extends AbstractAsynchronouslyRefreshedCache<Di
         }
 
         final String finalTenant = tenantId;
-        return AuthenticationUtil.runAs(new RunAsWork<DictionaryRegistry>()
-        {
+        return AuthenticationUtil.runAs(new RunAsWork<DictionaryRegistry>() {
             public DictionaryRegistry doWork() throws Exception
             {
                 return dictionaryDAO.initDictionaryRegistry(finalTenant);
@@ -64,12 +64,13 @@ public class CompiledModelsCache extends AbstractAsynchronouslyRefreshedCache<Di
     }
 
     /**
-     * @param tenantId the tenantId of cache that will be removed from live cache
+     * @param tenantId
+     *            the tenantId of cache that will be removed from live cache
      * @return removed DictionaryRegistry
      */
     public void remove(final String tenantId)
     {
-        //TODO Should be reworked when ACE-2001 will be implemented
+        // TODO Should be reworked when ACE-2001 will be implemented
         liveLock.writeLock().lock();
         try
         {
@@ -78,7 +79,7 @@ public class CompiledModelsCache extends AbstractAsynchronouslyRefreshedCache<Di
             {
                 live.remove(tenantId);
                 dictionaryRegistry.remove();
-                
+
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Removed dictionary register for tenant " + tenantId);
@@ -92,7 +93,8 @@ public class CompiledModelsCache extends AbstractAsynchronouslyRefreshedCache<Di
     }
 
     /**
-     * @param dictionaryDAO the dictionaryDAOImpl to set
+     * @param dictionaryDAO
+     *            the dictionaryDAOImpl to set
      */
     public void setDictionaryDAO(DictionaryDAOImpl dictionaryDAO)
     {
@@ -100,7 +102,8 @@ public class CompiledModelsCache extends AbstractAsynchronouslyRefreshedCache<Di
     }
 
     /**
-     * @param tenantService the tenantService to set
+     * @param tenantService
+     *            the tenantService to set
      */
     public void setTenantService(TenantService tenantService)
     {
@@ -113,30 +116,29 @@ public class CompiledModelsCache extends AbstractAsynchronouslyRefreshedCache<Di
         super.afterPropertiesSet();
         // RefreshableCacheListener as anonymous class since CompileModelsCache already
         // implements this interface, but expects to be invoked in different circumstances.
-        register(new RefreshableCacheListener()
-        {
+        register(new RefreshableCacheListener() {
             @Override
             public void onRefreshableCacheEvent(RefreshableCacheEvent event)
             {
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug("Handling "+event.getClass().getSimpleName()+
-                                ", cache="+event.getCacheId()+
-                                ", key="+event.getKey());
+                    logger.debug("Handling " + event.getClass().getSimpleName() +
+                            ", cache=" + event.getCacheId() +
+                            ", key=" + event.getKey());
                 }
-                
+
                 if (event instanceof RefreshableCacheRefreshedEvent &&
-                    event.getCacheId().equals(getCacheId()))
+                        event.getCacheId().equals(getCacheId()))
                 {
                     // notify registered listeners that dictionary has been initialised (population is complete).
                     // Note we do that here to ensure that the dictionary registry has been added to the cache,
                     // so that any dependencies (like the CMIS dictionary) will use the new dictionary.
                     for (DictionaryListener dictionaryListener : dictionaryDAO.getDictionaryListeners())
                     {
-                        logger.debug("Calling afterDIctionaryInit ["+event.getClass().getSimpleName()+
-                                ", cache="+event.getCacheId()+
-                                ", key="+event.getKey()+
-                                "] on "+
+                        logger.debug("Calling afterDIctionaryInit [" + event.getClass().getSimpleName() +
+                                ", cache=" + event.getCacheId() +
+                                ", key=" + event.getKey() +
+                                "] on " +
                                 dictionaryListener.getClass().getSimpleName());
 
                         dictionaryListener.afterDictionaryInit();
@@ -149,6 +151,6 @@ public class CompiledModelsCache extends AbstractAsynchronouslyRefreshedCache<Di
             {
                 return CompiledModelsCache.this.getCacheId();
             }
-        }); 
+        });
     }
 }

@@ -27,10 +27,8 @@ package org.alfresco.service.cmr.invitation;
 
 import java.util.Date;
 
-
 /**
- * The nominated invitation is a model object for who, needs to be added or removed 
- * from which resource with which attributes.
+ * The nominated invitation is a model object for who, needs to be added or removed from which resource with which attributes.
  * 
  * Invitations are processed by the InvitationService
  * 
@@ -40,27 +38,27 @@ import java.util.Date;
  */
 public interface NominatedInvitation extends Invitation
 {
-	public String getInviterUserName();
+    public String getInviterUserName();
 
-	public String getInviteeFirstName();
+    public String getInviteeFirstName();
 
-	public String getInviteeLastName();
+    public String getInviteeLastName();
 
-	public String getInviteeEmail();
+    public String getInviteeEmail();
 
-	public String getResourceName();
+    public String getResourceName();
 
     public String getResourceTitle();
 
     public String getResourceDescription();
 
-	public String getServerPath();
+    public String getServerPath();
 
-	public String getAcceptUrl();
+    public String getAcceptUrl();
 
-	public String getRejectUrl();
+    public String getRejectUrl();
 
-	public Date getSentInviteDate();
-	
-	public String getTicket();
+    public Date getSentInviteDate();
+
+    public String getTicket();
 }

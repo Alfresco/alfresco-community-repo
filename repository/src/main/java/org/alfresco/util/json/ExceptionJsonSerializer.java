@@ -30,13 +30,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.cmr.transfer.TransferException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.transfer.TransferException;
 
 public class ExceptionJsonSerializer implements JsonSerializer<Throwable, JSONObject>
 {
@@ -50,16 +51,16 @@ public class ExceptionJsonSerializer implements JsonSerializer<Throwable, JSONOb
         {
             return null;
         }
-        
+
         Throwable result = null;
         Object createdObject = null;
-        
+
         try
         {
-            //errorType and errorMessage should always be reported
+            // errorType and errorMessage should always be reported
             String errorType = errorJSON.getString("errorType");
             String errorMessage = errorJSON.getString("errorMessage");
-            
+
             if (errorType == null)
             {
                 errorType = Exception.class.getName();
@@ -68,8 +69,8 @@ public class ExceptionJsonSerializer implements JsonSerializer<Throwable, JSONOb
             {
                 errorMessage = "";
             }
-            //alfrescoErrorId and alfrescoErrorParams will only appear if the
-            //throwable object was of a subclass of AlfrescoRuntimeException
+            // alfrescoErrorId and alfrescoErrorParams will only appear if the
+            // throwable object was of a subclass of AlfrescoRuntimeException
             String errorId = errorJSON.optString("alfrescoMessageId", null);
             Object[] errorParams = new Object[0];
             JSONArray errorParamArray = errorJSON.optJSONArray("alfrescoMessageParams");
@@ -77,7 +78,7 @@ public class ExceptionJsonSerializer implements JsonSerializer<Throwable, JSONOb
             {
                 int length = errorParamArray.length();
                 errorParams = new Object[length];
-                for (int i = 0; i < length; ++i) 
+                for (int i = 0; i < length; ++i)
                 {
                     errorParams[i] = errorParamArray.getString(i);
                 }
@@ -117,8 +118,7 @@ public class ExceptionJsonSerializer implements JsonSerializer<Throwable, JSONOb
                                 createdObject = constructor.newInstance();
                             }
                             catch (NoSuchMethodException e2)
-                            {
-                            }
+                            {}
                         }
                     }
                 }
@@ -133,10 +133,10 @@ public class ExceptionJsonSerializer implements JsonSerializer<Throwable, JSONOb
             }
             else
             {
-                result = (Throwable)createdObject;
+                result = (Throwable) createdObject;
             }
         }
-        catch(JSONException ex)
+        catch (JSONException ex)
         {
             if (log.isDebugEnabled())
             {
@@ -150,14 +150,14 @@ public class ExceptionJsonSerializer implements JsonSerializer<Throwable, JSONOb
     public JSONObject serialize(Throwable object)
     {
         JSONObject errorObject = new JSONObject();
-        
+
         try
         {
             errorObject.put("errorType", object.getClass().getName());
             errorObject.put("errorMessage", object.getMessage());
             if (AlfrescoRuntimeException.class.isAssignableFrom(object.getClass()))
             {
-                AlfrescoRuntimeException alfEx = (AlfrescoRuntimeException)object;
+                AlfrescoRuntimeException alfEx = (AlfrescoRuntimeException) object;
                 errorObject.put("alfrescoMessageId", alfEx.getMsgId());
                 Object[] msgParams = alfEx.getMsgParams();
                 List<Object> params = msgParams == null ? Collections.emptyList() : Arrays.asList(msgParams);

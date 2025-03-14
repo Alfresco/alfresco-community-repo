@@ -29,11 +29,12 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
+import org.mozilla.javascript.Scriptable;
+
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.util.ParameterCheck;
-import org.mozilla.javascript.Scriptable;
 
 /**
  * Scriptable Version
@@ -62,7 +63,7 @@ public final class ScriptVersion implements Serializable
     /**
      * Gets the date the version was created
      *
-     * @return  the date the version was created
+     * @return the date the version was created
      */
     public Date getCreatedDate()
     {
@@ -72,7 +73,7 @@ public final class ScriptVersion implements Serializable
     /**
      * Gets the creator of the version
      *
-     * @return  the creator of the version
+     * @return the creator of the version
      */
     public String getCreator()
     {
@@ -82,7 +83,7 @@ public final class ScriptVersion implements Serializable
     /**
      * Gets the version label
      *
-     * @return  the version label
+     * @return the version label
      */
     public String getLabel()
     {
@@ -92,7 +93,7 @@ public final class ScriptVersion implements Serializable
     /**
      * Gets the version type
      *
-     * @return  "MAJOR", "MINOR"
+     * @return "MAJOR", "MINOR"
      */
     public String getType()
     {
@@ -120,7 +121,7 @@ public final class ScriptVersion implements Serializable
     /**
      * Gets the node ref represented by this version
      *
-     * @return  node ref
+     * @return node ref
      */
     public NodeRef getNodeRef()
     {
@@ -130,7 +131,7 @@ public final class ScriptVersion implements Serializable
     /**
      * Gets the node represented by this version
      *
-     * @return  node
+     * @return node
      */
     public ScriptNode getNode()
     {
@@ -140,7 +141,7 @@ public final class ScriptVersion implements Serializable
     /**
      * Get the map containing the version property values
      *
-     * @return  the map containing the version properties
+     * @return the map containing the version properties
      */
     public Map<String, Serializable> getVersionProperties()
     {
@@ -150,8 +151,9 @@ public final class ScriptVersion implements Serializable
     /**
      * Gets the value of a named version property.
      *
-     * @param name  the name of the property
-     * @return      the value of the property
+     * @param name
+     *            the name of the property
+     * @return the value of the property
      */
     public Serializable getVersionProperty(String name)
     {

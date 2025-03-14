@@ -1,15 +1,16 @@
 package org.alfresco.email.imap;
 
+import jakarta.mail.MessagingException;
+
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.email.EmailTest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.*;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import jakarta.mail.MessagingException;
 
 public class ImapDeleteMessagesTests extends EmailTest
 {
@@ -21,22 +22,14 @@ public class ImapDeleteMessagesTests extends EmailTest
         adminSite = dataSite.usingAdmin().createIMAPSite();
     }
 
-    //    TODO uncomment once https://issues.alfresco.com/jira/browse/MNT-21648 is solved
-    /* @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.SANITY,
-            description = "Verify message can be deleted from IMAP client by admin")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.SANITY })
-    public void adminShouldDeleteMessage() throws Exception
-    {
-        testFile = dataContent.usingAdmin().usingSite(adminSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        imapProtocol.authenticateUser(dataUser.getAdminUser()).usingSite(adminSite).assertThat().containsMessages(testFile)
-            .and().usingResource(testFile).assertThat().existsInRepo().deleteMessage()
-            .and().assertThat().doesNotContainMessages(testFile)
-            .then().usingResource(testFile).assertThat().doesNotExistInRepo();
-    } */
+    // TODO uncomment once https://issues.alfresco.com/jira/browse/MNT-21648 is solved
+    /* @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.SANITY, description = "Verify message can be deleted from IMAP client by admin")
+     * 
+     * @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.SANITY }) public void adminShouldDeleteMessage() throws Exception { testFile = dataContent.usingAdmin().usingSite(adminSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN); imapProtocol.authenticateUser(dataUser.getAdminUser()).usingSite(adminSite).assertThat().containsMessages(testFile) .and().usingResource(testFile).assertThat().existsInRepo().deleteMessage() .and().assertThat().doesNotContainMessages(testFile) .then().usingResource(testFile).assertThat().doesNotExistInRepo(); } */
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.SANITY,
             description = "Verify deleting message via IMAP client by user with MANAGER role")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.SANITY })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.SANITY})
     public void siteManagerShouldDeleteMessage() throws Exception
     {
         testFile = dataContent.usingUser(testUser).usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -45,9 +38,9 @@ public class ImapDeleteMessagesTests extends EmailTest
                 .and().assertThat().doesNotContainMessages(testFile);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify message has been deleted via REPOSITORU by user with MANAGER role")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE})
     public void siteManagerVerifyMessageHasBeenDeletedFromRepository() throws Exception
     {
         testFile = dataContent.usingUser(testUser).usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -56,9 +49,9 @@ public class ImapDeleteMessagesTests extends EmailTest
                 .and().usingSite(testSite).assertThat().doesNotContainMessages(testFile);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify deleting message via IMAP client by user with CONTRIBUTOR role")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE})
     public void siteContributorShouldDeleteMessage() throws Exception
     {
         UserModel contributorUser = dataUser.createRandomTestUser();
@@ -69,9 +62,9 @@ public class ImapDeleteMessagesTests extends EmailTest
                 .and().usingSite(testSite).assertThat().doesNotContainMessages(testFile);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify deleting message via IMAP client by user with COLLABORATOR role")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE})
     public void siteCollaboratorShouldDeleteMessage() throws Exception
     {
         UserModel collaboratorUser = dataUser.createRandomTestUser();
@@ -82,9 +75,9 @@ public class ImapDeleteMessagesTests extends EmailTest
                 .and().usingSite(testSite).assertThat().doesNotContainMessages(testFile);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify deleting message via IMAP client by user with CONSUMER role is not permitted")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE }, expectedExceptions = MessagingException.class,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE}, expectedExceptions = MessagingException.class,
             expectedExceptionsMessageRegExp = ".*No permission to set DELETED flag")
     public void siteConsumerShouldNotDeleteMessage() throws Exception
     {

@@ -40,6 +40,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.dao.ConcurrencyFailureException;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.node.NodeDAO;
@@ -69,14 +78,6 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.test.junitrules.RetryAtMostRule;
 import org.alfresco.util.test.junitrules.RetryAtMostRule.RetryAtMost;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * Test class for {@link FixedAclUpdater}
@@ -105,8 +106,8 @@ public class FixedAclUpdaterTest
     private AuthorityService authorityService;
     private static final long MAX_TRANSACTION_TIME_DEFAULT = 10;
     private static final int LARGE_TRANSACTION_TIME = 86_400_000;
-    private static final int[] filesPerLevelMoreFolders = { 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
-    private static final int[] filesPerLevelMoreFiles = { 5, 100 };
+    private static final int[] filesPerLevelMoreFolders = {5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    private static final int[] filesPerLevelMoreFiles = {5, 100};
     private static HashMap<Integer, Class<?>> errors;
     private static String TEST_GROUP_NAME = "FixedACLUpdaterTest";
     private static String TEST_GROUP_NAME_FULL = PermissionService.GROUP_PREFIX + TEST_GROUP_NAME;
@@ -147,9 +148,7 @@ public class FixedAclUpdaterTest
         AuthenticationUtil.clearCurrentSecurityContext();
     }
 
-    /*
-     * Test setting permissions having the maxTransactionTime set to 24H, disabling the need for the job
-     */
+    /* Test setting permissions having the maxTransactionTime set to 24H, disabling the need for the job */
     @Test
     public void testSyncNoTimeOut()
     {
@@ -171,9 +170,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * Test setting permissions explicitly as sync, but the operation times out
-     */
+    /* Test setting permissions explicitly as sync, but the operation times out */
     @Test
     public void testSyncTimeOut()
     {
@@ -191,12 +188,12 @@ public class FixedAclUpdaterTest
 
             // Validate values in pending ACL node
             NodeRef folderWithPendingAcl = getFirstNodeWithAclPending(ContentModel.TYPE_FOLDER);
-            
+
             // - Validate modification date
             long folderWithPendingAclNodeId = nodeDAO.getNodePair(folderWithPendingAcl).getFirst();
             Date modificationDate = (Date) nodeDAO.getNodeProperty(folderWithPendingAclNodeId, ContentModel.PROP_MODIFIED);
-            assertTrue("Changing permissions updated cm:modified",modificationDate.getTime() < timestampBeforePermissions);
-            
+            assertTrue("Changing permissions updated cm:modified", modificationDate.getTime() < timestampBeforePermissions);
+
             // - Validate pending values
             ACLComparator aclComparatorForPending = new ACLComparator(folderWithPendingAcl);
             assertEquals("Pending inheritFrom value should be the parent ACL id", aclComparator.getParentAcl(),
@@ -214,10 +211,10 @@ public class FixedAclUpdaterTest
             assertEquals("Processed Pending ACL children doesn't have correct ACL", aclComparator.getChildAcl(),
                     aclComparatorForPending.getChildAcl());
             assertTrue("Permissions not applied on pending nodes", aclComparatorForPending.firstChildHasOriginalPermission());
-            
-            //Verify removing the pendingAcl aspect did not change the modification date
+
+            // Verify removing the pendingAcl aspect did not change the modification date
             Date modificationDateAfterJob = (Date) nodeDAO.getNodeProperty(folderWithPendingAclNodeId, ContentModel.PROP_MODIFIED);
-            assertEquals("Running the job updated cm:modified",modificationDate.getTime(),modificationDateAfterJob.getTime());
+            assertEquals("Running the job updated cm:modified", modificationDate.getTime(), modificationDateAfterJob.getTime());
         }
         finally
         {
@@ -225,9 +222,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * Test setting permissions explicitly as async
-     */
+    /* Test setting permissions explicitly as async */
     @Test
     @RetryAtMost(3)
     public void testAsync()
@@ -272,9 +267,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * MNT-21847 - Create a new content in folder that has the aspect applied
-     */
+    /* MNT-21847 - Create a new content in folder that has the aspect applied */
     @Test
     @RetryAtMost(3)
     public void testAsyncWithNodeCreation()
@@ -303,9 +296,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * MNT-22009 - Delete node that has the aspect applied before job runs
-     */
+    /* MNT-22009 - Delete node that has the aspect applied before job runs */
     @Test
     @RetryAtMost(3)
     public void testAsyncWithNodeDeletion()
@@ -333,9 +324,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * Copy node with no timeout and no pending nodes
-     */
+    /* Copy node with no timeout and no pending nodes */
     @Test
     public void testSyncCopyNoTimeOut() throws FileExistsException, FileNotFoundException
     {
@@ -394,9 +383,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * MNT-22040 - Copy node that has the aspect applied before job runs
-     */
+    /* MNT-22040 - Copy node that has the aspect applied before job runs */
     @Test
     @RetryAtMost(3)
     public void testAsyncWithNodeCopy()
@@ -474,9 +461,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * Copy node that has the aspect to another folder that also has the aspect applied before job runs
-     */
+    /* Copy node that has the aspect to another folder that also has the aspect applied before job runs */
     @Test
     @RetryAtMost(3)
     public void testAsyncWithNodeCopyToPendingFolder()
@@ -565,10 +550,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * Copy parent of node that has the aspect to a child folder of a folder that also has the aspect applied before job
-     * runs
-     */
+    /* Copy parent of node that has the aspect to a child folder of a folder that also has the aspect applied before job runs */
     @Test
     @RetryAtMost(3)
     public void testAsyncWithNodeCopyParentToChildPendingFolder()
@@ -677,10 +659,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * Move child of node that has the aspect to a child folder of a folder that also has the aspect applied before job
-     * runs
-     */
+    /* Move child of node that has the aspect to a child folder of a folder that also has the aspect applied before job runs */
     @Test
     @RetryAtMost(3)
     public void testAsyncWithNodeMoveChildToChildPendingFolder()
@@ -762,11 +741,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * Create a conflicting ACL on a node and then try to run the job normally, without forcing the ACL to get the
-     * expected error and then run it again with the forcedShareACL property as true so it can override the problematic
-     * ACL
-     */
+    /* Create a conflicting ACL on a node and then try to run the job normally, without forcing the ACL to get the expected error and then run it again with the forcedShareACL property as true so it can override the problematic ACL */
     @Test
     @RetryAtMost(3)
     public void testAsyncWithErrorsForceSharedACL()
@@ -823,9 +798,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * MNT-22040 - Move node that has the aspect applied before job runs
-     */
+    /* MNT-22040 - Move node that has the aspect applied before job runs */
     @Test
     @RetryAtMost(3)
     public void testAsyncWithNodeMove()
@@ -900,9 +873,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * Move node that has the aspect to another folder that also has the aspect applied before job runs
-     */
+    /* Move node that has the aspect to another folder that also has the aspect applied before job runs */
     @Test
     @RetryAtMost(3)
     public void testAsyncWithNodeMoveToPendingFolder()
@@ -989,9 +960,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * Lock node that has the aspect applied before job runs
-     */
+    /* Lock node that has the aspect applied before job runs */
     @Test
     @RetryAtMost(3)
     public void testAsyncWithNodeLock()
@@ -1019,9 +988,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * Checkout a node for editing that has the aspect applied before job runs
-     */
+    /* Checkout a node for editing that has the aspect applied before job runs */
     @Test
     @RetryAtMost(3)
     public void testAsyncWithNodeCheckout()
@@ -1050,9 +1017,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * Update the permissions of a node that has the aspect applied (new permissions: fixed)
-     */
+    /* Update the permissions of a node that has the aspect applied (new permissions: fixed) */
     @Test
     @RetryAtMost(3)
     public void testAsyncWithNodeUpdatePermissionsFixed()
@@ -1092,9 +1057,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * Update the permissions of a node that has the aspect applied (new permissions: shared)
-     */
+    /* Update the permissions of a node that has the aspect applied (new permissions: shared) */
     @Test
     @RetryAtMost(3)
     public void testAsyncWithNodeUpdatePermissionsShared()
@@ -1131,9 +1094,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * Update the permissions of the parent of a node that has the aspect applied (new permissions: fixed)
-     */
+    /* Update the permissions of the parent of a node that has the aspect applied (new permissions: fixed) */
     @Test
     @RetryAtMost(3)
     public void testAsyncWithParentUpdatePermissionsFixed()
@@ -1173,9 +1134,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * Update the permissions of the parent of a node that has the aspect applied (new permissions: shared)
-     */
+    /* Update the permissions of the parent of a node that has the aspect applied (new permissions: shared) */
     @Test
     @RetryAtMost(3)
     public void testAsyncWithParentUpdatePermissionsShared()
@@ -1265,9 +1224,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * Update the content of a node that has the aspect applied before job runs
-     */
+    /* Update the content of a node that has the aspect applied before job runs */
     @Test
     @RetryAtMost(3)
     public void testAsyncWithNodeContentUpdate()
@@ -1298,9 +1255,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * Test setting permissions concurrently to actually cause the expected concurrency exception
-     */
+    /* Test setting permissions concurrently to actually cause the expected concurrency exception */
     @Test
     @RetryAtMost(3)
     public void testAsyncConcurrentPermissionsUpdate() throws Throwable
@@ -1369,10 +1324,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * Test setting permissions concurrently as the job runs at the same time to actually cause the expected concurrency
-     * exception but the job should be able to recover
-     */
+    /* Test setting permissions concurrently as the job runs at the same time to actually cause the expected concurrency exception but the job should be able to recover */
     @Test
     @RetryAtMost(3)
     public void testAsyncConcurrentUpdateAndJob() throws Throwable
@@ -1441,9 +1393,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * Test with maxItems limit
-     */
+    /* Test with maxItems limit */
     @Test
     @RetryAtMost(3)
     public void testWithLimits()
@@ -1462,7 +1412,7 @@ public class FixedAclUpdaterTest
             while (initialPendingAcls <= maxItems && initialPendingAcls > 0)
             {
                 // Trigger the job a single round each time to create new pendings until we have enough
-                triggerFixedACLJob(false,true,maxItems,1);
+                triggerFixedACLJob(false, true, maxItems, 1);
                 initialPendingAcls = getNodesCountWithPendingFixedAclAspect();
             }
 
@@ -1472,7 +1422,7 @@ public class FixedAclUpdaterTest
             setFixedAclMaxTransactionTime(permissionsDaoComponent, homeFolderNodeRef, LARGE_TRANSACTION_TIME);
 
             // Trigger job in single round without timeout
-            triggerFixedACLJob(false,true,maxItems,1);
+            triggerFixedACLJob(false, true, maxItems, 1);
 
             int finalPendingAcls = getNodesCountWithPendingFixedAclAspect();
 
@@ -1485,9 +1435,7 @@ public class FixedAclUpdaterTest
         }
     }
 
-    /*
-     * Test without imposing the order by
-     */
+    /* Test without imposing the order by */
     @Test
     @RetryAtMost(3)
     public void testUnordered()
@@ -1501,11 +1449,11 @@ public class FixedAclUpdaterTest
             int initialPendingAcls = getNodesCountWithPendingFixedAclAspect();
             assertTrue("We don't have enough pending acls to test", initialPendingAcls > 0);
 
-            triggerFixedACLJob(false,true,-1,30);
+            triggerFixedACLJob(false, true, -1, 30);
 
             int finalPendingAcls = getNodesCountWithPendingFixedAclAspect();
 
-            assertEquals("Not all ACls were processed",0, finalPendingAcls);
+            assertEquals("Not all ACls were processed", 0, finalPendingAcls);
         }
         finally
         {
@@ -1557,8 +1505,7 @@ public class FixedAclUpdaterTest
 
     private Runnable createRunnableToSetPermissions(NodeRef folderRef, String authName, int thread) throws Throwable
     {
-        return new Runnable()
-        {
+        return new Runnable() {
             @Override
             public synchronized void run()
             {
@@ -1570,8 +1517,7 @@ public class FixedAclUpdaterTest
 
     private Runnable createRunnableToRunJob() throws Throwable
     {
-        return new Runnable()
-        {
+        return new Runnable() {
             @Override
             public synchronized void run()
             {
@@ -1732,7 +1678,8 @@ public class FixedAclUpdaterTest
                 if (isDescendent && nodeDAO.getNodeType(nodeDAO.getNodePair(nodeRef).getFirst()).equals(nodeType))
                 {
                     // If folder, the tests will need a child and a grandchild to verify permissions
-                    if (nodeType.equals(ContentModel.TYPE_FOLDER) && !hasGrandChilden(nodeRef)) {
+                    if (nodeType.equals(ContentModel.TYPE_FOLDER) && !hasGrandChilden(nodeRef))
+                    {
                         continue;
                     }
                     return nodeRef;
@@ -1755,7 +1702,8 @@ public class FixedAclUpdaterTest
                 if (nodeDAO.getNodeType(nodeDAO.getNodePair(nodeRef).getFirst()).equals(nodeType))
                 {
                     // If folder, the tests will need a child and a grandchild to verify permissions
-                    if (nodeType.equals(ContentModel.TYPE_FOLDER) && !hasGrandChilden(nodeRef)) {
+                    if (nodeType.equals(ContentModel.TYPE_FOLDER) && !hasGrandChilden(nodeRef))
+                    {
                         continue;
                     }
                     return nodeRef;

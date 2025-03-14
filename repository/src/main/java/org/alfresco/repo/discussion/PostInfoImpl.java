@@ -37,130 +37,129 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Nick Burch (based on existing webscript controllers in the REST API)
  * @since 4.0
  */
-public class PostInfoImpl implements PostInfo 
+public class PostInfoImpl implements PostInfo
 {
-   private NodeRef nodeRef;
-   private TopicInfo topic;
-   private String systemName;
-   private String title;
-   private String contents;
-   private String creator;
-   private String modifier;
-   private Date createdAt;
-   private Date modifiedAt;
-   private Date updatedAt;
+    private NodeRef nodeRef;
+    private TopicInfo topic;
+    private String systemName;
+    private String title;
+    private String contents;
+    private String creator;
+    private String modifier;
+    private Date createdAt;
+    private Date modifiedAt;
+    private Date updatedAt;
 
-   /**
-    * Creates a new, empty {@link PostInfo}
-    */
-   public PostInfoImpl()
-   {
-   }
-   
-   /**
-    * Create a {@link PostInfo} object from an existing node
-    */
-   public PostInfoImpl(NodeRef nodeRef, String systemName, TopicInfo topic)
-   {
-      this.nodeRef = nodeRef;
-      this.systemName = systemName;
-      this.topic = topic;
-   }
+    /**
+     * Creates a new, empty {@link PostInfo}
+     */
+    public PostInfoImpl()
+    {}
 
-   @Override
-   public TopicInfo getTopic() 
-   {
-      return topic;
-   }
+    /**
+     * Create a {@link PostInfo} object from an existing node
+     */
+    public PostInfoImpl(NodeRef nodeRef, String systemName, TopicInfo topic)
+    {
+        this.nodeRef = nodeRef;
+        this.systemName = systemName;
+        this.topic = topic;
+    }
 
-   @Override
-   public NodeRef getNodeRef() 
-   {
-      return nodeRef;
-   }
-   
-   @Override
-   public String getSystemName() 
-   {
-      return systemName;
-   }
+    @Override
+    public TopicInfo getTopic()
+    {
+        return topic;
+    }
 
-   @Override
-   public String getTitle() 
-   {
-      return title;
-   }
+    @Override
+    public NodeRef getNodeRef()
+    {
+        return nodeRef;
+    }
 
-   @Override
-   public String getContents() 
-   {
-      return contents;
-   }
+    @Override
+    public String getSystemName()
+    {
+        return systemName;
+    }
 
-   @Override
-   public String getCreator() 
-   {
-      return creator;
-   }
+    @Override
+    public String getTitle()
+    {
+        return title;
+    }
 
-   @Override
-   public String getModifier() 
-   {
-      return modifier;
-   }
+    @Override
+    public String getContents()
+    {
+        return contents;
+    }
 
-   @Override
-   public Date getCreatedAt() 
-   {
-      return createdAt;
-   }
+    @Override
+    public String getCreator()
+    {
+        return creator;
+    }
 
-   @Override
-   public Date getModifiedAt() 
-   {
-      return modifiedAt;
-   }
+    @Override
+    public String getModifier()
+    {
+        return modifier;
+    }
 
-   @Override
-   public Date getUpdatedAt() 
-   {
-      return updatedAt;
-   }
+    @Override
+    public Date getCreatedAt()
+    {
+        return createdAt;
+    }
 
-   @Override
-   public void setTitle(String title) 
-   {
-      this.title = title;
-   }
+    @Override
+    public Date getModifiedAt()
+    {
+        return modifiedAt;
+    }
 
-   @Override
-   public void setContents(String contents) 
-   {
-      this.contents = contents;
-   }
+    @Override
+    public Date getUpdatedAt()
+    {
+        return updatedAt;
+    }
 
-   public void setCreator(String creator) 
-   {
-      this.creator = creator;
-   }
+    @Override
+    public void setTitle(String title)
+    {
+        this.title = title;
+    }
 
-   public void setModifier(String modifier) 
-   {
-      this.modifier = modifier;
-   }
+    @Override
+    public void setContents(String contents)
+    {
+        this.contents = contents;
+    }
 
-   public void setCreatedAt(Date createdAt) 
-   {
-      this.createdAt = createdAt;
-   }
+    public void setCreator(String creator)
+    {
+        this.creator = creator;
+    }
 
-   public void setModifiedAt(Date modifiedAt) 
-   {
-      this.modifiedAt = modifiedAt;
-   }
+    public void setModifier(String modifier)
+    {
+        this.modifier = modifier;
+    }
 
-   public void setUpdatedAt(Date updatedAt) 
-   {
-      this.updatedAt = updatedAt;
-   }
+    public void setCreatedAt(Date createdAt)
+    {
+        this.createdAt = createdAt;
+    }
+
+    public void setModifiedAt(Date modifiedAt)
+    {
+        this.modifiedAt = modifiedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt)
+    {
+        this.updatedAt = updatedAt;
+    }
 }

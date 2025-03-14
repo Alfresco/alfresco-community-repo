@@ -25,7 +25,6 @@
  */
 package org.alfresco.service.cmr.view;
 
-
 /**
  * Base Exception of Import Exceptions.
  * 
@@ -37,12 +36,12 @@ public class ImporterException extends RuntimeException
 
     public ImporterException(String msg)
     {
-       super(msg);
+        super(msg);
     }
-    
+
     public ImporterException(String msg, Throwable cause)
     {
-       super(msg, cause);
+        super(msg, cause);
     }
 
 }

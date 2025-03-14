@@ -41,8 +41,10 @@ public class SortedResultSetRow extends AbstractResultSetRow implements ResultSe
 {
 
     /**
-     * @param resultSet SortedResultSet
-     * @param index int
+     * @param resultSet
+     *            SortedResultSet
+     * @param index
+     *            int
      */
     public SortedResultSetRow(SortedResultSet resultSet, int index)
     {
@@ -74,8 +76,5 @@ public class SortedResultSetRow extends AbstractResultSetRow implements ResultSe
         SortedResultSet srs = (SortedResultSet) getResultSet();
         return srs.getNodeService().getProperties(srs.getNodeRef(getIndex()));
     }
-  
-
-    
 
 }

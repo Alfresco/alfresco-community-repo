@@ -10,12 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
-import org.alfresco.cmis.CmisProperties;
-import org.alfresco.cmis.dsl.QueryExecutor.QueryResultAssertion;
-import org.alfresco.utility.Utility;
-import org.alfresco.utility.model.ContentModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +19,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+
+import org.alfresco.cmis.CmisProperties;
+import org.alfresco.cmis.dsl.QueryExecutor.QueryResultAssertion;
+import org.alfresco.utility.Utility;
+import org.alfresco.utility.model.ContentModel;
 
 @ContextConfiguration("classpath:alfresco-cmis-context.xml")
 @Component
@@ -56,8 +56,11 @@ public abstract class AbstractCmisE2ETest extends AbstractE2EFunctionalTest
 
     /**
      * Repeat Elastic Query till results count returns expectedCountResults
-     * @param query CMIS Query to be executed
-     * @param expectedResultsCount Number of results expected
+     * 
+     * @param query
+     *            CMIS Query to be executed
+     * @param expectedResultsCount
+     *            Number of results expected
      * @return true when results count is equals to expectedCountResults
      */
     protected boolean waitForIndexing(String query, long expectedResultsCount)
@@ -77,8 +80,10 @@ public abstract class AbstractCmisE2ETest extends AbstractE2EFunctionalTest
     /**
      * Repeat Elastic Query until we get the expected results or we hit the retry limit.
      *
-     * @param query CMIS Query to be executed
-     * @param expectedResults The expected results (unordered).
+     * @param query
+     *            CMIS Query to be executed
+     * @param expectedResults
+     *            The expected results (unordered).
      */
     protected void waitForIndexing(String query, ContentModel... expectedResults)
     {
@@ -89,8 +94,10 @@ public abstract class AbstractCmisE2ETest extends AbstractE2EFunctionalTest
     /**
      * Repeat Elastic Query until we get the expected results in the given order or we hit the retry limit.
      *
-     * @param query CMIS Query to be executed
-     * @param expectedResults The expected results (ordered).
+     * @param query
+     *            CMIS Query to be executed
+     * @param expectedResults
+     *            The expected results (ordered).
      */
     protected void waitForIndexingOrdered(String query, ContentModel... expectedResults)
     {
@@ -101,8 +108,10 @@ public abstract class AbstractCmisE2ETest extends AbstractE2EFunctionalTest
     /**
      * Repeat Elastic Query until we get the expected results or we hit the retry limit.
      *
-     * @param query CMIS Query to be executed
-     * @param assertionMethod A method that will be called to check the response and which will throw an AssertionError if they aren't what we want.
+     * @param query
+     *            CMIS Query to be executed
+     * @param assertionMethod
+     *            A method that will be called to check the response and which will throw an AssertionError if they aren't what we want.
      */
     protected void waitForIndexing(String query, Consumer<QueryResultAssertion> assertionMethod)
     {

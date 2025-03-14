@@ -25,15 +25,6 @@
  */
 package org.alfresco.repo.content.metadata;
 
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import jakarta.mail.Header;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,19 +32,26 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import jakarta.mail.Header;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * @deprecated OOTB extractors have being moved to T-Engines.
  *
- * This class originally provided metadata extraction of RFC822 mimetype emails. It will no longer be used for that
- * purpose as that work has been off loaded to a T-Engine via the AsynchronousExtractor. It still exists because the
- * governance services (RM) AMP overrides it to provide alternate property mappings and to filter out some of
- * these properties if the node does not have the "record" or "dod5015record" aspects.<p>
+ *             This class originally provided metadata extraction of RFC822 mimetype emails. It will no longer be used for that purpose as that work has been off loaded to a T-Engine via the AsynchronousExtractor. It still exists because the governance services (RM) AMP overrides it to provide alternate property mappings and to filter out some of these properties if the node does not have the "record" or "dod5015record" aspects.
+ *             <p>
  *
- * We still also have the Default configuration file (RFC822MetadataExtracter.properties) file which contains the
- * default set of properties, which may be manipulated by RM.
+ *             We still also have the Default configuration file (RFC822MetadataExtracter.properties) file which contains the default set of properties, which may be manipulated by RM.
  *
- * <pre>
+ *             <pre>
  *   <b>messageFrom:</b>              --      imap:messageFrom, cm:originator
  *   <b>messageTo:</b>                --      imap:messageTo
  *   <b>messageCc:</b>                --      imap:messageCc
@@ -65,10 +63,7 @@ import java.util.Set;
  *      <b>Message-ID:</b>            --      imap:messageId
  * </pre>
  *
- * This class now provides an alternative property mapping in the request to the T-Engine. Unlike the previous
- * implementation the filtering of properties takes place before rather than after the extraction. This is done in
- * this class making the code within the org.alfresco.module.org_alfresco_module_rm.email.RFC822MetadataExtracter
- * filterSystemProperties method redundant.
+ *             This class now provides an alternative property mapping in the request to the T-Engine. Unlike the previous implementation the filtering of properties takes place before rather than after the extraction. This is done in this class making the code within the org.alfresco.module.org_alfresco_module_rm.email.RFC822MetadataExtracter filterSystemProperties method redundant.
  *
  * @author adavis
  */
@@ -87,8 +82,7 @@ public class RFC822MetadataExtracter extends AbstractMappingMetadataExtracter
 
     private static Log logger = LogFactory.getLog(RFC822MetadataExtracter.class);
 
-    private static final HashSet<String> SUPPORTED_MIMETYPES =
-            new HashSet<>(Arrays.asList(new String[] { MimetypeMap.MIMETYPE_RFC822 }));
+    private static final HashSet<String> SUPPORTED_MIMETYPES = new HashSet<>(Arrays.asList(new String[]{MimetypeMap.MIMETYPE_RFC822}));
 
     public RFC822MetadataExtracter()
     {
@@ -112,6 +106,7 @@ public class RFC822MetadataExtracter extends AbstractMappingMetadataExtracter
 
     /**
      * Back door for RM
+     * 
      * @return Map
      */
     public final Map<String, Set<QName>> getCurrentMapping()

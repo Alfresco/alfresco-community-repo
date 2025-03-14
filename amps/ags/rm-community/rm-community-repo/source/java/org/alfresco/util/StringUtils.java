@@ -35,7 +35,8 @@ package org.alfresco.util;
 public class StringUtils
 {
     /** Private constructor for the helper class. */
-    private StringUtils() {}
+    private StringUtils()
+    {}
 
     /**
      * Convert the given object to string with each line indented by 4 spaces (except the first line).

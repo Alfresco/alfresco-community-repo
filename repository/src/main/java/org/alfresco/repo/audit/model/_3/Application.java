@@ -34,11 +34,12 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for Application complex type.
+ * <p>
+ * Java class for Application complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType name="Application">
@@ -57,10 +58,10 @@ import jakarta.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Application", propOrder = {
-    "pathMappings"
+        "pathMappings"
 })
 public class Application
-    extends AuditPath
+        extends AuditPath
 {
 
     @XmlElement(name = "PathMappings")
@@ -72,26 +73,25 @@ public class Application
      * Gets the value of the pathMappings property.
      * 
      * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the pathMappings property.
+     * This accessor method returns a reference to the live list, not a snapshot. Therefore any modification you make to the returned list will be present inside the JAXB object. This is why there is not a <CODE>set</CODE> method for the pathMappings property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
+     * 
      * <pre>
-     *    getPathMappings().add(newItem);
+     * getPathMappings().add(newItem);
      * </pre>
      * 
      * 
      * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link PathMappings }
+     * Objects of the following type(s) are allowed in the list {@link PathMappings }
      * 
      * 
      */
-    public List<PathMappings> getPathMappings() {
-        if (pathMappings == null) {
+    public List<PathMappings> getPathMappings()
+    {
+        if (pathMappings == null)
+        {
             pathMappings = new ArrayList<PathMappings>();
         }
         return this.pathMappings;
@@ -100,12 +100,11 @@ public class Application
     /**
      * Gets the value of the name property.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     * @return possible object is {@link String }
+     * 
      */
-    public String getName() {
+    public String getName()
+    {
         return name;
     }
 
@@ -113,11 +112,11 @@ public class Application
      * Sets the value of the name property.
      * 
      * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *            allowed object is {@link String }
+     * 
      */
-    public void setName(String value) {
+    public void setName(String value)
+    {
         this.name = value;
     }
 

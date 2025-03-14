@@ -42,15 +42,10 @@ public class ZeroReferenceParser implements ReferenceParser, ZeroEncoding
     private static final long serialVersionUID = 795566334039858555L;
 
     /**
-     * Parses a String representation of a {@link Reference} and returns the
-     * corresponding {@link Reference}. Parsing is done with the help of the
-     * {@link Cursor} class, which keeps track of the String elements that make
-     * up the {@link Reference} String representation. This method instantiates
-     * and initiates the cursor and checks the validity of the referenceString
-     * and relies upon the {@link ZeroReferenceParser#parseReference} for the
-     * actual parsing.
+     * Parses a String representation of a {@link Reference} and returns the corresponding {@link Reference}. Parsing is done with the help of the {@link Cursor} class, which keeps track of the String elements that make up the {@link Reference} String representation. This method instantiates and initiates the cursor and checks the validity of the referenceString and relies upon the {@link ZeroReferenceParser#parseReference} for the actual parsing.
      *
-     * @param referenceString the String representation of a {@link Reference}.
+     * @param referenceString
+     *            the String representation of a {@link Reference}.
      * @return the newly created {@link Reference}
      * @throws ReferenceParseException
      */
@@ -59,7 +54,7 @@ public class ZeroReferenceParser implements ReferenceParser, ZeroEncoding
     {
         String[] referenceTokens = referenceString.split(DELIMITER);
         final Cursor cursor = new Cursor(referenceTokens,
-                                         0);
+                0);
 
         if (referenceTokens.length < 2)
         {
@@ -69,10 +64,7 @@ public class ZeroReferenceParser implements ReferenceParser, ZeroEncoding
     }
 
     /**
-     * Parses a String representation of a {@link Reference} and returns the
-     * corresponding {@link Reference}. Parsing is done with the help of the
-     * {@link Cursor} class, which keeps track of the String elements that make
-     * up the {@link Reference} String representation.
+     * Parses a String representation of a {@link Reference} and returns the corresponding {@link Reference}. Parsing is done with the help of the {@link Cursor} class, which keeps track of the String elements that make up the {@link Reference} String representation.
      *
      * @param cursor
      * @return A {@link Reference} instance.
@@ -104,31 +96,28 @@ public class ZeroReferenceParser implements ReferenceParser, ZeroEncoding
             }
             cursor.i++;
             final Resource resource = parseResource(protocolResourceEncoding,
-                                                    cursor);
+                    cursor);
             final List<Parameter> parameters = parseParameters(cursor);
 
             Reference reference = new Reference(Encodings.ZERO.encoding,
-                                                protocol,
-                                                resource,
-                                                parameters);
+                    protocol,
+                    resource,
+                    parameters);
             return reference;
         }
         catch (ArrayIndexOutOfBoundsException | NumberFormatException e)
         {
             throw new ReferenceParseException("Invalid reference",
-                                              e);
+                    e);
         }
     }
 
     /**
-     * Parses a {@link Resource} which is an instance of
-     * {@link RepositoryResource} or {@link ClasspathResource} if the current
-     * token is contained in the array {@link ZeroEncoding#RESOURCE_PARAMETER}.
+     * Parses a {@link Resource} which is an instance of {@link RepositoryResource} or {@link ClasspathResource} if the current token is contained in the array {@link ZeroEncoding#RESOURCE_PARAMETER}.
      * 
      * @param resourceEncoding
      * @param cursor
-     * @return an instance of {@link RepositoryResource} or
-     *         {@link ClasspathResource}
+     * @return an instance of {@link RepositoryResource} or {@link ClasspathResource}
      * @throws ReferenceParseException
      */
     private Resource parseResource(int resourceEncoding, Cursor cursor) throws ReferenceParseException
@@ -154,9 +143,7 @@ public class ZeroReferenceParser implements ReferenceParser, ZeroEncoding
     }
 
     /**
-     * Parses a {@link Resource} reference which is an instance of
-     * {@link RepositoryResource} or {@link ClasspathResource}, depending on the
-     * {@link ZeroEncoding#RESOURCE_PARAMETER}
+     * Parses a {@link Resource} reference which is an instance of {@link RepositoryResource} or {@link ClasspathResource}, depending on the {@link ZeroEncoding#RESOURCE_PARAMETER}
      * 
      * @param cursor
      * @return A {@link Resource} reference.
@@ -165,17 +152,14 @@ public class ZeroReferenceParser implements ReferenceParser, ZeroEncoding
     private Resource parseResource(Cursor cursor) throws ReferenceParseException
     {
         return this.parseResource(Byte.parseByte(cursor.tokens[cursor.i - 1]),
-                                  cursor);
+                cursor);
     }
 
     /**
-     * Creates a list of {@link Parameter}s by parsing the individual parameters
-     * given by the cursor's tokens. Stops parsing parameters upon encountering
-     * {@link ZeroEncoding#REFERENCE_DELIMITER}, which signals the end of a
-     * {@link ReferenceParameter}
+     * Creates a list of {@link Parameter}s by parsing the individual parameters given by the cursor's tokens. Stops parsing parameters upon encountering {@link ZeroEncoding#REFERENCE_DELIMITER}, which signals the end of a {@link ReferenceParameter}
      * 
      * @param cursor
-     * @return a list of {@link Parameter}s 
+     * @return a list of {@link Parameter}s
      * @throws ReferenceParseException
      */
     private List<Parameter> parseParameters(Cursor cursor) throws ReferenceParseException
@@ -212,13 +196,10 @@ public class ZeroReferenceParser implements ReferenceParser, ZeroEncoding
     }
 
     /**
-     * Creates a {@link Parameter} reference that is an instance of
-     * {@link StringParameter} by parsing the resource given by the cursor's
-     * current token.
+     * Creates a {@link Parameter} reference that is an instance of {@link StringParameter} by parsing the resource given by the cursor's current token.
      * 
      * @param cursor
-     * @return a {@link Parameter} reference that is instance of
-     *         {@link StringParameter} from the cursor parameter
+     * @return a {@link Parameter} reference that is instance of {@link StringParameter} from the cursor parameter
      */
     private Parameter parseStringParameter(Cursor cursor)
     {
@@ -228,13 +209,10 @@ public class ZeroReferenceParser implements ReferenceParser, ZeroEncoding
     }
 
     /**
-     * Creates a {@link Parameter} reference that is an instance of
-     * {@link ResourceParameter} by parsing the resource given by the cursor's
-     * current token.
+     * Creates a {@link Parameter} reference that is an instance of {@link ResourceParameter} by parsing the resource given by the cursor's current token.
      * 
      * @param cursor
-     * @return a {@link Parameter} reference that is instance of
-     *         {@link ResourceParameter} from the cursor parameter
+     * @return a {@link Parameter} reference that is instance of {@link ResourceParameter} from the cursor parameter
      * @throws ReferenceParseException
      */
     private Parameter parseResourceParameter(Cursor cursor) throws ReferenceParseException
@@ -257,9 +235,7 @@ public class ZeroReferenceParser implements ReferenceParser, ZeroEncoding
     }
 
     /**
-     * Creates a {@link RepositoryNodeRef} reference from the default
-     * {@link StoreRef}, SpacesStore and from the node id given by the cursor's
-     * current token.
+     * Creates a {@link RepositoryNodeRef} reference from the default {@link StoreRef}, SpacesStore and from the node id given by the cursor's current token.
      * 
      * @param cursor
      * @return A {@link RepositoryNodeRef} reference.
@@ -270,15 +246,14 @@ public class ZeroReferenceParser implements ReferenceParser, ZeroEncoding
         cursor.i++;
 
         return new RepositoryNodeRef(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
-                                                 id));
+                id));
     }
 
     /**
-     * Creates a {@link ClasspathResource} reference from the current token of the
-     * cursor parameter.
+     * Creates a {@link ClasspathResource} reference from the current token of the cursor parameter.
      * 
      * @param cursor
-     * @return A {@link ClasspathResource} reference. 
+     * @return A {@link ClasspathResource} reference.
      */
     private ClasspathResource parseClasspathResource(Cursor cursor)
     {
@@ -288,9 +263,7 @@ public class ZeroReferenceParser implements ReferenceParser, ZeroEncoding
     }
 
     /**
-     * Creates a {@link ReferenceParameter} reference from the cursor's tokens up
-     * to the * token which signifies the end of the current
-     * {@link ReferenceParameter}. 
+     * Creates a {@link ReferenceParameter} reference from the cursor's tokens up to the * token which signifies the end of the current {@link ReferenceParameter}.
      * 
      * @param cursor
      * @return A {@link ReferenceParameter} reference.

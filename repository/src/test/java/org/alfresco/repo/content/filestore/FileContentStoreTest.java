@@ -25,9 +25,20 @@
  */
 package org.alfresco.repo.content.filestore;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Locale;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.alfresco.repo.content.AbstractWritableContentStoreTest;
 import org.alfresco.repo.content.ContentContext;
@@ -41,16 +52,6 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.TempFileProvider;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Tests read and write functionality for the store.
@@ -63,7 +64,7 @@ import static org.junit.Assert.fail;
 public class FileContentStoreTest extends AbstractWritableContentStoreTest
 {
     protected FileContentStore store;
-    
+
     @Before
     public void before() throws Exception
     {
@@ -71,13 +72,13 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
         File tempDir = TempFileProvider.getTempDir();
         store = new FileContentStore(ctx,
                 tempDir.getAbsolutePath() +
-                File.separatorChar +
-                getName());
-        
+                        File.separatorChar +
+                        getName());
+
         store.setDeleteEmptyDirs(true);
         // Do not need super class's transactions
     }
-    
+
     @After
     public void after()
     {
@@ -89,7 +90,7 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
     {
         return store;
     }
-    
+
     /**
      * Checks that the store disallows concurrent writers to be issued to the same URL.
      */
@@ -126,7 +127,7 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
         File dir = new File(root);
         assertTrue("Root location for FileContentStore must exist", dir.exists());
     }
-    
+
     /**
      * Ensures that the size is something other than <tt>-1</tt> or <tt>Long.MAX_VALUE</tt>
      */
@@ -139,7 +140,7 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
         assertTrue("Size must be positive", size > 0L);
         assertTrue("Size must not be Long.MAX_VALUE", size < Long.MAX_VALUE);
     }
-    
+
     /**
      * Ensures that the size is something other than <tt>-1</tt> or <tt>Long.MAX_VALUE</tt>
      */
@@ -152,8 +153,7 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
         assertTrue("Size must be positive", size > 0L);
         assertTrue("Size must not be Long.MAX_VALUE", size < Long.MAX_VALUE);
     }
-    
-    
+
     /**
      * Empty parent directories should be removed when a URL is removed.
      */
@@ -162,25 +162,26 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
     {
         ContentStore store = getStore();
         String url = "store://1965/12/1/13/12/file.bin";
-        
+
         // Ensure clean test data
-        if (store.exists(url)) store.delete(url);
-        
+        if (store.exists(url))
+            store.delete(url);
+
         String content = "Content for test: " + getName();
         store.getWriter(new ContentContext(null, url)).putContent(content);
-        
+
         File root = new File(store.getRootLocation());
-        
+
         assertDirExists(root, "");
         assertDirExists(root, "1965/12/1/13/12");
-        
+
         store.delete(url);
-        
+
         assertDirNotExists(root, "1965");
         // root should be untouched.
         assertDirExists(root, "");
     }
-    
+
     /**
      * Only non-empty directories should be deleted.
      */
@@ -189,36 +190,37 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
     {
         ContentStore store = getStore();
         String url = "store://1965/12/1/13/12/file.bin";
-        
+
         // Ensure clean test data
-        if (store.exists(url)) store.delete(url);
-        
+        if (store.exists(url))
+            store.delete(url);
+
         String content = "Content for test: " + getName();
         store.getWriter(new ContentContext(null, url)).putContent(content);
-        
+
         File root = new File(store.getRootLocation());
-        
+
         assertDirExists(root, "");
         assertDirExists(root, "1965/12/1/13/12");
-        
+
         // Make a directory non-empty
         String anotherUrl = "store://1965/12/3/another.bin";
-        if (store.exists(anotherUrl)) store.delete(anotherUrl);
+        if (store.exists(anotherUrl))
+            store.delete(anotherUrl);
         store.getWriter(new ContentContext(null, anotherUrl));
-        
+
         store.delete(url);
-        
+
         // Parents of another.bin cannot be deleted
         assertDirExists(root, "1965");
         assertDirExists(root, "1965/12");
         // Non-parents of another.bin could be deleted
         assertDirNotExists(root, "1965/12/1");
-        
+
         // root should be untouched.
         assertDirExists(root, "");
     }
-    
-    
+
     /**
      * Empty parent directories are not deleted if the store is configured not to.
      */
@@ -229,21 +231,22 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
         FileContentStore store = (FileContentStore) getStore();
         String url = "store://1965/12/1/13/12/file.bin";
         // Ensure clean test data
-        if (store.exists(url)) store.delete(url);
+        if (store.exists(url))
+            store.delete(url);
         String content = "Content for test: " + getName();
         store.getWriter(new ContentContext(null, url)).putContent(content);
         File root = new File(store.getRootLocation());
-        
+
         store.delete(url);
-        
+
         assertDirExists(root, "1965/12/1/13/12");
         // root should be untouched.
         assertDirExists(root, "");
     }
-    
+
     /**
-     * This method tests that writing content with a configured {@link ContentLimitProvider limit} fails with
-     * the expected exception.
+     * This method tests that writing content with a configured {@link ContentLimitProvider limit} fails with the expected exception.
+     * 
      * @since Thor
      */
     @Test
@@ -251,13 +254,13 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
     {
         ContentWriter writer = getWriter();
         assertEquals("Writer was of wrong type", FileContentWriter.class, writer.getClass());
-        
-        FileContentWriter fileContentWriter = (FileContentWriter)writer;
-        
+
+        FileContentWriter fileContentWriter = (FileContentWriter) writer;
+
         // Set a maximum size limit for this writer. We use a limit of 3 bytes.
         ContentLimitProvider limitProvider = new SimpleFixedLimitProvider(3);
         fileContentWriter.setContentLimitProvider(limitProvider);
-        
+
         // Attempt to write content that will exceed the limit.
         boolean expectedExceptionThrown = false;
         try
@@ -268,11 +271,11 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
         {
             expectedExceptionThrown = true;
         }
-        
+
         assertTrue("Expected exception not thrown.", expectedExceptionThrown);
         assertTrue("Stream close not detected", writer.isClosed());
     }
-    
+
     /**
      * Test for MNT-12301 case.
      */
@@ -280,7 +283,7 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
     public void testFileAccessOutsideStoreRoot()
     {
         String url = FileContentStore.STORE_PROTOCOL + ContentStore.PROTOCOL_DELIMITER + "../somefile.bin";
-        
+
         try
         {
             store.getReader(url);
@@ -288,9 +291,9 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
         }
         catch (ContentIOException e)
         {
-            //expected
+            // expected
         }
-        
+
         try
         {
             store.exists(url);
@@ -298,9 +301,9 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
         }
         catch (ContentIOException e)
         {
-            //expected
+            // expected
         }
-        
+
         try
         {
             store.delete(url);
@@ -308,9 +311,9 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
         }
         catch (ContentIOException e)
         {
-            //expected
+            // expected
         }
-        
+
         try
         {
             store.getWriterInternal(null, url);
@@ -318,10 +321,10 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
         }
         catch (ContentIOException e)
         {
-            //expected
+            // expected
         }
     }
-    
+
     /**
      * Ensure that the store is able to produce readers for spoofed text.
      * 
@@ -347,13 +350,12 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
         assertTrue(reader instanceof SpoofedTextContentReader);
         assertEquals(1024L, reader.getContentString().getBytes("UTF-8").length);
     }
-    
+
     private void assertDirExists(File root, String dir)
     {
         assertTrue("Directory [" + dir + "] should exist", new File(root, dir).exists());
     }
-    
-    
+
     private void assertDirNotExists(File root, String dir)
     {
         assertFalse("Directory [" + dir + "] should NOT exist", new File(root, dir).exists());

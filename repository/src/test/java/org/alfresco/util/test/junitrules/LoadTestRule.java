@@ -34,31 +34,30 @@ import java.lang.annotation.Target;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.rules.ErrorCollector;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+
 /**
- * This JUnit rule can be used to turn existing test code into Load Tests.
- * It does this in conjunction with the {@link AlfrescoPeople} JUnit rule.
- * That rule is used to {@link AlfrescoPeople#AlfrescoPeople(ApplicationContextInit, int) create} a
- * fixed number of Alfresco users. Then {@link LoadTestRule} will do the following for each of your JUnit 4 &#64;Test methods:
+ * This JUnit rule can be used to turn existing test code into Load Tests. It does this in conjunction with the {@link AlfrescoPeople} JUnit rule. That rule is used to {@link AlfrescoPeople#AlfrescoPeople(ApplicationContextInit, int) create} a fixed number of Alfresco users. Then {@link LoadTestRule} will do the following for each of your JUnit 4 &#64;Test methods:
  * <ul>
  * <li>if they are annotated with the {@link LoadTest} marker annotation:
- *    <ol>
- *    <li>one Java thread for each of the users created by the {@link AlfrescoPeople} rule will be created and started.</li>
- *    <li>each of those threads will start by authenticating as a different user from the above set.</li>
- *    <li>each of those threads will concurrently execute the same JUnit &#64;Test method.</li>
- *    <li>if all the concurrent threads complete execution successfully, the &#64;Test method is passed.</li>
- *    <li>but if one or more of those concurrent threads fail, the error messages will be aggregated together into a single error for that method.</li>
- *    </ol>
+ * <ol>
+ * <li>one Java thread for each of the users created by the {@link AlfrescoPeople} rule will be created and started.</li>
+ * <li>each of those threads will start by authenticating as a different user from the above set.</li>
+ * <li>each of those threads will concurrently execute the same JUnit &#64;Test method.</li>
+ * <li>if all the concurrent threads complete execution successfully, the &#64;Test method is passed.</li>
+ * <li>but if one or more of those concurrent threads fail, the error messages will be aggregated together into a single error for that method.</li>
+ * </ol>
  * <li>else they will be executed as normal and will pass or fail as normal.</li>
  * </ul>
  * <p/>
  * Example usage, where we have a 'normal' feature test and a load test for the same feature.:
+ * 
  * <pre>
  * public class YourTestClass
  * {
@@ -93,27 +92,29 @@ import org.junit.runners.model.Statement;
 public class LoadTestRule extends ErrorCollector
 {
     private static final Log log = LogFactory.getLog(LoadTestRule.class);
-    
+
     private final AlfrescoPeople people;
-    
+
     public LoadTestRule(AlfrescoPeople people)
     {
         this.people = people;
     }
-    
+
     /**
      * Gets the number of users/concurrent threads that this Rule has been configured to use.
+     * 
      * @return the number of users/threads.
      */
     public int getCount()
     {
         return this.people.getUsernames().size();
     }
-    
-    @Override public Statement apply(final Statement base, final Description description)
+
+    @Override
+    public Statement apply(final Statement base, final Description description)
     {
         boolean loadTestingRequestedForThisMethod = false;
-        
+
         Collection<Annotation> annotations = description.getAnnotations();
         for (Annotation anno : annotations)
         {
@@ -122,30 +123,30 @@ public class LoadTestRule extends ErrorCollector
                 loadTestingRequestedForThisMethod = true;
             }
         }
-        
+
         if (loadTestingRequestedForThisMethod)
         {
             log.debug(LoadTest.class.getSimpleName() + "-based testing configured for method " + description.getMethodName());
-            
-            return new Statement()
-            {
-                @Override public void evaluate() throws Throwable
+
+            return new Statement() {
+                @Override
+                public void evaluate() throws Throwable
                 {
                     int executionCount = getCount();
                     int currentIndex = 1;
-                    
+
                     final CountDownLatch latch = new CountDownLatch(executionCount);
-                    
-                    for (String username: people.getUsernames())
+
+                    for (String username : people.getUsernames())
                     {
                         log.debug("About to start " + description.getMethodName() + ". " + currentIndex + "/" + executionCount + " as " + username);
                         new Thread(new StatementEvaluatorRunnable(username, base, latch)).start();
-                        
+
                         currentIndex++;
                     }
-                    
+
                     latch.await();
-                    
+
                     verify();
                 }
             };
@@ -153,41 +154,43 @@ public class LoadTestRule extends ErrorCollector
         else
         {
             log.debug(LoadTest.class.getSimpleName() + "-based testing NOT configured for this method.");
-            
+
             return base;
         }
     }
-    
+
     private class StatementEvaluatorRunnable implements Runnable
     {
         private final String username;
         private final CountDownLatch latch;
         private final Statement base;
+
         public StatementEvaluatorRunnable(String username, Statement base, CountDownLatch latch)
         {
             this.username = username;
             this.latch = latch;
             this.base = base;
         }
-        
-        @Override public void run()
+
+        @Override
+        public void run()
         {
             try
             {
                 log.debug("Setting fully auth'd user to " + username);
                 AuthenticationUtil.setFullyAuthenticatedUser(username);
-                
+
                 base.evaluate();
             }
             catch (Throwable t)
             {
                 addError(t);
             }
-            
+
             latch.countDown();
         }
     }
-    
+
     /**
      * This annotation is a marker used to identify a JUnit &#64;Test method as a "load test".
      */

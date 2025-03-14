@@ -5,6 +5,11 @@ import static org.testng.Assert.assertFalse;
 import java.util.List;
 
 import com.google.common.collect.ImmutableMap;
+import org.json.JSONObject;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActionConstraintDataModel;
@@ -19,10 +24,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.json.JSONObject;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class ActionsTests extends RestTest
 {
@@ -38,40 +39,31 @@ public class ActionsTests extends RestTest
         document = dataContent.usingSite(publicSite).usingUser(adminUser).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
     }
 
-    @TestRail(section = { TestGroup.REST_API,TestGroup.ACTIONS }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.ACTIONS}, executionType = ExecutionType.SANITY,
             description = "Verify actions")
-    @Test(groups = { TestGroup.REST_API, TestGroup.ACTIONS, TestGroup.SANITY})
+    @Test(groups = {TestGroup.REST_API, TestGroup.ACTIONS, TestGroup.SANITY})
     public void testActionDefinitions() throws Exception
     {
         restClient.authenticateUser(dataContent.getAdminUser());
 
-        RestActionDefinitionModelsCollection restActionDefinitions =  restClient.
-                withCoreAPI().
-                usingActions().
-                listActionDefinitions();
-        
+        RestActionDefinitionModelsCollection restActionDefinitions = restClient.withCoreAPI().usingActions().listActionDefinitions();
+
         restClient.assertStatusCodeIs(HttpStatus.OK);
         assertFalse(restActionDefinitions.isEmpty());
-        restActionDefinitions.assertThat().
-                entriesListContains("name", "copy").
-                and().entriesListContains("name", "move").
-                and().entriesListContains("name", "check-out").
-                and().entriesListContains("name", "check-in");
+        restActionDefinitions.assertThat().entriesListContains("name", "copy").and().entriesListContains("name", "move").and().entriesListContains("name", "check-out").and().entriesListContains("name", "check-in");
     }
-    
-    @TestRail(section = { TestGroup.REST_API,TestGroup.ACTIONS }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.ACTIONS}, executionType = ExecutionType.REGRESSION,
             description = "Verify actions error conditions")
-    @Test(groups = { TestGroup.REST_API, TestGroup.ACTIONS, TestGroup.REGRESSION})
-    public void testActionDefinitionsNegative() throws Exception{
+    @Test(groups = {TestGroup.REST_API, TestGroup.ACTIONS, TestGroup.REGRESSION})
+    public void testActionDefinitionsNegative() throws Exception
+    {
         // Badly formed request -> 400
         {
             restClient.authenticateUser(dataContent.getAdminUser()).
-                    // invalid skipCount
-                    withParams("skipCount=-1").
-                    withCoreAPI().
-                    usingActions().
-                    listActionDefinitions();
-            
+            // invalid skipCount
+                    withParams("skipCount=-1").withCoreAPI().usingActions().listActionDefinitions();
+
             restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
 
         }
@@ -86,21 +78,17 @@ public class ActionsTests extends RestTest
         }
     }
 
-    @TestRail(section = { TestGroup.REST_API,TestGroup.ACTIONS }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.ACTIONS}, executionType = ExecutionType.SANITY,
             description = "Sanity test for POST /action-executions")
-    @Test(groups = { TestGroup.REST_API, TestGroup.ACTIONS, TestGroup.SANITY})
+    @Test(groups = {TestGroup.REST_API, TestGroup.ACTIONS, TestGroup.SANITY})
     public void executeAction() throws Exception
     {
-        JSONObject response = restClient.authenticateUser(adminUser).withCoreAPI().usingActions().executeAction
-                ("add-features", document, ImmutableMap.of("aspect-name", "cm:versionable"));
+        JSONObject response = restClient.authenticateUser(adminUser).withCoreAPI().usingActions().executeAction("add-features", document, ImmutableMap.of("aspect-name", "cm:versionable"));
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
 
         assertFalse(response.getString("id").isEmpty());
 
-        /*
-         * Get all node properties and check that action was executed and
-         * cm:versionable aspect was added
-         */
+        /* Get all node properties and check that action was executed and cm:versionable aspect was added */
         Utility.sleep(500, 20000, () -> {
             RestNodeModel fileModel = restClient.authenticateUser(adminUser).withCoreAPI().usingNode(document).getNode();
 
@@ -109,42 +97,35 @@ public class ActionsTests extends RestTest
         });
     }
 
-    @TestRail (section = { TestGroup.REST_API, TestGroup.ACTIONS }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.ACTIONS}, executionType = ExecutionType.SANITY,
             description = "Sanity test for POST /action-executions")
-    @Test (groups = { TestGroup.REST_API, TestGroup.ACTIONS, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.ACTIONS, TestGroup.SANITY})
     public void executeActionWithoutParam() throws Exception
     {
-        JSONObject response = restClient.authenticateUser(adminUser).withCoreAPI().usingActions().executeAction
-                ("check-out", document);
+        JSONObject response = restClient.authenticateUser(adminUser).withCoreAPI().usingActions().executeAction("check-out", document);
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
 
         assertFalse(response.getString("id").isEmpty());
 
-        /*
-         * Get all node properties and check that action was executed and
-         * cm:checkedOut aspect was added
-         */
+        /* Get all node properties and check that action was executed and cm:checkedOut aspect was added */
         Utility.sleep(500, 20000, () -> {
             RestNodeModel fileModel = restClient.authenticateUser(adminUser).withCoreAPI().usingNode(document)
-                                                .getNode();
+                    .getNode();
 
             restClient.assertStatusCodeIs(HttpStatus.OK);
             fileModel.assertThat().field("aspectNames").contains("cm:checkedOut");
         });
     }
 
-    @TestRail(section = { TestGroup.REST_API,TestGroup.ACTIONS }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.ACTIONS}, executionType = ExecutionType.SANITY,
             description = "Sanity test for ACTIONS endpoint GET action-definitions/{actionDefinitionId}")
-    @Test(groups = { TestGroup.REST_API, TestGroup.ACTIONS, TestGroup.SANITY})
+    @Test(groups = {TestGroup.REST_API, TestGroup.ACTIONS, TestGroup.SANITY})
     public void testGetActionDefinitionById() throws Exception
     {
         restClient.authenticateUser(dataContent.getAdminUser());
 
-        RestActionDefinitionModel restActionDefinition =  restClient.
-                withCoreAPI().
-                usingActions().
-                getActionDefinitionById("add-features");
-        
+        RestActionDefinitionModel restActionDefinition = restClient.withCoreAPI().usingActions().getActionDefinitionById("add-features");
+
         restClient.assertStatusCodeIs(HttpStatus.OK);
         assertFalse(restActionDefinition.getId().isEmpty());
         restActionDefinition.getId().equals("add-features");
@@ -161,8 +142,7 @@ public class ActionsTests extends RestTest
         restClient.authenticateUser(testUser);
 
         final String compareOperationsName = "ac-compare-operations";
-        final RestActionConstraintModel actionConstraintCompareOperations =
-                restClient.withCoreAPI().usingActions().getActionConstraintByName(compareOperationsName);
+        final RestActionConstraintModel actionConstraintCompareOperations = restClient.withCoreAPI().usingActions().getActionConstraintByName(compareOperationsName);
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
 

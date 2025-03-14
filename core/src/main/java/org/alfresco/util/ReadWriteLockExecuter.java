@@ -21,13 +21,9 @@ package org.alfresco.util;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * Utility object that wraps read and write methods within the context of a
- * {@link ReentrantReadWriteLock}.  The callback's methods are best-suited
- * to fetching values from a cache or protecting members that need lazy
- * initialization.
+ * Utility object that wraps read and write methods within the context of a {@link ReentrantReadWriteLock}. The callback's methods are best-suited to fetching values from a cache or protecting members that need lazy initialization.
  * <p>
- * Client code should construct an instance of this class for each resource
- * (or set of resources) that need to be protected.
+ * Client code should construct an instance of this class for each resource (or set of resources) that need to be protected.
  * 
  * @author Derek Hulley
  * @since 3.4
@@ -46,27 +42,24 @@ public abstract class ReadWriteLockExecuter<T>
         readLock = lock.readLock();
         writeLock = lock.writeLock();
     }
-    
+
     /**
      * Execute the read-only part of the work.
      * 
-     * @return              Returns a value of interest or <tt>null</tt> if
-     *                      the {@link #getWithWriteLock()} method must be
-     *                      called
-     * @throws Throwable    all checked exceptions are wrapped in a <tt>RuntimeException</tt>
+     * @return Returns a value of interest or <tt>null</tt> if the {@link #getWithWriteLock()} method must be called
+     * @throws Throwable
+     *             all checked exceptions are wrapped in a <tt>RuntimeException</tt>
      */
     protected abstract T getWithReadLock() throws Throwable;
-    
+
     /**
      * Execute the write part of the work.
      * <p>
-     * <b>NOTE:</b> It is important to perform a double-check on the resource
-     * before assuming it is not null; there is a window between the {@link #getWithReadLock()}
-     * and the {@link #getWithWriteLock()} during which another thread may have populated
-     * the resource of interest.
+     * <b>NOTE:</b> It is important to perform a double-check on the resource before assuming it is not null; there is a window between the {@link #getWithReadLock()} and the {@link #getWithWriteLock()} during which another thread may have populated the resource of interest.
      * 
-     * @return              Returns the value of interest of <tt>null</tt>
-     * @throws Throwable    all checked exceptions are wrapped in a <tt>RuntimeException</tt>
+     * @return Returns the value of interest of <tt>null</tt>
+     * @throws Throwable
+     *             all checked exceptions are wrapped in a <tt>RuntimeException</tt>
      */
     protected abstract T getWithWriteLock() throws Throwable;
 

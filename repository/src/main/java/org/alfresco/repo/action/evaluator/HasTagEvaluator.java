@@ -47,46 +47,48 @@ public class HasTagEvaluator extends ActionConditionEvaluatorAbstractBase
      */
     public static final String NAME = "has-tag";
     public static final String PARAM_TAG = "tag";
-    
+
     /** The node service */
     private NodeService nodeService;
-    
+
     /** The tag service */
     private TaggingService taggingService;
-    
+
     /**
      * Set node service
      * 
-     * @param nodeService  the node service
+     * @param nodeService
+     *            the node service
      */
-    public void setNodeService(NodeService nodeService) 
+    public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Set tagging service
      * 
-     * @param taggingService    the tagging service
+     * @param taggingService
+     *            the tagging service
      */
     public void setTaggingService(TaggingService taggingService)
     {
         this.taggingService = taggingService;
     }
-    
+
     /**
      * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase#evaluateImpl(org.alfresco.service.cmr.action.ActionCondition, org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean evaluateImpl(ActionCondition ruleCondition, NodeRef actionedUponNodeRef)
     {
         boolean result = false;
-        
+
         if (this.nodeService.exists(actionedUponNodeRef) == true)
         {
-            String tag = (String)ruleCondition.getParameterValue(PARAM_TAG);
+            String tag = (String) ruleCondition.getParameterValue(PARAM_TAG);
             result = taggingService.hasTag(actionedUponNodeRef, tag);
         }
-        
+
         return result;
     }
 
@@ -94,7 +96,7 @@ public class HasTagEvaluator extends ActionConditionEvaluatorAbstractBase
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_TAG, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_TAG)));
     }

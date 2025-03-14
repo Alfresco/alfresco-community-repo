@@ -39,29 +39,29 @@ import org.alfresco.rest.framework.resource.UniqueId;
  */
 public class NetworkImpl implements Comparable<NetworkImpl>, Network
 {
-	private String id;
-	private Date createdAt;
-	private List<Quota> quotas = new LinkedList<Quota>();
+    private String id;
+    private Date createdAt;
+    private List<Quota> quotas = new LinkedList<Quota>();
     private Boolean isEnabled;
     private String subscriptionLevel;
     private Boolean paidNetwork;
-    
+
     public NetworkImpl(org.alfresco.repo.tenant.Network network)
     {
-    	this.id = network.getTenantDomain();
-    	this.createdAt = network.getCreatedAt();
-    	this.isEnabled = network.isEnabled();
-    	this.paidNetwork = network.getPaidNetwork();
-    	this.subscriptionLevel = network.getSubscriptionLevel();
+        this.id = network.getTenantDomain();
+        this.createdAt = network.getCreatedAt();
+        this.isEnabled = network.isEnabled();
+        this.paidNetwork = network.getPaidNetwork();
+        this.subscriptionLevel = network.getSubscriptionLevel();
     }
 
     public NetworkImpl(String id, Date createdAt, Boolean isEnabled, String subscriptionLevel, Boolean paidNetwork)
     {
-    	this.id = id;
-    	this.createdAt = createdAt;
-    	this.isEnabled = isEnabled;
-    	this.subscriptionLevel = subscriptionLevel;
-    	this.paidNetwork = paidNetwork;
+        this.id = id;
+        this.createdAt = createdAt;
+        this.isEnabled = isEnabled;
+        this.subscriptionLevel = subscriptionLevel;
+        this.paidNetwork = paidNetwork;
     }
 
     /**
@@ -72,34 +72,34 @@ public class NetworkImpl implements Comparable<NetworkImpl>, Network
     @UniqueId
     public String getId()
     {
-    	return id;
+        return id;
     }
-    
+
     /**
      * Gets the date the account was created
      *
-     * @return  The account creation date
+     * @return The account creation date
      */
     public Date getCreatedAt()
     {
-    	return createdAt;
+        return createdAt;
     }
-    
+
     public List<Quota> getQuotas()
     {
-		return quotas;
-	}
+        return quotas;
+    }
 
-	/**
-     * Gets whether an account is enabled or not. 
+    /**
+     * Gets whether an account is enabled or not.
      *
      * @return true = account is enabled, false = account is disabled
      */
     public Boolean getIsEnabled()
     {
-    	return isEnabled;
+        return isEnabled;
     }
-    
+
     /**
      * Gets the subscription level.
      * 
@@ -107,58 +107,58 @@ public class NetworkImpl implements Comparable<NetworkImpl>, Network
      */
     public String getSubscriptionLevel()
     {
-    	return subscriptionLevel;
+        return subscriptionLevel;
     }
-    
-	public Boolean getPaidNetwork()
-	{
-		return paidNetwork;
-	}
 
-	@Override
-	public int compareTo(NetworkImpl network)
-	{
-		return id.compareTo(network.getId());
-	}
+    public Boolean getPaidNetwork()
+    {
+        return paidNetwork;
+    }
 
-	@Override
-	public int hashCode()
-	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		return result;
-	}
+    @Override
+    public int compareTo(NetworkImpl network)
+    {
+        return id.compareTo(network.getId());
+    }
 
-	@Override
-	public boolean equals(Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-		
-		if (obj == null)
-		{
-			return false;
-		}
-		
-		if (getClass() != obj.getClass())
-		{
-			return false;
-		}
-		
-		Network other = (Network) obj;
-		return(id.equals(other.getId()));
-	}
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        return result;
+    }
 
-	@Override
-	public String toString()
-	{
-		return "Network [id=" + id
-				+ ", createdAt=" + createdAt + ", quotas=" + quotas
-				+ ", isEnabled=" + isEnabled + ", subscriptionLevel="
-				+ subscriptionLevel + "]";
-	}
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+
+        if (obj == null)
+        {
+            return false;
+        }
+
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+
+        Network other = (Network) obj;
+        return (id.equals(other.getId()));
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Network [id=" + id
+                + ", createdAt=" + createdAt + ", quotas=" + quotas
+                + ", isEnabled=" + isEnabled + ", subscriptionLevel="
+                + subscriptionLevel + "]";
+    }
 
 }

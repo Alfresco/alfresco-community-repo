@@ -27,15 +27,14 @@ package org.alfresco.repo.security.person;
 
 import java.util.List;
 
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
 
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.PropertyCheck;
+
 /**
- * Abstract class that implements {@link HomeFolderProvider2} which
- * works with the {@link PortableHomeFolderManager} (which performs most of
- * the work) to create home folders in custom locations.
+ * Abstract class that implements {@link HomeFolderProvider2} which works with the {@link PortableHomeFolderManager} (which performs most of the work) to create home folders in custom locations.
  * 
  * @author Alan Davis
  */
@@ -51,7 +50,7 @@ public abstract class AbstractHomeFolderProvider2 implements
      * The home folder manager
      */
     private PortableHomeFolderManager homeFolderManager;
-    
+
     /**
      * The store URL.
      */
@@ -61,10 +60,9 @@ public abstract class AbstractHomeFolderProvider2 implements
      * The path to the root folder
      */
     private String rootPath;
-    
+
     /**
-     * Set the authority to use as the owner of all home folder nodes.
-     * May be {@code null}.
+     * Set the authority to use as the owner of all home folder nodes. May be {@code null}.
      */
     private String owner;
 
@@ -97,7 +95,9 @@ public abstract class AbstractHomeFolderProvider2 implements
 
     /**
      * Set the home folder manager.
-     * @param homeFolderManager PortableHomeFolderManager
+     * 
+     * @param homeFolderManager
+     *            PortableHomeFolderManager
      */
     public void setHomeFolderManager(PortableHomeFolderManager homeFolderManager)
     {
@@ -138,20 +138,20 @@ public abstract class AbstractHomeFolderProvider2 implements
     {
         boolean reset = this.rootPath != null;
         this.rootPath = rootPath;
-        
+
         // If a reset need to clear caches
         if (reset)
         {
             homeFolderManager.clearCaches(this);
         }
     }
-    
+
     @Override
     public String getStoreUrl()
     {
         return storeUrl;
     }
-    
+
     /**
      * Set the store URL.
      */
@@ -159,7 +159,7 @@ public abstract class AbstractHomeFolderProvider2 implements
     {
         this.storeUrl = storeUrl;
     }
-    
+
     /**
      * Sets the PermissionsManager used on creating the home folder
      */
@@ -167,7 +167,7 @@ public abstract class AbstractHomeFolderProvider2 implements
     {
         this.onCreatePermissionsManager = onCreatePermissionsManager;
     }
-    
+
     @Override
     public PermissionsManager getOnCreatePermissionsManager()
     {
@@ -195,7 +195,7 @@ public abstract class AbstractHomeFolderProvider2 implements
     {
         this.owner = owner;
     }
-    
+
     @Override
     public String getOwner()
     {

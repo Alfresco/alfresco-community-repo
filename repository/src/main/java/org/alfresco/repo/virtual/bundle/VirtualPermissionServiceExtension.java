@@ -32,6 +32,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.security.permissions.NodePermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
@@ -47,12 +50,10 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionContext;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.traitextender.SpringBeanExtension;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class VirtualPermissionServiceExtension extends
-            SpringBeanExtension<PermissionServiceExtension, PermissionServiceTrait> implements
-            PermissionServiceExtension
+        SpringBeanExtension<PermissionServiceExtension, PermissionServiceTrait> implements
+        PermissionServiceExtension
 {
     private static Log logger = LogFactory.getLog(VirtualPermissionServiceExtension.class);
 
@@ -75,12 +76,12 @@ public class VirtualPermissionServiceExtension extends
         if (reference == null)
         {
             return theTrait.hasPermission(nodeRef,
-                                          perm);
+                    perm);
         }
         else
         {
             AccessStatus virtualAccessStatus = smartStore.hasPermission(reference,
-                                                                        perm);
+                    perm);
             if (!AccessStatus.UNDETERMINED.equals(virtualAccessStatus))
             {
                 return virtualAccessStatus;
@@ -95,7 +96,7 @@ public class VirtualPermissionServiceExtension extends
                 else
                 {
                     return theTrait.hasPermission(nodeToAdhereTo,
-                                                  perm);
+                            perm);
                 }
             }
         }
@@ -108,12 +109,12 @@ public class VirtualPermissionServiceExtension extends
         if (reference == null)
         {
             return theTrait.hasPermission(nodeRef,
-                                          perm);
+                    perm);
         }
         else
         {
             AccessStatus virtualAccessStatus = smartStore.hasPermission(reference,
-                                                                        perm);
+                    perm);
             if (!AccessStatus.UNDETERMINED.equals(virtualAccessStatus))
             {
                 return virtualAccessStatus;
@@ -128,7 +129,7 @@ public class VirtualPermissionServiceExtension extends
                 else
                 {
                     return theTrait.hasPermission(nodeToAdhereTo,
-                                                  perm);
+                            perm);
                 }
             }
         }
@@ -149,7 +150,7 @@ public class VirtualPermissionServiceExtension extends
     @Override
     public Set<PermissionReference> getSettablePermissionReferences(NodeRef nodeRef)
     {
-    	Reference reference = Reference.fromNodeRef(nodeRef);
+        Reference reference = Reference.fromNodeRef(nodeRef);
         if (reference == null)
         {
             return getTrait().getSettablePermissionReferences(nodeRef);
@@ -205,15 +206,15 @@ public class VirtualPermissionServiceExtension extends
                 }
             }
             return new SimpleNodePermissionEntry(nodeRef,
-                                                 inheritPermissions,
-                                                 mergedEntries);
+                    inheritPermissions,
+                    mergedEntries);
         }
     }
 
     private NodeRef establishPermisisonAdherence(Reference reference)
     {
         NodeRef nodeToAdhereTo = smartStore.adhere(reference,
-                                                   VirtualStore.FILING_OR_MATERIAL_ADHERENCE);
+                VirtualStore.FILING_OR_MATERIAL_ADHERENCE);
         if (logger.isDebugEnabled())
         {
             if (nodeToAdhereTo == null)
@@ -229,7 +230,7 @@ public class VirtualPermissionServiceExtension extends
     public NodePermissionEntry explainPermission(NodeRef nodeRef, PermissionReference perm)
     {
         return getTrait().explainPermission(smartStore.materializeIfPossible(nodeRef),
-                                            perm);
+                perm);
     }
 
     @Override
@@ -261,7 +262,7 @@ public class VirtualPermissionServiceExtension extends
     @Override
     public void setPermission(PermissionEntry permissionEntry)
     {
-        if (Reference.fromNodeRef(permissionEntry.getNodeRef())==null)
+        if (Reference.fromNodeRef(permissionEntry.getNodeRef()) == null)
         {
             getTrait().setPermission(permissionEntry);
         }
@@ -438,8 +439,8 @@ public class VirtualPermissionServiceExtension extends
     public AccessStatus hasPermission(Long aclID, PermissionContext context, String permission)
     {
         return getTrait().hasPermission(aclID,
-                                        context,
-                                        permission);
+                context,
+                permission);
     }
 
     @Override
@@ -461,7 +462,7 @@ public class VirtualPermissionServiceExtension extends
         if (Reference.fromNodeRef(nodeRef) == null)
         {
             getTrait().clearPermission(nodeRef,
-                                       authority);
+                    authority);
         }
         else
         {
@@ -475,8 +476,8 @@ public class VirtualPermissionServiceExtension extends
         if (Reference.fromNodeRef(nodeRef) == null)
         {
             getTrait().deletePermission(nodeRef,
-                                        authority,
-                                        permission);
+                    authority,
+                    permission);
         }
         else
         {
@@ -490,9 +491,9 @@ public class VirtualPermissionServiceExtension extends
         if (Reference.fromNodeRef(nodeRef) == null)
         {
             getTrait().setPermission(nodeRef,
-                                     authority,
-                                     permission,
-                                     allow);
+                    authority,
+                    permission,
+                    allow);
         }
         else
         {
@@ -506,7 +507,7 @@ public class VirtualPermissionServiceExtension extends
         if (Reference.fromNodeRef(nodeRef) == null)
         {
             getTrait().setInheritParentPermissions(nodeRef,
-                                                   inheritParentPermissions);
+                    inheritParentPermissions);
         }
         else
         {
@@ -532,24 +533,24 @@ public class VirtualPermissionServiceExtension extends
     public void setPermission(StoreRef storeRef, String authority, String permission, boolean allow)
     {
         getTrait().setPermission(storeRef,
-                                 authority,
-                                 permission,
-                                 allow);
+                authority,
+                permission,
+                allow);
     }
 
     @Override
     public void deletePermission(StoreRef storeRef, String authority, String permission)
     {
         getTrait().deletePermission(storeRef,
-                                    authority,
-                                    permission);
+                authority,
+                permission);
     }
 
     @Override
     public void clearPermission(StoreRef storeRef, String authority)
     {
         getTrait().clearPermission(storeRef,
-                                   authority);
+                authority);
     }
 
     @Override

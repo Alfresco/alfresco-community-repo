@@ -28,17 +28,16 @@ package org.alfresco.filesys.repo.rules;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.alfresco.filesys.repo.rules.ScenarioInstance.Ranking;
-import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.filesys.repo.rules.ScenarioInstance.Ranking;
+import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 
 /**
  * A rename, delete, move scenario
  * 
- * a) Original file is renamed.
- * b) Renamed file is deleted via delete command or via deleteOnClose flag and close operation.
- * c) Temp file is moved into original file location.
+ * a) Original file is renamed. b) Renamed file is deleted via delete command or via deleteOnClose flag and close operation. c) Temp file is moved into original file location.
  */
 public class ScenarioRenameDeleteMove implements Scenario
 {

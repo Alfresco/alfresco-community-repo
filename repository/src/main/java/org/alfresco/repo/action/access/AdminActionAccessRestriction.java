@@ -30,11 +30,13 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.security.AuthorityService;
 
-public class AdminActionAccessRestriction extends ActionAccessRestrictionAbstractBase {
+public class AdminActionAccessRestriction extends ActionAccessRestrictionAbstractBase
+{
 
     private AuthorityService authorityService;
 
-    public void setAuthorityService(AuthorityService authorityService) {
+    public void setAuthorityService(AuthorityService authorityService)
+    {
         this.authorityService = authorityService;
     }
 
@@ -43,9 +45,11 @@ public class AdminActionAccessRestriction extends ActionAccessRestrictionAbstrac
      *
      * @param action
      */
-    protected void innerVerifyAccessRestriction(Action action) {
+    protected void innerVerifyAccessRestriction(Action action)
+    {
         boolean isAdminOrSystemUser = authorityService.hasAdminAuthority() || AuthenticationUtil.isRunAsUserTheSystemUser();
-        if (!isAdminOrSystemUser) {
+        if (!isAdminOrSystemUser)
+        {
             throw new ActionAccessException("Only admin or system user is allowed to define uses of " +
                     "or directly execute this action");
         }

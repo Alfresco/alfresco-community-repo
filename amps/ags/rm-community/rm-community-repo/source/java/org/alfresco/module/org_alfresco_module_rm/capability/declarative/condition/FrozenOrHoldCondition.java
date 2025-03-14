@@ -45,7 +45,7 @@ public class FrozenOrHoldCondition extends AbstractCapabilityCondition
     public boolean evaluateImpl(NodeRef nodeRef)
     {
         FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
-        return (freezeService.isFrozen(nodeRef) || 
+        return (freezeService.isFrozen(nodeRef) ||
                 (kind != null && kind.equals(FilePlanComponentKind.HOLD)));
     }
 

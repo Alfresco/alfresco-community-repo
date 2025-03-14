@@ -54,12 +54,12 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
-* Transfer children relation
-*
-* @author Silviu Dinuta
-* @since 2.6
-*/
-@RelationshipResource(name="children", entityResource = TransferEntityResource.class, title = "Children of a transfer")
+ * Transfer children relation
+ *
+ * @author Silviu Dinuta
+ * @since 2.6
+ */
+@RelationshipResource(name = "children", entityResource = TransferEntityResource.class, title = "Children of a transfer")
 public class TransferChildrenRelation implements RelationshipResourceAction.Read<TransferChild>
 {
     private FilePlanComponentsApiUtils apiUtils;
@@ -107,8 +107,7 @@ public class TransferChildrenRelation implements RelationshipResourceAction.Read
 
         final List<FileInfo> page = pagingResults.getPage();
         Map<String, UserInfo> mapUserInfo = new HashMap<>();
-        List<TransferChild> nodes = new AbstractList<TransferChild>()
-        {
+        List<TransferChild> nodes = new AbstractList<TransferChild>() {
             @Override
             public TransferChild get(int index)
             {

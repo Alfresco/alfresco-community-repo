@@ -25,7 +25,6 @@
  */
 package org.alfresco.rest.api.model;
 
-
 /**
  * @author janv
  */
@@ -34,8 +33,7 @@ public class Assoc
     private String prefixAssocTypeQName;
 
     public Assoc()
-    {
-    }
+    {}
 
     public Assoc(String prefixAssocTypeQName)
     {

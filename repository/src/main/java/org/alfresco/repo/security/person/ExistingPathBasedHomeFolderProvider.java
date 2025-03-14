@@ -30,8 +30,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * HomeFolderProvider that simply uses the root path for the home folder.
  *
- * @deprecated 
- * Depreciated since 4.0. {@link ExistingPathBasedHomeFolderProvider2} should now be used.
+ * @deprecated Depreciated since 4.0. {@link ExistingPathBasedHomeFolderProvider2} should now be used.
  * 
  * @author Andy Hind
  */

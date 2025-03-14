@@ -25,14 +25,14 @@
  */
 package org.alfresco.repo.rendition2;
 
+import java.util.Map;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentServiceTransientException;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-
-import java.util.Map;
 
 /**
  * @author adavis
@@ -56,7 +56,7 @@ public class TestSynchronousTransformClient<T> implements SynchronousTransformCl
 
     @Override
     public boolean isSupported(String sourceMimetype, long sourceSizeInBytes, String contentUrl, String targetMimetype,
-                               Map<String, String> actualOptions, String transformName, NodeRef sourceNodeRef)
+            Map<String, String> actualOptions, String transformName, NodeRef sourceNodeRef)
     {
         boolean supported = true;
         if (!isATest(sourceMimetype, targetMimetype))
@@ -84,7 +84,7 @@ public class TestSynchronousTransformClient<T> implements SynchronousTransformCl
 
     static boolean isATest(String sourceMimetype, String targetMimetype)
     {
-        return  isFailingTest(sourceMimetype, targetMimetype) ||
+        return isFailingTest(sourceMimetype, targetMimetype) ||
                 isLongRunningTest(sourceMimetype, targetMimetype) ||
                 isUserTest(sourceMimetype, targetMimetype);
     }
@@ -105,7 +105,7 @@ public class TestSynchronousTransformClient<T> implements SynchronousTransformCl
     }
 
     static void doTest(String sourceMimetype, String targetMimetype, ContentWriter writer,
-                       TestTransformClientCallback callback)
+            TestTransformClientCallback callback)
     {
         if (isFailingTest(sourceMimetype, targetMimetype))
         {

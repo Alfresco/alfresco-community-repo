@@ -33,47 +33,51 @@ package org.alfresco.rest.api.model;
  */
 public class ContentInfo
 {
-	private String mimeType;
+    private String mimeType;
     private String mimeTypeName;
-	private Long sizeInBytes;
-	private String encoding;
+    private Long sizeInBytes;
+    private String encoding;
 
-	public ContentInfo()
-	{
-	}
+    public ContentInfo()
+    {}
 
-	public ContentInfo(String mimeType, String mimeTypeName, Long sizeInBytes, String encoding)
-	{
-		this.mimeType = mimeType;
-		this.mimeTypeName = mimeTypeName;
-		this.sizeInBytes = sizeInBytes;
-		this.encoding = encoding;
-	}
+    public ContentInfo(String mimeType, String mimeTypeName, Long sizeInBytes, String encoding)
+    {
+        this.mimeType = mimeType;
+        this.mimeTypeName = mimeTypeName;
+        this.sizeInBytes = sizeInBytes;
+        this.encoding = encoding;
+    }
 
-    public String getMimeType() {
+    public String getMimeType()
+    {
         return mimeType;
     }
 
-	public void setMimeType(String mimeType) {
-		this.mimeType = mimeType;
-	}
+    public void setMimeType(String mimeType)
+    {
+        this.mimeType = mimeType;
+    }
 
-    public String getMimeTypeName() {
+    public String getMimeTypeName()
+    {
         return mimeTypeName;
     }
 
-    public Long getSizeInBytes() {
+    public Long getSizeInBytes()
+    {
         return sizeInBytes;
     }
 
-    public String getEncoding() {
+    public String getEncoding()
+    {
         return encoding;
     }
 
     @Override
-	public String toString()
-	{
-		return "ContentInfo [mimeType=" + mimeType + ", mimeTypeName=" + mimeTypeName
-				+ ", encoding=" + encoding + ", sizeInBytes=" + sizeInBytes + "]";
-	}
+    public String toString()
+    {
+        return "ContentInfo [mimeType=" + mimeType + ", mimeTypeName=" + mimeTypeName
+                + ", encoding=" + encoding + ", sizeInBytes=" + sizeInBytes + "]";
+    }
 }

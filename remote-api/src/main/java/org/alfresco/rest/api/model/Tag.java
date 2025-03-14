@@ -29,6 +29,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -40,126 +41,123 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class Tag implements Comparable<Tag>
 {
-	private NodeRef nodeRef;
-	private String tag;
-	private Long count;
+    private NodeRef nodeRef;
+    private String tag;
+    private Long count;
 
     public Tag()
-	{
-	}
-	
-	public Tag(NodeRef nodeRef, String tag)
-	{
-		this.nodeRef = nodeRef;
-		setTag(tag);
-	}
+    {}
 
-	@JsonProperty("id")
-	@UniqueId
-	public NodeRef getNodeRef()
-	{
-		return nodeRef;
-	}
+    public Tag(NodeRef nodeRef, String tag)
+    {
+        this.nodeRef = nodeRef;
+        setTag(tag);
+    }
 
-	public void setNodeRef(NodeRef nodeRef)
-	{
-		this.nodeRef = nodeRef;
-	}
+    @JsonProperty("id")
+    @UniqueId
+    public NodeRef getNodeRef()
+    {
+        return nodeRef;
+    }
 
-	public String getTag()
-	{
-		return tag;
-	}
+    public void setNodeRef(NodeRef nodeRef)
+    {
+        this.nodeRef = nodeRef;
+    }
 
-	public void setTag(String tag)
-	{
-		this.tag = Optional.ofNullable(tag).map(String::toLowerCase).orElse(null);
-	}
-	
-	public Long getCount()
-	{
-	
-	    return count;
-	}
+    public String getTag()
+    {
+        return tag;
+    }
 
-	public void setCount(Long count)
-	{
-	    this.count = count;
-	}
+    public void setTag(String tag)
+    {
+        this.tag = Optional.ofNullable(tag).map(String::toLowerCase).orElse(null);
+    }
 
-	/*
-	 * Note that comparison of tags is based on their string value. This should still
-	 * be consistent with equals since tags that are equal implies NodeRefs that are equal.
-	 * 
-	 * (non-Javadoc)
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
-	@Override
-	public int compareTo(Tag o)
-	{
-		int ret = getTag().compareTo(o.getTag());
-		return ret;
-	}
+    public Long getCount()
+    {
 
-	@Override
-	public boolean equals(Object o)
-	{
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
-		Tag tag1 = (Tag) o;
-		return Objects.equals(nodeRef, tag1.nodeRef) && Objects.equals(tag, tag1.tag) && Objects.equals(count, tag1.count);
-	}
+        return count;
+    }
 
-	@Override
-	public int hashCode()
-	{
-		return Objects.hash(nodeRef, tag, count);
-	}
+    public void setCount(Long count)
+    {
+        this.count = count;
+    }
 
-	@Override
-	public String toString()
-	{
-		return "Tag{" + "nodeRef=" + nodeRef + ", tag='" + tag + '\'' + ", count=" + count + '}';
-	}
+    /* Note that comparison of tags is based on their string value. This should still be consistent with equals since tags that are equal implies NodeRefs that are equal.
+     * 
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Comparable#compareTo(java.lang.Object) */
+    @Override
+    public int compareTo(Tag o)
+    {
+        int ret = getTag().compareTo(o.getTag());
+        return ret;
+    }
 
-	public static Builder builder()
-	{
-		return new Builder();
-	}
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Tag tag1 = (Tag) o;
+        return Objects.equals(nodeRef, tag1.nodeRef) && Objects.equals(tag, tag1.tag) && Objects.equals(count, tag1.count);
+    }
 
-	public static class Builder
-	{
-		private NodeRef nodeRef;
-		private String tag;
-		private Long count;
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(nodeRef, tag, count);
+    }
 
-		public Builder nodeRef(NodeRef nodeRef)
-		{
-			this.nodeRef = nodeRef;
-			return this;
-		}
+    @Override
+    public String toString()
+    {
+        return "Tag{" + "nodeRef=" + nodeRef + ", tag='" + tag + '\'' + ", count=" + count + '}';
+    }
 
-		public Builder tag(String tag)
-		{
-			this.tag = tag;
-			return this;
-		}
+    public static Builder builder()
+    {
+        return new Builder();
+    }
 
-		public Builder count(Long count)
-		{
-			this.count = count;
-			return this;
-		}
+    public static class Builder
+    {
+        private NodeRef nodeRef;
+        private String tag;
+        private Long count;
 
-		public Tag create()
-		{
-			final Tag tag = new Tag();
-			tag.setNodeRef(nodeRef);
-			tag.setTag(this.tag);
-			tag.setCount(count);
-			return tag;
-		}
-	}
+        public Builder nodeRef(NodeRef nodeRef)
+        {
+            this.nodeRef = nodeRef;
+            return this;
+        }
+
+        public Builder tag(String tag)
+        {
+            this.tag = tag;
+            return this;
+        }
+
+        public Builder count(Long count)
+        {
+            this.count = count;
+            return this;
+        }
+
+        public Tag create()
+        {
+            final Tag tag = new Tag();
+            tag.setNodeRef(nodeRef);
+            tag.setTag(this.tag);
+            tag.setCount(count);
+            return tag;
+        }
+    }
 }

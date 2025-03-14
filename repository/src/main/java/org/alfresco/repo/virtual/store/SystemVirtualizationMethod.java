@@ -37,12 +37,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * An {@link AspectVirtualizationMethod} that uses an aspect defined String
- * property that holds the system path of a template resource.<br>
- * System paths are custom string reference of a resource that can be located
- * either in the repository or in the java classpath - <i>system paths are
- * deprecated and they will be replaced by {@link Encodings#PLAIN} encoded
- * {@link Reference} strings</i>.<br>
+ * An {@link AspectVirtualizationMethod} that uses an aspect defined String property that holds the system path of a template resource.<br>
+ * System paths are custom string reference of a resource that can be located either in the repository or in the java classpath - <i>system paths are deprecated and they will be replaced by {@link Encodings#PLAIN} encoded {@link Reference} strings</i>.<br>
  * 
  * @author Bogdan Horje
  */
@@ -52,8 +48,7 @@ public class SystemVirtualizationMethod extends AspectVirtualizationMethod
     private QName systemPathPropertyQName;
 
     /**
-     * String name of template system path holding property. Will be converted
-     * into a {@link QName} during {@link #init()}
+     * String name of template system path holding property. Will be converted into a {@link QName} during {@link #init()}
      */
     private String systemPathPropertyName;
 
@@ -72,7 +67,7 @@ public class SystemVirtualizationMethod extends AspectVirtualizationMethod
         if (systemPathPropertyName != null)
         {
             systemPathPropertyQName = QName.createQName(systemPathPropertyName,
-                                                        namespacePrefixResolver);
+                    namespacePrefixResolver);
         }
     }
 
@@ -85,12 +80,12 @@ public class SystemVirtualizationMethod extends AspectVirtualizationMethod
     public Reference virtualize(ActualEnvironment env, NodeRef nodeRef) throws VirtualizationException
     {
         String templateSystemPath = (String) env.getProperty(nodeRef,
-                                                             systemPathPropertyQName);
+                systemPathPropertyQName);
         if (templateSystemPath != null)
         {
             return newVirtualReference(env,
-                                       nodeRef,
-                                       templateSystemPath);
+                    nodeRef,
+                    templateSystemPath);
         }
         else
         {
@@ -103,15 +98,16 @@ public class SystemVirtualizationMethod extends AspectVirtualizationMethod
     public boolean canVirtualize(ActualEnvironment env, NodeRef nodeRef) throws ActualEnvironmentException
     {
         boolean canVirtualize = super.canVirtualize(env,
-                                                    nodeRef);
+                nodeRef);
         if (canVirtualize)
         {
             // TODO: optimize - should not need another repository meta data access !!!
             // Optimization requires a default value specified.
 
             String templateSystemPath = (String) env.getProperty(nodeRef,
-                                                                 systemPathPropertyQName);
-            if(templateSystemPath==null){
+                    systemPathPropertyQName);
+            if (templateSystemPath == null)
+            {
                 return false;
             }
             final char systemToken = templateSystemPath.charAt(0);

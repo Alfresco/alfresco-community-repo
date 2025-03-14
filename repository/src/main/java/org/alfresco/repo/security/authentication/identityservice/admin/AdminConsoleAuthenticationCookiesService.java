@@ -28,6 +28,7 @@ package org.alfresco.repo.security.authentication.identityservice.admin;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.alfresco.repo.admin.SysAdminParams;
 
 /**
@@ -47,8 +48,10 @@ public class AdminConsoleAuthenticationCookiesService
     /**
      * Get the cookie with the given name.
      *
-     * @param name    the name of the cookie
-     * @param request the request that might contain the cookie
+     * @param name
+     *            the name of the cookie
+     * @param request
+     *            the request that might contain the cookie
      * @return the cookie, or null if the cookie cannot be found
      */
     public String getCookie(String name, HttpServletRequest request)
@@ -74,9 +77,12 @@ public class AdminConsoleAuthenticationCookiesService
     /**
      * Add a cookie to the response.
      *
-     * @param name            the name of the cookie
-     * @param value           the value of the cookie
-     * @param servletResponse the response to add the cookie to
+     * @param name
+     *            the name of the cookie
+     * @param value
+     *            the value of the cookie
+     * @param servletResponse
+     *            the response to add the cookie to
      */
     public void addCookie(String name, String value, HttpServletResponse servletResponse)
     {
@@ -86,8 +92,10 @@ public class AdminConsoleAuthenticationCookiesService
     /**
      * Issue a cookie reset within the given response.
      *
-     * @param name            the cookie to reset
-     * @param servletResponse the response to issue the cookie reset
+     * @param name
+     *            the cookie to reset
+     * @param servletResponse
+     *            the response to issue the cookie reset
      */
     public void resetCookie(String name, HttpServletResponse servletResponse)
     {

@@ -24,6 +24,7 @@
  * #L%
  */
 package org.alfresco.repo.index.shard;
+
 /**
  * Enum that details sharding type.
  *
@@ -33,69 +34,62 @@ package org.alfresco.repo.index.shard;
  */
 public enum ShardMethodEnum
 {
-    MOD_ACL_ID,
-    ACL_ID,
-    DB_ID,
-    DB_ID_RANGE,
-    EXPLICIT_ID,
-    EXPLICIT_ID_FALLBACK_LRIS,
-    LAST_REGISTERED_INDEXING_SHARD,
-    DATE,
-    UNKOWN,
-    PROPERTY;
-    
+    MOD_ACL_ID, ACL_ID, DB_ID, DB_ID_RANGE, EXPLICIT_ID, EXPLICIT_ID_FALLBACK_LRIS, LAST_REGISTERED_INDEXING_SHARD, DATE, UNKOWN, PROPERTY;
+
     public static ShardMethodEnum getShardMethod(String shardMethod)
     {
-        if(shardMethod == null)
+        if (shardMethod == null)
         {
             return UNKOWN;
         }
 
         switch (shardMethod.toUpperCase())
         {
-            case "MOD_ACL_ID":
-                return MOD_ACL_ID;
-            case "ACL_ID":
-                return ACL_ID;
-            case "DB_ID":
-                return DB_ID;
-            case "DB_ID_RANGE":
-                return DB_ID_RANGE;
-            case "DATE":
-                return DATE;
-            case "PROPERTY":
-                return PROPERTY;
-            case "EXPLICIT_ID":
-            case "EXPLICIT_ID_FALLBACK_DBID":
-                return EXPLICIT_ID;
-            case "LRIS":
-            case "LAST_REGISTERED_INDEXING_SHARD":
-                return LAST_REGISTERED_INDEXING_SHARD;
-            case "EXPLICIT_ID_FALLBACK_LRIS":
-                return EXPLICIT_ID_FALLBACK_LRIS;
-            default:
-                return UNKOWN;
+        case "MOD_ACL_ID":
+            return MOD_ACL_ID;
+        case "ACL_ID":
+            return ACL_ID;
+        case "DB_ID":
+            return DB_ID;
+        case "DB_ID_RANGE":
+            return DB_ID_RANGE;
+        case "DATE":
+            return DATE;
+        case "PROPERTY":
+            return PROPERTY;
+        case "EXPLICIT_ID":
+        case "EXPLICIT_ID_FALLBACK_DBID":
+            return EXPLICIT_ID;
+        case "LRIS":
+        case "LAST_REGISTERED_INDEXING_SHARD":
+            return LAST_REGISTERED_INDEXING_SHARD;
+        case "EXPLICIT_ID_FALLBACK_LRIS":
+            return EXPLICIT_ID_FALLBACK_LRIS;
+        default:
+            return UNKOWN;
         }
     }
-    
+
     /**
      * Returns true if the method if any of the alias for EXPLICIT_ID methods, false otherwise
-     * @param shardMethod String representing the ShardMethod name
+     * 
+     * @param shardMethod
+     *            String representing the ShardMethod name
      * @return true if the method is EXPLICIT_ID based
      */
     public static boolean isExplicitIdMethod(String shardMethod)
     {
-        
+
         switch (shardMethod.toUpperCase())
         {
-            case "EXPLICIT_ID":
-            case "EXPLICIT_ID_FALLBACK_DBID":
-            case "EXPLICIT_ID_FALLBACK_LRIS":
-                return true;
-            default:
-                return false;
+        case "EXPLICIT_ID":
+        case "EXPLICIT_ID_FALLBACK_DBID":
+        case "EXPLICIT_ID_FALLBACK_LRIS":
+            return true;
+        default:
+            return false;
         }
-        
+
     }
-    
+
 }

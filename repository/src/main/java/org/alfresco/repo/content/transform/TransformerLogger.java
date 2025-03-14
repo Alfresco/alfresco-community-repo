@@ -31,13 +31,13 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Properties;
 
-import org.alfresco.api.AlfrescoPublicApi;  
-import org.alfresco.util.LogAdapter;
 import org.apache.commons.logging.Log;
 
+import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.util.LogAdapter;
+
 /**
- * Implementation of {@link Log} that logs messages to an internal structure which
- * only keeps a predefined number of entries.
+ * Implementation of {@link Log} that logs messages to an internal structure which only keeps a predefined number of entries.
  * 
  * Only supports debug level logging.
  * 
@@ -50,10 +50,10 @@ abstract class TransformerLogger<T> extends LogAdapter implements LogEntries
 
     private TransformerDebug transformerDebug;
     private Properties properties;
-    
+
     private int maxEntries = -1;
     private Deque<T> entries = new LinkedList<T>();
-    
+
     TransformerLogger()
     {
         super(null);
@@ -71,6 +71,7 @@ abstract class TransformerLogger<T> extends LogAdapter implements LogEntries
 
     /**
      * Returns an int from a property.
+     * 
      * @param propertyName
      */
     private int getProperty(String propertyName, int min, int max)
@@ -95,7 +96,7 @@ abstract class TransformerLogger<T> extends LogAdapter implements LogEntries
         i = Math.min(Math.max(i, min), max);
         return i;
     }
-    
+
     private int getMaxEntries()
     {
         if (maxEntries < 0)
@@ -106,8 +107,7 @@ abstract class TransformerLogger<T> extends LogAdapter implements LogEntries
     }
 
     /**
-     * Enabled if number of transformer debug entries is greater than 0
-     * AND there is not a test function generating output.
+     * Enabled if number of transformer debug entries is greater than 0 AND there is not a test function generating output.
      */
     @Override
     public boolean isDebugEnabled()
@@ -116,15 +116,17 @@ abstract class TransformerLogger<T> extends LogAdapter implements LogEntries
     }
 
     /**
-     * @param message to be appended to the log
-     * @param throwable ignored
+     * @param message
+     *            to be appended to the log
+     * @param throwable
+     *            ignored
      */
     @Override
     public void debug(Object message, Throwable throwable)
     {
         if (isDebugEnabled())
         {
-            synchronized(entries)
+            synchronized (entries)
             {
                 addOrModify(entries, message);
                 for (int size = entries.size(); size > maxEntries; size--)
@@ -134,13 +136,14 @@ abstract class TransformerLogger<T> extends LogAdapter implements LogEntries
             }
         }
     }
-    
+
     /**
      * Overridden in sub classes to add a new entry or modify and existing one
+     * 
      * @param message
      */
     protected abstract void addOrModify(Deque<T> entries, Object message);
-    
+
     /**
      * Removes an entry. By default removes the first (oldest) entry by may be overridden.
      */
@@ -148,10 +151,12 @@ abstract class TransformerLogger<T> extends LogAdapter implements LogEntries
     {
         entries.removeFirst();
     }
-    
+
     /**
      * Returns the log entries.
-     * @param n the maximum number of entries to return. All if n is smaller or equal to zero.
+     * 
+     * @param n
+     *            the maximum number of entries to return. All if n is smaller or equal to zero.
      */
     @Override
     public String[] getEntries(int n)
@@ -159,7 +164,7 @@ abstract class TransformerLogger<T> extends LogAdapter implements LogEntries
         if (getMaxEntries() > 0)
         {
             n = n <= 0 ? Integer.MAX_VALUE : n;
-            synchronized(entries)
+            synchronized (entries)
             {
                 n = Math.min(Math.max(Math.min(maxEntries, n), 0), entries.size());
                 String[] array = new String[n];
@@ -173,12 +178,12 @@ abstract class TransformerLogger<T> extends LogAdapter implements LogEntries
         }
         else
         {
-            return new String[] { "No entries are available. "+
-                    getPropertyName()+" must be set to a number between 1 and "+
+            return new String[]{"No entries are available. " +
+                    getPropertyName() + " must be set to a number between 1 and " +
                     getUpperMaxEntries()};
         }
     }
-    
+
     private static void appendProperty(StringBuilder sb, String propertyName, String value, String defaultValue)
     {
         boolean isDefaultValue = value.equals(defaultValue);
@@ -195,9 +200,9 @@ abstract class TransformerLogger<T> extends LogAdapter implements LogEntries
             sb.append(defaultValue);
         }
     }
+
     /**
-     * Overridden to specify the maximum value the maxEntries property may set.
-     * Generally quite a small number as values are stored in memory.
+     * Overridden to specify the maximum value the maxEntries property may set. Generally quite a small number as values are stored in memory.
      */
     protected abstract int getUpperMaxEntries();
 

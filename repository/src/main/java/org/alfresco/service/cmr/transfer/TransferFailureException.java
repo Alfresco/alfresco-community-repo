@@ -25,16 +25,15 @@
  */
 package org.alfresco.service.cmr.transfer;
 
-
 /**
  * Transfer failure exception
  * 
  * @author davidc
  */
-public class TransferFailureException extends TransferException 
+public class TransferFailureException extends TransferException
 {
     private static final long serialVersionUID = 9009938314128119981L;
-    
+
     private TransferEventError event;
 
     public TransferFailureException(TransferEventError event)
@@ -50,6 +49,6 @@ public class TransferFailureException extends TransferException
      */
     public TransferEventError getErrorEvent()
     {
-        return event; 
+        return event;
     }
 }

@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.content.caching.quota;
 
-
 import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedOutputStream;
@@ -38,15 +37,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.repo.content.ContentContext;
-import org.alfresco.repo.content.caching.CachingContentStore;
-import org.alfresco.repo.content.caching.ContentCacheImpl;
-import org.alfresco.repo.content.caching.cleanup.CachedContentCleaner;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.GUID;
-import org.alfresco.util.TempFileProvider;
-import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.comparator.SizeFileComparator;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
@@ -58,8 +48,19 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
+import org.alfresco.repo.content.ContentContext;
+import org.alfresco.repo.content.caching.CachingContentStore;
+import org.alfresco.repo.content.caching.ContentCacheImpl;
+import org.alfresco.repo.content.caching.cleanup.CachedContentCleaner;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
+import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.testing.category.LuceneTests;
+
 /**
  * Tests for the StandardQuotaStrategy.
+ * 
  * @author Matt Ward
  */
 @Category(LuceneTests.class)
@@ -72,27 +73,24 @@ public class StandardQuotaStrategyTest
     private File cacheRoot;
     private StandardQuotaStrategy quota;
     private CachedContentCleaner cleaner;
-    
+
     @BeforeClass
     public static void beforeClass()
     {
-        ctx = ApplicationContextHelper.getApplicationContext(new String[]
-        {
-                    "classpath:cachingstore/test-std-quota-context.xml"
+        ctx = ApplicationContextHelper.getApplicationContext(new String[]{
+                "classpath:cachingstore/test-std-quota-context.xml"
         });
-     
+
         aKB = new byte[1024];
         Arrays.fill(aKB, (byte) 36);
     }
 
-    
     @AfterClass
     public static void afterClass()
     {
         ApplicationContextHelper.closeApplicationContext();
     }
-    
-    
+
     @Before
     public void setUp() throws Exception
     {
@@ -107,18 +105,17 @@ public class StandardQuotaStrategyTest
         cleaner = (CachedContentCleaner) ctx.getBean("cachedContentCleaner");
         // Empty the in-memory cache
         cache.removeAll();
-        
+
         FileUtils.cleanDirectory(cacheRoot);
     }
-    
-    
+
     @Test
     public void cleanerWillTriggerAtCorrectThreshold() throws IOException, InterruptedException
     {
         // Write 15 x 1MB files. This will not trigger any quota related actions.
         // Quota is 20MB. The quota manager will...
-        //   * start the cleaner at 16MB (80% of 20MB)
-        //   * refuse to cache any more files at 18MB (90% of 20MB)
+        // * start the cleaner at 16MB (80% of 20MB)
+        // * refuse to cache any more files at 18MB (90% of 20MB)
         List<String> contentURLs = new ArrayList<String>();
         for (int i = 0; i < 15; i++)
         {
@@ -127,7 +124,7 @@ public class StandardQuotaStrategyTest
         }
         // All 15 should be retained.
         assertEquals(15, findCacheFiles().size());
-    
+
         // Simulate eviction from the in-memory cache. We'll evict 10, so that 6 of the
         // eventual 16 created files have details remaining in the cache.
         //
@@ -139,10 +136,10 @@ public class StandardQuotaStrategyTest
         {
             cache.remove(contentURLs.get(evictCount));
         }
-        
+
         // Writing one more file should trigger a clean.
         writeSingleFileInMB(1);
-        
+
         Thread.sleep(200);
         while (cleaner.isRunning())
         {
@@ -153,8 +150,7 @@ public class StandardQuotaStrategyTest
         // ran, then only 6 files should remain on disk - the rest should have been removed by the cleaner.
         assertEquals(6, findCacheFiles().size());
     }
-    
-    
+
     @Test
     public void cachingIsDisabledAtCorrectThreshold() throws IOException
     {
@@ -163,12 +159,12 @@ public class StandardQuotaStrategyTest
         {
             writeSingleFileInMB(6);
         }
-        
+
         // Only the first 3 are cached - caching is disabled after that as
         // the panic threshold has been reached.
-        assertEquals(3, findCacheFiles().size());    
+        assertEquals(3, findCacheFiles().size());
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void largeContentCacheFilesAreNotKeptOnDisk() throws IOException
@@ -178,15 +174,15 @@ public class StandardQuotaStrategyTest
         writeSingleFileInMB(2);
         writeSingleFileInMB(3);
         writeSingleFileInMB(4);
-        
+
         List<File> files = new ArrayList<File>(findCacheFiles());
         assertEquals(3, files.size());
-        Collections.sort(files,SizeFileComparator.SIZE_COMPARATOR);
+        Collections.sort(files, SizeFileComparator.SIZE_COMPARATOR);
         assertEquals(1, files.get(0).length() / FileUtils.ONE_MB);
         assertEquals(2, files.get(1).length() / FileUtils.ONE_MB);
         assertEquals(3, files.get(2).length() / FileUtils.ONE_MB);
     }
-    
+
     private String writeSingleFileInMB(int sizeInMb) throws IOException
     {
         ContentWriter writer = store.getWriter(ContentContext.NULL_CONTEXT);
@@ -205,22 +201,18 @@ public class StandardQuotaStrategyTest
             os.write(aKB);
         }
         os.close();
-        
+
         return file;
     }
-    
-    
+
     @SuppressWarnings("unchecked")
     private Collection<File> findCacheFiles()
     {
         return FileUtils.listFiles(cacheRoot, new SuffixFileFilter(".bin"), TrueFileFilter.INSTANCE);
     }
-        
-    
+
     /**
-     * Not a unit test, but useful to fire up a lot of writers that will push the
-     * CachingContentStore's StandardQuotaStrategy beyond the panic threshold. The
-     * behaviour can then be monitored with, for example, a profiler.
+     * Not a unit test, but useful to fire up a lot of writers that will push the CachingContentStore's StandardQuotaStrategy beyond the panic threshold. The behaviour can then be monitored with, for example, a profiler.
      * 
      * @throws Exception
      */
@@ -231,14 +223,13 @@ public class StandardQuotaStrategyTest
         // Need to set maxDeleteWatch count to > 0
         // (0 is useful in unit tests, but for real usage must not be used)
         cleaner.setMaxDeleteWatchCount(1);
-        
+
         final int numThreads = 100;
         Thread[] writers = new Thread[numThreads];
         for (int i = 0; i < numThreads; i++)
         {
             final String threadName = "WriterThread[" + i + "]";
-            Runnable runnable = new Runnable()
-            {
+            Runnable runnable = new Runnable() {
                 @Override
                 public void run()
                 {
@@ -248,19 +239,19 @@ public class StandardQuotaStrategyTest
                         pause();
                     }
                 }
-                
+
                 private void writeFile()
                 {
                     try
                     {
-                        writeSingleFileInMB(1); 
+                        writeSingleFileInMB(1);
                     }
                     catch (IOException error)
                     {
                         throw new RuntimeException(threadName + " couldn't write file.", error);
                     }
                 }
-                
+
                 private void pause()
                 {
                     long pauseTimeMillis = Math.round(Math.random() * 2000);
@@ -278,13 +269,11 @@ public class StandardQuotaStrategyTest
             Thread writerThread = new Thread(runnable);
             writerThread.setName(threadName);
             writers[i] = writerThread;
-            
+
             writerThread.start();
         }
     }
-    
-    
-    
+
     public static void main(String[] args) throws Exception
     {
         StandardQuotaStrategyTest test = new StandardQuotaStrategyTest();

@@ -34,8 +34,7 @@ import java.lang.annotation.Target;
 /**
  * Annotates a method and indicates it is the unique id of a embedded object.
  * 
- * The method must have zero arguments.  It will be executed and the enclosing class will have
- * the result of a call to the entity resource embedded in it.
+ * The method must have zero arguments. It will be executed and the enclosing class will have the result of a call to the entity resource embedded in it.
  *
  * @author Gethin James
  */
@@ -45,5 +44,6 @@ import java.lang.annotation.Target;
 public @interface EmbeddedEntityResource
 {
     String propertyName();
+
     Class<?> entityResource();
 }

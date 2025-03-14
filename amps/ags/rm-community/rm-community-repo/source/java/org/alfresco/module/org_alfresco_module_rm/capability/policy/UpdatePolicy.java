@@ -30,16 +30,17 @@ package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.aopalliance.intercept.MethodInvocation;
+
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.UpdateCapability;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.aopalliance.intercept.MethodInvocation;
 
 public class UpdatePolicy extends AbstractBasePolicy
 {
 
     @SuppressWarnings("rawtypes")
-	public int evaluate(
+    public int evaluate(
             MethodInvocation invocation,
             Class[] params,
             ConfigAttributeDefinition cad)

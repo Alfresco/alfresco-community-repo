@@ -32,8 +32,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Returns the actual {@link NodeRef} of a given reference.<br>
- * Actual {@link NodeRef} are node references of content elements found in the
- * Alfresco repository that are subjected to a virtualization process.
+ * Actual {@link NodeRef} are node references of content elements found in the Alfresco repository that are subjected to a virtualization process.
  * 
  * @author Bogdan Horje
  */

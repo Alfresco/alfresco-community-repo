@@ -36,9 +36,9 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -49,7 +49,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
-public class LinkCategoryActionExecuter extends ActionExecuterAbstractBase 
+public class LinkCategoryActionExecuter extends ActionExecuterAbstractBase
 {
     /**
      * Rule constants
@@ -57,31 +57,33 @@ public class LinkCategoryActionExecuter extends ActionExecuterAbstractBase
     public static final String NAME = "link-category";
     public static final String PARAM_CATEGORY_ASPECT = "category-aspect";
     public static final String PARAM_CATEGORY_VALUE = "category-value";
-    
+
     /**
      * The node service
      */
     private NodeService nodeService;
-    
+
     /**
      * The dictionary service
      */
     private DictionaryService dictionaryService;
-    
+
     /**
      * Sets the node service
      * 
-     * @param nodeService  the node service
+     * @param nodeService
+     *            the node service
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Sets the dictionary service
      * 
-     * @param dictionaryService  the dictionary service
+     * @param dictionaryService
+     *            the dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -92,12 +94,12 @@ public class LinkCategoryActionExecuter extends ActionExecuterAbstractBase
      * Add the parameter definitions
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_CATEGORY_ASPECT, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_CATEGORY_ASPECT)));
         paramList.add(new ParameterDefinitionImpl(PARAM_CATEGORY_VALUE, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_CATEGORY_VALUE)));
     }
-    
+
     /**
      * Execute action implementation
      */
@@ -108,22 +110,22 @@ public class LinkCategoryActionExecuter extends ActionExecuterAbstractBase
         if (this.nodeService.exists(actionedUponNodeRef) == true)
         {
             // Get the rule parameter values
-            QName categoryAspect = (QName)ruleAction.getParameterValue(PARAM_CATEGORY_ASPECT);
+            QName categoryAspect = (QName) ruleAction.getParameterValue(PARAM_CATEGORY_ASPECT);
             if (categoryAspect == null)
             {
                 // Use the default general classifiable aspect
-                //cm:generalclassifiable
+                // cm:generalclassifiable
                 categoryAspect = ContentModel.ASPECT_GEN_CLASSIFIABLE;
-            }                    
-            NodeRef categoryValue = (NodeRef)ruleAction.getParameterValue(PARAM_CATEGORY_VALUE);
-            
+            }
+            NodeRef categoryValue = (NodeRef) ruleAction.getParameterValue(PARAM_CATEGORY_VALUE);
+
             // Check that the aspect is classifiable and is currently applied to the node
             if (this.dictionaryService.isSubClass(categoryAspect, ContentModel.ASPECT_CLASSIFIABLE) == true)
             {
                 // Get the category property qname
                 QName categoryProperty = null;
                 Map<QName, PropertyDefinition> propertyDefs = this.dictionaryService.getAspect(categoryAspect).getProperties();
-                for (Map.Entry<QName, PropertyDefinition> entry : propertyDefs.entrySet()) 
+                for (Map.Entry<QName, PropertyDefinition> entry : propertyDefs.entrySet())
                 {
                     if (DataTypeDefinition.CATEGORY.equals(entry.getValue().getDataType().getName()) == true)
                     {
@@ -132,13 +134,13 @@ public class LinkCategoryActionExecuter extends ActionExecuterAbstractBase
                         break;
                     }
                 }
-                
+
                 // Check that the category property is not null
                 if (categoryProperty == null)
                 {
                     throw new AlfrescoRuntimeException("The category aspect " + categoryAspect.toPrefixString() + " does not have a category property to set.");
                 }
-                
+
                 if (categoryAspect != null)
                 {
                     if (this.nodeService.hasAspect(actionedUponNodeRef, categoryAspect) == false)
@@ -163,12 +165,12 @@ public class LinkCategoryActionExecuter extends ActionExecuterAbstractBase
                             if (categories.contains(categoryValue) == false)
                             {
                                 categories.add(categoryValue);
-                            }                            
+                            }
                         }
-                        this.nodeService.setProperty(actionedUponNodeRef, categoryProperty, (Serializable)categories);
+                        this.nodeService.setProperty(actionedUponNodeRef, categoryProperty, (Serializable) categories);
                     }
                 }
-            }            
+            }
         }
     }
 }

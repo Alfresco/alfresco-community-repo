@@ -26,17 +26,18 @@
 
 package org.alfresco.rest.framework.tools;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.util.List;
+
 import com.fasterxml.jackson.databind.JsonMappingException;
-import org.alfresco.rest.framework.core.exceptions.ApiException;
-import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.util.List;
+import org.alfresco.rest.framework.core.exceptions.ApiException;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 
 /*
  * Reads information from the request
@@ -48,9 +49,12 @@ public interface RequestReader
     /**
      * Extracts the body contents from the request
      *
-     * @param req          the request
-     * @param jsonHelper   Jackson Helper
-     * @param requiredType the type to return
+     * @param req
+     *            the request
+     * @param jsonHelper
+     *            Jackson Helper
+     * @param requiredType
+     *            the type to return
      * @return the Object in the required type
      */
     default <T> T extractJsonContent(WebScriptRequest req, JacksonHelper jsonHelper, Class<T> requiredType)
@@ -75,9 +79,12 @@ public interface RequestReader
     /**
      * Extracts the body contents from the request as a List, the JSON can be an array or just a single value without the [] symbols
      *
-     * @param req          the request
-     * @param jsonHelper   Jackson Helper
-     * @param requiredType the type to return (without the List param)
+     * @param req
+     *            the request
+     * @param jsonHelper
+     *            Jackson Helper
+     * @param requiredType
+     *            the type to return (without the List param)
      * @return A List of "Object" as the required type
      */
     default <T> List<T> extractJsonContentAsList(WebScriptRequest req, JacksonHelper jsonHelper, Class<T> requiredType)

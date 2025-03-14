@@ -38,7 +38,7 @@ public interface CustomEmailMappingService
     /**
      * Get the list of custom mappings
      *
-     * @return  {@link Set}&lt;{@link CustomMapping}&gt;
+     * @return {@link Set}&lt;{@link CustomMapping}&gt;
      */
     Set<CustomMapping> getCustomMappings();
 
@@ -68,7 +68,8 @@ public interface CustomEmailMappingService
     /**
      * Registers an email mapping key with the existing list of email mapping keys
      *
-     * @param emailMappingKey  emailMappingKey to register
+     * @param emailMappingKey
+     *            emailMappingKey to register
      */
     void registerEMailMappingKey(String emailMappingKey);
 }

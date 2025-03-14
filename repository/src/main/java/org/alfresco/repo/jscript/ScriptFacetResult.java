@@ -42,10 +42,14 @@ public class ScriptFacetResult implements Serializable
     private final int hits;
 
     /**
-     * @param facetValue the facet value. e.g. the content creator's userID
-     * @param facetLabel the display name of the {@code facetValue}. e.g. jdoe => John Doe
-     * @param facetLabelIndex the label index to be used for sorting (Optional).The default value is -1
-     * @param hits the number of hits
+     * @param facetValue
+     *            the facet value. e.g. the content creator's userID
+     * @param facetLabel
+     *            the display name of the {@code facetValue}. e.g. jdoe => John Doe
+     * @param facetLabelIndex
+     *            the label index to be used for sorting (Optional).The default value is -1
+     * @param hits
+     *            the number of hits
      */
     public ScriptFacetResult(String facetValue, String facetLabel, int facetLabelIndex, int hits)
     {

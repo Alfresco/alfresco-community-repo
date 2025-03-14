@@ -50,45 +50,45 @@ public class AnalysedDirectory
         // Sort the files/directories so that the *.metadata.properties.xml found later, see ALF-17965 for details.
         Collections.sort(originalPaths);
         importableItems = new HashMap<Path, ImportableItem>();
-        importableDirectories = new HashMap<Path, ImportableItem>();            
+        importableDirectories = new HashMap<Path, ImportableItem>();
     }
-    
+
     public List<Path> getOriginalPaths()
     {
         return originalPaths;
     }
-    
-	public Collection<ImportableItem> getImportableItems()
-	{
-		return importableItems.values();
-	}
 
-	public Collection<ImportableItem> getImportableDirectories()
-	{
-		return importableDirectories.values();
-	}
-
-	public void addImportableItem(ImportableItem importableItem)
+    public Collection<ImportableItem> getImportableItems()
     {
-        if(importableItem.getHeadRevision().contentFileExists() &&
-        		ImportableItem.FileType.DIRECTORY.equals(importableItem.getHeadRevision().getContentFileType()))
+        return importableItems.values();
+    }
+
+    public Collection<ImportableItem> getImportableDirectories()
+    {
+        return importableDirectories.values();
+    }
+
+    public void addImportableItem(ImportableItem importableItem)
+    {
+        if (importableItem.getHeadRevision().contentFileExists() &&
+                ImportableItem.FileType.DIRECTORY.equals(importableItem.getHeadRevision().getContentFileType()))
         {
-        	importableDirectories.put(importableItem.getHeadRevision().getContentFile(), importableItem);
+            importableDirectories.put(importableItem.getHeadRevision().getContentFile(), importableItem);
         }
         else
         {
-    		importableItems.put(importableItem.getHeadRevision().getContentFile(), importableItem);        	
+            importableItems.put(importableItem.getHeadRevision().getContentFile(), importableItem);
         }
     }
 
     public ImportableItem findImportableItem(Path contentFile)
     {
-    	ImportableItem result = null;
-    	result = importableItems.get(contentFile);
-    	if(result == null)
-    	{
-    		result = importableDirectories.get(contentFile);
-    	}
+        ImportableItem result = null;
+        result = importableItems.get(contentFile);
+        if (result == null)
+        {
+            result = importableDirectories.get(contentFile);
+        }
         return result;
     }
 }

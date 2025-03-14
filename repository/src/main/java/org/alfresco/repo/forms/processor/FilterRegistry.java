@@ -35,13 +35,10 @@ import org.apache.commons.logging.LogFactory;
 /**
  * Holds a list of filters for a type of form processor.
  * <p>
- * Each filter is called before and after the processor generates and persists
- * the form, thus allowing the form and the effected objects to be manipulated
- * prior to generation or persistence or after the fact.
+ * Each filter is called before and after the processor generates and persists the form, thus allowing the form and the effected objects to be manipulated prior to generation or persistence or after the fact.
  * </p>
  * <p>
- * Each filter is responsible for determing whether it applies to the item being
- * processed.
+ * Each filter is responsible for determing whether it applies to the item being processed.
  * </p>
  * 
  * @see org.alfresco.repo.forms.processor.Filter
@@ -64,7 +61,8 @@ public class FilterRegistry<ItemType, PersistType>
     /**
      * Registers a filter
      * 
-     * @param filter The Filter to regsiter
+     * @param filter
+     *            The Filter to regsiter
      */
     public void addFilter(Filter<ItemType, PersistType> filter)
     {
@@ -72,7 +70,8 @@ public class FilterRegistry<ItemType, PersistType>
         {
             this.filters.add(filter);
 
-            if (logger.isDebugEnabled()) logger.debug("Registered filter: " + filter + " in registry: " + this);
+            if (logger.isDebugEnabled())
+                logger.debug("Registered filter: " + filter + " in registry: " + this);
         }
         else if (logger.isWarnEnabled())
         {
@@ -98,7 +97,8 @@ public class FilterRegistry<ItemType, PersistType>
             }
         }
 
-        if (logger.isDebugEnabled()) logger.debug("Returning active filters: " + activeFilters);
+        if (logger.isDebugEnabled())
+            logger.debug("Returning active filters: " + activeFilters);
 
         return activeFilters;
     }

@@ -34,7 +34,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import java.lang.annotation.Annotation;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.alfresco.util.test.junitrules.RetryAtMostRule.RetryAtMost;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -43,6 +42,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.model.Statement;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import org.alfresco.util.test.junitrules.RetryAtMostRule.RetryAtMost;
 
 /**
  * Test class for {@link RetryAtMostRule}.
@@ -67,7 +68,7 @@ public class RetryAtMostRuleTest
     public void testSucceedOnFirstAttempt() throws Throwable
     {
         Description description = Description.createTestDescription(RetryAtMostRuleTest.class.getSimpleName(),
-            testNameRule.getMethodName(), getAnnotationByMethodName(ANNOTATION_RETRY_AT_MOST_THRICE));
+                testNameRule.getMethodName(), getAnnotationByMethodName(ANNOTATION_RETRY_AT_MOST_THRICE));
 
         Statement statement = retryAtMostRule.apply(statementMock, description);
         statement.evaluate();
@@ -80,7 +81,7 @@ public class RetryAtMostRuleTest
         doThrow(new AssertionError("First execution should fail")).doNothing().when(statementMock).evaluate();
 
         Description description = Description.createTestDescription(RetryAtMostRuleTest.class.getSimpleName(),
-            testNameRule.getMethodName(), getAnnotationByMethodName(ANNOTATION_RETRY_AT_MOST_THRICE));
+                testNameRule.getMethodName(), getAnnotationByMethodName(ANNOTATION_RETRY_AT_MOST_THRICE));
 
         Statement statement = retryAtMostRule.apply(statementMock, description);
         statement.evaluate();
@@ -101,7 +102,7 @@ public class RetryAtMostRuleTest
         doThrow(new AssertionError("All executions should fail")).when(statementMock).evaluate();
 
         Description description = Description.createTestDescription(RetryAtMostRuleTest.class.getSimpleName(),
-            testNameRule.getMethodName(), getAnnotationByMethodName(ANNOTATION_RETRY_AT_MOST_THRICE));
+                testNameRule.getMethodName(), getAnnotationByMethodName(ANNOTATION_RETRY_AT_MOST_THRICE));
 
         Statement statement = retryAtMostRule.apply(statementMock, description);
         statement.evaluate();
@@ -111,7 +112,7 @@ public class RetryAtMostRuleTest
     public void testInvalidRetryAtMostTimes() throws Throwable
     {
         Description description = Description.createTestDescription(RetryAtMostRuleTest.class.getSimpleName(),
-            testNameRule.getMethodName(), getAnnotationByMethodName(ANNOTATION_WITH_NEGATIVE_VALUE));
+                testNameRule.getMethodName(), getAnnotationByMethodName(ANNOTATION_WITH_NEGATIVE_VALUE));
 
         Statement statement = retryAtMostRule.apply(statementMock, description);
         statement.evaluate();

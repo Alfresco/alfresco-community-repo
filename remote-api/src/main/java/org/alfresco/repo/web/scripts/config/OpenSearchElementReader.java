@@ -27,13 +27,13 @@ package org.alfresco.repo.web.scripts.config;
 
 import java.util.Iterator;
 
+import org.dom4j.Element;
 import org.springframework.extensions.config.ConfigElement;
 import org.springframework.extensions.config.ConfigException;
 import org.springframework.extensions.config.xml.elementreader.ConfigElementReader;
+
 import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement.EngineConfig;
 import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement.ProxyConfig;
-import org.dom4j.Element;
-
 
 /**
  * Custom element reader to parse config for the open search
@@ -52,7 +52,6 @@ public class OpenSearchElementReader implements ConfigElementReader
     public static final String ATTR_LABEL_ID = "label-id";
     public static final String ATTR_PROXY = "proxy";
 
-    
     /**
      * @see org.springframework.extensions.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)
      */
@@ -76,7 +75,7 @@ public class OpenSearchElementReader implements ConfigElementReader
             if (pluginsElem != null)
             {
                 Iterator<Element> engines = pluginsElem.elementIterator(ELEMENT_ENGINE);
-                while(engines.hasNext())
+                while (engines.hasNext())
                 {
                     // construct engine
                     Element engineElem = engines.next();
@@ -84,7 +83,7 @@ public class OpenSearchElementReader implements ConfigElementReader
                     String labelId = engineElem.attributeValue(ATTR_LABEL_ID);
                     String proxy = engineElem.attributeValue(ATTR_PROXY);
                     EngineConfig engineCfg = new EngineConfig(label, labelId, proxy);
-                
+
                     // construct urls for engine
                     Iterator<Element> urlsConfig = engineElem.elementIterator(ELEMENT_URL);
                     while (urlsConfig.hasNext())
@@ -99,7 +98,7 @@ public class OpenSearchElementReader implements ConfigElementReader
                     configElement.addEngine(engineCfg);
                 }
             }
-            
+
             // extract proxy configuration
             String url = null;
             Element proxyElem = element.element(ELEMENT_PROXY);

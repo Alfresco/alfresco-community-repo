@@ -36,8 +36,7 @@ import org.alfresco.repo.domain.locale.LocaleDAO;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Class holding properties associated with the <b>sys:localized</b> aspect.
- * This aspect is common enough to warrant direct inclusion on the <b>Node</b> entity.
+ * Class holding properties associated with the <b>sys:localized</b> aspect. This aspect is common enough to warrant direct inclusion on the <b>Node</b> entity.
  * 
  * @author Derek Hulley
  * @since 4.0
@@ -50,15 +49,15 @@ public class LocalizedPropertiesEntity
         LOCALIZED_PROP_QNAMES = new HashSet<QName>(8);
         LOCALIZED_PROP_QNAMES.add(ContentModel.PROP_LOCALE);
     }
-    
+
     /**
-     * @return          Returns <tt>true</tt> if the property belongs to the <b>sys:localized</b> aspect
+     * @return Returns <tt>true</tt> if the property belongs to the <b>sys:localized</b> aspect
      */
     public static boolean isLocalizedProperty(QName qname)
     {
         return LOCALIZED_PROP_QNAMES.contains(qname);
     }
-    
+
     /**
      * Remove all {@link ContentModel#ASPECT_LOCALIZED localized} properties
      */
@@ -66,7 +65,7 @@ public class LocalizedPropertiesEntity
     {
         properties.keySet().removeAll(LOCALIZED_PROP_QNAMES);
     }
-    
+
     /**
      * Remove all {@link ContentModel#ASPECT_LOCALIZED localized} properties
      */
@@ -74,7 +73,7 @@ public class LocalizedPropertiesEntity
     {
         propertyQNames.removeAll(LOCALIZED_PROP_QNAMES);
     }
-    
+
     /**
      * Adds all {@link ContentModel#ASPECT_LOCALIZED localized} properties.
      */

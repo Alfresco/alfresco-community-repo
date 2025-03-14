@@ -50,7 +50,8 @@ public class BeanExtender implements BeanFactoryPostProcessor
     private String extendingBeanName;
 
     /**
-     * @param beanName  bean name
+     * @param beanName
+     *            bean name
      */
     public void setBeanName(String beanName)
     {
@@ -58,7 +59,8 @@ public class BeanExtender implements BeanFactoryPostProcessor
     }
 
     /**
-     * @param extendingBeanName extending bean name
+     * @param extendingBeanName
+     *            extending bean name
      */
     public void setExtendingBeanName(String extendingBeanName)
     {
@@ -92,7 +94,7 @@ public class BeanExtender implements BeanFactoryPostProcessor
 
         // update class
         if (StringUtils.isNotBlank(extendingBeanDefinition.getBeanClassName()) &&
-            !beanDefinition.getBeanClassName().equals(extendingBeanDefinition.getBeanClassName()))
+                !beanDefinition.getBeanClassName().equals(extendingBeanDefinition.getBeanClassName()))
         {
             beanDefinition.setBeanClassName(extendingBeanDefinition.getBeanClassName());
         }

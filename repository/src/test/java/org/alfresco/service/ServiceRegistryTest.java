@@ -29,10 +29,11 @@ import static org.junit.Assert.fail;
 
 import java.lang.reflect.Method;
 
-import org.alfresco.util.ApplicationContextHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
+
+import org.alfresco.util.ApplicationContextHelper;
 
 public class ServiceRegistryTest
 {
@@ -71,7 +72,7 @@ public class ServiceRegistryTest
                 {
                     fail("Failed to invoke " + method.getName() + " : " + e.getMessage());
                 }
-                
+
             }
         }
     }

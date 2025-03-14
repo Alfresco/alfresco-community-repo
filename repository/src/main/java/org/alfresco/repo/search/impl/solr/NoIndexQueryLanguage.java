@@ -38,6 +38,6 @@ public class NoIndexQueryLanguage extends AbstractLuceneQueryLanguage
     @Override
     public ResultSet executeQuery(SearchParameters searchParameters)
     {
-       throw new AlfrescoRuntimeException("There is no index to execute the query");
+        throw new AlfrescoRuntimeException("There is no index to execute the query");
     }
 }

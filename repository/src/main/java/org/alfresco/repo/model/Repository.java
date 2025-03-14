@@ -29,6 +29,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
@@ -45,11 +51,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * Provision of Repository Context
@@ -59,7 +60,7 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 public class Repository implements ApplicationContextAware
 {
     private ProcessorLifecycle lifecycle = new ProcessorLifecycle();
-    
+
     // dependencies
     private RetryingTransactionHelper retryingTransactionHelper;
     private NamespaceService namespaceService;
@@ -67,45 +68,47 @@ public class Repository implements ApplicationContextAware
     private NodeService nodeService;
     private FileFolderService fileFolderService;
     private PersonService personService;
-    
+
     // company home
     private StoreRef companyHomeStore; // ie. workspace://SpaceStore
-    private String companyHomePath;    // ie. /app:company_home
-    private String sharedHomePath;     // ie. /app:shared
+    private String companyHomePath; // ie. /app:company_home
+    private String sharedHomePath; // ie. /app:shared
 
-    private String guestHomePath;       // /app:company_home/app:guest_home
-    
+    private String guestHomePath; // /app:company_home/app:guest_home
+
     // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
     private SimpleCache<String, NodeRef> singletonCache; // eg. for companyHomeNodeRef
     private final String KEY_COMPANYHOME_NODEREF = "key.companyhome.noderef";
     private final String KEY_GUESTHOME_NODEREF = "key.guesthome.noderef";
     private final String KEY_SHAREDHOME_NODEREF = "key.sharedhome.noderef";
-    
-    
+
     /**
      * Sets the Company Home Store
      * 
-     * @param companyHomeStore String
+     * @param companyHomeStore
+     *            String
      */
     public void setCompanyHomeStore(String companyHomeStore)
     {
         this.companyHomeStore = new StoreRef(companyHomeStore);
     }
-    
+
     /**
      * Sets the Company Home Path
      * 
-     * @param companyHomePath String
+     * @param companyHomePath
+     *            String
      */
     public void setCompanyHomePath(String companyHomePath)
     {
         this.companyHomePath = companyHomePath;
     }
-    
+
     /**
      * Sets the Shared Home Path
      * 
-     * @param sharedHomePath String
+     * @param sharedHomePath
+     *            String
      */
     public void setSharedHomePath(String sharedHomePath)
     {
@@ -137,7 +140,7 @@ public class Repository implements ApplicationContextAware
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * Sets the search service
      */
@@ -145,7 +148,7 @@ public class Repository implements ApplicationContextAware
     {
         this.searchService = searchService;
     }
-    
+
     /**
      * Sets the node service
      */
@@ -169,7 +172,7 @@ public class Repository implements ApplicationContextAware
     {
         this.personService = personService;
     }
-    
+
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         lifecycle.setApplicationContext(applicationContext);
@@ -179,7 +182,7 @@ public class Repository implements ApplicationContextAware
     {
         lifecycle.onApplicationEvent(event);
     }
-    
+
     /**
      * Hooks into Spring Application Lifecycle
      */
@@ -190,49 +193,47 @@ public class Repository implements ApplicationContextAware
         {
             initContext();
         }
-        
+
         @Override
         protected void onShutdown(ApplicationEvent event)
         {
-            //NOOP
+            // NOOP
         }
     }
-    
+
     /**
      * Initialise Repository Context
      */
     protected void initContext()
     {
-        //NOOP
+        // NOOP
     }
-    
+
     /**
      * Gets the root home of the company home store
      * 
-     * @return  root node ref
+     * @return root node ref
      */
     public NodeRef getRootHome()
     {
         // note: store root nodes are cached by the NodeDAO
         return nodeService.getRootNode(companyHomeStore);
     }
-    
+
     /**
      * Gets the Company Home. Note this is tenant-aware if the correct Cache is supplied.
-     *  
-     * @return  company home node ref
+     * 
+     * @return company home node ref
      */
     public NodeRef getCompanyHome()
     {
         NodeRef companyHomeRef = singletonCache.get(KEY_COMPANYHOME_NODEREF);
         if (companyHomeRef == null)
         {
-            companyHomeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-            {
+            companyHomeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
                 public NodeRef doWork() throws Exception
                 {
-                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-                    {
+                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
                         public NodeRef execute() throws Exception
                         {
                             List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(companyHomeStore), companyHomePath, null, namespaceService, false);
@@ -245,7 +246,7 @@ public class Repository implements ApplicationContextAware
                     }, true);
                 }
             }, AuthenticationUtil.getSystemUserName());
-            
+
             singletonCache.put(KEY_COMPANYHOME_NODEREF, companyHomeRef);
         }
         return companyHomeRef;
@@ -254,19 +255,17 @@ public class Repository implements ApplicationContextAware
     /**
      * Gets the Guest Home. Note this is tenant-aware if the correct Cache is supplied.
      *
-     * @return  guest home node ref
+     * @return guest home node ref
      */
     public NodeRef getGuestHome()
     {
         NodeRef guestHomeRef = singletonCache.get(KEY_GUESTHOME_NODEREF);
         if (guestHomeRef == null)
         {
-            guestHomeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-            {
+            guestHomeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
                 public NodeRef doWork() throws Exception
                 {
-                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-                    {
+                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
                         public NodeRef execute() throws Exception
                         {
                             List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(companyHomeStore), guestHomePath, null, namespaceService, false);
@@ -287,20 +286,18 @@ public class Repository implements ApplicationContextAware
 
     /**
      * Gets the Shared Home. Note this is tenant-aware if the correct Cache is supplied.
-     *  
-     * @return  shared home node ref
+     * 
+     * @return shared home node ref
      */
     public NodeRef getSharedHome()
     {
         NodeRef sharedHomeRef = singletonCache.get(KEY_SHAREDHOME_NODEREF);
         if (sharedHomeRef == null)
         {
-            sharedHomeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-            {
+            sharedHomeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
                 public NodeRef doWork() throws Exception
                 {
-                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-                    {
+                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
                         public NodeRef execute() throws Exception
                         {
                             List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(companyHomeStore), sharedHomePath, null, namespaceService, false);
@@ -313,21 +310,20 @@ public class Repository implements ApplicationContextAware
                     }, true);
                 }
             }, AuthenticationUtil.getSystemUserName());
-            
+
             singletonCache.put(KEY_SHAREDHOME_NODEREF, sharedHomeRef);
         }
         return sharedHomeRef;
     }
 
     /**
-     * Gets the currently authenticated person
-     * Includes any overlay authentication set by runas 
-     * @return  person node ref
+     * Gets the currently authenticated person Includes any overlay authentication set by runas
+     * 
+     * @return person node ref
      */
     public NodeRef getPerson()
     {
-        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
-        {
+        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>() {
             @Override
             public NodeRef execute() throws Throwable
             {
@@ -345,16 +341,15 @@ public class Repository implements ApplicationContextAware
         };
         return retryingTransactionHelper.doInTransaction(callback, true);
     }
-    
+
     /**
-     * Gets the currently fully authenticated person, 
-     * Excludes any overlay authentication set by runas 
-     * @return  person node ref
+     * Gets the currently fully authenticated person, Excludes any overlay authentication set by runas
+     * 
+     * @return person node ref
      */
     public NodeRef getFullyAuthenticatedPerson()
     {
-        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
-        {
+        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>() {
             @Override
             public NodeRef execute() throws Throwable
             {
@@ -376,17 +371,17 @@ public class Repository implements ApplicationContextAware
     /**
      * Gets the user home of the currently authenticated person
      * 
-     * @param person  person
-     * @return  user home of person
+     * @param person
+     *            person
+     * @return user home of person
      */
     public NodeRef getUserHome(final NodeRef person)
     {
-        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
-        {
+        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>() {
             @Override
             public NodeRef execute() throws Throwable
             {
-                NodeRef homeFolderRef = (NodeRef)nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER);
+                NodeRef homeFolderRef = (NodeRef) nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER);
                 if (homeFolderRef != null && nodeService.exists(homeFolderRef))
                 {
                     return homeFolderRef;
@@ -399,29 +394,25 @@ public class Repository implements ApplicationContextAware
         };
         return retryingTransactionHelper.doInTransaction(callback, true);
     }
-    
+
     /**
      * Helper to convert a Web Script Request URL to a Node Ref
      * <p/>
-     * 1) Node - {store_type}/{store_id}/{node_id} 
-     * <br/>
-     *    Resolve to node via its Node Reference.
-     * <br/>
-     * 2) Path - {store_type}/{store_id}/{path}
-     * <br/>
-     *    Resolve to node via its display path.
-     * <br/>
-     * 3) QName - {store_type}/{store_id}/{child_qname_path}  TODO: Implement
-     * <br/>
-     *    Resolve to node via its child qname path.
+     * 1) Node - {store_type}/{store_id}/{node_id} <br/>
+     * Resolve to node via its Node Reference. <br/>
+     * 2) Path - {store_type}/{store_id}/{path} <br/>
+     * Resolve to node via its display path. <br/>
+     * 3) QName - {store_type}/{store_id}/{child_qname_path} TODO: Implement <br/>
+     * Resolve to node via its child qname path.
      * 
-     * @param  referenceType  one of node, path or qname
-     * @return  reference  array of reference segments (as described above for each reference type)
+     * @param referenceType
+     *            one of node, path or qname
+     * @return reference array of reference segments (as described above for each reference type)
      */
     public NodeRef findNodeRef(String referenceType, String[] reference)
     {
         NodeRef nodeRef = null;
-        
+
         // construct store reference
         if (reference.length < 3)
         {
@@ -446,7 +437,7 @@ public class Repository implements ApplicationContextAware
                     {
                         // process optional path elements
                         List<String> paths = new ArrayList<String>(reference.length - 3);
-                        for (int i=3; i<reference.length; i++)
+                        for (int i = 3; i < reference.length; i++)
                         {
                             paths.add(reference[i]);
                         }
@@ -467,7 +458,7 @@ public class Repository implements ApplicationContextAware
             else if (referenceType.equals("path"))
             {
                 // TODO: Allow a root path to be specified - for now, hard-code to Company Home
-                //NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+                // NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
                 NodeRef rootNodeRef = getCompanyHome();
                 if (reference.length == 3)
                 {
@@ -478,9 +469,9 @@ public class Repository implements ApplicationContextAware
                 }
                 else
                 {
-                    String[] path = new String[reference.length - /*2*/3];
-                    System.arraycopy(reference, /*2*/3, path, 0, path.length);
-                    
+                    String[] path = new String[reference.length - /* 2 */3];
+                    System.arraycopy(reference, /* 2 */3, path, 0, path.length);
+
                     try
                     {
                         FileInfo fileInfo = fileFolderService.resolveNamePath(rootNodeRef, Arrays.asList(path));
@@ -492,14 +483,14 @@ public class Repository implements ApplicationContextAware
                     }
                 }
             }
-            
+
             else
             {
                 // TODO: Implement 'qname' style
                 throw new AlfrescoRuntimeException("Web Script Node URL specified an invalid reference style of '" + referenceType + "'");
             }
         }
-        
+
         return nodeRef;
     }
 }

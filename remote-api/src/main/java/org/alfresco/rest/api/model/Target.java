@@ -32,5 +32,4 @@ package org.alfresco.rest.api.model;
  *
  */
 public abstract class Target
-{
-}
+{}

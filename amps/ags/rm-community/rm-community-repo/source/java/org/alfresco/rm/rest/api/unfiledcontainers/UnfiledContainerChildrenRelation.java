@@ -39,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.extensions.webscripts.servlet.FormData;
+
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.activities.ActivityType;
@@ -67,8 +69,6 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.extensions.webscripts.servlet.FormData;
-
 
 /**
  * Unfiled container children relation
@@ -77,14 +77,13 @@ import org.springframework.extensions.webscripts.servlet.FormData;
  * @author Ana Bozianu
  * @since 2.6
  */
-@RelationshipResource(name="children", entityResource = UnfiledContainerEntityResource.class, title = "Children of an unfiled container")
+@RelationshipResource(name = "children", entityResource = UnfiledContainerEntityResource.class, title = "Children of an unfiled container")
 public class UnfiledContainerChildrenRelation implements RelationshipResourceAction.Read<UnfiledContainerChild>,
-                                                 RelationshipResourceAction.Create<UnfiledContainerChild>,
-                                                 MultiPartRelationshipResourceAction.Create<UnfiledContainerChild>
+        RelationshipResourceAction.Create<UnfiledContainerChild>,
+        MultiPartRelationshipResourceAction.Create<UnfiledContainerChild>
 {
 
-    private final static Set<String> LIST_UNFILED_CONTAINER_CHILDREN_EQUALS_QUERY_PROPERTIES =
-            new HashSet<>(Arrays.asList(new String[] {UnfiledChild.PARAM_IS_UNFILED_RECORD_FOLDER, UnfiledChild.PARAM_IS_RECORD, RMNode.PARAM_NODE_TYPE}));
+    private final static Set<String> LIST_UNFILED_CONTAINER_CHILDREN_EQUALS_QUERY_PROPERTIES = new HashSet<>(Arrays.asList(new String[]{UnfiledChild.PARAM_IS_UNFILED_RECORD_FOLDER, UnfiledChild.PARAM_IS_RECORD, RMNode.PARAM_NODE_TYPE}));
 
     private FilePlanComponentsApiUtils apiUtils;
     private SearchTypesFactory searchTypesFactory;
@@ -141,8 +140,7 @@ public class UnfiledContainerChildrenRelation implements RelationshipResourceAct
 
         final List<FileInfo> page = pagingResults.getPage();
         Map<String, UserInfo> mapUserInfo = new HashMap<>();
-        List<UnfiledContainerChild> nodes = new AbstractList<UnfiledContainerChild>()
-        {
+        List<UnfiledContainerChild> nodes = new AbstractList<UnfiledContainerChild>() {
             @Override
             public UnfiledContainerChild get(int index)
             {
@@ -169,7 +167,7 @@ public class UnfiledContainerChildrenRelation implements RelationshipResourceAct
     }
 
     @Override
-    @WebApiDescription(title="Create one (or more) nodes as children of a unfiled container identified by 'unfiledContainerId'")
+    @WebApiDescription(title = "Create one (or more) nodes as children of a unfiled container identified by 'unfiledContainerId'")
     public List<UnfiledContainerChild> create(String unfiledContainerId, final List<UnfiledContainerChild> nodeInfos, Parameters parameters)
     {
         checkNotBlank("unfiledContainerId", unfiledContainerId);
@@ -179,8 +177,7 @@ public class UnfiledContainerChildrenRelation implements RelationshipResourceAct
         final NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(unfiledContainerId, RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
 
         // Create the nodes
-        RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>()
-        {
+        RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>() {
             public List<NodeRef> execute()
             {
                 List<NodeRef> createdNodes = new LinkedList<>();
@@ -197,7 +194,7 @@ public class UnfiledContainerChildrenRelation implements RelationshipResourceAct
         // Get the nodes info
         List<UnfiledContainerChild> result = new LinkedList<>();
         Map<String, UserInfo> mapUserInfo = new HashMap<>();
-        for(NodeRef newNodeRef : createdNodes)
+        for (NodeRef newNodeRef : createdNodes)
         {
             FileInfo info = fileFolderService.getFileInfo(newNodeRef);
             apiUtils.postActivity(info, parentNodeRef, ActivityType.FILE_ADDED);
@@ -219,8 +216,7 @@ public class UnfiledContainerChildrenRelation implements RelationshipResourceAct
         UploadInfo uploadInfo = new UploadInfo(formData);
 
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(unfiledContainerId, RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
-        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
-        {
+        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute()
             {
                 return apiUtils.uploadRecord(parentNodeRef, uploadInfo, parameters);

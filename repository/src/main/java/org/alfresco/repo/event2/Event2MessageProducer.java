@@ -27,12 +27,13 @@ package org.alfresco.repo.event2;
 
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.rawevents.AbstractEventProducer;
-import org.alfresco.util.PropertyCheck;
 import org.apache.camel.ExchangePattern;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.rawevents.AbstractEventProducer;
+import org.alfresco.util.PropertyCheck;
 
 /**
  * An Apache Camel implementation of a message producer for repo event2.

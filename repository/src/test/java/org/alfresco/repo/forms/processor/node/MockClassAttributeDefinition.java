@@ -84,12 +84,12 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
         mockDataTypeName(mock, dataTypeName, null);
         return mock;
     }
-    
+
     public static MockClassAttributeDefinition mockPropertyDefinition(QName name, QName dataTypeName, String defaultValue)
     {
         return mockPropertyDefinition(name, dataTypeName, null, defaultValue);
     }
-    
+
     public static MockClassAttributeDefinition mockPropertyDefinition(QName name, QName dataTypeName, Class<?> typeClass, String defaultValue)
     {
         MockClassAttributeDefinition mock = new MockClassAttributeDefinition(name);
@@ -98,14 +98,14 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
         return mock;
     }
 
-    public static MockClassAttributeDefinition mockPropertyDefinition(QName name,// 
-                QName dataTypeName,//
-                String title,//
-                String description,//
-                boolean isProtected,//
-                String defaultValue,//
-                boolean Mandatory,//
-                boolean multiValued)
+    public static MockClassAttributeDefinition mockPropertyDefinition(QName name, //
+            QName dataTypeName, //
+            String title, //
+            String description, //
+            boolean isProtected, //
+            String defaultValue, //
+            boolean Mandatory, //
+            boolean multiValued)
     {
         MockClassAttributeDefinition mock = new MockClassAttributeDefinition(name, title, description, isProtected);
         mockDataTypeName(mock, dataTypeName, null);
@@ -122,13 +122,13 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
         return mock;
     }
 
-    public static MockClassAttributeDefinition mockAssociationDefinition(QName name,// 
-                QName targetClassName,//
-                String title,//
-                String description,//
-                boolean isProtected,//
-                boolean targetMandatory,//
-                boolean targetMany)
+    public static MockClassAttributeDefinition mockAssociationDefinition(QName name, //
+            QName targetClassName, //
+            String title, //
+            String description, //
+            boolean isProtected, //
+            boolean targetMandatory, //
+            boolean targetMany)
     {
         MockClassAttributeDefinition mock = new MockClassAttributeDefinition(name, title, description, isProtected);
         mockTargetClassName(targetClassName, mock);
@@ -140,7 +140,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     private static void mockDataTypeName(MockClassAttributeDefinition mock, QName dataTypeName, Class<?> javaClass)
     {
         when(mock.dataType.getName()).thenReturn(dataTypeName);
-        if (javaClass!=null)
+        if (javaClass != null)
         {
             when(mock.dataType.getJavaClassName()).thenReturn(javaClass.getName());
         }
@@ -228,7 +228,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     {
         return title;
     }
-    
+
     @Override
     public boolean isIndexed()
     {
@@ -338,8 +338,8 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getFacetable()
-     */
+     * 
+     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getFacetable() */
     @Override
     public Facetable getFacetable()
     {

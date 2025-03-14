@@ -25,10 +25,11 @@
  */
 package org.alfresco.repo.admin.patch;
 
-import org.alfresco.service.descriptor.Descriptor;
-import org.alfresco.service.descriptor.DescriptorService;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
+import org.alfresco.service.descriptor.Descriptor;
+import org.alfresco.service.descriptor.DescriptorService;
 
 /**
  * @author Andy
@@ -70,11 +71,9 @@ public class OptionalPatchApplicationCheckBootstrapBean extends AbstractLifecycl
         this.descriptorService = descriptorService;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.
-     * ApplicationEvent)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context. ApplicationEvent) */
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -97,11 +96,9 @@ public class OptionalPatchApplicationCheckBootstrapBean extends AbstractLifecycl
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.context.
-     * ApplicationEvent)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.context. ApplicationEvent) */
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
@@ -117,7 +114,7 @@ public class OptionalPatchApplicationCheckBootstrapBean extends AbstractLifecycl
     {
         return patchApplied;
     }
-    
+
     public String getPatchId()
     {
         return patch.getId();

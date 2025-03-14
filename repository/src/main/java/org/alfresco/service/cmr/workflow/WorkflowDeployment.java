@@ -29,7 +29,7 @@ import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Workflow Definition Deployment
- *  
+ * 
  * @author davidc
  */
 @AlfrescoPublicApi
@@ -47,7 +47,7 @@ public class WorkflowDeployment
     {
         // Default Constructor.
     }
-    
+
     public WorkflowDeployment(WorkflowDefinition definition, String... problems)
     {
         this.definition = definition;
@@ -71,8 +71,8 @@ public class WorkflowDeployment
     }
 
     /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
+     * 
+     * @see java.lang.Object#toString() */
     @Override
     public String toString()
     {

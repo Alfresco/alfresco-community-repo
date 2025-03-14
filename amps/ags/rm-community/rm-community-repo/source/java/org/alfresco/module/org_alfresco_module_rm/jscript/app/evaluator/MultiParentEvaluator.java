@@ -51,8 +51,7 @@ public class MultiParentEvaluator extends BaseEvaluator
     @Override
     protected boolean evaluateImpl(final NodeRef nodeRef)
     {
-        return AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
-        {
+        return AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>() {
             public Boolean doWork()
             {
                 // get parent associations

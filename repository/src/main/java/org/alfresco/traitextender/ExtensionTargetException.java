@@ -41,18 +41,18 @@ public class ExtensionTargetException extends RuntimeException
     }
 
     public ExtensionTargetException(String message, Throwable cause, boolean enableSuppression,
-                boolean writableStackTrace)
+            boolean writableStackTrace)
     {
         super(message,
-              cause,
-              enableSuppression,
-              writableStackTrace);
+                cause,
+                enableSuppression,
+                writableStackTrace);
     }
 
     public ExtensionTargetException(String message, Throwable cause)
     {
         super(message,
-              cause);
+                cause);
     }
 
     public ExtensionTargetException(String message)

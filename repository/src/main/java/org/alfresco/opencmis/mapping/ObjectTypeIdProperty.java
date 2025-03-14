@@ -28,11 +28,12 @@ package org.alfresco.opencmis.mapping;
 import java.io.Serializable;
 import java.util.Collections;
 
+import org.apache.chemistry.opencmis.commons.PropertyIds;
+
 import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
  * Get the CMIS object type id property
@@ -44,9 +45,12 @@ public class ObjectTypeIdProperty extends AbstractProperty
     /**
      * Construct
      *
-     * @param serviceRegistry ServiceRegistry
-     * @param connector CMISConnector
-     * @param dictionaryService CMISDictionaryService
+     * @param serviceRegistry
+     *            ServiceRegistry
+     * @param connector
+     *            CMISConnector
+     * @param dictionaryService
+     *            CMISDictionaryService
      */
     public ObjectTypeIdProperty(ServiceRegistry serviceRegistry, CMISConnector connector,
             CMISDictionaryService dictionaryService)
@@ -56,11 +60,11 @@ public class ObjectTypeIdProperty extends AbstractProperty
 
     public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        if(nodeInfo.getType() == null)
+        if (nodeInfo.getType() == null)
         {
             return (Serializable) Collections.emptyList();
         }
-        
+
         return nodeInfo.getType().getTypeId();
     }
 }

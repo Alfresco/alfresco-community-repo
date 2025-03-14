@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.networks;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.Networks;
 import org.alfresco.rest.api.model.Network;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -33,21 +35,20 @@ import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
 
-@EntityResource(name="networks", title = "Networks entity")
+@EntityResource(name = "networks", title = "Networks entity")
 public class NetworksEntityResource implements EntityResourceAction.ReadById<Network>, InitializingBean
 {
-	public static final String NAME = "networks";
+    public static final String NAME = "networks";
 
-	private Networks networks;
+    private Networks networks;
 
-	public void setNetworks(Networks networks)
-	{
-		this.networks = networks;
-	}
+    public void setNetworks(Networks networks)
+    {
+        this.networks = networks;
+    }
 
-	@Override
+    @Override
     public void afterPropertiesSet()
     {
         ParameterCheck.mandatory("networks", this.networks);
@@ -58,6 +59,6 @@ public class NetworksEntityResource implements EntityResourceAction.ReadById<Net
     @WebApiParam(name = "networkId", title = "The network name")
     public Network readById(final String networkId, Parameters parameters)
     {
-    	return networks.getNetwork(networkId);
+        return networks.getNetwork(networkId);
     }
 }

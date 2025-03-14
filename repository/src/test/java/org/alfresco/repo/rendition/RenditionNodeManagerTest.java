@@ -60,15 +60,15 @@ public class RenditionNodeManagerTest extends TestCase
     private final NodeService nodeService = mock(NodeService.class);
     private final RenditionService renditionService = mock(RenditionService.class);
     private final BehaviourFilter behaviourFilter = mock(BehaviourFilter.class);
-    
+
     private final NodeRef source = new NodeRef("http://test/sourceId");
     private final NodeRef destination = new NodeRef("http://test/destinationId");
     private final NodeRef oldRendition = new NodeRef("http://test/oldRenditionId");
-    
+
     private final QName renditionName = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "renditionName");
-    private final RenditionDefinition definition = new RenditionDefinitionImpl("definitionId", renditionName, "engineName" );
-    
-    // Check findOrCreateRenditionNode() works when there is 
+    private final RenditionDefinition definition = new RenditionDefinitionImpl("definitionId", renditionName, "engineName");
+
+    // Check findOrCreateRenditionNode() works when there is
     // no old rendition and a destination node is specified and
     public void testNoOldRenditionAndDestinationSpecified()
     {
@@ -79,8 +79,8 @@ public class RenditionNodeManagerTest extends TestCase
         ChildAssociationRef result = manager.findOrCreateRenditionNode();
         assertEquals(parentAssoc, result);
     }
-    
-    // Check findOrCreateRenditionNode() works when there is 
+
+    // Check findOrCreateRenditionNode() works when there is
     // no old rendition and a destination node is not specified.
     // the parent node is the source node.
     public void testNoOldRenditionAndNoDestinationSpecifiedAndParentIsSource()
@@ -88,15 +88,15 @@ public class RenditionNodeManagerTest extends TestCase
         Map<QName, Serializable> indexProps = Collections.singletonMap(ContentModel.PROP_IS_INDEXED, (Serializable) Boolean.FALSE);
         ChildAssociationRef parentAssoc = makeAssoc(source, destination, true);
         when(nodeService.createNode(source, RenditionModel.ASSOC_RENDITION, renditionName, ContentModel.TYPE_CONTENT, indexProps))
-            .thenReturn(parentAssoc);
-        
+                .thenReturn(parentAssoc);
+
         RenditionLocation location = new RenditionLocationImpl(source, null, renditionName.getLocalName());
         RenditionNodeManager manager = new RenditionNodeManager(source, null, location, definition, nodeService, renditionService, behaviourFilter);
         ChildAssociationRef result = manager.findOrCreateRenditionNode();
         assertEquals(parentAssoc, result);
     }
-    
-    // Check findOrCreateRenditionNode() works when there is 
+
+    // Check findOrCreateRenditionNode() works when there is
     // no old rendition and a destination node is not specified.
     // the parent node is not the source node.
     public void testNoOldRenditionAndNoDestinationSpecifiedAndParentIsNotSource()
@@ -105,11 +105,11 @@ public class RenditionNodeManagerTest extends TestCase
         QName assocName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, localName);
         NodeRef parent = new NodeRef("http://test/parentId");
         ChildAssociationRef parentAssoc = makeAssoc(parent, destination, assocName, false);
-        
+
         Map<QName, Serializable> indexProps = Collections.singletonMap(ContentModel.PROP_IS_INDEXED, (Serializable) Boolean.FALSE);
         when(nodeService.createNode(parent, ContentModel.ASSOC_CONTAINS, assocName, ContentModel.TYPE_CONTENT, indexProps))
-            .thenReturn(parentAssoc);
-        
+                .thenReturn(parentAssoc);
+
         RenditionLocation location = new RenditionLocationImpl(parent, null, localName);
         RenditionNodeManager manager = new RenditionNodeManager(source, null, location, definition, nodeService, renditionService, behaviourFilter);
         ChildAssociationRef result = manager.findOrCreateRenditionNode();
@@ -117,8 +117,8 @@ public class RenditionNodeManagerTest extends TestCase
         // Check the rendition association is created.
         verify(nodeService).addChild(source, destination, RenditionModel.ASSOC_RENDITION, renditionName);
     }
-    
-    // Check findOrCreateRenditionNode() works when there is 
+
+    // Check findOrCreateRenditionNode() works when there is
     // an old rendition which is specified as the destination
     // node in the location.
     public void testHasOldRenditionMatchesSpecifiedDestinationNode()
@@ -131,8 +131,8 @@ public class RenditionNodeManagerTest extends TestCase
         ChildAssociationRef result = manager.findOrCreateRenditionNode();
         assertEquals(renditionAssoc, result);
     }
-    
-    // Check findOrCreateRenditionNode() works when there is 
+
+    // Check findOrCreateRenditionNode() works when there is
     // an old rendition which has the specified parent folder.
     // If no name is specified and the parent folder is correct then the location should match.
     public void testHasOldRenditionCorrectParentNoNameSpecified()
@@ -142,7 +142,7 @@ public class RenditionNodeManagerTest extends TestCase
         when(renditionService.getRenditionByName(source, renditionName)).thenReturn(renditionAssoc);
         ChildAssociationRef parentAssoc = makeAssoc(parent, oldRendition, false);
         when(nodeService.getPrimaryParent(oldRendition)).thenReturn(parentAssoc);
-  
+
         RenditionLocation location = new RenditionLocationImpl(parent, null, null);
         RenditionNodeManager manager = new RenditionNodeManager(source, oldRendition, location, definition, nodeService, renditionService, behaviourFilter);
         ChildAssociationRef result = manager.findOrCreateRenditionNode();
@@ -150,7 +150,7 @@ public class RenditionNodeManagerTest extends TestCase
         verify(nodeService, times(2)).getPrimaryParent(oldRendition);
     }
 
-    // Check findOrCreateRenditionNode() works when there is 
+    // Check findOrCreateRenditionNode() works when there is
     // an old rendition which has the specified parent folder.
     // If the correct name is specified and the parent folder is correct then the location should match.
     public void testHasOldRenditionCorrectParentCorrectNameSpecified()
@@ -163,8 +163,8 @@ public class RenditionNodeManagerTest extends TestCase
         QName assocName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, rendName);
         ChildAssociationRef parentAssoc = makeAssoc(parent, oldRendition, assocName, false);
         when(nodeService.getPrimaryParent(oldRendition)).thenReturn(parentAssoc);
-        when(nodeService.getProperty(oldRendition,ContentModel.PROP_NAME ))
-            .thenReturn(rendName);
+        when(nodeService.getProperty(oldRendition, ContentModel.PROP_NAME))
+                .thenReturn(rendName);
 
         RenditionLocationImpl location = new RenditionLocationImpl(parent, null, rendName);
         RenditionNodeManager manager = new RenditionNodeManager(source, oldRendition, location, definition, nodeService, renditionService, behaviourFilter);
@@ -172,8 +172,8 @@ public class RenditionNodeManagerTest extends TestCase
         assertEquals(parentAssoc, result);
         verify(nodeService, times(2)).getPrimaryParent(oldRendition);
     }
-    
-    // Check findOrCreateRenditionNode() works when there is 
+
+    // Check findOrCreateRenditionNode() works when there is
     // an old rendition which has the wrong parent folder.
     public void testHasOldRenditionWrongParentSpecified()
     {
@@ -185,17 +185,17 @@ public class RenditionNodeManagerTest extends TestCase
         // The old rendition is under the source node but should be under parent node.
         when(nodeService.getPrimaryParent(oldRendition)).thenReturn(sourceAssoc);
         when(nodeService.moveNode(oldRendition, parent, ContentModel.ASSOC_CONTAINS, renditionName))
-            .thenReturn(parentAssoc);
+                .thenReturn(parentAssoc);
         RenditionLocationImpl location = new RenditionLocationImpl(parent, null, null);
         RenditionNodeManager manager = new RenditionNodeManager(source, oldRendition, location, definition, nodeService, renditionService, behaviourFilter);
         ChildAssociationRef result = manager.findOrCreateRenditionNode();
         assertEquals(parentAssoc, result);
         verify(nodeService).moveNode(oldRendition, parent, ContentModel.ASSOC_CONTAINS, renditionName);
- 
+
         // The old rendition is under the parent node but should be under the source node.
         when(nodeService.getPrimaryParent(oldRendition)).thenReturn(parentAssoc);
         when(nodeService.moveNode(oldRendition, source, RenditionModel.ASSOC_RENDITION, renditionName))
-            .thenReturn(sourceAssoc);
+                .thenReturn(sourceAssoc);
         location = new RenditionLocationImpl(source, null, null);
         manager = new RenditionNodeManager(source, oldRendition, location, definition, nodeService, renditionService, behaviourFilter);
         result = manager.findOrCreateRenditionNode();
@@ -205,18 +205,18 @@ public class RenditionNodeManagerTest extends TestCase
         // The old rendition is under the parent node but should be under the new parent node.
         NodeRef newParent = new NodeRef("http://test/newParentId");
         ChildAssociationRef newParentAssoc = makeAssoc(newParent, oldRendition, false);
-        
+
         when(nodeService.getPrimaryParent(oldRendition)).thenReturn(parentAssoc);
         when(nodeService.moveNode(oldRendition, newParent, ContentModel.ASSOC_CONTAINS, renditionName))
-            .thenReturn(newParentAssoc);
+                .thenReturn(newParentAssoc);
         location = new RenditionLocationImpl(newParent, null, null);
         manager = new RenditionNodeManager(source, oldRendition, location, definition, nodeService, renditionService, behaviourFilter);
         result = manager.findOrCreateRenditionNode();
         assertEquals(newParentAssoc, result);
         verify(nodeService).moveNode(oldRendition, newParent, ContentModel.ASSOC_CONTAINS, renditionName);
     }
-    
-    // Check findOrCreateRenditionNode() works when there is 
+
+    // Check findOrCreateRenditionNode() works when there is
     // an old rendition which has the correct parent folder
     // but the wrong name
     public void testHasOldRenditionCorrectParentWrongNameSpecified()
@@ -224,28 +224,28 @@ public class RenditionNodeManagerTest extends TestCase
         NodeRef parent = new NodeRef("http://test/parentId");
         ChildAssociationRef parentAssoc = makeAssoc(parent, oldRendition, false);
         ChildAssociationRef renditionAssoc = makeAssoc(source, oldRendition, true);
-        
+
         String newName = "newName";
         QName assocName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, newName);
         when(renditionService.getRenditionByName(source, renditionName)).thenReturn(renditionAssoc);
         when(nodeService.getPrimaryParent(oldRendition)).thenReturn(parentAssoc);
         when(nodeService.moveNode(oldRendition, parent, ContentModel.ASSOC_CONTAINS, assocName))
-            .thenReturn(parentAssoc);
+                .thenReturn(parentAssoc);
         when(nodeService.getProperty(oldRendition, ContentModel.PROP_NAME))
-            .thenReturn("oldName");
-        
+                .thenReturn("oldName");
+
         RenditionLocationImpl location = new RenditionLocationImpl(parent, null, newName);
         RenditionNodeManager manager = new RenditionNodeManager(source, oldRendition, location, definition, nodeService, renditionService, behaviourFilter);
         ChildAssociationRef result = manager.findOrCreateRenditionNode();
         assertEquals(parentAssoc, result);
         verify(nodeService).moveNode(oldRendition, parent, ContentModel.ASSOC_CONTAINS, assocName);
     }
-    
+
     private ChildAssociationRef makeAssoc(NodeRef parent, NodeRef child, boolean isRenditionAssoc)
     {
         return makeAssoc(parent, child, renditionName, isRenditionAssoc);
     }
-        
+
     private ChildAssociationRef makeAssoc(NodeRef parent, NodeRef child, QName assocName, boolean isRenditionAssoc)
     {
         QName assocType = isRenditionAssoc ? RenditionModel.ASSOC_RENDITION : ContentModel.ASSOC_CONTAINS;

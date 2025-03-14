@@ -33,6 +33,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies;
@@ -63,9 +67,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * Dictionary model type behaviour.
@@ -73,57 +74,57 @@ import org.springframework.dao.ConcurrencyFailureException;
  * @author Roy Wetherall, janv, sglover
  */
 public class DictionaryModelType implements ContentServicePolicies.OnContentUpdatePolicy,
-                                            NodeServicePolicies.OnUpdatePropertiesPolicy,
-                                            NodeServicePolicies.BeforeDeleteNodePolicy,
-                                            NodeServicePolicies.OnDeleteNodePolicy,
-                                            NodeServicePolicies.OnCreateNodePolicy,
-                                            NodeServicePolicies.OnRemoveAspectPolicy,
-                                            NodeServicePolicies.OnSetNodeTypePolicy,
-                                            NodeServicePolicies.BeforeCreateNodePolicy
+        NodeServicePolicies.OnUpdatePropertiesPolicy,
+        NodeServicePolicies.BeforeDeleteNodePolicy,
+        NodeServicePolicies.OnDeleteNodePolicy,
+        NodeServicePolicies.OnCreateNodePolicy,
+        NodeServicePolicies.OnRemoveAspectPolicy,
+        NodeServicePolicies.OnSetNodeTypePolicy,
+        NodeServicePolicies.BeforeCreateNodePolicy
 {
     // Logger
     private static Log logger = LogFactory.getLog(DictionaryModelType.class);
-    
+
     /** Key to the pending models */
     private static final String KEY_PENDING_MODELS = "dictionaryModelType.pendingModels";
-    
+
     /** Key to the pending deleted models */
     private static final String KEY_PENDING_DELETE_MODELS = "dictionaryModelType.pendingDeleteModels";
-    
+
     /** Key to the removed "workingcopy" aspect */
     private static final String KEY_WORKING_COPY = "dictionaryModelType.workingCopy";
-    
+
     /** The name of the lock used to ensure that DictionaryModelType updates do not run on more than one thread/node at the same time. */
     private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "DictionaryModelType");
-    
+
     private static final String MODEL_IN_USE = "cmm.service.model_in_use";
-    
+
     public static final String ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY = "ALFRESCO_MODEL_ADMINISTRATORS";
     public static final String GROUP_ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY = PermissionService.GROUP_PREFIX
-                + ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY;
-    
+            + ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY;
+
     /** The dictionary DAO */
     private DictionaryDAO dictionaryDAO;
-    
+
     /** The namespace DAO */
     private NamespaceDAO namespaceDAO;
-    
+
     /** The node service */
     private NodeService nodeService;
-    
+
     /** The content service */
     private ContentService contentService;
-    
+
     /** The policy component */
     private PolicyComponent policyComponent;
-    
+
     /** The tenant service */
     private TenantService tenantService;
-    
+
     private TransactionService transactionService;
-    
+
     private JobLockService jobLockService;
-    
+
     /** Transaction listener */
     private DictionaryModelTypeTransactionListener transactionListener;
 
@@ -131,10 +132,10 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
 
     /** Validation marker */
     private boolean doValidation = true;
-    
+
     /** Provides information about custom models */
     private AuthorityService authorityService;
-    
+
     /**
      * Set the dictionary DAO
      */
@@ -145,17 +146,17 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
 
     public void setModelValidator(ModelValidator modelValidator)
     {
-		this.modelValidator = modelValidator;
-	}
+        this.modelValidator = modelValidator;
+    }
 
-	/**
+    /**
      * Set the namespace DOA
      */
     public void setNamespaceDAO(NamespaceDAO namespaceDAO)
     {
         this.namespaceDAO = namespaceDAO;
     }
-    
+
     /**
      * Set the node service
      */
@@ -163,7 +164,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Set the content service
      */
@@ -171,7 +172,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     {
         this.contentService = contentService;
     }
-    
+
     /**
      * Set the policy component
      */
@@ -195,7 +196,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     {
         this.transactionService = transactionService;
     }
-    
+
     public void setJobLockService(JobLockService jobLockService)
     {
         this.jobLockService = jobLockService;
@@ -203,117 +204,121 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
 
     public void setDoValidation(boolean doValidation)
     {
-    	this.doValidation = doValidation;
-    }  
-    
+        this.doValidation = doValidation;
+    }
+
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
     }
-   
+
     /**
      * The initialise method
      */
     public void init()
     {
-    	if(logger.isDebugEnabled())
-    	{
-    		logger.debug("init : bind class behaviours for " + ContentModel.TYPE_DICTIONARY_MODEL);
-    	}
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("init : bind class behaviours for " + ContentModel.TYPE_DICTIONARY_MODEL);
+        }
         // Register interest in the onContentUpdate policy for the dictionary model type
         policyComponent.bindClassBehaviour(
                 ContentServicePolicies.OnContentUpdatePolicy.QNAME,
                 ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "onContentUpdate"));
-        
+
         // Register interest in the onUpdateProperties policy for the dictionary model type
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
                 ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "onUpdateProperties"));
-        
+
         // Register interest in the beforeDeleteNode policy for the dictionary model type
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
                 ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "beforeDeleteNode"));
-        
+
         // Register interest in the onDeleteNode policy for the dictionary model type
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"),
                 ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "onDeleteNode"));
-        
+
         // Register interest in the onRemoveAspect policy
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"),
                 ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "onRemoveAspect"));
-        
+
         // Register interest in the onCreateNode policy
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
                 ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "onCreateNode"));
-        
+
         // Register interest in the onSetNodeType policy for the dictionary
         // model type
         policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onSetNodeType"), 
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onSetNodeType"),
                 ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "onSetNodeType"));
-        
+
         // Register interest in the beforeCreateNode policy for the dictionary
         // model type
         policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateNode"), 
+                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateNode"),
                 ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "beforeCreateNode"));
 
         // Create the transaction listener
         this.transactionListener = new DictionaryModelTypeTransactionListener(this.nodeService, this.contentService);
     }
-    
+
     /**
      * On content update behaviour implementation
      * 
-     * @param nodeRef   the node reference whose content has been updated
+     * @param nodeRef
+     *            the node reference whose content has been updated
      */
     public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
-    	if (logger.isTraceEnabled())
+        if (logger.isTraceEnabled())
         {
-            logger.trace("onContentUpdate: nodeRef="+nodeRef+ " ["+AlfrescoTransactionSupport.getTransactionId()+"]");
+            logger.trace("onContentUpdate: nodeRef=" + nodeRef + " [" + AlfrescoTransactionSupport.getTransactionId() + "]");
         }
-        
-        Boolean value = (Boolean)nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_ACTIVE);
+
+        Boolean value = (Boolean) nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_ACTIVE);
         if ((value != null) && (value == true))
         {
-        	queueModel(nodeRef);
+            queueModel(nodeRef);
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     private void queueModel(NodeRef nodeRef)
     {
-        Set<NodeRef> pendingModels = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_PENDING_MODELS);
+        Set<NodeRef> pendingModels = (Set<NodeRef>) AlfrescoTransactionSupport.getResource(KEY_PENDING_MODELS);
         if (pendingModels == null)
         {
-            //pendingModels = Collections.newSetFromMap(new ConcurrentHashMap()); // Java 6
+            // pendingModels = Collections.newSetFromMap(new ConcurrentHashMap()); // Java 6
             pendingModels = new CopyOnWriteArraySet<NodeRef>();
             AlfrescoTransactionSupport.bindResource(KEY_PENDING_MODELS, pendingModels);
         }
         pendingModels.add(tenantService.getName(nodeRef));
-        
+
         AlfrescoTransactionSupport.bindListener(this.transactionListener);
     }
-    
+
     /**
      * On update properties behaviour implementation
      * 
-     * @param nodeRef   the node reference
-     * @param before    the values of the properties before update
-     * @param after     the values of the properties after the update
+     * @param nodeRef
+     *            the node reference
+     * @param before
+     *            the values of the properties before update
+     * @param after
+     *            the values of the properties after the update
      */
     public void onUpdateProperties(
             NodeRef nodeRef,
@@ -322,12 +327,12 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     {
         if (logger.isTraceEnabled())
         {
-            logger.trace("onUpdateProperties: nodeRef="+nodeRef+ " ["+AlfrescoTransactionSupport.getTransactionId()+"]");
+            logger.trace("onUpdateProperties: nodeRef=" + nodeRef + " [" + AlfrescoTransactionSupport.getTransactionId() + "]");
         }
-        
-        Boolean beforeValue = (Boolean)before.get(ContentModel.PROP_MODEL_ACTIVE);
-        Boolean afterValue = (Boolean)after.get(ContentModel.PROP_MODEL_ACTIVE);
-        
+
+        Boolean beforeValue = (Boolean) before.get(ContentModel.PROP_MODEL_ACTIVE);
+        Boolean afterValue = (Boolean) after.get(ContentModel.PROP_MODEL_ACTIVE);
+
         if (beforeValue == null && afterValue != null)
         {
             // if trying to activate the model, check the namespace prefix is not a duplicate
@@ -352,43 +357,43 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             queueModel(nodeRef);
         }
     }
-    
+
     public void onRemoveAspect(NodeRef nodeRef, QName aspect)
     {
         if (logger.isTraceEnabled())
         {
-            logger.trace("onRemoveAspect: nodeRef="+nodeRef+ " ["+AlfrescoTransactionSupport.getTransactionId()+"]");
+            logger.trace("onRemoveAspect: nodeRef=" + nodeRef + " [" + AlfrescoTransactionSupport.getTransactionId() + "]");
         }
-        
+
         // undo/cancel checkout removes the "workingcopy" aspect prior to deleting the node - hence need to track here
         if (aspect.equals(ContentModel.ASPECT_WORKING_COPY))
         {
             AlfrescoTransactionSupport.bindResource(KEY_WORKING_COPY, nodeRef);
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     public void beforeDeleteNode(NodeRef nodeRef)
     {
         boolean workingCopy = nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY);
-        NodeRef wcNodeRef = (NodeRef)AlfrescoTransactionSupport.getResource(KEY_WORKING_COPY);
+        NodeRef wcNodeRef = (NodeRef) AlfrescoTransactionSupport.getResource(KEY_WORKING_COPY);
         if ((wcNodeRef != null) && (wcNodeRef.equals(nodeRef)))
         {
             workingCopy = true;
         }
-        
+
         boolean isVersionNode = nodeRef.getStoreRef().getIdentifier().equals(Version2Model.STORE_ID);
-        
+
         // Ignore if the node is a working copy or version node
-        if (! (workingCopy || isVersionNode))
+        if (!(workingCopy || isVersionNode))
         {
-            QName modelName = (QName)this.nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_NAME);
-            
+            QName modelName = (QName) this.nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_NAME);
+
             if (logger.isTraceEnabled())
             {
-                logger.trace("beforeDeleteNode: nodeRef="+nodeRef+" validate model delete (modelName="+modelName+")");
+                logger.trace("beforeDeleteNode: nodeRef=" + nodeRef + " validate model delete (modelName=" + modelName + ")");
             }
-            
+
             if (modelName != null)
             {
                 // Validate model delete against usages - content and/or workflows
@@ -397,15 +402,15 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                     throw AlfrescoRuntimeException.create(MODEL_IN_USE, modelName);
                 }
 
-                Set<NodeRef> pendingModelDeletes = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_PENDING_DELETE_MODELS);
+                Set<NodeRef> pendingModelDeletes = (Set<NodeRef>) AlfrescoTransactionSupport.getResource(KEY_PENDING_DELETE_MODELS);
                 if (pendingModelDeletes == null)
                 {
-                    //pendingModelDeletes = Collections.newSetFromMap(new ConcurrentHashMap()); // Java 6
+                    // pendingModelDeletes = Collections.newSetFromMap(new ConcurrentHashMap()); // Java 6
                     pendingModelDeletes = new CopyOnWriteArraySet<NodeRef>();
                     AlfrescoTransactionSupport.bindResource(KEY_PENDING_DELETE_MODELS, pendingModelDeletes);
                 }
                 pendingModelDeletes.add(tenantService.getName(nodeRef));
-                
+
                 AlfrescoTransactionSupport.bindListener(this.transactionListener);
             }
         }
@@ -413,63 +418,41 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         {
             if (logger.isTraceEnabled())
             {
-                logger.trace("beforeDeleteNode: nodeRef="+nodeRef+ " ignored ("+(workingCopy ? " workingCopy " : "")+(isVersionNode ? " isVersionNode " : "")+") ["+AlfrescoTransactionSupport.getTransactionId()+"]");
+                logger.trace("beforeDeleteNode: nodeRef=" + nodeRef + " ignored (" + (workingCopy ? " workingCopy " : "") + (isVersionNode ? " isVersionNode " : "") + ") [" + AlfrescoTransactionSupport.getTransactionId() + "]");
             }
         }
     }
-    
-    //@SuppressWarnings("unchecked")
+
+    // @SuppressWarnings("unchecked")
     public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived)
     {
-        /*
-        NodeRef nodeRef = childAssocRef.getChildRef();
-        
-        if (logger.isTraceEnabled())
-        {
-            logger.trace("onDeleteNode: nodeRef="+nodeRef+ " ["+AlfrescoTransactionSupport.getTransactionId()+"]");
-        }
-        
-        Set<NodeRef> pendingDeleteModels = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_PENDING_DELETE_MODELS);
-        
-        if (pendingDeleteModels != null)
-        {
-            if (pendingDeleteModels.contains(nodeRef))
-            {
-                String tenantDomain = tenantService.getDomain(nodeRef.getStoreRef().getIdentifier());
-                String tenantSystemUserName = tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain);
-                
-                AuthenticationUtil.runAs(new RunAsWork<Object>()
-                {
-                    public Object doWork()
-                    {
-                        // invalidate - to force lazy re-init
-                        dictionaryDAO.destroy();
-                        
-                        return null; 
-                    }
-                }, tenantSystemUserName);
-                
-                if (logger.isTraceEnabled())
-                {
-                    logger.trace("onDeleteNode: Dictionary destroyed ["+AlfrescoTransactionSupport.getTransactionId()+"]");
-                }
-            }
-        }
-        */
+        /* NodeRef nodeRef = childAssocRef.getChildRef();
+         * 
+         * if (logger.isTraceEnabled()) { logger.trace("onDeleteNode: nodeRef="+nodeRef+ " ["+AlfrescoTransactionSupport.getTransactionId()+"]"); }
+         * 
+         * Set<NodeRef> pendingDeleteModels = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_PENDING_DELETE_MODELS);
+         * 
+         * if (pendingDeleteModels != null) { if (pendingDeleteModels.contains(nodeRef)) { String tenantDomain = tenantService.getDomain(nodeRef.getStoreRef().getIdentifier()); String tenantSystemUserName = tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain);
+         * 
+         * AuthenticationUtil.runAs(new RunAsWork<Object>() { public Object doWork() { // invalidate - to force lazy re-init dictionaryDAO.destroy();
+         * 
+         * return null; } }, tenantSystemUserName);
+         * 
+         * if (logger.isTraceEnabled()) { logger.trace("onDeleteNode: Dictionary destroyed ["+AlfrescoTransactionSupport.getTransactionId()+"]"); } } } */
     }
-    
+
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
-        
+
         if (logger.isTraceEnabled())
         {
-            logger.trace("onCreateNode: nodeRef="+nodeRef+ " ["+AlfrescoTransactionSupport.getTransactionId()+"]");
+            logger.trace("onCreateNode: nodeRef=" + nodeRef + " [" + AlfrescoTransactionSupport.getTransactionId() + "]");
         }
-        
+
         if (nodeService.getType(nodeRef).equals(ContentModel.TYPE_DICTIONARY_MODEL))
         {
-            Boolean value = (Boolean)nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_ACTIVE);
+            Boolean value = (Boolean) nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_ACTIVE);
             if ((value != null) && (value == true))
             {
                 queueModel(nodeRef);
@@ -486,65 +469,63 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
          * Id used in equals and hash
          */
         private String id = GUID.generate();
-        
+
         private NodeService nodeService;
         private ContentService contentService;
-        
+
         public DictionaryModelTypeTransactionListener(NodeService nodeService, ContentService contentService)
         {
             this.nodeService = nodeService;
             this.contentService = contentService;
         }
-        
+
         @SuppressWarnings("unchecked")
         @Override
         public void afterCommit()
         {
-            Set<NodeRef> pendingModels = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_PENDING_MODELS);
-            Set<NodeRef> pendingDeleteModels = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_PENDING_DELETE_MODELS);
-            
+            Set<NodeRef> pendingModels = (Set<NodeRef>) AlfrescoTransactionSupport.getResource(KEY_PENDING_MODELS);
+            Set<NodeRef> pendingDeleteModels = (Set<NodeRef>) AlfrescoTransactionSupport.getResource(KEY_PENDING_DELETE_MODELS);
+
             if (logger.isTraceEnabled())
             {
-                logger.trace("afterCommit: "+Thread.currentThread().getName()+" pendingModelsCnt="+(pendingModels != null ? pendingModels.size() : "0")+
-                                        ", pendingDeleteModelsCnt="+(pendingDeleteModels != null ? pendingDeleteModels.size() : "0"));
+                logger.trace("afterCommit: " + Thread.currentThread().getName() + " pendingModelsCnt=" + (pendingModels != null ? pendingModels.size() : "0") +
+                        ", pendingDeleteModelsCnt=" + (pendingDeleteModels != null ? pendingDeleteModels.size() : "0"));
             }
-            
+
             Set<String> systemTenants = new HashSet<String>(10);
-            
+
             if (pendingModels != null)
             {
                 // unbind the resource from the transaction
                 AlfrescoTransactionSupport.unbindResource(KEY_PENDING_MODELS);
-                
+
                 for (NodeRef nodeRef : pendingModels)
                 {
                     String tenantDomain = tenantService.getDomain(nodeRef.getStoreRef().getIdentifier());
                     systemTenants.add(tenantDomain);
                 }
             }
-            
+
             if (pendingDeleteModels != null)
             {
                 // unbind the resource from the transaction
                 AlfrescoTransactionSupport.unbindResource(KEY_PENDING_DELETE_MODELS);
-                
+
                 for (NodeRef nodeRef : pendingDeleteModels)
                 {
                     String tenantDomain = tenantService.getDomain(nodeRef.getStoreRef().getIdentifier());
                     systemTenants.add(tenantDomain);
                 }
             }
-            
+
             if (systemTenants.size() > 0)
             {
                 for (final String tenantName : systemTenants)
                 {
-                    RetryingTransactionCallback<Void> work = new RetryingTransactionCallback<Void>()
-                    {
+                    RetryingTransactionCallback<Void> work = new RetryingTransactionCallback<Void>() {
                         public Void execute() throws Throwable
                         {
-                            return TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
-                            {
+                            return TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>() {
                                 public Void doWork()
                                 {
                                     // force refresh of the dictionary
@@ -552,10 +533,10 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
 
                                     if (logger.isTraceEnabled())
                                     {
-                                        logger.trace("afterCommit: Dictionary destroyed ["+AlfrescoTransactionSupport.getTransactionId()+"]");
+                                        logger.trace("afterCommit: Dictionary destroyed [" + AlfrescoTransactionSupport.getTransactionId() + "]");
                                     }
 
-                                    return null; 
+                                    return null;
                                 }
                             }, tenantName);
                         }
@@ -565,7 +546,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                 }
             }
         }
-        
+
         /**
          * @see org.alfresco.repo.transaction.TransactionListener#beforeCommit(boolean)
          */
@@ -577,66 +558,65 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             {
                 if (logger.isTraceEnabled())
                 {
-                    logger.trace("beforeCommit: "+Thread.currentThread().getName()+" attempt to get transactional lock ["+AlfrescoTransactionSupport.getTransactionId()+"]");
+                    logger.trace("beforeCommit: " + Thread.currentThread().getName() + " attempt to get transactional lock [" + AlfrescoTransactionSupport.getTransactionId() + "]");
                 }
-                
+
                 try
                 {
-                    jobLockService.getTransactionalLock(LOCK_QNAME, (1000*60), 3000, 10);
+                    jobLockService.getTransactionalLock(LOCK_QNAME, (1000 * 60), 3000, 10);
                 }
                 catch (LockAcquisitionException lae)
                 {
                     throw new ConcurrencyFailureException(lae.getMessage());
                 }
-                
+
                 if (logger.isTraceEnabled())
                 {
-                    logger.trace("beforeCommit: "+Thread.currentThread().getName()+" got transactional lock ["+AlfrescoTransactionSupport.getTransactionId()+"]");
+                    logger.trace("beforeCommit: " + Thread.currentThread().getName() + " got transactional lock [" + AlfrescoTransactionSupport.getTransactionId() + "]");
                 }
             }
-            
-            Set<NodeRef> pendingModels = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_PENDING_MODELS);
-            
+
+            Set<NodeRef> pendingModels = (Set<NodeRef>) AlfrescoTransactionSupport.getResource(KEY_PENDING_MODELS);
+
             if (pendingModels != null)
             {
                 if (logger.isTraceEnabled())
                 {
-                    logger.trace("beforeCommit: pendinpolicy-context.xmlgModelsCnt="+pendingModels.size()+" ["+AlfrescoTransactionSupport.getTransactionId()+"]");
+                    logger.trace("beforeCommit: pendinpolicy-context.xmlgModelsCnt=" + pendingModels.size() + " [" + AlfrescoTransactionSupport.getTransactionId() + "]");
                 }
-                
+
                 for (NodeRef pendingNodeRef : pendingModels)
                 {
                     String tenantDomain = tenantService.getDomain(pendingNodeRef.getStoreRef().getIdentifier());
                     String tenantSystemUserName = tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain);
-                    
+
                     final NodeRef nodeRef = tenantService.getBaseName(pendingNodeRef);
-                    
-                    AuthenticationUtil.runAs(new RunAsWork<Object>()
-                    {
+
+                    AuthenticationUtil.runAs(new RunAsWork<Object>() {
                         public Object doWork()
                         {
                             // Ignore if the node no longer exists
-                            if (! nodeService.exists(nodeRef))
+                            if (!nodeService.exists(nodeRef))
                             {
                                 return null;
                             }
-                            
+
                             // Find out whether the model is active
                             boolean isActive = false;
-                            Boolean value = (Boolean)nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_ACTIVE);
+                            Boolean value = (Boolean) nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_ACTIVE);
                             if (value != null)
                             {
                                 isActive = value.booleanValue();
                             }
-                            
+
                             // Ignore if the node is a working copy
-                            if (! (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY)))
+                            if (!(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY)))
                             {
                                 if (isActive == true)
                                 {
                                     // 1. Compile the model and update the details on the node
                                     // 2. Re-put the model
-                                    
+
                                     ContentReader contentReader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
                                     if (contentReader != null)
                                     {
@@ -662,11 +642,11 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                                 }
                                             }
                                         }
-                                        
+
                                         // Try and compile the model
-                                        CompiledModel compiledModel= m2Model.compile(dictionaryDAO, namespaceDAO, true);
+                                        CompiledModel compiledModel = m2Model.compile(dictionaryDAO, namespaceDAO, true);
                                         ModelDefinition modelDefinition = compiledModel.getModelDefinition();
-                                        
+
                                         // Update the meta data for the model
                                         Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
                                         props.put(ContentModel.PROP_MODEL_NAME, modelDefinition.getName());
@@ -674,28 +654,28 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                         props.put(ContentModel.PROP_MODEL_AUTHOR, modelDefinition.getAuthor());
                                         props.put(ContentModel.PROP_MODEL_PUBLISHED_DATE, modelDefinition.getPublishedDate());
                                         props.put(ContentModel.PROP_MODEL_VERSION, modelDefinition.getVersion());
-                                       
+
                                         nodeService.setProperties(nodeRef, props);
-                                        
+
                                         // Validate model against dictionary - could be new, unchanged or updated
                                         if (doValidation == true)
                                         {
-                                        	modelValidator.validateModel(compiledModel);
+                                            modelValidator.validateModel(compiledModel);
                                         }
 
                                         // invalidate - to force lazy re-init
                                         // TODO
-                                        //dictionaryDAO.destroy();
-                                        
+                                        // dictionaryDAO.destroy();
+
                                         if (logger.isTraceEnabled())
                                         {
-                                            logger.trace("beforeCommit: activating nodeRef="+nodeRef+" ("+modelDefinition.getName()+") ["+AlfrescoTransactionSupport.getTransactionId()+"]");
+                                            logger.trace("beforeCommit: activating nodeRef=" + nodeRef + " (" + modelDefinition.getName() + ") [" + AlfrescoTransactionSupport.getTransactionId() + "]");
                                         }
                                     }
                                 }
                                 else
                                 {
-                                    QName modelName = (QName)nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_NAME);
+                                    QName modelName = (QName) nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_NAME);
                                     if (modelName != null)
                                     {
                                         // Validate model delete against usages - content and/or workflows
@@ -705,23 +685,23 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                         }
 
                                         // invalidate - to force lazy re-init
-                                        //dictionaryDAO.destroy();
-                                        
+                                        // dictionaryDAO.destroy();
+
                                         if (logger.isTraceEnabled())
                                         {
-                                            logger.trace("beforeCommit: deactivating nodeRef="+nodeRef+" ("+modelName+") ["+AlfrescoTransactionSupport.getTransactionId()+"]");
+                                            logger.trace("beforeCommit: deactivating nodeRef=" + nodeRef + " (" + modelName + ") [" + AlfrescoTransactionSupport.getTransactionId() + "]");
                                         }
                                     }
                                 }
                             }
-                            
-                            return null; 
+
+                            return null;
                         }
                     }, tenantSystemUserName);
                 }
             }
         }
-        
+
         /**
          * @see java.lang.Object#equals(java.lang.Object)
          */
@@ -748,7 +728,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     public void onSetNodeType(NodeRef nodeRef, QName oldType, QName newType)
     {
         String userName = AuthenticationUtil.getFullyAuthenticatedUser();
-        
+
         if (!isUserNameAModelAdminAuthority(userName))
         {
             throw new InvalidTypeException(newType);
@@ -774,8 +754,8 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         }
         // this also allows the AuthenticationUtil.SYSTEM_USER_NAME ("System") user
         return this.authorityService.isAdminAuthority(userName)
-               || this.authorityService.getAuthoritiesForUser(userName).contains(GROUP_ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY)
-               || AuthenticationUtil.isRunAsUserTheSystemUser();
+                || this.authorityService.getAuthoritiesForUser(userName).contains(GROUP_ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY)
+                || AuthenticationUtil.isRunAsUserTheSystemUser();
     }
-        
+
 }

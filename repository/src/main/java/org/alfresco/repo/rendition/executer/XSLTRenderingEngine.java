@@ -33,6 +33,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.template.TemplateProcessorMethod;
 import org.alfresco.repo.template.XSLTProcessor;
@@ -46,12 +53,6 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.XMLUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 /**
  * @author Brian Remmington
@@ -70,7 +71,7 @@ public class XSLTRenderingEngine extends BaseTemplateRenderingEngine
     private NamespacePrefixResolver namespacePrefixResolver;
     private FileFolderService fileFolderService;
 
-    @SuppressWarnings({ "serial", "unchecked" })
+    @SuppressWarnings({"serial", "unchecked"})
     protected Object buildModel(RenderingContext context)
     {
         Map<String, Serializable> suppliedParams = context.getCheckedParam(PARAM_MODEL, Map.class);
@@ -93,8 +94,7 @@ public class XSLTRenderingEngine extends BaseTemplateRenderingEngine
 
         // add methods
         model.put(QName.createQName(NamespaceService.ALFRESCO_PREFIX, "encodeQuotes", namespacePrefixResolver),
-                new TemplateProcessorMethod()
-                {
+                new TemplateProcessorMethod() {
                     public Object exec(final Object[] arguments) throws IOException, SAXException
                     {
                         if (arguments.length != 1)
@@ -121,8 +121,7 @@ public class XSLTRenderingEngine extends BaseTemplateRenderingEngine
                 });
 
         model.put(QName.createQName(NamespaceService.ALFRESCO_PREFIX, "parseXMLDocument", namespacePrefixResolver),
-                new TemplateProcessorMethod()
-                {
+                new TemplateProcessorMethod() {
                     public Object exec(final Object[] arguments) throws IOException, SAXException
                     {
                         if (arguments.length != 1)
@@ -156,8 +155,7 @@ public class XSLTRenderingEngine extends BaseTemplateRenderingEngine
                     }
                 });
         model.put(QName.createQName(NamespaceService.ALFRESCO_PREFIX, "parseXMLDocuments", namespacePrefixResolver),
-                new TemplateProcessorMethod()
-                {
+                new TemplateProcessorMethod() {
                     public Object exec(final Object[] arguments) throws IOException, SAXException
                     {
                         if (arguments.length > 2)
@@ -252,7 +250,8 @@ public class XSLTRenderingEngine extends BaseTemplateRenderingEngine
     }
 
     /**
-     * @param nodeRef NodeRef
+     * @param nodeRef
+     *            NodeRef
      * @return String
      */
     private String getPath(NodeRef nodeRef)

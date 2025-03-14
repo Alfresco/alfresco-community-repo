@@ -37,6 +37,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface WebApiParameters {
-    WebApiParam[] value()  default {};
+public @interface WebApiParameters
+{
+    WebApiParam[] value() default {};
 }

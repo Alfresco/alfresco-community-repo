@@ -36,6 +36,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -51,11 +57,6 @@ import org.alfresco.service.cmr.dictionary.NamespaceDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 
 /**
  * Default implementation of the Dictionary.
@@ -106,14 +107,14 @@ public class DictionaryDAOImpl implements DictionaryDAO, NamespaceDAO,
      * 
      */
     public DictionaryDAOImpl()
-    {
-    }
+    {}
 
     /**
      * Register listener with the Dictionary
      * <p>
-     *     This method is <b>deprecated</b>, use {@link #registerListener(DictionaryListener dictionaryListener)} instead.
+     * This method is <b>deprecated</b>, use {@link #registerListener(DictionaryListener dictionaryListener)} instead.
      * </p>
+     * 
      * @param dictionaryListener
      */
     @Override
@@ -181,8 +182,7 @@ public class DictionaryDAOImpl implements DictionaryDAO, NamespaceDAO,
             final String tenant)
     {
         DictionaryRegistry result = AuthenticationUtil.runAs(
-                new RunAsWork<DictionaryRegistry>()
-                {
+                new RunAsWork<DictionaryRegistry>() {
                     public DictionaryRegistry doWork()
                     {
                         DictionaryRegistry dictionaryRegistry = new TenantDictionaryRegistryImpl(
@@ -699,14 +699,14 @@ public class DictionaryDAOImpl implements DictionaryDAO, NamespaceDAO,
     /**
      * For cache use only.
      * 
-     * @param tenantDomain String
+     * @param tenantDomain
+     *            String
      * @return constructed DictionaryRegistry
      */
     public DictionaryRegistry initDictionaryRegistry(final String tenantDomain)
     {
         return AuthenticationUtil.runAs(
-                new RunAsWork<DictionaryRegistry>()
-                {
+                new RunAsWork<DictionaryRegistry>() {
                     public DictionaryRegistry doWork()
                     {
                         DictionaryRegistry dictionaryRegistry = null;
@@ -733,10 +733,10 @@ public class DictionaryDAOImpl implements DictionaryDAO, NamespaceDAO,
     /**
      * Return diffs between input model and model in the Dictionary.
      * 
-     * If the input model does not exist in the Dictionary then no diffs will be
-     * returned.
+     * If the input model does not exist in the Dictionary then no diffs will be returned.
      * 
-     * @param model M2Model
+     * @param model
+     *            M2Model
      * @return model diffs (if any)
      */
     public List<M2ModelDiff> diffModel(M2Model model)
@@ -752,11 +752,12 @@ public class DictionaryDAOImpl implements DictionaryDAO, NamespaceDAO,
     /**
      * Return diffs between input model and model in the Dictionary.
      * 
-     * If the input model does not exist in the Dictionary then no diffs will be
-     * returned.
+     * If the input model does not exist in the Dictionary then no diffs will be returned.
      * 
-     * @param model M2Model
-     * @param enableConstraintClassLoading boolean
+     * @param model
+     *            M2Model
+     * @param enableConstraintClassLoading
+     *            boolean
      * @return model diffs (if any)
      */
     public List<M2ModelDiff> diffModel(M2Model model,
@@ -774,7 +775,7 @@ public class DictionaryDAOImpl implements DictionaryDAO, NamespaceDAO,
         }
         catch (DictionaryException e)
         {
-             // ignore missing model, there's no need to warn about this.
+            // ignore missing model, there's no need to warn about this.
             logger.debug(e);
         }
 
@@ -791,19 +792,14 @@ public class DictionaryDAOImpl implements DictionaryDAO, NamespaceDAO,
     /**
      * Return diffs between two compiled models.
      * 
-     * note: - checks classes (types & aspects) for incremental updates - checks
-     * properties for incremental updates, but does not include the diffs -
-     * checks assocs & child assocs for incremental updates, but does not
-     * include the diffs - incremental updates include changes in
-     * title/description, property default value, etc - ignores changes in model
-     * definition except name (ie. title, description, author, published date,
-     * version are treated as an incremental update)
+     * note: - checks classes (types & aspects) for incremental updates - checks properties for incremental updates, but does not include the diffs - checks assocs & child assocs for incremental updates, but does not include the diffs - incremental updates include changes in title/description, property default value, etc - ignores changes in model definition except name (ie. title, description, author, published date, version are treated as an incremental update)
      * 
-     * TODO - imports - namespace - datatypes - constraints (including property
-     * constraints - references and inline)
+     * TODO - imports - namespace - datatypes - constraints (including property constraints - references and inline)
      * 
-     * @param previousVersion CompiledModel
-     * @param model CompiledModel
+     * @param previousVersion
+     *            CompiledModel
+     * @param model
+     *            CompiledModel
      * @return model diffs (if any)
      */
     /* package */List<M2ModelDiff> diffModel(CompiledModel previousVersion,
@@ -915,7 +911,7 @@ public class DictionaryDAOImpl implements DictionaryDAO, NamespaceDAO,
                 }
                 else
                 {
-                    for(NamespaceDefinition namespaceDefinition: importedNamespaces) 
+                    for (NamespaceDefinition namespaceDefinition : importedNamespaces)
                     {
                         M2ModelDiffs.add(new M2ModelDiff(namespaceDefinition.getModel().getName(),
                                 namespaceDefinition,

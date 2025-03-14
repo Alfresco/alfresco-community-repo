@@ -28,16 +28,6 @@ package org.alfresco.repo.config.xml;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.config.ConfigDataCache;
-import org.alfresco.repo.config.ConfigDataCache.ConfigData;
-import org.alfresco.repo.config.ConfigDataCache.ImmutableConfigData;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.tenant.TenantDeployer;
-import org.alfresco.repo.tenant.TenantUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
@@ -49,20 +39,30 @@ import org.springframework.extensions.config.evaluator.Evaluator;
 import org.springframework.extensions.config.xml.XMLConfigService;
 import org.springframework.extensions.config.xml.elementreader.ConfigElementReader;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.config.ConfigDataCache;
+import org.alfresco.repo.config.ConfigDataCache.ConfigData;
+import org.alfresco.repo.config.ConfigDataCache.ImmutableConfigData;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.TenantDeployer;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.transaction.TransactionService;
+
 /**
  * XML-based configuration service which can optionally read config from the Repository
  */
 public class RepoXMLConfigService extends XMLConfigService implements TenantDeployer
 {
     private static final Log logger = LogFactory.getLog(RepoXMLConfigService.class);
-    
+
     /**
      * Configuration that is manipulated by the current thread.<br/>
-     * This is required because the super classes call back into this mechanism after
-     * receiving the initial object, etc.
+     * This is required because the super classes call back into this mechanism after receiving the initial object, etc.
      */
     private final ThreadLocal<ConfigData> configUnderConstruction = new ThreadLocal<ConfigData>();
-    
+
     // Dependencies
     private TransactionService transactionService;
     private ConfigDataCache configDataCache;
@@ -79,7 +79,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
     {
         this.configDataCache = configDataCache;
     }
-        
+
     /**
      * Constructs an XMLConfigService using the given config source
      */
@@ -96,19 +96,17 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
         ConfigData configData = configDataCache.get();
         return configData.getConfigDeployments();
     }
-    
+
     /**
-     * Get the repository configuration data for a given tenant.
-     * This does the low-level initialization of the configuration and does not do any
-     * caching.
+     * Get the repository configuration data for a given tenant. This does the low-level initialization of the configuration and does not do any caching.
      * 
-     * @param tenantDomain              the current tenant domain
-     * @return                          return the repository configuration for the given tenant (never <tt>null</tt>)
+     * @param tenantDomain
+     *            the current tenant domain
+     * @return return the repository configuration for the given tenant (never <tt>null</tt>)
      */
     public ConfigData getRepoConfig(final String tenantDomain)
     {
-        final RetryingTransactionCallback<Void> getConfigWork = new RetryingTransactionCallback<Void>()
-        {
+        final RetryingTransactionCallback<Void> getConfigWork = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -117,8 +115,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
                 return null;
             }
         };
-        TenantUtil.TenantRunAsWork<Void> getConfigRunAs = new TenantUtil.TenantRunAsWork<Void>()
-        {
+        TenantUtil.TenantRunAsWork<Void> getConfigRunAs = new TenantUtil.TenantRunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -133,7 +130,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
             {
                 logger.debug(
                         "Fetching repository config data for tenant: \n" +
-                        "   Tenant Domain: " + tenantDomain);
+                                "   Tenant Domain: " + tenantDomain);
             }
             // Put some mutable config onto the current thread and have the superclasses mess with that.
             ConfigData configData = new ConfigData();
@@ -147,8 +144,8 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
             {
                 logger.debug(
                         "Fetched repository config data for tenant: \n" +
-                        "   Tenant Domain: " + tenantDomain + "\n" +
-                        "   Config:        " + configData);
+                                "   Tenant Domain: " + tenantDomain + "\n" +
+                                "   Config:        " + configData);
             }
             return configData;
         }
@@ -156,7 +153,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
         {
             throw new AlfrescoRuntimeException(
                     "Failed to fetch repository config data for tenant \n" +
-                    "   Tenant Domain: " + tenantDomain,
+                            "   Tenant Domain: " + tenantDomain,
                     e);
         }
         finally
@@ -164,13 +161,13 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
             configUnderConstruction.remove();
         }
     }
-    
+
     @Override
     public void destroy()
     {
         reset();
     }
-    
+
     /**
      * Resets the config values for the current tenant
      */
@@ -179,48 +176,44 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
     {
         configDataCache.refresh();
     }
-    
+
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
         // run as System on bootstrap
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Object>() {
             public Object doWork()
-            {            
+            {
                 initConfig();
                 return null;
-            }                               
+            }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
         // NOOP
     }
-  
+
     @Override
     public void onEnableTenant()
     {
         initConfig(); // will be called in context of tenant
     }
-    
+
     @Override
     public void onDisableTenant()
     {
         destroy(); // will be called in context of tenant
     }
-    
+
     /**
-     * Fetch the tenant-specific config data from the cache.  If nothing is
-     * available then the config will be created.
+     * Fetch the tenant-specific config data from the cache. If nothing is available then the config will be created.
      * <p/>
-     * Note that this method is used during construction of the config as well.
-     * When this occurs, a thread local value is used in place of the cached
-     * value.  It's not pretty.
+     * Note that this method is used during construction of the config as well. When this occurs, a thread local value is used in place of the cached value. It's not pretty.
      * 
-     * @return          the tenant-specific configuration (never <tt>null</tt>)
+     * @return the tenant-specific configuration (never <tt>null</tt>)
      */
     private ConfigData getConfigData()
     {
@@ -232,73 +225,73 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
         // Go to the backing cache
         return configDataCache.get();
     }
-    
+
     @Override
     protected ConfigImpl getGlobalConfigImpl()
     {
         return getConfigData().getGlobalConfig();
     }
-    
+
     @Override
     protected void putGlobalConfig(ConfigImpl globalConfig)
     {
         getConfigData().setGlobalConfig(globalConfig);
     }
-    
+
     @Override
     protected void removeGlobalConfig()
     {
         throw new UnsupportedOperationException("'destroy' method must destroy all config.  Piecemeal destruction is not supported.");
     }
-    
+
     @Override
     protected Map<String, Evaluator> getEvaluators()
     {
         return getConfigData().getEvaluators();
     }
-    
+
     @Override
     protected void putEvaluators(Map<String, Evaluator> evaluators)
     {
         getConfigData().setEvaluators(evaluators);
     }
-    
+
     @Override
     protected void removeEvaluators()
     {
         throw new UnsupportedOperationException("'destroy' method must destroy all config.  Piecemeal destruction is not supported.");
     }
-    
+
     @Override
     public Map<String, List<ConfigSection>> getSectionsByArea()
     {
         return getConfigData().getSectionsByArea();
     }
-    
+
     @Override
     protected void putSectionsByArea(Map<String, List<ConfigSection>> sectionsByArea)
     {
         getConfigData().setSectionsByArea(sectionsByArea);
     }
-    
+
     @Override
     protected void removeSectionsByArea()
     {
         throw new UnsupportedOperationException("'destroy' method must destroy all config.  Piecemeal destruction is not supported.");
     }
-    
+
     @Override
     public List<ConfigSection> getSections()
     {
         return getConfigData().getSections();
     }
-    
+
     @Override
     protected void putSections(List<ConfigSection> sections)
     {
         getConfigData().setSections(sections);
     }
-    
+
     @Override
     protected void removeSections()
     {
@@ -310,13 +303,13 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
     {
         return getConfigData().getElementReaders();
     }
-    
+
     @Override
     protected void putElementReaders(Map<String, ConfigElementReader> elementReaders)
     {
         getConfigData().setElementReaders(elementReaders);
     }
-    
+
     @Override
     protected void removeElementReaders()
     {

@@ -34,15 +34,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Date;
-
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.util.BaseApplicationContextHelper;
-import org.alfresco.util.TempFileProvider;
-import org.alfresco.util.WebApplicationContextLoader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.http.UriCompliance;
@@ -56,6 +51,11 @@ import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.util.BaseApplicationContextHelper;
+import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.WebApplicationContextLoader;
+
 /**
  * Manages an embedded jetty server, hooking it up to the repository spring context.
  * 
@@ -64,7 +64,7 @@ import org.springframework.web.context.support.GenericWebApplicationContext;
  */
 public abstract class AbstractJettyComponent implements JettyComponent
 {
-	protected static final Log logger = LogFactory.getLog(AbstractJettyComponent.class);
+    protected static final Log logger = LogFactory.getLog(AbstractJettyComponent.class);
 
     public static final int JETTY_STOP_PORT = 8079;
     public static final String JETTY_LOCAL_IP = "127.0.0.1";
@@ -78,191 +78,186 @@ public abstract class AbstractJettyComponent implements JettyComponent
 
     private WebAppContext webAppContext;
 
-	public AbstractJettyComponent(int port, String contextPath, String[] configLocations, String[] classLocations)
-	{
-		this.configLocations = configLocations;
-		this.classLocations = classLocations;
-		this.port = port;
-		this.contextPath = contextPath;
-	    server = new Server(port);
-	}
-	
-	public int getPort()
-	{
-		return port;
-	}
+    public AbstractJettyComponent(int port, String contextPath, String[] configLocations, String[] classLocations)
+    {
+        this.configLocations = configLocations;
+        this.classLocations = classLocations;
+        this.port = port;
+        this.contextPath = contextPath;
+        server = new Server(port);
+    }
 
-	/*
-	 * Creates a web application context wrapping a Spring application context (adapted from core spring code in
-	 * org.springframework.web.context.ContextLoader)
-	 */
-	protected WebApplicationContext createWebApplicationContext(ServletContext sc, ApplicationContext parent)
-	{
-		GenericWebApplicationContext wac = (GenericWebApplicationContext) BeanUtils.instantiateClass(GenericWebApplicationContext.class);
+    public int getPort()
+    {
+        return port;
+    }
 
-		// Assign the best possible id value.
-		wac.setId(ConfigurableWebApplicationContext.APPLICATION_CONTEXT_ID_PREFIX + contextPath);
+    /* Creates a web application context wrapping a Spring application context (adapted from core spring code in org.springframework.web.context.ContextLoader) */
+    protected WebApplicationContext createWebApplicationContext(ServletContext sc, ApplicationContext parent)
+    {
+        GenericWebApplicationContext wac = (GenericWebApplicationContext) BeanUtils.instantiateClass(GenericWebApplicationContext.class);
 
-		wac.setParent(parent);
-		wac.setServletContext(sc);
-		wac.refresh();
+        // Assign the best possible id value.
+        wac.setId(ConfigurableWebApplicationContext.APPLICATION_CONTEXT_ID_PREFIX + contextPath);
 
-		return wac;
-	}
-	
-	public ConfigurableApplicationContext getApplicationContext()
-	{
-		return (ConfigurableApplicationContext)webAppContext.getServletContext().getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
-	}
-	
-	protected abstract void configureWebAppContext(WebAppContext webAppContext);
+        wac.setParent(parent);
+        wac.setServletContext(sc);
+        wac.refresh();
 
-	public void start()
-	{
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("["+new Date()+"] startJetty: starting embedded Jetty server ...");
-		}
+        return wac;
+    }
 
-	    try
-	    {
-			if(logger.isDebugEnabled())
-			{
-				logger.debug("["+new Date()+"] startJetty");
-			}
+    public ConfigurableApplicationContext getApplicationContext()
+    {
+        return (ConfigurableApplicationContext) webAppContext.getServletContext().getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
+    }
 
-		    this.webAppContext = new WebAppContext();
-		    webAppContext.setContextPath(contextPath);
+    protected abstract void configureWebAppContext(WebAppContext webAppContext);
 
-		    configure(webAppContext);
+    public void start()
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("[" + new Date() + "] startJetty: starting embedded Jetty server ...");
+        }
 
-		    server.setHandler(webAppContext);
+        try
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("[" + new Date() + "] startJetty");
+            }
 
-		    // for clean shutdown, add monitor thread 
-		    
-		    // from: http://ptrthomas.wordpress.com/2009/01/24/how-to-start-and-stop-jetty-revisited/
-		    // adapted from: http://jetty.codehaus.org/jetty/jetty-6/xref/org/mortbay/start/Monitor.html
-		    Thread monitor = new MonitorThread();
-		    monitor.start();
-		    
-		    configureWebAppContext(webAppContext);
+            this.webAppContext = new WebAppContext();
+            webAppContext.setContextPath(contextPath);
 
-			ignoreAmbiguousLinks(server);
+            configure(webAppContext);
 
-		    server.start();
+            server.setHandler(webAppContext);
 
-			if(logger.isDebugEnabled())
-			{
-				logger.debug("["+new Date()+"] startJetty: ... embedded Jetty server started on port " + port);
-			}
+            // for clean shutdown, add monitor thread
+
+            // from: http://ptrthomas.wordpress.com/2009/01/24/how-to-start-and-stop-jetty-revisited/
+            // adapted from: http://jetty.codehaus.org/jetty/jetty-6/xref/org/mortbay/start/Monitor.html
+            Thread monitor = new MonitorThread();
+            monitor.start();
+
+            configureWebAppContext(webAppContext);
+
+            ignoreAmbiguousLinks(server);
+
+            server.start();
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("[" + new Date() + "] startJetty: ... embedded Jetty server started on port " + port);
+            }
         }
         catch (Exception e)
         {
-        	logger.error("["+new Date()+"] startJetty: ... failed to start embedded Jetty server on port " + port + ", " + e);
+            logger.error("[" + new Date() + "] startJetty: ... failed to start embedded Jetty server on port " + port + ", " + e);
         }
-	}
-	
-	protected void configure(WebAppContext webAppContext)
-	{
+    }
+
+    protected void configure(WebAppContext webAppContext)
+    {
         try
         {
-        	ClassLoader classLoader = BaseApplicationContextHelper.buildClassLoader(classLocations);
+            ClassLoader classLoader = BaseApplicationContextHelper.buildClassLoader(classLocations);
             webAppContext.setClassLoader(classLoader);
         }
         catch (IOException e)
         {
             throw new ExceptionInInitializerError(e);
         }
-        
-	    webAppContext.addEventListener(new ServletContextListener()
-		{
-	    	public void contextInitialized(ServletContextEvent sce)
-		    {
-	    		// create a Spring web application context, wrapping and providing access to
-	    		// the application context
-	    		try
-	    		{
-		    		ServletContext servletContext = sce.getServletContext();
 
-		    		// initialise web application context
-		    		WebApplicationContextLoader.getApplicationContext(servletContext, configLocations, classLocations);
+        webAppContext.addEventListener(new ServletContextListener() {
+            public void contextInitialized(ServletContextEvent sce)
+            {
+                // create a Spring web application context, wrapping and providing access to
+                // the application context
+                try
+                {
+                    ServletContext servletContext = sce.getServletContext();
 
-					if(logger.isDebugEnabled())
-					{
-						logger.debug("contextInitialized "+sce);
-					}
-	    		}
-	    		catch(Throwable t)
-	    		{
-	    			logger.error("Failed to start Jetty server: " + t);
-	    			throw new AlfrescoRuntimeException("Failed to start Jetty server", t);
-	    		}
-	    	}
+                    // initialise web application context
+                    WebApplicationContextLoader.getApplicationContext(servletContext, configLocations, classLocations);
 
-		    public void contextDestroyed(ServletContextEvent sce)
-		    {
-				if(logger.isDebugEnabled())
-				{
-					logger.debug("contextDestroyed "+sce);
-				}
-			}    
-		});
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("contextInitialized " + sce);
+                    }
+                }
+                catch (Throwable t)
+                {
+                    logger.error("Failed to start Jetty server: " + t);
+                    throw new AlfrescoRuntimeException("Failed to start Jetty server", t);
+                }
+            }
 
-	    // arbitrary temporary file location
-	    File tmp = new File(TempFileProvider.getSystemTempDir(), String.valueOf(System.currentTimeMillis()));
-	    webAppContext.setResourceBase(tmp.getAbsolutePath());		
-	}
+            public void contextDestroyed(ServletContextEvent sce)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("contextDestroyed " + sce);
+                }
+            }
+        });
 
-	/**
-	 * In newer jetty versions there is a stricter check for links e.g. "//" is not allowed, which clashes
-	 * with some of our tests, because even a NodeRef triggers it - "workspace://..."
-	 * Since Jetty is only used in tests it's alright to block this behaviour.
-	 *
-	 * @param server
-	 */
-	private void ignoreAmbiguousLinks(Server server) {
-		Arrays.stream(server.getConnectors())
-				.flatMap(c -> c.getConnectionFactories().stream())
-				.filter(cf -> cf instanceof HttpConnectionFactory)
-				.map(cf -> (HttpConnectionFactory) cf)
-				.forEach(hcf -> hcf.getHttpConfiguration().setUriCompliance(UriCompliance.RFC3986));
-	}
+        // arbitrary temporary file location
+        File tmp = new File(TempFileProvider.getSystemTempDir(), String.valueOf(System.currentTimeMillis()));
+        webAppContext.setResourceBase(tmp.getAbsolutePath());
+    }
 
-	public void shutdown()
-	{
-		try
-		{
-			server.stop();
-		}
-		catch(Exception e)
-		{
-			throw new AlfrescoRuntimeException("", e);
-		}
-	}
-	
-    private static class MonitorThread extends Thread 
+    /**
+     * In newer jetty versions there is a stricter check for links e.g. "//" is not allowed, which clashes with some of our tests, because even a NodeRef triggers it - "workspace://..." Since Jetty is only used in tests it's alright to block this behaviour.
+     *
+     * @param server
+     */
+    private void ignoreAmbiguousLinks(Server server)
+    {
+        Arrays.stream(server.getConnectors())
+                .flatMap(c -> c.getConnectionFactories().stream())
+                .filter(cf -> cf instanceof HttpConnectionFactory)
+                .map(cf -> (HttpConnectionFactory) cf)
+                .forEach(hcf -> hcf.getHttpConfiguration().setUriCompliance(UriCompliance.RFC3986));
+    }
+
+    public void shutdown()
+    {
+        try
+        {
+            server.stop();
+        }
+        catch (Exception e)
+        {
+            throw new AlfrescoRuntimeException("", e);
+        }
+    }
+
+    private static class MonitorThread extends Thread
     {
         private ServerSocket socket;
-        
-        public MonitorThread() 
+
+        public MonitorThread()
         {
             setDaemon(true);
             setName("StopMonitor");
-            try 
+            try
             {
                 socket = new ServerSocket(JETTY_STOP_PORT, 1, InetAddress.getByName(JETTY_LOCAL_IP));
-            } 
-            catch(Exception e) 
+            }
+            catch (Exception e)
             {
                 throw new RuntimeException(e);
             }
         }
-        
+
         @Override
-        public void run() 
+        public void run()
         {
             Socket accept;
-            try 
+            try
             {
                 accept = socket.accept();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(accept.getInputStream()));
@@ -270,8 +265,8 @@ public abstract class AbstractJettyComponent implements JettyComponent
                 server.stop();
                 accept.close();
                 socket.close();
-            } 
-            catch(Exception e) 
+            }
+            catch (Exception e)
             {
                 throw new RuntimeException(e);
             }

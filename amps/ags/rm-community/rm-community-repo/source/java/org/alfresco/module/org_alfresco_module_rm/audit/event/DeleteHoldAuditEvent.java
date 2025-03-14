@@ -42,8 +42,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Delete hold audit event.
- * This listens to the NodeServicePolicies.BeforeDeleteNodePolicy in order to cover the delete hold using nodes service
+ * Delete hold audit event. This listens to the NodeServicePolicies.BeforeDeleteNodePolicy in order to cover the delete hold using nodes service
  *
  * @author Sara Aspery
  * @since 3.3
@@ -59,7 +58,8 @@ public class DeleteHoldAuditEvent extends AuditEvent implements NodeServicePolic
     /**
      * Sets the node service
      *
-     * @param nodeService nodeService to set
+     * @param nodeService
+     *            nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -70,11 +70,10 @@ public class DeleteHoldAuditEvent extends AuditEvent implements NodeServicePolic
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    @Behaviour (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
             type = "rma:hold",
-            notificationFrequency = EVERY_EVENT
-    )
+            notificationFrequency = EVERY_EVENT)
     public void beforeDeleteNode(NodeRef holdNodeRef)
     {
         Map<QName, Serializable> auditProperties = HoldUtils.makePropertiesMap(holdNodeRef, nodeService);

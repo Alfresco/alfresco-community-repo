@@ -52,14 +52,16 @@ public interface BinaryResourceAction
     public static interface Read extends ResourceAction
     {
         /**
-         * Retrieves a binary property by returning a BinaryResource object.  The specific property is specified in the {@link Parameters} object.
-         * See {@link Parameters#hasBinaryProperty(String)} or {@link Parameters#getBinaryProperty()}
-         * @param entityId unique id
-         * @param parameters {@link Parameters}
-         * @return BinaryResource  - Either {@link FileBinaryResource} or {@link NodeBinaryResource}
+         * Retrieves a binary property by returning a BinaryResource object. The specific property is specified in the {@link Parameters} object. See {@link Parameters#hasBinaryProperty(String)} or {@link Parameters#getBinaryProperty()}
+         * 
+         * @param entityId
+         *            unique id
+         * @param parameters
+         *            {@link Parameters}
+         * @return BinaryResource - Either {@link FileBinaryResource} or {@link NodeBinaryResource}
          * @throws EntityNotFoundException
          */
-        public BinaryResource readProperty (String entityId,  Parameters parameters) throws EntityNotFoundException;
+        public BinaryResource readProperty(String entityId, Parameters parameters) throws EntityNotFoundException;
     }
 
     /**
@@ -68,14 +70,16 @@ public interface BinaryResourceAction
     public static interface ReadWithResponse extends ResourceAction
     {
         /**
-         * Retrieves a binary property by returning a BinaryResource object.  The specific property is specified in the {@link Parameters} object.
-         * See {@link Parameters#hasBinaryProperty(String)} or {@link Parameters#getBinaryProperty()}
-         * @param entityId unique id
-         * @param parameters {@link Parameters}
-         * @return BinaryResource  - Either {@link FileBinaryResource} or {@link NodeBinaryResource}
+         * Retrieves a binary property by returning a BinaryResource object. The specific property is specified in the {@link Parameters} object. See {@link Parameters#hasBinaryProperty(String)} or {@link Parameters#getBinaryProperty()}
+         * 
+         * @param entityId
+         *            unique id
+         * @param parameters
+         *            {@link Parameters}
+         * @return BinaryResource - Either {@link FileBinaryResource} or {@link NodeBinaryResource}
          * @throws EntityNotFoundException
          */
-        public BinaryResource readProperty (String entityId,  Parameters parameters, WithResponse withResponse) throws EntityNotFoundException;
+        public BinaryResource readProperty(String entityId, Parameters parameters, WithResponse withResponse) throws EntityNotFoundException;
     }
 
     /**
@@ -83,14 +87,16 @@ public interface BinaryResourceAction
      */
     public static interface Delete extends ResourceAction
     {
-        
+
         /**
-         * Deletes a binary property.  The specific property is specified in the {@link Parameters} object.
-         * See {@link Parameters#hasBinaryProperty(String)} or {@link Parameters#getBinaryProperty()}
-         * @param entityId unique id
-         * @param parameters {@link Parameters}
+         * Deletes a binary property. The specific property is specified in the {@link Parameters} object. See {@link Parameters#hasBinaryProperty(String)} or {@link Parameters#getBinaryProperty()}
+         * 
+         * @param entityId
+         *            unique id
+         * @param parameters
+         *            {@link Parameters}
          */
-        public void deleteProperty (String entityId, Parameters parameters);
+        public void deleteProperty(String entityId, Parameters parameters);
     }
 
     /**
@@ -100,12 +106,14 @@ public interface BinaryResourceAction
     {
 
         /**
-         * Deletes a binary property.  The specific property is specified in the {@link Parameters} object.
-         * See {@link Parameters#hasBinaryProperty(String)} or {@link Parameters#getBinaryProperty()}
-         * @param entityId unique id
-         * @param parameters {@link Parameters}
+         * Deletes a binary property. The specific property is specified in the {@link Parameters} object. See {@link Parameters#hasBinaryProperty(String)} or {@link Parameters#getBinaryProperty()}
+         * 
+         * @param entityId
+         *            unique id
+         * @param parameters
+         *            {@link Parameters}
          */
-        public void deleteProperty (String entityId, Parameters parameters, WithResponse withResponse);
+        public void deleteProperty(String entityId, Parameters parameters, WithResponse withResponse);
     }
 
     /**
@@ -115,14 +123,18 @@ public interface BinaryResourceAction
     {
 
         /**
-         * Updates a binary property.  The specific property is specified in the {@link Parameters} object.
-         * See {@link Parameters#hasBinaryProperty(String)} or {@link Parameters#getBinaryProperty()}
-         * @param entityId unique id
-         * @param stream An inputstream
-         * @param contentInfo Basic information about the content stream
-         * @param params {@link Parameters}
+         * Updates a binary property. The specific property is specified in the {@link Parameters} object. See {@link Parameters#hasBinaryProperty(String)} or {@link Parameters#getBinaryProperty()}
+         * 
+         * @param entityId
+         *            unique id
+         * @param stream
+         *            An inputstream
+         * @param contentInfo
+         *            Basic information about the content stream
+         * @param params
+         *            {@link Parameters}
          */
-        public E updateProperty (String entityId, BasicContentInfo contentInfo, InputStream stream, Parameters params);
+        public E updateProperty(String entityId, BasicContentInfo contentInfo, InputStream stream, Parameters params);
     }
 
     /**
@@ -132,13 +144,17 @@ public interface BinaryResourceAction
     {
 
         /**
-         * Updates a binary property.  The specific property is specified in the {@link Parameters} object.
-         * See {@link Parameters#hasBinaryProperty(String)} or {@link Parameters#getBinaryProperty()}
-         * @param entityId unique id
-         * @param stream An inputstream
-         * @param contentInfo Basic information about the content stream
-         * @param params {@link Parameters}
+         * Updates a binary property. The specific property is specified in the {@link Parameters} object. See {@link Parameters#hasBinaryProperty(String)} or {@link Parameters#getBinaryProperty()}
+         * 
+         * @param entityId
+         *            unique id
+         * @param stream
+         *            An inputstream
+         * @param contentInfo
+         *            Basic information about the content stream
+         * @param params
+         *            {@link Parameters}
          */
-        public E updateProperty (String entityId, BasicContentInfo contentInfo, InputStream stream, Parameters params, WithResponse withResponse);
+        public E updateProperty(String entityId, BasicContentInfo contentInfo, InputStream stream, Parameters params, WithResponse withResponse);
     }
 }

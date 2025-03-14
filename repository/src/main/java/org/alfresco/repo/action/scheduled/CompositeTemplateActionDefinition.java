@@ -39,11 +39,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class CompositeTemplateActionDefinition extends AbstractTemplateActionDefinition
 {
 
-    /*
-     * The list of action templates that define this composite
-     */
+    /* The list of action templates that define this composite */
     private List<TemplateActionDefinition> templateActionDefinitions;
-    
+
     /**
      * Default constructor.
      *
@@ -75,18 +73,20 @@ public class CompositeTemplateActionDefinition extends AbstractTemplateActionDef
 
     /**
      * Build the composite action in the context of the given node.
-     * @param nodeRef  NodeRef
+     * 
+     * @param nodeRef
+     *            NodeRef
      * @return - the contextualised action.
      * 
      */
     public Action getAction(NodeRef nodeRef)
     {
         CompositeAction compositeAction = getActionService().createCompositeAction();
-        for(TemplateActionDefinition tad : templateActionDefinitions)
-        {   
+        for (TemplateActionDefinition tad : templateActionDefinitions)
+        {
             compositeAction.addAction(tad.getAction(nodeRef));
         }
-        
+
         if (getCompensatingTemplateCompositeActionDefinition() != null)
         {
             compositeAction.setCompensatingAction(getCompensatingTemplateCompositeActionDefinition().getAction(nodeRef));

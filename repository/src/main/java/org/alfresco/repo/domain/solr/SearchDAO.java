@@ -44,44 +44,60 @@ public interface SearchDAO
     /**
      * Get the ACL changesets summary (rollup count) with paging options
      * 
-     * @param minAclChangeSetId         minimum ACL changeset ID - (inclusive and optional)
-     * @param fromCommitTime            minimum ACL commit time - (inclusive and optional)
-     * @param maxAclChangeSetId         maximum ACL changeset ID - (exclusive and optional)
-     * @param toCommitTime              maximum ACL commit time - (exclusive and optional)
-     * @param maxResults                limit the results (must be greater than zero and less than MAX)
-     * @return                          list of ACL changesets (no details)
+     * @param minAclChangeSetId
+     *            minimum ACL changeset ID - (inclusive and optional)
+     * @param fromCommitTime
+     *            minimum ACL commit time - (inclusive and optional)
+     * @param maxAclChangeSetId
+     *            maximum ACL changeset ID - (exclusive and optional)
+     * @param toCommitTime
+     *            maximum ACL commit time - (exclusive and optional)
+     * @param maxResults
+     *            limit the results (must be greater than zero and less than MAX)
+     * @return list of ACL changesets (no details)
      */
     public List<AclChangeSet> getAclChangeSets(Long minAclChangeSetId, Long fromCommitTime, Long maxAclChangeSetId, Long toCommitTime, int maxResults);
-    
+
     /**
      * Get the ACLs (no rollup count) for the given ACL ChangeSets
      * 
-     * @param aclChangeSetIds           the ACL ChangeSet IDs
-     * @param minAclId                  the minimum ACL ID - (inclusive and optional).
-     * @param maxResults                the maximum number of results (must be greater than zero and less than MAX)
-     * @return                          list of ACLs
+     * @param aclChangeSetIds
+     *            the ACL ChangeSet IDs
+     * @param minAclId
+     *            the minimum ACL ID - (inclusive and optional).
+     * @param maxResults
+     *            the maximum number of results (must be greater than zero and less than MAX)
+     * @return list of ACLs
      */
     public List<Acl> getAcls(List<Long> aclChangeSetIds, Long minAclId, int maxResults);
 
     /**
      * Get the transactions from either minTxnId or fromCommitTime, optionally limited to maxResults
      * 
-     * @param minTxnId greater than or equal to minTxnId
-     * @param fromCommitTime greater than or equal to transaction commit time
-     * @param maxTxnId less than maxTxnId
-     * @param toCommitTime less than toCommitTime
-     * @param maxResults limit the results. 0 or Integer.MAX_VALUE does not limit the results
+     * @param minTxnId
+     *            greater than or equal to minTxnId
+     * @param fromCommitTime
+     *            greater than or equal to transaction commit time
+     * @param maxTxnId
+     *            less than maxTxnId
+     * @param toCommitTime
+     *            less than toCommitTime
+     * @param maxResults
+     *            limit the results. 0 or Integer.MAX_VALUE does not limit the results
      * @return list of transactions
      */
-	public List<Transaction> getTransactions(Long minTxnId, Long fromCommitTime, Long maxTxnId, Long toCommitTime, int maxResults);
-	
+    public List<Transaction> getTransactions(Long minTxnId, Long fromCommitTime, Long maxTxnId, Long toCommitTime, int maxResults);
+
     /**
      * Get the nodes satisfying the constraints in nodeParameters
      * 
-     * @param nodeParameters set of constraints for which nodes to return
-     * @param shardPropertQName qname of property to use as shard_key
-     * @param shardPropertyTypeName type name (text, int, long) of property to use as shard_key
+     * @param nodeParameters
+     *            set of constraints for which nodes to return
+     * @param shardPropertQName
+     *            qname of property to use as shard_key
+     * @param shardPropertyTypeName
+     *            type name (text, int, long) of property to use as shard_key
      * @return list of matching nodes
      */
-	public List<Node> getNodes(NodeParameters nodeParameters, QName shardPropertQName, QName shardPropertyTypeName);
+    public List<Node> getNodes(NodeParameters nodeParameters, QName shardPropertQName, QName shardPropertyTypeName);
 }

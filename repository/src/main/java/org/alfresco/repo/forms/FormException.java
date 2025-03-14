@@ -40,12 +40,12 @@ public class FormException extends AlfrescoRuntimeException
     {
         super(msgId);
     }
-    
+
     public FormException(String msgId, Throwable cause)
     {
         super(msgId, cause);
     }
-    
+
     public FormException(String msgId, Object[] msgParams)
     {
         super(msgId, msgParams);

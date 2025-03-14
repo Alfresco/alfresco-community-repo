@@ -55,9 +55,12 @@ public abstract class AbstractProperty implements CMISPropertyAccessor
     /**
      * Construct
      * 
-     * @param serviceRegistry ServiceRegistry
-     * @param connector CMISConnector
-     * @param propertyName String
+     * @param serviceRegistry
+     *            ServiceRegistry
+     * @param connector
+     *            CMISConnector
+     * @param propertyName
+     *            String
      */
     protected AbstractProperty(ServiceRegistry serviceRegistry, CMISConnector connector, String propertyName)
     {
@@ -68,15 +71,15 @@ public abstract class AbstractProperty implements CMISPropertyAccessor
 
     protected String getGuid(String nodeId)
     {
-    	int idx = nodeId.lastIndexOf("/");
-    	if(idx != -1)
-    	{
-    		return nodeId.substring(idx+1);
-    	}
-    	else
-    	{
-    		return nodeId;
-    	}
+        int idx = nodeId.lastIndexOf("/");
+        if (idx != -1)
+        {
+            return nodeId.substring(idx + 1);
+        }
+        else
+        {
+            return nodeId;
+        }
     }
 
     /**
@@ -119,7 +122,8 @@ public abstract class AbstractProperty implements CMISPropertyAccessor
         {
             Serializable value = nodeInfo.getPropertyValue(propertyName);
             return value;
-        } else
+        }
+        else
         {
             Serializable value = getValueInternal(nodeInfo);
             nodeInfo.putPropertyValue(propertyName, value);
@@ -149,7 +153,8 @@ public abstract class AbstractProperty implements CMISPropertyAccessor
         if (nodeInfo.containsPropertyValue(CONTENT_PROPERTY))
         {
             return (ContentData) nodeInfo.getPropertyValue(CONTENT_PROPERTY);
-        } else
+        }
+        else
         {
             ContentData contentData = null;
 

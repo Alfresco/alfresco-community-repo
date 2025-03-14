@@ -26,10 +26,11 @@
 package org.alfresco.repo.module;
 
 import java.util.Collection;
-
 import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -43,9 +44,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Tests various module components.
@@ -58,14 +56,14 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 @Category({LuceneTests.class, RedundantTests.class})
 public class ComponentsTest extends TestCase
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(new String[] {"classpath:module/module-component-test-beans.xml"});
-    
+    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(new String[]{"classpath:module/module-component-test-beans.xml"});
+
     private ServiceRegistry serviceRegistry;
     private AuthenticationComponent authenticationComponent;
     private TransactionService transactionService;
     private NodeService nodeService;
     private UserTransaction txn;
-    
+
     @Override
     protected void setUp() throws Exception
     {
@@ -73,14 +71,14 @@ public class ComponentsTest extends TestCase
         authenticationComponent = (AuthenticationComponent) ctx.getBean("AuthenticationComponent");
         transactionService = serviceRegistry.getTransactionService();
         nodeService = serviceRegistry.getNodeService();
-        
+
         // Run as system user
         authenticationComponent.setSystemUserAsCurrentUser();
-        
+
         // Start a transaction
         txn = transactionService.getUserTransaction();
     }
-    
+
     @Override
     protected void tearDown() throws Exception
     {
@@ -96,7 +94,7 @@ public class ComponentsTest extends TestCase
         // Rollback the transaction
         try
         {
-//            txn.rollback();
+            // txn.rollback();
             txn.commit();
         }
         catch (Throwable e)
@@ -107,13 +105,12 @@ public class ComponentsTest extends TestCase
 
     /** Ensure that the test starts and stops properly */
     public void testSetup() throws Exception
-    {
-    }
-    
+    {}
+
     private NodeRef getLoadedCategoryRoot()
     {
         StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-        
+
         CategoryService categoryService = serviceRegistry.getCategoryService();
         // Check if the categories exist
         Collection<ChildAssociationRef> assocRefs = categoryService.getRootCategories(
@@ -131,7 +128,7 @@ public class ComponentsTest extends TestCase
         }
         return null;
     }
-    
+
     public void testImporterModuleComponent() throws Exception
     {
         // Delete any pre-existing data
@@ -144,11 +141,11 @@ public class ComponentsTest extends TestCase
         // Double check to make sure it is gone
         nodeRef = getLoadedCategoryRoot();
         assertNull("Category not deleted", nodeRef);
-        
+
         ImporterModuleComponent component = (ImporterModuleComponent) ctx.getBean("module.test.importerComponent");
         // Execute it
         component.execute();
-        
+
         // Now make sure the data exists
         nodeRef = getLoadedCategoryRoot();
         assertNotNull("Loaded category root not found", nodeRef);

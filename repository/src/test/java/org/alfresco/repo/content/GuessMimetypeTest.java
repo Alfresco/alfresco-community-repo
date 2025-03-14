@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import junit.framework.TestCase;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -42,7 +43,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Tests for guess mimetype for file
@@ -71,8 +71,7 @@ public class GuessMimetypeTest extends TestCase
 
         this.retryingTransactionHelper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
 
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
             @Override
             public Object execute() throws Throwable
             {
@@ -92,8 +91,7 @@ public class GuessMimetypeTest extends TestCase
     {
         String content = "This is some content";
         String fileName = "._myfile.pdf";
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
             @Override
             public Object execute() throws Throwable
             {
@@ -116,8 +114,7 @@ public class GuessMimetypeTest extends TestCase
         assertEquals(MimetypeMap.MIMETYPE_APPLEFILE, writer.getMimetype());
 
         fileName = "myfile.pdf";
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
             @Override
             public Object execute() throws Throwable
             {

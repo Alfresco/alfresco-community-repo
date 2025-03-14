@@ -25,14 +25,15 @@
  */
 package org.alfresco.repo.security.authentication;
 
-import net.sf.acegisecurity.GrantedAuthority;
-import net.sf.acegisecurity.providers.dao.User;
-
 import java.io.Serializable;
 import java.util.List;
 
+import net.sf.acegisecurity.GrantedAuthority;
+import net.sf.acegisecurity.providers.dao.User;
+
 /**
  * A user authenticated by the Alfresco repository using RepositoryAuthenticationDao
+ * 
  * @author Gethin James
  */
 public class RepositoryAuthenticatedUser extends User

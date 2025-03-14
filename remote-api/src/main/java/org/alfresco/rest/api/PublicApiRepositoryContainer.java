@@ -27,16 +27,17 @@ package org.alfresco.rest.api;
 
 import java.io.IOException;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.repo.tenant.TenantUtil;
-import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
-import org.alfresco.repo.web.scripts.TenantRepositoryContainer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Authenticator;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
+
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
+import org.alfresco.repo.web.scripts.TenantRepositoryContainer;
 
 /**
  * Repository (server-tier) container for public api
@@ -50,14 +51,14 @@ public class PublicApiRepositoryContainer extends TenantRepositoryContainer
 
     @Override
     public void executeScript(final WebScriptRequest scriptReq, final WebScriptResponse scriptRes, final Authenticator auth)
-        throws IOException
+            throws IOException
     {
-        String tenant = ((PublicApiTenantWebScriptServletRequest)scriptReq).getTenant();
+        String tenant = ((PublicApiTenantWebScriptServletRequest) scriptReq).getTenant();
         if (tenant != null)
         {
             // handle special tenant keys
-            // -super-    => run as system tenant
-            // -default-  => run as user's default tenant
+            // -super- => run as system tenant
+            // -default- => run as user's default tenant
             String user = null;
             if (tenant.equalsIgnoreCase(TenantUtil.DEFAULT_TENANT))
             {
@@ -68,22 +69,21 @@ public class PublicApiRepositoryContainer extends TenantRepositoryContainer
                     tenant = TenantUtil.SYSTEM_TENANT;
                 }
             }
-            
+
             // run as super tenant
             if (tenant.equalsIgnoreCase(TenantUtil.SYSTEM_TENANT))
             {
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug("executeScript (-system-): ["+user+","+tenant+"] "+scriptReq.getServicePath());
+                    logger.debug("executeScript (-system-): [" + user + "," + tenant + "] " + scriptReq.getServicePath());
                 }
 
-                TenantUtil.runAsTenant(new TenantRunAsWork<Object>()
-                {
+                TenantUtil.runAsTenant(new TenantRunAsWork<Object>() {
                     public Object doWork() throws Exception
                     {
                         PublicApiRepositoryContainer.super.executeScript(scriptReq, scriptRes, auth);
                         return null;
-                        
+
                     }
                 }, TenantService.DEFAULT_DOMAIN);
             }
@@ -95,8 +95,7 @@ public class PublicApiRepositoryContainer extends TenantRepositoryContainer
                 }
 
                 // run as explicit tenant
-                TenantUtil.runAsTenant(new TenantRunAsWork<Object>()
-                {
+                TenantUtil.runAsTenant(new TenantRunAsWork<Object>() {
                     public Object doWork() throws Exception
                     {
                         PublicApiRepositoryContainer.super.executeScript(scriptReq, scriptRes, auth);

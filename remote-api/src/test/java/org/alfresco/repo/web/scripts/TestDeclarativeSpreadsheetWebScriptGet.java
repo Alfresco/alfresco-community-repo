@@ -29,15 +29,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.Pair;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
+
 /**
  * Test class for DeclarativeSpreadsheetWebScriptTest class
+ * 
  * @author alex.mukha
  * @since 4.2.4
  */
@@ -58,23 +60,22 @@ public class TestDeclarativeSpreadsheetWebScriptGet extends DeclarativeSpreadshe
     @Override
     protected List<Pair<QName, Boolean>> buildPropertiesForHeader(Object resource, String format, WebScriptRequest req)
     {
-        List<Pair<QName,Boolean>> properties = 
-                new ArrayList<Pair<QName,Boolean>>(DeclarativeSpreadsheetWebScriptTest.COLUMNS.length);
-            boolean required = true;
-            for(QName qname : DeclarativeSpreadsheetWebScriptTest.COLUMNS) 
+        List<Pair<QName, Boolean>> properties = new ArrayList<Pair<QName, Boolean>>(DeclarativeSpreadsheetWebScriptTest.COLUMNS.length);
+        boolean required = true;
+        for (QName qname : DeclarativeSpreadsheetWebScriptTest.COLUMNS)
+        {
+            Pair<QName, Boolean> p = null;
+            if (qname != null)
             {
-                Pair<QName,Boolean> p = null;
-                if(qname != null)
-                {
-                    p = new Pair<QName, Boolean>(qname, required);
-                }
-                else
-                {
-                    required = false;
-                }
-                properties.add(p);
+                p = new Pair<QName, Boolean>(qname, required);
             }
-            return properties;
+            else
+            {
+                required = false;
+            }
+            properties.add(p);
+        }
+        return properties;
     }
 
     @Override
@@ -86,6 +87,5 @@ public class TestDeclarativeSpreadsheetWebScriptGet extends DeclarativeSpreadshe
 
     @Override
     protected void populateBody(Object resource, CSVPrinter csv, List<QName> properties) throws IOException
-    {
-    }
+    {}
 }

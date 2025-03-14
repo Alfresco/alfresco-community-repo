@@ -29,6 +29,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.admin.patch.AbstractPatch;
@@ -39,14 +43,9 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * This patch adjusts dates for Calendar Events. Share application in 3.4.x versions doesn't adjust specified in form dates with time zone offset value to. Web Script which saves a
- * new event always performs correction of the dates in accordance with time zone for 'All Day' events. Date becomes on a day before, if time for date is set to '00:00' in this
- * case. Share in 4.x does this adjustment automatically before sending request to the Web Script.<br />
+ * This patch adjusts dates for Calendar Events. Share application in 3.4.x versions doesn't adjust specified in form dates with time zone offset value to. Web Script which saves a new event always performs correction of the dates in accordance with time zone for 'All Day' events. Date becomes on a day before, if time for date is set to '00:00' in this case. Share in 4.x does this adjustment automatically before sending request to the Web Script.<br />
  * <br />
  * See "<a href="https://issues.alfresco.com/jira/browse/MNT-8977">CMIS (OpenCMIS version) is sharing security context with other functionality in Alfresco</a>" for more details
  * 
@@ -68,8 +67,7 @@ public class CalendarAllDayEventDatesCorrectingPatch extends AbstractPatch
     private CalendarService calendarService;
 
     public CalendarAllDayEventDatesCorrectingPatch()
-    {
-    }
+    {}
 
     public void setBatchSize(int batchSize)
     {
@@ -195,7 +193,8 @@ public class CalendarAllDayEventDatesCorrectingPatch extends AbstractPatch
     /**
      * Increases (or decreases) <code>propertyId</code> date-property by the extracted (from the specified property value) time zone offset
      * 
-     * @param oldDate - {@link Date} instance, which represents not adjusted date for an 'All Day' event
+     * @param oldDate
+     *            - {@link Date} instance, which represents not adjusted date for an 'All Day' event
      * @return {@link Date} instance, which represents adjusted date-property in accordance with time zone offset
      */
     private Date adjustOldDate(Date oldDate)
@@ -206,45 +205,38 @@ public class CalendarAllDayEventDatesCorrectingPatch extends AbstractPatch
         result.add(Calendar.MILLISECOND, offset);
         return result.getTime();
     }
-    
+
     /**
-     * Does the given {@link CalendarEntry} define an all-day
-     *  event?
-     * An All Day Event is defined as one starting at midnight
-     *  on a day, and ending at midnight.
-     *  
-     * For a single day event, the start and end dates should be
-     *  the same, and the times for both are UTC midnight.
-     * For a multi day event, the start and end times are UTC midnight,
-     *  for the first and last days respectively.
+     * Does the given {@link CalendarEntry} define an all-day event? An All Day Event is defined as one starting at midnight on a day, and ending at midnight.
+     * 
+     * For a single day event, the start and end dates should be the same, and the times for both are UTC midnight. For a multi day event, the start and end times are UTC midnight, for the first and last days respectively.
      */
     public static boolean isAllDay(CalendarEntry entry)
     {
-       if (entry.getStart() == null || entry.getEnd() == null)
-       {
-          // One or both dates is missing
-          return false;
-       }
+        if (entry.getStart() == null || entry.getEnd() == null)
+        {
+            // One or both dates is missing
+            return false;
+        }
 
-       // Pre-4.0, the midnights were local time...
-       Calendar startLocal = Calendar.getInstance();
-       Calendar endLocal = Calendar.getInstance();
-       startLocal.setTime(entry.getStart());
-       endLocal.setTime(entry.getEnd());
+        // Pre-4.0, the midnights were local time...
+        Calendar startLocal = Calendar.getInstance();
+        Calendar endLocal = Calendar.getInstance();
+        startLocal.setTime(entry.getStart());
+        endLocal.setTime(entry.getEnd());
 
-          if (startLocal.get(Calendar.HOUR_OF_DAY) == 0 &&
-         	startLocal.get(Calendar.MINUTE) == 0 &&
-         	startLocal.get(Calendar.SECOND) == 0 &&
-         	endLocal.get(Calendar.HOUR_OF_DAY) == 0 &&
-         	endLocal.get(Calendar.MINUTE) == 0 &&
-         	endLocal.get(Calendar.SECOND) == 0)
-          {
-             // Both at midnight, counts as all day
-             return true;
-          }
-       
-       
-       // In any other case, it isn't an all-day
-       return false;
+        if (startLocal.get(Calendar.HOUR_OF_DAY) == 0 &&
+                startLocal.get(Calendar.MINUTE) == 0 &&
+                startLocal.get(Calendar.SECOND) == 0 &&
+                endLocal.get(Calendar.HOUR_OF_DAY) == 0 &&
+                endLocal.get(Calendar.MINUTE) == 0 &&
+                endLocal.get(Calendar.SECOND) == 0)
+        {
+            // Both at midnight, counts as all day
+            return true;
+        }
+
+        // In any other case, it isn't an all-day
+        return false;
     }
 }

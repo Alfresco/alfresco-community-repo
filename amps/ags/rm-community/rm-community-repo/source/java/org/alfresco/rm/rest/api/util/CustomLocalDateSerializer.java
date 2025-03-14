@@ -31,7 +31,6 @@ import java.io.IOException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -44,7 +43,7 @@ import org.joda.time.format.ISODateTimeFormat;
  */
 public class CustomLocalDateSerializer extends StdSerializer<LocalDate>
 {
-    /** Local date format yyyy-MM-dd*/
+    /** Local date format yyyy-MM-dd */
     private final static DateTimeFormatter DATE_FORMAT = ISODateTimeFormat.date();
 
     public CustomLocalDateSerializer()
@@ -60,7 +59,8 @@ public class CustomLocalDateSerializer extends StdSerializer<LocalDate>
     /**
      * Custom serialize method to convert the org.joda.time.LocalDate into string value using the DATE_FORMAT
      *
-     * @param value local date value
+     * @param value
+     *            local date value
      * @param jgen
      * @param provider
      * @throws IOException

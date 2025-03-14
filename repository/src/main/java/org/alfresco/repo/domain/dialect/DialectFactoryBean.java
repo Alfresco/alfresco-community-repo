@@ -28,14 +28,13 @@ package org.alfresco.repo.domain.dialect;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-
 import javax.sql.DataSource;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 
 /**
- * Factory for the DB dialect. Allows dialect detection logic to be centralized and the dialect to be injected
- * where required as a singleton from the container.
+ * Factory for the DB dialect. Allows dialect detection logic to be centralized and the dialect to be injected where required as a singleton from the container.
  * 
  * @author dward
  * @since 6.0
@@ -69,8 +68,7 @@ public class DialectFactoryBean implements FactoryBean<Dialect>
                 con.close();
             }
             catch (Exception e)
-            {
-            }
+            {}
         }
     }
 

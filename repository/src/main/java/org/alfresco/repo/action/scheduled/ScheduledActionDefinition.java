@@ -43,7 +43,8 @@ public interface ScheduledActionDefinition extends InitializingBean
     /**
      * Set the template action definition that is used to build the Action to execute.
      * 
-     * @param templateActionDefinition TemplateActionDefinition
+     * @param templateActionDefinition
+     *            TemplateActionDefinition
      */
     public void setTemplateActionDefinition(TemplateActionDefinition templateActionDefinition);
 
@@ -57,15 +58,17 @@ public interface ScheduledActionDefinition extends InitializingBean
     /**
      * Register with a scheduler. This should be called in the implementation afterPropertiesSet() method of InitializingBean
      * 
-     * @param scheduler Scheduler
+     * @param scheduler
+     *            Scheduler
      * @throws SchedulerException
      */
     public void register(Scheduler scheduler) throws SchedulerException;
 
     /**
-     * Set the name of the job - used for job admin 
+     * Set the name of the job - used for job admin
      * 
-     * @param jobName String
+     * @param jobName
+     *            String
      */
     public void setJobName(String jobName);
 
@@ -79,12 +82,14 @@ public interface ScheduledActionDefinition extends InitializingBean
     /**
      * Set the job group - used for job admin
      * 
-     * @param jobGroup String
+     * @param jobGroup
+     *            String
      */
     public void setJobGroup(String jobGroup);
 
     /**
      * Get the job group - used for job admin
+     * 
      * @return - the job group.
      */
     public String getJobGroup();
@@ -92,20 +97,23 @@ public interface ScheduledActionDefinition extends InitializingBean
     /**
      * Set the trigger name - used for job admin
      * 
-     * @param triggerName String
+     * @param triggerName
+     *            String
      */
     public void setTriggerName(String triggerName);
 
     /**
      * Get the trigger name - used for job admin
+     * 
      * @return - the trigger name.
      */
     public String getTriggerName();
 
-    /** 
+    /**
      * Set the trigger group - used for job admin
      * 
-     * @param triggerGroup String
+     * @param triggerGroup
+     *            String
      */
     public void setTriggerGroup(String triggerGroup);
 

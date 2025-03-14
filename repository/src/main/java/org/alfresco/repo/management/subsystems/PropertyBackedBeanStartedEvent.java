@@ -25,9 +25,6 @@
  */
 package org.alfresco.repo.management.subsystems;
 
-import java.util.List;
-
-
 /**
  * An event emitted after a {@link PropertyBackedBean} is started.
  * 
@@ -46,5 +43,5 @@ public class PropertyBackedBeanStartedEvent extends PropertyBackedBeanEvent
     public PropertyBackedBeanStartedEvent(PropertyBackedBean source)
     {
         super(source);
-    }    
+    }
 }

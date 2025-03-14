@@ -36,14 +36,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
-
 import javax.sql.DataSource;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Same logic as DeleteNotExistsExecutor with the following changes:
@@ -52,16 +52,11 @@ import org.apache.commons.logging.LogFactory;
  * <p/>
  * - eager close of result sets
  * <p/>
- * - we store all the ids in memory and process them from there - the secondary ids are stored in a unique list without
- * duplicate values.
+ * - we store all the ids in memory and process them from there - the secondary ids are stored in a unique list without duplicate values.
  * <p/>
- * - we only cross 2 sets (the potential ids to delete from the primary table with the set of all secondary ids in that
- * range) removing all elements from the second set from the first set
+ * - we only cross 2 sets (the potential ids to delete from the primary table with the set of all secondary ids in that range) removing all elements from the second set from the first set
  * <p/>
- * - every {pauseAndRecoverBatchSize} rows deleted we close all prepared statements and close the connection and sleep
- * for {pauseAndRecoverTime} milliseconds. This is necessary to allow the DBMS to perform the background tasks without
- * load from ACS. When we do not do this and if we are performing millions of deletes, the connection eventually gets
- * aborted.
+ * - every {pauseAndRecoverBatchSize} rows deleted we close all prepared statements and close the connection and sleep for {pauseAndRecoverTime} milliseconds. This is necessary to allow the DBMS to perform the background tasks without load from ACS. When we do not do this and if we are performing millions of deletes, the connection eventually gets aborted.
  * 
  * @author Eva Vasques
  */
@@ -352,9 +347,7 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
         }
     }
 
-    /*
-     * Get a combined list of the ids present in all the secondary tables
-     */
+    /* Get a combined list of the ids present in all the secondary tables */
     private SecondaryResultsInfo getSecondaryResults(PreparedStatement[] preparedStatements, Pair<String, String>[] tableColumn,
             Long minPotentialId, Long maxPotentialId) throws SQLException
     {
@@ -466,9 +459,7 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
         }
     }
 
-    /*
-     * Sleep for {pauseAndRecoverTime} before opening a new connection and continue to process new batches
-     */
+    /* Sleep for {pauseAndRecoverTime} before opening a new connection and continue to process new batches */
     private void pauseAndRecoverJob(DataSource dataSource) throws SQLException
     {
         if (logger.isDebugEnabled())

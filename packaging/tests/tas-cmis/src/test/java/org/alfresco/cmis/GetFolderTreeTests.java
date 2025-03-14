@@ -1,18 +1,17 @@
 package org.alfresco.cmis;
 
-import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.data.DataUser;
-import org.alfresco.utility.model.*;
-import org.alfresco.utility.report.Bug;
-import org.alfresco.utility.testrail.ExecutionType;
-import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisUnauthorizedException;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.model.*;
+import org.alfresco.utility.testrail.ExecutionType;
+import org.alfresco.utility.testrail.annotation.TestRail;
 
 public class GetFolderTreeTests extends CmisTest
 {
@@ -43,10 +42,10 @@ public class GetFolderTreeTests extends CmisTest
         folderModel2 = FolderModel.getRandomFolderModel();
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.SANITY,
             description = "Verify site manager can get folder tree for valid parent folder with at least 2 children" +
                     " folders and depth set to 1")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = {TestGroup.SANITY, TestGroup.CMIS})
     public void getFolderTreeForValidParentFolderWithAtLeast2ChildrenFoldersAndDepthGreaterThan1() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFolder(testFolder)
@@ -57,10 +56,10 @@ public class GetFolderTreeTests extends CmisTest
                 .then().usingResource(testFolder).assertThat().hasFolderTree(1, folderModel1, folderModel2);
     }
 
-    @TestRail(section = {"cmis-api" }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.SANITY,
             description = "Verify site manager can get folder tree for valid parent folder with at least 2 children" +
                     " folders and depth set to -1")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = {TestGroup.SANITY, TestGroup.CMIS})
     public void getFolderTreeForValidParentFolderWithAtLeast2ChildrenFoldersAndDepthSetToMinus1() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFolder(testFolder)
@@ -70,11 +69,11 @@ public class GetFolderTreeTests extends CmisTest
                 .and().usingResource(folderModel1).createFolder(folderModel2)
                 .then().usingResource(testFolder).assertThat().hasFolderTree(-1, folderModel1, folderModel2);
     }
-    
-    @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager can NOT get folder tree for valid parent folder with at least 2 children" +
                     " folders and depth set to 0")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisInvalidArgumentException.class})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisInvalidArgumentException.class})
     public void getFolderTreeForValidParentFolderWithAtLeast2ChildrenFoldersAndDepthSetTo0() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFolder(testFolder)
@@ -84,13 +83,13 @@ public class GetFolderTreeTests extends CmisTest
                 .and().createFolder(folderModel12)
                 .and().usingResource(folderModel11).createFolder(folderModel2)
                 .then().usingResource(testFolder)
-                    .assertThat().hasFolderTree(0, folderModel11);
+                .assertThat().hasFolderTree(0, folderModel11);
     }
-    
-    @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager can NOT get folder tree for valid parent folder with at least 2 children" +
                     " folders and depth set to -2")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisInvalidArgumentException.class})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisInvalidArgumentException.class})
     public void getFolderTreeForValidParentFolderWithAtLeast2ChildrenFoldersAndDepthSetToMinus2() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFolder(testFolder)
@@ -100,13 +99,13 @@ public class GetFolderTreeTests extends CmisTest
                 .and().createFolder(folderModel12)
                 .and().usingResource(folderModel11).createFolder(folderModel2)
                 .then().usingResource(testFolder)
-                    .assertThat().hasFolderTree(-2, folderModel11);
+                .assertThat().hasFolderTree(-2, folderModel11);
     }
-    
-    @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager can NOT get folder tree for parent folder with children" +
                     " that was previously deleted")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisObjectNotFoundException.class})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisObjectNotFoundException.class})
     public void getFolderTreeForDeletedParentFolderWithChildren() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFolder(testFolder)
@@ -117,12 +116,12 @@ public class GetFolderTreeTests extends CmisTest
                 .and().usingResource(folderModel11).createFolder(folderModel2)
                 .and().usingResource(testFolder).deleteFolderTree()
                 .then().usingResource(testFolder)
-                    .assertThat().hasFolderTree(1, folderModel11);
+                .assertThat().hasFolderTree(1, folderModel11);
     }
 
-    @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site collaborator can get folder tree for valid parent folder with at least 2 children folders")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteCollaboratorCanGetFolderTreeForValidParentFolder() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).usingSite(testSite)
@@ -131,9 +130,9 @@ public class GetFolderTreeTests extends CmisTest
                 .usingResource(testFolder).assertThat().hasFolderTree(-1, folderModel1, folderModel2);
     }
 
-    @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site collaborator can get folder tree for valid parent folder with at least 2 children folders")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteCollaboratorCanGetFolderTreeForValidParentFolderCreatedByManager() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFolder(testFolder)
@@ -143,9 +142,9 @@ public class GetFolderTreeTests extends CmisTest
                 .usingResource(testFolder).assertThat().hasFolderTree(-1, folderModel1, folderModel2);
     }
 
-    @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor can get folder tree for valid parent folder with at least 2 children folders")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteContributorCanGetFolderTreeForValidParentFolder() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingSite(testSite)
@@ -154,9 +153,9 @@ public class GetFolderTreeTests extends CmisTest
                 .usingResource(testFolder).assertThat().hasFolderTree(-1, folderModel1, folderModel2);
     }
 
-    @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor can get folder tree for valid parent folder with at least 2 children folders")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteContributorCanGetFolderTreeForValidParentFolderCreatedByManager() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite)
@@ -167,9 +166,9 @@ public class GetFolderTreeTests extends CmisTest
                 .usingResource(testFolder).assertThat().hasFolderTree(-1, folderModel1, folderModel2);
     }
 
-    @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site consumer can get folder tree for valid parent folder with at least 2 children folders")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteConsumerCanGetFolderTreeForValidParentFolder() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite)
@@ -180,9 +179,9 @@ public class GetFolderTreeTests extends CmisTest
                 .usingResource(testFolder).assertThat().hasFolderTree(-1, folderModel1, folderModel2);
     }
 
-    @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify non site member of a private site cannot get folder tree for valid parent folder with at least 2 children folders")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberCannotGetFolderTreeForAFolderFromAPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
@@ -195,9 +194,9 @@ public class GetFolderTreeTests extends CmisTest
                 .assertThat().hasFolderTree(-1, folderModel1, folderModel2);
     }
 
-    @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify non site member of a moderated site cannot get folder tree for valid parent folder with at least 2 children folders")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberCannotGetFolderTreeForAFolderFromAModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingAdmin().createModeratedRandomSite();

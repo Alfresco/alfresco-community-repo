@@ -25,11 +25,12 @@
  */
 package org.alfresco.repo.activities.feed;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * Executes scheduled feed generator quartz-job - refer to scheduled-jobs-context.xml
@@ -37,8 +38,7 @@ import org.quartz.JobExecutionException;
 public class FeedGeneratorJob implements Job
 {
     public FeedGeneratorJob()
-    {
-    }
+    {}
 
     /**
      * Calls the feed generator to do its work
@@ -53,7 +53,7 @@ public class FeedGeneratorJob implements Job
             throw new AlfrescoRuntimeException(
                     "FeedGeneratorObj data must contain valid 'feedGenerator' reference");
         }
-        FeedGenerator feedGenerator = (FeedGenerator)feedGeneratorObj;
+        FeedGenerator feedGenerator = (FeedGenerator) feedGeneratorObj;
         feedGenerator.execute();
     }
 }

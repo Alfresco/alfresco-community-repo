@@ -36,7 +36,7 @@ import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.traitextender.SpringBeanExtension;
 
 public class VirtualWorkflowPackageExtension extends
-            SpringBeanExtension<WorkflowPackageExtension, WorkflowPackageTrait> implements WorkflowPackageExtension
+        SpringBeanExtension<WorkflowPackageExtension, WorkflowPackageTrait> implements WorkflowPackageExtension
 {
     private VirtualStore smartStore;
 

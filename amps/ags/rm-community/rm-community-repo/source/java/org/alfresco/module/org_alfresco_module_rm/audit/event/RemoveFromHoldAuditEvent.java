@@ -57,7 +57,8 @@ public class RemoveFromHoldAuditEvent extends AuditEvent implements HoldServiceP
     /**
      * Sets the node service
      *
-     * @param nodeService nodeService to set
+     * @param nodeService
+     *            nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -68,12 +69,10 @@ public class RemoveFromHoldAuditEvent extends AuditEvent implements HoldServiceP
      * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnRemoveFromHoldPolicy#onRemoveFromHold(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    @Behaviour
-            (
-                    kind = BehaviourKind.CLASS,
-                    type = "rma:hold",
-                    notificationFrequency = NotificationFrequency.EVERY_EVENT
-            )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            type = "rma:hold",
+            notificationFrequency = NotificationFrequency.EVERY_EVENT)
     public void onRemoveFromHold(NodeRef holdNodeRef, NodeRef contentNodeRef)
     {
         Map<QName, Serializable> auditProperties = HoldUtils.makePropertiesMap(holdNodeRef, nodeService);

@@ -30,26 +30,17 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import net.sf.acegisecurity.providers.encoding.BaseDigestPasswordEncoder;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 
 /**
  * Base for digest password encoders.
  * <p>
- * This class can be used stand-alone, or one of the subclasses can be used for
- * compatiblity and convenience. When using this class directly you must specify
- * a <a href=
- * "http://java.sun.com/j2se/1.4.2/docs/guide/security/CryptoSpec.html#AppA">
- * Message Digest Algorithm</a> to use as a constructor arg
+ * This class can be used stand-alone, or one of the subclasses can be used for compatiblity and convenience. When using this class directly you must specify a <a href= "http://java.sun.com/j2se/1.4.2/docs/guide/security/CryptoSpec.html#AppA"> Message Digest Algorithm</a> to use as a constructor arg
  * </p>
  * 
  * <p>
- * The encoded password hash is normally returned as Hex (32 char) version of
- * the hash bytes. Setting the <tt>encodeHashAsBase64</tt> property to
- * <tt>true</tt> will cause the encoded pass to be returned as Base64 text,
- * which will consume 24 characters. See
- * {@link BaseDigestPasswordEncoder#setEncodeHashAsBase64(boolean)}
+ * The encoded password hash is normally returned as Hex (32 char) version of the hash bytes. Setting the <tt>encodeHashAsBase64</tt> property to <tt>true</tt> will cause the encoded pass to be returned as Base64 text, which will consume 24 characters. See {@link BaseDigestPasswordEncoder#setEncodeHashAsBase64(boolean)}
  * </p>
  * <p>
  * This PasswordEncoder can be used directly as in the following example:<br/>
@@ -68,11 +59,10 @@ public class MessageDigestPasswordEncoder extends BaseDigestPasswordEncoder
     private final String algorithm;
 
     /**
-     * The digest algorithm to use Supports the named <a href=
-     * "http://java.sun.com/j2se/1.4.2/docs/guide/security/CryptoSpec.html#AppA"
-     * > Message Digest Algorithms</a> in the Java environment.
+     * The digest algorithm to use Supports the named <a href= "http://java.sun.com/j2se/1.4.2/docs/guide/security/CryptoSpec.html#AppA" > Message Digest Algorithms</a> in the Java environment.
      * 
-     * @param algorithm String
+     * @param algorithm
+     *            String
      */
     public MessageDigestPasswordEncoder(String algorithm)
     {
@@ -80,11 +70,12 @@ public class MessageDigestPasswordEncoder extends BaseDigestPasswordEncoder
     }
 
     /**
-     * Convenience constructor for specifying the algorithm and whether or not
-     * to enable base64 encoding
+     * Convenience constructor for specifying the algorithm and whether or not to enable base64 encoding
      *
-     * @param algorithm String
-     * @param encodeHashAsBase64 boolean
+     * @param algorithm
+     *            String
+     * @param encodeHashAsBase64
+     *            boolean
      * @throws IllegalArgumentException
      *             if an unknown
      */
@@ -97,15 +88,13 @@ public class MessageDigestPasswordEncoder extends BaseDigestPasswordEncoder
     }
 
     /**
-     * Encodes the rawPass using a MessageDigest. If a salt is specified it will
-     * be merged with the password before encoding.
+     * Encodes the rawPass using a MessageDigest. If a salt is specified it will be merged with the password before encoding.
      * 
      * @param rawPass
      *            The plain text password
      * @param salt
      *            The salt to sprinkle
-     * @return Hex string of password digest (or base64 encoded string if
-     *         encodeHashAsBase64 is enabled.
+     * @return Hex string of password digest (or base64 encoded string if encodeHashAsBase64 is enabled.
      */
     public String encodePassword(String rawPass, Object salt)
     {
@@ -118,7 +107,8 @@ public class MessageDigestPasswordEncoder extends BaseDigestPasswordEncoder
         try
         {
             digest = messageDigest.digest(saltedPass.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException e)
+        }
+        catch (UnsupportedEncodingException e)
         {
             throw new IllegalStateException("UTF-8 not supported!");
         }
@@ -126,15 +116,15 @@ public class MessageDigestPasswordEncoder extends BaseDigestPasswordEncoder
         if (getEncodeHashAsBase64())
         {
             return new String(Base64.encodeBase64(digest));
-        } else
+        }
+        else
         {
             return new String(Hex.encodeHex(digest));
         }
     }
 
     /**
-     * Get a MessageDigest instance for the given algorithm. Throws an
-     * IllegalArgumentException if <i>algorithm</i> is unknown
+     * Get a MessageDigest instance for the given algorithm. Throws an IllegalArgumentException if <i>algorithm</i> is unknown
      * 
      * @return MessageDigest instance
      * @throws IllegalArgumentException
@@ -145,15 +135,15 @@ public class MessageDigestPasswordEncoder extends BaseDigestPasswordEncoder
         try
         {
             return MessageDigest.getInstance(algorithm);
-        } catch (NoSuchAlgorithmException e)
+        }
+        catch (NoSuchAlgorithmException e)
         {
             throw new IllegalArgumentException("No such algorithm [" + algorithm + "]");
         }
     }
 
     /**
-     * Takes a previously encoded password and compares it with a rawpassword
-     * after mixing in the salt and encoding that value
+     * Takes a previously encoded password and compares it with a rawpassword after mixing in the salt and encoding that value
      * 
      * @param encPass
      *            previously encoded password

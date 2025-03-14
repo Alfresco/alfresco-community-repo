@@ -31,49 +31,48 @@ import org.json.simple.JSONObject;
 
 public class Company extends org.alfresco.rest.api.model.Company implements ExpectedComparison
 {
-	public Company()
-	{
-	}
+    public Company()
+    {}
 
-	public Company(org.alfresco.rest.api.model.Company company)
-	{
-		super(company.getOrganization(), company.getAddress1(), company.getAddress2(), company.getAddress3(), company.getPostcode(), company.getTelephone(), company.getFax(), company.getEmail());
-	}
+    public Company(org.alfresco.rest.api.model.Company company)
+    {
+        super(company.getOrganization(), company.getAddress1(), company.getAddress2(), company.getAddress3(), company.getPostcode(), company.getTelephone(), company.getFax(), company.getEmail());
+    }
 
-	public Company(String organization, String address1, String address2, String address3, String postcode, String telephone, String fax, String email)
-	{
-		super(organization, address1, address2, address3, postcode, telephone, fax, email);
-	}
+    public Company(String organization, String address1, String address2, String address3, String postcode, String telephone, String fax, String email)
+    {
+        super(organization, address1, address2, address3, postcode, telephone, fax, email);
+    }
 
-	@SuppressWarnings("unchecked")
-	public JSONObject toJSON()
-	{
-		JSONObject companyJson = new JSONObject();
-		companyJson.put("organization", getOrganization());
-		companyJson.put("address1", getAddress1());
-		companyJson.put("address2", getAddress2());
-		companyJson.put("address3", getAddress3());
-		companyJson.put("postcode", getPostcode());
-		companyJson.put("telephone", getTelephone());
-		companyJson.put("fax", getFax());
-		companyJson.put("email", getEmail());
-		return companyJson;
-	}
+    @SuppressWarnings("unchecked")
+    public JSONObject toJSON()
+    {
+        JSONObject companyJson = new JSONObject();
+        companyJson.put("organization", getOrganization());
+        companyJson.put("address1", getAddress1());
+        companyJson.put("address2", getAddress2());
+        companyJson.put("address3", getAddress3());
+        companyJson.put("postcode", getPostcode());
+        companyJson.put("telephone", getTelephone());
+        companyJson.put("fax", getFax());
+        companyJson.put("email", getEmail());
+        return companyJson;
+    }
 
-	@Override
-	public void expected(Object o)
-	{
-		assertTrue(o instanceof Company);
+    @Override
+    public void expected(Object o)
+    {
+        assertTrue(o instanceof Company);
 
-		Company other = (Company)o;
+        Company other = (Company) o;
 
-		AssertUtil.assertEquals("organization", getOrganization(), other.getOrganization());
-		AssertUtil.assertEquals("address1", getAddress1(), other.getAddress1());
-		AssertUtil.assertEquals("address2", getAddress2(), other.getAddress2());
-		AssertUtil.assertEquals("address3", getAddress3(), other.getAddress3());
-		AssertUtil.assertEquals("postcode", getPostcode(), other.getPostcode());
-		AssertUtil.assertEquals("telephone", getTelephone(), other.getTelephone());
-		AssertUtil.assertEquals("fax", getFax(), other.getFax());
-		AssertUtil.assertEquals("email", getEmail(), other.getEmail());
-	}
+        AssertUtil.assertEquals("organization", getOrganization(), other.getOrganization());
+        AssertUtil.assertEquals("address1", getAddress1(), other.getAddress1());
+        AssertUtil.assertEquals("address2", getAddress2(), other.getAddress2());
+        AssertUtil.assertEquals("address3", getAddress3(), other.getAddress3());
+        AssertUtil.assertEquals("postcode", getPostcode(), other.getPostcode());
+        AssertUtil.assertEquals("telephone", getTelephone(), other.getTelephone());
+        AssertUtil.assertEquals("fax", getFax(), other.getFax());
+        AssertUtil.assertEquals("email", getEmail(), other.getEmail());
+    }
 }

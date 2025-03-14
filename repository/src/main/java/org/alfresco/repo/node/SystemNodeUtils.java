@@ -27,9 +27,10 @@
 package org.alfresco.repo.node;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
@@ -41,8 +42,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Utilities for working with System Nodes
@@ -56,9 +55,8 @@ public abstract class SystemNodeUtils
      * The logger
      */
     private static Log logger = LogFactory.getLog(SystemNodeUtils.class);
-    
-    private static QName SYSTEM_FOLDER_QNAME =
-            QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "system");
+
+    private static QName SYSTEM_FOLDER_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "system");
 
     /**
      * Returns the System Container for the current tenant
@@ -68,7 +66,7 @@ public abstract class SystemNodeUtils
         // Grab the root of the repository, for the current tennant
         final NodeRef root = repositoryHelper.getRootHome();
 
-        // Locate the system folder, in the root 
+        // Locate the system folder, in the root
         List<ChildAssociationRef> sysRefs = nodeService.getChildAssocs(
                 root, ContentModel.ASSOC_CHILDREN, SYSTEM_FOLDER_QNAME);
         if (sysRefs.size() != 1)
@@ -76,13 +74,12 @@ public abstract class SystemNodeUtils
             throw new IllegalStateException("System folder missing / duplicated! Found " + sysRefs);
         }
         final NodeRef system = sysRefs.get(0).getChildRef();
-        
+
         return system;
     }
-    
+
     /**
-     * Returns the NodeRef of a given Child Container within the current Tenant's 
-     *  System Container, if found
+     * Returns the NodeRef of a given Child Container within the current Tenant's System Container, if found
      */
     public static NodeRef getSystemChildContainer(final QName childName, final NodeService nodeService, final Repository repositoryHelper)
     {
@@ -99,11 +96,9 @@ public abstract class SystemNodeUtils
     }
 
     /**
-     * MNT-20212
-     * Avoid using this method. It is meant only to fix that bug reported in the MNT
+     * MNT-20212 Avoid using this method. It is meant only to fix that bug reported in the MNT
      *
-     * Returns the list with all the NodeRef of a given Child Container within the current Tenant's
-     *  System Container, if found
+     * Returns the list with all the NodeRef of a given Child Container within the current Tenant's System Container, if found
      */
     public static List<NodeRef> getSystemChildContainers(final QName childName, final NodeService nodeService, final Repository repositoryHelper)
     {
@@ -132,12 +127,11 @@ public abstract class SystemNodeUtils
     }
 
     private static List<ChildAssociationRef> getChildAssociationRefs(final QName childName, final NodeService nodeService,
-        final Repository repositoryHelper)
+            final Repository repositoryHelper)
     {
         final NodeRef system = getSystemContainer(nodeService, repositoryHelper);
 
-        List<ChildAssociationRef> containerRefs = AuthenticationUtil.runAsSystem(new RunAsWork<List<ChildAssociationRef>>()
-        {
+        List<ChildAssociationRef> containerRefs = AuthenticationUtil.runAsSystem(new RunAsWork<List<ChildAssociationRef>>() {
             @Override
             public List<ChildAssociationRef> doWork() throws Exception
             {
@@ -148,37 +142,34 @@ public abstract class SystemNodeUtils
     }
 
     /**
-     * Returns the NodeRef of a given Child Container within the current Tenant's System Container,
-     *  creating the Container as System if required.
-     * The calling code should handle retries, locking etc.
+     * Returns the NodeRef of a given Child Container within the current Tenant's System Container, creating the Container as System if required. The calling code should handle retries, locking etc.
      * 
      * @return the Child Container NodeRef, and whether the Container has just been created
      */
-    public static Pair<NodeRef, Boolean> getOrCreateSystemChildContainer(final QName childName, 
+    public static Pair<NodeRef, Boolean> getOrCreateSystemChildContainer(final QName childName,
             final NodeService nodeService, final Repository repositoryHelper)
     {
         NodeRef container = getSystemChildContainer(childName, nodeService, repositoryHelper);
         if (container != null)
         {
-            return new Pair<NodeRef,Boolean>(container, Boolean.FALSE);
+            return new Pair<NodeRef, Boolean>(container, Boolean.FALSE);
         }
-        
+
         // Create
         container = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>() {
             @Override
             public NodeRef doWork() throws Exception
             {
                 NodeRef system = getSystemContainer(nodeService, repositoryHelper);
-                
+
                 NodeRef container = nodeService.createNode(
-                        system, ContentModel.ASSOC_CHILDREN, childName, ContentModel.TYPE_CONTAINER
-                ).getChildRef();
+                        system, ContentModel.ASSOC_CHILDREN, childName, ContentModel.TYPE_CONTAINER).getChildRef();
                 nodeService.setProperty(container, ContentModel.PROP_NAME, childName.getLocalName());
-                
+
                 return container;
             }
         });
-        
-        return new Pair<NodeRef,Boolean>(container, Boolean.TRUE);
+
+        return new Pair<NodeRef, Boolean>(container, Boolean.TRUE);
     }
 }

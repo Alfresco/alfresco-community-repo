@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-
 /**
  * Property Definition
  * 
@@ -54,129 +53,115 @@ public class M2Property
     private Boolean isStoredInIndex = null;
     private Boolean isFacetable = null;
     private IndexTokenisationMode indexTokenisationMode = null;
-    private String  analyserResourceBundleName;
+    private String analyserResourceBundleName;
     private List<M2Constraint> constraints = new ArrayList<M2Constraint>();
     private Properties configProperties = new Properties();
 
-    /*package*/ M2Property()
-    {
-    }
+    /* package */ M2Property()
+    {}
 
-    
-    /*package*/ M2Property(String name)
+    /* package */ M2Property(String name)
     {
         this.name = name;
     }
-    
+
     public boolean isOverride()
     {
         return isOverride;
     }
-    
+
     public void setOverride(boolean isOverride)
     {
         this.isOverride = isOverride;
     }
-    
+
     public String getName()
     {
         return name;
     }
 
-    
     public void setName(String name)
     {
         this.name = name;
     }
 
-    
     public String getTitle()
     {
         return title;
     }
-    
-    
+
     public void setTitle(String title)
     {
         this.title = title;
     }
 
-    
     public String getDescription()
     {
         return description;
     }
-    
-    
+
     public void setDescription(String description)
     {
         this.description = description;
     }
-    
-    
+
     public String getType()
     {
         return propertyType;
     }
-    
-    
+
     public void setType(String type)
     {
         this.propertyType = type;
     }
-    
-    
+
     public boolean isProtected()
     {
         return isProtected;
     }
-    
-    
+
     public void setProtected(boolean isProtected)
     {
         this.isProtected = isProtected;
     }
-    
-    
+
     public boolean isMandatory()
     {
         return isMandatory;
     }
-    
+
     public void setMandatory(boolean isMandatory)
     {
         this.isMandatory = isMandatory;
     }
-    
+
     public boolean isMandatoryEnforced()
     {
         return isMandatoryEnforced;
     }
-    
+
     public void setMandatoryEnforced(boolean isMandatoryEnforced)
     {
         this.isMandatoryEnforced = isMandatoryEnforced;
     }
-    
+
     public boolean isMultiValued()
     {
         return isMultiValued;
     }
-    
-    
+
     public void setMultiValued(boolean isMultiValued)
     {
         this.isMultiValued = isMultiValued;
     }
-    
-    
+
     public String getDefaultValue()
     {
         if (defaultValue != null && M2Class.PROPERTY_PLACEHOLDER.matcher(defaultValue).matches())
         {
             String key = defaultValue.substring(defaultValue.indexOf("${") + 2, defaultValue.indexOf("}"));
             String value = defaultValue.substring(defaultValue.indexOf("|") + 1);
-            
+
             return configProperties.getProperty(key, value);
         }
         else
@@ -184,72 +169,61 @@ public class M2Property
             return defaultValue;
         }
     }
-    
-    
+
     public void setDefaultValue(String defaultValue)
     {
         this.defaultValue = defaultValue;
     }
-    
-    
+
     public Boolean isIndexed()
     {
         return isIndexed;
     }
-    
-    
+
     public void setIndexed(boolean isIndexed)
     {
         this.isIndexed = Boolean.valueOf(isIndexed);
     }
-    
-    
+
     public Boolean isStoredInIndex()
     {
         return isStoredInIndex;
     }
- 
-    
+
     public void setStoredInIndex(boolean isStoredInIndex)
     {
         this.isStoredInIndex = Boolean.valueOf(isStoredInIndex);
     }
-    
+
     public Boolean isFacetable()
     {
         return isFacetable;
     }
- 
-    
+
     public void setFacetable(boolean isFacetable)
     {
         this.isFacetable = Boolean.valueOf(isFacetable);
     }
 
-    
     public Boolean isIndexedAtomically()
     {
         return isIndexedAtomically;
     }
-    
-    
+
     public void setIndexedAtomically(boolean isIndexedAtomically)
     {
         this.isIndexedAtomically = Boolean.valueOf(isIndexedAtomically);
     }
-    
 
     public IndexTokenisationMode getIndexTokenisationMode()
     {
         return indexTokenisationMode;
     }
-    
-    
+
     public void setIndexTokenisationMode(IndexTokenisationMode indexTokenisationMode)
     {
         this.indexTokenisationMode = indexTokenisationMode;
     }
-
 
     public List<M2Constraint> getConstraints()
     {
@@ -262,12 +236,12 @@ public class M2Property
             return constraints;
         }
     }
-    
+
     public boolean hasConstraints()
     {
         return ((this.constraints != null) && (constraints.size() > 0));
     }
-    
+
     public M2Constraint addConstraintRef(String refName)
     {
         M2Constraint constraint = new M2Constraint();
@@ -299,7 +273,7 @@ public class M2Property
 
     public void removeConstraint(String name)
     {
-        if(name == null)
+        if (name == null)
         {
             return;
         }
@@ -312,7 +286,7 @@ public class M2Property
             }
         }
     }
-    
+
     public void setConfigProperties(Properties configProperties)
     {
         this.configProperties = configProperties;

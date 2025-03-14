@@ -26,13 +26,29 @@
 
 package org.alfresco.rest.api.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.StringUtils;
+
 import org.alfresco.rest.api.ClassDefinitionMapper;
-import org.alfresco.rest.api.model.AssociationSource;
-import org.alfresco.rest.api.model.Association;
 import org.alfresco.rest.api.model.AbstractClass;
-import org.alfresco.rest.api.model.PropertyDefinition;
+import org.alfresco.rest.api.model.Association;
+import org.alfresco.rest.api.model.AssociationSource;
 import org.alfresco.rest.api.model.ClassDefinition;
+import org.alfresco.rest.api.model.PropertyDefinition;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
@@ -45,23 +61,9 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.commons.lang3.StringUtils;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Map;
-import java.util.Collection;
-import java.util.ArrayList;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
-public class AbstractClassImpl<T extends AbstractClass> {
+public class AbstractClassImpl<T extends AbstractClass>
+{
     static String PARAM_MODEL_IDS = "modelId";
     static String PARAM_PARENT_IDS = "parentId";
     static String PARAM_NAMESPACE_URI = "namespaceUri";
@@ -107,7 +109,7 @@ public class AbstractClassImpl<T extends AbstractClass> {
 
     public boolean filterByNamespace(ModelApiFilter query, QName qName)
     {
-        //System aspect/type is not allowed
+        // System aspect/type is not allowed
         if (qName.getNamespaceURI().equals(NamespaceService.SYSTEM_MODEL_1_0_URI))
         {
             return false;
@@ -118,9 +120,9 @@ public class AbstractClassImpl<T extends AbstractClass> {
         }
         if (query != null && query.getNotMatchedPrefix() != null)
         {
-            return  !Pattern.matches(query.getNotMatchedPrefix(), qName.getNamespaceURI());
+            return !Pattern.matches(query.getNotMatchedPrefix(), qName.getNamespaceURI());
         }
-        return  true;
+        return true;
     }
 
     public ModelApiFilter getQuery(Query queryParameters)
@@ -155,11 +157,9 @@ public class AbstractClassImpl<T extends AbstractClass> {
                 });
     }
 
-
-    protected Set<Pair<QName,Boolean>> parseModelIds(Set<String> modelIds, String apiSuffix)
+    protected Set<Pair<QName, Boolean>> parseModelIds(Set<String> modelIds, String apiSuffix)
     {
-        return modelIds.stream().map(modelId ->
-        {
+        return modelIds.stream().map(modelId -> {
             QName qName = null;
             boolean filterIncludeSubClass = false;
 
@@ -190,8 +190,8 @@ public class AbstractClassImpl<T extends AbstractClass> {
         }).collect(Collectors.toSet());
     }
 
-
-    public T constructFromFilters(T abstractClass, org.alfresco.service.cmr.dictionary.ClassDefinition classDefinition, List<String> includes) {
+    public T constructFromFilters(T abstractClass, org.alfresco.service.cmr.dictionary.ClassDefinition classDefinition, List<String> includes)
+    {
 
         if (includes != null && includes.contains(PARAM_INCLUDE_PROPERTIES))
         {
@@ -222,7 +222,7 @@ public class AbstractClassImpl<T extends AbstractClass> {
         abstractClass.setIsContainer(classDefinition.isContainer());
         abstractClass.setIsArchive(classDefinition.getArchive());
         abstractClass.setIncludedInSupertypeQuery(classDefinition.getIncludedInSuperTypeQuery());
-        return  abstractClass;
+        return abstractClass;
     }
 
     List<Association> getAssociations(Map<QName, AssociationDefinition> associationDefinitionMap)
@@ -274,7 +274,8 @@ public class AbstractClassImpl<T extends AbstractClass> {
         return associations;
     }
 
-    public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+    public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor)
+    {
         Map<Object, Boolean> seen = new ConcurrentHashMap<>();
         return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
     }
@@ -352,8 +353,7 @@ public class AbstractClassImpl<T extends AbstractClass> {
         private String notMatchedPrefix;
 
         public ModelApiFilter()
-        {
-        }
+        {}
 
         public Set<String> getModelIds()
         {

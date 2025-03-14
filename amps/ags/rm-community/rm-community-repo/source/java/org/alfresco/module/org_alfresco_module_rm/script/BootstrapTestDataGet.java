@@ -37,6 +37,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
@@ -64,19 +71,13 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * BootstrapTestData GET WebScript implementation.
  */
 @Deprecated
 public class BootstrapTestDataGet extends DeclarativeWebScript
-                                  implements RecordsManagementModel
+        implements RecordsManagementModel
 {
     private static Log logger = LogFactory.getLog(BootstrapTestDataGet.class);
 
@@ -202,11 +203,11 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
             Reader viewReader = null;
             try
             {
-               viewReader = new InputStreamReader(is, CHARSET_NAME);
+                viewReader = new InputStreamReader(is, CHARSET_NAME);
             }
             catch (UnsupportedEncodingException error)
             {
-               throw new AlfrescoRuntimeException("The Character Encoding '" + CHARSET_NAME + "' is not supported.", error);
+                throw new AlfrescoRuntimeException("The Character Encoding '" + CHARSET_NAME + "' is not supported.", error);
             }
             Location location = new Location(filePlan);
             importerService.importView(viewReader, location, null, null);
@@ -214,13 +215,13 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
 
         // Patch data
         BootstrapTestDataGet.patchLoadedData(searchService, nodeService, recordsManagementService,
-                                             recordsManagementActionService, permissionService,
-                                             authorityService, recordsManagementSecurityService,
-                                             recordsManagementSearchBehaviour,
-                                             dispositionService, recordFolderService);
+                recordsManagementActionService, permissionService,
+                authorityService, recordsManagementSecurityService,
+                recordsManagementSearchBehaviour,
+                dispositionService, recordFolderService);
 
         Map<String, Object> model = new HashMap<>(1, 1.0f);
-    	model.put("success", true);
+        model.put("success", true);
 
         return model;
     }
@@ -233,19 +234,18 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
      * @param recordsManagementService
      * @param recordsManagementActionService
      */
-    public static void patchLoadedData( final SearchService searchService,
-                                        final NodeService nodeService,
-                                        final RecordsManagementService recordsManagementService,
-                                        final RecordsManagementActionService recordsManagementActionService,
-                                        final PermissionService permissionService,
-                                        final AuthorityService authorityService,
-                                        final RecordsManagementSecurityService recordsManagementSecurityService,
-                                        final RecordsManagementSearchBehaviour recordManagementSearchBehaviour,
-                                        final DispositionService dispositionService,
-                                        final RecordFolderService recordFolderService)
+    public static void patchLoadedData(final SearchService searchService,
+            final NodeService nodeService,
+            final RecordsManagementService recordsManagementService,
+            final RecordsManagementActionService recordsManagementActionService,
+            final PermissionService permissionService,
+            final AuthorityService authorityService,
+            final RecordsManagementSecurityService recordsManagementSecurityService,
+            final RecordsManagementSearchBehaviour recordManagementSearchBehaviour,
+            final DispositionService dispositionService,
+            final RecordFolderService recordFolderService)
     {
-        AuthenticationUtil.RunAsWork<Object> runAsWork = new AuthenticationUtil.RunAsWork<Object>()
-        {
+        AuthenticationUtil.RunAsWork<Object> runAsWork = new AuthenticationUtil.RunAsWork<Object>() {
             public Object doWork()
             {
                 java.util.List<NodeRef> rmRoots = recordsManagementService.getFilePlans();
@@ -267,8 +267,8 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
 
                         // Create "all" role group for root node
                         String allRoles = authorityService.createAuthority(AuthorityType.GROUP,
-                                                                           allRoleShortName,
-                                                                           RMAuthority.ALL_ROLES_DISPLAY_NAME,
+                                allRoleShortName,
+                                RMAuthority.ALL_ROLES_DISPLAY_NAME,
                                 new HashSet<>(Arrays.asList(RMAuthority.ZONE_APP_RM)));
 
                         // Put all the role groups in it
@@ -292,7 +292,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
 
                     for (NodeRef container : rs.getNodeRefs())
                     {
-                        String containerName = (String)nodeService.getProperty(container, ContentModel.PROP_NAME);
+                        String containerName = (String) nodeService.getProperty(container, ContentModel.PROP_NAME);
 
                         // Set permissions
                         if (permissionService.getInheritParentPermissions(container))
@@ -315,7 +315,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
 
                     for (NodeRef recordFolder : rs.getNodeRefs())
                     {
-                        String folderName = (String)nodeService.getProperty(recordFolder, ContentModel.PROP_NAME);
+                        String folderName = (String) nodeService.getProperty(recordFolder, ContentModel.PROP_NAME);
 
                         // Set permissions
                         if (permissionService.getInheritParentPermissions(recordFolder))

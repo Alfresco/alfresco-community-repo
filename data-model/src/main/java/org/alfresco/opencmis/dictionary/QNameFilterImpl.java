@@ -36,10 +36,7 @@ import java.util.Set;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Filters a QName and excludes any
- * that are defined using the excludedTypes parameter.
- * The list of types can either be defined using a property name such as "cm:name" or with a wildcard: "cm:*"
- * It validates the definitions against the DataDictionary.
+ * Filters a QName and excludes any that are defined using the excludedTypes parameter. The list of types can either be defined using a property name such as "cm:name" or with a wildcard: "cm:*" It validates the definitions against the DataDictionary.
  *
  * @author steveglover
  * @author Gethin James
@@ -48,13 +45,14 @@ public class QNameFilterImpl implements QNameFilter
 {
     private Map<QName, Boolean> excludedQNames;
     private Set<String> excludedModels;
-    
+
     private List<String> excludedTypes;
-    
+
     /**
      * Filters out any QName defined in the "excludedModels" property
      * 
-     * @param typesToFilter - original list
+     * @param typesToFilter
+     *            - original list
      * @return the filtered list
      */
     public Collection<QName> filterQName(Collection<QName> typesToFilter)
@@ -62,15 +60,15 @@ public class QNameFilterImpl implements QNameFilter
         Collection<QName> filteredTypes = new ArrayList<QName>();
         if (!excludedQNames.isEmpty() || !excludedModels.isEmpty())
         {
-            //If we have a exclusion list then loop through and exclude models /types
-            //that are in this list.
+            // If we have a exclusion list then loop through and exclude models /types
+            // that are in this list.
             for (QName classQName : typesToFilter)
             {
-            	if(!isExcluded(classQName))
-//                if (!excludedQNames.contains(classQName) && !excludedModels.contains(classQName.getNamespaceURI()))
-                {    
-                  //Not excluded so add it
-                  filteredTypes.add(classQName); 
+                if (!isExcluded(classQName))
+                // if (!excludedQNames.contains(classQName) && !excludedModels.contains(classQName.getNamespaceURI()))
+                {
+                    // Not excluded so add it
+                    filteredTypes.add(classQName);
                 }
             }
         }
@@ -80,15 +78,14 @@ public class QNameFilterImpl implements QNameFilter
         }
         return filteredTypes;
     }
-    
-    
+
     /**
-     * Processes the user-defined list of types into valid QNames and models, it validates them
-     * against the dictionary and also supports wildcards
+     * Processes the user-defined list of types into valid QNames and models, it validates them against the dictionary and also supports wildcards
      */
     protected void preprocessExcludedTypes(List<String> excludeTypeNames)
     {
-        if (excludeTypeNames == null || excludeTypeNames.isEmpty()) return;
+        if (excludeTypeNames == null || excludeTypeNames.isEmpty())
+            return;
 
         Map<QName, Boolean> qNamesToExclude = new HashMap<QName, Boolean>();
         Set<String> modelsToExclude = new HashSet<String>();
@@ -98,11 +95,11 @@ public class QNameFilterImpl implements QNameFilter
             final QName typeDef = QName.createQName(typeDefinition);
             if (WILDCARD.equals(typeDef.getLocalName()))
             {
-            	modelsToExclude.add(typeDef.getNamespaceURI());
+                modelsToExclude.add(typeDef.getNamespaceURI());
             }
             else
             {
-            	qNamesToExclude.put(typeDef, Boolean.TRUE); // valid so add it to the list
+                qNamesToExclude.put(typeDef, Boolean.TRUE); // valid so add it to the list
             }
         }
 
@@ -112,15 +109,17 @@ public class QNameFilterImpl implements QNameFilter
 
     /**
      * Indicates that this QName should be excluded.
-     * @param typeQName QName
+     * 
+     * @param typeQName
+     *            QName
      * @return boolean true if it is excluded
      */
     public boolean isExcluded(QName typeQName)
     {
-    	Boolean isExcluded = excludedQNames.get(typeQName);
+        Boolean isExcluded = excludedQNames.get(typeQName);
         return (isExcluded != null && isExcluded.booleanValue() || excludedModels.contains(typeQName.getNamespaceURI()));
     }
-    
+
     @Override
     public void initFilter()
     {
@@ -137,13 +136,13 @@ public class QNameFilterImpl implements QNameFilter
     }
 
     /**
-     * I don't like hard code values, but have been persuaded its less pain
-     * than having to keep a config file in sync with both sides of SOLR.
+     * I don't like hard code values, but have been persuaded its less pain than having to keep a config file in sync with both sides of SOLR.
      * 
      */
-    public static List<String> listOfHardCodedExcludedTypes() {
+    public static List<String> listOfHardCodedExcludedTypes()
+    {
         List<String> hardCodeListOfTypes = new ArrayList<String>();
-        
+
         hardCodeListOfTypes.add("{http://www.alfresco.org/model/imap/1.0}*");
         hardCodeListOfTypes.add("{http://www.alfresco.org/model/publishing/1.0}*");
         hardCodeListOfTypes.add("{http://www.alfresco.org/model/publishingworkflow/1.0}*");
@@ -183,10 +182,10 @@ public class QNameFilterImpl implements QNameFilter
         return hardCodeListOfTypes;
     }
 
-	@Override
-	public void setExcluded(QName typeQName, boolean excluded)
-	{
-		excludedQNames.put(typeQName, Boolean.valueOf(excluded));
-	}
+    @Override
+    public void setExcluded(QName typeQName, boolean excluded)
+    {
+        excludedQNames.put(typeQName, Boolean.valueOf(excluded));
+    }
 
 }

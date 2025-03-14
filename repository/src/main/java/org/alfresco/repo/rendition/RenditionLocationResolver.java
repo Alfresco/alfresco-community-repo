@@ -40,9 +40,12 @@ public interface RenditionLocationResolver
 
     /**
      * 
-     * @param sourceNode NodeRef
-     * @param definition RenditionDefinition
-     * @param tempRenditionLocation NodeRef
+     * @param sourceNode
+     *            NodeRef
+     * @param definition
+     *            RenditionDefinition
+     * @param tempRenditionLocation
+     *            NodeRef
      * @return RenditionLocation
      */
     RenditionLocation getRenditionLocation(NodeRef sourceNode, RenditionDefinition definition, NodeRef tempRenditionLocation);

@@ -31,6 +31,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -39,11 +45,6 @@ import org.alfresco.service.cmr.dictionary.CustomModelService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Tests custom model expected behaviour after the repo server restarts.
@@ -67,8 +68,7 @@ public class CustomModelRepoRestartTest
     @After
     public void tearDown() throws Exception
     {
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Exception
             {
                 try
@@ -84,8 +84,7 @@ public class CustomModelRepoRestartTest
             }
         });
 
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Exception
             {
                 try
@@ -123,8 +122,7 @@ public class CustomModelRepoRestartTest
         model.createNamespace(uri, prefix);
 
         // Create the model
-        CustomModelDefinition modelDefinition = transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelDefinition>()
-        {
+        CustomModelDefinition modelDefinition = transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelDefinition>() {
             public CustomModelDefinition execute() throws Exception
             {
                 return customModelService.createCustomModel(model, false);
@@ -136,8 +134,7 @@ public class CustomModelRepoRestartTest
         assertFalse(modelDefinition.isActive());
 
         // Activate the model
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Exception
             {
                 customModelService.activateCustomModel(modelName);
@@ -165,8 +162,7 @@ public class CustomModelRepoRestartTest
 
     private CustomModelDefinition getModel(final String modelName)
     {
-        return transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelDefinition>()
-        {
+        return transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelDefinition>() {
             public CustomModelDefinition execute() throws Exception
             {
                 return customModelService.getCustomModel(modelName);

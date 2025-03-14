@@ -31,6 +31,7 @@ import java.util.List;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.DeploymentQuery;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.workflow.WorkflowDeployer;
@@ -48,64 +49,66 @@ public class DeploymentsImpl extends WorkflowRestImpl implements Deployments
     public CollectionWithPagingInfo<Deployment> getDeployments(Paging paging)
     {
         // Only admin-user is allowed to get deployments
-        if(!authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser())) {
+        if (!authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser()))
+        {
             throw new PermissionDeniedException();
         }
-        
+
         DeploymentQuery query = activitiProcessEngine
                 .getRepositoryService()
                 .createDeploymentQuery()
                 .deploymentCategoryNotEquals(WorkflowDeployer.CATEGORY_ALFRESCO_INTERNAL);
-        
-        if (tenantService.isEnabled() && deployWorkflowsInTenant) 
+
+        if (tenantService.isEnabled() && deployWorkflowsInTenant)
         {
             query.processDefinitionKeyLike("@" + TenantUtil.getCurrentDomain() + "@%");
         }
-        
+
         query.orderByDeploymenTime().desc();
         List<org.activiti.engine.repository.Deployment> deployments = query.listPage(paging.getSkipCount(), paging.getMaxItems());
         int totalCount = (int) query.count();
 
         List<Deployment> page = new ArrayList<Deployment>(deployments.size());
-        for (org.activiti.engine.repository.Deployment deployment: deployments) 
+        for (org.activiti.engine.repository.Deployment deployment : deployments)
         {
             page.add(new Deployment(deployment));
         }
-          
+
         return CollectionWithPagingInfo.asPaged(paging, page, (page.size() + paging.getSkipCount()) < totalCount, totalCount);
     }
-    
+
     @Override
-    public Deployment getDeployment(String deploymentId) 
+    public Deployment getDeployment(String deploymentId)
     {
         // Only admin-user is allowed to get deployments
-        if(!authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser())) {
+        if (!authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser()))
+        {
             throw new PermissionDeniedException();
         }
-        
+
         RepositoryService repositoryService = activitiProcessEngine.getRepositoryService();
-        
+
         DeploymentQuery query = repositoryService
                 .createDeploymentQuery()
                 .deploymentId(deploymentId);
-        
-        if (tenantService.isEnabled() && deployWorkflowsInTenant) 
+
+        if (tenantService.isEnabled() && deployWorkflowsInTenant)
         {
             query.processDefinitionKeyLike("@" + TenantUtil.getCurrentDomain() + "@%");
         }
-        
+
         org.activiti.engine.repository.Deployment deployment = null;
-        try 
+        try
         {
             deployment = query.singleResult();
-        } 
-        catch(ActivitiException e) 
+        }
+        catch (ActivitiException e)
         {
             // The next exception will cause a response status 400: Bad request
-            throw new InvalidArgumentException("Invalid deployment id: " + deploymentId); 
+            throw new InvalidArgumentException("Invalid deployment id: " + deploymentId);
         }
-        
-        if (deployment == null) 
+
+        if (deployment == null)
         {
             // The next exception will cause a response status 404: Not found
             throw new EntityNotFoundException(deploymentId);

@@ -35,6 +35,9 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.domain.locale.LocaleDAO;
@@ -49,13 +52,9 @@ import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * This class provides services for translating exploded properties
- * (as persisted in <b>alf_node_properties</b>) in the public form, which is a
- * <tt>Map</tt> of values keyed by their <tt>QName</tt>.
+ * This class provides services for translating exploded properties (as persisted in <b>alf_node_properties</b>) in the public form, which is a <tt>Map</tt> of values keyed by their <tt>QName</tt>.
  * 
  * @author Derek Hulley
  * @since 3.4
@@ -63,7 +62,7 @@ import org.apache.commons.logging.LogFactory;
 public class NodePropertyHelper
 {
     private static final Log logger = LogFactory.getLog(NodePropertyHelper.class);
-    
+
     private final DictionaryService dictionaryService;
     private final QNameDAO qnameDAO;
     private final LocaleDAO localeDAO;
@@ -99,7 +98,7 @@ public class NodePropertyHelper
             Long propertyQNameId = qnameDAO.getOrCreateQName(propertyQName).getFirst();
             // Get the property definition, if available
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
-            
+
             // Add it to the map
             addValueToPersistedProperties(
                     propertyMap,
@@ -114,17 +113,17 @@ public class NodePropertyHelper
     }
 
     /**
-     * The collection index used to indicate that the value is not part of a collection. All values from zero up are
-     * used for real collection indexes.
+     * The collection index used to indicate that the value is not part of a collection. All values from zero up are used for real collection indexes.
      */
     private static final int IDX_NO_COLLECTION = -1;
 
     /**
      * A method that adds properties to the given map. It copes with collections.
      * 
-     * @param propertyDef the property definition (<tt>null</tt> is allowed)
-     * @param collectionIndex the index of the property in the collection or <tt>-1</tt> if we are not yet processing a
-     *            collection
+     * @param propertyDef
+     *            the property definition (<tt>null</tt> is allowed)
+     * @param collectionIndex
+     *            the index of the property in the collection or <tt>-1</tt> if we are not yet processing a collection
      */
     private void addValueToPersistedProperties(
             Map<NodePropertyKey, NodePropertyValue> propertyMap,
@@ -159,7 +158,7 @@ public class NodePropertyHelper
         {
             propertyTypeQName = propertyDef.getDataType().getName();
         }
-        
+
         // A property may appear to be multi-valued if the model definition is loose and
         // an unexploded collection is passed in. Otherwise, use the model-defined behaviour
         // strictly.
@@ -294,14 +293,14 @@ public class NodePropertyHelper
     /**
      * Helper method to convert the <code>Serializable</code> value into a full, persistable {@link NodePropertyValue}.
      * <p>
-     * Where the property definition is null, the value will take on the {@link DataTypeDefinition#ANY generic ANY}
-     * value.
+     * Where the property definition is null, the value will take on the {@link DataTypeDefinition#ANY generic ANY} value.
      * <p>
-     * Collections are NOT supported. These must be split up by the calling code before calling this method. Map
-     * instances are supported as plain serializable instances.
+     * Collections are NOT supported. These must be split up by the calling code before calling this method. Map instances are supported as plain serializable instances.
      * 
-     * @param propertyDef the property dictionary definition, may be null
-     * @param value the value, which will be converted according to the definition - may be null
+     * @param propertyDef
+     *            the property dictionary definition, may be null
+     * @param value
+     *            the value, which will be converted according to the definition - may be null
      * @return Returns the persistable property value
      */
     public NodePropertyValue makeNodePropertyValue(PropertyDefinition propertyDef, Serializable value)
@@ -329,9 +328,9 @@ public class NodePropertyHelper
         {
             throw new TypeConversionException(
                     "The property value is not compatible with the type defined for the property: \n" +
-                    "   property: " + (propertyDef == null ? "unknown" : propertyDef) + "\n" +
-                    "   value: " + value + "\n" +
-                    "   value type: " + value.getClass(),
+                            "   property: " + (propertyDef == null ? "unknown" : propertyDef) + "\n" +
+                            "   value: " + value + "\n" +
+                            "   value type: " + value.getClass(),
                     e);
         }
     }
@@ -437,7 +436,7 @@ public class NodePropertyHelper
                     collection.add(collapsedValue);
                     collapsedValue = collection;
                 }
-                
+
                 // Store the value
                 propertyMap.put(currentQName, collapsedValue);
                 // Reset
@@ -536,12 +535,9 @@ public class NodePropertyHelper
     }
 
     /**
-     * At this level, the properties have the same qname and list index. They can only be separated by locale.
-     * Typically, MLText will fall into this category as only.
+     * At this level, the properties have the same qname and list index. They can only be separated by locale. Typically, MLText will fall into this category as only.
      * <p>
-     * If there are multiple values then they can only be separated by locale. If they are separated by locale, then
-     * they have to be text-based. This means that the only way to store them is via MLText. Any other multi-locale
-     * properties cannot be deserialized.
+     * If there are multiple values then they can only be separated by locale. If they are separated by locale, then they have to be text-based. This means that the only way to store them is via MLText. Any other multi-locale properties cannot be deserialized.
      */
     private Serializable collapsePropertiesWithSameQNameAndListIndex(
             PropertyDefinition propertyDef,
@@ -554,14 +550,14 @@ public class NodePropertyHelper
             // Nothing to do
             return value;
         }
-        
+
         // Do we definitely have MLText?
         boolean isMLText = (propertyDef != null && propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT));
-        
-        // Determine the default locale ID.  The chance of it being null is vanishingly small, but ...
+
+        // Determine the default locale ID. The chance of it being null is vanishingly small, but ...
         Pair<Long, Locale> defaultLocalePair = localeDAO.getDefaultLocalePair();
         Long defaultLocaleId = (defaultLocalePair == null) ? null : defaultLocalePair.getFirst();
-        
+
         Integer listIndex = null;
         for (Map.Entry<NodePropertyKey, NodePropertyValue> entry : propertyValues.entrySet())
         {
@@ -577,14 +573,14 @@ public class NodePropertyHelper
             {
                 throw new IllegalStateException("Expecting to collapse properties with same list index: " + propertyValues);
             }
-            
+
             // Get the locale of the current value
             Long localeId = propertyKey.getLocaleId();
             boolean isDefaultLocale = EqualsHelper.nullSafeEquals(defaultLocaleId, localeId);
-            
+
             // Get the local entry value
             Serializable entryValue = makeSerializableValue(propertyDef, propertyValue);
-            
+
             // A default locale indicates a simple value i.e. the entry represents the whole value,
             // unless the dictionary specifically declares it to be d:mltext
             if (isDefaultLocale && !isMLText)
@@ -594,10 +590,10 @@ public class NodePropertyHelper
                 {
                     logger.warn(
                             "Found localized properties along with a 'null' value in the default locale. \n" +
-                            "   The localized values will be ignored; 'null' will be returned: \n" +
-                            "   Default locale ID: " + defaultLocaleId + "\n" +
-                            "   Property:          " + propertyDef + "\n" +
-                            "   Values:            " + propertyValues);
+                                    "   The localized values will be ignored; 'null' will be returned: \n" +
+                                    "   Default locale ID: " + defaultLocaleId + "\n" +
+                                    "   Property:          " + propertyDef + "\n" +
+                                    "   Values:            " + propertyValues);
                 }
                 // The entry could be null or whatever value came out
                 value = entryValue;
@@ -612,22 +608,22 @@ public class NodePropertyHelper
                 if (value == null)
                 {
                     value = new MLText();
-                }       // We break for other entry values, so no need to check the non-null case
-                // Put the current value into the MLText object
+                } // We break for other entry values, so no need to check the non-null case
+                  // Put the current value into the MLText object
                 if (entryValue == null || entryValue instanceof String)
                 {
                     // Can put in nulls and Strings
-                    ((MLText)value).put(locale, (String)entryValue);    // We've checked the casts
+                    ((MLText) value).put(locale, (String) entryValue); // We've checked the casts
                 }
                 else
                 {
                     // It's a non-null non-String ... can't be added to MLText!
                     logger.warn(
                             "Found localized non-String properties. \n" +
-                            "   The non-String values will be ignored: \n" +
-                            "   Default locale ID: " + defaultLocaleId + "\n" +
-                            "   Property:          " + propertyDef + "\n" +
-                            "   Values:            " + propertyValues);
+                                    "   The non-String values will be ignored: \n" +
+                                    "   Default locale ID: " + defaultLocaleId + "\n" +
+                                    "   Property:          " + propertyDef + "\n" +
+                                    "   Values:            " + propertyValues);
                 }
             }
         }
@@ -638,10 +634,11 @@ public class NodePropertyHelper
     /**
      * Extracts the externally-visible property from the persistable value.
      * 
-     * @param propertyDef       the model property definition - may be <tt>null</tt>
-     * @param propertyValue     the persisted property
-     * @return                  Returns the value of the property in the format dictated by the property definition,
-     *                          or null if the property value is null
+     * @param propertyDef
+     *            the model property definition - may be <tt>null</tt>
+     * @param propertyValue
+     *            the persisted property
+     * @return Returns the value of the property in the format dictated by the property definition, or null if the property value is null
      */
     public Serializable makeSerializableValue(PropertyDefinition propertyDef, NodePropertyValue propertyValue)
     {
@@ -685,8 +682,9 @@ public class NodePropertyHelper
         {
             throw new TypeConversionException(
                     "The property value is not compatible with the type defined for the property: \n" +
-                    "   property: " + (propertyDef == null ? "unknown" : propertyDef) + "\n" +
-                    "   property value: " + propertyValue, e);
+                            "   property: " + (propertyDef == null ? "unknown" : propertyDef) + "\n" +
+                            "   property value: " + propertyValue,
+                    e);
         }
     }
 }

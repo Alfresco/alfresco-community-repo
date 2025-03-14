@@ -36,13 +36,8 @@ import org.alfresco.util.ParameterCheck;
  */
 public class RepoUsage
 {
-    /*
-     * DH:
-     * This class could operate using a Map to store limits and restrictions dynamically.
-     * Policies could be wired in to do the comparisons.  For expedience and simplicity,
-     * the supported limits and associated behaviour are hard-coded.
-     */
-    
+    /* DH: This class could operate using a Map to store limits and restrictions dynamically. Policies could be wired in to do the comparisons. For expedience and simplicity, the supported limits and associated behaviour are hard-coded. */
+
     /**
      * Enumeration of the common usage types
      * 
@@ -64,7 +59,7 @@ public class RepoUsage
          */
         USAGE_ALL
     }
-    
+
     /**
      * Enumeration of the server license modes.
      * 
@@ -86,7 +81,7 @@ public class RepoUsage
          */
         UNKNOWN
     }
-    
+
     private final Long lastUpdate;
     private final Long users;
     private final Long documents;
@@ -95,12 +90,18 @@ public class RepoUsage
     private final boolean readOnly;
 
     /**
-     * @param lastUpdate            the time the repository usage was last updated
-     * @param users                 the number of users or <tt>null</tt> if not known
-     * @param documents             the number of documents or <tt>null</tt> if not known
-     * @param licenseMode           the server license mode in effect at runtime
-     * @param licenseExpiryDate     the date that the license expires or <tt>null</tt> if it doesn't
-     * @param readOnly              <tt>true</tt> if the server is currently read-only
+     * @param lastUpdate
+     *            the time the repository usage was last updated
+     * @param users
+     *            the number of users or <tt>null</tt> if not known
+     * @param documents
+     *            the number of documents or <tt>null</tt> if not known
+     * @param licenseMode
+     *            the server license mode in effect at runtime
+     * @param licenseExpiryDate
+     *            the date that the license expires or <tt>null</tt> if it doesn't
+     * @param readOnly
+     *            <tt>true</tt> if the server is currently read-only
      */
     public RepoUsage(
             Long lastUpdate,
@@ -111,7 +112,7 @@ public class RepoUsage
             boolean readOnly)
     {
         ParameterCheck.mandatory("licenseMode", licenseMode);
-        
+
         this.lastUpdate = lastUpdate;
         this.users = users;
         this.documents = documents;
@@ -123,11 +124,14 @@ public class RepoUsage
     @Override
     public boolean equals(Object obj)
     {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
         RepoUsage that = (RepoUsage) obj;
-        return  EqualsHelper.nullSafeEquals(this.users, that.users) &&
+        return EqualsHelper.nullSafeEquals(this.users, that.users) &&
                 EqualsHelper.nullSafeEquals(this.documents, that.documents) &&
                 EqualsHelper.nullSafeEquals(this.licenseMode, that.licenseMode) &&
                 EqualsHelper.nullSafeEquals(this.licenseExpiryDate, that.licenseExpiryDate) &&
@@ -139,20 +143,20 @@ public class RepoUsage
     {
         StringBuilder sb = new StringBuilder(128);
         sb.append("RepoUsage")
-          .append("[lastUpdate=").append(lastUpdate)
-          .append(", users=").append(users)
-          .append(", documents=").append(documents)
-          .append(", licenseMode=").append(licenseMode)
-          .append(", licenseExpiryDate=").append(licenseExpiryDate)
-          .append(", readOnly=").append(readOnly)
-          .append("]");
+                .append("[lastUpdate=").append(lastUpdate)
+                .append(", users=").append(users)
+                .append(", documents=").append(documents)
+                .append(", licenseMode=").append(licenseMode)
+                .append(", licenseExpiryDate=").append(licenseExpiryDate)
+                .append(", readOnly=").append(readOnly)
+                .append("]");
         return sb.toString();
     }
 
     /**
      * Get the time (ms since epoch) that the repository usage was last updated.
      * 
-     * @return          time of last usage update
+     * @return time of last usage update
      */
     public Long getLastUpdate()
     {
@@ -162,7 +166,7 @@ public class RepoUsage
     /**
      * Get the number of users or <tt>null</tt> if unknown
      * 
-     * @return          the number of users or <tt>null</tt> if unknown
+     * @return the number of users or <tt>null</tt> if unknown
      */
     public Long getUsers()
     {
@@ -172,7 +176,7 @@ public class RepoUsage
     /**
      * Get the number of documents or <tt>null</tt> if not known
      * 
-     * @return          document count or <tt>null</tt> if not known
+     * @return document count or <tt>null</tt> if not known
      */
     public Long getDocuments()
     {
@@ -180,10 +184,9 @@ public class RepoUsage
     }
 
     /**
-     * Get the server license mode.  This is determined by (a) the build in use and
-     * (b) the installed license.
+     * Get the server license mode. This is determined by (a) the build in use and (b) the installed license.
      * 
-     * @return          the license mode (never <tt>null</tt>)
+     * @return the license mode (never <tt>null</tt>)
      */
     public LicenseMode getLicenseMode()
     {
@@ -191,10 +194,9 @@ public class RepoUsage
     }
 
     /**
-     * Get the server license expiry date.  This is determined by the license and is
-     * <tt>null</tt> if there is no expiry or if it is unknown.
+     * Get the server license expiry date. This is determined by the license and is <tt>null</tt> if there is no expiry or if it is unknown.
      * 
-     * @return          the license expiry date or <tt>null</tt>
+     * @return the license expiry date or <tt>null</tt>
      */
     public Long getLicenseExpiryDate()
     {
@@ -204,7 +206,7 @@ public class RepoUsage
     /**
      * Get the read-write state of the repository
      * 
-     * @return          <tt>true</tt> if the server is in read-only mode otherwise <tt>false</tt>
+     * @return <tt>true</tt> if the server is in read-only mode otherwise <tt>false</tt>
      */
     public boolean isReadOnly()
     {

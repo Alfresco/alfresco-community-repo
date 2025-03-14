@@ -39,9 +39,7 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 /**
- * This JUnit rule can be used to turn existing test code into retryable tests.
- * The test methods marked with the {@link RetryAtMost} annotation will be attempted at most the specified
- * amount of times, stopping at the first successful execution.
+ * This JUnit rule can be used to turn existing test code into retryable tests. The test methods marked with the {@link RetryAtMost} annotation will be attempted at most the specified amount of times, stopping at the first successful execution.
  *
  * @author Domenico Sibilio
  */
@@ -84,8 +82,8 @@ public class RetryAtMostRule implements TestRule
                 try
                 {
                     LOG.debug(
-                        "Retryable testing configured for method: " + description.getMethodName()
-                            + " // Attempt #" + (i + 1));
+                            "Retryable testing configured for method: " + description.getMethodName()
+                                    + " // Attempt #" + (i + 1));
                     statement.evaluate();
                     break; // stop at the first successful execution
                 }
@@ -106,7 +104,7 @@ public class RetryAtMostRule implements TestRule
             {
                 String methodName = description.getMethodName();
                 throw new IllegalArgumentException(
-                    "Invalid value for @RetryAtMost on method " + methodName + ": " + retryCount + " is less than 1.");
+                        "Invalid value for @RetryAtMost on method " + methodName + ": " + retryCount + " is less than 1.");
             }
         }
 

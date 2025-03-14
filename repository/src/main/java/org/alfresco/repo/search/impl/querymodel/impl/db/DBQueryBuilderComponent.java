@@ -39,8 +39,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Build the commands required to generate the dynamic SQL
- * This is independent of the data base schema. 
+ * Build the commands required to generate the dynamic SQL This is independent of the data base schema.
  * 
  * @author Andy
  *
@@ -49,28 +48,34 @@ public interface DBQueryBuilderComponent
 {
     /**
      * Is this component supported in a DB query?
+     * 
      * @return boolean
      */
     public boolean isSupported();
-    
+
     /**
-     * Use the dictionary to expand any terms, deal with multi-valued properties, etc
-     * Use the QNameDAO to look up any ids
-     * @param namespaceService NamespaceService
-     * @param dictionaryService DictionaryService
-     * @param qnameDAO QNameDAO
-     * @param nodeDAO NodeDAO
-     * @param tenantService TenantService
-     * @param functionContext FunctionEvaluationContext
+     * Use the dictionary to expand any terms, deal with multi-valued properties, etc Use the QNameDAO to look up any ids
+     * 
+     * @param namespaceService
+     *            NamespaceService
+     * @param dictionaryService
+     *            DictionaryService
+     * @param qnameDAO
+     *            QNameDAO
+     * @param nodeDAO
+     *            NodeDAO
+     * @param tenantService
+     *            TenantService
+     * @param functionContext
+     *            FunctionEvaluationContext
      */
-    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors, Map<String, Argument> functionArgs,  FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble);
-    
+    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors, Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble);
+
     /**
-     * Build the Set of required joins 
-     * Assign join aliases and link them up to each component where required
+     * Build the Set of required joins Assign join aliases and link them up to each component where required
      */
     public void buildJoins(Map<QName, DBQueryBuilderJoinCommand> singleJoins, List<DBQueryBuilderJoinCommand> multiJoins);
-    
+
     /**
      * Add to the list of commands used to build the SQL predicate
      */

@@ -38,8 +38,6 @@ import java.util.Set;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
-
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.ClientRegistrationProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -50,6 +48,8 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.web.client.RestTemplate;
+
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.ClientRegistrationProvider;
 
 public class ClientRegistrationProviderUnitTest
 {
@@ -90,7 +90,7 @@ public class ClientRegistrationProviderUnitTest
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
             ClientRegistration clientRegistration = new ClientRegistrationProvider(config).createClientRegistration(
-                restTemplate);
+                    restTemplate);
             assertThat(clientRegistration).isNotNull();
             assertThat(clientRegistration.getClientId()).isNotNull();
             assertThat(clientRegistration.getProviderDetails().getAuthorizationUri()).isNotNull();
@@ -99,7 +99,7 @@ public class ClientRegistrationProviderUnitTest
             assertThat(clientRegistration.getProviderDetails().getUserInfoEndpoint()).isNotNull();
             assertThat(clientRegistration.getProviderDetails().getIssuerUri()).isNotNull();
             assertThat(requestEntityCaptor.getValue().getUrl().toASCIIString()).isEqualTo(
-                AUTH_SERVER + DISCOVERY_PATH_SEGMENTS);
+                    AUTH_SERVER + DISCOVERY_PATH_SEGMENTS);
         }
     }
 
@@ -112,7 +112,7 @@ public class ClientRegistrationProviderUnitTest
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
             ClientRegistration clientRegistration = new ClientRegistrationProvider(config).createClientRegistration(
-                restTemplate);
+                    restTemplate);
             assertThat(clientRegistration).isNotNull();
             assertThat(clientRegistration.getClientId()).isNotNull();
             assertThat(clientRegistration.getProviderDetails().getAuthorizationUri()).isNotNull();
@@ -121,7 +121,7 @@ public class ClientRegistrationProviderUnitTest
             assertThat(clientRegistration.getProviderDetails().getUserInfoEndpoint()).isNotNull();
             assertThat(clientRegistration.getProviderDetails().getIssuerUri()).isNotNull();
             assertThat(requestEntityCaptor.getValue().getUrl().toASCIIString()).isEqualTo(
-                AUTH_SERVER + DISCOVERY_PATH_SEGMENTS);
+                    AUTH_SERVER + DISCOVERY_PATH_SEGMENTS);
         }
     }
 
@@ -134,7 +134,7 @@ public class ClientRegistrationProviderUnitTest
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
             assertThrows(IdentityServiceException.class,
-                () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
+                    () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
         }
     }
 
@@ -148,7 +148,7 @@ public class ClientRegistrationProviderUnitTest
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
             assertThrows(IdentityServiceException.class,
-                () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
+                    () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
         }
     }
 
@@ -161,7 +161,7 @@ public class ClientRegistrationProviderUnitTest
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
             assertThrows(IdentityServiceException.class,
-                () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
+                    () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
         }
     }
 
@@ -174,7 +174,7 @@ public class ClientRegistrationProviderUnitTest
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
             assertThrows(IdentityServiceException.class,
-                () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
+                    () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
         }
     }
 
@@ -187,7 +187,7 @@ public class ClientRegistrationProviderUnitTest
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
             assertThrows(IdentityServiceException.class,
-                () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
+                    () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
         }
     }
 
@@ -200,7 +200,7 @@ public class ClientRegistrationProviderUnitTest
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
             assertThrows(IdentityServiceException.class,
-                () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
+                    () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
         }
     }
 
@@ -215,7 +215,7 @@ public class ClientRegistrationProviderUnitTest
 
             new ClientRegistrationProvider(config).createClientRegistration(restTemplate);
             assertThat(requestEntityCaptor.getValue().getUrl().toASCIIString()).isEqualTo(
-                AUTH_SERVER + "/realms/alfresco" + DISCOVERY_PATH_SEGMENTS);
+                    AUTH_SERVER + "/realms/alfresco" + DISCOVERY_PATH_SEGMENTS);
         }
     }
 
@@ -227,10 +227,10 @@ public class ClientRegistrationProviderUnitTest
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
             ClientRegistration clientRegistration = new ClientRegistrationProvider(config).createClientRegistration(
-                restTemplate);
+                    restTemplate);
             assertThat(
-                clientRegistration.getScopes().containsAll(
-                    Set.of("openid", "profile", "email"))).isTrue();
+                    clientRegistration.getScopes().containsAll(
+                            Set.of("openid", "profile", "email"))).isTrue();
         }
     }
 
@@ -243,7 +243,7 @@ public class ClientRegistrationProviderUnitTest
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
             ClientRegistration clientRegistration = new ClientRegistrationProvider(config).createClientRegistration(
-                restTemplate);
+                    restTemplate);
             assertThat(clientRegistration.getScopes().size()).isEqualTo(1);
             assertThat(clientRegistration.getScopes().stream().findFirst().get()).isEqualTo("openid");
         }
@@ -260,7 +260,7 @@ public class ClientRegistrationProviderUnitTest
 
             new ClientRegistrationProvider(config).createClientRegistration(restTemplate);
             assertThat(requestEntityCaptor.getValue().getUrl().toASCIIString()).isEqualTo(
-                "https://login.serviceonline.alfresco/alfresco/v2.0" + DISCOVERY_PATH_SEGMENTS);
+                    "https://login.serviceonline.alfresco/alfresco/v2.0" + DISCOVERY_PATH_SEGMENTS);
         }
     }
 }

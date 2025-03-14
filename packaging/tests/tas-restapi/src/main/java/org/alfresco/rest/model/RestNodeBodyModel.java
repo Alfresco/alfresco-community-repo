@@ -33,8 +33,7 @@ import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
 
 /**
- * Generated from 'Alfresco Core REST API' swagger file
- * Base Path {@linkplain /alfresco/api/-default-/public/alfresco/versions/1}
+ * Generated from 'Alfresco Core REST API' swagger file Base Path {@linkplain /alfresco/api/-default-/public/alfresco/versions/1}
  */
 public class RestNodeBodyModel extends TestModel implements IRestModel<RestNodeBodyModel>
 {
@@ -48,8 +47,7 @@ public class RestNodeBodyModel extends TestModel implements IRestModel<RestNodeB
     }
 
     /**
-     * The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
-     * The character . must not be used at the end of the name.
+     * The name must not contain spaces or the following special characters: * " < > \ / ? : and |. The character . must not be used at the end of the name.
      */
 
     @JsonProperty(required = true)
@@ -89,8 +87,6 @@ public class RestNodeBodyModel extends TestModel implements IRestModel<RestNodeB
     {
         this.nodeType = nodeType;
     }
-
-     
 
     public Object getProperties()
     {

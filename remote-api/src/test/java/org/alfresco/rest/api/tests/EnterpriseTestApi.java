@@ -29,22 +29,22 @@ import org.junit.Before;
 
 public class EnterpriseTestApi extends AbstractTestApi
 {
-	@Before
-	public void setup() throws Exception
-	{
-		// force creation of some test data (if not specifically overridden)
-		getTestFixture().getRandomNetwork();
-	}
-	
-	@Override
-	protected TestFixture getTestFixture() throws Exception
-	{
-		return EnterprisePublicApiTestFixture.getInstance();
-	}
+    @Before
+    public void setup() throws Exception
+    {
+        // force creation of some test data (if not specifically overridden)
+        getTestFixture().getRandomNetwork();
+    }
 
-	@Override
-	protected TestFixture getTestFixture(boolean createTestData) throws Exception
-	{
-		return EnterprisePublicApiTestFixture.getInstance(createTestData);
-	}
+    @Override
+    protected TestFixture getTestFixture() throws Exception
+    {
+        return EnterprisePublicApiTestFixture.getInstance();
+    }
+
+    @Override
+    protected TestFixture getTestFixture(boolean createTestData) throws Exception
+    {
+        return EnterprisePublicApiTestFixture.getInstance(createTestData);
+    }
 }

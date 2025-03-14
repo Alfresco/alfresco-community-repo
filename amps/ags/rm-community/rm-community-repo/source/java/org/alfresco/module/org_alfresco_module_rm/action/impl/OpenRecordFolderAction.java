@@ -27,14 +27,15 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Action to re-open the records folder
@@ -53,15 +54,14 @@ public class OpenRecordFolderAction extends RMActionExecuterAbstractBase
     public static final String PARAM_OPEN_PARENT = "openParent";
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         if (getNodeService().exists(actionedUponNodeRef) &&
-            !getFreezeService().isFrozen(actionedUponNodeRef) &&
-            !(getDictionaryService().isSubClass(getNodeService().getType(actionedUponNodeRef), ContentModel.TYPE_CONTENT) && !getRecordService().isFiled(actionedUponNodeRef)))
+                !getFreezeService().isFrozen(actionedUponNodeRef) &&
+                !(getDictionaryService().isSubClass(getNodeService().getType(actionedUponNodeRef), ContentModel.TYPE_CONTENT) && !getRecordService().isFiled(actionedUponNodeRef)))
         {
             // TODO move re-open logic into a service method
             // TODO check that the user in question has the correct permission to re-open a records folder

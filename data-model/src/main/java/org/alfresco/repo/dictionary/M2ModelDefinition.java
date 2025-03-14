@@ -47,33 +47,30 @@ public class M2ModelDefinition implements ModelDefinition
 {
     private QName name;
     private M2Model model;
-    private String  analyserResourceBundleName;
+    private String analyserResourceBundleName;
     private DictionaryDAO dictionaryDAO;
-    
-    
-    /*package*/ M2ModelDefinition(M2Model model, NamespacePrefixResolver resolver, DictionaryDAO dictionaryDAO)
+
+    /* package */ M2ModelDefinition(M2Model model, NamespacePrefixResolver resolver, DictionaryDAO dictionaryDAO)
     {
         this.name = QName.createQName(model.getName(), resolver);
         this.model = model;
         this.dictionaryDAO = dictionaryDAO;
     }
 
-    
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.ModelDefinition#getName()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.ModelDefinition#getName() */
     public QName getName()
     {
         return name;
     }
 
-
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.ModelDefinition#getDescription()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.ModelDefinition#getDescription() */
     public String getDescription(MessageLookup messageLookup)
     {
-        String value = M2Label.getLabel(this, messageLookup, null, null, "description"); 
+        String value = M2Label.getLabel(this, messageLookup, null, null, "description");
         if (value == null)
         {
             value = model.getDescription();
@@ -81,36 +78,33 @@ public class M2ModelDefinition implements ModelDefinition
         return value;
     }
 
-
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.ModelDefinition#getAuthor()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.ModelDefinition#getAuthor() */
     public String getAuthor()
     {
         return model.getAuthor();
     }
 
-
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.ModelDefinition#getPublishedDate()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.ModelDefinition#getPublishedDate() */
     public Date getPublishedDate()
     {
         return model.getPublishedDate();
     }
 
-
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.ModelDefinition#getVersion()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.ModelDefinition#getVersion() */
     public String getVersion()
     {
         return model.getVersion();
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.dictionary.ModelDefinition#getNamespaces()
-     */
+     * 
+     * @see org.alfresco.service.cmr.dictionary.ModelDefinition#getNamespaces() */
     public Collection<NamespaceDefinition> getNamespaces()
     {
         List<NamespaceDefinition> namespaces = new ArrayList<NamespaceDefinition>();
@@ -122,8 +116,8 @@ public class M2ModelDefinition implements ModelDefinition
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.dictionary.ModelDefinition#isNamespaceDefined(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.service.cmr.dictionary.ModelDefinition#isNamespaceDefined(java.lang.String) */
     public boolean isNamespaceDefined(String uri)
     {
         for (M2Namespace namespace : model.getNamespaces())
@@ -137,8 +131,8 @@ public class M2ModelDefinition implements ModelDefinition
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.dictionary.ModelDefinition#getImportedNamespaces()
-     */
+     * 
+     * @see org.alfresco.service.cmr.dictionary.ModelDefinition#getImportedNamespaces() */
     public Collection<NamespaceDefinition> getImportedNamespaces()
     {
         List<NamespaceDefinition> namespaces = new ArrayList<NamespaceDefinition>();
@@ -148,10 +142,10 @@ public class M2ModelDefinition implements ModelDefinition
         }
         return namespaces;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.dictionary.ModelDefinition#isNamespaceImported(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.service.cmr.dictionary.ModelDefinition#isNamespaceImported(java.lang.String) */
     public boolean isNamespaceImported(String uri)
     {
         for (M2Namespace namespace : model.getImports())
@@ -163,12 +157,12 @@ public class M2ModelDefinition implements ModelDefinition
         }
         return false;
     }
-    
+
     public void toXML(XMLBindingType bindingType, OutputStream xml)
     {
         model.toXML(bindingType, xml);
     }
-    
+
     public long getChecksum(XMLBindingType bindingType)
     {
         return model.getChecksum(bindingType);
@@ -179,6 +173,5 @@ public class M2ModelDefinition implements ModelDefinition
     {
         return dictionaryDAO;
     }
-    
-    
+
 }

@@ -25,6 +25,27 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Nodes;
@@ -42,32 +63,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.util.testing.category.RedundantTests;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentCaptor;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 /**
-* V1 REST API tests for pre-defined 'live' search Queries on Nodes
+ * V1 REST API tests for pre-defined 'live' search Queries on Nodes
  * 
  * <ul>
- * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/queries/nodes} </li>
+ * <li>{@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/queries/nodes}</li>
  * </ul>
  *
  * @author janv
@@ -76,67 +77,61 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
 {
     private static final String URL_QUERIES_LSN = "queries/nodes";
 
-    private static final String DEAFULT_QUERY =
-        "\"%s\" AND " +
-        "(+TYPE:\"cm:content\" OR +TYPE:\"cm:folder\") AND " +
-        "-TYPE:\"cm:thumbnail\" AND " +
-        "-TYPE:\"cm:failedThumbnail\" AND " +
-        "-TYPE:\"cm:rating\" AND " +
-        "-TYPE:\"fm:post\" AND " +
-        "-TYPE:\"st:site\" AND " +
-        "-ASPECT:\"st:siteContainer\" AND " +
-        "-ASPECT:\"sys:hidden\" AND " +
-        "-cm:creator:system AND " +
-        "-QNAME:comment\\-* ";
+    private static final String DEAFULT_QUERY = "\"%s\" AND " +
+            "(+TYPE:\"cm:content\" OR +TYPE:\"cm:folder\") AND " +
+            "-TYPE:\"cm:thumbnail\" AND " +
+            "-TYPE:\"cm:failedThumbnail\" AND " +
+            "-TYPE:\"cm:rating\" AND " +
+            "-TYPE:\"fm:post\" AND " +
+            "-TYPE:\"st:site\" AND " +
+            "-ASPECT:\"st:siteContainer\" AND " +
+            "-ASPECT:\"sys:hidden\" AND " +
+            "-cm:creator:system AND " +
+            "-QNAME:comment\\-* ";
 
-    private static final String NODE_TYPE_QUERY =
-        "\"%s\" AND " +
-        "(+TYPE:\"%s\") AND " +
-        "-ASPECT:\"sys:hidden\" AND " +
-        "-cm:creator:system AND " +
-        "-QNAME:comment\\-* ";
+    private static final String NODE_TYPE_QUERY = "\"%s\" AND " +
+            "(+TYPE:\"%s\") AND " +
+            "-ASPECT:\"sys:hidden\" AND " +
+            "-cm:creator:system AND " +
+            "-QNAME:comment\\-* ";
 
-    private static final String ROOT_NODE_QUERY_PREFIX =
-        "PATH:\"";
-    private static final String ROOT_NODE_QUERY_SUFFIX =
-        "//*\" " +
-        "AND " +
-        "(\"%s\") AND " +
-        "(+TYPE:\"cm:content\" OR +TYPE:\"cm:folder\") " +
-        "AND -TYPE:\"cm:thumbnail\" AND " +
-        "-TYPE:\"cm:failedThumbnail\" AND " +
-        "-TYPE:\"cm:rating\" AND " +
-        "-TYPE:\"fm:post\" AND " +
-        "-TYPE:\"st:site\" AND " +
-        "-ASPECT:\"st:siteContainer\" AND " +
-        "-ASPECT:\"sys:hidden\" AND " +
-        "-cm:creator:system AND " +
-        "-QNAME:comment\\-* ";
+    private static final String ROOT_NODE_QUERY_PREFIX = "PATH:\"";
+    private static final String ROOT_NODE_QUERY_SUFFIX = "//*\" " +
+            "AND " +
+            "(\"%s\") AND " +
+            "(+TYPE:\"cm:content\" OR +TYPE:\"cm:folder\") " +
+            "AND -TYPE:\"cm:thumbnail\" AND " +
+            "-TYPE:\"cm:failedThumbnail\" AND " +
+            "-TYPE:\"cm:rating\" AND " +
+            "-TYPE:\"fm:post\" AND " +
+            "-TYPE:\"st:site\" AND " +
+            "-ASPECT:\"st:siteContainer\" AND " +
+            "-ASPECT:\"sys:hidden\" AND " +
+            "-cm:creator:system AND " +
+            "-QNAME:comment\\-* ";
 
-    public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue( Map<K, V> map )
+    public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map)
     {
-        List<Map.Entry<K, V>> list =
-                new LinkedList<>( map.entrySet() );
-        Collections.sort( list, new Comparator<Map.Entry<K, V>>()
-        {
-            public int compare( Map.Entry<K, V> o1, Map.Entry<K, V> o2 )
+        List<Map.Entry<K, V>> list = new LinkedList<>(map.entrySet());
+        Collections.sort(list, new Comparator<Map.Entry<K, V>>() {
+            public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2)
             {
-                return (o1.getValue()).compareTo( o2.getValue() );
+                return (o1.getValue()).compareTo(o2.getValue());
             }
-        } );
+        });
 
         Map<K, V> result = new LinkedHashMap<>();
         for (Map.Entry<K, V> entry : list)
         {
-            result.put( entry.getKey(), entry.getValue() );
+            result.put(entry.getKey(), entry.getValue());
         }
         return result;
     }
 
     private List<Node> checkApiCall(String pathRegex, String queryForm, String term, String nodeType, String rootNodeId,
-                                    String include, String orderBy, Paging paging, int expectedStatus,
-                                    Boolean checkNodeOrderAsc, Boolean propertyNullCheck,
-                                    List<String> ids) throws Exception
+            String include, String orderBy, Paging paging, int expectedStatus,
+            Boolean checkNodeOrderAsc, Boolean propertyNullCheck,
+            List<String> ids) throws Exception
     {
         Map<String, String> params = new HashMap<>(1);
         params.put(Queries.PARAM_TERM, term);
@@ -159,7 +154,7 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
 
         // Create the list of NodeRefs returned from the dummy search
         dummySearchServiceQueryNodeRefs.clear();
-        for (String id: ids)
+        for (String id : ids)
         {
             NodeRef nodeRef = getNodeRef(id);
             dummySearchServiceQueryNodeRefs.add(nodeRef);
@@ -177,14 +172,13 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
         if (expectedStatus == 200)
         {
             String termWithEscapedAsterisks = term.replaceAll("\\*", "\\\\*").replaceAll("\"", "\\\\\"");
-            String expectedQuery =
-                  DEAFULT_QUERY.equals(queryForm)
-                ? String.format(DEAFULT_QUERY, termWithEscapedAsterisks)
-                : NODE_TYPE_QUERY.equals(queryForm)
-                ? String.format(NODE_TYPE_QUERY, termWithEscapedAsterisks, nodeType)
-                : ROOT_NODE_QUERY_SUFFIX.equals(queryForm)
-                ? String.format(ROOT_NODE_QUERY_SUFFIX, termWithEscapedAsterisks)
-                : "TODO";
+            String expectedQuery = DEAFULT_QUERY.equals(queryForm)
+                    ? String.format(DEAFULT_QUERY, termWithEscapedAsterisks)
+                    : NODE_TYPE_QUERY.equals(queryForm)
+                            ? String.format(NODE_TYPE_QUERY, termWithEscapedAsterisks, nodeType)
+                            : ROOT_NODE_QUERY_SUFFIX.equals(queryForm)
+                                    ? String.format(ROOT_NODE_QUERY_SUFFIX, termWithEscapedAsterisks)
+                                    : "TODO";
             ArgumentCaptor<SearchParameters> searchParametersCaptor = ArgumentCaptor.forClass(SearchParameters.class);
             verify(mockSearchService, times(++callCountToMockSearchService)).query(searchParametersCaptor.capture());
             SearchParameters parameters = searchParametersCaptor.getValue();
@@ -192,10 +186,10 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
             if (ROOT_NODE_QUERY_SUFFIX.equals(queryForm))
             {
                 assertNotNull(query);
-                assertTrue("Query should have started with "+ROOT_NODE_QUERY_PREFIX+" but was "+query, query.startsWith(ROOT_NODE_QUERY_PREFIX));
-                assertTrue("Query should have ended with "+expectedQuery+" but was "+query, query.endsWith(expectedQuery));
-                String path = query.substring(ROOT_NODE_QUERY_PREFIX.length(), query.length()-expectedQuery.length());
-                assertTrue("Query path should match "+pathRegex+" but was "+path, Pattern.matches(pathRegex, path));
+                assertTrue("Query should have started with " + ROOT_NODE_QUERY_PREFIX + " but was " + query, query.startsWith(ROOT_NODE_QUERY_PREFIX));
+                assertTrue("Query should have ended with " + expectedQuery + " but was " + query, query.endsWith(expectedQuery));
+                String path = query.substring(ROOT_NODE_QUERY_PREFIX.length(), query.length() - expectedQuery.length());
+                assertTrue("Query path should match " + pathRegex + " but was " + path, Pattern.matches(pathRegex, path));
             }
             else
             {
@@ -231,10 +225,10 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
     {
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
         // The following call to new NodeRef(...) returns a NodeRef like:
-        //    workspace://SpacesStore/9db76769-96de-4de4-bdb4-a127130af362
+        // workspace://SpacesStore/9db76769-96de-4de4-bdb4-a127130af362
         // We call tenantService.getName(nodeRef) to get a fully qualified NodeRef as Solr returns this.
         // They look like:
-        //    workspace://@org.alfresco.rest.api.tests.queriespeopleapitest@SpacesStore/9db76769-96de-4de4-bdb4-a127130af362
+        // workspace://@org.alfresco.rest.api.tests.queriespeopleapitest@SpacesStore/9db76769-96de-4de4-bdb4-a127130af362
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id);
         nodeRef = tenantService.getName(nodeRef);
         return nodeRef;
@@ -243,14 +237,16 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
     /**
      * Tests basic api for nodes live search - metadata (name, title, description) &/or full text search of file/content
      *
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/queries/nodes}
      */
     @Test
     public void testLiveSearchNodes_FTS_and_Metadata() throws Exception
     {
         setRequestContext(user1);
-        
+
         int f1Count = 5;
         List<String> f1NodeIds = new ArrayList<>(f1Count);
 
@@ -286,11 +282,11 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
             String title = "title";
             String descrip = "descrip";
 
-            String folderNameSuffix = " "+testTerm+" folder";
+            String folderNameSuffix = " " + testTerm + " folder";
             String txtSuffix = ".txt";
 
-            Map<String,String> idNameMap = new HashMap<>();
-            Map<String,List<String>> textIdMap = new HashMap<>();
+            Map<String, String> idNameMap = new HashMap<>();
+            Map<String, List<String>> textIdMap = new HashMap<>();
 
             int nameIdx = f1Count;
             for (int i = 1; i <= f1Count; i++)
@@ -299,17 +295,17 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
                 String contentText = "f1 " + testTerm + " test document " + user1 + " document " + i;
 
                 String num = String.format("%05d", nameIdx);
-                String docName = name+num+name+txtSuffix;
+                String docName = name + num + name + txtSuffix;
 
-                Map<String,String> docProps = new HashMap<>(2);
+                Map<String, String> docProps = new HashMap<>(2);
                 docProps.put("cm:title", title + num + title);
-                docProps.put("cm:description", descrip+num+descrip);
+                docProps.put("cm:description", descrip + num + descrip);
 
                 Document doc = createTextFile(f1Id, docName, contentText, "UTF-8", docProps);
 
                 f1NodeIds.add(doc.getId());
                 idNameMap.put(doc.getId(), docName);
-                addTo(textIdMap, name+num+name, doc.getId());
+                addTo(textIdMap, name + num + name, doc.getId());
                 addTo(textIdMap, docName, doc.getId());
                 addTo(textIdMap, docProps.get("cm:title"), doc.getId());
                 addTo(textIdMap, docProps.get("cm:description"), doc.getId());
@@ -324,18 +320,18 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
                 String contentText = "f2 " + testTerm + " test document";
 
                 String num = String.format("%05d", nameIdx);
-                String docName = name+num+name+txtSuffix;
+                String docName = name + num + name + txtSuffix;
 
                 Map<String, String> props = new HashMap<>(2);
-                props.put("cm:title", title+num+title);
-                props.put("cm:description", descrip+num+descrip);
+                props.put("cm:title", title + num + title);
+                props.put("cm:description", descrip + num + descrip);
 
                 Document doc = createTextFile(f2Id, docName, contentText, "UTF-8", props);
 
                 f2NodeIds.add(doc.getId());
                 idNameMap.put(doc.getId(), docName);
 
-                addTo(textIdMap, name+num+name, doc.getId());
+                addTo(textIdMap, name + num + name, doc.getId());
                 addTo(textIdMap, docName, doc.getId());
                 addTo(textIdMap, props.get("cm:title"), doc.getId());
                 addTo(textIdMap, props.get("cm:description"), doc.getId());
@@ -348,21 +344,21 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
             {
                 // create folders - in folder 3
                 String num = String.format("%05d", nameIdx);
-                String folderName = name+num+name+folderNameSuffix;
+                String folderName = name + num + name + folderNameSuffix;
 
                 Map<String, Object> props = new HashMap<>(2);
-                props.put("cm:title", title+num+title);
-                props.put("cm:description", descrip+num+descrip);
+                props.put("cm:title", title + num + title);
+                props.put("cm:description", descrip + num + descrip);
 
                 Node node = createFolder(myFolderNodeId, folderName, props);
 
                 f3NodeIds.add(node.getId());
                 idNameMap.put(node.getId(), folderName);
 
-                addTo(textIdMap, name+num+name, node.getId());
+                addTo(textIdMap, name + num + name, node.getId());
                 addTo(textIdMap, folderName, node.getId());
-                addTo(textIdMap, (String)props.get("cm:title"), node.getId());
-                addTo(textIdMap, (String)props.get("cm:description"), node.getId());
+                addTo(textIdMap, (String) props.get("cm:title"), node.getId());
+                addTo(textIdMap, (String) props.get("cm:description"), node.getId());
 
                 nameIdx--;
             }
@@ -390,59 +386,59 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
 
             // Search - with folder 1 as root node (for path-based / in-tree search)
             checkApiCall("/app:company_home/app:user_homes/cm:user1-[0-9]*_x...._org.alfresco.rest.api.tests.queriesnodesapitest/cm:folder_x...._1",
-                ROOT_NODE_QUERY_SUFFIX, testTerm, null, f1Id, null, null, paging, 200, null, null, f1NodeIds);
+                    ROOT_NODE_QUERY_SUFFIX, testTerm, null, f1Id, null, null, paging, 200, null, null, f1NodeIds);
 
             // Search - with folder 2 as the root node (for path-based / in-tree search)
             checkApiCall("/app:company_home/app:user_homes/cm:user1-[0-9]*_x...._org.alfresco.rest.api.tests.queriesnodesapitest/cm:folder_x...._2",
-                ROOT_NODE_QUERY_SUFFIX, testTerm, null, f2Id, null, null, paging, 200, null, null, f2NodeIds);
+                    ROOT_NODE_QUERY_SUFFIX, testTerm, null, f2Id, null, null, paging, 200, null, null, f2NodeIds);
 
             // Search - with -my- as the root node (for path-based / in-tree search)
             checkApiCall("/app:company_home/app:user_homes/cm:user1-[0-9]*_x...._org.alfresco.rest.api.tests.queriesnodesapitest",
-                ROOT_NODE_QUERY_SUFFIX, name+"*", null, Nodes.PATH_MY, null, null, paging, 200, null, null, allIds);
+                    ROOT_NODE_QUERY_SUFFIX, name + "*", null, Nodes.PATH_MY, null, null, paging, 200, null, null, allIds);
 
             // Search hits based on cm:name
-            String term = name+String.format("%05d", 1)+name;
+            String term = name + String.format("%05d", 1) + name;
             List<String> ids = textIdMap.get(term);
             assertEquals(term, 3, ids.size());
-            List<Node> nodes = checkApiCall(null, DEAFULT_QUERY, "\""+term+"\"", null, null, null, null, paging, 200, null, null, ids);
+            List<Node> nodes = checkApiCall(null, DEAFULT_QUERY, "\"" + term + "\"", null, null, null, null, paging, 200, null, null, ids);
             for (Node node : nodes)
             {
                 if (node.getIsFolder())
                 {
-                    assertEquals(term+folderNameSuffix, node.getName());
+                    assertEquals(term + folderNameSuffix, node.getName());
                 }
                 else
                 {
-                    assertEquals(term+txtSuffix, node.getName());
+                    assertEquals(term + txtSuffix, node.getName());
                 }
             }
 
             // search for name with . (eg. ".txt") without double quotes
-            term = name+String.format("%05d", 1)+name+txtSuffix;
+            term = name + String.format("%05d", 1) + name + txtSuffix;
             ids = textIdMap.get(term);
             assertEquals(term, 2, ids.size());
             checkApiCall(null, DEAFULT_QUERY, term, null, null, null, null, paging, 200, null, null, ids);
 
             // search for name with . (eg. ".txt") with double quotes
-            term = name+String.format("%05d", 1)+name+txtSuffix;
+            term = name + String.format("%05d", 1) + name + txtSuffix;
             ids = textIdMap.get(term);
             assertEquals(term, 2, ids.size());
-            checkApiCall(null, DEAFULT_QUERY, "\""+term+"\"", null, null, null, null, paging, 200, null, null, ids);
+            checkApiCall(null, DEAFULT_QUERY, "\"" + term + "\"", null, null, null, null, paging, 200, null, null, ids);
 
             // Search hits based on cm:title
-            term = title+String.format("%05d", 2)+title;
+            term = title + String.format("%05d", 2) + title;
             ids = textIdMap.get(term);
             assertEquals(term, 3, ids.size());
-            nodes = checkApiCall(null, DEAFULT_QUERY, "\""+term+"\"", null, null, "properties", null, paging, 200, null, null, ids);
+            nodes = checkApiCall(null, DEAFULT_QUERY, "\"" + term + "\"", null, null, "properties", null, paging, 200, null, null, ids);
             assertEquals(term, nodes.get(0).getProperties().get("cm:title"));
             assertEquals(term, nodes.get(1).getProperties().get("cm:title"));
             assertEquals(term, nodes.get(2).getProperties().get("cm:title"));
 
             // Search hits based on cm:description
-            term = descrip+String.format("%05d", 3)+descrip;
+            term = descrip + String.format("%05d", 3) + descrip;
             ids = textIdMap.get(term);
             assertEquals(term, 3, ids.size());
-            nodes = checkApiCall(null, DEAFULT_QUERY, "\""+term+"\"", null, null, "properties", null, paging, 200, null, null, ids);
+            nodes = checkApiCall(null, DEAFULT_QUERY, "\"" + term + "\"", null, null, "properties", null, paging, 200, null, null, ids);
             assertEquals(term, nodes.get(0).getProperties().get("cm:description"));
             assertEquals(term, nodes.get(1).getProperties().get("cm:description"));
             assertEquals(term, nodes.get(2).getProperties().get("cm:description"));
@@ -507,7 +503,7 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
     public void testLiveSearchNodes_SortPage() throws Exception
     {
         setRequestContext(user1);
-        
+
         int f1Count = 5;
         List<String> f1NodeIds = new ArrayList<>(f1Count);
 
@@ -535,7 +531,7 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
 
             String name = "name";
 
-            Map<String,String> idNameMap = new HashMap<>();
+            Map<String, String> idNameMap = new HashMap<>();
 
             int nameIdx = f1Count;
             for (int i = 1; i <= f1Count; i++)
@@ -544,7 +540,7 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
                 String contentText = "f1 " + testTerm + " test document " + user1 + " document " + i;
 
                 String num = String.format("%05d", nameIdx);
-                String docName = name+num+name+".txt";
+                String docName = name + num + name + ".txt";
 
                 Document doc = createTextFile(f1Id, docName, contentText, "UTF-8", null);
 
@@ -561,7 +557,7 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
                 String contentText = "f2 " + testTerm + " test document";
 
                 String num = String.format("%05d", nameIdx);
-                String docName = name+num+name+".txt";
+                String docName = name + num + name + ".txt";
 
                 Document doc = createTextFile(f2Id, docName, contentText, "UTF-8", null);
 
@@ -625,7 +621,6 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
 
             checkApiCall(null, DEAFULT_QUERY, testTerm, null, null, null, null, getPaging(f1Count, f2Count), 200, false, true, f2NodeIds);
 
-
             // TODO sanity check modifiedAt (for now modifiedAt=createdAt)
 
             // -ve test - invalid sort field
@@ -654,7 +649,7 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
     public void testLiveSearchNodes_Tags() throws Exception
     {
         setRequestContext(user1);
-        
+
         PublicApiClient.Nodes nodesProxy = publicApiClient.nodes();
 
         int f1Count = 5;
@@ -685,7 +680,7 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
             {
                 // create doc - in folder 1
                 String contentText = "f1 test document " + user1 + " document " + i;
-                String docName = name+i;
+                String docName = name + i;
 
                 Document doc = createTextFile(f1Id, docName, contentText, "UTF-8", null);
 
@@ -700,7 +695,7 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
             for (int i = 1; i <= f2Count; i++)
             {
                 // create folder - in folder 2
-                String folderName = name+i;
+                String folderName = name + i;
 
                 Folder folder = createFolder(f2Id, folderName, null);
 

@@ -25,6 +25,21 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+import java.util.UUID;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.data.Document;
@@ -34,20 +49,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.UUID;
-
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class NodeApiVersioningMultipartParameterizedTest extends AbstractSingleNetworkSiteTest
@@ -75,7 +76,6 @@ public class NodeApiVersioningMultipartParameterizedTest extends AbstractSingleN
     private NodeService nodeService;
     private NamespaceService namespaceService;
 
-
     @Parameterized.Parameter(value = 0)
     public String type;
 
@@ -91,7 +91,7 @@ public class NodeApiVersioningMultipartParameterizedTest extends AbstractSingleN
     @Parameterized.Parameter(value = 4)
     public String expectedAspect;
 
-    @Parameterized.Parameters //parameters source - MMT-22462 comments
+    @Parameterized.Parameters // parameters source - MMT-22462 comments
     public static Collection<Object[]> data()
     {
         Collection<Object[]> params = new ArrayList();
@@ -130,7 +130,7 @@ public class NodeApiVersioningMultipartParameterizedTest extends AbstractSingleN
         permissionService = applicationContext.getBean("permissionService", PermissionService.class);
         authorityService = (AuthorityService) applicationContext.getBean("AuthorityService");
         nodeService = applicationContext.getBean("NodeService", NodeService.class);
-        namespaceService= (NamespaceService) applicationContext.getBean("NamespaceService");
+        namespaceService = (NamespaceService) applicationContext.getBean("NamespaceService");
     }
 
     @After
@@ -151,7 +151,7 @@ public class NodeApiVersioningMultipartParameterizedTest extends AbstractSingleN
         MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new MultiPartBuilder.FileData(fileName, file));
         multiPartBuilder.setNodeType(type);
         multiPartBuilder.setVersioningEnabled(versioningEnabled);
-        if(majorVersion != null)
+        if (majorVersion != null)
         {
             multiPartBuilder.setMajorVersion(majorVersion);
         }
@@ -168,14 +168,16 @@ public class NodeApiVersioningMultipartParameterizedTest extends AbstractSingleN
 
     private void assertExpectedVersion(String expectedVersion, Map<String, Object> documentProperties)
     {
-        if(documentProperties != null) {
+        if (documentProperties != null)
+        {
             assertEquals(expectedVersion, documentProperties.get("cm:versionLabel"));
         }
     }
 
     private void assertContainsAspect(String expectedAspect, Document documentResponse)
     {
-        if(expectedAspect != null) {
+        if (expectedAspect != null)
+        {
             assertTrue(!documentResponse.getAspectNames().isEmpty());
             assertTrue(documentResponse.getAspectNames().contains(expectedAspect));
         }

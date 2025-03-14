@@ -25,9 +25,10 @@
  */
 package org.alfresco.repo.transaction;
 
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 
 /**
  * A this advice wrapper around the {@link RetryingTransactionHelper}.
@@ -64,8 +65,7 @@ public class RetryingTransactionAdvice implements MethodInterceptor
     public Object invoke(final MethodInvocation methodInvocation) throws Throwable
     {
         // Just call the helper
-        RetryingTransactionCallback<Object> txnCallback = new RetryingTransactionCallback<Object>()
-        {
+        RetryingTransactionCallback<Object> txnCallback = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 return methodInvocation.proceed();

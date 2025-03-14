@@ -51,9 +51,7 @@ public class PropertyBackedBeanUnregisteredEvent extends PropertyBackedBeanEvent
     /**
      * Is the component being destroyed forever, i.e. should persisted values be removed?
      * 
-     * @return <code>true</code> if the bean is being destroyed forever. On server shutdown, this value would be
-     *         <code>false</code>, whereas on the removal of a dynamically created instance, this value would be
-     *         <code>true</code>.
+     * @return <code>true</code> if the bean is being destroyed forever. On server shutdown, this value would be <code>false</code>, whereas on the removal of a dynamically created instance, this value would be <code>true</code>.
      */
     public boolean isPermanent()
     {

@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.domain.permissions;
 
-
 /**
  * Entity for <b>alf_authority_alias</b> persistence.
  * 
@@ -35,6 +34,8 @@ package org.alfresco.repo.domain.permissions;
 public interface AuthorityAlias
 {
     public Long getId();
+
     public Long getAuthId();
+
     public Long getAliasId();
 }

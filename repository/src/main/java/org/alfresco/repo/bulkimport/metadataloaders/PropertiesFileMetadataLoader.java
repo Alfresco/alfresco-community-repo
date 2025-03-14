@@ -34,27 +34,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.alfresco.repo.bulkimport.MetadataLoader;
-import org.alfresco.repo.bulkimport.impl.FileUtils;
-import org.alfresco.service.ServiceRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.repo.bulkimport.MetadataLoader;
+import org.alfresco.repo.bulkimport.impl.FileUtils;
+import org.alfresco.service.ServiceRegistry;
+
 /**
- * MetadataLoader that loads metadata from an (optional) "shadow" properties
- * file.  This shadow properties file must have <strong>exactly</strong> the
- * same name and extension as the file for whom it is storing metadata, but
- * with the suffix ".metadata.properties".  So for example, if there is a file
- * called "IMG_1967.jpg", the "shadow" properties metadata file for it would
- * be called "IMG_1967.jpg.metadata.properties". 
+ * MetadataLoader that loads metadata from an (optional) "shadow" properties file. This shadow properties file must have <strong>exactly</strong> the same name and extension as the file for whom it is storing metadata, but with the suffix ".metadata.properties". So for example, if there is a file called "IMG_1967.jpg", the "shadow" properties metadata file for it would be called "IMG_1967.jpg.metadata.properties".
  * 
- * The metadata file itself follows the usual rules for Java properties files,
- * with a property with the key "type" containing the qualified name of the
- * content type to use for the file, a property with the key "aspects"
- * containing a comma-delimited list of qualified names of the aspects to
- * attach to the file, and then one Java property per metadata property, with
- * the key being the Alfresco property QName and the value being the value of
- * that property.
+ * The metadata file itself follows the usual rules for Java properties files, with a property with the key "type" containing the qualified name of the content type to use for the file, a property with the key "aspects" containing a comma-delimited list of qualified names of the aspects to attach to the file, and then one Java property per metadata property, with the key being the Alfresco property QName and the value being the value of that property.
  * 
  * For example (note escaping rules for namespace separator!):
  * 
@@ -70,16 +60,10 @@ import org.apache.commons.logging.LogFactory;
  * 
  * Notes:
  * <ul>
- *   <li>Java properties files do not support Unicode characters - all values
- *       are loaded assuming an ISO-8859-1 character set.  For Unicode
- *       metadata, you should use <code>XmlPropertiesFileMetadataLoader</code>
- *       instead.</li>
- *   <li>the metadata must conform to the type and aspect definitions
- *       configured in Alfresco (including mandatory fields, constraints and data
- *       types).  Any violations will terminate the bulk import process.</li>
- *   <li>associations are not yet supported</li>
- *   <li>dates, times and date times <u>must</u> be stored in ISO8601 format
- *       (although note that Alfresco ignores timezone modifiers)</li>
+ * <li>Java properties files do not support Unicode characters - all values are loaded assuming an ISO-8859-1 character set. For Unicode metadata, you should use <code>XmlPropertiesFileMetadataLoader</code> instead.</li>
+ * <li>the metadata must conform to the type and aspect definitions configured in Alfresco (including mandatory fields, constraints and data types). Any violations will terminate the bulk import process.</li>
+ * <li>associations are not yet supported</li>
+ * <li>dates, times and date times <u>must</u> be stored in ISO8601 format (although note that Alfresco ignores timezone modifiers)</li>
  * </ul>
  *
  * @since 4.0
@@ -87,45 +71,43 @@ import org.apache.commons.logging.LogFactory;
  * @see MetadataLoader
  */
 public final class PropertiesFileMetadataLoader
-extends AbstractMapBasedMetadataLoader
+        extends AbstractMapBasedMetadataLoader
 {
     private final static Log log = LogFactory.getLog(PropertiesFileMetadataLoader.class);
-    
+
     private final static String METADATA_FILE_EXTENSION = "properties.xml";
 
-    
     public PropertiesFileMetadataLoader(final ServiceRegistry serviceRegistry)
     {
         super(serviceRegistry, METADATA_FILE_EXTENSION);
     }
-    
-    
+
     public PropertiesFileMetadataLoader(final ServiceRegistry serviceRegistry, final String multiValuedSeparator)
     {
         super(serviceRegistry, multiValuedSeparator, METADATA_FILE_EXTENSION);
     }
 
-    
     /**
      * @see org.alfresco.repo.bulkimport.metadataloaders.AbstractMapBasedMetadataLoader#loadMetadataFromFile(java.io.File)
      */
     @Override
-    protected Map<String,Serializable> loadMetadataFromFile(Path metadataFile)
+    protected Map<String, Serializable> loadMetadataFromFile(Path metadataFile)
     {
-        Map<String,Serializable> result = null;
-        
+        Map<String, Serializable> result = null;
+
         try
         {
             Properties props = new Properties();
             props.load(new BufferedInputStream(Files.newInputStream(metadataFile)));
-            result = new HashMap<String,Serializable>((Map)props);
+            result = new HashMap<String, Serializable>((Map) props);
         }
         catch (final IOException ioe)
         {
-            if (log.isWarnEnabled()) log.warn("Metadata file '" + FileUtils.getFileName(metadataFile) + "' could not be read.", ioe);
+            if (log.isWarnEnabled())
+                log.warn("Metadata file '" + FileUtils.getFileName(metadataFile) + "' could not be read.", ioe);
         }
-        
-        return(result);
+
+        return (result);
     }
 
 }

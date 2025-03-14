@@ -42,13 +42,13 @@ public class FTSRange extends BaseFunction
     public final static String NAME = "FTSRange";
 
     public final static String ARG_FROM_INC = "FromInc";
-    
+
     public final static String ARG_FROM = "From";
-    
+
     public final static String ARG_TO = "To";
-    
+
     public final static String ARG_TO_INC = "ToInc";
-    
+
     public final static String ARG_PROPERTY = "Property";
 
     public static LinkedHashMap<String, ArgumentDefinition> args;
@@ -67,8 +67,7 @@ public class FTSRange extends BaseFunction
     {
         super(NAME, DataTypeDefinition.BOOLEAN, args);
     }
-    
-    
+
     public Serializable getValue(Map<String, Argument> args, FunctionEvaluationContext context)
     {
         throw new UnsupportedOperationException();

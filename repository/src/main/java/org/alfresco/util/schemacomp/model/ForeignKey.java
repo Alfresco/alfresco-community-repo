@@ -29,10 +29,8 @@ import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
 
-
 /**
- * Represents a foreign key on a database table (<code>localColumn</code>) that references
- * <code>targetTable.targetColumn</code>
+ * Represents a foreign key on a database table (<code>localColumn</code>) that references <code>targetTable.targetColumn</code>
  * 
  * @author Matt Ward
  */
@@ -41,21 +39,25 @@ public class ForeignKey extends AbstractDbObject
     private String localColumn;
     private String targetTable;
     private String targetColumn;
-    
-    
+
     public ForeignKey(String name)
     {
         super(null, name);
     }
-    
+
     /**
      * Constructor.
      * 
-     * @param table the parent table
-     * @param fkName String
-     * @param localColumn String
-     * @param targetTable String
-     * @param targetColumn String
+     * @param table
+     *            the parent table
+     * @param fkName
+     *            String
+     * @param localColumn
+     *            String
+     * @param targetTable
+     *            String
+     * @param targetColumn
+     *            String
      */
     public ForeignKey(Table table, String fkName, String localColumn, String targetTable, String targetColumn)
     {
@@ -64,7 +66,7 @@ public class ForeignKey extends AbstractDbObject
         this.targetTable = targetTable;
         this.targetColumn = targetColumn;
     }
-    
+
     /**
      * @return the localColumn
      */
@@ -72,15 +74,16 @@ public class ForeignKey extends AbstractDbObject
     {
         return this.localColumn;
     }
-    
+
     /**
-     * @param localColumn the localColumn to set
+     * @param localColumn
+     *            the localColumn to set
      */
     public void setLocalColumn(String localColumn)
     {
         this.localColumn = localColumn;
     }
-    
+
     /**
      * @return the targetTable
      */
@@ -88,15 +91,16 @@ public class ForeignKey extends AbstractDbObject
     {
         return this.targetTable;
     }
-    
+
     /**
-     * @param targetTable the targetTable to set
+     * @param targetTable
+     *            the targetTable to set
      */
     public void setTargetTable(String targetTable)
     {
         this.targetTable = targetTable;
     }
-    
+
     /**
      * @return the targetColumn
      */
@@ -104,15 +108,16 @@ public class ForeignKey extends AbstractDbObject
     {
         return this.targetColumn;
     }
-    
+
     /**
-     * @param targetColumn the targetColumn to set
+     * @param targetColumn
+     *            the targetColumn to set
      */
     public void setTargetColumn(String targetColumn)
     {
         this.targetColumn = targetColumn;
     }
-    
+
     @Override
     public int hashCode()
     {
@@ -123,49 +128,57 @@ public class ForeignKey extends AbstractDbObject
         result = prime * result + ((this.targetTable == null) ? 0 : this.targetTable.hashCode());
         return result;
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
-        if (this == obj) return true;
-        if (!super.equals(obj)) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
         ForeignKey other = (ForeignKey) obj;
         if (this.localColumn == null)
         {
-            if (other.localColumn != null) return false;
+            if (other.localColumn != null)
+                return false;
         }
-        else if (!this.localColumn.equals(other.localColumn)) return false;
+        else if (!this.localColumn.equals(other.localColumn))
+            return false;
         if (this.targetColumn == null)
         {
-            if (other.targetColumn != null) return false;
+            if (other.targetColumn != null)
+                return false;
         }
-        else if (!this.targetColumn.equals(other.targetColumn)) return false;
+        else if (!this.targetColumn.equals(other.targetColumn))
+            return false;
         if (this.targetTable == null)
         {
-            if (other.targetTable != null) return false;
+            if (other.targetTable != null)
+                return false;
         }
-        else if (!this.targetTable.equals(other.targetTable)) return false;
+        else if (!this.targetTable.equals(other.targetTable))
+            return false;
         return true;
     }
-    
-    
+
     @Override
     protected void doDiff(DbObject right, DiffContext ctx)
     {
         ForeignKey thatFK = (ForeignKey) right;
         comparisonUtils.compareSimple(
-                    new DbProperty(this, "localColumn"),
-                    new DbProperty(thatFK, "localColumn"),
-                    ctx);
+                new DbProperty(this, "localColumn"),
+                new DbProperty(thatFK, "localColumn"),
+                ctx);
         comparisonUtils.compareSimple(
-                    new DbProperty(this, "targetTable"),
-                    new DbProperty(thatFK, "targetTable"),
-                    ctx);
+                new DbProperty(this, "targetTable"),
+                new DbProperty(thatFK, "targetTable"),
+                ctx);
         comparisonUtils.compareSimple(
-                    new DbProperty(this, "targetColumn"),
-                    new DbProperty(thatFK, "targetColumn"),
-                    ctx);        
+                new DbProperty(this, "targetColumn"),
+                new DbProperty(thatFK, "targetColumn"),
+                ctx);
     }
 
     @Override
@@ -191,7 +204,7 @@ public class ForeignKey extends AbstractDbObject
         {
             return false;
         }
-        
+
         if ((getParent() != null && getParent().sameAs(other.getParent())))
         {
             ForeignKey otherFK = (ForeignKey) other;
@@ -199,7 +212,7 @@ public class ForeignKey extends AbstractDbObject
             {
                 return false;
             }
-            // ALF-14129 fix, make table names case insensitive 
+            // ALF-14129 fix, make table names case insensitive
             if (!getTargetTable().equalsIgnoreCase(otherFK.getTargetTable()))
             {
                 return false;
@@ -210,7 +223,7 @@ public class ForeignKey extends AbstractDbObject
             }
             return true;
         }
-        
+
         return false;
     }
 }

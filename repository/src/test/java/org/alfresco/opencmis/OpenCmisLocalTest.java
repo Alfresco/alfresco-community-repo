@@ -43,29 +43,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.TestCase;
-
-import org.alfresco.sync.events.types.ContentEventImpl;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.filestore.FileContentWriter;
-import org.alfresco.repo.domain.node.ContentDataWithId;
-import org.alfresco.repo.events.EventPublisherForTestingOnly;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.coci.CheckOutCheckInService;
-import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.FileFilterMode.Client;
-import org.alfresco.util.GUID;
-import org.alfresco.util.TempFileProvider;
-import org.alfresco.util.TestHelper;
-import org.alfresco.util.testing.category.LuceneTests;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.chemistry.opencmis.client.api.Document;
@@ -93,6 +70,29 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.ConcurrencyFailureException;
 
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.filestore.FileContentWriter;
+import org.alfresco.repo.domain.node.ContentDataWithId;
+import org.alfresco.repo.events.EventPublisherForTestingOnly;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.sync.events.types.ContentEventImpl;
+import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.FileFilterMode.Client;
+import org.alfresco.util.GUID;
+import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.TestHelper;
+import org.alfresco.util.testing.category.LuceneTests;
+
 /**
  * Tests basic local CMIS interaction
  * 
@@ -103,15 +103,15 @@ import org.springframework.dao.ConcurrencyFailureException;
 @Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class OpenCmisLocalTest extends TestCase
 {
-    public static final String[] CONFIG_LOCATIONS = new String[] { "classpath:alfresco/application-context.xml",
-    	"classpath:opencmis/opencmistest-context.xml"
-    																};
+    public static final String[] CONFIG_LOCATIONS = new String[]{"classpath:alfresco/application-context.xml",
+            "classpath:opencmis/opencmistest-context.xml"
+    };
     private static ApplicationContext ctx;
     private static final String BEAN_NAME_AUTHENTICATION_COMPONENT = "authenticationComponent";
     private static final String MIME_PLAIN_TEXT = "text/plain";
     private TempStoreOutputStreamFactory streamFactory;
     private EventPublisherForTestingOnly eventPublisher;
-    
+
     /**
      * Test class to provide the service factory
      * 
@@ -121,6 +121,7 @@ public class OpenCmisLocalTest extends TestCase
     public static class TestCmisServiceFactory extends AbstractServiceFactory
     {
         private static AlfrescoCmisServiceFactory serviceFactory;
+
         @Override
         public void init(Map<String, String> parameters)
         {
@@ -130,15 +131,14 @@ public class OpenCmisLocalTest extends TestCase
 
         @Override
         public void destroy()
-        {
-        }
+        {}
 
         @Override
         public CmisService getService(CallContext context)
         {
             return serviceFactory.getService(context);
         }
-        
+
     }
 
     private Repository getRepository(String user, String password)
@@ -159,7 +159,7 @@ public class OpenCmisLocalTest extends TestCase
         List<Repository> repositories = sessionFactory.getRepositories(parameters);
         return repositories.size() > 0 ? repositories.get(0) : null;
     }
-    
+
     public void setUp() throws Exception
     {
         ctx = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
@@ -167,31 +167,31 @@ public class OpenCmisLocalTest extends TestCase
         this.streamFactory = TempStoreOutputStreamFactory.newInstance(tempDir, 1024, 1024, false);
         this.eventPublisher = (EventPublisherForTestingOnly) ctx.getBean("eventPublisher");
     }
-    
+
     public void testVoid()
     {
-        
+
     }
-    
+
     public void DISABLED_testSetUp() throws Exception
     {
         Repository repository = getRepository("admin", "admin");
         assertNotNull("No repository available for testing", repository);
     }
-    
+
     public void DISABLED_testBasicFileOps()
     {
         Repository repository = getRepository("admin", "admin");
         Session session = repository.createSession();
         Folder rootFolder = session.getRootFolder();
         // create folder
-        Map<String,String> folderProps = new HashMap<String, String>();
+        Map<String, String> folderProps = new HashMap<String, String>();
         {
             folderProps.put(PropertyIds.OBJECT_TYPE_ID, "cmis:folder");
             folderProps.put(PropertyIds.NAME, getName() + "-" + GUID.generate());
         }
         Folder folder = rootFolder.createFolder(folderProps, null, null, null, session.getDefaultContext());
-        
+
         Map<String, String> fileProps = new HashMap<String, String>();
         {
             fileProps.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
@@ -207,7 +207,7 @@ public class OpenCmisLocalTest extends TestCase
         }
         folder.createDocument(fileProps, fileContent, VersioningState.MAJOR);
     }
-    
+
     public void testDownloadEvent() throws InterruptedException
     {
         Repository repository = getRepository("admin", "admin");
@@ -219,7 +219,7 @@ public class OpenCmisLocalTest extends TestCase
             props.put(PropertyIds.OBJECT_TYPE_ID, "D:cmiscustom:document");
             props.put(PropertyIds.NAME, docname);
         }
-        
+
         // content
         byte[] byteContent = "Hello from Download testing class".getBytes();
         InputStream stream = new ByteArrayInputStream(byteContent);
@@ -227,16 +227,16 @@ public class OpenCmisLocalTest extends TestCase
 
         Document doc1 = rootFolder.createDocument(props, contentStream, VersioningState.MAJOR);
         NodeRef doc1NodeRef = cmisIdToNodeRef(doc1.getId());
-        
+
         ContentStream content = doc1.getContentStream();
         assertNotNull(content);
-        
-        //range request
-        content = doc1.getContentStream(BigInteger.valueOf(2),BigInteger.valueOf(4));
+
+        // range request
+        content = doc1.getContentStream(BigInteger.valueOf(2), BigInteger.valueOf(4));
         assertNotNull(content);
     }
 
-    private void commonAsserts(byte[] byteContent,ContentEventImpl cre)
+    private void commonAsserts(byte[] byteContent, ContentEventImpl cre)
     {
         assertEquals(Client.cmis, cre.getClient());
         assertEquals(byteContent.length, cre.getSize());
@@ -245,20 +245,21 @@ public class OpenCmisLocalTest extends TestCase
 
     /**
      * Turns a CMIS id into a node ref
+     * 
      * @param nodeId
      * @return
      */
     private NodeRef cmisIdToNodeRef(String nodeId)
     {
         int idx = nodeId.indexOf(";");
-        if(idx != -1)
+        if (idx != -1)
         {
             nodeId = nodeId.substring(0, idx);
         }
         NodeRef nodeRef = new NodeRef(nodeId);
         return nodeRef;
     }
-    
+
     public void testALF10085() throws InterruptedException
     {
         Repository repository = getRepository("admin", "admin");
@@ -271,48 +272,48 @@ public class OpenCmisLocalTest extends TestCase
             props.put(PropertyIds.NAME, "mydoc-" + GUID.generate() + ".txt");
         }
         Document doc1 = rootFolder.createDocument(props, null, null);
-        
+
         props = new HashMap<String, String>();
         {
             props.put(PropertyIds.OBJECT_TYPE_ID, "D:cmiscustom:document");
             props.put(PropertyIds.NAME, "mydoc-" + GUID.generate() + ".txt");
         }
         Document doc2 = rootFolder.createDocument(props, null, null);
-        
-        Thread.sleep(6000); 
-        
+
+        Thread.sleep(6000);
+
         session.getObject(doc1);
 
         doc1.refresh();
-        Calendar doc1LastModifiedBefore = (Calendar)doc1.getProperty(PropertyIds.LAST_MODIFICATION_DATE).getFirstValue();
+        Calendar doc1LastModifiedBefore = (Calendar) doc1.getProperty(PropertyIds.LAST_MODIFICATION_DATE).getFirstValue();
         assertNotNull(doc1LastModifiedBefore);
 
         doc2.refresh();
-        Calendar doc2LastModifiedBefore = (Calendar)doc2.getProperty(PropertyIds.LAST_MODIFICATION_DATE).getFirstValue();
+        Calendar doc2LastModifiedBefore = (Calendar) doc2.getProperty(PropertyIds.LAST_MODIFICATION_DATE).getFirstValue();
         assertNotNull(doc2LastModifiedBefore);
 
         // Add relationship A to B
         props = new HashMap<String, String>();
         {
             props.put(PropertyIds.OBJECT_TYPE_ID, "R:cmiscustom:assoc");
-            props.put(PropertyIds.NAME, "A Relationship"); 
-            props.put(PropertyIds.SOURCE_ID, doc1.getId()); 
-            props.put(PropertyIds.TARGET_ID, doc2.getId()); 
+            props.put(PropertyIds.NAME, "A Relationship");
+            props.put(PropertyIds.SOURCE_ID, doc1.getId());
+            props.put(PropertyIds.TARGET_ID, doc2.getId());
         }
-        session.createRelationship(props); 
+        session.createRelationship(props);
 
         doc1.refresh();
-        Calendar doc1LastModifiedAfter = (Calendar)doc1.getProperty(PropertyIds.LAST_MODIFICATION_DATE).getFirstValue();
+        Calendar doc1LastModifiedAfter = (Calendar) doc1.getProperty(PropertyIds.LAST_MODIFICATION_DATE).getFirstValue();
         assertNotNull(doc1LastModifiedAfter);
-        
+
         doc2.refresh();
-        Calendar doc2LastModifiedAfter = (Calendar)doc2.getProperty(PropertyIds.LAST_MODIFICATION_DATE).getFirstValue();
+        Calendar doc2LastModifiedAfter = (Calendar) doc2.getProperty(PropertyIds.LAST_MODIFICATION_DATE).getFirstValue();
         assertNotNull(doc2LastModifiedAfter);
 
         assertEquals(doc1LastModifiedBefore, doc1LastModifiedAfter);
         assertEquals(doc2LastModifiedBefore, doc2LastModifiedAfter);
     }
-    
+
     // Test we don't get an exception with the interceptor
     public void testAlfrescoCmisStreamInterceptor() throws Exception
     {
@@ -329,11 +330,8 @@ public class OpenCmisLocalTest extends TestCase
     }
 
     /**
-     * Simulates the pattern of advice created by AlfrescoCmisServiceFactory.getService(CallContext),
-     * optionally including a AlfrescoCmisStreamInterceptor which changes ContentStream parameter
-     * values into ReusableContentStream parameters which unlike the original may be closed and then
-     * opened again. This is important as retrying transaction advice is also added (simulated here
-     * by the afterAdvice and the test target object. See MNT-285
+     * Simulates the pattern of advice created by AlfrescoCmisServiceFactory.getService(CallContext), optionally including a AlfrescoCmisStreamInterceptor which changes ContentStream parameter values into ReusableContentStream parameters which unlike the original may be closed and then opened again. This is important as retrying transaction advice is also added (simulated here by the afterAdvice and the test target object. See MNT-285
+     * 
      * @param includeStreamInterceptor
      */
     private void simulateCallWithAdvice(boolean includeStreamInterceptor) throws Exception
@@ -343,9 +341,8 @@ public class OpenCmisLocalTest extends TestCase
         final AtomicInteger beforeAdviceCount = new AtomicInteger(0);
         final AtomicInteger afterAdviceCount = new AtomicInteger(0);
         final AtomicInteger targetCount = new AtomicInteger(0);
-        
-        MethodInterceptor beforeAdvice = new MethodInterceptor()
-        {
+
+        MethodInterceptor beforeAdvice = new MethodInterceptor() {
             @Override
             public Object invoke(MethodInvocation mi) throws Throwable
             {
@@ -353,12 +350,11 @@ public class OpenCmisLocalTest extends TestCase
                 return mi.proceed();
             }
         };
-        
+
         AlfrescoCmisStreamInterceptor interceptor = new AlfrescoCmisStreamInterceptor();
-        
+
         // Represents the retrying transaction
-        MethodInterceptor afterAdvice = new MethodInterceptor()
-        {
+        MethodInterceptor afterAdvice = new MethodInterceptor() {
             @Override
             public Object invoke(MethodInvocation mi) throws Throwable
             {
@@ -381,19 +377,17 @@ public class OpenCmisLocalTest extends TestCase
                             throw e;
                         }
                     }
-                }
-                while (!exit);
+                } while (!exit);
                 return null;
             }
         };
-        
-        TestStreamTarget target = new TestStreamTarget()
-        {
+
+        TestStreamTarget target = new TestStreamTarget() {
             @Override
             public void methodA(ContentStream csa, String str, ContentStream csb, ContentStream csc, int i) throws Exception
             {
                 int count = targetCount.incrementAndGet();
-                
+
                 // Use input streams - normally only works once
                 File a = null;
                 File b = null;
@@ -402,8 +396,8 @@ public class OpenCmisLocalTest extends TestCase
                 {
                     a = TempFileProvider.createTempFile(csa.getStream(), "csA", ".txt");
                     b = TempFileProvider.createTempFile(csb.getStream(), "csB", ".txt");
-                    c = TempFileProvider.createTempFile(null,            "csC", ".txt");
-                    
+                    c = TempFileProvider.createTempFile(null, "csC", ".txt");
+
                     // Similar test to that in AlfrescoCmisServiceImpl.copyToTempFile(ContentStream)
                     if ((csa.getLength() > -1) && (a == null || csa.getLength() != a.length()))
                     {
@@ -426,7 +420,7 @@ public class OpenCmisLocalTest extends TestCase
                         c.delete();
                     }
                 }
-                
+
                 // Force the input stream to be reused
                 if (count < loops)
                 {
@@ -434,7 +428,7 @@ public class OpenCmisLocalTest extends TestCase
                 }
             }
         };
-        
+
         ProxyFactory proxyFactory = new ProxyFactory(target);
         proxyFactory.addInterface(TestStreamTarget.class);
         proxyFactory.addAdvice(beforeAdvice);
@@ -459,18 +453,16 @@ public class OpenCmisLocalTest extends TestCase
         assertEquals("afterAdvice count", 1, beforeAdviceCount.intValue());
         assertEquals("target count", loops, targetCount.intValue());
     }
-    
+
     private interface TestStreamTarget
     {
         void methodA(ContentStream csa, String str, ContentStream csb, ContentStream csc, int i) throws Exception;
     }
 
     /**
-     * MNT-14687 - Creating a document as checkedout and then cancelling the
-     * checkout should delete the document.
+     * MNT-14687 - Creating a document as checkedout and then cancelling the checkout should delete the document.
      * 
-     * This test would have fit better within CheckOutCheckInServiceImplTest but
-     * was added here to make use of existing methods
+     * This test would have fit better within CheckOutCheckInServiceImplTest but was added here to make use of existing methods
      */
     public void testCancelCheckoutWhileInCheckedOutState()
     {
@@ -505,8 +497,7 @@ public class OpenCmisLocalTest extends TestCase
         NodeRef doc1WorkingCopy = cociService.getWorkingCopy(doc1NodeRef);
 
         /* Cancel Checkout */
-        TestHelper.waitForMethodToFinish(of(100, MILLIS), () ->
-                cociService.cancelCheckout(doc1WorkingCopy),
+        TestHelper.waitForMethodToFinish(of(100, MILLIS), () -> cociService.cancelCheckout(doc1WorkingCopy),
                 CmisRuntimeException.class, ConcurrencyFailureException.class);
 
         /* Check if both the working copy and the document were deleted */

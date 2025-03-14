@@ -30,36 +30,34 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.service.cmr.workflow.WorkflowAdminService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.Filter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 
 /**
  * BPM Engine Registry
  * 
- * Responsible for managing the list of registered BPM Engines for the
- * following components:
+ * Responsible for managing the list of registered BPM Engines for the following components:
  * 
- * - Workflow Component
- * - Task Component
+ * - Workflow Component - Task Component
  * 
  * @author davidc
  */
 public class BPMEngineRegistry
 {
     /** ID seperator used in global Ids */
-    private static final String ID_SEPERATOR = "$"; 
-    private static final String ID_SEPERATOR_REGEX = "\\$"; 
-    
+    private static final String ID_SEPERATOR = "$";
+    private static final String ID_SEPERATOR_REGEX = "\\$";
+
     /** Logging support */
     private static Log logger = LogFactory.getLog("org.alfresco.repo.workflow");
 
     private WorkflowAdminService workflowAdminService;
-    
+
     private Map<String, WorkflowComponent> workflowComponents;
     private Map<String, TaskComponent> taskComponents;
 
@@ -71,22 +69,25 @@ public class BPMEngineRegistry
         workflowComponents = new HashMap<String, WorkflowComponent>();
         taskComponents = new HashMap<String, TaskComponent>();
     }
-    
+
     /**
      * Sets the workflow admin service
      * 
-     * @param workflowAdminService the workflow admin service
+     * @param workflowAdminService
+     *            the workflow admin service
      */
     public void setWorkflowAdminService(WorkflowAdminService workflowAdminService)
     {
         this.workflowAdminService = workflowAdminService;
     }
-    
+
     /**
      * Register a BPM Engine Workflow Component
      * 
-     * @param engineId  engine id
-     * @param engine  implementing engine
+     * @param engineId
+     *            engine id
+     * @param engine
+     *            implementing engine
      */
     public void registerWorkflowComponent(String engineId, WorkflowComponent engine)
     {
@@ -102,7 +103,7 @@ public class BPMEngineRegistry
     /**
      * Gets all registered Workflow Components
      * 
-     * @return  array of engine ids
+     * @return array of engine ids
      */
     public String[] getWorkflowComponents()
     {
@@ -112,27 +113,30 @@ public class BPMEngineRegistry
     /**
      * Gets a specific BPM Engine Workflow Component
      * 
-     * @param engineId  engine id
-     * @return  the Workflow Component
+     * @param engineId
+     *            engine id
+     * @return the Workflow Component
      */
     public WorkflowComponent getWorkflowComponent(String engineId)
     {
-        if(false == workflowAdminService.isEngineEnabled(engineId))
+        if (false == workflowAdminService.isEngineEnabled(engineId))
         {
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-                logger.debug("Ignoring disabled WorkflowComponent: "+engineId);
+                logger.debug("Ignoring disabled WorkflowComponent: " + engineId);
             }
             return null;
         }
         return workflowComponents.get(engineId);
     }
-    
+
     /**
      * Register a BPM Engine Task Component
      * 
-     * @param engineId  engine id
-     * @param engine  implementing engine
+     * @param engineId
+     *            engine id
+     * @param engine
+     *            implementing engine
      */
     public void registerTaskComponent(String engineId, TaskComponent engine)
     {
@@ -148,7 +152,7 @@ public class BPMEngineRegistry
     /**
      * Gets all registered Task Components
      * 
-     * @return  array of engine ids
+     * @return array of engine ids
      */
     public String[] getTaskComponents()
     {
@@ -157,8 +161,7 @@ public class BPMEngineRegistry
 
     private String[] getComponents(Set<String> components)
     {
-        List<String> filtered = CollectionUtils.filter(components, new Filter<String>()
-        {
+        List<String> filtered = CollectionUtils.filter(components, new Filter<String>() {
             public Boolean apply(String engineId)
             {
                 return workflowAdminService.isEngineEnabled(engineId);
@@ -170,44 +173,47 @@ public class BPMEngineRegistry
     /**
      * Gets a specific BPM Engine Task Component
      * 
-     * @param engineId  engine id
-     * @return  the Workflow Component
+     * @param engineId
+     *            engine id
+     * @return the Workflow Component
      */
     public TaskComponent getTaskComponent(String engineId)
     {
-        if(false == workflowAdminService.isEngineEnabled(engineId))
+        if (false == workflowAdminService.isEngineEnabled(engineId))
         {
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-                logger.debug("Ignoring disabled TaskComponent: "+engineId);
+                logger.debug("Ignoring disabled TaskComponent: " + engineId);
             }
             return null;
         }
         return taskComponents.get(engineId);
     }
 
-    
     //
     // BPM Engine Id support
     //
-    
+
     /**
      * Construct a global Id
      * 
-     * @param engineId  engine id
-     * @param localId  engine local id
-     * @return  the global id
+     * @param engineId
+     *            engine id
+     * @param localId
+     *            engine local id
+     * @return the global id
      */
     public static String createGlobalId(String engineId, String localId)
     {
         return engineId + ID_SEPERATOR + localId;
     }
-    
+
     /**
      * Break apart a global id into its engine and local ids
      * 
-     * @param globalId  the global id
-     * @return  array containing engine id and global id in that order
+     * @param globalId
+     *            the global id
+     * @return array containing engine id and global id in that order
      */
     public static String[] getGlobalIdParts(String globalId)
     {
@@ -218,23 +224,25 @@ public class BPMEngineRegistry
         }
         return parts;
     }
-    
+
     /**
      * Get the engine id from a global id
      * 
-     * @param globalId  the global id
-     * @return  the engine id
+     * @param globalId
+     *            the global id
+     * @return the engine id
      */
     public static String getEngineId(String globalId)
     {
         return getGlobalIdParts(globalId)[0];
     }
-    
+
     /**
      * Get the local id from a global id
      * 
-     * @param globalId  the global id
-     * @return  the local id
+     * @param globalId
+     *            the global id
+     * @return the local id
      */
     public static String getLocalId(String globalId)
     {
@@ -242,16 +250,17 @@ public class BPMEngineRegistry
     }
 
     /**
-     * Returns <code>true</code> if the globalId parameter is a valid global Id
-     * for the given engineId.
+     * Returns <code>true</code> if the globalId parameter is a valid global Id for the given engineId.
      * 
-     * @param globalId String
-     * @param engineId String
+     * @param globalId
+     *            String
+     * @param engineId
+     *            String
      * @return boolean
      */
     public static boolean isGlobalId(String globalId, String engineId)
     {
-        return globalId.startsWith(engineId+ID_SEPERATOR);
+        return globalId.startsWith(engineId + ID_SEPERATOR);
     }
 
 }

@@ -52,7 +52,9 @@ public class TestGroupManager
 
     /**
      * Creates a group with the given name if one does not already exist.
-     * @param groupShortName String
+     * 
+     * @param groupShortName
+     *            String
      * @return The group's full name.
      */
     public String createGroupIfNotExist(String groupShortName)
@@ -72,11 +74,12 @@ public class TestGroupManager
     }
 
     /**
-     * Adds the child group as a sub-authority of the parent group. Creates the
-     * child group and parent group if they do not exist.
+     * Adds the child group as a sub-authority of the parent group. Creates the child group and parent group if they do not exist.
      * 
-     * @param parentGroupShortName String
-     * @param childGroupShortName String
+     * @param parentGroupShortName
+     *            String
+     * @param childGroupShortName
+     *            String
      * @return The full name of the child group.
      */
     public String addGroupToParent(String parentGroupShortName, String childGroupShortName)
@@ -86,20 +89,21 @@ public class TestGroupManager
         authorityService.addAuthority(parentFullName, groupFullName);
         return groupFullName;
     }
-    
+
     /**
-     * Adds the user as a sub-authroity of the specified group.
-     * Creates the group if it doesn't exist.
+     * Adds the user as a sub-authroity of the specified group. Creates the group if it doesn't exist.
      * 
-     * @param groupShortName String
-     * @param userName String
+     * @param groupShortName
+     *            String
+     * @param userName
+     *            String
      */
     public void addUserToGroup(String groupShortName, String userName)
     {
         String fullGroupName = createGroupIfNotExist(groupShortName);
         authorityService.addAuthority(fullGroupName, userName);
     }
-    
+
     public void deleteGroup(String groupShortName)
     {
         String groupFullName = authorityService.getName(AuthorityType.GROUP, groupShortName);
@@ -114,24 +118,24 @@ public class TestGroupManager
         for (String group : groups.keySet())
         {
             String fullName = authorityService.getName(AuthorityType.GROUP, group);
-            if(authorityService.authorityExists(fullName))
+            if (authorityService.authorityExists(fullName))
             {
                 authorityService.deleteAuthority(fullName);
             }
         }
         groups.clear();
     }
-    
+
     public NodeRef get(String groupShortName)
     {
         NodeRef result = groups.get(groupShortName);
-        if(result == null)
+        if (result == null)
         {
             result = findGroupNode(groupShortName);
         }
         return result;
     }
-    
+
     private NodeRef findGroupNode(String groupShortName)
     {
         String fullName = authorityService.getName(AuthorityType.GROUP, groupShortName);

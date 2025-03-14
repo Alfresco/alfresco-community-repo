@@ -26,6 +26,12 @@
 
 package org.alfresco.rest.api.impl;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.rest.api.Aspects;
 import org.alfresco.rest.api.ClassDefinitionMapper;
@@ -43,12 +49,6 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class AspectsImpl extends AbstractClassImpl<Aspect> implements Aspects
 {
@@ -124,7 +124,7 @@ public class AspectsImpl extends AbstractClassImpl<Aspect> implements Aspects
 
         try
         {
-           aspectDefinition = dictionaryService.getAspect(QName.createQName(aspectId, this.namespaceService));
+            aspectDefinition = dictionaryService.getAspect(QName.createQName(aspectId, this.namespaceService));
         }
         catch (NamespaceException exception)
         {
@@ -151,13 +151,13 @@ public class AspectsImpl extends AbstractClassImpl<Aspect> implements Aspects
         }
     }
 
-    private Collection<QName> getModelAspects(Pair<QName,Boolean> model)
+    private Collection<QName> getModelAspects(Pair<QName, Boolean> model)
     {
-        ModelDefinition modelDefinition =  null;
+        ModelDefinition modelDefinition = null;
 
         try
         {
-            modelDefinition =  this.dictionaryService.getModel(model.getFirst());
+            modelDefinition = this.dictionaryService.getModel(model.getFirst());
         }
         catch (Exception exception)
         {

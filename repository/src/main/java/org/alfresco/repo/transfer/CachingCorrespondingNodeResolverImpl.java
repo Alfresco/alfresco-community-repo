@@ -29,11 +29,12 @@ package org.alfresco.repo.transfer;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @author brian
@@ -42,7 +43,7 @@ import org.apache.commons.logging.LogFactory;
 public class CachingCorrespondingNodeResolverImpl implements CorrespondingNodeResolver
 {
     private static final Log log = LogFactory.getLog(CachingCorrespondingNodeResolverImpl.class);
-    
+
     private Map<NodeRef, ResolvedParentChildPair> cache = new HashMap<NodeRef, ResolvedParentChildPair>(359);
     private CorrespondingNodeResolver delegateResolver;
 
@@ -52,7 +53,8 @@ public class CachingCorrespondingNodeResolverImpl implements CorrespondingNodeRe
     }
 
     /**
-     * @param delegateResolver CorrespondingNodeResolver
+     * @param delegateResolver
+     *            CorrespondingNodeResolver
      */
     public CachingCorrespondingNodeResolverImpl(CorrespondingNodeResolver delegateResolver)
     {
@@ -63,12 +65,12 @@ public class CachingCorrespondingNodeResolverImpl implements CorrespondingNodeRe
     public ResolvedParentChildPair resolveCorrespondingNode(NodeRef sourceNodeRef, ChildAssociationRef primaryAssoc,
             Path parentPath)
     {
-        
+
         ResolvedParentChildPair result = cache.get(sourceNodeRef);
 
         if (result != null)
         {
-            if (log.isDebugEnabled()) 
+            if (log.isDebugEnabled())
             {
                 log.debug("Found fully-resolved entry in cache for node " + sourceNodeRef);
             }
@@ -77,7 +79,7 @@ public class CachingCorrespondingNodeResolverImpl implements CorrespondingNodeRe
 
         result = delegateResolver.resolveCorrespondingNode(sourceNodeRef, primaryAssoc, parentPath);
 
-        //If we have fully resolved the parent and child nodes then stick it in the cache...
+        // If we have fully resolved the parent and child nodes then stick it in the cache...
         if (result.resolvedChild != null && result.resolvedParent != null)
         {
             cache.put(sourceNodeRef, result);
@@ -86,7 +88,8 @@ public class CachingCorrespondingNodeResolverImpl implements CorrespondingNodeRe
     }
 
     /**
-     * @param delegateResolver the delegateResolver to set
+     * @param delegateResolver
+     *            the delegateResolver to set
      */
     public void setDelegateResolver(CorrespondingNodeResolver delegateResolver)
     {

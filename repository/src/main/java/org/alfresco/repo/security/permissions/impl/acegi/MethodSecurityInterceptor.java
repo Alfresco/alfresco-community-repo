@@ -25,9 +25,9 @@
  */
 package org.alfresco.repo.security.permissions.impl.acegi;
 
-import org.alfresco.service.cmr.security.AccessStatus;
-
 import net.sf.acegisecurity.ConfigAttributeDefinition;
+
+import org.alfresco.service.cmr.security.AccessStatus;
 
 public class MethodSecurityInterceptor extends net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor
 {
@@ -42,7 +42,7 @@ public class MethodSecurityInterceptor extends net.sf.acegisecurity.intercept.me
         ConfigAttributeDefinition attr = this.obtainObjectDefinitionSource().getAttributes(object);
         if (this.getAccessDecisionManager() instanceof AffirmativeBasedAccessDecisionManger)
         {
-            return ((AffirmativeBasedAccessDecisionManger)getAccessDecisionManager()).pre(object, attr); 
+            return ((AffirmativeBasedAccessDecisionManger) getAccessDecisionManager()).pre(object, attr);
         }
         else
         {

@@ -29,6 +29,12 @@ import java.io.File;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.ImporterBootstrap;
@@ -43,20 +49,14 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * Component to perform a bootstrap check of the alignment of the
- * database and content store.
+ * Component to perform a bootstrap check of the alignment of the database and content store.
  * <p>
  * The algorithm is:
  * <ul>
- *   <li>Checks that an absolute path is used</li>
- *   <li>Ensures that the system descriptor content is available (created at bootstrap)</li>
+ * <li>Checks that an absolute path is used</li>
+ * <li>Ensures that the system descriptor content is available (created at bootstrap)</li>
  * </ul>
  * 
  * @author Derek Hulley
@@ -64,7 +64,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class ConfigurationChecker extends AbstractLifecycleBean
 {
     private static Log logger = LogFactory.getLog(ConfigurationChecker.class);
-    
+
     private static final String WARN_RELATIVE_DIR_ROOT = "system.config_check.warn.dir_root";
     private static final String MSG_DIR_ROOT = "system.config_check.msg.dir_root";
     private static final String ERR_MISSING_CONTENT = "system.config_check.err.missing_content";
@@ -80,11 +80,10 @@ public class ConfigurationChecker extends AbstractLifecycleBean
     private NodeService nodeService;
     private SearchService searchService;
     private ContentService contentService;
-    
+
     public ConfigurationChecker()
-    {
-    }
-    
+    {}
+
     @Override
     public String toString()
     {
@@ -94,12 +93,10 @@ public class ConfigurationChecker extends AbstractLifecycleBean
     }
 
     /**
-     * This flag controls the behaviour of the component in the event of problems being found.
-     * Generally, the system should be <b>strict</b>, but this can be changed if indexes are
-     * going to be recovered, or if missing content is acceptable.
+     * This flag controls the behaviour of the component in the event of problems being found. Generally, the system should be <b>strict</b>, but this can be changed if indexes are going to be recovered, or if missing content is acceptable.
      * 
-     * @param strict <code>true</code> to prevent system startup if problems are found, otherwise
-     *      <code>false</code> to allow the system to startup regardless.
+     * @param strict
+     *            <code>true</code> to prevent system startup if problems are found, otherwise <code>false</code> to allow the system to startup regardless.
      */
     public void setStrict(boolean strict)
     {
@@ -140,16 +137,15 @@ public class ConfigurationChecker extends AbstractLifecycleBean
     {
         this.contentService = contentService;
     }
-    
+
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        RetryingTransactionCallback<Object> checkWork = new RetryingTransactionCallback<Object>()
-        {
-            public Object execute() throws Throwable {
+        RetryingTransactionCallback<Object> checkWork = new RetryingTransactionCallback<Object>() {
+            public Object execute() throws Throwable
+            {
                 // run as System on bootstrap
-                return AuthenticationUtil.runAs(new RunAsWork<Object>()
-                {
+                return AuthenticationUtil.runAs(new RunAsWork<Object>() {
                     public Object doWork()
                     {
                         check();
@@ -160,7 +156,7 @@ public class ConfigurationChecker extends AbstractLifecycleBean
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(checkWork, true);
     }
-    
+
     /**
      * Performs the check work.
      */
@@ -170,7 +166,7 @@ public class ConfigurationChecker extends AbstractLifecycleBean
         {
             logger.debug("Starting bootstrap configuration check: " + this);
         }
-        
+
         // check the dir.root
         boolean isRelativeRoot = dirRoot.startsWith(".");
         if (isRelativeRoot)
@@ -199,13 +195,13 @@ public class ConfigurationChecker extends AbstractLifecycleBean
                 logger.error(msg);
             }
         }
-            
+
         // handle content missing
         if (!versionPropertiesContentAvailable)
         {
             String msg = I18NUtil.getMessage(ERR_FIX_DIR_ROOT, dirRootFile);
             logger.error(msg);
-            
+
             // Now determine the failure behaviour
             if (strict)
             {
@@ -218,7 +214,7 @@ public class ConfigurationChecker extends AbstractLifecycleBean
             }
         }
     }
-    
+
     /**
      * @return Returns the system descriptor node or null
      */

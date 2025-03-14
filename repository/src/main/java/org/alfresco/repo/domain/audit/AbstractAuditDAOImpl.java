@@ -38,6 +38,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.zip.CRC32;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.dao.DataIntegrityViolationException;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
@@ -48,10 +53,6 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.dao.ConcurrencyFailureException;
-import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * Abstract helper DAO for <b>alf_audit_XXX</b> tables.
@@ -59,14 +60,14 @@ import org.springframework.dao.DataIntegrityViolationException;
  * @author Derek Hulley
  * @since 3.2
  */
-public abstract class AbstractAuditDAOImpl implements AuditDAO 
+public abstract class AbstractAuditDAOImpl implements AuditDAO
 {
     protected final Log logger = LogFactory.getLog(this.getClass());
-    
+
     private ContentService contentService;
     private ContentDataDAO contentDataDAO;
     protected PropertyValueDAO propertyValueDAO;
-    
+
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
@@ -76,20 +77,18 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
     {
         this.contentDataDAO = contentDataDAO;
     }
-    
+
     public void setPropertyValueDAO(PropertyValueDAO propertyValueDAO)
     {
         this.propertyValueDAO = propertyValueDAO;
     }
-    
+
     protected PropertyValueDAO getPropertyValueDAO()
     {
         return this.propertyValueDAO;
     }
-    
-    /*
-     * alf_audit_model
-     */
+
+    /* alf_audit_model */
 
     /**
      * {@inheritDoc}
@@ -112,8 +111,7 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
                     break;
                 }
                 crcCalc.update(buffer, 0, read);
-            }
-            while (true);
+            } while (true);
             long crc = crcCalc.getValue();
             // Find an existing entry
             AuditModelEntity existingEntity = getAuditModelByCrc(crc);
@@ -122,17 +120,16 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
                 Long existingEntityId = existingEntity.getId();
                 // Locate the content
                 ContentData existingContentData = contentDataDAO.getContentData(
-                        existingEntity.getContentDataId()
-                        ).getSecond();
+                        existingEntity.getContentDataId()).getSecond();
                 Pair<Long, ContentData> result = new Pair<Long, ContentData>(existingEntityId, existingContentData);
                 // Done
                 if (logger.isDebugEnabled())
                 {
                     logger.debug(
                             "Found existing model with same CRC: \n" +
-                            "   URL:    " + url + "\n" +
-                            "   CRC:    " + crc + "\n" +
-                            "   Result: " + result);
+                                    "   URL:    " + url + "\n" +
+                                    "   CRC:    " + crc + "\n" +
+                                    "   Result: " + result);
                 }
                 return result;
             }
@@ -154,9 +151,9 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
                 {
                     logger.debug(
                             "Created new audit model: \n" +
-                            "   URL:    " + url + "\n" +
-                            "   CRC:    " + crc + "\n" +
-                            "   Result: " + result);
+                                    "   URL:    " + url + "\n" +
+                                    "   CRC:    " + crc + "\n" +
+                                    "   Result: " + result);
                 }
                 return result;
             }
@@ -169,18 +166,22 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
         {
             if (is != null)
             {
-                try { is.close(); } catch (Throwable e) {}
+                try
+                {
+                    is.close();
+                }
+                catch (Throwable e)
+                {}
             }
         }
     }
-    
+
     protected abstract AuditModelEntity getAuditModelByCrc(long crc);
+
     protected abstract AuditModelEntity createAuditModel(Long contentDataId, long crc);
-    
-    /*
-     * alf_audit_application
-     */
-    
+
+    /* alf_audit_application */
+
     public AuditApplicationInfo getAuditApplication(String application)
     {
         AuditApplicationEntity entity = getAuditApplicationByName(application);
@@ -200,22 +201,22 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
             {
                 logger.debug(
                         "Found existing audit application: \n" +
-                        "  " + appInfo);
+                                "  " + appInfo);
             }
             return appInfo;
         }
     }
-    
+
     public AuditApplicationInfo createAuditApplication(String application, Long modelId)
     {
         // Persist the string
         Long appNameId = propertyValueDAO.getOrCreatePropertyValue(application).getFirst();
         // We need a property to hold any disabled paths
         Set<String> disabledPaths = new HashSet<String>();
-        Long disabledPathsId = propertyValueDAO.createProperty((Serializable)disabledPaths);
+        Long disabledPathsId = propertyValueDAO.createProperty((Serializable) disabledPaths);
         // Create the audit app
         AuditApplicationEntity entity = createAuditApplication(appNameId, modelId, disabledPathsId);
-        
+
         // Create return value
         AuditApplicationInfo appInfo = new AuditApplicationInfo();
         appInfo.setId(entity.getId());
@@ -227,9 +228,9 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
         {
             logger.debug(
                     "Created new audit application: \n" +
-                    "   Model:  " + modelId + "\n" +
-                    "   App:    " + application + "\n" +
-                    "   Result: " + entity);
+                            "   Model:  " + modelId + "\n" +
+                            "   App:    " + application + "\n" +
+                            "   Result: " + entity);
         }
         return appInfo;
     }
@@ -274,13 +275,14 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
     }
 
     protected abstract AuditApplicationEntity getAuditApplicationById(Long id);
+
     protected abstract AuditApplicationEntity getAuditApplicationByName(String appName);
+
     protected abstract AuditApplicationEntity createAuditApplication(Long appNameId, Long modelId, Long disabledPathsId);
+
     protected abstract AuditApplicationEntity updateAuditApplication(AuditApplicationEntity entity);
-    
-    /*
-     * alf_audit_entry
-     */
+
+    /* alf_audit_entry */
 
     public Long createAuditEntry(Long applicationId, long time, String username, Map<String, Serializable> values)
     {
@@ -297,7 +299,7 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
         Long valuesId = null;
         if (values != null && values.size() > 0)
         {
-            valuesId = propertyValueDAO.createProperty((Serializable)values);
+            valuesId = propertyValueDAO.createProperty((Serializable) values);
         }
 
         // Create the audit entry
@@ -308,14 +310,14 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
         {
             logger.debug(
                     "Created new audit entry: \n" +
-                    "   Application: " + applicationId + "\n" +
-                    "   Time:        " + (new Date(time)) + "\n" +
-                    "   User:        " + username + "\n" +
-                    "   Result:      " + entity);
+                            "   Application: " + applicationId + "\n" +
+                            "   Time:        " + (new Date(time)) + "\n" +
+                            "   User:        " + username + "\n" +
+                            "   Result:      " + entity);
         }
         return entity.getId();
     }
-    
+
     public int deleteAuditEntries(List<Long> auditEntryIds)
     {
         // Ensure that we don't have duplicates
@@ -348,12 +350,11 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
     }
 
     protected abstract AuditEntryEntity createAuditEntry(Long applicationId, long time, Long usernameId, Long valuesId);
+
     protected abstract int deleteAuditEntriesImpl(List<Long> auditEntryIds);
-    
-    /*
-     * Searches
-     */
-    
+
+    /* Searches */
+
     /**
      * Class that passes results from a result entity into the client callback
      */
@@ -361,12 +362,13 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
     {
         private final AuditQueryCallback callback;
         private boolean more;
+
         private AuditQueryRowHandler(AuditQueryCallback callback)
         {
             this.callback = callback;
             this.more = true;
         }
-        
+
         public boolean valuesRequired()
         {
             return callback.valuesRequired();
@@ -437,7 +439,7 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
             String auditUser = auditUserId == null
                     ? null
                     : (String) propertyValueDAO.getPropertyValueById(auditUserId).getSecond();
-            
+
             more = callback.handleAuditEntry(
                     row.getAuditEntryId(),
                     auditAppName,
@@ -458,7 +460,7 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
                 maxResults,
                 parameters);
     }
-    
+
     protected abstract void findAuditEntries(
             AuditQueryRowHandler rowHandler,
             int maxResults,

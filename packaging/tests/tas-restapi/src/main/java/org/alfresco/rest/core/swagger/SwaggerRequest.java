@@ -60,7 +60,7 @@ public class SwaggerRequest
         }
         return cfg;
     }
-    
+
     public SwaggerRequest(String httpMethod, String pathUrl, Operation swaggerRequest)
     {
         this.swaggerRequest = swaggerRequest;

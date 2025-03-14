@@ -34,61 +34,43 @@ import org.alfresco.utility.model.TestModel;
  * 
  * @author Cristina Axinte
  * 
- * Handles single Activity JSON responses
- * Example:
-        {
-          "postedAt": "2016-09-30T12:31:54.088+0000",
-          "feedPersonId": "user-vtcaquckbq",
-          "postPersonId": "user-vtcaquckbq",
-          "siteId": "site-mNygPRuKka",
-          "activitySummary": {
-            "firstName": "User-vtCaqUCKBq FirstName",
-            "lastName": "LN-User-vtCaqUCKBq",
-            "memberFirstName": "User-vtCaqUCKBq FirstName",
-            "role": "SiteManager",
-            "memberLastName": "LN-User-vtCaqUCKBq",
-            "title": "User-vtCaqUCKBq FirstName LN-User-vtCaqUCKBq (User-vtCaqUCKBq)",
-            "memberPersonId": "User-vtCaqUCKBq"
-          },
-          "id": 14689,
-          "activityType": "org.alfresco.site.user-joined"
-        }
+ *         Handles single Activity JSON responses Example: { "postedAt": "2016-09-30T12:31:54.088+0000", "feedPersonId": "user-vtcaquckbq", "postPersonId": "user-vtcaquckbq", "siteId": "site-mNygPRuKka", "activitySummary": { "firstName": "User-vtCaqUCKBq FirstName", "lastName": "LN-User-vtCaqUCKBq", "memberFirstName": "User-vtCaqUCKBq FirstName", "role": "SiteManager", "memberLastName": "LN-User-vtCaqUCKBq", "title": "User-vtCaqUCKBq FirstName LN-User-vtCaqUCKBq (User-vtCaqUCKBq)", "memberPersonId": "User-vtCaqUCKBq" }, "id": 14689, "activityType": "org.alfresco.site.user-joined" }
  *
  */
 public class RestActivityModel extends TestModel implements IRestModel<RestActivityModel>
 {
     @JsonProperty(value = "entry")
     RestActivityModel activityModel;
-    
+
     @Override
     public RestActivityModel onModel()
     {
         return activityModel;
     }
-    
+
     @JsonProperty(required = true)
     String id;
-    
+
     /**
      * The id of the person who performed the activity
      */
     @JsonProperty(required = true)
-    String postPersonId; 
-    
+    String postPersonId;
+
     String siteId;
-    String postedAt; 
-    
+    String postedAt;
+
     /**
      * The feed on which this activity was posted
      */
     @JsonProperty(required = true)
     String feedPersonId;
-    
+
     RestActivitySummaryModel activitySummary;
-    
+
     @JsonProperty(required = true)
     String activityType;
-    
+
     public String getActivityType()
     {
         return activityType;

@@ -31,8 +31,7 @@ import org.alfresco.repo.virtual.VirtualizationException;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * A {@link FilingRule} created in the absence of filing criteria in the virtual
- * folder template.
+ * A {@link FilingRule} created in the absence of filing criteria in the virtual folder template.
  *
  * @author Bogdan Horje
  */

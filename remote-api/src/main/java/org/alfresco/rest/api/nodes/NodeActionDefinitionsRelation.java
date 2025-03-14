@@ -34,7 +34,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ParameterCheck;
 
-@RelationshipResource(name = "action-definitions",  entityResource = NodesEntityResource.class, title = "Node action definitions")
+@RelationshipResource(name = "action-definitions", entityResource = NodesEntityResource.class, title = "Node action definitions")
 public class NodeActionDefinitionsRelation extends AbstractNodeRelation
         implements RelationshipResourceAction.Read<ActionDefinition>
 {

@@ -47,10 +47,10 @@ public class StringLengthConstraint extends AbstractConstraint
     private static final String ERR_INVALID_MAX_LENGTH = "d_dictionary.constraint.string_length.invalid_max_length";
     private static final String ERR_NON_STRING = "d_dictionary.constraint.string_length.non_string";
     private static final String ERR_INVALID_LENGTH = "d_dictionary.constraint.string_length.invalid_length";
-    
+
     private int minLength = 0;
     private int maxLength = Integer.MAX_VALUE;
-    
+
     /**
      * {@inheritDoc}
      */
@@ -65,9 +65,9 @@ public class StringLengthConstraint extends AbstractConstraint
     {
         StringBuilder sb = new StringBuilder(80);
         sb.append("StringLengthConstraint")
-          .append("[ minLength=").append(minLength)
-          .append(", maxLength=").append(maxLength)
-          .append("]");
+                .append("[ minLength=").append(minLength)
+                .append(", maxLength=").append(maxLength)
+                .append("]");
         return sb.toString();
     }
 
@@ -80,10 +80,10 @@ public class StringLengthConstraint extends AbstractConstraint
     }
 
     /**
-     * Set the minimum number of characters allowed.  Valid values are in
-     * the range [0, {@link Integer#MAX_VALUE}].
+     * Set the minimum number of characters allowed. Valid values are in the range [0, {@link Integer#MAX_VALUE}].
      * 
-     * @param minLength the minimum numbers of characters allowed
+     * @param minLength
+     *            the minimum numbers of characters allowed
      */
     public void setMinLength(int minLength)
     {
@@ -103,10 +103,10 @@ public class StringLengthConstraint extends AbstractConstraint
     }
 
     /**
-     * Set the maximum number of characters allowed.  Valid values are in
-     * the range [0, {@link Integer#MAX_VALUE}].
+     * Set the maximum number of characters allowed. Valid values are in the range [0, {@link Integer#MAX_VALUE}].
      * 
-     * @param maxLength the minimum numbers of characters allowed
+     * @param maxLength
+     *            the minimum numbers of characters allowed
      */
     public void setMaxLength(int maxLength)
     {
@@ -121,10 +121,10 @@ public class StringLengthConstraint extends AbstractConstraint
     public Map<String, Object> getParameters()
     {
         Map<String, Object> params = new HashMap<String, Object>(2);
-        
+
         params.put("minLength", this.minLength);
         params.put("maxLength", this.maxLength);
-        
+
         return params;
     }
 
@@ -140,7 +140,7 @@ public class StringLengthConstraint extends AbstractConstraint
         {
             throw new ConstraintException(ERR_NON_STRING, value);
         }
-        
+
         // Check that the value length
         int length = checkValue.length();
         if (length > maxLength || length < minLength)

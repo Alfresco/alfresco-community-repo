@@ -30,6 +30,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ImporterTopLevel;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.Undefined;
+import org.mozilla.javascript.UniqueTag;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryComponent;
@@ -50,17 +60,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
-import org.junit.experimental.categories.Category;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.ImporterTopLevel;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptableObject;
-import org.mozilla.javascript.Undefined;
-import org.mozilla.javascript.UniqueTag;
-import org.springframework.context.ApplicationContext;
-
-import junit.framework.TestCase;
-
 
 /**
  * @author Kevin Roast
@@ -69,45 +68,43 @@ import junit.framework.TestCase;
 public class RhinoScriptTest extends TestCase
 {
     private ApplicationContext ctx;
-    
+
     private ContentService contentService;
     private NodeService nodeService;
     private TransactionService transactionService;
     private ServiceRegistry serviceRegistry;
     private AuthenticationComponent authenticationComponent;
     private ScriptService scriptService;
-    
-    /*
-     * @see junit.framework.TestCase#setUp()
-     */
+
+    /* @see junit.framework.TestCase#setUp() */
     protected void setUp() throws Exception
     {
         super.setUp();
         ctx = ApplicationContextHelper.getApplicationContext();
-        transactionService = (TransactionService)ctx.getBean("transactionComponent");
-        contentService = (ContentService)ctx.getBean("contentService");
-        nodeService = (NodeService)ctx.getBean("nodeService");
-        scriptService = (ScriptService)ctx.getBean("scriptService");
-        serviceRegistry = (ServiceRegistry)ctx.getBean("ServiceRegistry");
-        
-        this.authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
+        transactionService = (TransactionService) ctx.getBean("transactionComponent");
+        contentService = (ContentService) ctx.getBean("contentService");
+        nodeService = (NodeService) ctx.getBean("nodeService");
+        scriptService = (ScriptService) ctx.getBean("scriptService");
+        serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
+
+        this.authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         this.authenticationComponent.setSystemUserAsCurrentUser();
-        
-        DictionaryDAO dictionaryDao = (DictionaryDAO)ctx.getBean("dictionaryDAO");
-        
+
+        DictionaryDAO dictionaryDao = (DictionaryDAO) ctx.getBean("dictionaryDAO");
+
         // load the system model
         ClassLoader cl = BaseNodeServiceTest.class.getClassLoader();
         InputStream modelStream = cl.getResourceAsStream("alfresco/model/contentModel.xml");
         assertNotNull(modelStream);
         M2Model model = M2Model.createModel(modelStream);
         dictionaryDao.putModel(model);
-        
+
         // load the test model
         modelStream = cl.getResourceAsStream("org/alfresco/repo/node/BaseNodeServiceTest_model.xml");
         assertNotNull(modelStream);
         model = M2Model.createModel(modelStream);
         dictionaryDao.putModel(model);
-        
+
         DictionaryComponent dictionary = new DictionaryComponent();
         dictionary.setDictionaryDAO(dictionaryDao);
         BaseNodeServiceTest.loadModel(ctx);
@@ -119,258 +116,247 @@ public class RhinoScriptTest extends TestCase
         authenticationComponent.clearCurrentSecurityContext();
         super.tearDown();
     }
-    
+
     public void testRhinoIntegration()
     {
         transactionService.getRetryingTransactionHelper().doInTransaction(
-            new RetryingTransactionCallback<Object>()
-            {
-                public Object execute() throws Exception
-                {
-                    // check that rhino script engine is available
-                    Context cx = Context.enter();
-                    try
+                new RetryingTransactionCallback<Object>() {
+                    public Object execute() throws Exception
                     {
-                        // The easiest way to embed Rhino is just to create a new scope this way whenever
-                        // you need one. However, initStandardObjects is an expensive method to call and it
-                        // allocates a fair amount of memory.
-                        Scriptable scope = cx.initStandardObjects();
-                        
-                        // Now we can evaluate a script. Let's create a new associative array object
-                        // using the object literal notation to create the members
-                        Object result = cx.evaluateString(scope, "obj = {a:1, b:['x','y']}", "TestJS1", 1, null);
-                        
-                        Scriptable obj = (Scriptable)scope.get("obj", scope);
-                        
-                        // Should resolve a non-null value
-                        assertNotNull(obj.get("a", obj));
-                        
-                        // should resolve "obj.a == 1" - JavaScript objects come back as Number
-                        assertEquals(Double.valueOf(1.0), obj.get("a", obj));
-                        
-                        // try another script eval - this time a function call returning a result
-                        result = cx.evaluateString(scope, "function f(x) {return x+1} f(7)", "TestJS2", 1, null);
-                        assertEquals(8.0, Context.toNumber(result));
+                        // check that rhino script engine is available
+                        Context cx = Context.enter();
+                        try
+                        {
+                            // The easiest way to embed Rhino is just to create a new scope this way whenever
+                            // you need one. However, initStandardObjects is an expensive method to call and it
+                            // allocates a fair amount of memory.
+                            Scriptable scope = cx.initStandardObjects();
+
+                            // Now we can evaluate a script. Let's create a new associative array object
+                            // using the object literal notation to create the members
+                            Object result = cx.evaluateString(scope, "obj = {a:1, b:['x','y']}", "TestJS1", 1, null);
+
+                            Scriptable obj = (Scriptable) scope.get("obj", scope);
+
+                            // Should resolve a non-null value
+                            assertNotNull(obj.get("a", obj));
+
+                            // should resolve "obj.a == 1" - JavaScript objects come back as Number
+                            assertEquals(Double.valueOf(1.0), obj.get("a", obj));
+
+                            // try another script eval - this time a function call returning a result
+                            result = cx.evaluateString(scope, "function f(x) {return x+1} f(7)", "TestJS2", 1, null);
+                            assertEquals(8.0, Context.toNumber(result));
+                        }
+                        finally
+                        {
+                            Context.exit();
+                        }
+
+                        return null;
                     }
-                    finally
-                    {
-                        Context.exit();
-                    }
-                    
-                    return null;
-                }                
-            });
+                });
     }
-    
+
     public void testJSObjectWrapping()
     {
         transactionService.getRetryingTransactionHelper().doInTransaction(
-            new RetryingTransactionCallback<Object>()
-            {
-                public Object execute() throws Exception
-                {
-                    StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "rhino_" + System.currentTimeMillis());
-                    NodeRef root = nodeService.getRootNode(store);
-                    BaseNodeServiceTest.buildNodeGraph(nodeService, root);
-                    
-                    Context cx = Context.enter();
-                    try
+                new RetryingTransactionCallback<Object>() {
+                    public Object execute() throws Exception
                     {
-                        Scriptable scope = cx.initStandardObjects();
-                        
-                        // add logger object so we can perform output from within scripts
-                        ScriptableObject.putProperty(scope, "logger", new ScriptLogger());
-                        
-                        // wrap a simple NodeRef Java object
-                        // we can use Java style method calls within the script to access it's properties
-                        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(root);
-                        NodeRef ref1 = childAssocs.get(0).getChildRef();
-                        Object wrappedNodeRef = Context.javaToJS(ref1, scope);
-                        ScriptableObject.putProperty(scope, "rootref", wrappedNodeRef);
-                        
-                        // evaluate script that touches the wrapped NodeRef
-                        Object result = cx.evaluateString(scope, "obj = rootref.getId()", "TestJS3", 1, null);
-                        assertEquals(ref1.getId(), Context.toString(result));
-                        
-                        // wrap a scriptable Alfresco Node object - the Node object is a wrapper like TemplateNode
-                        ScriptNode node1 = new ScriptNode(root, serviceRegistry, scope);
-                        Object wrappedNode = Context.javaToJS(node1, scope);
-                        ScriptableObject.putProperty(scope, "root", wrappedNode);
-                        
-                        // evaluate scripts that perform methods on the wrapped Node
-                        result = cx.evaluateString(scope, TESTSCRIPT1, "TestJS4", 1, null);
+                        StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "rhino_" + System.currentTimeMillis());
+                        NodeRef root = nodeService.getRootNode(store);
+                        BaseNodeServiceTest.buildNodeGraph(nodeService, root);
+
+                        Context cx = Context.enter();
+                        try
+                        {
+                            Scriptable scope = cx.initStandardObjects();
+
+                            // add logger object so we can perform output from within scripts
+                            ScriptableObject.putProperty(scope, "logger", new ScriptLogger());
+
+                            // wrap a simple NodeRef Java object
+                            // we can use Java style method calls within the script to access it's properties
+                            List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(root);
+                            NodeRef ref1 = childAssocs.get(0).getChildRef();
+                            Object wrappedNodeRef = Context.javaToJS(ref1, scope);
+                            ScriptableObject.putProperty(scope, "rootref", wrappedNodeRef);
+
+                            // evaluate script that touches the wrapped NodeRef
+                            Object result = cx.evaluateString(scope, "obj = rootref.getId()", "TestJS3", 1, null);
+                            assertEquals(ref1.getId(), Context.toString(result));
+
+                            // wrap a scriptable Alfresco Node object - the Node object is a wrapper like TemplateNode
+                            ScriptNode node1 = new ScriptNode(root, serviceRegistry, scope);
+                            Object wrappedNode = Context.javaToJS(node1, scope);
+                            ScriptableObject.putProperty(scope, "root", wrappedNode);
+
+                            // evaluate scripts that perform methods on the wrapped Node
+                            result = cx.evaluateString(scope, TESTSCRIPT1, "TestJS4", 1, null);
+                        }
+                        finally
+                        {
+                            Context.exit();
+                        }
+
+                        return null;
                     }
-                    finally
-                    {
-                        Context.exit();
-                    }
-                    
-                    return null;
-                }                
-            });
+                });
     }
-    
+
     public void testScriptService()
     {
         transactionService.getRetryingTransactionHelper().doInTransaction(
-            new RetryingTransactionCallback<Object>()
-            {
-                public Object execute() throws Exception
-                {
-                    StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "rhino_" + System.currentTimeMillis());
-                    NodeRef root = nodeService.getRootNode(store);
-                    BaseNodeServiceTest.buildNodeGraph(nodeService, root);
-                    
-                    try
+                new RetryingTransactionCallback<Object>() {
+                    public Object execute() throws Exception
                     {
-                        Map<String, Object> model = new HashMap<String, Object>();
-                        model.put("out", System.out);
-                        
-                        // create an Alfresco scriptable Node object
-                        // the Node object is a wrapper similar to the TemplateNode concept
-                        ScriptNode rootNode = new ScriptNode(root, serviceRegistry, null);
-                        model.put("root", rootNode);
-                        
-                        // execute test scripts using the various entry points of the ScriptService
-                        
-                        // test executing a script file via classpath lookup
-                        Object result = scriptService.executeScript(TESTSCRIPT_CLASSPATH1, model);
-                        System.out.println("Result from TESTSCRIPT_CLASSPATH1: " + result.toString());
-                        assertTrue((Boolean)result);    // we know the result is a boolean
-                        
-                        // test executing a script embedded inside Node content
-                        ChildAssociationRef childRef = nodeService.createNode(
-                                root,
-                                BaseNodeServiceTest.ASSOC_TYPE_QNAME_TEST_CHILDREN,
-                                QName.createQName(BaseNodeServiceTest.NAMESPACE, "script_content"),
-                                BaseNodeServiceTest.TYPE_QNAME_TEST_CONTENT,
-                                null);
-                        NodeRef contentNodeRef = childRef.getChildRef();
-                        ContentWriter writer = contentService.getWriter(
-                                contentNodeRef,
-                                BaseNodeServiceTest.PROP_QNAME_TEST_CONTENT,
-                                true);
-                        writer.setMimetype("application/x-javascript");
-                        writer.putContent(TESTSCRIPT1);
-                        scriptService.executeScript(contentNodeRef, BaseNodeServiceTest.PROP_QNAME_TEST_CONTENT, model);
-                        
-                        // test executing a script directly as a String
-                        scriptService.executeScriptString("javascript", TESTSCRIPT1, model);
+                        StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "rhino_" + System.currentTimeMillis());
+                        NodeRef root = nodeService.getRootNode(store);
+                        BaseNodeServiceTest.buildNodeGraph(nodeService, root);
+
+                        try
+                        {
+                            Map<String, Object> model = new HashMap<String, Object>();
+                            model.put("out", System.out);
+
+                            // create an Alfresco scriptable Node object
+                            // the Node object is a wrapper similar to the TemplateNode concept
+                            ScriptNode rootNode = new ScriptNode(root, serviceRegistry, null);
+                            model.put("root", rootNode);
+
+                            // execute test scripts using the various entry points of the ScriptService
+
+                            // test executing a script file via classpath lookup
+                            Object result = scriptService.executeScript(TESTSCRIPT_CLASSPATH1, model);
+                            System.out.println("Result from TESTSCRIPT_CLASSPATH1: " + result.toString());
+                            assertTrue((Boolean) result); // we know the result is a boolean
+
+                            // test executing a script embedded inside Node content
+                            ChildAssociationRef childRef = nodeService.createNode(
+                                    root,
+                                    BaseNodeServiceTest.ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                                    QName.createQName(BaseNodeServiceTest.NAMESPACE, "script_content"),
+                                    BaseNodeServiceTest.TYPE_QNAME_TEST_CONTENT,
+                                    null);
+                            NodeRef contentNodeRef = childRef.getChildRef();
+                            ContentWriter writer = contentService.getWriter(
+                                    contentNodeRef,
+                                    BaseNodeServiceTest.PROP_QNAME_TEST_CONTENT,
+                                    true);
+                            writer.setMimetype("application/x-javascript");
+                            writer.putContent(TESTSCRIPT1);
+                            scriptService.executeScript(contentNodeRef, BaseNodeServiceTest.PROP_QNAME_TEST_CONTENT, model);
+
+                            // test executing a script directly as a String
+                            scriptService.executeScriptString("javascript", TESTSCRIPT1, model);
+                        }
+                        finally
+                        {}
+
+                        return null;
                     }
-                    finally
-                    {
-                    }
-                    
-                    return null;
-                }                
-            });
+                });
     }
-    
+
     public void testScriptActions()
     {
         transactionService.getRetryingTransactionHelper().doInTransaction(
-            new RetryingTransactionCallback<Object>()
-            {
-                public Object execute() throws Exception
-                {
-                    StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "rhino_" + System.currentTimeMillis());
-                    NodeRef root = nodeService.getRootNode(store);
-                    
-                    try
+                new RetryingTransactionCallback<Object>() {
+                    public Object execute() throws Exception
                     {
-                        // create a content object
-                        ChildAssociationRef childRef = nodeService.createNode(
-                                root,
-                                BaseNodeServiceTest.ASSOC_TYPE_QNAME_TEST_CHILDREN,
-                                QName.createQName(BaseNodeServiceTest.NAMESPACE, "script_content"),
-                                BaseNodeServiceTest.TYPE_QNAME_TEST_CONTENT,
-                                null);
-                        NodeRef contentNodeRef = childRef.getChildRef();
-                        ContentWriter writer = contentService.getWriter(
-                                contentNodeRef,
-                                BaseNodeServiceTest.PROP_QNAME_TEST_CONTENT,
-                                true);
-                        writer.setMimetype("application/x-javascript");
-                        writer.putContent(TESTSCRIPT1);
+                        StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "rhino_" + System.currentTimeMillis());
+                        NodeRef root = nodeService.getRootNode(store);
 
-                        
-                        // create an Alfresco scriptable Node object
-                        // the Node object is a wrapper similar to the TemplateNode concept
-                        Map<String, Object> model = new HashMap<String, Object>();
-                        model.put("doc", new ScriptNode(childRef.getChildRef(), serviceRegistry, null));
-                        model.put("root", new ScriptNode(root, serviceRegistry, null));
-                        
-                        // execute to add aspect via action
-                        Object result = scriptService.executeScript(TESTSCRIPT_CLASSPATH2, model);
-                        System.out.println("Result from TESTSCRIPT_CLASSPATH2: " + result.toString());
-                        assertTrue((Boolean)result);    // we know the result is a boolean
+                        try
+                        {
+                            // create a content object
+                            ChildAssociationRef childRef = nodeService.createNode(
+                                    root,
+                                    BaseNodeServiceTest.ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                                    QName.createQName(BaseNodeServiceTest.NAMESPACE, "script_content"),
+                                    BaseNodeServiceTest.TYPE_QNAME_TEST_CONTENT,
+                                    null);
+                            NodeRef contentNodeRef = childRef.getChildRef();
+                            ContentWriter writer = contentService.getWriter(
+                                    contentNodeRef,
+                                    BaseNodeServiceTest.PROP_QNAME_TEST_CONTENT,
+                                    true);
+                            writer.setMimetype("application/x-javascript");
+                            writer.putContent(TESTSCRIPT1);
 
-                        // ensure aspect has been added via script
-                        assertTrue(nodeService.hasAspect(childRef.getChildRef(), ContentModel.ASPECT_LOCKABLE));
+                            // create an Alfresco scriptable Node object
+                            // the Node object is a wrapper similar to the TemplateNode concept
+                            Map<String, Object> model = new HashMap<String, Object>();
+                            model.put("doc", new ScriptNode(childRef.getChildRef(), serviceRegistry, null));
+                            model.put("root", new ScriptNode(root, serviceRegistry, null));
+
+                            // execute to add aspect via action
+                            Object result = scriptService.executeScript(TESTSCRIPT_CLASSPATH2, model);
+                            System.out.println("Result from TESTSCRIPT_CLASSPATH2: " + result.toString());
+                            assertTrue((Boolean) result); // we know the result is a boolean
+
+                            // ensure aspect has been added via script
+                            assertTrue(nodeService.hasAspect(childRef.getChildRef(), ContentModel.ASPECT_LOCKABLE));
+                        }
+                        finally
+                        {}
+
+                        return null;
                     }
-                    finally
-                    {
-                    }
-                    
-                    return null;
-                }                
-            });
+                });
     }
 
-    
     public void xtestScriptActionsMail()
     {
         transactionService.getRetryingTransactionHelper().doInTransaction(
-            new RetryingTransactionCallback<Object>()
-            {
-                public Object execute() throws Exception
-                {
-                    StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "rhino_" + System.currentTimeMillis());
-                    NodeRef root = nodeService.getRootNode(store);
-                    
-                    try
+                new RetryingTransactionCallback<Object>() {
+                    public Object execute() throws Exception
                     {
-                        // create a content object
-                        ChildAssociationRef childRef = nodeService.createNode(
-                                root,
-                                BaseNodeServiceTest.ASSOC_TYPE_QNAME_TEST_CHILDREN,
-                                QName.createQName(BaseNodeServiceTest.NAMESPACE, "script_content"),
-                                BaseNodeServiceTest.TYPE_QNAME_TEST_CONTENT,
-                                null);
-                        NodeRef contentNodeRef = childRef.getChildRef();
-                        ContentWriter writer = contentService.getWriter(
-                                contentNodeRef,
-                                BaseNodeServiceTest.PROP_QNAME_TEST_CONTENT,
-                                true);
-                        writer.setMimetype("application/x-javascript");
-                        writer.putContent(TESTSCRIPT1);
-                        
-                        // create an Alfresco scriptable Node object
-                        // the Node object is a wrapper similar to the TemplateNode concept
-                        Map<String, Object> model = new HashMap<String, Object>();
-                        model.put("doc", new ScriptNode(childRef.getChildRef(), serviceRegistry, null));
-                        model.put("root", new ScriptNode(root, serviceRegistry, null));
-                        
-                        // execute to add aspect via action
-                        Object result = scriptService.executeScript(TESTSCRIPT_CLASSPATH3, model);
-                        System.out.println("Result from TESTSCRIPT_CLASSPATH3: " + result.toString());
-                        assertTrue((Boolean)result);    // we know the result is a boolean
+                        StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "rhino_" + System.currentTimeMillis());
+                        NodeRef root = nodeService.getRootNode(store);
+
+                        try
+                        {
+                            // create a content object
+                            ChildAssociationRef childRef = nodeService.createNode(
+                                    root,
+                                    BaseNodeServiceTest.ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                                    QName.createQName(BaseNodeServiceTest.NAMESPACE, "script_content"),
+                                    BaseNodeServiceTest.TYPE_QNAME_TEST_CONTENT,
+                                    null);
+                            NodeRef contentNodeRef = childRef.getChildRef();
+                            ContentWriter writer = contentService.getWriter(
+                                    contentNodeRef,
+                                    BaseNodeServiceTest.PROP_QNAME_TEST_CONTENT,
+                                    true);
+                            writer.setMimetype("application/x-javascript");
+                            writer.putContent(TESTSCRIPT1);
+
+                            // create an Alfresco scriptable Node object
+                            // the Node object is a wrapper similar to the TemplateNode concept
+                            Map<String, Object> model = new HashMap<String, Object>();
+                            model.put("doc", new ScriptNode(childRef.getChildRef(), serviceRegistry, null));
+                            model.put("root", new ScriptNode(root, serviceRegistry, null));
+
+                            // execute to add aspect via action
+                            Object result = scriptService.executeScript(TESTSCRIPT_CLASSPATH3, model);
+                            System.out.println("Result from TESTSCRIPT_CLASSPATH3: " + result.toString());
+                            assertTrue((Boolean) result); // we know the result is a boolean
+                        }
+                        finally
+                        {}
+
+                        return null;
                     }
-                    finally
-                    {
-                    }
-                    
-                    return null;
-                }                
-            });
+                });
     }
-    
+
     // MNT-21009
     public void testUnsecureScriptAddedOnRepoNode()
     {
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>() {
             public Object execute() throws Exception
             {
                 StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "rhino_" + System.currentTimeMillis());
@@ -405,15 +391,14 @@ public class RhinoScriptTest extends TestCase
                     {
                         // expected
                     }
-                    
-                    
+
                     ChildAssociationRef childRef1 = nodeService.createNode(root, BaseNodeServiceTest.ASSOC_TYPE_QNAME_TEST_CHILDREN,
                             QName.createQName(BaseNodeServiceTest.NAMESPACE, "script_content"), BaseNodeServiceTest.TYPE_QNAME_TEST_CONTENT, null);
                     NodeRef contentNodeRef1 = childRef1.getChildRef();
                     ContentWriter writer1 = contentService.getWriter(contentNodeRef1, BaseNodeServiceTest.PROP_QNAME_TEST_CONTENT, true);
                     writer1.setMimetype("application/x-javascript");
                     writer1.putContent(REFLECTION_GET_CLASS);
-                    
+
                     try
                     {
                         scriptService.executeScript(contentNodeRef1, BaseNodeServiceTest.PROP_QNAME_TEST_CONTENT, model);
@@ -425,8 +410,7 @@ public class RhinoScriptTest extends TestCase
                     }
                 }
                 finally
-                {
-                }
+                {}
 
                 return null;
             }
@@ -451,67 +435,65 @@ public class RhinoScriptTest extends TestCase
     public void testScopeData()
     {
         transactionService.getRetryingTransactionHelper().doInTransaction(
-            new RetryingTransactionCallback<Object>()
-            {
-                public Object execute() throws Exception
-                {
-                    Context cx = Context.enter();
-                    try
+                new RetryingTransactionCallback<Object>() {
+                    public Object execute() throws Exception
                     {
-                        Scriptable sharedScope = new ImporterTopLevel(cx, true);
-                        Scriptable scope = cx.newObject(sharedScope);
-                        scope.setPrototype(sharedScope);
-                        scope.setParentScope(null);
+                        Context cx = Context.enter();
+                        try
+                        {
+                            Scriptable sharedScope = new ImporterTopLevel(cx, true);
+                            Scriptable scope = cx.newObject(sharedScope);
+                            scope.setPrototype(sharedScope);
+                            scope.setParentScope(null);
 
-                        // Executes a first script
-                        Object result = cx.evaluateString(scope, "var a = 10; var b = 20; var sum = a+b;", "TestJS1", 1, null);
-                        assertTrue(Undefined.isUndefined(result));
+                            // Executes a first script
+                            Object result = cx.evaluateString(scope, "var a = 10; var b = 20; var sum = a+b;", "TestJS1", 1, null);
+                            assertTrue(Undefined.isUndefined(result));
 
-                        // Test sum value
-                        Object sum = scope.get("sum", scope);
-                        assertEquals(30.0, Context.toNumber(sum));
+                            // Test sum value
+                            Object sum = scope.get("sum", scope);
+                            assertEquals(30.0, Context.toNumber(sum));
 
-                        // No 'sum' property should be found in the shared scope
-                        sum = sharedScope.get("sum", sharedScope);
-                        assertEquals(sum, UniqueTag.NOT_FOUND);
+                            // No 'sum' property should be found in the shared scope
+                            sum = sharedScope.get("sum", sharedScope);
+                            assertEquals(sum, UniqueTag.NOT_FOUND);
 
-                        // No 'b' property should be found in the shared scope
-                        Object b = ScriptableObject.getProperty(sharedScope, "b");
-                        assertEquals(b, UniqueTag.NOT_FOUND);
+                            // No 'b' property should be found in the shared scope
+                            Object b = ScriptableObject.getProperty(sharedScope, "b");
+                            assertEquals(b, UniqueTag.NOT_FOUND);
 
-                        // Cleans scope
-                        unsetScope(scope);
+                            // Cleans scope
+                            unsetScope(scope);
 
-                        // Executes a second script using the same scope
-                        result = cx.evaluateString(scope, "var test = 'test';", "TestJS2", 1, null);
+                            // Executes a second script using the same scope
+                            result = cx.evaluateString(scope, "var test = 'test';", "TestJS2", 1, null);
 
-                        // 'sum' property should be null
-                        sum = scope.get("sum", scope);
-                        assertNull(sum);
+                            // 'sum' property should be null
+                            sum = scope.get("sum", scope);
+                            assertNull(sum);
 
-                        // New scope initialization
-                        scope = cx.newObject(sharedScope);
-                        scope.setPrototype(sharedScope);
-                        scope.setParentScope(null);
+                            // New scope initialization
+                            scope = cx.newObject(sharedScope);
+                            scope.setPrototype(sharedScope);
+                            scope.setParentScope(null);
 
-                        // check 'test' property
-                        Object test = scope.get("test", scope);
-                        assertEquals(test, UniqueTag.NOT_FOUND);
+                            // check 'test' property
+                            Object test = scope.get("test", scope);
+                            assertEquals(test, UniqueTag.NOT_FOUND);
+                        }
+                        finally
+                        {
+                            Context.exit();
+                        }
+
+                        return null;
                     }
-                    finally
-                    {
-                        Context.exit();
-                    }
-
-                    return null;
-                }
-            });
+                });
     }
 
     private boolean executeSecureScriptString(String script, Boolean secure)
     {
-        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Boolean>()
-        {
+        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Boolean>() {
             public Boolean execute() throws Exception
             {
                 StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "rhino_" + System.currentTimeMillis());
@@ -577,15 +559,14 @@ public class RhinoScriptTest extends TestCase
     private static final String TESTSCRIPT_CLASSPATH1 = "org/alfresco/repo/jscript/test_script1.js";
     private static final String TESTSCRIPT_CLASSPATH2 = "org/alfresco/repo/jscript/test_script2.js";
     private static final String TESTSCRIPT_CLASSPATH3 = "org/alfresco/repo/jscript/test_script3.js";
-    
-    private static final String TESTSCRIPT1 =
-            "var id = root.id;\r\n" + 
-            "logger.log(id);\r\n" + 
-            "var name = root.name;\r\n" + 
-            "logger.log(name);\r\n" + 
-            "var type = root.type;\r\n" + 
-            "logger.log(type);\r\n" + 
-            "var childList = root.children;\r\n" + 
+
+    private static final String TESTSCRIPT1 = "var id = root.id;\r\n" +
+            "logger.log(id);\r\n" +
+            "var name = root.name;\r\n" +
+            "logger.log(name);\r\n" +
+            "var type = root.type;\r\n" +
+            "logger.log(type);\r\n" +
+            "var childList = root.children;\r\n" +
             "logger.log(\"zero index node name: \" + childList[0].name);\r\n" +
             "logger.log(\"name property access: \" + childList[0].properties.name);\r\n" +
             "var childByNameNode = root.childByNamePath(\"/\" + childList[0].name);\r\n" +
@@ -598,12 +579,9 @@ public class RhinoScriptTest extends TestCase
             + "var res = exec.execute();\r\n"
             + "java.lang.System.err.println(res.getStdOut());\r\n";
 
-    private static final String BASIC_JAVA = 
-            "var list = com.google.common.collect.Lists.newArrayList();\n" + 
+    private static final String BASIC_JAVA = "var list = com.google.common.collect.Lists.newArrayList();\n" +
             "root.nodeRef.getClass().forName(\"java.lang.ProcessBuilder\")";
-    
-    private static final String REFLECTION_GET_CLASS =
-          "root.nodeRef.getClass().forName(\"java.lang.ProcessBuilder\")";
-            
+
+    private static final String REFLECTION_GET_CLASS = "root.nodeRef.getClass().forName(\"java.lang.ProcessBuilder\")";
 
 }

@@ -36,9 +36,9 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.alfresco.repo.forms.AssociationFieldDefinition;
+import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
 import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.PropertyFieldDefinition;
-import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
 import org.alfresco.repo.forms.processor.FormCreationData;
 import org.alfresco.repo.forms.processor.FormCreationDataImpl;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
@@ -73,7 +73,7 @@ public class FieldProcessorTest extends TestCase
         AssociationFieldProcessor processor = new AssociationFieldProcessor();
         processor.setNamespaceService(namespaceService);
 
-        String name1 = ASSOC + ":"+ PREFIX +":"+ NAME1;
+        String name1 = ASSOC + ":" + PREFIX + ":" + NAME1;
         Field field = processor.generateField(name1, data);
         AssociationFieldDefinition assocFieldDef = (AssociationFieldDefinition) field.getFieldDefinition();
 
@@ -90,7 +90,7 @@ public class FieldProcessorTest extends TestCase
 
         // Repeat using different params to ensuere the fieldDefinition values
         // are dependant on the AssociationDefinition values.
-        String name2 = ASSOC + ":" + PREFIX +":"+ NAME2;
+        String name2 = ASSOC + ":" + PREFIX + ":" + NAME2;
         field = processor.generateField(name2, data);
         assocFieldDef = (AssociationFieldDefinition) field.getFieldDefinition();
 
@@ -105,8 +105,8 @@ public class FieldProcessorTest extends TestCase
     {
         PropertyFieldProcessor processor = new PropertyFieldProcessor();
         processor.setNamespaceService(namespaceService);
-        
-        String name1 = PROP+ ":" + PREFIX + ":" + NAME1;
+
+        String name1 = PROP + ":" + PREFIX + ":" + NAME1;
         Field field = processor.generateField(name1, data);
         PropertyFieldDefinition propFieldDef = (PropertyFieldDefinition) field.getFieldDefinition();
         assertNotNull(propFieldDef);
@@ -132,22 +132,20 @@ public class FieldProcessorTest extends TestCase
         assertTrue(propFieldDef.isRepeating());
     }
 
-    /*
-     * @see junit.framework.TestCase#setUp()
-     */
+    /* @see junit.framework.TestCase#setUp() */
     @Override
     protected void setUp() throws Exception
     {
         super.setUp();
         namespaceService = makeNamespaceService();
-        data = new FormCreationDataImpl(makeItemData(), null,  null);
+        data = new FormCreationDataImpl(makeItemData(), null, null);
     }
 
     private ContentModelItemData<Void> makeItemData()
     {
         Map<QName, PropertyDefinition> propDefs = makePropertyDefs();
         Map<QName, AssociationDefinition> assocDefs = makeAssociationDefs();
-        
+
         Map<QName, Serializable> propValues = new HashMap<QName, Serializable>();
         Map<QName, Serializable> assocValues = new HashMap<QName, Serializable>();
         Map<String, Object> transientValues = new HashMap<String, Object>();
@@ -159,7 +157,7 @@ public class FieldProcessorTest extends TestCase
         QName targetClass = QName.createQName(URI, "Target");
         AssociationDefinition assocDef1 = MockClassAttributeDefinition.mockAssociationDefinition(
                 qName1, targetClass,
-                null,// Defalt title, so sets label to be same as name.
+                null, // Defalt title, so sets label to be same as name.
                 DESCRIPTION1, false, false, false);
         MockClassAttributeDefinition assocDef2 = MockClassAttributeDefinition.mockAssociationDefinition(
                 qName2, targetClass,
@@ -176,7 +174,7 @@ public class FieldProcessorTest extends TestCase
         QName dataTypeName = QName.createQName(URI, "Type");
         PropertyDefinition propDef1 = MockClassAttributeDefinition.mockPropertyDefinition(
                 qName1, dataTypeName,
-                null,// Defalt title, so sets label to be same as name.
+                null, // Defalt title, so sets label to be same as name.
                 DESCRIPTION1, false,
                 "Default1", false, false);
         PropertyDefinition propDef2 = MockClassAttributeDefinition.mockPropertyDefinition(

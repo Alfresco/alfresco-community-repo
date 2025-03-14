@@ -36,6 +36,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface AuthorityBridgeDAO
 {
     List<AuthorityBridgeLink> getAuthorityBridgeLinks();
-    
+
     List<AuthorityBridgeLink> getDirectAuthoritiesForUser(NodeRef authRef);
 }

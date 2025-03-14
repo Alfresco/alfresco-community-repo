@@ -29,9 +29,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.surf.util.Content;
@@ -39,6 +36,10 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 
 /**
  * Webscript implementation for the POST method for 'changepassword' API.
@@ -51,34 +52,34 @@ public class ChangePasswordPost extends DeclarativeWebScript
     private static final String PARAM_OLDPW = "oldpw";
     private MutableAuthenticationService authenticationService;
     private AuthorityService authorityService;
-    
-    
+
     /**
-     * @param authenticationService    the AuthenticationService to set
+     * @param authenticationService
+     *            the AuthenticationService to set
      */
     public void setAuthenticationService(MutableAuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
     }
-    
+
     /**
-     * @param authorityService          the AuthorityService to set
+     * @param authorityService
+     *            the AuthorityService to set
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
     }
-    
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status)
-     */
+     * 
+     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status) */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
         // Extract user name from the URL - cannot be null or webscript desc would not match
         String userName = req.getExtensionPath();
-        
+
         // Extract old and new password details from JSON POST
         Content c = req.getContent();
         if (c == null)
@@ -89,10 +90,10 @@ public class ChangePasswordPost extends DeclarativeWebScript
         try
         {
             json = new JSONObject(c.getContent());
-            
+
             String oldPassword = null;
             String newPassword;
-            
+
             // admin users can change/set a password without knowing the old one
             boolean isAdmin = authorityService.hasAdminAuthority();
             if (!isAdmin || (userName.equalsIgnoreCase(authenticationService.getCurrentUserName())))
@@ -100,17 +101,17 @@ public class ChangePasswordPost extends DeclarativeWebScript
                 if (!json.has(PARAM_OLDPW) || json.getString(PARAM_OLDPW).length() == 0)
                 {
                     throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Old password 'oldpw' is a required POST parameter.");
+                            "Old password 'oldpw' is a required POST parameter.");
                 }
                 oldPassword = json.getString(PARAM_OLDPW);
             }
             if (!json.has(PARAM_NEWPW) || json.getString(PARAM_NEWPW).length() == 0)
             {
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "New password 'newpw' is a required POST parameter.");
+                        "New password 'newpw' is a required POST parameter.");
             }
             newPassword = json.getString(PARAM_NEWPW);
-            
+
             // update the password
             // an Admin user can update without knowing the original pass - but must know their own!
             if (!isAdmin || (userName.equalsIgnoreCase(authenticationService.getCurrentUserName())))
@@ -137,7 +138,7 @@ public class ChangePasswordPost extends DeclarativeWebScript
             throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
                     "Unable to retrieve POST body: " + ioErr.getMessage());
         }
-        
+
         Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
         model.put("success", Boolean.TRUE);
         return model;

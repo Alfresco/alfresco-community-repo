@@ -27,6 +27,12 @@ package org.alfresco.repo.oauth1;
 
 import java.util.List;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.runners.MethodSorters;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -39,11 +45,6 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
-import org.junit.Test;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class OAuth1CredentialsStoreServiceTest extends BaseSpringTest
@@ -56,15 +57,15 @@ public class OAuth1CredentialsStoreServiceTest extends BaseSpringTest
 
     private static String RemoteSystemId = "Test-OAuth1RemoteSystem";
 
-    //New
+    // New
     private static String Token = "123456789ABC";
     private static String Secret = "CBA987654321";
 
-    //Updated
+    // Updated
     private static String UpdatedToken = "abcdefghi123";
     private static String UpdatedSecret = "321ihgfedcba";
 
-    //Users
+    // Users
     private static String TEST_USER_ONE = OAuth1CredentialsStoreService.class.getSimpleName() + GUID.generate();
     private static String TEST_USER_TWO = OAuth1CredentialsStoreService.class.getSimpleName() + GUID.generate();
     private static final String ADMIN_USER = AuthenticationUtil.getAdminUserName();
@@ -93,14 +94,14 @@ public class OAuth1CredentialsStoreServiceTest extends BaseSpringTest
     public void test1StorePersonalOAuth1Credentials()
     {
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
-        //Store new credentials
+        // Store new credentials
         oauth1CredentialsStoreService.storePersonalOAuth1Credentials(RemoteSystemId, Token, Secret);
         OAuth1CredentialsInfo oAuth1CredentialsInfo = oauth1CredentialsStoreService.getPersonalOAuth1Credentials(RemoteSystemId);
 
         assertEquals("Expect that access tokens will match", Token, oAuth1CredentialsInfo.getOAuthToken());
         assertEquals("Expect the refresh token will match", Secret, oAuth1CredentialsInfo.getOAuthSecret());
 
-        //Update credentials
+        // Update credentials
         oauth1CredentialsStoreService.storePersonalOAuth1Credentials(RemoteSystemId, UpdatedToken, UpdatedSecret);
         OAuth1CredentialsInfo _oAuth1CredentialsInfo = oauth1CredentialsStoreService.getPersonalOAuth1Credentials(RemoteSystemId);
 
@@ -112,7 +113,7 @@ public class OAuth1CredentialsStoreServiceTest extends BaseSpringTest
     public void test2StoreSharedOAuth1Credentials()
     {
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
-        //Store new credentials
+        // Store new credentials
         oauth1CredentialsStoreService.storeSharedOAuth1Credentials(RemoteSystemId, Token, Secret);
 
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_TWO);
@@ -123,21 +124,21 @@ public class OAuth1CredentialsStoreServiceTest extends BaseSpringTest
         assertEquals("Expect the refresh token will match", Secret, oAuth1CredentialsInfo.getOAuthSecret());
     }
 
-    @Test (expected=AccessDeniedException.class)
+    @Test(expected = AccessDeniedException.class)
     public void test3SecureUpdateSharedOAuth1CredentialsTestUpdateSharedOAuth1Credentials()
     {
         {
             AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_TWO);
-            //Update credentials
+            // Update credentials
             List<OAuth1CredentialsInfo> sharedCredentials = oauth1CredentialsStoreService.listSharedOAuth1Credentials(RemoteSystemId);
             OAuth1CredentialsInfo oAuth1CredentialsInfo = sharedCredentials.get(0);
             oauth1CredentialsStoreService.updateSharedOAuth1Credentials(oAuth1CredentialsInfo, RemoteSystemId, UpdatedToken, UpdatedSecret);
         }
 
-        //public void testUpdateSharedOAuth1Credentials()
+        // public void testUpdateSharedOAuth1Credentials()
         {
             AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
-            //Update credentials
+            // Update credentials
             List<OAuth1CredentialsInfo> sharedCredentials = oauth1CredentialsStoreService.listSharedOAuth1Credentials(RemoteSystemId);
             OAuth1CredentialsInfo oAuth1CredentialsInfo = sharedCredentials.get(0);
             OAuth1CredentialsInfo _oAuth1CredentialsInfo = oauth1CredentialsStoreService.updateSharedOAuth1Credentials(oAuth1CredentialsInfo, RemoteSystemId, UpdatedToken, UpdatedSecret);
@@ -161,7 +162,7 @@ public class OAuth1CredentialsStoreServiceTest extends BaseSpringTest
         assertFalse(_deleted);
     }
 
-    @Test(expected=AccessDeniedException.class)
+    @Test(expected = AccessDeniedException.class)
     public void test5SecureDeleteSharedOAuth1CredentialsTestDeleteSharedOAuth1Credentials()
     {
         {
@@ -170,7 +171,7 @@ public class OAuth1CredentialsStoreServiceTest extends BaseSpringTest
             OAuth1CredentialsInfo oAuth1CredentialsInfo = sharedCredentials.get(0);
             oauth1CredentialsStoreService.deleteSharedOAuth1Credentials(RemoteSystemId, oAuth1CredentialsInfo);
         }
-        //public void testDeleteSharedOAuth1Credentials()
+        // public void testDeleteSharedOAuth1Credentials()
         {
             AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
             List<OAuth1CredentialsInfo> sharedCredentials = oauth1CredentialsStoreService.listSharedOAuth1Credentials(RemoteSystemId);
@@ -181,14 +182,11 @@ public class OAuth1CredentialsStoreServiceTest extends BaseSpringTest
         }
     }
 
-
     // --------------------------------------------------------------------------------
-
 
     private static void createUser(final String userName)
     {
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {

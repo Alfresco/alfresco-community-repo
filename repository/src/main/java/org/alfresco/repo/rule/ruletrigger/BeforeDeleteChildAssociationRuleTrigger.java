@@ -27,6 +27,9 @@ package org.alfresco.repo.rule.ruletrigger;
 
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
@@ -34,15 +37,13 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * A rule trigger for the creation of <b>secondary child associations</b>.
  * <p>
  * Policy names supported are:
  * <ul>
- *   <li>{@link org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteChildAssociationPolicy}</li>
+ * <li>{@link org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteChildAssociationPolicy}</li>
  * </ul>
  * 
  * @author Roy Wetherall
@@ -53,45 +54,45 @@ public class BeforeDeleteChildAssociationRuleTrigger
         NodeServicePolicies.BeforeMoveNodePolicy
 
 {
-	/**
+    /**
      * The logger
      */
     private static Log logger = LogFactory.getLog(BeforeDeleteChildAssociationRuleTrigger.class);
-    
+
     private static final String POLICY = "beforeDeleteChildAssociation";
-	
-	private boolean isClassBehaviour = false;
-	
-	public void setIsClassBehaviour(boolean isClassBehaviour)
-	{
-		this.isClassBehaviour = isClassBehaviour;
-	}
-	
-	/**
-	 * @see org.alfresco.repo.rule.ruletrigger.RuleTrigger#registerRuleTrigger()
-	 */
-	public void registerRuleTrigger()
-	{
-		if (isClassBehaviour == true)
-		{
-			this.policyComponent.bindClassBehaviour(
-					QName.createQName(NamespaceService.ALFRESCO_URI, POLICY), 
-					this, 
-					new JavaBehaviour(this, POLICY));
-		}
-		else
-		{
-			this.policyComponent.bindAssociationBehaviour(
-					QName.createQName(NamespaceService.ALFRESCO_URI, POLICY), 
-					this, 
-					new JavaBehaviour(this, POLICY));
-		}
+
+    private boolean isClassBehaviour = false;
+
+    public void setIsClassBehaviour(boolean isClassBehaviour)
+    {
+        this.isClassBehaviour = isClassBehaviour;
+    }
+
+    /**
+     * @see org.alfresco.repo.rule.ruletrigger.RuleTrigger#registerRuleTrigger()
+     */
+    public void registerRuleTrigger()
+    {
+        if (isClassBehaviour == true)
+        {
+            this.policyComponent.bindClassBehaviour(
+                    QName.createQName(NamespaceService.ALFRESCO_URI, POLICY),
+                    this,
+                    new JavaBehaviour(this, POLICY));
+        }
+        else
+        {
+            this.policyComponent.bindAssociationBehaviour(
+                    QName.createQName(NamespaceService.ALFRESCO_URI, POLICY),
+                    this,
+                    new JavaBehaviour(this, POLICY));
+        }
 
         this.policyComponent.bindClassBehaviour(
                 NodeServicePolicies.BeforeMoveNodePolicy.QNAME,
                 this,
                 new JavaBehaviour(this, NodeServicePolicies.BeforeMoveNodePolicy.QNAME.getLocalName()));
-	}
+    }
 
     public void beforeDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
@@ -109,12 +110,12 @@ public class BeforeDeleteChildAssociationRuleTrigger
         {
             return;
         }
-        
+
         if (logger.isDebugEnabled() == true)
         {
             logger.debug("Single child assoc trigger (policy = " + POLICY + ") fired for parent node " + childAssocRef.getParentRef() + " and child node " + childAssocRef.getChildRef());
         }
-        
+
         triggerRules(childAssocRef.getParentRef(), childNodeRef);
     }
 

@@ -25,6 +25,12 @@
  */
 package org.alfresco.repo.module.tool;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.Map.Entry;
+
 import com.fasterxml.uuid.Generators;
 import de.schlichtherle.truezip.file.*;
 import de.schlichtherle.truezip.fs.FsSyncException;
@@ -36,17 +42,10 @@ import org.alfresco.repo.module.ModuleVersionNumber;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleInstallState;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.util.Map.Entry;
-
 /**
  * Module management tool.
  * <p>
- * Manages the modules installed in a war file.  Allows modules to be installed, updated, enabled, disabled and
- * uninstalled.  Information about the module installed is also available. 
+ * Manages the modules installed in a war file. Allows modules to be installed, updated, enabled, disabled and uninstalled. Information about the module installed is also available.
  * 
  * @since 2.0
  * 
@@ -60,17 +59,16 @@ public class ModuleManagementTool implements LogOutput
     /** Location of the AMP-specific mappings file */
     private static final String FILE_MAPPING_PROPERTIES = "file-mapping.properties";
     /**
-     * The property to add to a custom {@link #FILE_MAPPING_PROPERTIES file-mapping.properties} to inherit the default values.
-     * The default is <code>true</code>.
+     * The property to add to a custom {@link #FILE_MAPPING_PROPERTIES file-mapping.properties} to inherit the default values. The default is <code>true</code>.
      */
     private static final String PROP_INHERIT_DEFAULT = "include.default";
-    
+
     /** Standard directories found in the alfresco war */
-    public static final String BACKUP_DIR = WarHelper.MODULE_NAMESPACE_DIR+ "/backup";
-    
+    public static final String BACKUP_DIR = WarHelper.MODULE_NAMESPACE_DIR + "/backup";
+
     /** Operations and options supperted via the command line interface to this class */
     private static final String OP_INSTALL = "install";
-    private static final String OP_UNINSTALL = "uninstall";    
+    private static final String OP_UNINSTALL = "uninstall";
     private static final String OP_LIST = "list";
     private static final String OPTION_VERBOSE = "-verbose";
     private static final String OPTION_FORCE = "-force";
@@ -79,18 +77,18 @@ public class ModuleManagementTool implements LogOutput
     private static final String OPTION_DIRECTORY = "-directory";
     private static final String OPTION_PURGE = "-purge";
     private static final String OPTION_HELP = "-help";
-    
+
     private static final int ERROR_EXIT_CODE = 1;
     private static final int SUCCESS_EXIT_CODE = 0;
-    
+
     /** File mapping properties */
     private Properties defaultFileMappingProperties;
-    
+
     /** Indicates the current verbose setting */
     private boolean verbose = false;
-    
+
     WarHelper warHelper = new WarHelperImpl(this);
-    
+
     /**
      * Constructor
      */
@@ -111,21 +109,22 @@ public class ModuleManagementTool implements LogOutput
             throw new ModuleManagementToolException("Unable to load default extension file mapping properties.", exception);
         }
     }
-    
-    /** 
+
+    /**
      * Indicates whether the management tool is currently in verbose reporting mode.
      * 
-     * @return  true if verbose, false otherwise
+     * @return true if verbose, false otherwise
      */
     public boolean isVerbose()
     {
         return verbose;
     }
-    
+
     /**
      * Sets the verbose setting for the mangement tool
      * 
-     * @param verbose   true if verbose, false otherwise
+     * @param verbose
+     *            true if verbose, false otherwise
      */
     public void setVerbose(boolean verbose)
     {
@@ -134,7 +133,8 @@ public class ModuleManagementTool implements LogOutput
 
     /**
      * Installs all modules within a folder into the given WAR file.
-     * @throws IOException 
+     * 
+     * @throws IOException
      * 
      * @see #installModule(String, String, boolean, boolean, boolean)
      */
@@ -142,27 +142,28 @@ public class ModuleManagementTool implements LogOutput
     {
         installModules(directory, warFileLocation, false, false, true);
     }
-    
+
     public void installModules(String directoryLocation, String warFileLocation, boolean preview, boolean forceInstall, boolean backupWAR) throws IOException
     {
         java.io.File dir = new java.io.File(directoryLocation);
         if (dir.exists() == true)
         {
-            if (backupWAR) {
-                backupWar(new TFile(warFileLocation),true);
-                backupWAR = false; //Set it to false so a backup doesn't occur again.
+            if (backupWAR)
+            {
+                backupWar(new TFile(warFileLocation), true);
+                backupWAR = false; // Set it to false so a backup doesn't occur again.
             }
-            installModules(dir, warFileLocation, preview, forceInstall,backupWAR);
+            installModules(dir, warFileLocation, preview, forceInstall, backupWAR);
         }
         else
         {
             throw new ModuleManagementToolException("Invalid directory '" + directoryLocation + "'");
         }
     }
-    
+
     private void installModules(java.io.File dir, String warFileLocation, boolean preview, boolean forceInstall, boolean backupWAR)
     {
-        java.io.File[] children =  dir.listFiles();
+        java.io.File[] children = dir.listFiles();
         if (children != null)
         {
             for (java.io.File child : children)
@@ -178,40 +179,45 @@ public class ModuleManagementTool implements LogOutput
             }
         }
     }
-    
+
     /**
-     * Installs a given AMP file into a given WAR file.  
+     * Installs a given AMP file into a given WAR file.
      * 
      * @see ModuleManagementTool#installModule(String, String, boolean, boolean, boolean)
      * 
-     * @param ampFileLocation   the location of the AMP file to be installed
-     * @param warFileLocation   the location of the WAR file into which the AMP file is to be installed
+     * @param ampFileLocation
+     *            the location of the AMP file to be installed
+     * @param warFileLocation
+     *            the location of the WAR file into which the AMP file is to be installed
      */
     public void installModule(String ampFileLocation, String warFileLocation)
     {
         installModule(ampFileLocation, warFileLocation, false, false, true);
     }
-    
+
     /**
      * Installs a given AMP file into a given WAR file.
      * 
-     * @param ampFileLocation   the location of the AMP file to be installed
-     * @param warFileLocation   the location of the WAR file into which the AMP file is to be installed.
-     * @param preview           indicates whether this should be a preview install.  This means that the process of 
-     *                          installation will be followed and reported, but the WAR file will not be modified.
-     * @param forceInstall      indicates whether the installed files will be replaced regardless of the currently installed 
-     *                          version of the AMP.  Generally used during development of the AMP.
-     * @param backupWAR         indicates whether we should backup the war we are modifying or not 
+     * @param ampFileLocation
+     *            the location of the AMP file to be installed
+     * @param warFileLocation
+     *            the location of the WAR file into which the AMP file is to be installed.
+     * @param preview
+     *            indicates whether this should be a preview install. This means that the process of installation will be followed and reported, but the WAR file will not be modified.
+     * @param forceInstall
+     *            indicates whether the installed files will be replaced regardless of the currently installed version of the AMP. Generally used during development of the AMP.
+     * @param backupWAR
+     *            indicates whether we should backup the war we are modifying or not
      */
     public void installModule(String ampFileLocation, String warFileLocation, boolean preview, boolean forceInstall, boolean backupWAR)
     {
         TFile warFile = new TFile(warFileLocation);
         try
-        {   
+        {
             outputVerboseMessage("Installing AMP '" + ampFileLocation + "' into WAR '" + warFileLocation + "'");
             if (!warFile.exists())
             {
-                throw new ModuleManagementToolException("The war file '" + warFile + "' does not exist.");     
+                throw new ModuleManagementToolException("The war file '" + warFile + "' does not exist.");
             }
             if (preview == false)
             {
@@ -223,7 +229,7 @@ public class ModuleManagementTool implements LogOutput
                 }
                 backupWar(warFile, backupWAR);
             }
-            
+
             // Get the details of the installing module
             String propertiesLocation = ampFileLocation + "/module.properties";
             ModuleDetails installingModuleDetails = ModuleDetailsHelper.createModuleDetailsFromPropertyLocation(propertiesLocation, this);
@@ -233,33 +239,33 @@ public class ModuleManagementTool implements LogOutput
             }
             String installingId = installingModuleDetails.getId();
             ModuleVersionNumber installingVersion = installingModuleDetails.getModuleVersionNumber();
-            
-            //A series of checks
+
+            // A series of checks
             warHelper.checkCompatibleVersion(warFile, installingModuleDetails);
             warHelper.checkCompatibleEdition(warFile, installingModuleDetails);
             warHelper.checkModuleDependencies(warFile, installingModuleDetails);
-            
+
             // Try to find an installed module by the ID
             ModuleDetails installedModuleDetails = warHelper.getModuleDetailsOrAlias(warFile, installingModuleDetails);
-            
-            //Check module directory exists
-            TFile moduleInstallDirectory = new TFile(warFileLocation + WarHelper.MODULE_NAMESPACE_DIR+ "/" + installingId);
-            if (preview == false  && moduleInstallDirectory.exists() == false)
+
+            // Check module directory exists
+            TFile moduleInstallDirectory = new TFile(warFileLocation + WarHelper.MODULE_NAMESPACE_DIR + "/" + installingId);
+            if (preview == false && moduleInstallDirectory.exists() == false)
             {
-            	moduleInstallDirectory.mkdir();
-            }       
-            
+                moduleInstallDirectory.mkdir();
+            }
+
             uninstallIfNecessary(warFileLocation, installedModuleDetails, preview, forceInstall, installingVersion);
-            
+
             outputVerboseMessage("Adding files relating to version '" + installingVersion + "' of module '" + installingId + "'");
             InstalledFiles installedFiles = new InstalledFiles(warFileLocation, installingId);
-            
-            Properties directoryChanges = calculateChanges(ampFileLocation, warFileLocation, preview, forceInstall, installedFiles);   
-            
+
+            Properties directoryChanges = calculateChanges(ampFileLocation, warFileLocation, preview, forceInstall, installedFiles);
+
             if (preview == false)
             {
-                //Now actually do the changes
-                if (directoryChanges != null && directoryChanges.size() > 0) 
+                // Now actually do the changes
+                if (directoryChanges != null && directoryChanges.size() > 0)
                 {
                     for (Entry<Object, Object> entry : directoryChanges.entrySet())
                     {
@@ -268,10 +274,10 @@ public class ModuleManagementTool implements LogOutput
                         source.cp_rp(destination);
                     }
                 }
-                
+
                 // Save the installed file list
                 installedFiles.save();
-           
+
                 // Update the installed module details
                 installingModuleDetails.setInstallState(ModuleInstallState.INSTALLED);
                 installingModuleDetails.setInstallDate(new Date());
@@ -282,7 +288,7 @@ public class ModuleManagementTool implements LogOutput
                 {
                     warFile.setLastModified(System.currentTimeMillis());
                 }
-            }               
+            }
         }
         catch (AlfrescoRuntimeException exception)
         {
@@ -301,59 +307,59 @@ public class ModuleManagementTool implements LogOutput
             catch (FsSyncException e)
             {
                 throw new ModuleManagementToolException(
-                            "Error when attempting to unmount WAR file: "+warFile.getPath(),
-                            e);
+                        "Error when attempting to unmount WAR file: " + warFile.getPath(),
+                        e);
             }
         }
     }
 
     private void uninstallIfNecessary(String warFileLocation, ModuleDetails installedModuleDetails, boolean preview,
-                boolean forceInstall, ModuleVersionNumber installingVersion) throws IOException
+            boolean forceInstall, ModuleVersionNumber installingVersion) throws IOException
     {
         // Now clean up the old instance
         if (installedModuleDetails != null)
         {
             String installedId = installedModuleDetails.getId();
             ModuleVersionNumber installedVersion = installedModuleDetails.getModuleVersionNumber();
-            
+
             int compareValue = installedVersion.compareTo(installingVersion);
             if (compareValue > 0)
             {
                 // Trying to install an earlier version of the extension
-                outputVerboseMessage("WARNING: A later version of this module is already installed in the WAR. Installation skipped.  "+
-                "You could force the installation by passing the -force option.",false);
+                outputVerboseMessage("WARNING: A later version of this module is already installed in the WAR. Installation skipped.  " +
+                        "You could force the installation by passing the -force option.", false);
                 return;
             }
 
             if (forceInstall == true)
             {
                 // Warn of forced install
-                outputVerboseMessage("WARNING: The installation of this module is being forced.  All files will be removed and replaced regardless of existing versions present.",false);
+                outputVerboseMessage("WARNING: The installation of this module is being forced.  All files will be removed and replaced regardless of existing versions present.", false);
             }
-            
+
             if (compareValue == 0)
             {
                 // Trying to install the same extension version again
-                outputVerboseMessage("WARNING: This version of this module is already installed in the WAR..upgrading.",false);
+                outputVerboseMessage("WARNING: This version of this module is already installed in the WAR..upgrading.", false);
             }
-            
+
             if (forceInstall == true || compareValue <= 0)
             {
-                
+
                 // Trying to update the extension, old files need to cleaned before we proceed
-                outputVerboseMessage("Clearing out files relating to version '" + installedVersion + "' of module '" + installedId + "'",false);
+                outputVerboseMessage("Clearing out files relating to version '" + installedVersion + "' of module '" + installedId + "'", false);
                 uninstallModule(installedId, warFileLocation, preview, true);
-            } 
+            }
         }
     }
 
     /**
      */
     private Properties calculateChanges(String ampFileLocation, String warFileLocation, boolean preview,
-                boolean forceInstall, InstalledFiles installedFiles) throws IOException
+            boolean forceInstall, InstalledFiles installedFiles) throws IOException
     {
         Properties dirChanges = new Properties();
-        
+
         // Check if a custom mapping file has been defined
         Properties fileMappingProperties = null;
         Properties customFileMappingProperties = getCustomFileMappings(ampFileLocation);
@@ -364,7 +370,7 @@ public class ModuleManagementTool implements LogOutput
         else
         {
             fileMappingProperties = new Properties();
-            // A custom mapping file was present.  Check if it must inherit the default mappings.
+            // A custom mapping file was present. Check if it must inherit the default mappings.
             String inheritDefaultStr = customFileMappingProperties.getProperty(PROP_INHERIT_DEFAULT, "true");
             if (inheritDefaultStr.equalsIgnoreCase("true"))
             {
@@ -373,7 +379,7 @@ public class ModuleManagementTool implements LogOutput
             fileMappingProperties.putAll(customFileMappingProperties);
             fileMappingProperties.remove(PROP_INHERIT_DEFAULT);
         }
-        
+
         // Copy the files from the AMP file into the WAR file
         for (Map.Entry<Object, Object> entry : fileMappingProperties.entrySet())
         {
@@ -388,13 +394,13 @@ public class ModuleManagementTool implements LogOutput
             {
                 throw new AlfrescoRuntimeException("File mapping targets must start with '/' but was '" + mappingTarget + "'");
             }
-            
-            mappingSource = mappingSource.trim(); //trim whitespace
-            mappingTarget = mappingTarget.trim(); //trim whitespace
-            
+
+            mappingSource = mappingSource.trim(); // trim whitespace
+            mappingTarget = mappingTarget.trim(); // trim whitespace
+
             // Run through the files one by one figuring out what we are going to do during the copy
             calculateCopyToWar(ampFileLocation, warFileLocation, mappingSource, mappingTarget, installedFiles, preview, forceInstall);
-            
+
             // Get a reference to the source folder (if it isn't present don't do anything)
             TFile source = new TFile(ampFileLocation + "/" + mappingSource);
             if (source != null && source.list() != null)
@@ -404,9 +410,9 @@ public class ModuleManagementTool implements LogOutput
                 String destinationDir = warFileLocation + mappingTarget;
                 dirChanges.put(sourceDir, destinationDir);
             }
-            
+
         }
-        
+
         return dirChanges;
     }
 
@@ -415,8 +421,10 @@ public class ModuleManagementTool implements LogOutput
      *
      * @see ModuleManagementTool#installModule(String, String, boolean, boolean, boolean)
      *
-     * @param warFile   the location of the AMP file to be installed
-     * @param backupWAR true if you want it to perform the backup
+     * @param warFile
+     *            the location of the AMP file to be installed
+     * @param backupWAR
+     *            true if you want it to perform the backup
      */
     private void backupWar(TFile warFile, boolean backupWAR) throws IOException
     {
@@ -427,7 +435,7 @@ public class ModuleManagementTool implements LogOutput
             warHelper.backup(warFile);
         }
     }
-    
+
     /**
      * @return Returns the custom file mapping properties or null if they weren't overwritten
      */
@@ -454,26 +462,35 @@ public class ModuleManagementTool implements LogOutput
         {
             if (is != null)
             {
-                try { is.close(); } catch (Throwable e ) {}
+                try
+                {
+                    is.close();
+                }
+                catch (Throwable e)
+                {}
             }
         }
         return mappingProperties;
     }
-    
+
     /**
      * Cleans the WAR file of all files relating to the currently installed version of the the Module.
      * 
-     * @param warFileLocation    the war file location
-     * @param moduleId          the module id
-     * @param preview           indicates whether this is a preview installation
-     * @param purge             Fully delete all files (including those marked "PRESERVED")
-     * @throws IOException 
+     * @param warFileLocation
+     *            the war file location
+     * @param moduleId
+     *            the module id
+     * @param preview
+     *            indicates whether this is a preview installation
+     * @param purge
+     *            Fully delete all files (including those marked "PRESERVED")
+     * @throws IOException
      */
-    public void uninstallModule(String moduleId,String warFileLocation, boolean preview, boolean purge) throws IOException
+    public void uninstallModule(String moduleId, String warFileLocation, boolean preview, boolean purge) throws IOException
     {
         InstalledFiles installedFiles = new InstalledFiles(warFileLocation, moduleId);
         installedFiles.load();
-                
+
         for (String add : installedFiles.getAdds())
         {
             // Remove file
@@ -489,12 +506,12 @@ public class ModuleManagementTool implements LogOutput
             if (preview == false)
             {
                 // Recover updated file and delete backups
-               TFile modified = new TFile(warFileLocation + update.getKey());
-               TFile backup = new TFile(warFileLocation + update.getValue());
-               backup.cp_rp(modified);
-               backup.rm();
+                TFile modified = new TFile(warFileLocation + update.getKey());
+                TFile backup = new TFile(warFileLocation + update.getValue());
+                backup.cp_rp(modified);
+                backup.rm();
             }
-            
+
             outputVerboseMessage("Recovering file '" + update.getKey() + "' from backup '" + update.getValue() + "'", true);
         }
         // Now remove the installed files list
@@ -504,13 +521,16 @@ public class ModuleManagementTool implements LogOutput
         String modulePropertiesFileLocationInWar = ModuleDetailsHelper.getModulePropertiesFilePathInWar(moduleId);
         removeFile(warFileLocation, modulePropertiesFileLocationInWar, preview);
     }
-    
+
     /**
      * Removes a file from the given location in the war file.
      * 
-     * @param warLocation   the war file location
-     * @param filePath      the path to the file that is to be deleted
-     * @param preview       indicates whether this is a preview install
+     * @param warLocation
+     *            the war file location
+     * @param filePath
+     *            the path to the file that is to be deleted
+     * @param preview
+     *            indicates whether this is a preview install
      */
     private void removeFile(String warLocation, String filePath, boolean preview)
     {
@@ -528,22 +548,29 @@ public class ModuleManagementTool implements LogOutput
             outputVerboseMessage("The file '" + filePath + "' was expected for removal but was not present in the war", true);
         }
     }
-    
+
     /**
      * Copies a file from the AMP location to the correct location in the WAR, interating on directories where appropraite.
      * 
-     * @param ampFileLocation   the AMP file location
-     * @param warFileLocation   the WAR file location
-     * @param sourceDir         the directory in the AMP to copy from.  It must start with "/".
-     * @param destinationDir    the directory in the WAR to copy to.  It must start with "/".
-     * @param installedFiles    a list of the currently installed files
-     * @param preview           indicates whether this is a preview install or not
-     * @param forceInstall      indicates whether the installed files will be replaces regardless of the currently installed 
-     *                          version of the AMP.
-     * @throws IOException      throws any IOExpceptions thar are raised
+     * @param ampFileLocation
+     *            the AMP file location
+     * @param warFileLocation
+     *            the WAR file location
+     * @param sourceDir
+     *            the directory in the AMP to copy from. It must start with "/".
+     * @param destinationDir
+     *            the directory in the WAR to copy to. It must start with "/".
+     * @param installedFiles
+     *            a list of the currently installed files
+     * @param preview
+     *            indicates whether this is a preview install or not
+     * @param forceInstall
+     *            indicates whether the installed files will be replaces regardless of the currently installed version of the AMP.
+     * @throws IOException
+     *             throws any IOExpceptions thar are raised
      */
     private void calculateCopyToWar(String ampFileLocation, String warFileLocation, String sourceDir, String destinationDir, InstalledFiles installedFiles, boolean preview, boolean forceInstall)
-        throws IOException
+            throws IOException
     {
         if (sourceDir.length() == 0 || !sourceDir.startsWith("/"))
         {
@@ -553,7 +580,7 @@ public class ModuleManagementTool implements LogOutput
         {
             throw new IllegalArgumentException("destinationDir must start with '/'");
         }
-        
+
         // Handle source and destination if they are just the root '/'
         if (sourceDir.equals("/"))
         {
@@ -563,11 +590,11 @@ public class ModuleManagementTool implements LogOutput
         {
             destinationDir = "";
         }
-        
-        String sourceLocation = ampFileLocation + sourceDir;               
+
+        String sourceLocation = ampFileLocation + sourceDir;
         TFile ampConfig = new TFile(sourceLocation);
-        
-        java.io.File[] files = ampConfig.listFiles();  
+
+        java.io.File[] files = ampConfig.listFiles();
         if (files != null)
         {
             for (java.io.File sourceChild : files)
@@ -590,27 +617,29 @@ public class ModuleManagementTool implements LogOutput
                             backupLocation = BACKUP_DIR + "/" + generateGuid() + ".bin";
                             if (preview == false)
                             {
-                                //Create the directory if it doesn't exist.
-                                TFile backupLocationDirectory = new TFile(warFileLocation+ BACKUP_DIR);
+                                // Create the directory if it doesn't exist.
+                                TFile backupLocationDirectory = new TFile(warFileLocation + BACKUP_DIR);
                                 if (!backupLocationDirectory.exists())
                                 {
                                     backupLocationDirectory.mkdir();
                                 }
-                                
-                                //Backup the file
+
+                                // Backup the file
                                 TFile backupFile = new TFile(warFileLocation + backupLocation);
                                 destinationChild.cp_rp(backupFile);
                             }
-                        } else {
-                            //Not a forced install, there is an existing file in the war, lets rollback the transaction, 
-                            //throw an error and explain the problem.
-//                            File.
-//                            ZipController zipController = ZipController.getInstance(warFile);
-//                            zipController.reset();
+                        }
+                        else
+                        {
+                            // Not a forced install, there is an existing file in the war, lets rollback the transaction,
+                            // throw an error and explain the problem.
+                            // File.
+                            // ZipController zipController = ZipController.getInstance(warFile);
+                            // zipController.reset();
                             throw new ModuleManagementToolException("ERROR: The amp will overwrite an existing file in the war '" + destinationDir + "/" + sourceChild.getName() + "'. Execution halted.  By specifying -force , you can force installation of AMP regardless of the current war state.");
                         }
                     }
-                    
+
                     if (createFile == true)
                     {
                         installedFiles.addAdd(destinationDir + "/" + sourceChild.getName());
@@ -629,9 +658,9 @@ public class ModuleManagementTool implements LogOutput
                     {
                         mkdir = true;
                     }
-                    
-                    calculateCopyToWar(ampFileLocation, warFileLocation, sourceDir + "/" + sourceChild.getName(), 
-                                                                destinationDir + "/" + sourceChild.getName(), installedFiles, preview, forceInstall);
+
+                    calculateCopyToWar(ampFileLocation, warFileLocation, sourceDir + "/" + sourceChild.getName(),
+                            destinationDir + "/" + sourceChild.getName(), installedFiles, preview, forceInstall);
                     if (mkdir == true)
                     {
                         installedFiles.addMkdir(destinationDir + "/" + sourceChild.getName());
@@ -641,27 +670,28 @@ public class ModuleManagementTool implements LogOutput
             }
         }
     }
-    
+
     /**
-     * @throws  UnsupportedOperationException
+     * @throws UnsupportedOperationException
      */
     public void disableModule(String moduleId, String warLocation)
     {
         throw new UnsupportedOperationException("Disable module is not currently supported");
     }
-    
+
     /**
-     * @throws  UnsupportedOperationException
+     * @throws UnsupportedOperationException
      */
     public void enableModule(String moduleId, String warLocation)
     {
         throw new UnsupportedOperationException("Enable module is not currently supported");
     }
-    
+
     /**
      * Lists all the currently installed modules in the WAR
      * 
-     * @param warLocation   the war location
+     * @param warLocation
+     *            the war location
      * @throws ModuleManagementToolException
      */
     public void listModules(String warLocation)
@@ -671,15 +701,16 @@ public class ModuleManagementTool implements LogOutput
 
         try
         {
-            List<ModuleDetails> modulesFound =  warHelper.listModules(new TFile(warLocation));
+            List<ModuleDetails> modulesFound = warHelper.listModules(new TFile(warLocation));
 
             if (modulesFound.size() < 1)
             {
                 outputVerboseMessage("No modules are installed in this WAR file");
             }
 
-            for (Iterator<ModuleDetails> iterator = modulesFound.iterator(); iterator.hasNext(); ) {
-                ModuleDetails moduleDetails =  iterator.next();
+            for (Iterator<ModuleDetails> iterator = modulesFound.iterator(); iterator.hasNext();)
+            {
+                ModuleDetails moduleDetails = iterator.next();
                 outputVerboseMessage("Module '" + moduleDetails.getId() + "' installed in '" + warLocation + "'");
                 outputVerboseMessage("   Title:        " + moduleDetails.getTitle(), true);
                 outputVerboseMessage("   Version:      " + moduleDetails.getModuleVersionNumber(), true);
@@ -693,56 +724,66 @@ public class ModuleManagementTool implements LogOutput
             this.verbose = previous;
         }
     }
-    
+
     /**
      * Outputs a message the console (in verbose mode).
      * 
-     * @param message   the message to output
+     * @param message
+     *            the message to output
      */
     private void outputVerboseMessage(String message)
     {
         outputMessage(message, false, false, false);
     }
-    
+
     /**
      * Outputs a message the console (in verbose mode).
      * 
-     * @param message   the message to output
+     * @param message
+     *            the message to output
      */
     private void outputErrorMessage(String message)
     {
         outputMessage(message, false, true, false);
     }
-    
+
     /**
      * Outputs a message the console (in verbose mode).
      * 
-     * @param message   the message to output
-     * @param indent    indicates that the message should be formated with an indent
+     * @param message
+     *            the message to output
+     * @param indent
+     *            indicates that the message should be formated with an indent
      */
     private void outputVerboseMessage(String message, boolean indent)
     {
         outputMessage(message, indent, false, false);
     }
-    
+
     /**
      * Outputs a message to the console regardless of the verbose setting.
      * 
-     * @param message   the message to output
-     * @param indent    indicates that the message should be formated with an indent
+     * @param message
+     *            the message to output
+     * @param indent
+     *            indicates that the message should be formated with an indent
      */
     private void outputMessage(String message, boolean indent)
     {
-    	outputMessage(message, indent, false, true);
+        outputMessage(message, indent, false, true);
     }
-    
+
     /**
      * Outputs a message the console. Errors are always output, but others are only output in verbose mode.
      * 
-     * @param message   the message to output
-     * @param indent    indicates that the message should be formated with an indent
-     * @param error     indicates that the message is an error.
-     * @param stdout	indicates that the message should output to the console regardless of verbose setting
+     * @param message
+     *            the message to output
+     * @param indent
+     *            indicates that the message should be formated with an indent
+     * @param error
+     *            indicates that the message is an error.
+     * @param stdout
+     *            indicates that the message should output to the console regardless of verbose setting
      */
     private void outputMessage(String message, boolean indent, boolean error, boolean stdout)
     {
@@ -759,11 +800,12 @@ public class ModuleManagementTool implements LogOutput
             System.out.println(message);
         }
     }
-    
+
     /**
      * Main
      * 
-     * @param args  command line interface arguments 
+     * @param args
+     *            command line interface arguments
      */
     public static void main(String[] args)
     {
@@ -773,28 +815,28 @@ public class ModuleManagementTool implements LogOutput
             System.exit(ERROR_EXIT_CODE);
         }
         ModuleManagementTool manager = new ModuleManagementTool();
-        
+
         String operation = args[0];
         try
         {
-        	if (operation.equals(OPTION_HELP) == true)
-        	{
-        		outputUsage();
-        		System.exit(SUCCESS_EXIT_CODE);
-        	} 
-        	else if (operation.equals(OP_INSTALL) == true)
+            if (operation.equals(OPTION_HELP) == true)
             {
-            	if (args.length < 3) 
-            	{
-            		throw new UsageException(OP_INSTALL + " requires at least 3 arguments.");
-            	}
+                outputUsage();
+                System.exit(SUCCESS_EXIT_CODE);
+            }
+            else if (operation.equals(OP_INSTALL) == true)
+            {
+                if (args.length < 3)
+                {
+                    throw new UsageException(OP_INSTALL + " requires at least 3 arguments.");
+                }
                 String aepFileLocation = args[1];
                 String warFileLocation = args[2];
                 boolean forceInstall = false;
                 boolean previewInstall = false;
                 boolean backup = true;
                 boolean directory = false;
-                
+
                 if (args.length > 3)
                 {
                     for (int i = 3; i < args.length; i++)
@@ -823,7 +865,7 @@ public class ModuleManagementTool implements LogOutput
                         }
                     }
                 }
-               
+
                 try
                 {
                     if (directory == false)
@@ -839,39 +881,39 @@ public class ModuleManagementTool implements LogOutput
                 }
                 catch (IOException error)
                 {
-                    throw new ModuleManagementToolException(error.getMessage());    
+                    throw new ModuleManagementToolException(error.getMessage());
                 }
                 System.exit(SUCCESS_EXIT_CODE);
 
             }
             else if (OP_LIST.equals(operation) == true)
             {
-            	if (args.length != 2) 
-            	{
-            		throw new UsageException(OP_LIST + " requires 2 arguments.");
-            	}
+                if (args.length != 2)
+                {
+                    throw new UsageException(OP_LIST + " requires 2 arguments.");
+                }
                 // List the installed modules
                 String warFileLocation = args[1];
-                manager.listModules(warFileLocation);                
+                manager.listModules(warFileLocation);
                 System.exit(SUCCESS_EXIT_CODE);
             }
             else if (OP_UNINSTALL.equals(operation) == true)
             {
-            	if (args.length < 3) 
-            	{
-            		throw new UsageException(OP_UNINSTALL + " requires at least 3 arguments.");
-            	}
+                if (args.length < 3)
+                {
+                    throw new UsageException(OP_UNINSTALL + " requires at least 3 arguments.");
+                }
                 String moduleId = args[1];
                 String warLocation = args[2];
                 boolean purge = false;
                 boolean preview = false;
-                
-                if (args.length >= 4) 
+
+                if (args.length >= 4)
                 {
                     for (int i = 3; i < args.length; i++)
                     {
                         String option = args[i];
-                        if (OPTION_PURGE.equals(option) == true) 
+                        if (OPTION_PURGE.equals(option) == true)
                         {
                             purge = true;
                         }
@@ -883,20 +925,20 @@ public class ModuleManagementTool implements LogOutput
                     }
                 }
                 manager.setVerbose(true);
-                manager.uninstallModule(moduleId, warLocation,preview, purge);
+                manager.uninstallModule(moduleId, warLocation, preview, purge);
                 System.exit(SUCCESS_EXIT_CODE);
             }
             else
             {
                 throw new UsageException("Unknown operation " + operation + ".");
             }
-        
+
         }
-        catch (UsageException e) 
+        catch (UsageException e)
         {
-        	manager.outputErrorMessage("Usage error: " + e.getMessage());
-        	outputUsage();
-        	System.exit(ERROR_EXIT_CODE);
+            manager.outputErrorMessage("Usage error: " + e.getMessage());
+            outputUsage();
+            System.exit(ERROR_EXIT_CODE);
         }
         catch (ModuleManagementToolException e)
         {
@@ -925,7 +967,7 @@ public class ModuleManagementTool implements LogOutput
     private static void outputUsage()
     {
         System.out.println("Module managment tool available commands:");
-        System.out.println("-----------------------------------------------------------\n");        
+        System.out.println("-----------------------------------------------------------\n");
         System.out.println("install: Installs a AMP file(s) into an Alfresco WAR file, updates if an older version is already installed.");
         System.out.println("usage:   install <AMPFileLocation> <WARFileLocation> [options]");
         System.out.println("valid options: ");
@@ -941,22 +983,23 @@ public class ModuleManagementTool implements LogOutput
         System.out.println("-----------------------------------------------------------\n");
         System.out.println("uninstall:  Uninstalls a module from the Alfresco WAR file.");
         System.out.println("usage: uninstall <ModuleId> <WARFileLocation>\n");
-        System.out.println("-----------------------------------------------------------\n");    
+        System.out.println("-----------------------------------------------------------\n");
     }
 
     @Override
     public void info(Object message)
     {
         outputVerboseMessage(String.valueOf(message));
-    }    
-
-    private static class UsageException extends Exception 
-    {
-		private static final long serialVersionUID = 1L;
-		
-		public UsageException(String message) {
-			super(message);
-		}
     }
- 
+
+    private static class UsageException extends Exception
+    {
+        private static final long serialVersionUID = 1L;
+
+        public UsageException(String message)
+        {
+            super(message);
+        }
+    }
+
 }

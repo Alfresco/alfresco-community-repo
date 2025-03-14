@@ -37,25 +37,24 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-
 import javax.sql.DataSource;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.content.filestore.FileContentWriter;
-import org.alfresco.repo.domain.dialect.MySQLClusterNDBDialect;
-import org.alfresco.repo.domain.dialect.Dialect;
-import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
-import org.alfresco.repo.domain.dialect.PostgreSQLDialect;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.util.DialectUtil;
-import org.alfresco.util.LogUtil;
-import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.content.filestore.FileContentWriter;
+import org.alfresco.repo.domain.dialect.Dialect;
+import org.alfresco.repo.domain.dialect.MySQLClusterNDBDialect;
+import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
+import org.alfresco.repo.domain.dialect.PostgreSQLDialect;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.util.DialectUtil;
+import org.alfresco.util.LogUtil;
+import org.alfresco.util.TempFileProvider;
 
 public class ScriptExecutorImpl implements ScriptExecutor
 {
@@ -71,7 +70,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
     private static final String ERR_STATEMENT_VAR_ASSIGNMENT_BEFORE_SQL = "schema.update.err.statement_var_assignment_before_sql";
     private static final String ERR_STATEMENT_VAR_ASSIGNMENT_FORMAT = "schema.update.err.statement_var_assignment_format";
     private static final String ERR_STATEMENT_VAR_ASSIGNMENT_NULL = "schema.update.err.statement_var_assignment_null";
-    private static final String ERR_STATEMENT_TERMINATOR = "schema.update.err.statement_terminator";    
+    private static final String ERR_STATEMENT_TERMINATOR = "schema.update.err.statement_terminator";
     private static final String ERR_DELIMITER_SET_BEFORE_SQL = "schema.update.err.delimiter_set_before_sql";
     private static final String ERR_DELIMITER_INVALID = "schema.update.err.delimiter_invalid";
     private static final int DEFAULT_MAX_STRING_LENGTH = 1024;
@@ -84,21 +83,20 @@ public class ScriptExecutorImpl implements ScriptExecutor
     private ThreadLocal<StringBuilder> executedStatementsThreadLocal = new ThreadLocal<StringBuilder>();
     private DataSource dataSource;
 
-
     /**
-     * @return      Returns the maximum number of characters that a string field can be
+     * @return Returns the maximum number of characters that a string field can be
      */
     public static final int getMaxStringLength()
     {
         return ScriptExecutorImpl.maxStringLength;
     }
-    
+
     /**
-     * Truncates or returns a string that will fit into the string columns in the schema.  Text fields can
-     * either cope with arbitrarily long text fields or have the default limit, {@link #DEFAULT_MAX_STRING_LENGTH}.
+     * Truncates or returns a string that will fit into the string columns in the schema. Text fields can either cope with arbitrarily long text fields or have the default limit, {@link #DEFAULT_MAX_STRING_LENGTH}.
      * 
-     * @param value             the string to check
-     * @return                  Returns a string that is short enough for {@link ScriptExecutorImpl#getMaxStringLength()}
+     * @param value
+     *            the string to check
+     * @return Returns a string that is short enough for {@link ScriptExecutorImpl#getMaxStringLength()}
      * 
      * @since 3.2
      */
@@ -129,12 +127,12 @@ public class ScriptExecutorImpl implements ScriptExecutor
     {
         globalProperties = new Properties();
     }
-    
+
     public void setDataSource(DataSource dataSource)
     {
         this.dataSource = dataSource;
     }
-    
+
     /**
      * Sets the properties map from which we look up some configuration settings.
      * 
@@ -181,7 +179,12 @@ public class ScriptExecutorImpl implements ScriptExecutor
         }
         finally
         {
-            try { scriptInputStream.close(); } catch (Throwable e) {}  // usually a duplicate close
+            try
+            {
+                scriptInputStream.close();
+            }
+            catch (Throwable e)
+            {} // usually a duplicate close
         }
         // now execute it
         String dialectScriptUrl = scriptUrl.replaceAll(DialectUtil.PLACEHOLDER_DIALECT, dialect.getClass().getName());
@@ -190,9 +193,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
     }
 
     /**
-     * Replaces the dialect placeholder in the script URL and attempts to find a file for
-     * it.  If not found, the dialect hierarchy will be walked until a compatible script is
-     * found.  This makes it possible to have scripts that are generic to all dialects.
+     * Replaces the dialect placeholder in the script URL and attempts to find a file for it. If not found, the dialect hierarchy will be walked until a compatible script is found. This makes it possible to have scripts that are generic to all dialects.
      * 
      * @return Returns an input stream onto the script, otherwise null
      */
@@ -205,12 +206,14 @@ public class ScriptExecutorImpl implements ScriptExecutor
         }
         return resource.getInputStream();
     }
-    
+
     /**
-     * @param connection    the DB connection to use
-     * @param scriptFile    the file containing the statements
-     * @param scriptUrl     the URL of the script to report.  If this is null, the script
-     *                      is assumed to have been auto-generated.
+     * @param connection
+     *            the DB connection to use
+     * @param scriptFile
+     *            the file containing the statements
+     * @param scriptUrl
+     *            the URL of the script to report. If this is null, the script is assumed to have been auto-generated.
      */
     private void executeScriptFile(
             Connection connection,
@@ -218,14 +221,14 @@ public class ScriptExecutorImpl implements ScriptExecutor
             String scriptUrl) throws Exception
     {
         final Dialect dialect = this.dialect;
-        
+
         StringBuilder executedStatements = executedStatementsThreadLocal.get();
         if (executedStatements == null)
         {
             executedStatements = new StringBuilder(8094);
             executedStatementsThreadLocal.set(executedStatements);
         }
-        
+
         if (scriptUrl == null)
         {
             LogUtil.info(logger, MSG_EXECUTING_GENERATED_SCRIPT, scriptFile);
@@ -234,7 +237,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
         {
             LogUtil.info(logger, MSG_EXECUTING_COPIED_SCRIPT, scriptFile, scriptUrl);
         }
-        
+
         InputStream scriptInputStream = new FileInputStream(scriptFile);
         BufferedReader reader = new BufferedReader(new InputStreamReader(scriptInputStream, "UTF-8"));
         try
@@ -271,20 +274,20 @@ public class ScriptExecutorImpl implements ScriptExecutor
             long now = System.currentTimeMillis();
             varAssignments.put("now", Long.valueOf(now).toString());
             varAssignments.put("NOW", Long.valueOf(now).toString());
-            
-            while(true)
+
+            while (true)
             {
                 connection = refreshConnection(connection);
 
                 String sqlOriginal = reader.readLine();
                 line++;
-                
+
                 if (sqlOriginal == null)
                 {
                     // nothing left in the file
                     break;
                 }
-                
+
                 // trim it
                 String sql = sqlOriginal.trim();
                 // Check of includes
@@ -333,11 +336,11 @@ public class ScriptExecutorImpl implements ScriptExecutor
                         doBatch = true;
                         // Select the upper bound of the table column
                         batchTableName = args[1].substring(0, sepIndex);
-                        String stmt = "SELECT MAX(" + args[1].substring(sepIndex+1) + ") AS upper_limit FROM " + batchTableName;
-                        Object fetchedVal = executeStatement(connection, stmt, "upper_limit", false, line, scriptFile);                        
+                        String stmt = "SELECT MAX(" + args[1].substring(sepIndex + 1) + ") AS upper_limit FROM " + batchTableName;
+                        Object fetchedVal = executeStatement(connection, stmt, "upper_limit", false, line, scriptFile);
                         if (fetchedVal instanceof Number)
                         {
-                            batchUpperLimit = ((Number)fetchedVal).intValue();
+                            batchUpperLimit = ((Number) fetchedVal).intValue();
                             // Read the batch size from the named property
                             String batchSizeString = globalProperties.getProperty(args[2]);
                             // Fall back to the default property
@@ -388,14 +391,14 @@ public class ScriptExecutorImpl implements ScriptExecutor
                 // Allow transaction delineation
                 else if (sql.startsWith("--BEGIN TXN"))
                 {
-                   connection.setAutoCommit(false);
-                   continue;
+                    connection.setAutoCommit(false);
+                    continue;
                 }
                 else if (sql.startsWith("--END TXN"))
                 {
-                   connection.commit();
-                   connection.setAutoCommit(true);
-                   continue;
+                    connection.commit();
+                    connection.setAutoCommit(true);
+                    continue;
                 }
                 else if (sql.startsWith("--SET-DELIMITER:"))
                 {
@@ -416,9 +419,9 @@ public class ScriptExecutorImpl implements ScriptExecutor
 
                 // Check for comments
                 if (sql.length() == 0 ||
-                    sql.startsWith( "--" ) ||
-                    sql.startsWith( "//" ) ||
-                    sql.startsWith( "/*" ) )
+                        sql.startsWith("--") ||
+                        sql.startsWith("//") ||
+                        sql.startsWith("/*"))
                 {
                     if (sb.length() > 0)
                     {
@@ -471,10 +474,10 @@ public class ScriptExecutorImpl implements ScriptExecutor
                 {
                     // Now substitute and execute the statement the appropriate number of times
                     String unsubstituted = sb.toString();
-                    for(int lowerBound = 0; lowerBound <= batchUpperLimit; lowerBound += batchSize)
+                    for (int lowerBound = 0; lowerBound <= batchUpperLimit; lowerBound += batchSize)
                     {
                         sql = unsubstituted;
-                        
+
                         // Substitute in the next pair of range parameters
                         if (doBatch)
                         {
@@ -482,7 +485,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
                             varAssignments.put("LOWERBOUND", String.valueOf(lowerBound));
                             varAssignments.put("UPPERBOUND", String.valueOf(lowerBound + batchSize - 1));
                         }
-                        
+
                         // Perform variable replacement using the ${var} format
                         for (Map.Entry<String, Object> entry : varAssignments.entrySet())
                         {
@@ -490,7 +493,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
                             Object val = entry.getValue();
                             sql = sql.replaceAll("\\$\\{" + var + "\\}", val.toString());
                         }
-                        
+
                         // Handle the 0/1 values that PostgreSQL doesn't translate to TRUE
                         if (this.dialect != null && this.dialect instanceof PostgreSQLDialect)
                         {
@@ -500,30 +503,28 @@ public class ScriptExecutorImpl implements ScriptExecutor
                         {
                             sql = sql.replaceAll("\\$\\{TRUE\\}", "1");
                         }
-                        
+
                         if (this.dialect != null && this.dialect instanceof MySQLInnoDBDialect)
                         {
                             // note: enable bootstrap on MySQL 5.5 (eg. for auto-generated SQL)
                             sql = sql.replaceAll("(?i)TYPE=InnoDB", "ENGINE=InnoDB");
                         }
-                        
+
                         if (this.dialect != null && this.dialect instanceof MySQLClusterNDBDialect)
                         {
                             // note: enable bootstrap on MySQL Cluster NDB
-                            /*
-                        	 * WARNING: Experimental/unsupported - see MySQLClusterNDBDialect !
-                    		 */
-                        	sql = sql.replaceAll("(?i)TYPE=InnoDB", "ENGINE=NDB"); // belts-and-braces
+                            /* WARNING: Experimental/unsupported - see MySQLClusterNDBDialect ! */
+                            sql = sql.replaceAll("(?i)TYPE=InnoDB", "ENGINE=NDB"); // belts-and-braces
                             sql = sql.replaceAll("(?i)ENGINE=InnoDB", "ENGINE=NDB");
-                            
+
                             sql = sql.replaceAll("(?i) BIT ", " BOOLEAN ");
                             sql = sql.replaceAll("(?i) BIT,", " BOOLEAN,");
-                            
-                            sql = sql.replaceAll("(?i) string_value text", " string_value VARCHAR("+DEFAULT_MAX_STRING_LENGTH_NDB+")");
-                            
+
+                            sql = sql.replaceAll("(?i) string_value text", " string_value VARCHAR(" + DEFAULT_MAX_STRING_LENGTH_NDB + ")");
+
                             sql = sql.replaceAll("(?i) VARCHAR(4000)", "TEXT(4000)");
                         }
-                        
+
                         Object fetchedVal = executeStatement(connection, sql, fetchColumnName, optional, line, scriptFile);
                         if (fetchVarName != null && fetchColumnName != null)
                         {
@@ -547,14 +548,24 @@ public class ScriptExecutorImpl implements ScriptExecutor
                     batchTableName = null;
                     doBatch = false;
                     batchUpperLimit = 0;
-                    batchSize = 1;                    
+                    batchSize = 1;
                 }
             }
         }
         finally
         {
-            try { reader.close(); } catch (Throwable e) {}
-            try { scriptInputStream.close(); } catch (Throwable e) {}
+            try
+            {
+                reader.close();
+            }
+            catch (Throwable e)
+            {}
+            try
+            {
+                scriptInputStream.close();
+            }
+            catch (Throwable e)
+            {}
         }
     }
 
@@ -586,10 +597,10 @@ public class ScriptExecutorImpl implements ScriptExecutor
     }
 
     /**
-     * Execute the given SQL statement, absorbing exceptions that we expect during
-     * schema creation or upgrade.
+     * Execute the given SQL statement, absorbing exceptions that we expect during schema creation or upgrade.
      * 
-     * @param fetchColumnName       the name of the column value to return
+     * @param fetchColumnName
+     *            the name of the column value to return
      */
     private Object executeStatement(
             Connection connection,
@@ -641,7 +652,12 @@ public class ScriptExecutorImpl implements ScriptExecutor
         }
         finally
         {
-            try { stmt.close(); } catch (Throwable e) {}
+            try
+            {
+                stmt.close();
+            }
+            catch (Throwable e)
+            {}
         }
         return ret;
     }

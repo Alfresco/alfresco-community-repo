@@ -26,6 +26,10 @@
 
 package org.alfresco.rest.api.nodes;
 
+import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.ContentStorageInformation;
 import org.alfresco.rest.api.model.ArchiveContentRequest;
 import org.alfresco.rest.api.model.ContentStorageInfo;
@@ -42,9 +46,6 @@ import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
-
-import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Node storage information.
@@ -86,14 +87,15 @@ public class NodeStorageInfoRelation implements RelationshipResourceAction.ReadB
             description = "Submits a request to send content to archive",
             successStatus = HttpServletResponse.SC_OK)
     public void requestArchiveContent(String nodeId, String contentPropName, ArchiveContentRequest archiveContentRequest, Parameters parameters,
-                                      WithResponse withResponse)
+            WithResponse withResponse)
     {
         final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
         final boolean result = storageInformation.requestArchiveContent(nodeRef, contentPropName, archiveContentRequest);
         if (result)
         {
             withResponse.setStatus(HttpServletResponse.SC_OK);
-        } else
+        }
+        else
         {
             withResponse.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
         }
@@ -106,14 +108,14 @@ public class NodeStorageInfoRelation implements RelationshipResourceAction.ReadB
             description = "Submits a request to restore content from archive",
             successStatus = HttpServletResponse.SC_ACCEPTED)
     public void requestRestoreContentFromArchive(String nodeId, String contentPropName, RestoreArchivedContentRequest restoreArchivedContentRequest,
-                                                 Parameters parameters, WithResponse withResponse)
+            Parameters parameters, WithResponse withResponse)
     {
         final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
         final boolean result = storageInformation.requestRestoreContentFromArchive(nodeRef, contentPropName, restoreArchivedContentRequest);
         if (result)
         {
             withResponse.setStatus(HttpServletResponse.SC_ACCEPTED);
-        } 
+        }
         else
         {
             withResponse.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);

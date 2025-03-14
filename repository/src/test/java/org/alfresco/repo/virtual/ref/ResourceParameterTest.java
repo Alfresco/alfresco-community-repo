@@ -26,10 +26,10 @@
 
 package org.alfresco.repo.virtual.ref;
 
-import org.alfresco.service.cmr.repository.NodeRef;
+import junit.framework.TestCase;
 import org.junit.Test;
 
-import junit.framework.TestCase;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 public class ResourceParameterTest extends TestCase
 {
@@ -45,30 +45,30 @@ public class ResourceParameterTest extends TestCase
 
         //
         assertEquals(repoNodeRefResource,
-                     repoNodeRefResourceParam.getValue());
+                repoNodeRefResourceParam.getValue());
 
         String repoNodeRefResourceParamStrRepresentation = repoNodeRefResourceParam.stringify(new PlainStringifier());
 
         assertEquals("r:repository:node:workspace:SpacesStore:0029-222-333-444",
-                     repoNodeRefResourceParamStrRepresentation);
+                repoNodeRefResourceParamStrRepresentation);
 
         //
         assertEquals(repoPathResource,
-                     repoPathResourceParam.getValue());
+                repoPathResourceParam.getValue());
 
         String repoPathResourceParamStrRepresentation = repoPathResourceParam.stringify(new PlainStringifier());
 
         assertEquals("r:repository:path:/Foo/Bar",
-                     repoPathResourceParamStrRepresentation);
+                repoPathResourceParamStrRepresentation);
 
         //
 
         assertEquals(classpathResource,
-                     classpathResourceParam.getValue());
+                classpathResourceParam.getValue());
 
         String classpathResourceParamStrRepresentation = classpathResourceParam.stringify(new PlainStringifier());
 
         assertEquals("r:classpath:/org/alfresco/",
-                     classpathResourceParamStrRepresentation);
+                classpathResourceParamStrRepresentation);
     }
 }

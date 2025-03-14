@@ -29,17 +29,19 @@ import java.util.Calendar;
 
 /**
  * Support for calendar based "end of" periods with month and day offsets for fiscal year support
+ * 
  * @author andyh
  *
  */
 public abstract class AbstractEndOfCalendarPeriodProvider extends AbstractCalendarPeriodProvider
 {
     private int startDayOfMonth = 1;
-    
+
     private int startMonth = Calendar.JANUARY;
 
     /**
      * Get the start day of the month (as defined by Calendar)
+     * 
      * @return - the start day of the month
      */
     public int getStartDayOfMonth()
@@ -49,7 +51,9 @@ public abstract class AbstractEndOfCalendarPeriodProvider extends AbstractCalend
 
     /**
      * Set the start day of the month (as defined by Calendar)
-     * @param startDayOfMonth int
+     * 
+     * @param startDayOfMonth
+     *            int
      */
     public void setStartDayOfMonth(int startDayOfMonth)
     {
@@ -58,6 +62,7 @@ public abstract class AbstractEndOfCalendarPeriodProvider extends AbstractCalend
 
     /**
      * Get the start month (as defined by Calendar)
+     * 
      * @return - the start month
      */
     public int getStartMonth()
@@ -67,7 +72,9 @@ public abstract class AbstractEndOfCalendarPeriodProvider extends AbstractCalend
 
     /**
      * Set the start month (as defined by Calendar)
-     * @param startMonth int
+     * 
+     * @param startMonth
+     *            int
      */
     public void setStartMonth(int startMonth)
     {

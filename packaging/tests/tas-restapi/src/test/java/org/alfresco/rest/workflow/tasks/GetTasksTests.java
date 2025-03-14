@@ -1,5 +1,9 @@
 package org.alfresco.rest.workflow.tasks;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
@@ -15,9 +19,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class GetTasksTests extends RestTest
 {
@@ -40,8 +41,8 @@ public class GetTasksTests extends RestTest
         dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify admin user gets all existing tasks with Rest API and response is successfull (200)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.SANITY, description = "Verify admin user gets all existing tasks with Rest API and response is successfull (200)")
     public void adminUserGetsAllTasks() throws Exception
     {
         UserModel adminUser = dataUser.getAdminUser();
@@ -51,8 +52,8 @@ public class GetTasksTests extends RestTest
         taskModels.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify asignee user gets its existing tasks with Rest API and response is successfull (200)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.SANITY, description = "Verify asignee user gets its existing tasks with Rest API and response is successfull (200)")
     public void assigneeUserGetsItsTasks() throws Exception
     {
         taskModels = restClient.authenticateUser(assigneeUser).withWorkflowAPI().getTasks();
@@ -60,8 +61,8 @@ public class GetTasksTests extends RestTest
         taskModels.assertThat().entriesListIsNotEmpty().and().entriesListCountIs(1).and().entriesListContains("assignee", assigneeUser.getUsername());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify candidate user that claims the task gets its existing tasks with Rest API and response is successfull (200)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.SANITY, description = "Verify candidate user that claims the task gets its existing tasks with Rest API and response is successfull (200)")
     @Bug(id = "MNT-16967")
     public void candidateUserGetsItsTasks() throws Exception
     {
@@ -77,8 +78,8 @@ public class GetTasksTests extends RestTest
         taskModels.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify candidate user that claims the task gets its existing tasks with Rest API and response is successfull (200)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.SANITY, description = "Verify candidate user that claims the task gets its existing tasks with Rest API and response is successfull (200)")
     public void candidateUserThatClaimsTaskGetsItsTasks() throws Exception
     {
         UserModel userModel1 = dataUser.createRandomTestUser();
@@ -93,8 +94,8 @@ public class GetTasksTests extends RestTest
         taskModels.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify candidate user without claim gets no tasks with Rest API and response is successfull (200)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.SANITY, description = "Verify candidate user without claim gets no tasks with Rest API and response is successfull (200)")
     public void candidateUserWithoutClaimTaskGetsNoTasks() throws Exception
     {
         UserModel userModel1 = dataUser.createRandomTestUser();
@@ -110,9 +111,9 @@ public class GetTasksTests extends RestTest
         taskModels.assertThat().entriesListIsEmpty();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
-            TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Check that skipCount parameter is applied.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,
+            TestGroup.TASKS}, executionType = ExecutionType.REGRESSION, description = "Check that skipCount parameter is applied.")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void skipCountParameterApplied() throws Exception
     {
         taskCollections = restClient.authenticateUser(dataUser.getAdminUser()).withParams("orderBy=description ASC").withWorkflowAPI().getTasks();
@@ -127,9 +128,9 @@ public class GetTasksTests extends RestTest
         taskModels.assertThat().paginationField("skipCount").is("2");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
-            TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Check that maxItems parameter is applied.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,
+            TestGroup.TASKS}, executionType = ExecutionType.REGRESSION, description = "Check that maxItems parameter is applied.")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void maxItemsParameterApplied() throws Exception
     {
         restClient.authenticateUser(userModel).withWorkflowAPI().addProcess("activitiAdhoc", assigneeUser, false, Priority.Low);
@@ -146,9 +147,9 @@ public class GetTasksTests extends RestTest
         taskModels.assertThat().paginationField("count").is("2");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
-            TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Check that properties parameter is applied.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,
+            TestGroup.TASKS}, executionType = ExecutionType.REGRESSION, description = "Check that properties parameter is applied.")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void propertiesParameterApplied() throws Exception
     {
         taskModels = restClient.authenticateUser(dataUser.getAdminUser()).withParams("properties=name,description").withWorkflowAPI().getTasks();
@@ -166,9 +167,9 @@ public class GetTasksTests extends RestTest
                 .assertThat().entriesListDoesNotContain("formResourceKey");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
-            TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Use invalid where parameter. Check default error model schema.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,
+            TestGroup.TASKS}, executionType = ExecutionType.REGRESSION, description = "Use invalid where parameter. Check default error model schema.")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void invalidWhereParameterCheckDefaultErrorModelSchema() throws Exception
     {
         restClient.authenticateUser(dataUser.getAdminUser()).where("assignee AND '" + assigneeUser.getUsername() + "'").withWorkflowAPI().getTasks();
@@ -179,9 +180,9 @@ public class GetTasksTests extends RestTest
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
-            TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Verify the request in case of any user which is not involved.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,
+            TestGroup.TASKS}, executionType = ExecutionType.REGRESSION, description = "Verify the request in case of any user which is not involved.")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void requestWithUserNotInvolved() throws Exception
     {
         taskModels = restClient.authenticateUser(userNotInvolved).withWorkflowAPI().getTasks();
@@ -189,30 +190,29 @@ public class GetTasksTests extends RestTest
         taskModels.assertThat().entriesListIsEmpty();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
-            TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Check that orderBy parameter is applied.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,
+            TestGroup.TASKS}, executionType = ExecutionType.REGRESSION, description = "Check that orderBy parameter is applied.")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void orderByParameterApplied() throws Exception
-    { 
+    {
         taskModels = restClient.authenticateUser(dataUser.getAdminUser()).withParams("orderBy=id").withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        taskModels.assertThat().entriesListIsNotEmpty().
-            and().entriesListIsSortedAscBy("id");       
+        taskModels.assertThat().entriesListIsNotEmpty().and().entriesListIsSortedAscBy("id");
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
-            TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Check that orderBy parameter is applied and supports only one parameter.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,
+            TestGroup.TASKS}, executionType = ExecutionType.REGRESSION, description = "Check that orderBy parameter is applied and supports only one parameter.")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void orderByParameterSupportsOnlyOneParameter() throws Exception
     {
         taskModels = restClient.authenticateUser(dataUser.getAdminUser()).withParams("orderBy=id,processDefinitionId").withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("Only one order by parameter is supported");
-        taskModels.assertThat().entriesListIsEmpty();   
+        taskModels.assertThat().entriesListIsEmpty();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
-            TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Check that where parameter is applied.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,
+            TestGroup.TASKS}, executionType = ExecutionType.REGRESSION, description = "Check that where parameter is applied.")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void whereParameterApplied() throws Exception
     {
         UserModel anotherAssignee = dataUser.createRandomTestUser();
@@ -223,9 +223,9 @@ public class GetTasksTests extends RestTest
         taskModels.assertThat().entriesListIsNotEmpty().and().entriesListContains("assignee", anotherAssignee.getUsername()).and().entriesListCountIs(1);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
-            TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Check that invalid orderBy parameter applied returns 400 status code.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,
+            TestGroup.TASKS}, executionType = ExecutionType.REGRESSION, description = "Check that invalid orderBy parameter applied returns 400 status code.")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void invalidOrderByParameterApplied() throws Exception
     {
         restClient.authenticateUser(dataUser.getAdminUser()).withParams("orderBy=invalidParameter").withWorkflowAPI().getTasks();

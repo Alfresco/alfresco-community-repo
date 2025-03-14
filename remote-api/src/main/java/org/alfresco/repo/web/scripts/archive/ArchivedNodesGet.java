@@ -31,14 +31,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.ModelUtil;
 import org.alfresco.util.ScriptPagingDetails;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * This class is the controller for the archivednodes.get web script.
@@ -67,15 +68,15 @@ public class ArchivedNodesGet extends AbstractArchivedNodeWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         // We want to get all nodes in the archive which were originally
         // contained in the following StoreRef.
         StoreRef storeRef = parseRequestForStoreRef(req);
-        
+
         // Create paging
         ScriptPagingDetails paging = new ScriptPagingDetails(getIntParameter(req, MAX_ITEMS, DEFAULT_MAX_ITEMS_PER_PAGE),
-                    getIntParameter(req, SKIP_COUNT, 0));
-        
+                getIntParameter(req, SKIP_COUNT, 0));
+
         PagingResults<NodeRef> result = getArchivedNodesFrom(storeRef, paging, req.getParameter(NAME_FILTER));
         List<NodeRef> nodeRefs = result.getPage();
 
@@ -87,13 +88,13 @@ public class ArchivedNodesGet extends AbstractArchivedNodeWebScript
         }
 
         // Now do the paging
-        // ALF-19111. Note: Archived nodes CQ, supports Paging, 
-        // so no need to use the ModelUtil.page method to build the page again.        
+        // ALF-19111. Note: Archived nodes CQ, supports Paging,
+        // so no need to use the ModelUtil.page method to build the page again.
         model.put(DELETED_NODES, deletedNodes);
         // Because we haven't used ModelUtil.page method, we need to set the total items manually.
         paging.setTotalItems(deletedNodes.size());
         model.put("paging", ModelUtil.buildPaging(paging));
-        
+
         return model;
     }
 }

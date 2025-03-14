@@ -25,10 +25,11 @@
  */
 package org.alfresco.ibatis;
 
-import org.alfresco.metrics.db.DBMetricsReporter;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+
+import org.alfresco.metrics.db.DBMetricsReporter;
 
 public class AlfrescoSqlSessionFactoryBuilder extends SqlSessionFactoryBuilder
 {

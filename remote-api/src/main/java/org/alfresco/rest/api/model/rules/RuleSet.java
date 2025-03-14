@@ -50,15 +50,17 @@ public class RuleSet
     public static RuleSet of(String id)
     {
         return builder()
-            .id(id)
-            .create();
+                .id(id)
+                .create();
     }
 
-    public static boolean isNotDefaultId(final String id) {
+    public static boolean isNotDefaultId(final String id)
+    {
         return !isDefaultId(id);
     }
 
-    public static boolean isDefaultId(final String id) {
+    public static boolean isDefaultId(final String id)
+    {
         return DEFAULT_ID.equals(id);
     }
 
@@ -115,7 +117,8 @@ public class RuleSet
     /**
      * Set a flag indicating that the rule set is inherited by a folder.
      *
-     * @param inherited The flag.
+     * @param inherited
+     *            The flag.
      */
     public void setIsInherited(Boolean inherited)
     {
@@ -135,7 +138,8 @@ public class RuleSet
     /**
      * Set a flag indicating that the rule set is linked to by a folder.
      *
-     * @param isLinkedTo The flag.
+     * @param isLinkedTo
+     *            The flag.
      */
     public void setIsLinkedTo(Boolean isLinkedTo)
     {
@@ -167,15 +171,15 @@ public class RuleSet
     {
         return "RuleSet{"
                 + new StringJoiner(", ")
-                    .add("id='" + id + "'")
-                    .add("owningFolder='" + owningFolder + "'")
-                    .add("inclusionType='" + inclusionType + "'")
-                    .add("inheritedBy='" + inheritedBy + "'")
-                    .add("linkedToBy='" + linkedToBy + "'")
-                    .add("isInherited='" + isInherited + "'")
-                    .add("isLinkedTo='" + isLinkedTo + "'")
-                    .add("ruleIds='" + ruleIds + "'")
-                    .toString()
+                        .add("id='" + id + "'")
+                        .add("owningFolder='" + owningFolder + "'")
+                        .add("inclusionType='" + inclusionType + "'")
+                        .add("inheritedBy='" + inheritedBy + "'")
+                        .add("linkedToBy='" + linkedToBy + "'")
+                        .add("isInherited='" + isInherited + "'")
+                        .add("isLinkedTo='" + isLinkedTo + "'")
+                        .add("ruleIds='" + ruleIds + "'")
+                        .toString()
                 + '}';
     }
 

@@ -28,11 +28,11 @@ package org.alfresco.repo.invitation.activiti;
 import java.util.Map;
 
 import org.activiti.engine.delegate.DelegateExecution;
+
 import org.alfresco.repo.invitation.WorkflowModelModeratedInvitation;
 
 /**
- * Activiti delegate that is executed when a invitation-moderated process is reviewed 
- * and rejected. 
+ * Activiti delegate that is executed when a invitation-moderated process is reviewed and rejected.
  * 
  * <b>Same behaviour as {@link ModeratedActionReject}</b>
  *
@@ -52,7 +52,7 @@ public class RejectModeratedInviteDelegate extends AbstractInvitationDelegate
         String reviewer = (String) vars.get(WorkflowModelModeratedInvitation.wfVarReviewer);
         String resourceType = (String) vars.get(WorkflowModelModeratedInvitation.wfVarResourceType);
         String reviewComments = (String) vars.get(WorkflowModelModeratedInvitation.wfVarReviewComments);
-        
+
         invitationService.rejectModeratedInvitation(siteName, invitee, role, reviewer, resourceType, reviewComments);
     }
 }

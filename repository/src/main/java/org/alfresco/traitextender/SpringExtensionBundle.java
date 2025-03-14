@@ -34,13 +34,9 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
- * A {@link SpringBeanExtension}s collection that get registered on the
- * {@link Extender}'s registry on {@link #afterPropertiesSet()}.<br>
- * Works in conjunction with {@link SpringBeanExtension}s and
- * {@link SpringExtensionPoint}s to define and start spring based
- * {@link ExtensionBundle}s of {@link SingletonExtension}s.<br>
- * The spring-context XML sample bellow shows the definition of spring-bundled
- * trait-extensions:
+ * A {@link SpringBeanExtension}s collection that get registered on the {@link Extender}'s registry on {@link #afterPropertiesSet()}.<br>
+ * Works in conjunction with {@link SpringBeanExtension}s and {@link SpringExtensionPoint}s to define and start spring based {@link ExtensionBundle}s of {@link SingletonExtension}s.<br>
+ * The spring-context XML sample bellow shows the definition of spring-bundled trait-extensions:
  * 
  * <pre>
  * {@code
@@ -91,10 +87,9 @@ public class SpringExtensionBundle implements InitializingBean
     private RegistryExtensionBundle extensionBundle;
 
     /**
-     * @param enabled <code>true</code> if the current bundle should be
-     *            registered.<br>
-     *            <code>false</code> if the current bundle should skip extension
-     *            registration
+     * @param enabled
+     *            <code>true</code> if the current bundle should be registered.<br>
+     *            <code>false</code> if the current bundle should skip extension registration
      */
     public void setEnabled(boolean enabled)
     {
@@ -122,12 +117,9 @@ public class SpringExtensionBundle implements InitializingBean
     }
 
     /**
-     * Creates a {@link RegistryExtensionBundle} and registers all contained
-     * {@link SpringBeanExtension}s with it.<br>
-     * When all extension have successfully registered it starts the
-     * {@link RegistryExtensionBundle}.<br>
-     * The previously created {@link RegistryExtensionBundle} is stored for
-     * later start or {@link #stop()} operations.
+     * Creates a {@link RegistryExtensionBundle} and registers all contained {@link SpringBeanExtension}s with it.<br>
+     * When all extension have successfully registered it starts the {@link RegistryExtensionBundle}.<br>
+     * The previously created {@link RegistryExtensionBundle} is stored for later start or {@link #stop()} operations.
      * 
      * @see Extender#start(ExtensionBundle)
      * @see Extender#stop(ExtensionBundle)
@@ -149,8 +141,8 @@ public class SpringExtensionBundle implements InitializingBean
                 catch (Exception error)
                 {
                     throw new InvalidExtension("Could not register extension " + springExtension + " with "
-                                                           + extensionBundle,
-                                               error);
+                            + extensionBundle,
+                            error);
                 }
 
             }
@@ -161,8 +153,7 @@ public class SpringExtensionBundle implements InitializingBean
     }
 
     /**
-     * Stops a previously {@link #start()} created
-     * {@link RegistryExtensionBundle}.
+     * Stops a previously {@link #start()} created {@link RegistryExtensionBundle}.
      * 
      * @see Extender#start(ExtensionBundle)
      * @see Extender#stop(ExtensionBundle)

@@ -26,8 +26,8 @@
 package org.alfresco.repo.security.authority;
 
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -37,6 +37,10 @@ import java.util.List;
 import java.util.Set;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -53,11 +57,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
-
-import org.junit.experimental.categories.Category;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.springframework.context.ApplicationContext;
 
 @Category(OwnJVMTestsCategory.class)
 public class AuthorityBridgeTableAsynchronouslyRefreshedCacheTest extends TestCase
@@ -86,9 +85,9 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCacheTest extends TestCa
         {
             throw new AlfrescoRuntimeException(
                     "A previous tests did not clean up transaction: " +
-                    AlfrescoTransactionSupport.getTransactionId());
+                            AlfrescoTransactionSupport.getTransactionId());
         }
-        
+
         transactionService = (TransactionService) ctx.getBean(ServiceRegistry.TRANSACTION_SERVICE.getLocalName());
         authorityService = (AuthorityService) ctx.getBean(ServiceRegistry.AUTHORITY_SERVICE.getLocalName());
         tenantAdminService = ctx.getBean("tenantAdminService", TenantAdminService.class);
@@ -117,8 +116,7 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCacheTest extends TestCa
         // Create a group and place a user in it
         AuthenticationUtil.setFullyAuthenticatedUser(TENANT_ADMIN_USER);
         assertEquals(TENANT_DOMAIN, tenantService.getCurrentUserDomain());
-        final String tenantChildGroup = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<String>()
-        {
+        final String tenantChildGroup = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<String>() {
             @Override
             public String execute() throws Throwable
             {
@@ -134,8 +132,7 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCacheTest extends TestCa
 
         // Create another group and place in it an existing group with a user
         // The transaction is required, because the AuthorityBridgeTableAsynchronouslyRefreshedCache is cleared in the end of transaction asynchronously using FutureTask.
-        final String tenantParentGroup = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<String>()
-        {
+        final String tenantParentGroup = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<String>() {
             @Override
             public String execute() throws Throwable
             {
@@ -156,8 +153,7 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCacheTest extends TestCa
 
     private void createTenant(final String tenantDomain)
     {
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -173,7 +169,7 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCacheTest extends TestCa
             }
         }, false, true);
     }
-    
+
     /**
      * See MNT-12473
      */
@@ -182,20 +178,20 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCacheTest extends TestCa
         List<AuthorityBridgeLink> cyclicLinks = new LinkedList<AuthorityBridgeLink>();
         // no cycle
         cyclicLinks.add(createAuthorityBridgeLink("a1", "a2"));
-        
+
         cyclicLinks.add(createAuthorityBridgeLink("g1", "g2"));
         cyclicLinks.add(createAuthorityBridgeLink("g2", "g3"));
         cyclicLinks.add(createAuthorityBridgeLink("g3", "g4"));
         // 1st cycle
         cyclicLinks.add(createAuthorityBridgeLink("g4", "g1"));
-        
+
         cyclicLinks.add(createAuthorityBridgeLink("b1", "b2"));
         // child with no cycle
         cyclicLinks.add(createAuthorityBridgeLink("b2", "a1"));
         cyclicLinks.add(createAuthorityBridgeLink("b2", "b3"));
         // 2nd cycle
         cyclicLinks.add(createAuthorityBridgeLink("b3", "b1"));
-        
+
         cyclicLinks.add(createAuthorityBridgeLink("d1", "d2"));
         cyclicLinks.add(createAuthorityBridgeLink("d2", "d3"));
         // 3rd cycle
@@ -206,18 +202,20 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCacheTest extends TestCa
         cyclicLinks.add(createAuthorityBridgeLink("d3", "d5"));
         // 5th cycle
         cyclicLinks.add(createAuthorityBridgeLink("d5", "d1"));
-        
+
         AuthorityBridgeDAO authorityBridgeDAOMock = mock(AuthorityBridgeDAO.class);
         when(authorityBridgeDAOMock.getAuthorityBridgeLinks()).thenReturn(cyclicLinks);
-        
+
         AuthorityDAO authorityDAOMock = mock(AuthorityDAO.class);
         class Counter
         {
             private int removed = 0;
+
             public int getRemoved()
             {
                 return removed;
             }
+
             public void increase()
             {
                 this.removed++;
@@ -225,21 +223,20 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCacheTest extends TestCa
         }
         ;
         final Counter cycles = new Counter();
-        doAnswer(new Answer<Object>()
-        {
+        doAnswer(new Answer<Object>() {
             public Object answer(InvocationOnMock invocation)
             {
                 cycles.increase();
                 return null;
             }
         }).when(authorityDAOMock).removeAuthority(anyString(), anyString(), anyBoolean());
-        
+
         AuthorityBridgeTableAsynchronouslyRefreshedCache cache = new AuthorityBridgeTableAsynchronouslyRefreshedCache();
         cache.setAuthorityBridgeDAO(authorityBridgeDAOMock);
         cache.setAuthorityDAO(authorityDAOMock);
         cache.setTenantAdminService(tenantAdminService);
         cache.setRetryingTransactionHelper(transactionService.getRetryingTransactionHelper());
-        
+
         try
         {
             cache.buildCache(tenantAdminService.getCurrentUserDomain());
@@ -254,7 +251,7 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCacheTest extends TestCa
             fail("Cyclic links were NOT detected and processed");
         }
     }
-    
+
     private AuthorityBridgeLink createAuthorityBridgeLink(String parentName, String childName)
     {
         AuthorityBridgeLink link = new AuthorityBridgeLink();

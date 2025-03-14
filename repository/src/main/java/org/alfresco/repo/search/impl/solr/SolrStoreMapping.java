@@ -27,8 +27,9 @@ package org.alfresco.repo.search.impl.solr;
 
 import java.util.LinkedHashSet;
 
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.springframework.beans.factory.BeanNameAware;
+
+import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
  * @author Andy
@@ -37,35 +38,35 @@ import org.springframework.beans.factory.BeanNameAware;
 public class SolrStoreMapping implements BeanNameAware
 {
     StoreRef storeRef;
-    
+
     String httpClientFactory;
-    
+
     String baseUrl;
-    
+
     String protocol;
-    
+
     String identifier;
 
     private String beanName;
-    
+
     private String[] nodes = new String[0];
 
     private int numShards = 1;
 
     private int replicationFactor = 1;
-    
+
     public SolrStoreMapping()
     {
-        
+
     }
-    
-//    public SolrStoreMapping(String protocol, String identifier, String httpClientFactory, String baseUrl)
-//    {
-//        this.protocol = protocol;
-//        this.identifier = identifier;
-//        this.httpClientFactory = httpClientFactory;
-//        this.baseUrl = baseUrl;
-//    }
+
+    // public SolrStoreMapping(String protocol, String identifier, String httpClientFactory, String baseUrl)
+    // {
+    // this.protocol = protocol;
+    // this.identifier = identifier;
+    // this.httpClientFactory = httpClientFactory;
+    // this.baseUrl = baseUrl;
+    // }
 
     /**
      * @return the storeRef
@@ -74,7 +75,6 @@ public class SolrStoreMapping implements BeanNameAware
     {
         return storeRef;
     }
-
 
     /**
      * @return the protocol
@@ -85,7 +85,8 @@ public class SolrStoreMapping implements BeanNameAware
     }
 
     /**
-     * @param protocol the protocol to set
+     * @param protocol
+     *            the protocol to set
      */
     public void setProtocol(String protocol)
     {
@@ -102,7 +103,8 @@ public class SolrStoreMapping implements BeanNameAware
     }
 
     /**
-     * @param identifier the identifier to set
+     * @param identifier
+     *            the identifier to set
      */
     public void setIdentifier(String identifier)
     {
@@ -119,7 +121,8 @@ public class SolrStoreMapping implements BeanNameAware
     }
 
     /**
-     * @param httpClientFactory the httpClientFactory to set
+     * @param httpClientFactory
+     *            the httpClientFactory to set
      */
     public void setHttpClientFactory(String httpClientFactory)
     {
@@ -135,7 +138,8 @@ public class SolrStoreMapping implements BeanNameAware
     }
 
     /**
-     * @param baseUrl the baseUrl to set
+     * @param baseUrl
+     *            the baseUrl to set
      */
     public void setBaseUrl(String baseUrl)
     {
@@ -143,8 +147,8 @@ public class SolrStoreMapping implements BeanNameAware
     }
 
     /* (non-Javadoc)
-     * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String)
-     */
+     * 
+     * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String) */
     @Override
     public void setBeanName(String beanName)
     {
@@ -153,21 +157,21 @@ public class SolrStoreMapping implements BeanNameAware
 
     private void setStoreRef()
     {
-        if((protocol != null) && (identifier != null))
+        if ((protocol != null) && (identifier != null))
         {
             this.storeRef = new StoreRef(protocol, identifier);
         }
     }
-    
+
     /**
      * @return the nodes
      */
     public String getNodeString()
     {
         StringBuilder builder = new StringBuilder();
-        for(String node : nodes)
+        for (String node : nodes)
         {
-            if(builder.length() > 0)
+            if (builder.length() > 0)
             {
                 builder.append(',');
             }
@@ -175,7 +179,7 @@ public class SolrStoreMapping implements BeanNameAware
         }
         return builder.toString();
     }
-    
+
     /**
      * @return the nodes
      */
@@ -188,33 +192,32 @@ public class SolrStoreMapping implements BeanNameAware
      * @param nodes
      *            the nodes to set
      */
-//    public void setNodes(String[] nodes)
-//    {
-//        LinkedHashSet<String> unique = new LinkedHashSet<String>();
-//        for(String node : nodes)
-//        {
-//            for(String split : node.split(","))
-//            {
-//                unique.add(split.trim());
-//            }
-//        }
-//        
-//        this.nodes = unique.toArray(new String[0]);
-//    }
-    
+    // public void setNodes(String[] nodes)
+    // {
+    // LinkedHashSet<String> unique = new LinkedHashSet<String>();
+    // for(String node : nodes)
+    // {
+    // for(String split : node.split(","))
+    // {
+    // unique.add(split.trim());
+    // }
+    // }
+    //
+    // this.nodes = unique.toArray(new String[0]);
+    // }
+
     public void setNodeString(String nodes)
     {
         LinkedHashSet<String> unique = new LinkedHashSet<String>();
 
-        for(String split : nodes.split(","))
+        for (String split : nodes.split(","))
         {
             unique.add(split.trim());
         }
 
-
         this.nodes = unique.toArray(new String[0]);
     }
-    
+
     /**
      * @return the numShards
      */

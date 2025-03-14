@@ -30,8 +30,10 @@ public interface MessageProducer
     /**
      * Send the given POJO message to the default queue for the producer
      *
-     * @param message message to send
-     * @throws MessagingException on failure
+     * @param message
+     *            message to send
+     * @throws MessagingException
+     *             on failure
      */
     void send(Object message) throws MessagingException;
 }

@@ -27,7 +27,6 @@ package org.alfresco.repo.admin;
 
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 
-
 /**
  * Repository-stored Model Definition
  * 
@@ -38,9 +37,9 @@ public class RepoModelDefinition
     private String repoName;
     private String repoVersion;
     private ModelDefinition model;
-    
+
     private boolean loaded;
-    
+
     RepoModelDefinition(String repoName, String repoVersion, ModelDefinition model, boolean loaded)
     {
         this.repoName = repoName;
@@ -49,12 +48,11 @@ public class RepoModelDefinition
         this.loaded = loaded;
     }
 
-    
     public String getRepoName()
     {
         return repoName;
     }
-    
+
     public String getRepoVersion()
     {
         return repoVersion;
@@ -64,13 +62,13 @@ public class RepoModelDefinition
     {
         return model;
     }
-    
+
     // JanV - temp
     public boolean isLoaded()
     {
         return loaded;
     }
-    
+
     public String toString()
     {
         StringBuffer sb = new StringBuffer();
@@ -82,7 +80,7 @@ public class RepoModelDefinition
         sb.append("Author: " + (model == null ? "n/a" : model.getAuthor()) + " , ");
         sb.append("Published: " + (model == null ? "n/a" : model.getPublishedDate()) + " , ");
         sb.append("Version: " + (model == null ? "n/a" : model.getVersion()));
-       
+
         return sb.toString();
     }
 }

@@ -30,8 +30,7 @@ import org.alfresco.util.EqualsHelper;
 /**
  * Entity bean for <b>alf_encoding</b> table.
  * <p>
- * These are unique (see {@link #equals(Object) equals} and {@link #hashCode() hashCode}) based
- * on the {@link #getEncoding() encoding} value.
+ * These are unique (see {@link #equals(Object) equals} and {@link #hashCode() hashCode}) based on the {@link #getEncoding() encoding} value.
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -39,17 +38,17 @@ import org.alfresco.util.EqualsHelper;
 public class EncodingEntity
 {
     public static final Long CONST_LONG_ZERO = Long.valueOf(0L);
-    
+
     private Long id;
     private Long version;
     private String encoding;
-    
+
     @Override
     public int hashCode()
     {
         return (encoding == null ? 0 : encoding.hashCode());
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -67,15 +66,15 @@ public class EncodingEntity
             return false;
         }
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("EncodingEntity")
-          .append("[ ID=").append(id)
-          .append(", encoding=").append(encoding)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", encoding=").append(encoding)
+                .append("]");
         return sb.toString();
     }
 
@@ -98,7 +97,7 @@ public class EncodingEntity
     {
         this.version = version;
     }
-    
+
     public String getEncoding()
     {
         return encoding;

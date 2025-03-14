@@ -55,10 +55,10 @@ public class RenditionServiceImplTest extends TestCase
 
     private ServiceRegistry serviceRegistry = new MockedTestServiceRegistry();
     private ActionService actionService = mock(ActionService.class);
-    
+
     private final RenditionDefinitionPersisterImpl renditionDefinitionPersister = mock(RenditionDefinitionPersisterImpl.class);
     private RenditionServiceImpl renditionService;
-    
+
     private final QName ACTION_NAME = QName.createQName(NamespaceService.ALFRESCO_URI, "testName");
 
     @Override
@@ -107,7 +107,7 @@ public class RenditionServiceImplTest extends TestCase
         assertEquals(1, engineDefs.size());
         assertSame(renderingDefinition, engineDefs.get(0));
         assertNotNull(renditionService.loadRenditionDefinitions(ENGINE_NAME));
-        
+
         // Check that when the action service returns a non-rendering action
         // definition then the rendering service does not include it.
         ActionDefinition actionDefinition = new ActionDefinitionImpl(ENGINE_NAME);

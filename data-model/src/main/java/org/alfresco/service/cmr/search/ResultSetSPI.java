@@ -34,37 +34,25 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
 
 /**
- * This is the common interface for both row (Alfresco node) and column (CMIS style property or function) based results.
- * The meta-data for the results sets contains the detailed info on what columns are available. For row based result
- * sets there is no selector - all the nodes returned do not have to have a specific type or aspect. For example, an FTS
- * search on properties of type d:content has no type constraint implied or otherwise. Searches against properties have
- * an implied type, but as there can be more than one property -> more than one type or aspect implied (eg via OR in FTS
- * or lucene) they are ignored An iterable result set from a searcher query.<b/> Implementations must implement the
- * indexes for row lookup as zero-based.<b/>
+ * This is the common interface for both row (Alfresco node) and column (CMIS style property or function) based results. The meta-data for the results sets contains the detailed info on what columns are available. For row based result sets there is no selector - all the nodes returned do not have to have a specific type or aspect. For example, an FTS search on properties of type d:content has no type constraint implied or otherwise. Searches against properties have an implied type, but as there can be more than one property -> more than one type or aspect implied (eg via OR in FTS or lucene) they are ignored An iterable result set from a searcher query.<b/> Implementations must implement the indexes for row lookup as zero-based.<b/>
  * 
  * @author andyh
- * @param <ROW> 
- * @param <MD> 
+ * @param <ROW>
+ * @param <MD>
  */
 @AlfrescoPublicApi
 public interface ResultSetSPI<ROW extends ResultSetRow, MD extends ResultSetMetaData> extends Iterable<ROW> // Specific iterator over ResultSetRows
 {
     /**
-     * Get the number of rows in this result set. This will be less than or equal to the maximum number of rows
-     * requested or the full length of the results set if no restriction on length are specified. If a skip count is
-     * given, the length represents the number of results after the skip count and does not include the items skipped.
+     * Get the number of rows in this result set. This will be less than or equal to the maximum number of rows requested or the full length of the results set if no restriction on length are specified. If a skip count is given, the length represents the number of results after the skip count and does not include the items skipped.
      * 
-     * @return the number of results. -1 means unknown and can be returned for lazy evaluations of permissions when the
-     *         actual size is not known and evaluated upon request.
+     * @return the number of results. -1 means unknown and can be returned for lazy evaluations of permissions when the actual size is not known and evaluated upon request.
      */
     public int length();
-   
+
     /**
-     * Attempt to get the number of rows that matched the query. This result set may only contain a section of the results.
-     * If a skip count is given the number found may or may not include the items skipped.
-     * This is best effort and only done if is cheap.
-     * For SOLR it is cheap; for the DB it may be expensive as permissions are done post query.
-     * If you want to know if there are more results to fetch use hasMore()
+     * Attempt to get the number of rows that matched the query. This result set may only contain a section of the results. If a skip count is given the number found may or may not include the items skipped. This is best effort and only done if is cheap. For SOLR it is cheap; for the DB it may be expensive as permissions are done post query. If you want to know if there are more results to fetch use hasMore()
+     * 
      * @return long
      */
     public long getNumberFound();
@@ -88,8 +76,7 @@ public interface ResultSetSPI<ROW extends ResultSetRow, MD extends ResultSetMeta
     public float getScore(int n);
 
     /**
-     * Close the result set and release any resources held/ The result set is bound to the transaction and will auto
-     * close at the end of the transaction.
+     * Close the result set and release any resources held/ The result set is bound to the transaction and will auto close at the end of the transaction.
      */
     public void close();
 
@@ -133,8 +120,7 @@ public interface ResultSetSPI<ROW extends ResultSetRow, MD extends ResultSetMeta
     public MD getResultSetMetaData();
 
     /**
-     * Get the start point for this results set in the overall set of rows that match the query - this will be equal to
-     * the skip count set when executing the query, and zero if this is not set.
+     * Get the start point for this results set in the overall set of rows that match the query - this will be equal to the skip count set when executing the query, and zero if this is not set.
      * 
      * @return the position of the first result in the overall result set
      */
@@ -150,7 +136,8 @@ public interface ResultSetSPI<ROW extends ResultSetRow, MD extends ResultSetMeta
     /**
      * Bulk fetch results in the cache
      * 
-     * @param bulkFetch boolean
+     * @param bulkFetch
+     *            boolean
      */
     public boolean setBulkFetch(boolean bulkFetch);
 
@@ -164,7 +151,8 @@ public interface ResultSetSPI<ROW extends ResultSetRow, MD extends ResultSetMeta
     /**
      * Set the bulk fetch size
      * 
-     * @param bulkFetchSize int
+     * @param bulkFetchSize
+     *            int
      */
     public int setBulkFetchSize(int bulkFetchSize);
 
@@ -174,9 +162,10 @@ public interface ResultSetSPI<ROW extends ResultSetRow, MD extends ResultSetMeta
      * @return the fetch size
      */
     public int getBulkFetchSize();
-    
+
     /**
-     * @param field String
+     * @param field
+     *            String
      * @return List
      */
     public List<Pair<String, Integer>> getFieldFacet(String field);
@@ -189,11 +178,12 @@ public interface ResultSetSPI<ROW extends ResultSetRow, MD extends ResultSetMeta
     public Map<String, Integer> getFacetQueries();
 
     /**
-     * Gets the highlighting results.  Returns a Map keyed by noderef.
-     * Each value is a pair of "fieldname" and a String array of highlight snippets
+     * Gets the highlighting results. Returns a Map keyed by noderef. Each value is a pair of "fieldname" and a String array of highlight snippets
+     * 
      * @return the Map
      */
     public Map<NodeRef, List<Pair<String, List<String>>>> getHighlighting();
+
     /**
      * Gets the spell check result
      * 

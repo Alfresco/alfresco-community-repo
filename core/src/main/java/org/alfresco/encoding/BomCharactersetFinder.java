@@ -35,7 +35,7 @@ import org.apache.commons.logging.LogFactory;
 public class BomCharactersetFinder extends AbstractCharactersetFinder
 {
     private static Log logger = LogFactory.getLog(BomCharactersetFinder.class);
-    
+
     @Override
     public void setBufferSize(int bufferSize)
     {
@@ -43,7 +43,7 @@ public class BomCharactersetFinder extends AbstractCharactersetFinder
     }
 
     /**
-     * @return          Returns 64
+     * @return Returns 64
      */
     @Override
     protected int getBufferSize()
@@ -52,8 +52,7 @@ public class BomCharactersetFinder extends AbstractCharactersetFinder
     }
 
     /**
-     * Just searches the Byte Order Marker, i.e. the first three characters for a sign of
-     * the encoding.
+     * Just searches the Byte Order Marker, i.e. the first three characters for a sign of the encoding.
      */
     protected Charset detectCharsetImpl(byte[] buffer) throws Exception
     {
@@ -73,22 +72,19 @@ public class BomCharactersetFinder extends AbstractCharactersetFinder
                 // ASCII
                 charset = Charset.forName("Cp1252");
             }
-            else if (
-                    byteHeader[0] == 0xFE &&
+            else if (byteHeader[0] == 0xFE &&
                     byteHeader[1] == 0xFF)
             {
                 // UCS-2 Big Endian
                 charset = Charset.forName("UTF-16BE");
             }
-            else if (
-                    byteHeader[0] == 0xFF &&
+            else if (byteHeader[0] == 0xFF &&
                     byteHeader[1] == 0xFE)
             {
                 // UCS-2 Little Endian
                 charset = Charset.forName("UTF-16LE");
             }
-            else if (
-                    bytesRead >= 3 &&
+            else if (bytesRead >= 3 &&
                     byteHeader[0] == 0xEF &&
                     byteHeader[1] == 0xBB &&
                     byteHeader[2] == 0xBF)
@@ -108,7 +104,12 @@ public class BomCharactersetFinder extends AbstractCharactersetFinder
         {
             if (bis != null)
             {
-                try { bis.close(); } catch (Throwable e) {}
+                try
+                {
+                    bis.close();
+                }
+                catch (Throwable e)
+                {}
             }
         }
     }

@@ -24,13 +24,15 @@
  * #L%
  */
 package org.alfresco.rest.api.search;
+
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
-import org.alfresco.rest.api.search.model.SearchSQLQuery;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import org.alfresco.rest.api.search.model.SearchSQLQuery;
 
 public class SearchSQLParseTest
 {
@@ -41,6 +43,7 @@ public class SearchSQLParseTest
     {
         helper = new SerializerTestHelper();
     }
+
     @Test
     public void testSQLDeserializeQuery() throws IOException
     {
@@ -48,6 +51,7 @@ public class SearchSQLParseTest
         SearchSQLQuery searchQuery = parse(query);
         assertEquals("select cm_name from alfresco", searchQuery.getStmt());
     }
+
     @Test
     public void testSQLDeserializeSelectQuery() throws IOException
     {
@@ -55,6 +59,7 @@ public class SearchSQLParseTest
         SearchSQLQuery searchQuery = parse(query);
         assertEquals("select SITE from alfresco", searchQuery.getStmt());
     }
+
     private SearchSQLQuery parse(String json) throws IOException
     {
         return (SearchSQLQuery) helper.searchSQLQueryFromJson(json, SearchSQLQuery.class);

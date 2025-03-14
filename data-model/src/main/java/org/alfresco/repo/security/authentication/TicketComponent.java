@@ -30,7 +30,6 @@ import java.util.Set;
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.Auditable;
 
-
 /**
  * Manage authentication tickets
  * 
@@ -43,7 +42,8 @@ public interface TicketComponent
     /**
      * Register a new ticket
      * 
-     * @param userName String
+     * @param userName
+     *            String
      * @return - the ticket
      * @throws AuthenticationException
      */
@@ -52,98 +52,108 @@ public interface TicketComponent
     /**
      * Get the current ticket
      * 
-     * @param userName String
+     * @param userName
+     *            String
      * @param autoCreate
      *            should we create one automatically if there isn't one?
      * @return - the ticket
      */
-    
+
     public String getCurrentTicket(String userName, boolean autoCreate);
-    
+
     /**
      * Check that a certificate is valid and can be used in place of a login.
      * 
      * Tickets may be rejected because:
      * <ol>
-     * <li> The certificate does not exists
-     * <li> The status of the user has changed 
+     * <li>The certificate does not exists
+     * <li>The status of the user has changed
      * <ol>
-     * <li> The user is locked
-     * <li> The account has expired
-     * <li> The credentials have expired
-     * <li> The account is disabled
+     * <li>The user is locked
+     * <li>The account has expired
+     * <li>The credentials have expired
+     * <li>The account is disabled
      * </ol>
-     * <li> The ticket may have expired
+     * <li>The ticket may have expired
      * <ol>
-     * <li> The ticked my be invalid by timed expiry
-     * <li> An attemp to reuse a once only ticket
+     * <li>The ticked my be invalid by timed expiry
+     * <li>An attemp to reuse a once only ticket
      * </ol>
      * </ol>
      * 
-     * @param ticket String
+     * @param ticket
+     *            String
      * @return - the user name
      * @throws AuthenticationException
      */
     @Auditable(parameters = {"ticket"}, recordable = {false})
     public String validateTicket(String ticket) throws AuthenticationException;
-    
+
     /**
      * Invalidate the tickets by id
-     * @param ticket String
+     * 
+     * @param ticket
+     *            String
      */
     @Auditable(parameters = {"ticket"}, recordable = {false})
     public void invalidateTicketById(String ticket);
-    
+
     /**
      * Invalidate all user tickets
      * 
-     * @param userName String
+     * @param userName
+     *            String
      */
     public void invalidateTicketByUser(String userName);
-      
-	/**
-	 * Count tickets
-	 * 
-	 * This may be higher than the user count, since a user can have more than one ticket/session
-	 *
-	 * @param nonExpiredOnly  true for non expired tickets, false for all (including expired) tickets
-	 * @return int number of tickets
-	 */
+
+    /**
+     * Count tickets
+     * 
+     * This may be higher than the user count, since a user can have more than one ticket/session
+     *
+     * @param nonExpiredOnly
+     *            true for non expired tickets, false for all (including expired) tickets
+     * @return int number of tickets
+     */
     public int countTickets(boolean nonExpiredOnly);
-    
-	/**
-	 * Get set of users with tickets
-	 * 
-	 * This may be lower than the ticket count, since a user can have more than one ticket/session
-	 *
-	 * @param nonExpiredOnly  true for non expired tickets, false for all (including expired) tickets
-	 */
+
+    /**
+     * Get set of users with tickets
+     * 
+     * This may be lower than the ticket count, since a user can have more than one ticket/session
+     *
+     * @param nonExpiredOnly
+     *            true for non expired tickets, false for all (including expired) tickets
+     */
     public Set<String> getUsersWithTickets(boolean nonExpiredOnly);
 
-	/**
-	 * Invalidate tickets
-	 * 
-	 * @param expiredOnly  true for EXPIRED tickets, false for ALL (including non-expired) tickets
-	 * @return int  count of invalidated tickets
-	 */
+    /**
+     * Invalidate tickets
+     * 
+     * @param expiredOnly
+     *            true for EXPIRED tickets, false for ALL (including non-expired) tickets
+     * @return int count of invalidated tickets
+     */
     public int invalidateTickets(boolean expiredOnly);
-    
+
     /**
      * Get the authority for the given ticket
      * 
-     * @param ticket String
+     * @param ticket
+     *            String
      * @return the authority
      */
     public String getAuthorityForTicket(String ticket);
-    
+
     /**
      * Clear the current ticket
      *
      */
     public void clearCurrentTicket();
-    
+
     /**
-     * Does this ticket component support a single ticket per user or one ticket for each time they login? 
+     * Does this ticket component support a single ticket per user or one ticket for each time they login?
+     * 
      * @return boolean
      */
     public boolean getUseSingleTicketPerUser();

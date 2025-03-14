@@ -26,20 +26,20 @@
 
 package org.alfresco.rest.api;
 
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+
 import org.alfresco.rest.api.categories.CategoriesEntityResourceTest;
 import org.alfresco.rest.api.categories.NodesCategoryLinksRelationTest;
 import org.alfresco.rest.api.categories.SubcategoriesRelationTest;
 import org.alfresco.rest.api.impl.CategoriesImplTest;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    CategoriesImplTest.class,
-    CategoriesEntityResourceTest.class,
-    SubcategoriesRelationTest.class,
-    NodesCategoryLinksRelationTest.class
+        CategoriesImplTest.class,
+        CategoriesEntityResourceTest.class,
+        SubcategoriesRelationTest.class,
+        NodesCategoryLinksRelationTest.class
 })
 public class CategoriesUnitTests
-{
-}
+{}

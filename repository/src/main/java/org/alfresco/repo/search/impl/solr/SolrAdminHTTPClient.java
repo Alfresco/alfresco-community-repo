@@ -31,12 +31,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.httpclient.HttpClientFactory;
-import org.alfresco.repo.search.QueryParserException;
-import org.alfresco.util.ParameterCheck;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -53,6 +49,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import org.alfresco.httpclient.HttpClientFactory;
+import org.alfresco.repo.search.QueryParserException;
+import org.alfresco.util.ParameterCheck;
+
 /**
  * @author Andy
  */
@@ -61,17 +61,15 @@ public class SolrAdminHTTPClient
     static Log s_logger = LogFactory.getLog(SolrAdminHTTPClient.class);
 
     private String adminUrl;
-    
+
     private String baseUrl;
 
     private HttpClient httpClient;
-	private HttpClientFactory httpClientFactory;
-	
-    public SolrAdminHTTPClient()
-    {
-    }
+    private HttpClientFactory httpClientFactory;
 
-    
+    public SolrAdminHTTPClient()
+    {}
+
     public void setBaseUrl(String baseUrl)
     {
         this.baseUrl = baseUrl;
@@ -80,21 +78,21 @@ public class SolrAdminHTTPClient
     public void init()
     {
         ParameterCheck.mandatory("baseUrl", baseUrl);
-        
-    	StringBuilder sb = new StringBuilder();
-    	sb.append(baseUrl + "/admin/cores");
-    	this.adminUrl = sb.toString();
 
-    	httpClient = httpClientFactory.getHttpClient();
-    	HttpClientParams params = httpClient.getParams();
-    	params.setBooleanParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, true);
-    	httpClient.getState().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials("admin", "admin"));
+        StringBuilder sb = new StringBuilder();
+        sb.append(baseUrl + "/admin/cores");
+        this.adminUrl = sb.toString();
+
+        httpClient = httpClientFactory.getHttpClient();
+        HttpClientParams params = httpClient.getParams();
+        params.setBooleanParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, true);
+        httpClient.getState().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials("admin", "admin"));
     }
 
     public void setHttpClientFactory(HttpClientFactory httpClientFactory)
-	{
-		this.httpClientFactory = httpClientFactory;
-	}
+    {
+        this.httpClientFactory = httpClientFactory;
+    }
 
     public JSONObject execute(HashMap<String, String> args)
     {

@@ -5,8 +5,6 @@ import static org.alfresco.utility.report.log.Step.STEP;
 import java.util.Iterator;
 import java.util.List;
 
-import org.alfresco.cmis.CmisWrapper;
-import org.alfresco.utility.LogFactory;
 import org.apache.chemistry.opencmis.client.api.ItemIterable;
 import org.apache.chemistry.opencmis.client.api.ObjectType;
 import org.apache.chemistry.opencmis.client.api.Tree;
@@ -15,6 +13,9 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.testng.Assert;
+
+import org.alfresco.cmis.CmisWrapper;
+import org.alfresco.utility.LogFactory;
 
 /**
  * DSL for preparing calls on getting the type children of a type.
@@ -45,9 +46,7 @@ public class BaseObjectType
     }
 
     /**
-     * Example of objectTypeID:
-     * "D:trx:transferReport" - see {@link ObjectTypeHelper} "D:trx:tempTransferStore"
-     * "D:imap:imapAttach"
+     * Example of objectTypeID: "D:trx:transferReport" - see {@link ObjectTypeHelper} "D:trx:tempTransferStore" "D:imap:imapAttach"
      *
      * @param objectTypeID
      */
@@ -57,9 +56,7 @@ public class BaseObjectType
     }
 
     /**
-     * Example of objectTypeID:
-     * "D:trx:transferReport" - see {@link ObjectTypeHelper} "D:trx:tempTransferStore"
-     * "D:imap:imapAttach"
+     * Example of objectTypeID: "D:trx:transferReport" - see {@link ObjectTypeHelper} "D:trx:tempTransferStore" "D:imap:imapAttach"
      *
      * @param objectTypeID
      */
@@ -70,9 +67,7 @@ public class BaseObjectType
     }
 
     /**
-     * Example of objectTypeID:
-     * "D:trx:transferReport" - see {@link ObjectTypeHelper} "D:trx:tempTransferStore"
-     * "D:imap:imapAttach"
+     * Example of objectTypeID: "D:trx:transferReport" - see {@link ObjectTypeHelper} "D:trx:tempTransferStore" "D:imap:imapAttach"
      *
      * @param objectTypeID
      */
@@ -151,11 +146,7 @@ public class BaseObjectType
     }
 
     /**
-     * Assert that specified descendantType is present in the depth of tree
-     * Depth can be -1 or >= 1
-     * Example of objectTypeID:
-     * "D:trx:transferReport" - see {@link ObjectTypeHelper} "D:trx:tempTransferStore"
-     * "D:imap:imapAttach"
+     * Assert that specified descendantType is present in the depth of tree Depth can be -1 or >= 1 Example of objectTypeID: "D:trx:transferReport" - see {@link ObjectTypeHelper} "D:trx:tempTransferStore" "D:imap:imapAttach"
      * 
      * @param objectTypeID
      * @param depth
@@ -167,11 +158,7 @@ public class BaseObjectType
     }
 
     /**
-     * Assert that specified descendantType is NOT present in the depth of tree
-     * Depth can be -1 or >= 1
-     * Example of objectTypeID:
-     * "D:trx:transferReport" - see {@link ObjectTypeHelper} "D:trx:tempTransferStore"
-     * "D:imap:imapAttach"
+     * Assert that specified descendantType is NOT present in the depth of tree Depth can be -1 or >= 1 Example of objectTypeID: "D:trx:transferReport" - see {@link ObjectTypeHelper} "D:trx:tempTransferStore" "D:imap:imapAttach"
      * 
      * @param objectTypeID
      * @param depth

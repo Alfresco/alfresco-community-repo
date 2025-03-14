@@ -47,8 +47,7 @@ public class RM1814Test extends BaseRMTestCase
 
     public void testRM1814() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -58,8 +57,7 @@ public class RM1814Test extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -68,11 +66,8 @@ public class RM1814Test extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new FailureTest
-        (
-            "Target node is in a hold."
-        )
-        {
+        doTestInTransaction(new FailureTest(
+                "Target node is in a hold.") {
             @Override
             public void run() throws Exception
             {
@@ -80,8 +75,7 @@ public class RM1814Test extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {

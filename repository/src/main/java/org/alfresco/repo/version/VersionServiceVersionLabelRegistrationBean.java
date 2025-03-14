@@ -37,59 +37,59 @@ import org.alfresco.util.PropertyCheck;
  * Used to configure the version service via spring.
  * 
  */
-public class VersionServiceVersionLabelRegistrationBean 
+public class VersionServiceVersionLabelRegistrationBean
 {
-	private String typeQName;
-	
-	private CalculateVersionLabelPolicy policy;
-	
-	private VersionService versionService;
-	
-	private NamespacePrefixResolver prefixResolver;
-	
-	/**
-	 * Register the deployment target with the deployment target registry
-	 */
-	public void register()
-	{
-		PropertyCheck.mandatory(this, "typeQName", typeQName);
-		PropertyCheck.mandatory(this, "versionService", getVersionService());
-		PropertyCheck.mandatory(this, "policy", policy);
-	    PropertyCheck.mandatory(this, "prefixResolver", prefixResolver);
-		
-		/**
-		 * Go ahead and register the version label policy with the 
-		 * versionService
-		 */
-		QName qName = QName.createQName(typeQName, prefixResolver);
-		getVersionService().registerVersionLabelPolicy(qName, policy);
-	    
-	}
-	
-	public void setTypeQName(String typeQName) 
-	{
-		this.typeQName = typeQName;
-	}
-	
-	public String getTypeQName() 
-	{
-		return typeQName;
-	}
-	
-	public void setPolicy(CalculateVersionLabelPolicy policy)
-	{
-	    this.policy = policy;
-	}
-	
-	public CalculateVersionLabelPolicy getPolicy()
-	{
-	    return policy;
-	}
+    private String typeQName;
+
+    private CalculateVersionLabelPolicy policy;
+
+    private VersionService versionService;
+
+    private NamespacePrefixResolver prefixResolver;
+
+    /**
+     * Register the deployment target with the deployment target registry
+     */
+    public void register()
+    {
+        PropertyCheck.mandatory(this, "typeQName", typeQName);
+        PropertyCheck.mandatory(this, "versionService", getVersionService());
+        PropertyCheck.mandatory(this, "policy", policy);
+        PropertyCheck.mandatory(this, "prefixResolver", prefixResolver);
+
+        /**
+         * Go ahead and register the version label policy with the versionService
+         */
+        QName qName = QName.createQName(typeQName, prefixResolver);
+        getVersionService().registerVersionLabelPolicy(qName, policy);
+
+    }
+
+    public void setTypeQName(String typeQName)
+    {
+        this.typeQName = typeQName;
+    }
+
+    public String getTypeQName()
+    {
+        return typeQName;
+    }
+
+    public void setPolicy(CalculateVersionLabelPolicy policy)
+    {
+        this.policy = policy;
+    }
+
+    public CalculateVersionLabelPolicy getPolicy()
+    {
+        return policy;
+    }
 
     public void setNamespacePrefixResolver(NamespacePrefixResolver prefixResolver)
     {
         this.prefixResolver = prefixResolver;
     }
+
     public NamespacePrefixResolver getNamespacePrefixResolver()
     {
         return prefixResolver;
@@ -104,5 +104,5 @@ public class VersionServiceVersionLabelRegistrationBean
     {
         return versionService;
     }
-	
+
 }

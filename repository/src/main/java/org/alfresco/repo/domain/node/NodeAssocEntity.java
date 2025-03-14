@@ -55,24 +55,23 @@ public class NodeAssocEntity
      * Required default constructor
      */
     public NodeAssocEntity()
-    {
-    }
-        
+    {}
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("NodeAssocEntity")
-          .append("[ ID=").append(id)
-          .append(", sourceNode=").append(sourceNode)
-          .append(", targetNode=").append(targetNode)
-          .append(", typeQNameId=").append(typeQNameId)
-          .append(", assocIndex=").append(assocIndex)
-          .append(", typeQNameIds=").append(typeQNameIds)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", sourceNode=").append(sourceNode)
+                .append(", targetNode=").append(targetNode)
+                .append(", typeQNameId=").append(typeQNameId)
+                .append(", assocIndex=").append(assocIndex)
+                .append(", typeQNameIds=").append(typeQNameIds)
+                .append("]");
         return sb.toString();
     }
-    
+
     /**
      * Helper method to fetch the association reference
      */

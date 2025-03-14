@@ -31,11 +31,12 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for DataGenerator complex type.
+ * <p>
+ * Java class for DataGenerator complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType name="DataGenerator">
@@ -53,7 +54,8 @@ import jakarta.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "DataGenerator")
-public class DataGenerator {
+public class DataGenerator
+{
 
     @XmlAttribute(required = true)
     protected String name;
@@ -65,12 +67,11 @@ public class DataGenerator {
     /**
      * Gets the value of the name property.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     * @return possible object is {@link String }
+     * 
      */
-    public String getName() {
+    public String getName()
+    {
         return name;
     }
 
@@ -78,23 +79,22 @@ public class DataGenerator {
      * Sets the value of the name property.
      * 
      * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *            allowed object is {@link String }
+     * 
      */
-    public void setName(String value) {
+    public void setName(String value)
+    {
         this.name = value;
     }
 
     /**
      * Gets the value of the registeredName property.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     * @return possible object is {@link String }
+     * 
      */
-    public String getRegisteredName() {
+    public String getRegisteredName()
+    {
         return registeredName;
     }
 
@@ -102,23 +102,22 @@ public class DataGenerator {
      * Sets the value of the registeredName property.
      * 
      * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *            allowed object is {@link String }
+     * 
      */
-    public void setRegisteredName(String value) {
+    public void setRegisteredName(String value)
+    {
         this.registeredName = value;
     }
 
     /**
      * Gets the value of the clazz property.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     * @return possible object is {@link String }
+     * 
      */
-    public String getClazz() {
+    public String getClazz()
+    {
         return clazz;
     }
 
@@ -126,11 +125,11 @@ public class DataGenerator {
      * Sets the value of the clazz property.
      * 
      * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *            allowed object is {@link String }
+     * 
      */
-    public void setClazz(String value) {
+    public void setClazz(String value)
+    {
         this.clazz = value;
     }
 

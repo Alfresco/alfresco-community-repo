@@ -1,5 +1,9 @@
 package org.alfresco.rest.sites.groups;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;
@@ -12,9 +16,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class GetSiteGroupTests extends RestTest
 {
@@ -41,8 +42,8 @@ public class GetSiteGroupTests extends RestTest
         restClient.authenticateUser(adminUser).withCoreAPI().usingSite(publicSiteModel).addSiteGroup(getId(consumer), UserRole.SiteConsumer);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify admin user can get site group and gets status code OK (200)")
     public void getSiteGroupWithAdminUser() throws Exception
     {
@@ -53,8 +54,8 @@ public class GetSiteGroupTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.SANITY,
             description = "Failed authentication get site group call returns status code 401")
     public void unauthenticatedUserIsNotAuthorizedToRetrieveSiteGroup() throws JsonToModelConversionException, Exception
     {
@@ -63,8 +64,8 @@ public class GetSiteGroupTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Manager role doesn't get a site group of inexistent site and status code is Not Found (404)")
     public void getSiteGroupOfInexistentSite() throws Exception
     {
@@ -76,8 +77,8 @@ public class GetSiteGroupTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_WAS_NOT_FOUND, invalidSite.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Manager role doesn't get non site group of inexistent site and status code is Not Found (404)")
     public void getSiteGroupForNonSiteGroup() throws Exception
     {
@@ -89,8 +90,8 @@ public class GetSiteGroupTests extends RestTest
                 .assertLastError().containsSummary(String.format("Given authority is not a member of the site"));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Manager role doesn't get not existing site group and status code is Not Found (404)")
     public void getSiteGroupForInexistentSiteGroup() throws Exception
     {
@@ -102,8 +103,8 @@ public class GetSiteGroupTests extends RestTest
                 .assertLastError().containsSummary(String.format("An authority was not found for %s", getId(inexistentGroup)));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Manager role gets site groups with Manager role and status code is OK (200)")
     public void getSiteGroupWithManagerRole() throws Exception
     {
@@ -116,7 +117,8 @@ public class GetSiteGroupTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    String getId(GroupModel group) {
+    String getId(GroupModel group)
+    {
         return "GROUP_" + group.getGroupIdentifier();
     }
 }

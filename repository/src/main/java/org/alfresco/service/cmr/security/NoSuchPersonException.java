@@ -39,7 +39,7 @@ public class NoSuchPersonException extends PersonException
     private static final long serialVersionUID = -8514361120995433997L;
 
     private final String userName;
-    
+
     public NoSuchPersonException(String userName)
     {
         super(String.format("User does not exist and could not be created: %s", userName));

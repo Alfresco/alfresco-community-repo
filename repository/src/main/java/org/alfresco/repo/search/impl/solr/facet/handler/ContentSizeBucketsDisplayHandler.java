@@ -33,13 +33,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.Set;
+
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 import org.alfresco.repo.search.impl.solr.facet.FacetQueryProvider;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetConfigException;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * A simple handler to get the appropriate display label for the content size buckets.
@@ -75,7 +76,7 @@ public class ContentSizeBucketsDisplayHandler extends AbstractFacetLabelDisplayH
                 if (!matcher.find())
                 {
                     throw new SolrFacetConfigException(
-                                "Invalid size range. Example of a valid size range is: [0 TO 1024]");
+                            "Invalid size range. Example of a valid size range is: [0 TO 1024]");
                 }
                 // build the facet query. e.g. {http://www.alfresco.org/model/content/1.0}content.size:[0 TO 1024]
                 String facetQuery = facetQueryField + ':' + sizeRange;

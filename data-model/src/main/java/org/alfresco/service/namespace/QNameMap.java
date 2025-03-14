@@ -35,24 +35,23 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * A Map that holds as it's key a QName stored in it's internal String representation.
- * Calls to get and put automatically map the key to and from the QName representation.
+ * A Map that holds as it's key a QName stored in it's internal String representation. Calls to get and put automatically map the key to and from the QName representation.
  * 
  * @author gavinc
  */
-public class QNameMap<K,V> implements Map, Cloneable, Serializable
+public class QNameMap<K, V> implements Map, Cloneable, Serializable
 {
     private static final long serialVersionUID = -6578946123712939602L;
-    
+
     protected static Log logger = LogFactory.getLog(QNameMap.class);
     protected Map<String, Object> contents = new HashMap<String, Object>(16, 1.0f);
     protected NamespacePrefixResolverProvider provider = null;
-    
-    
+
     /**
      * Constructor
      * 
-     * @param provider      Mandatory NamespacePrefixResolverProvider helper
+     * @param provider
+     *            Mandatory NamespacePrefixResolverProvider helper
      */
     public QNameMap(NamespacePrefixResolverProvider provider)
     {
@@ -62,7 +61,7 @@ public class QNameMap<K,V> implements Map, Cloneable, Serializable
         }
         this.provider = provider;
     }
-    
+
     /**
      * Constructor for Serialization mechanism
      */
@@ -70,11 +69,9 @@ public class QNameMap<K,V> implements Map, Cloneable, Serializable
     {
         super();
     }
-    
-    
+
     /**
-     * Helper to return a NamespacePrefixResolver instance - should -always- be used
-     * rather than holding onto a reference on the heap.
+     * Helper to return a NamespacePrefixResolver instance - should -always- be used rather than holding onto a reference on the heap.
      * 
      * @return NamespacePrefixResolver
      */
@@ -82,7 +79,7 @@ public class QNameMap<K,V> implements Map, Cloneable, Serializable
     {
         return this.provider.getNamespacePrefixResolver();
     }
-    
+
     /**
      * @see java.util.Map#size()
      */
@@ -90,7 +87,7 @@ public class QNameMap<K,V> implements Map, Cloneable, Serializable
     {
         return this.contents.size();
     }
-    
+
     /**
      * @see java.util.Map#isEmpty()
      */
@@ -98,7 +95,7 @@ public class QNameMap<K,V> implements Map, Cloneable, Serializable
     {
         return this.contents.isEmpty();
     }
-    
+
     /**
      * @see java.util.Map#containsKey(java.lang.Object)
      */
@@ -106,7 +103,7 @@ public class QNameMap<K,V> implements Map, Cloneable, Serializable
     {
         return (this.contents.containsKey(QName.resolveToQNameString(getResolver(), key.toString())));
     }
-    
+
     /**
      * @see java.util.Map#containsValue(java.lang.Object)
      */
@@ -114,7 +111,7 @@ public class QNameMap<K,V> implements Map, Cloneable, Serializable
     {
         return this.contents.containsValue(value);
     }
-    
+
     /**
      * @see java.util.Map#get(java.lang.Object)
      */
@@ -122,10 +119,10 @@ public class QNameMap<K,V> implements Map, Cloneable, Serializable
     {
         String qnameKey = QName.resolveToQNameString(getResolver(), key.toString());
         Object obj = this.contents.get(qnameKey);
-        
+
         return obj;
     }
-    
+
     /**
      * @see java.util.Map#put(Object, Object)
      */
@@ -133,7 +130,7 @@ public class QNameMap<K,V> implements Map, Cloneable, Serializable
     {
         return this.contents.put(QName.resolveToQNameString(getResolver(), key.toString()), value);
     }
-    
+
     /**
      * @see java.util.Map#remove(java.lang.Object)
      */
@@ -141,7 +138,7 @@ public class QNameMap<K,V> implements Map, Cloneable, Serializable
     {
         return this.contents.remove(QName.resolveToQNameString(getResolver(), key.toString()));
     }
-    
+
     /**
      * @see java.util.Map#putAll(java.util.Map)
      */
@@ -152,7 +149,7 @@ public class QNameMap<K,V> implements Map, Cloneable, Serializable
             this.put(key, t.get(key));
         }
     }
-    
+
     /**
      * @see java.util.Map#clear()
      */
@@ -160,7 +157,7 @@ public class QNameMap<K,V> implements Map, Cloneable, Serializable
     {
         this.contents.clear();
     }
-    
+
     /**
      * @see java.util.Map#keySet()
      */
@@ -168,7 +165,7 @@ public class QNameMap<K,V> implements Map, Cloneable, Serializable
     {
         return this.contents.keySet();
     }
-    
+
     /**
      * @see java.util.Map#values()
      */
@@ -176,7 +173,7 @@ public class QNameMap<K,V> implements Map, Cloneable, Serializable
     {
         return this.contents.values();
     }
-    
+
     /**
      * @see java.util.Map#entrySet()
      */
@@ -184,7 +181,7 @@ public class QNameMap<K,V> implements Map, Cloneable, Serializable
     {
         return this.contents.entrySet();
     }
-    
+
     /**
      * Override Object.toString() to provide useful debug output
      */
@@ -192,7 +189,7 @@ public class QNameMap<K,V> implements Map, Cloneable, Serializable
     {
         return this.contents.toString();
     }
-    
+
     /**
      * Shallow copy the map by copying keys and values into a new QNameMap
      */
@@ -200,10 +197,10 @@ public class QNameMap<K,V> implements Map, Cloneable, Serializable
     {
         QNameMap<K, V> map = new QNameMap<K, V>(provider);
         map.putAll(this);
-        
+
         return map;
     }
-    
+
     @SuppressWarnings("unchecked")
     public Map<QName, V> getMapOfQNames()
     {
@@ -211,7 +208,7 @@ public class QNameMap<K,V> implements Map, Cloneable, Serializable
         for (Entry<String, Object> entry : contents.entrySet())
         {
             QName key = QName.createQName(entry.getKey());
-            map.put(key, (V)entry.getValue());
+            map.put(key, (V) entry.getValue());
         }
         return map;
     }

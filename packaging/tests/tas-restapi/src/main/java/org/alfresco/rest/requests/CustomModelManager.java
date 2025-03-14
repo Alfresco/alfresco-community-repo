@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.requests;
 
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
@@ -33,8 +35,6 @@ import org.alfresco.rest.model.RestCustomModel;
 import org.alfresco.rest.model.RestCustomTypeModel;
 import org.alfresco.utility.model.CustomAspectModel;
 import org.alfresco.utility.model.CustomContentModel;
-import org.springframework.http.HttpMethod;
-
 
 /**
  * @author Bogdan Bocancea
@@ -63,7 +63,7 @@ public class CustomModelManager extends ModelRequest<CustomModelManager>
     public RestCustomModel createCustomModel(CustomContentModel customContentModel)
     {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, customContentModel.toJson(),
-            "cmm?{parameters}", restWrapper.getParameters());
+                "cmm?{parameters}", restWrapper.getParameters());
         return restWrapper.processModel(RestCustomModel.class, request);
     }
 
@@ -78,7 +78,7 @@ public class CustomModelManager extends ModelRequest<CustomModelManager>
                 restWrapper.getParameters());
         return restWrapper.processModel(RestCustomModel.class, request);
     }
-    
+
     public void activateModel()
     {
         String json = JsonBodyGenerator.keyValueJson("status", "ACTIVE");
@@ -102,7 +102,7 @@ public class CustomModelManager extends ModelRequest<CustomModelManager>
     public RestCustomAspectModel createAspect(CustomAspectModel aspectModel)
     {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, aspectModel.toJson(),
-            "cmm/{modelName}/aspects?{parameters}", this.customContentModel.getName(), restWrapper.getParameters());
+                "cmm/{modelName}/aspects?{parameters}", this.customContentModel.getName(), restWrapper.getParameters());
         return restWrapper.processModel(RestCustomAspectModel.class, request);
     }
 

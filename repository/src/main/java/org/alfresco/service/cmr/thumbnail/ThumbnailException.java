@@ -35,12 +35,12 @@ import org.alfresco.error.AlfrescoRuntimeException;
  * @deprecated We are introducing the new async RenditionService2.
  */
 @Deprecated
-public class ThumbnailException extends AlfrescoRuntimeException 
+public class ThumbnailException extends AlfrescoRuntimeException
 {
-	/**
-	 * Serial version UID 
-	 */
-	private static final long serialVersionUID = 3257571685241467958L;
+    /**
+     * Serial version UID
+     */
+    private static final long serialVersionUID = 3257571685241467958L;
 
     public ThumbnailException(String msgId)
     {

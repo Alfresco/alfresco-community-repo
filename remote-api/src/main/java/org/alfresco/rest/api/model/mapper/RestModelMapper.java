@@ -31,40 +31,56 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.alfresco.service.Experimental;
 import org.apache.commons.lang3.NotImplementedException;
+
+import org.alfresco.service.Experimental;
 
 @Experimental
 public interface RestModelMapper<R, S>
 {
-    default R toRestModel(S serviceModel) {
+    default R toRestModel(S serviceModel)
+    {
         throw new NotImplementedException();
     }
-    default S toServiceModel(R restModel) {
+
+    default S toServiceModel(R restModel)
+    {
         throw new NotImplementedException();
     }
-    default R toRestModel(Collection<S> serviceModels) {
+
+    default R toRestModel(Collection<S> serviceModels)
+    {
         throw new NotImplementedException();
     }
-    default S toServiceModel(Collection<R> restModels) {
+
+    default S toServiceModel(Collection<R> restModels)
+    {
         throw new NotImplementedException();
     }
-    default List<R> toRestModels(Collection<S> serviceModels) {
+
+    default List<R> toRestModels(Collection<S> serviceModels)
+    {
         return serviceModels.stream()
                 .filter(Objects::nonNull)
                 .map(this::toRestModel)
                 .collect(Collectors.toList());
     }
-    default List<S> toServiceModels(Collection<R> restModels) {
+
+    default List<S> toServiceModels(Collection<R> restModels)
+    {
         return restModels.stream()
                 .filter(Objects::nonNull)
                 .map(this::toServiceModel)
                 .collect(Collectors.toList());
     }
-    default List<R> toRestModels(S serviceModel) {
+
+    default List<R> toRestModels(S serviceModel)
+    {
         throw new NotImplementedException();
     }
-    default List<S> toServiceModels(R restModel) {
+
+    default List<S> toServiceModels(R restModel)
+    {
         throw new NotImplementedException();
     }
 }

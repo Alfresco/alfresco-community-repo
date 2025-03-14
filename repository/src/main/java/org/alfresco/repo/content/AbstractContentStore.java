@@ -25,25 +25,22 @@
  */
 package org.alfresco.repo.content;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.content.ContentLimitProvider.NoLimitProvider;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Base class providing support for different types of content stores.
  * <p>
- * Since content URLs have to be consistent across all stores for
- * reasons of replication and backup, the most important functionality
- * provided is the generation of new content URLs and the checking of
- * existing URLs.
+ * Since content URLs have to be consistent across all stores for reasons of replication and backup, the most important functionality provided is the generation of new content URLs and the checking of existing URLs.
  * <p>
- * Implementations must override either of the <b>getWriter</b> methods;
- * {@link #getWriter(ContentContext)} or {@link #getWriterInternal(ContentReader, String)}.
+ * Implementations must override either of the <b>getWriter</b> methods; {@link #getWriter(ContentContext)} or {@link #getWriterInternal(ContentReader, String)}.
  * 
  * @see #getWriter(org.alfresco.repo.content.ContentContext)
  * @see #getWriterInternal(ContentReader, String)
@@ -58,11 +55,11 @@ public abstract class AbstractContentStore implements ContentStore
     private static final int PROTOCOL_DELIMETER_LENGTH = PROTOCOL_DELIMITER.length();
 
     /**
-     * Checks that the content conforms to the format <b>protocol://identifier</b>
-     * as specified in the contract of the {@link ContentStore} interface.
+     * Checks that the content conforms to the format <b>protocol://identifier</b> as specified in the contract of the {@link ContentStore} interface.
      * 
-     * @param contentUrl    the content URL to check
-     * @return              Returns <tt>true</tt> if the content URL is valid
+     * @param contentUrl
+     *            the content URL to check
+     * @return Returns <tt>true</tt> if the content URL is valid
      * 
      * @since 2.1
      */
@@ -93,15 +90,15 @@ public abstract class AbstractContentStore implements ContentStore
     {
         this.contentLimitProvider = contentLimitProvider;
     }
-    
+
     /**
-     * Splits the content URL into its component parts as separated by
-     * {@link ContentStore#PROTOCOL_DELIMITER protocol delimiter}.
+     * Splits the content URL into its component parts as separated by {@link ContentStore#PROTOCOL_DELIMITER protocol delimiter}.
      * 
-     * @param contentUrl    the content URL to split
-     * @return              Returns the protocol and identifier portions of the content URL,
-     *                      both of which will not be <tt>null</tt>
-     * @throws              UnsupportedContentUrlException if the content URL is invalid
+     * @param contentUrl
+     *            the content URL to split
+     * @return Returns the protocol and identifier portions of the content URL, both of which will not be <tt>null</tt>
+     * @throws UnsupportedContentUrlException
+     *             if the content URL is invalid
      * 
      * @since 2.1
      */
@@ -128,9 +125,7 @@ public abstract class AbstractContentStore implements ContentStore
     }
 
     /**
-     * Override this method to supply a efficient and direct check of the URL supplied.
-     * The default implementation checks whether {@link ContentStore#getReader(String)}
-     * throws the {@link UnsupportedContentUrlException} exception.
+     * Override this method to supply a efficient and direct check of the URL supplied. The default implementation checks whether {@link ContentStore#getReader(String)} throws the {@link UnsupportedContentUrlException} exception.
      * 
      * @since 2.1
      */
@@ -152,7 +147,8 @@ public abstract class AbstractContentStore implements ContentStore
     /**
      * Override if the derived class supports the operation.
      * 
-     * @throws UnsupportedOperationException    always
+     * @throws UnsupportedOperationException
+     *             always
      * 
      * @since 2.1
      */
@@ -163,18 +159,19 @@ public abstract class AbstractContentStore implements ContentStore
     }
 
     /**
-     * Implement to supply a store-specific writer for the given existing content
-     * and optional target content URL.
+     * Implement to supply a store-specific writer for the given existing content and optional target content URL.
      * 
-     * @param existingContentReader     a reader onto any content to initialize the new writer with
-     * @param newContentUrl             an optional target for the new content
-     *                 
+     * @param existingContentReader
+     *            a reader onto any content to initialize the new writer with
+     * @param newContentUrl
+     *            an optional target for the new content
+     * 
      * @throws UnsupportedContentUrlException
-     *      if the content URL supplied is not supported by the store
+     *             if the content URL supplied is not supported by the store
      * @throws ContentExistsException
-     *      if the content URL is already in use
+     *             if the content URL is already in use
      * @throws ContentIOException
-     *      if an IO error occurs
+     *             if an IO error occurs
      * 
      * @since 2.1
      */
@@ -184,9 +181,7 @@ public abstract class AbstractContentStore implements ContentStore
     }
 
     /**
-     * An implementation that does some sanity checking before requesting a writer from the
-     * store.  If this method is not overridden, then an implementation of
-     * {@link #getWriterInternal(ContentReader, String)} must be supplied.
+     * An implementation that does some sanity checking before requesting a writer from the store. If this method is not overridden, then an implementation of {@link #getWriterInternal(ContentReader, String)} must be supplied.
      * 
      * @see #getWriterInternal(ContentReader, String)
      * @since 2.1
@@ -203,8 +198,8 @@ public abstract class AbstractContentStore implements ContentStore
             {
                 logger.debug(
                         "Write requests are not supported for this store:\n" +
-                        "   Store:   " + this + "\n" +
-                        "   Context: " + context);
+                                "   Store:   " + this + "\n" +
+                                "   Context: " + context);
             }
             throw new UnsupportedOperationException("Write operations are not supported by this store: " + this);
         }
@@ -217,8 +212,8 @@ public abstract class AbstractContentStore implements ContentStore
                 {
                     logger.debug(
                             "Specific writer content URL is unsupported: \n" +
-                            "   Store:   " + this + "\n" +
-                            "   Context: " + context);
+                                    "   Store:   " + this + "\n" +
+                                    "   Context: " + context);
                 }
                 throw new UnsupportedContentUrlException(this, contentUrl);
             }
@@ -228,8 +223,8 @@ public abstract class AbstractContentStore implements ContentStore
                 {
                     logger.debug(
                             "The content location is already used: \n" +
-                            "   Store:   " + this + "\n" +
-                            "   Context: " + context);
+                                    "   Store:   " + this + "\n" +
+                                    "   Context: " + context);
                 }
                 throw new ContentExistsException(this, contentUrl);
             }
@@ -241,17 +236,15 @@ public abstract class AbstractContentStore implements ContentStore
         {
             logger.debug(
                     "Fetched new writer: \n" +
-                    "   Store:   " + this + "\n" +
-                    "   Context: " + context + "\n" +
-                    "   Writer:  " + writer);
+                            "   Store:   " + this + "\n" +
+                            "   Context: " + context + "\n" +
+                            "   Writer:  " + writer);
         }
         return writer;
     }
 
     /**
-     * Simple implementation that uses the
-     * {@link ContentReader#exists() reader's exists} method as its implementation.
-     * Override this method if a more efficient implementation is possible.
+     * Simple implementation that uses the {@link ContentReader#exists() reader's exists} method as its implementation. Override this method if a more efficient implementation is possible.
      */
     @Override
     public boolean exists(String contentUrl)
@@ -261,7 +254,7 @@ public abstract class AbstractContentStore implements ContentStore
     }
 
     /**
-     * @return      Returns <tt>-1</tt> always
+     * @return Returns <tt>-1</tt> always
      */
     @Override
     public long getSpaceFree()
@@ -270,7 +263,7 @@ public abstract class AbstractContentStore implements ContentStore
     }
 
     /**
-     * @return      Returns <tt>-1</tt> always
+     * @return Returns <tt>-1</tt> always
      */
     @Override
     public long getSpaceTotal()
@@ -279,7 +272,7 @@ public abstract class AbstractContentStore implements ContentStore
     }
 
     /**
-     * @return      Returns a '.' (period) always
+     * @return Returns a '.' (period) always
      */
     @Override
     public String getRootLocation()

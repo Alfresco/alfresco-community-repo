@@ -25,20 +25,21 @@
  */
 package org.alfresco.repo.rendition2;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import static org.alfresco.model.ContentModel.PROP_CONTENT;
+
+import java.util.HashMap;
+
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.HashMap;
-
-import static org.alfresco.model.ContentModel.PROP_CONTENT;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 
 /**
  * Integration tests for {@link LocalTransformClient}
@@ -78,7 +79,7 @@ public class LocalTransformClientIntegrationTest extends AbstractRenditionIntegr
     @Test
     public void testRenderPagesToJpeg() throws Exception
     {
-        new RenditionDefinition2Impl("pagesToJpeg", "image/jpeg", new HashMap<>(), true, renditionDefinitionRegistry2 );
+        new RenditionDefinition2Impl("pagesToJpeg", "image/jpeg", new HashMap<>(), true, renditionDefinitionRegistry2);
         try
         {
             checkClientRendition("quick2009.pages", "pagesToJpeg", true);
@@ -93,10 +94,10 @@ public class LocalTransformClientIntegrationTest extends AbstractRenditionIntegr
     @Test
     public void testReloadOfStaticDefinitions()
     {
-        new RenditionDefinition2Impl("dynamic1", "image/jpeg", new HashMap<>(), true, renditionDefinitionRegistry2 );
-        new RenditionDefinition2Impl("dynamic2", "image/jpeg", new HashMap<>(), true, renditionDefinitionRegistry2 );
-        new RenditionDefinition2Impl("static1", "image/jpeg", new HashMap<>(), false, renditionDefinitionRegistry2 );
-        new RenditionDefinition2Impl("static2", "image/jpeg", new HashMap<>(), false, renditionDefinitionRegistry2 );
+        new RenditionDefinition2Impl("dynamic1", "image/jpeg", new HashMap<>(), true, renditionDefinitionRegistry2);
+        new RenditionDefinition2Impl("dynamic2", "image/jpeg", new HashMap<>(), true, renditionDefinitionRegistry2);
+        new RenditionDefinition2Impl("static1", "image/jpeg", new HashMap<>(), false, renditionDefinitionRegistry2);
+        new RenditionDefinition2Impl("static2", "image/jpeg", new HashMap<>(), false, renditionDefinitionRegistry2);
 
         try
         {
@@ -181,14 +182,11 @@ public class LocalTransformClientIntegrationTest extends AbstractRenditionIntegr
         if (expectedToPass)
         {
             // split into separate transactions as the client is async
-            NodeRef sourceNode = transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                    createContentNodeFromQuickFile(testFileName));
+            NodeRef sourceNode = transactionService.getRetryingTransactionHelper().doInTransaction(() -> createContentNodeFromQuickFile(testFileName));
             ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, nodeService.getProperty(sourceNode, PROP_CONTENT));
-            int sourceContentHashCode = (contentData == null ? "" : contentData.getContentUrl()+contentData.getMimetype()).hashCode();
-            transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-            {
-                RenditionDefinition2 renditionDefinition =
-                        renditionDefinitionRegistry2.getRenditionDefinition(renditionDefinitionName);
+            int sourceContentHashCode = (contentData == null ? "" : contentData.getContentUrl() + contentData.getMimetype()).hashCode();
+            transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+                RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(renditionDefinitionName);
                 String contentUrl = contentData.getContentUrl();
                 String sourceMimetype = contentData.getMimetype();
                 long size = contentData.getSize();

@@ -44,8 +44,7 @@ public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
     public static final String PARAM_CLOSE_PARENT = "closeParent";
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected void executeImpl(Action action, final NodeRef actionedUponNodeRef)
@@ -53,8 +52,7 @@ public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
         if (eligibleForAction(actionedUponNodeRef))
         {
             // do the work of creating the record as the system user
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
                 @Override
                 public Void doWork()
                 {
@@ -67,12 +65,10 @@ public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
     }
 
     /**
-     * Helper method to check the actioned upon node reference to decide to execute the action
-     * The preconditions are:
-     *  - The node must exist
-     *  - The node must not be frozen
+     * Helper method to check the actioned upon node reference to decide to execute the action The preconditions are: - The node must exist - The node must not be frozen
      *
-     * @param actionedUponNodeRef node reference
+     * @param actionedUponNodeRef
+     *            node reference
      * @return Return true if the node reference passes all the preconditions for executing the action, false otherwise
      */
     private boolean eligibleForAction(NodeRef actionedUponNodeRef)

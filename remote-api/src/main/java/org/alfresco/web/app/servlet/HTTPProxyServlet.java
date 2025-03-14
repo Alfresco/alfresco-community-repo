@@ -27,7 +27,6 @@ package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
 import java.util.Map;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,12 +34,10 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.extensions.surf.util.URLEncoder;
 
-
 /**
  * HTTP Proxy Servlet
  * 
- * Provides the ability to submit a URL request via the Alfresco Server i.e.
- * the Alfresco server acts as a proxy.
+ * Provides the ability to submit a URL request via the Alfresco Server i.e. the Alfresco server acts as a proxy.
  * 
  * This servlet accepts:
  * 
@@ -48,9 +45,7 @@ import org.springframework.extensions.surf.util.URLEncoder;
  * 
  * Where:
  * 
- * - endpointUrl is the URL to make a request against
- * - argName is the name of a URL argument to append to the request
- * - argValue is the value of URL argument
+ * - endpointUrl is the URL to make a request against - argName is the name of a URL argument to append to the request - argValue is the value of URL argument
  * 
  * E.g.:
  * 
@@ -61,10 +56,9 @@ import org.springframework.extensions.surf.util.URLEncoder;
 public class HTTPProxyServlet extends HttpServlet
 {
     private static final long serialVersionUID = -576405943603122206L;
-    
+
     private static final String PARAM_ENDPOINT = "endpoint";
-    
-    
+
     /**
      * @see jakarta.servlet.http.HttpServlet#doGet(jakarta.servlet.http.HttpServletRequest, jakarta.servlet.http.HttpServletResponse)
      */
@@ -73,19 +67,19 @@ public class HTTPProxyServlet extends HttpServlet
     {
         String endpoint = null;
         StringBuilder args = new StringBuilder(32);
-        
+
         Map<String, String[]> parameters = req.getParameterMap();
         for (Map.Entry<String, String[]> parameter : parameters.entrySet())
         {
             String[] values = parameter.getValue();
             int startIdx = 0;
-            
+
             if (parameter.getKey().equals(PARAM_ENDPOINT) && values.length != 0)
             {
                 endpoint = values[0];
                 startIdx++;
             }
-            
+
             for (int i = startIdx; i < values.length; i++)
             {
                 if (args.length() != 0)
@@ -95,12 +89,12 @@ public class HTTPProxyServlet extends HttpServlet
                 args.append(parameter.getKey()).append('=').append(URLEncoder.encode(values[i]));
             }
         }
-        
+
         if (endpoint == null || endpoint.length() == 0)
         {
             throw new IllegalArgumentException("endpoint argument not specified");
         }
-        
+
         String url = endpoint + ((args.length() == 0) ? "" : "?" + args.toString());
         HTTPProxy proxy = new HTTPProxy(url, res);
         proxy.service();
@@ -111,8 +105,9 @@ public class HTTPProxyServlet extends HttpServlet
      * 
      * Note: the "proxied" URL is a relative url - it is assumed that the servlet path is /proxy
      * 
-     * @param url  the URL to proxy
-     * @return  the "proxied" url
+     * @param url
+     *            the URL to proxy
+     * @return the "proxied" url
      */
     public static String createProxyUrl(String url)
     {
@@ -129,7 +124,7 @@ public class HTTPProxyServlet extends HttpServlet
                 proxy += "?endpoint=" + url.substring(0, argIndex) + "&" + url.substring(argIndex + 1);
             }
         }
-        
+
         return proxy;
     }
 }

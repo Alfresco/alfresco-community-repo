@@ -36,6 +36,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -54,11 +60,6 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationContext;
 
 /**
  * A utility class to test custom models download.
@@ -73,26 +74,25 @@ public class CMMDownloadTestUtil
     private static final String SHARE_EXTENSIONS_FOLDER = "extensions"; // app:company_home/st:sites/cm:surf-config/cm:extensions
     private static final String SHARE_PERSISTED_EXTENSION_FILE = "default-persisted-extension.xml"; // app:company_home/st:sites/cm:surf-config/cm:extensions/cm:default-persisted-extension.xml
     private static final String MKR = "{MKR}";
-    private static final String MODULE = 
-                "<extension>"
-                +    "<modules>"
-                +        "<module>"
-                +           "<id>CMM_" + MKR + "</id>"
-                +           "<auto-deploy>true</auto-deploy>"
-                +           "<configurations>"
-                +               "<config evaluator=\"string-compare\" condition=\"DocumentLibrary\" replace=\"false\">"
-                +                   "<types>"
-                +                       "<type name=\"cm:content\">"
-                +                           "<subtype label=\"type1 title\" name=\"testprefix:type1\"/>"
-                +                       "</type>"
-                +                   "</types>"
-                +               "</config>"
-                +               "<config evaluator=\"string-compare\" condition=\"FormDefinition\">"
-                +               "</config>"
-                +           "</configurations>"
-                +        "</module>"
-                +    "</modules>"
-                +"</extension>";
+    private static final String MODULE = "<extension>"
+            + "<modules>"
+            + "<module>"
+            + "<id>CMM_" + MKR + "</id>"
+            + "<auto-deploy>true</auto-deploy>"
+            + "<configurations>"
+            + "<config evaluator=\"string-compare\" condition=\"DocumentLibrary\" replace=\"false\">"
+            + "<types>"
+            + "<type name=\"cm:content\">"
+            + "<subtype label=\"type1 title\" name=\"testprefix:type1\"/>"
+            + "</type>"
+            + "</types>"
+            + "</config>"
+            + "<config evaluator=\"string-compare\" condition=\"FormDefinition\">"
+            + "</config>"
+            + "</configurations>"
+            + "</module>"
+            + "</modules>"
+            + "</extension>";
 
     private RetryingTransactionHelper transactionHelper;
     private ContentService contentService;
@@ -124,21 +124,20 @@ public class CMMDownloadTestUtil
     public synchronized void createShareExtModule(final String moduleId)
     {
         List<NodeRef> results = searchService.selectNodes(getRootNode(), SURF_CONFIG_PATH, null, namespaceService, false,
-                    SearchService.LANGUAGE_XPATH);
+                SearchService.LANGUAGE_XPATH);
         assertTrue(results.size() == 1);
         final NodeRef surfConfigNodeRef = results.get(0);
 
         this.extensionsNodeRef = nodeService.getChildByName(surfConfigNodeRef, ContentModel.ASSOC_CONTAINS, SHARE_EXTENSIONS_FOLDER);
         if (this.extensionsNodeRef == null)
         {
-            extensionsNodeRef = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-            {
+            extensionsNodeRef = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
                 @Override
                 public NodeRef execute() throws Throwable
                 {
                     QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, SHARE_EXTENSIONS_FOLDER);
                     NodeRef nodeRef = nodeService.createNode(surfConfigNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_FOLDER,
-                                Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, SHARE_EXTENSIONS_FOLDER)).getChildRef();
+                            Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, SHARE_EXTENSIONS_FOLDER)).getChildRef();
 
                     isExtFolderCreated = true;
                     return nodeRef;
@@ -151,24 +150,22 @@ public class CMMDownloadTestUtil
         this.sharePersistedExtNodeRef = nodeService.getChildByName(this.extensionsNodeRef, ContentModel.ASSOC_CONTAINS, SHARE_PERSISTED_EXTENSION_FILE);
         if (this.sharePersistedExtNodeRef == null)
         {
-            this.sharePersistedExtNodeRef = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-            {
+            this.sharePersistedExtNodeRef = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
 
                 @Override
                 public NodeRef execute() throws Throwable
                 {
                     QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, SHARE_PERSISTED_EXTENSION_FILE);
                     return nodeService.createNode(extensionsNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_CONTENT,
-                                Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, SHARE_PERSISTED_EXTENSION_FILE)).getChildRef();
+                            Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, SHARE_PERSISTED_EXTENSION_FILE)).getChildRef();
                 }
             });
 
             logger.info("Created 'cm:default-persisted-extension.xml' file within the 'app:company_home/st:sites/cm:surf-config/cm:extensions'");
         }
-        else if(originalShareExtFile == null)
+        else if (originalShareExtFile == null)
         {
-            transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
+            transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -181,8 +178,7 @@ public class CMMDownloadTestUtil
             });
         }
 
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -201,8 +197,7 @@ public class CMMDownloadTestUtil
     {
         if (isExtFolderCreated)
         {
-            transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
+            transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -215,8 +210,7 @@ public class CMMDownloadTestUtil
         }
         else if (originalShareExtFile != null)
         {
-            transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
+            transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -239,8 +233,7 @@ public class CMMDownloadTestUtil
 
     public Set<String> getDownloadEntries(final NodeRef downloadNode)
     {
-        return transactionHelper.doInTransaction(new RetryingTransactionCallback<Set<String>>()
-        {
+        return transactionHelper.doInTransaction(new RetryingTransactionCallback<Set<String>>() {
             @Override
             public Set<String> execute() throws Throwable
             {
@@ -275,13 +268,11 @@ public class CMMDownloadTestUtil
 
     public DownloadStatus getDownloadStatus(final NodeRef downloadNode)
     {
-        return AuthenticationUtil.runAsSystem(new RunAsWork<DownloadStatus>()
-        {
+        return AuthenticationUtil.runAsSystem(new RunAsWork<DownloadStatus>() {
             @Override
             public DownloadStatus doWork() throws Exception
             {
-                return transactionHelper.doInTransaction(new RetryingTransactionCallback<DownloadStatus>()
-                {
+                return transactionHelper.doInTransaction(new RetryingTransactionCallback<DownloadStatus>() {
                     @Override
                     public DownloadStatus execute() throws Throwable
                     {

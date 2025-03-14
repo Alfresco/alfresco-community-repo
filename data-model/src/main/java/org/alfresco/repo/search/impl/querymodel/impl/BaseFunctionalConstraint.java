@@ -38,7 +38,7 @@ import org.alfresco.repo.search.impl.querymodel.FunctionalConstraint;
 public class BaseFunctionalConstraint extends BaseConstraint implements FunctionalConstraint
 {
     private Function function;
-    
+
     private Map<String, Argument> arguments;
 
     public BaseFunctionalConstraint(Function function, Map<String, Argument> arguments)
@@ -46,26 +46,26 @@ public class BaseFunctionalConstraint extends BaseConstraint implements Function
         this.function = function;
         this.arguments = arguments;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.Constraint#evaluate()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.Constraint#evaluate() */
     public boolean evaluate()
     {
         throw new UnsupportedOperationException();
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.FunctionInvokation#getFunction()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionInvokation#getFunction() */
     public Function getFunction()
     {
         return function;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.FunctionInvokation#getFunctionArguments()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionInvokation#getFunctionArguments() */
     public Map<String, Argument> getFunctionArguments()
     {
         return arguments;
@@ -75,8 +75,8 @@ public class BaseFunctionalConstraint extends BaseConstraint implements Function
     {
         StringBuilder builder = new StringBuilder();
         builder.append("BaseFunctionalConstraint[");
-        builder.append("Function="+getFunction()).append(", ");
-        builder.append("Arguments="+getFunctionArguments());
+        builder.append("Function=" + getFunction()).append(", ");
+        builder.append("Arguments=" + getFunctionArguments());
         builder.append("]");
         return builder.toString();
     }

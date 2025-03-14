@@ -27,14 +27,15 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit;
 
+import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import static org.alfresco.model.ContentModel.PROP_AUTHORITY_DISPLAY_NAME;
 import static org.alfresco.model.ContentModel.PROP_AUTHORITY_NAME;
 import static org.alfresco.model.ContentModel.PROP_USERNAME;
 import static org.alfresco.module.org_alfresco_module_rm.audit.event.UserGroupMembershipUtils.PARENT_GROUP;
 import static org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model.TYPE_DOD_5015_SITE;
 import static org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType.DEFAULT_SITE_NAME;
-import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -53,6 +54,18 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import jakarta.transaction.SystemException;
+
+import org.apache.commons.lang3.time.DateUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -95,17 +108,6 @@ import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
-import org.apache.commons.lang3.time.DateUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Records Management Audit Service Implementation.
@@ -114,7 +116,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * @since 3.2
  */
 public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
-                                               implements RecordsManagementAuditService
+        implements RecordsManagementAuditService
 {
     /** I18N */
     private static final String MSG_TRAIL_FILE_FAIL = "rm.audit.trail-file-fail";
@@ -156,7 +158,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     protected static final String RM_AUDIT_DATA_LOGIN_FULLNAME = "/RM/login/no-error/fullName";
     protected static final String RM_AUDIT_DATA_LOGIN_ERROR = "/RM/login/error/value";
 
-    /* Provide Backward compatibility with DOD5015 Audit Events  RM-904*/
+    /* Provide Backward compatibility with DOD5015 Audit Events RM-904 */
     protected static final String DOD5015_AUDIT_APPLICATION_NAME = "DOD5015";
     protected static final String DOD5015_AUDIT_PATH_ROOT = "/DOD5015";
     protected static final String DOD5015_AUDIT_SNIPPET_EVENT = "/event";
@@ -262,9 +264,13 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * Set the site service (used to check the type of RM site created).
      *
-     * @param siteService The site service.
+     * @param siteService
+     *            The site service.
      */
-    public void setSiteService(SiteService siteService) { this.siteService = siteService; }
+    public void setSiteService(SiteService siteService)
+    {
+        this.siteService = siteService;
+    }
 
     /**
      * Sets the ContentService instance
@@ -299,15 +305,17 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     }
 
     /**
-     * @param filePlanService	file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
-		this.filePlanService = filePlanService;
-	}
+        this.filePlanService = filePlanService;
+    }
 
     /**
-     * @param namespaceService namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -315,13 +323,13 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     }
 
     /**
-     * @param capabilityService capability service
+     * @param capabilityService
+     *            capability service
      */
     public void setCapabilityService(CapabilityService capabilityService)
     {
         this.capabilityService = capabilityService;
     }
-
 
     /**
      * @param ignoredAuditProperties
@@ -424,8 +432,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public boolean isAuditLogEnabled(NodeRef filePlan)
     {
-    	ParameterCheck.mandatory("filePlan", filePlan);
-    	// TODO use file plan to scope audit log
+        ParameterCheck.mandatory("filePlan", filePlan);
+        // TODO use file plan to scope audit log
 
         return auditService.isAuditEnabled(
                 RM_AUDIT_APPLICATION_NAME,
@@ -438,8 +446,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public void startAuditLog(NodeRef filePlan)
     {
-    	ParameterCheck.mandatory("filePlan", filePlan);
-    	// TODO use file plan to scope audit log
+        ParameterCheck.mandatory("filePlan", filePlan);
+        // TODO use file plan to scope audit log
 
         auditService.enableAudit(
                 RM_AUDIT_APPLICATION_NAME,
@@ -459,8 +467,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public void stopAuditLog(NodeRef filePlan)
     {
-    	ParameterCheck.mandatory("filePlan", filePlan);
-    	// TODO use file plan to scope audit log
+        ParameterCheck.mandatory("filePlan", filePlan);
+        // TODO use file plan to scope audit log
 
         auditEvent(filePlan, AUDIT_EVENT_STOP, null, null, true);
 
@@ -480,8 +488,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public void clearAuditLog(NodeRef filePlan)
     {
-    	ParameterCheck.mandatory("filePlan", filePlan);
-    	// TODO use file plan to scope audit log
+        ParameterCheck.mandatory("filePlan", filePlan);
+        // TODO use file plan to scope audit log
 
         auditService.clearAudit(RM_AUDIT_APPLICATION_NAME, null, null);
         if (logger.isInfoEnabled())
@@ -498,8 +506,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public Date getDateAuditLogLastStarted(NodeRef filePlan)
     {
-    	ParameterCheck.mandatory("filePlan", filePlan);
-    	// TODO use file plan to scope audit log
+        ParameterCheck.mandatory("filePlan", filePlan);
+        // TODO use file plan to scope audit log
 
         // TODO: return proper date, for now it's today's date
         return getStartOfDay(new Date());
@@ -511,8 +519,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public Date getDateAuditLogLastStopped(NodeRef filePlan)
     {
-    	ParameterCheck.mandatory("filePlan", filePlan);
-    	// TODO use file plan to scope audit log
+        ParameterCheck.mandatory("filePlan", filePlan);
+        // TODO use file plan to scope audit log
 
         // TODO: return proper date, for now it's today's date
         return getEndOfDay(new Date());
@@ -542,7 +550,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public void auditEvent(NodeRef nodeRef, String eventName, Map<QName, Serializable> before, Map<QName, Serializable> after, boolean immediate)
     {
-    	auditEvent(nodeRef, eventName, before, after, immediate, false);
+        auditEvent(nodeRef, eventName, before, after, immediate, false);
     }
 
     /**
@@ -579,7 +587,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /** {@inheritDoc} */
     @Override
     public void auditOrUpdateEvent(NodeRef nodeRef, String eventName, Map<QName, Serializable> before,
-                Map<QName, Serializable> after, boolean removeIfNoPropertyChanged)
+            Map<QName, Serializable> after, boolean removeIfNoPropertyChanged)
     {
         RMAuditNode existingEventNode = findExistingEventNode(nodeRef, eventName);
         if (existingEventNode != null)
@@ -597,14 +605,19 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * Create a new audit event for this transaction.
      *
-     * @param nodeRef The node the audit message is about.
-     * @param eventName The event.
-     * @param before The before property map to use.
-     * @param after The after property map to use.
-     * @param removeIfNoPropertyChanged Whether to remove the event if no properties have changed.
+     * @param nodeRef
+     *            The node the audit message is about.
+     * @param eventName
+     *            The event.
+     * @param before
+     *            The before property map to use.
+     * @param after
+     *            The after property map to use.
+     * @param removeIfNoPropertyChanged
+     *            Whether to remove the event if no properties have changed.
      */
     private void createAuditEventInTransaction(NodeRef nodeRef, String eventName, Map<QName, Serializable> before,
-                Map<QName, Serializable> after, boolean removeIfNoPropertyChanged)
+            Map<QName, Serializable> after, boolean removeIfNoPropertyChanged)
     {
         // Create a new auditNode.
         RMAuditNode auditedNode = new RMAuditNode();
@@ -622,8 +635,10 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * Find an audit node if it already exists for the transaction.
      *
-     * @param nodeRef The node the event is against.
-     * @param eventName The name of the event.
+     * @param nodeRef
+     *            The node the event is against.
+     * @param eventName
+     *            The name of the event.
      * @return The pre-existing event node, or null if none exists.
      */
     private RMAuditNode findExistingEventNode(NodeRef nodeRef, String eventName)
@@ -655,7 +670,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 AuditApplication.buildPath(
                         RM_AUDIT_SNIPPET_EVENT,
                         RM_AUDIT_SNIPPET_NAME),
-                        eventName);
+                eventName);
 
         if (nodeRef != null)
         {
@@ -663,7 +678,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                     AuditApplication.buildPath(
                             RM_AUDIT_SNIPPET_EVENT,
                             RM_AUDIT_SNIPPET_NODE),
-                            nodeRef);
+                    nodeRef);
         }
 
         // Filter out any properties to be audited if specified in the Spring configuration.
@@ -703,8 +718,10 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * Helper method to remove system properties from maps
      *
-     * @param before    properties before event
-     * @param after     properties after event
+     * @param before
+     *            properties before event
+     * @param after
+     *            properties after event
      */
     private void removeAuditProperties(Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
@@ -730,10 +747,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     {
         private final Log logger = LogFactory.getLog(RecordsManagementAuditServiceImpl.class);
 
-        /*
-         * Equality and hashcode generation are left unimplemented; we expect to only have a single
-         * instance of this class per action.
-         */
+        /* Equality and hashcode generation are left unimplemented; we expect to only have a single instance of this class per action. */
 
         /**
          * Get the action parameters from the transaction and audit them.
@@ -744,8 +758,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             final Set<RMAuditNode> auditedNodes = TransactionalResourceHelper.getSet(KEY_RM_AUDIT_NODE_RECORDS);
 
             // Start a *new* read-write transaction to audit in
-            RetryingTransactionCallback<Void> auditCallback = new RetryingTransactionCallback<Void>()
-            {
+            RetryingTransactionCallback<Void> auditCallback = new RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -759,7 +772,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         /**
          * Do the actual auditing, assuming the presence of a viable transaction
          *
-         * @param auditedNodes              details of the nodes that were modified
+         * @param auditedNodes
+         *            details of the nodes that were modified
          */
         private void auditInTxn(Set<RMAuditNode> auditedNodes) throws SystemException
         {
@@ -777,10 +791,10 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
                 // build the audit map
                 Map<String, Serializable> auditMap = buildAuditMap(nodeRef,
-                                                                   auditedNode.getEventName(),
-                                                                   auditedNode.getNodePropertiesBefore(),
-                                                                   auditedNode.getNodePropertiesAfter(),
-                                                                   auditedNode.getRemoveIfNoPropertyChanged());
+                        auditedNode.getEventName(),
+                        auditedNode.getNodePropertiesBefore(),
+                        auditedNode.getNodePropertiesAfter(),
+                        auditedNode.getRemoveIfNoPropertyChanged());
                 // Audit it
                 if (logger.isDebugEnabled())
                 {
@@ -822,10 +836,10 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         ParameterCheck.mandatory("params", params);
 
         File auditTrailFile = TempFileProvider.createTempFile(AUDIT_TRAIL_FILE_PREFIX,
-            format == ReportFormat.HTML ? AUDIT_TRAIL_HTML_FILE_SUFFIX : AUDIT_TRAIL_JSON_FILE_SUFFIX);
+                format == ReportFormat.HTML ? AUDIT_TRAIL_HTML_FILE_SUFFIX : AUDIT_TRAIL_JSON_FILE_SUFFIX);
 
         try (FileOutputStream fileOutputStream = new FileOutputStream(auditTrailFile);
-            Writer fileWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream,"UTF8")))
+                Writer fileWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream, "UTF8")))
         {
             // Get the results, dumping to file
             getAuditTrailImpl(params, null, fileWriter, format);
@@ -863,10 +877,14 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * Get the audit trail, optionally dumping the results the the given writer dumping to a list.
      *
-     * @param params                the search parameters
-     * @param results               the list to which individual results will be dumped
-     * @param writer                Writer to write the audit trail
-     * @param reportFormat          Format to write the audit trail in, ignored if writer is <code>null</code>
+     * @param params
+     *            the search parameters
+     * @param results
+     *            the list to which individual results will be dumped
+     * @param writer
+     *            Writer to write the audit trail
+     * @param reportFormat
+     *            Format to write the audit trail in, ignored if writer is <code>null</code>
      */
     protected void getAuditTrailImpl(
             final RecordsManagementAuditQueryParameters params,
@@ -929,9 +947,9 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 auditQueryParams.addSearchKey(RM_AUDIT_DATA_LOGIN_FULLNAME, null);
             }
             else if (params.getEvent().equalsIgnoreCase(RM_AUDIT_EVENT_LOGIN_FAILURE))
-                {
-                    auditQueryParams.addSearchKey(RM_AUDIT_DATA_LOGIN_ERROR, null);
-                }
+            {
+                auditQueryParams.addSearchKey(RM_AUDIT_DATA_LOGIN_ERROR, null);
+            }
             else
             {
                 auditQueryParams.addSearchKey(RM_AUDIT_DATA_EVENT_NAME, params.getEvent());
@@ -964,11 +982,10 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     }
 
     /**
-     * Calculates the start of the given date.
-     * For example, if you had the date time of 12 Aug 2013 12:10:15.158
-     * the result would be 12 Aug 2013 00:00:00.000.
+     * Calculates the start of the given date. For example, if you had the date time of 12 Aug 2013 12:10:15.158 the result would be 12 Aug 2013 00:00:00.000.
      *
-     * @param date The date for which the start should be calculated.
+     * @param date
+     *            The date for which the start should be calculated.
      * @return Returns the start of the given date.
      */
     protected Date getStartOfDay(Date date)
@@ -978,9 +995,11 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
     /**
      * Gets the start of the from date
+     * 
      * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditServiceImpl#getStartOfDay(java.util.Date)
      *
-     * @param date The date for which the start should be retrieved.
+     * @param date
+     *            The date for which the start should be retrieved.
      * @return Returns null if the given date is null, otherwise the start of the given day.
      */
     private Date getFromDate(Date date)
@@ -991,7 +1010,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * Returns the number of milliseconds for the "from date".
      *
-     * @param date The date for which the number of milliseconds should retrieved.
+     * @param date
+     *            The date for which the number of milliseconds should retrieved.
      * @return Returns null if the given date is null, otherwise the number of milliseconds for the given date.
      */
     private Long getFromDateTime(Date date)
@@ -1006,11 +1026,10 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     }
 
     /**
-     * Calculates the end of the given date.
-     * For example, if you had the date time of 12 Aug 2013 12:10:15.158
-     * the result would be 12 Aug 2013 23:59:59.999.
+     * Calculates the end of the given date. For example, if you had the date time of 12 Aug 2013 12:10:15.158 the result would be 12 Aug 2013 23:59:59.999.
      *
-     * @param date The date for which the end should be calculated.
+     * @param date
+     *            The date for which the end should be calculated.
      * @return Returns the end of the given date.
      */
     private Date getEndOfDay(Date date)
@@ -1020,9 +1039,11 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
     /**
      * Gets the end of the from date
+     * 
      * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditServiceImpl#getEndOfDay(java.util.Date)
      *
-     * @param date The date for which the end should be retrieved.
+     * @param date
+     *            The date for which the end should be retrieved.
      * @return Returns null if the given date is null, otherwise the end of the given day.
      */
     private Date getToDate(Date date)
@@ -1033,7 +1054,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * Returns the number of milliseconds for the "to date".
      *
-     * @param date The date for which the number of milliseconds should retrieved.
+     * @param date
+     *            The date for which the number of milliseconds should retrieved.
      * @return Returns null if the given date is null, otherwise the number of milliseconds for the given date.
      */
     private Long getToDateTime(Date date)
@@ -1052,7 +1074,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
      */
     @Override
     public NodeRef fileAuditTrailAsRecord(RecordsManagementAuditQueryParameters params,
-                NodeRef destination, ReportFormat format)
+            NodeRef destination, ReportFormat format)
     {
         ParameterCheck.mandatory("params", params);
         ParameterCheck.mandatory("destination", destination);
@@ -1067,7 +1089,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         if (logger.isDebugEnabled())
         {
             logger.debug("Filing audit trail in file " + auditTrail.getAbsolutePath() +
-                        " as a record in record folder: " + destination);
+                    " as a record in record folder: " + destination);
         }
 
         try
@@ -1077,10 +1099,10 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
             // file the audit log as an undeclared record
             record = this.nodeService.createNode(destination,
-                        ContentModel.ASSOC_CONTAINS,
-                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                                    QName.createValidLocalName(auditTrail.getName())),
-                        ContentModel.TYPE_CONTENT, properties).getChildRef();
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                            QName.createValidLocalName(auditTrail.getName())),
+                    ContentModel.TYPE_CONTENT, properties).getChildRef();
 
             // Set the content
             ContentWriter writer = this.contentService.getWriter(record, ContentModel.PROP_CONTENT, true);
@@ -1118,14 +1140,16 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * Writes the start of the audit trail stream to the given writer
      *
-     * @param writer The writer to write to
+     * @param writer
+     *            The writer to write to
      * @params params The parameters being used
-     * @param reportFormat The format to write the header in
+     * @param reportFormat
+     *            The format to write the header in
      * @throws IOException
      */
     private void writeAuditTrailHeader(Writer writer,
-                RecordsManagementAuditQueryParameters params,
-                ReportFormat reportFormat) throws IOException
+            RecordsManagementAuditQueryParameters params,
+            ReportFormat reportFormat) throws IOException
     {
         if (writer == null)
         {
@@ -1204,14 +1228,17 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * Writes an audit trail entry to the given writer
      *
-     * @param writer The writer to write to
-     * @param entry The entry to write
-     * @param reportFormat The format to write the header in
+     * @param writer
+     *            The writer to write to
+     * @param entry
+     *            The entry to write
+     * @param reportFormat
+     *            The format to write the header in
      * @throws IOException
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private void writeAuditTrailEntry(Writer writer, RecordsManagementAuditEntry entry,
-                ReportFormat reportFormat) throws IOException
+            ReportFormat reportFormat) throws IOException
     {
         if (writer == null)
         {
@@ -1228,9 +1255,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             writer.write("</span>");
             writer.write("<span class=\"label\">User:</span>");
             writer.write("<span class=\"value\">");
-            writer.write(entry.getFullName() != null ?
-                            escapeHtml4(entry.getFullName()) :
-                            escapeHtml4(entry.getUserName()));
+            writer.write(entry.getFullName() != null ? escapeHtml4(entry.getFullName()) : escapeHtml4(entry.getUserName()));
             writer.write("</span>");
             if (entry.getUserRole() != null && entry.getUserRole().length() > 0)
             {
@@ -1305,7 +1330,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                         propDataType = propDef.getDataType().getName();
                     }
 
-                    if(DataTypeDefinition.MLTEXT.equals(propDataType))
+                    if (DataTypeDefinition.MLTEXT.equals(propDataType))
                     {
                         writer.write(values.getFirst() == null ? "&lt;none&gt;" : escapeHtml4(convertToMlText((Map) values.getFirst()).getDefaultValue()));
                         writer.write("</td><td>");
@@ -1336,16 +1361,16 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
                 json.put("timestamp", entry.getTimestampString());
                 json.put("userName", entry.getUserName());
-                json.put("userRole", entry.getUserRole() == null ? "": entry.getUserRole());
-                json.put("fullName", entry.getFullName() == null ? "": entry.getFullName());
-                json.put("nodeRef", entry.getNodeRef() == null ? "": entry.getNodeRef());
+                json.put("userRole", entry.getUserRole() == null ? "" : entry.getUserRole());
+                json.put("fullName", entry.getFullName() == null ? "" : entry.getFullName());
+                json.put("nodeRef", entry.getNodeRef() == null ? "" : entry.getNodeRef());
 
                 setNodeName(entry, json);
 
-                json.put("nodeType", entry.getNodeType() == null ? "": entry.getNodeType());
-                json.put("event", entry.getEvent() == null ? "": getAuditEventLabel(entry.getEvent()));
-                json.put("identifier", entry.getIdentifier() == null ? "": entry.getIdentifier());
-                json.put("path", entry.getPath() == null ? "": entry.getPath());
+                json.put("nodeType", entry.getNodeType() == null ? "" : entry.getNodeType());
+                json.put("event", entry.getEvent() == null ? "" : getAuditEventLabel(entry.getEvent()));
+                json.put("identifier", entry.getIdentifier() == null ? "" : entry.getIdentifier());
+                json.put("path", entry.getPath() == null ? "" : entry.getPath());
 
                 JSONArray changedValues = new JSONArray();
 
@@ -1368,10 +1393,10 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                         }
 
                         // handle output of mltext properties
-                        if(DataTypeDefinition.MLTEXT.equals(propDataType))
+                        if (DataTypeDefinition.MLTEXT.equals(propDataType))
                         {
-                            changedValue.put("previous", values.getFirst() == null ? "" : convertToMlText((Map)values.getFirst()).getDefaultValue());
-                            changedValue.put("new", values.getSecond() == null ? "" : convertToMlText((Map)values.getSecond()).getDefaultValue());
+                            changedValue.put("previous", values.getFirst() == null ? "" : convertToMlText((Map) values.getFirst()).getDefaultValue());
+                            changedValue.put("new", values.getSecond() == null ? "" : convertToMlText((Map) values.getSecond()).getDefaultValue());
                         }
                         else
                         {
@@ -1396,9 +1421,12 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * Update a JSON object with a node name for an audit event.
      *
-     * @param entry The audit event.
-     * @param json The object to update.
-     * @throws JSONException If there is a problem updating the JSON.
+     * @param entry
+     *            The audit event.
+     * @param json
+     *            The object to update.
+     * @throws JSONException
+     *             If there is a problem updating the JSON.
      */
     private void setNodeName(RecordsManagementAuditEntry entry, JSONObject json) throws JSONException
     {
@@ -1408,51 +1436,51 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             // TODO: Find another way for checking the event
             switch (entry.getEvent())
             {
-                case "Create Person":
-                    nodeName = getNodeName(entry.getAfterProperties(), PROP_USERNAME);
-                    // This is needed as older audit events (pre-2.7) were created without PROP_USERNAME being set.
-                    NodeRef nodeRef = entry.getNodeRef();
-                    if (nodeName == null && nodeService.exists(nodeRef))
-                    {
-                        nodeName = (String) nodeService.getProperty(nodeRef, PROP_USERNAME);
-                    }
-                    json.put("createPerson", true);
-                    break;
+            case "Create Person":
+                nodeName = getNodeName(entry.getAfterProperties(), PROP_USERNAME);
+                // This is needed as older audit events (pre-2.7) were created without PROP_USERNAME being set.
+                NodeRef nodeRef = entry.getNodeRef();
+                if (nodeName == null && nodeService.exists(nodeRef))
+                {
+                    nodeName = (String) nodeService.getProperty(nodeRef, PROP_USERNAME);
+                }
+                json.put("createPerson", true);
+                break;
 
-                case "Delete Person":
-                    nodeName = getNodeName(entry.getBeforeProperties(), PROP_USERNAME);
-                    json.put("noAvailableLink", true);
-                    break;
+            case "Delete Person":
+                nodeName = getNodeName(entry.getBeforeProperties(), PROP_USERNAME);
+                json.put("noAvailableLink", true);
+                break;
 
-                case "Create User Group":
-                    nodeName = getNodeName(entry.getAfterProperties(), PROP_AUTHORITY_DISPLAY_NAME, PROP_AUTHORITY_NAME);
-                    json.put("noAvailableLink", true);
-                    break;
+            case "Create User Group":
+                nodeName = getNodeName(entry.getAfterProperties(), PROP_AUTHORITY_DISPLAY_NAME, PROP_AUTHORITY_NAME);
+                json.put("noAvailableLink", true);
+                break;
 
-                case "Delete User Group":
-                    nodeName = getNodeName(entry.getBeforeProperties(), PROP_AUTHORITY_DISPLAY_NAME, PROP_AUTHORITY_NAME);
-                    json.put("noAvailableLink", true);
-                    break;
+            case "Delete User Group":
+                nodeName = getNodeName(entry.getBeforeProperties(), PROP_AUTHORITY_DISPLAY_NAME, PROP_AUTHORITY_NAME);
+                json.put("noAvailableLink", true);
+                break;
 
-                case "Add To User Group":
-                    nodeName = getNodeName(entry.getAfterProperties(), PARENT_GROUP);
-                    json.put("noAvailableLink", true);
-                    break;
+            case "Add To User Group":
+                nodeName = getNodeName(entry.getAfterProperties(), PARENT_GROUP);
+                json.put("noAvailableLink", true);
+                break;
 
-                case "Remove From User Group":
-                    nodeName = getNodeName(entry.getBeforeProperties(), PARENT_GROUP);
-                    json.put("noAvailableLink", true);
-                    break;
+            case "Remove From User Group":
+                nodeName = getNodeName(entry.getBeforeProperties(), PARENT_GROUP);
+                json.put("noAvailableLink", true);
+                break;
 
-                case "Delete RM Object":
-                case "Delete Hold":
-                    nodeName = entry.getNodeName();
-                    json.put("noAvailableLink", true);
-                    break;
+            case "Delete RM Object":
+            case "Delete Hold":
+                nodeName = entry.getNodeName();
+                json.put("noAvailableLink", true);
+                break;
 
-                default:
-                    nodeName = entry.getNodeName();
-                    break;
+            default:
+                nodeName = entry.getNodeName();
+                break;
             }
         }
         json.put("nodeName", nodeName == null ? "" : nodeName);
@@ -1461,8 +1489,10 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * Get a node name using the first non-blank value from a properties object using a list of property names.
      *
-     * @param properties The properties object.
-     * @param propertyNames The names of the properties to use. Return the first value that is not empty.
+     * @param properties
+     *            The properties object.
+     * @param propertyNames
+     *            The names of the properties to use. Return the first value that is not empty.
      * @return The value of the property, or null if it's not there.
      */
     private String getNodeName(Map<QName, Serializable> properties, QName... propertyNames)
@@ -1481,8 +1511,9 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * Helper method to convert value to MLText
      *
-     * @param map   map of locale's and values
-     * @return {@link MLText}   multilingual text value
+     * @param map
+     *            map of locale's and values
+     * @return {@link MLText} multilingual text value
      */
     private MLText convertToMlText(Map<Locale, String> map)
     {
@@ -1494,8 +1525,10 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * Writes the end of the audit trail stream to the given writer
      *
-     * @param writer The writer to write to
-     * @param reportFormat The format to write the footer in
+     * @param writer
+     *            The writer to write to
+     * @param reportFormat
+     *            The format to write the footer in
      * @throws IOException
      */
     private void writeAuditTrailFooter(Writer writer, ReportFormat reportFormat) throws IOException
@@ -1520,7 +1553,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * Returns the display label for a property QName
      *
-     * @param property The property to get label for
+     * @param property
+     *            The property to get label for
      * @return The label
      */
     private String getPropertyLabel(QName property)
@@ -1544,7 +1578,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * Returns the display label for the given audit event key
      *
-     * @param eventKey The audit event key
+     * @param eventKey
+     *            The audit event key
      * @return The display label or null if the key does not exist
      */
     private String getAuditEventLabel(String eventKey)
@@ -1630,7 +1665,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * Helper method to get the default file plan
      *
-     * @return  NodRef default file plan
+     * @return NodRef default file plan
      */
     private NodeRef getDefaultFilePlan()
     {
@@ -1704,6 +1739,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
     /**
      * {@inheritDoc}
+     * 
      * @since 3.2
      * @deprecated since 2.1
      */
@@ -1731,7 +1767,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             this.reportFormat = reportFormat;
             firstEntry = true;
         }
-
 
         @Override
         public boolean valuesRequired()
@@ -1763,7 +1798,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             {
                 return false;
             }
-
 
             Date timestamp = new Date(time);
             String eventName = null;
@@ -1809,7 +1843,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 QName nodeTypeQname = (QName) values.get(DOD5015_AUDIT_DATA_NODE_TYPE);
                 nodeIdentifier = (String) values.get(DOD5015_AUDIT_DATA_NODE_IDENTIFIER);
                 namePath = (String) values.get(DOD5015_AUDIT_DATA_NODE_NAMEPATH);
-                beforeProperties = (Map<QName, Serializable>) values.get( DOD5015_AUDIT_DATA_NODE_CHANGES_BEFORE);
+                beforeProperties = (Map<QName, Serializable>) values.get(DOD5015_AUDIT_DATA_NODE_CHANGES_BEFORE);
                 afterProperties = (Map<QName, Serializable>) values.get(DOD5015_AUDIT_DATA_NODE_CHANGES_AFTER);
 
                 // Convert some of the values to recognizable forms
@@ -1854,8 +1888,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 // This is not recognisable data
                 logger.warn(
                         "Unable to process audit entry for RM.  Unexpected data: \n" +
-                        "   Entry: " + entryId + "\n" +
-                        "   Data:  " + values);
+                                "   Entry: " + entryId + "\n" +
+                                "   Data:  " + values);
                 // Skip it
                 return true;
             }
@@ -1864,7 +1898,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             {
                 if ((filePlanService.isFilePlanComponent(nodeRef) &&
                         !AccessStatus.ALLOWED.equals(
-                                capabilityService.getCapabilityAccessState(nodeRef, ACCESS_AUDIT_CAPABILITY))) ||
+                                capabilityService.getCapabilityAccessState(nodeRef, ACCESS_AUDIT_CAPABILITY)))
+                        ||
                         (!AccessStatus.ALLOWED.equals(permissionService.hasPermission(nodeRef, PermissionService.READ))))
                 {
                     return true;
@@ -1913,7 +1948,9 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
         /**
          * Helper method to check permission on the hold, if any, from the given event properties
-         * @param eventProperties   event properties
+         * 
+         * @param eventProperties
+         *            event properties
          */
         private void checkPermissionIfHoldInProperties(Map<QName, Serializable> eventProperties)
         {
@@ -1930,7 +1967,9 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
         /**
          * Helper method to remove the hold node ref, if any, from the given event properties
-         * @param eventProperties   event properties
+         * 
+         * @param eventProperties
+         *            event properties
          */
         private void removeHoldNodeRefIfPresent(Map<QName, Serializable> eventProperties)
         {
@@ -1942,7 +1981,9 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
         /**
          * Helper method to write the audit entry to file
-         * @param entry      audit entry
+         * 
+         * @param entry
+         *            audit entry
          */
         private void writeEntryToFile(RecordsManagementAuditEntry entry)
         {

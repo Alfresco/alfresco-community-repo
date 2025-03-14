@@ -25,10 +25,11 @@
  */
 package org.alfresco.repo.web.scripts.dictionary.prefixed;
 
-import org.alfresco.repo.web.scripts.dictionary.AbstractClassesGet;
-import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
+
+import org.alfresco.repo.web.scripts.dictionary.AbstractClassesGet;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Webscript to get the Classdefinitions using classfilter , namespaceprefix and name
@@ -43,11 +44,11 @@ public class ClassesGet extends AbstractClassesGet
     {
         return QName.createQName(getFullNamespaceURI(namespacePrefix, name));
     }
-        
+
     @Override
     protected QName getClassQname(String namespacePrefix, String name)
     {
-        if(isValidClassname(namespacePrefix, name) == false)
+        if (isValidClassname(namespacePrefix, name) == false)
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the name - " + name + "parameter in the URL");
         }

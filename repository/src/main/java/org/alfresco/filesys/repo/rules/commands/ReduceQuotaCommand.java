@@ -38,9 +38,9 @@ public class ReduceQuotaCommand implements Command
     private String name;
     private String path;
     private NodeRef rootNode;
-  
+
     private NetworkFile networkFile;
-    
+
     public ReduceQuotaCommand(String name, NetworkFile networkFile, NodeRef rootNode, String path)
     {
         this.name = name;
@@ -53,17 +53,17 @@ public class ReduceQuotaCommand implements Command
     {
         return name;
     }
-    
+
     public NetworkFile getNetworkFile()
     {
         return networkFile;
     }
-    
+
     public NodeRef getRootNodeRef()
     {
         return rootNode;
     }
-    
+
     public String getPath()
     {
         return path;

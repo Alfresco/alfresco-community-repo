@@ -31,36 +31,36 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * Simple Map of Binding to Behaviour with observer support.
  * 
  * @author David Caruana
  *
- * @param <B>  the type of binding.
+ * @param <B>
+ *            the type of binding.
  */
-/*package*/ class BehaviourMap<B extends BehaviourBinding>
+/* package */ class BehaviourMap<B extends BehaviourBinding>
 {
-	/**
-	 * The count of behaviours
-	 */
-	int size = 0;
-	
+    /**
+     * The count of behaviours
+     */
+    int size = 0;
+
     /**
      * The map of bindings to behaviour
      */
     private Map<B, List<BehaviourDefinition<B>>> index = new HashMap<B, List<BehaviourDefinition<B>>>();
-    
+
     /**
      * The list of registered observers
      */
     private List<BehaviourChangeObserver<B>> observers = new ArrayList<BehaviourChangeObserver<B>>();
-    
 
     /**
      * Binds a Behaviour into the Map
      * 
-     * @param behaviourDefinition  the behaviour definition to bind
+     * @param behaviourDefinition
+     *            the behaviour definition to bind
      */
     public void put(BehaviourDefinition<B> behaviourDefinition)
     {
@@ -68,31 +68,32 @@ import java.util.Map;
         List<BehaviourDefinition<B>> existing = index.get(binding);
         if (existing == null)
         {
-        	List<BehaviourDefinition<B>> behaviourList = new ArrayList<BehaviourDefinition<B>>();
-        	behaviourList.add(behaviourDefinition);
-        	index.put(binding, behaviourList);
-        	size++;
+            List<BehaviourDefinition<B>> behaviourList = new ArrayList<BehaviourDefinition<B>>();
+            behaviourList.add(behaviourDefinition);
+            index.put(binding, behaviourList);
+            size++;
         }
         else
         {
-        	if (!existing.contains(behaviourDefinition))
-        	{
-        		existing.add(behaviourDefinition);
-        		size++;
-        	}
+            if (!existing.contains(behaviourDefinition))
+            {
+                existing.add(behaviourDefinition);
+                size++;
+            }
         }
-        
+
         for (BehaviourChangeObserver<B> listener : observers)
         {
             listener.addition(binding, behaviourDefinition.getBehaviour());
         }
-        
+
     }
-    
+
     /**
      * Remove behavior from map
      * 
-     * @param behaviourDefinition BehaviourDefinition<B>
+     * @param behaviourDefinition
+     *            BehaviourDefinition<B>
      */
     public void remove(BehaviourDefinition<B> behaviourDefinition)
     {
@@ -108,56 +109,54 @@ import java.util.Map;
                 listener.removal(binding, behaviourDefinition.getBehaviour());
             }
         }
-    } 
-    
-    
+    }
+
     /**
      * Gets a Behaviour from the Map
      * 
-     * @param binding  the binding
-     * @return  the behaviour
+     * @param binding
+     *            the binding
+     * @return the behaviour
      */
     public List<BehaviourDefinition<B>> get(B binding)
     {
         return index.get(binding);
     }
 
-
     /**
      * Gets all bound Behaviours from the Map
      * 
-     * @return  all bound behaviours
+     * @return all bound behaviours
      */
     public Collection<BehaviourDefinition<B>> getAll()
     {
-    	List<BehaviourDefinition<B>> allBehaviours = new ArrayList<BehaviourDefinition<B>>(size);
-    	for (List<BehaviourDefinition<B>> behaviours : index.values())
-    	{
-    		allBehaviours.addAll(behaviours);
-    	}
+        List<BehaviourDefinition<B>> allBehaviours = new ArrayList<BehaviourDefinition<B>>(size);
+        for (List<BehaviourDefinition<B>> behaviours : index.values())
+        {
+            allBehaviours.addAll(behaviours);
+        }
         return allBehaviours;
     }
 
-    
     /**
      * Gets the count of bound behaviours
      * 
-     * @return  the count
+     * @return the count
      */
     public int size()
     {
         return size;
     }
 
-    
     /**
      * Adds a Change Observer
      * 
-     * @param observer  the change observer
+     * @param observer
+     *            the change observer
      */
     public void addChangeObserver(BehaviourChangeObserver<B> observer)
     {
         observers.add(observer);
     }
-    
+
 }

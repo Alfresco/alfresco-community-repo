@@ -26,6 +26,15 @@
 
 package org.alfresco.repo.rendition;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.action.executer.ActionExecuter;
@@ -60,14 +69,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 
 /*
  * @author Nick Smith
@@ -77,9 +78,9 @@ import java.util.Set;
  * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
 @Deprecated
-public class RenditionServiceImpl implements 
-        RenditionService, 
-        RenditionDefinitionPersister, 
+public class RenditionServiceImpl implements
+        RenditionService,
+        RenditionDefinitionPersister,
         BeforeCheckOut,
         BeforeLock
 {
@@ -94,26 +95,28 @@ public class RenditionServiceImpl implements
     private RenditionService2Impl renditionService2;
 
     private RenditionDefinitionPersister renditionDefinitionPersister;
-    
+
     /**
      * @since 4.0.1
      */
     private RenditionPreventionRegistry renditionPreventionRegistry;
-    
+
     /**
      * @since 4.1.6
      */
     private List<String> knownCancellableActionTypes;
-    
+
     /**
      * Injects the RenditionDefinitionPersister bean.
-     * @param renditionDefinitionPersister RenditionDefinitionPersister
+     * 
+     * @param renditionDefinitionPersister
+     *            RenditionDefinitionPersister
      */
     public void setRenditionDefinitionPersister(RenditionDefinitionPersister renditionDefinitionPersister)
     {
         this.renditionDefinitionPersister = renditionDefinitionPersister;
     }
-    
+
     /**
      * @since 4.0.1
      */
@@ -121,10 +124,12 @@ public class RenditionServiceImpl implements
     {
         this.renditionPreventionRegistry = registry;
     }
-    
+
     /**
      * Injects the ServiceRegistry bean.
-     * @param serviceRegistry ServiceRegistry
+     * 
+     * @param serviceRegistry
+     *            ServiceRegistry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
@@ -134,7 +139,9 @@ public class RenditionServiceImpl implements
 
     /**
      * Injects the ActionService bean.
-     * @param actionService ActionService
+     * 
+     * @param actionService
+     *            ActionService
      */
     public void setActionService(ActionService actionService)
     {
@@ -143,7 +150,9 @@ public class RenditionServiceImpl implements
 
     /**
      * Injects the ActionTrackingService bean.
-     * @param actionTrackingService ActionTrackingService
+     * 
+     * @param actionTrackingService
+     *            ActionTrackingService
      */
     public void setActionTrackingService(ActionTrackingService actionTrackingService)
     {
@@ -152,7 +161,9 @@ public class RenditionServiceImpl implements
 
     /**
      * Injects the DictionaryService bean.
-     * @param dictionaryService DictionaryService
+     * 
+     * @param dictionaryService
+     *            DictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -161,15 +172,18 @@ public class RenditionServiceImpl implements
 
     /**
      * Injects the PolicyComponent bean.
-     * @param policyComponent PolicyComponent
+     * 
+     * @param policyComponent
+     *            PolicyComponent
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
+
     /**
      * Sets the list of known cancellable actions used by {@link #cancelRenditions(NodeRef)}.
+     * 
      * @since 4.1.6
      */
     public void setKnownCancellableActionTypes(List<String> knownCancellableActionTypes)
@@ -194,10 +208,9 @@ public class RenditionServiceImpl implements
                 new JavaBehaviour(this, "beforeLock"));
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rendition.RenditionService#getRenderingEngineDefinition(java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rendition.RenditionService#getRenderingEngineDefinition(java.lang.String) */
     public RenderingEngineDefinition getRenderingEngineDefinition(String name)
     {
         ActionDefinition actionDefinition = actionService.getActionDefinition(name);
@@ -209,10 +222,9 @@ public class RenditionServiceImpl implements
             return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rendition.RenditionService#getRenderingEngineDefinitions()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rendition.RenditionService#getRenderingEngineDefinitions() */
     public List<RenderingEngineDefinition> getRenderingEngineDefinitions()
     {
         List<RenderingEngineDefinition> results = new ArrayList<RenderingEngineDefinition>();
@@ -228,12 +240,9 @@ public class RenditionServiceImpl implements
         return results;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.service.cmr.rendition.RenditionService#createRenditionDefinition
-     * (org.alfresco.service.namespace.QName, java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rendition.RenditionService#createRenditionDefinition (org.alfresco.service.namespace.QName, java.lang.String) */
     public RenditionDefinition createRenditionDefinition(QName renditionDefinitionName, String renderingEngineName)
     {
         if (log.isDebugEnabled())
@@ -248,10 +257,9 @@ public class RenditionServiceImpl implements
         return new RenditionDefinitionImpl(GUID.generate(), renditionDefinitionName, renderingEngineName);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rendition.RenditionService#createCompositeRenditionDefinition(org.alfresco.service.namespace.QName)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rendition.RenditionService#createCompositeRenditionDefinition(org.alfresco.service.namespace.QName) */
     public CompositeRenditionDefinition createCompositeRenditionDefinition(QName renditionName)
     {
         if (log.isDebugEnabled())
@@ -264,17 +272,16 @@ public class RenditionServiceImpl implements
         return new CompositeRenditionDefinitionImpl(GUID.generate(), renditionName);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rendition.RenditionService#render(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rendition.RenditionDefinition)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rendition.RenditionService#render(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rendition.RenditionDefinition) */
     public ChildAssociationRef render(NodeRef sourceNode, RenditionDefinition definition)
     {
         checkSourceNodeForPreventionClass(sourceNode);
         log.debug("Original RenditionService render no callback START");
 
         ChildAssociationRef result = executeRenditionAction(sourceNode, definition, false);
-        
+
         if (log.isDebugEnabled())
         {
             log.debug("Produced rendition " + result);
@@ -293,66 +300,64 @@ public class RenditionServiceImpl implements
         // The asynchronous render can't return a ChildAssociationRef as it is created
         // asynchronously after this method returns.
         definition.setCallback(callback);
-        
+
         executeRenditionAction(sourceNode, definition, true);
         log.debug("Original RenditionService render   callback END");
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rendition.RenditionService#render(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rendition.RenditionService#render(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
     public ChildAssociationRef render(NodeRef sourceNode, final QName renditionDefinitionQName)
     {
         checkSourceNodeForPreventionClass(sourceNode);
-        
+
         RenditionDefinition rendDefn = AuthenticationUtil.runAs(
-                new AuthenticationUtil.RunAsWork<RenditionDefinition>()
-                {
+                new AuthenticationUtil.RunAsWork<RenditionDefinition>() {
                     public RenditionDefinition doWork() throws Exception
                     {
                         return loadRenditionDefinition(renditionDefinitionQName);
                     }
                 }, AuthenticationUtil.getSystemUserName());
-        
+
         if (rendDefn == null)
         {
             throw new RenditionServiceException("Rendition Definition " + renditionDefinitionQName + " was not found.");
         }
-        
+
         return this.render(sourceNode, rendDefn);
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rendition.RenditionService#render(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.cmr.rendition.RenderCallback)
-     */
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rendition.RenditionService#render(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.cmr.rendition.RenderCallback) */
     public void render(NodeRef sourceNode, final QName renditionDefinitionQName, RenderCallback callback)
     {
         checkSourceNodeForPreventionClass(sourceNode);
-        
+
         RenditionDefinition rendDefn = AuthenticationUtil.runAs(
-                new AuthenticationUtil.RunAsWork<RenditionDefinition>()
-                {
+                new AuthenticationUtil.RunAsWork<RenditionDefinition>() {
                     public RenditionDefinition doWork() throws Exception
                     {
                         return loadRenditionDefinition(renditionDefinitionQName);
                     }
                 }, AuthenticationUtil.getSystemUserName());
-            
+
         if (rendDefn == null)
         {
             throw new RenditionServiceException("Rendition Definition " + renditionDefinitionQName + " was not found.");
         }
-        
+
         this.render(sourceNode, rendDefn, callback);
     }
-    
+
     /**
      * This method checks whether the specified source node is of a content class which has been registered for rendition prevention.
      * 
-     * @param sourceNode the node to check.
-     * @throws RenditionPreventedException if the source node is configured for rendition prevention.
+     * @param sourceNode
+     *            the node to check.
+     * @throws RenditionPreventedException
+     *             if the source node is configured for rendition prevention.
      * @since 4.0.1
      * @see RenditionPreventionRegistry
      */
@@ -364,7 +369,7 @@ public class RenditionServiceImpl implements
         {
             Set<QName> nodeContentClasses = nodeService.getAspects(sourceNode);
             nodeContentClasses.add(nodeService.getType(sourceNode));
-            
+
             for (QName contentClass : nodeContentClasses)
             {
                 if (renditionPreventionRegistry.isContentClassRegistered(contentClass))
@@ -381,15 +386,16 @@ public class RenditionServiceImpl implements
             }
         }
     }
-    
+
     /**
-     * This method delegates the execution of the specified RenditionDefinition
-     * to the {@link ActionService action service}.
+     * This method delegates the execution of the specified RenditionDefinition to the {@link ActionService action service}.
      * 
-     * @param sourceNode the source node which is to be rendered.
-     * @param definition the rendition definition to be used.
-     * @param asynchronous <code>true</code> for asynchronous execution,
-     *                     <code>false</code> for synchronous.
+     * @param sourceNode
+     *            the source node which is to be rendered.
+     * @param definition
+     *            the rendition definition to be used.
+     * @param asynchronous
+     *            <code>true</code> for asynchronous execution, <code>false</code> for synchronous.
      * @return the ChildAssociationRef whose child is the rendition node.
      */
     private ChildAssociationRef executeRenditionAction(NodeRef sourceNode,
@@ -412,70 +418,52 @@ public class RenditionServiceImpl implements
         }
         final boolean checkConditions = true;
         actionService.executeAction(definition, sourceNode, checkConditions, asynchronous);
-        
-        ChildAssociationRef result = (ChildAssociationRef)definition.getParameterValue(ActionExecuter.PARAM_RESULT);
+
+        ChildAssociationRef result = (ChildAssociationRef) definition.getParameterValue(ActionExecuter.PARAM_RESULT);
         return result;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.service.cmr.rendition.RenditionService#saveRenditionDefinition
-     * (org.alfresco.service.cmr.rendition.RenditionDefinition)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rendition.RenditionService#saveRenditionDefinition (org.alfresco.service.cmr.rendition.RenditionDefinition) */
     public void saveRenditionDefinition(RenditionDefinition renderingAction)
     {
         this.renditionDefinitionPersister.saveRenditionDefinition(renderingAction);
     }
 
-    /*
-     * @see
-     * org.alfresco.service.cmr.rendition.RenditionService#loadRenderingAction
-     * (org.alfresco.service.namespace.QName)
-     */
+    /* @see org.alfresco.service.cmr.rendition.RenditionService#loadRenderingAction (org.alfresco.service.namespace.QName) */
     public RenditionDefinition loadRenditionDefinition(QName renditionDefinitionName)
     {
         return this.renditionDefinitionPersister.loadRenditionDefinition(renditionDefinitionName);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rendition.RenditionService#loadRenditionDefinitions()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rendition.RenditionService#loadRenditionDefinitions() */
     public List<RenditionDefinition> loadRenditionDefinitions()
     {
         return this.renditionDefinitionPersister.loadRenditionDefinitions();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.service.cmr.rendition.RenditionService#loadRenderingActions
-     * (java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rendition.RenditionService#loadRenderingActions (java.lang.String) */
     public List<RenditionDefinition> loadRenditionDefinitions(String renditionEngineName)
     {
         return this.renditionDefinitionPersister.loadRenditionDefinitions(renditionEngineName);
     }
-    
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.service.cmr.rendition.RenditionService#getRenditions(org
-     * .alfresco.service.cmr.repository.NodeRef)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rendition.RenditionService#getRenditions(org .alfresco.service.cmr.repository.NodeRef) */
     public List<ChildAssociationRef> getRenditions(NodeRef node)
     {
         return renditionService2.getRenditions(node);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.service.cmr.rendition.RenditionService#getRenditions(org
-     * .alfresco.service.cmr.repository.NodeRef, java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rendition.RenditionService#getRenditions(org .alfresco.service.cmr.repository.NodeRef, java.lang.String) */
     public List<ChildAssociationRef> getRenditions(NodeRef node, String mimeTypePrefix)
     {
         List<ChildAssociationRef> allRenditions = this.getRenditions(node);
@@ -508,10 +496,9 @@ public class RenditionServiceImpl implements
         return filteredResults;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rendition.RenditionService#getRenditionByName(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rendition.RenditionService#getRenditionByName(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
     public ChildAssociationRef getRenditionByName(NodeRef node, QName renditionName)
     {
         List<ChildAssociationRef> renditions = Collections.emptyList();
@@ -535,18 +522,17 @@ public class RenditionServiceImpl implements
             }
             ChildAssociationRef childAssoc = renditions.get(0);
             NodeRef renditionNode = childAssoc.getChildRef();
-            return !renditionService2.isRenditionAvailable(node, renditionNode) ? null: childAssoc;
+            return !renditionService2.isRenditionAvailable(node, renditionNode) ? null : childAssoc;
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rendition.RenditionService#isRendition(org.alfresco.service.cmr.repository.NodeRef)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rendition.RenditionService#isRendition(org.alfresco.service.cmr.repository.NodeRef) */
     public boolean isRendition(NodeRef node)
     {
         final QName aspectToCheckFor = RenditionModel.ASPECT_RENDITION;
-        
+
         Set<QName> existingAspects = nodeService.getAspects(node);
         for (QName nextAspect : existingAspects)
         {
@@ -557,11 +543,10 @@ public class RenditionServiceImpl implements
         }
         return false;
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rendition.RenditionService#getSourceNode(org.alfresco.service.cmr.repository.NodeRef)
-     */
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.rendition.RenditionService#getSourceNode(org.alfresco.service.cmr.repository.NodeRef) */
     public ChildAssociationRef getSourceNode(NodeRef renditionNode)
     {
         // In normal circumstances only a node which is itself a rendition can have
@@ -574,7 +559,7 @@ public class RenditionServiceImpl implements
         // This will also occur *during* execution of the webscript patch and so the
         // decision was made not to throw an exception or log a warning if such a
         // situation is encountered.
-        
+
         // A rendition node should have 1 and only 1 source node.
         List<ChildAssociationRef> parents = nodeService.getParentAssocs(renditionNode,
                 RenditionModel.ASSOC_RENDITION, RegexQNamePattern.MATCH_ALL);
@@ -597,7 +582,7 @@ public class RenditionServiceImpl implements
             return parents.isEmpty() ? null : parents.get(0);
         }
     }
-    
+
     public void cancelRenditions(NodeRef sourceNode)
     {
         if (knownCancellableActionTypes == null)
@@ -609,7 +594,7 @@ public class RenditionServiceImpl implements
             cancelRenditions(sourceNode, type);
         }
     }
-    
+
     public void cancelRenditions(NodeRef sourceNode, String type)
     {
         if (log.isDebugEnabled())
@@ -622,12 +607,12 @@ public class RenditionServiceImpl implements
             actionTrackingService.requestActionCancellation(executionSummary);
         }
     }
-    
+
     @Override
     public void beforeCheckOut(
             NodeRef nodeRef,
-            NodeRef destinationParentNodeRef,           
-            QName destinationAssocTypeQName, 
+            NodeRef destinationParentNodeRef,
+            QName destinationAssocTypeQName,
             QName destinationAssocQName)
     {
         cancelRenditions(nodeRef);
@@ -660,7 +645,7 @@ public class RenditionServiceImpl implements
                 {
                     if (log.isDebugEnabled())
                     {
-                        log.debug("OnContentUpdate ignored by original service as the rendition for \""+sourceNodeRef+"\", \""+renditionName+"\" new service has taken over.");
+                        log.debug("OnContentUpdate ignored by original service as the rendition for \"" + sourceNodeRef + "\", \"" + renditionName + "\" new service has taken over.");
                     }
                     useRenditionService2 = true;
                 }
@@ -668,7 +653,7 @@ public class RenditionServiceImpl implements
                 {
                     if (log.isDebugEnabled())
                     {
-                        log.debug("OnContentUpdate remove rendition for \""+sourceNodeRef+"\", \""+renditionName+"\" so we switch back to the original service, as the new service does not have the definition.");
+                        log.debug("OnContentUpdate remove rendition for \"" + sourceNodeRef + "\", \"" + renditionName + "\" so we switch back to the original service, as the new service does not have the definition.");
                     }
                     renditionService2.deleteRendition(sourceNodeRef, renditionName);
                 }
@@ -680,7 +665,7 @@ public class RenditionServiceImpl implements
                 // aspect being added, so future renditions will also be done by the newer service.
                 if (log.isDebugEnabled())
                 {
-                    log.debug("OnContentUpdate calling RenditionService2.render(\""+sourceNodeRef+"\", \""+renditionName+"\" so we switch to the new service.");
+                    log.debug("OnContentUpdate calling RenditionService2.render(\"" + sourceNodeRef + "\", \"" + renditionName + "\" so we switch to the new service.");
                 }
                 useRenditionService2 = true;
                 renditionService2.clearRenditionContentData(sourceNodeRef, renditionName);
@@ -692,7 +677,7 @@ public class RenditionServiceImpl implements
             // As the new service has been disabled the old service needs to take over, so the rendition is removed.
             if (log.isDebugEnabled())
             {
-                log.debug("OnContentUpdate remove rendition for \""+sourceNodeRef+"\", \""+renditionName+"\" so we switch back to the original service, as the new service is disabled.");
+                log.debug("OnContentUpdate remove rendition for \"" + sourceNodeRef + "\", \"" + renditionName + "\" so we switch back to the original service, as the new service is disabled.");
             }
             renditionService2.deleteRendition(sourceNodeRef, renditionName);
         }

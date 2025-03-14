@@ -29,6 +29,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
+import org.apache.chemistry.opencmis.commons.enums.CapabilityJoin;
+import org.apache.chemistry.opencmis.commons.enums.CapabilityQuery;
+
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.search.CMISQueryOptions;
 import org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryMode;
@@ -45,9 +49,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
-import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
-import org.apache.chemistry.opencmis.commons.enums.CapabilityJoin;
-import org.apache.chemistry.opencmis.commons.enums.CapabilityQuery;
 
 /**
  * @author Andy
@@ -55,7 +56,7 @@ import org.apache.chemistry.opencmis.commons.enums.CapabilityQuery;
 public class OpenCMISQueryServiceImpl implements CMISQueryService
 {
     private LuceneQueryLanguageSPI queryLanguage;
-    
+
     private NodeService nodeService;
 
     private DictionaryService alfrescoDictionaryService;
@@ -85,24 +86,24 @@ public class OpenCMISQueryServiceImpl implements CMISQueryService
     @Override
     public CMISResultSet query(CMISQueryOptions options)
     {
-    	SearchParameters searchParameters = options.getAsSearchParmeters();
-    	searchParameters.addExtraParameter("cmisVersion", options.getCmisVersion().toString());
+        SearchParameters searchParameters = options.getAsSearchParmeters();
+        searchParameters.addExtraParameter("cmisVersion", options.getCmisVersion().toString());
         ResultSet rs = queryLanguage.executeQuery(searchParameters);
-        
+
         CapabilityJoin joinSupport = getJoinSupport();
-        if(options.getQueryMode() == CMISQueryOptions.CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS)
+        if (options.getQueryMode() == CMISQueryOptions.CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS)
         {
             joinSupport = CapabilityJoin.INNERANDOUTER;
         }
-        
+
         // TODO: Refactor to avoid duplication of valid scopes here and in CMISQueryParser
-        
+
         BaseTypeId[] validScopes = (options.getQueryMode() == CMISQueryMode.CMS_STRICT) ? CmisFunctionEvaluationContext.STRICT_SCOPES : CmisFunctionEvaluationContext.ALFRESCO_SCOPES;
         CmisFunctionEvaluationContext functionContext = new CmisFunctionEvaluationContext();
         functionContext.setCmisDictionaryService(cmisDictionaryService);
         functionContext.setNodeService(nodeService);
         functionContext.setValidScopes(validScopes);
-        
+
         CMISQueryParser parser = new CMISQueryParser(options, cmisDictionaryService, joinSupport);
         Query query = parser.parse(new LuceneQueryModelFactory(), functionContext);
 
@@ -116,7 +117,7 @@ public class OpenCMISQueryServiceImpl implements CMISQueryService
         }
         LimitBy limitBy = null;
         limitBy = rs.getResultSetMetaData().getLimitedBy();
-        
+
         CMISResultSet cmis = new CMISResultSet(wrapped, options, limitBy, nodeService, query, cmisDictionaryService, alfrescoDictionaryService);
         return cmis;
     }

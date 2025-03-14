@@ -25,11 +25,12 @@
  */
 package org.alfresco.encryption;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * 
@@ -39,10 +40,10 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 public class BootstrapReEncryptor extends AbstractLifecycleBean
 {
     private static Log logger = LogFactory.getLog(BootstrapReEncryptor.class);
-    
+
     private boolean enabled;
     private ReEncryptor reEncryptor;
-    
+
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
@@ -59,7 +60,7 @@ public class BootstrapReEncryptor extends AbstractLifecycleBean
         {
             return reEncryptor.bootstrapReEncrypt();
         }
-        catch(MissingKeyException e)
+        catch (MissingKeyException e)
         {
             throw new AlfrescoRuntimeException("Bootstrap re-encryption failed", e);
         }
@@ -68,22 +69,21 @@ public class BootstrapReEncryptor extends AbstractLifecycleBean
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        if(enabled)
+        if (enabled)
         {
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Re-encrypting encryptable properties...");
             }
             int propertiesReEncrypted = reEncrypt();
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("...done, re-encrypted " + propertiesReEncrypted + " properties.");
             }
         }
     }
-    
+
     @Override
     protected void onShutdown(ApplicationEvent event)
-    {
-    }
+    {}
 }

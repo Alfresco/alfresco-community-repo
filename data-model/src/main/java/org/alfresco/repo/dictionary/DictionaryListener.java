@@ -32,7 +32,7 @@ package org.alfresco.repo.dictionary;
  *
  */
 public interface DictionaryListener
-{        
+{
     /**
      * Callback for (re-)initialising the Dictionary caches (executed in the current tenant context)
      */
@@ -42,7 +42,7 @@ public interface DictionaryListener
      * Callback once dictionary destroy is complete (executed in the current tenant context)
      */
     void afterDictionaryDestroy();
-    
+
     /**
      * Callback once dictionary initialisation is complete (executed in the current tenant context)
      */

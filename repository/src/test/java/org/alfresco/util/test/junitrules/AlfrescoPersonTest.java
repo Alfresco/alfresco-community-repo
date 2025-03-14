@@ -39,16 +39,17 @@ import org.alfresco.util.GUID;
  */
 public class AlfrescoPersonTest extends AbstractAlfrescoPersonTest
 {
-    @Override protected String createTestUserName()
+    @Override
+    protected String createTestUserName()
     {
         // In Community/Enterprise Alfresco, usernames are "just Strings" - e.g. they need not be email addresses.
         return GUID.generate();
     }
-    
-    @Override protected void validateCmPersonNode(final String username, final boolean exists)
+
+    @Override
+    protected void validateCmPersonNode(final String username, final boolean exists)
     {
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 assertEquals("Test person's existence was wrong", exists, PERSON_SERVICE.personExists(username));

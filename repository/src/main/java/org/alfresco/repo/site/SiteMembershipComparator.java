@@ -116,7 +116,7 @@ public class SiteMembershipComparator implements Comparator<SiteMembership>
     }
 
     static int compareSiteMembersBody(List<Pair<? extends Object, SortOrder>> sortPairs, String personId1, String personId2, String lastName1, String lastName2, String siteRole1, String siteRole2, int personId, int firstName,
-                                      int lastName, int siteRole, int ret)
+            int lastName, int siteRole, int ret)
     {
         for (Pair<? extends Object, SortOrder> pair : sortPairs)
         {
@@ -270,18 +270,18 @@ public class SiteMembershipComparator implements Comparator<SiteMembership>
 
         switch (comparatorType)
         {
-            case SITES:
-            {
-                ret = compareSitesBody(shortName1, shortName2, siteRole1, siteRole2, siteTitle1, siteTitle2, siteShortName, siteRole, siteTitle, ret);
-                break;
-            }
-            case MEMBERS:
-            {
-                ret = compareSiteMembersBody(sortPairs, personId1, personId2, lastName1, lastName2, siteRole1, siteRole2, personId, firstName, lastName, siteRole, ret);
-                break;
-            }
+        case SITES:
+        {
+            ret = compareSitesBody(shortName1, shortName2, siteRole1, siteRole2, siteTitle1, siteTitle2, siteShortName, siteRole, siteTitle, ret);
+            break;
         }
-        
+        case MEMBERS:
+        {
+            ret = compareSiteMembersBody(sortPairs, personId1, personId2, lastName1, lastName2, siteRole1, siteRole2, personId, firstName, lastName, siteRole, ret);
+            break;
+        }
+        }
+
         return ret;
     }
 }

@@ -25,8 +25,6 @@
  */
 package org.alfresco.rest.api.impl;
 
-import static org.alfresco.model.ContentModel.TYPE_CONTENT;
-import static org.alfresco.model.ContentModel.TYPE_FOLDER;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,8 +33,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import static org.alfresco.model.ContentModel.TYPE_CONTENT;
+import static org.alfresco.model.ContentModel.TYPE_FOLDER;
+
 import java.util.List;
 import java.util.Map;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import org.alfresco.repo.content.ObjectStorageProps;
 import org.alfresco.repo.module.ModuleDetailsImpl;
@@ -51,15 +59,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DownloadsImplCheckArchiveStatusUnitTest 
+public class DownloadsImplCheckArchiveStatusUnitTest
 {
     @InjectMocks
     private final DownloadsImpl downloads = new DownloadsImpl();
@@ -90,35 +92,31 @@ public class DownloadsImplCheckArchiveStatusUnitTest
 
     // folderParent1
     private final List<ChildAssociationRef> folderParent1ChildAssocs = List.of(
-        new ChildAssociationRef(TYPE_FOLDER, folderParent1, TYPE_CONTENT, contentNode3),
-        new ChildAssociationRef(TYPE_FOLDER, folderParent1, TYPE_CONTENT, contentNode4), 
-        new ChildAssociationRef(TYPE_FOLDER, folderParent1, TYPE_CONTENT, contentNode5), 
-        new ChildAssociationRef(TYPE_FOLDER, folderParent1, TYPE_FOLDER, folder2),
-        new ChildAssociationRef(TYPE_FOLDER, folderParent1, TYPE_FOLDER, folderParent2)
-    );
-    
+            new ChildAssociationRef(TYPE_FOLDER, folderParent1, TYPE_CONTENT, contentNode3),
+            new ChildAssociationRef(TYPE_FOLDER, folderParent1, TYPE_CONTENT, contentNode4),
+            new ChildAssociationRef(TYPE_FOLDER, folderParent1, TYPE_CONTENT, contentNode5),
+            new ChildAssociationRef(TYPE_FOLDER, folderParent1, TYPE_FOLDER, folder2),
+            new ChildAssociationRef(TYPE_FOLDER, folderParent1, TYPE_FOLDER, folderParent2));
+
     // folderParent2
     private final List<ChildAssociationRef> folderParent2ChildAssocs = List.of(
-        new ChildAssociationRef(TYPE_FOLDER, folderParent2, TYPE_FOLDER, folder1)
-    );
-   
+            new ChildAssociationRef(TYPE_FOLDER, folderParent2, TYPE_FOLDER, folder1));
+
     // folder1
     private final List<ChildAssociationRef> folder1ChildAssocs = List.of(
-        new ChildAssociationRef(TYPE_FOLDER, folder1, TYPE_CONTENT, contentNode1), 
-        new ChildAssociationRef(TYPE_FOLDER, folder1, TYPE_CONTENT, contentNode5), 
-        new ChildAssociationRef(TYPE_FOLDER, folder1, TYPE_CONTENT, contentNode6)
-    );
-    
+            new ChildAssociationRef(TYPE_FOLDER, folder1, TYPE_CONTENT, contentNode1),
+            new ChildAssociationRef(TYPE_FOLDER, folder1, TYPE_CONTENT, contentNode5),
+            new ChildAssociationRef(TYPE_FOLDER, folder1, TYPE_CONTENT, contentNode6));
+
     // folder2 empty
     private final List<ChildAssociationRef> folder2ChildAssocs = List.of();
-    
 
     private final Map<String, String> archivedProps = Map.of(ObjectStorageProps.X_ALF_ARCHIVED.getValue(), "true");
     private final Map<String, String> nonArchivedProps = Map.of(ObjectStorageProps.X_ALF_ARCHIVED.getValue(), "false");
 
     private final ModuleDetails mockDetails = new ModuleDetailsImpl("id", null, "title", "description"); // doesn't need to do anything, just exist
 
-    private final NodeRef[] nodeRefsToTest = { contentNode1, contentNode2, folderParent1, folder1 };
+    private final NodeRef[] nodeRefsToTest = {contentNode1, contentNode2, folderParent1, folder1};
 
     @Before
     public void setup()
@@ -136,9 +134,9 @@ public class DownloadsImplCheckArchiveStatusUnitTest
 
         when(moduleService.getModule("org_alfresco_integrations_S3Connector")).thenReturn(mockDetails);
 
-        final NodeRef[] childNodeRefsExpectedFolderParent1 = { contentNode3, contentNode4, contentNode5, folder2, folderParent2 };
-        final NodeRef[] childNodeRefsExpectedFolderParent2 = { folder1 };
-        final NodeRef[] childNodeRefsExpectedFolder1 = { contentNode1, contentNode5, contentNode6 };
+        final NodeRef[] childNodeRefsExpectedFolderParent1 = {contentNode3, contentNode4, contentNode5, folder2, folderParent2};
+        final NodeRef[] childNodeRefsExpectedFolderParent2 = {folder1};
+        final NodeRef[] childNodeRefsExpectedFolder1 = {contentNode1, contentNode5, contentNode6};
         final NodeRef[] childNodeRefsExpectedFolder2 = {};
 
         assertChildNodeRefMocks(folderParent1, childNodeRefsExpectedFolderParent1);
@@ -146,7 +144,6 @@ public class DownloadsImplCheckArchiveStatusUnitTest
         assertChildNodeRefMocks(folder1, childNodeRefsExpectedFolder1);
         assertChildNodeRefMocks(folder2, childNodeRefsExpectedFolder2);
     }
-    
 
     @Test
     public void testAllPass()
@@ -191,13 +188,13 @@ public class DownloadsImplCheckArchiveStatusUnitTest
         verify(contentService, times(1)).getStorageProperties(contentNode5, TYPE_CONTENT);
         verify(contentService, times(1)).getStorageProperties(contentNode6, TYPE_CONTENT);
         verifyNoMoreInteractions(contentService);
-    } 
+    }
 
     private void assertChildNodeRefMocks(final NodeRef nodeRef, final NodeRef[] expecteds)
     {
         final NodeRef[] actuals = nodeService.getChildAssocs(nodeRef).stream()
-                                                            .map(childAssoc -> childAssoc.getChildRef())
-                                                            .toArray(NodeRef[]::new);
+                .map(childAssoc -> childAssoc.getChildRef())
+                .toArray(NodeRef[]::new);
         assertArrayEquals(expecteds, actuals);
     }
 }

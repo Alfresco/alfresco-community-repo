@@ -27,6 +27,8 @@ package org.alfresco.rest.api.rules;
 
 import java.util.List;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.Rules;
 import org.alfresco.rest.api.model.rules.RuleExecution;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
@@ -35,7 +37,6 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 @Experimental
 @RelationshipResource(name = "rule-executions", entityResource = NodesEntityResource.class, title = "Executing rules")
@@ -57,9 +58,12 @@ public class NodeRuleExecutionsRelation implements RelationshipResourceAction.Cr
     /**
      * Execute rules for given folder node.
      *
-     * @param folderNodeId - the ID of a folder
-     * @param ruleExecutionParameters - rule execution parameters
-     * @param parameters - additional request parameters
+     * @param folderNodeId
+     *            - the ID of a folder
+     * @param ruleExecutionParameters
+     *            - rule execution parameters
+     * @param parameters
+     *            - additional request parameters
      * @return execution details
      */
     @Override

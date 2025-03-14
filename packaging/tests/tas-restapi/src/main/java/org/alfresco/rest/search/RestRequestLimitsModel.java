@@ -25,10 +25,10 @@
  */
 package org.alfresco.rest.search;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class RestRequestLimitsModel extends TestModel implements IRestModel<RestRequestLimitsModel>
 {
@@ -44,7 +44,7 @@ public class RestRequestLimitsModel extends TestModel implements IRestModel<Rest
     {
         return model;
     }
-    
+
     public RestRequestLimitsModel(Integer permissionEvaluationTime, Integer permissionEvaluationCount,
             Integer trackTotalHitsLimit)
     {
@@ -58,25 +58,29 @@ public class RestRequestLimitsModel extends TestModel implements IRestModel<Rest
     {
         return permissionEvaluationTime;
     }
+
     public void setPermissionEvaluationTime(Integer permissionEvaluationTime)
     {
         this.permissionEvaluationTime = permissionEvaluationTime;
     }
+
     public Integer getPermissionEvaluationCount()
     {
         return permissionEvaluationCount;
     }
+
     public void setPermissionEvaluationCount(Integer permissionEvaluationCount)
     {
         this.permissionEvaluationCount = permissionEvaluationCount;
     }
+
     public Integer getTrackTotalHitsLimit()
     {
         return trackTotalHitsLimit;
     }
+
     public void setTrackTotalHitsLimit(Integer trackTotalHitsLimit)
     {
         this.trackTotalHitsLimit = trackTotalHitsLimit;
     }
 }
- 

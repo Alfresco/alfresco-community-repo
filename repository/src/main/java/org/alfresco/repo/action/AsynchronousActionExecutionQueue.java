@@ -38,10 +38,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface AsynchronousActionExecutionQueue
 {
     /**
-     * @param actionService RuntimeActionService
-     * @param action Action
-     * @param actionedUponNodeRef NodeRef
-     * @param checkConditions boolean
+     * @param actionService
+     *            RuntimeActionService
+     * @param action
+     *            Action
+     * @param actionedUponNodeRef
+     *            NodeRef
+     * @param checkConditions
+     *            boolean
      */
     void executeAction(
             RuntimeActionService actionService,
@@ -49,5 +53,5 @@ public interface AsynchronousActionExecutionQueue
             NodeRef actionedUponNodeRef,
             boolean checkConditions,
             Set<String> actionChain);
-    
+
 }

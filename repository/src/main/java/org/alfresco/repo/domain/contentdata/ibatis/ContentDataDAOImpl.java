@@ -33,6 +33,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.ibatis.session.RowBounds;
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.dao.DataIntegrityViolationException;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.ibatis.IdsEntity;
 import org.alfresco.repo.domain.contentdata.AbstractContentDataDAOImpl;
@@ -46,10 +51,6 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
-import org.apache.ibatis.session.RowBounds;
-import org.mybatis.spring.SqlSessionTemplate;
-import org.springframework.dao.ConcurrencyFailureException;
-import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * iBatis-specific implementation of the ContentData DAO.
@@ -83,8 +84,8 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     private static final String COUNT_SYMMETRIC_KEYS_FOR_MASTER_KEYS = "alfresco.content.select_CountSymmetricKeysForAllMasterKeys";
 
     protected SqlSessionTemplate template;
-    
-    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
+
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate)
     {
         this.template = sqlSessionTemplate;
     }
@@ -110,9 +111,9 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         contentUrlEntity.setSize(size);
         contentUrlEntity.setOrphanTime(null);
         /* Long id = (Long) */ template.insert(INSERT_CONTENT_URL, contentUrlEntity);
-        /*contentUrlEntity.setId(id);*/
+        /* contentUrlEntity.setId(id); */
 
-        if(contentUrlKeyEntity != null)
+        if (contentUrlKeyEntity != null)
         {
             template.insert(INSERT_SYMMETRIC_KEY, contentUrlKeyEntity);
         }
@@ -152,13 +153,13 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
             final int maxResults)
     {
         ParameterCheck.mandatory("maxOrphanTimeExclusive", maxOrphanTimeExclusive);
-        
+
         ContentUrlOrphanQuery query = new ContentUrlOrphanQuery();
         query.setMaxOrphanTimeExclusive(maxOrphanTimeExclusive);
         query.setMaxRecords((long) maxResults);
-        List<ContentUrlEntity> results = template.selectList(SELECT_CONTENT_URLS_ORPHANED, 
-                                                                                      query, 
-                                                                                      new RowBounds(0, maxResults));
+        List<ContentUrlEntity> results = template.selectList(SELECT_CONTENT_URLS_ORPHANED,
+                query,
+                new RowBounds(0, maxResults));
         // Pass the result to the callback
         for (ContentUrlEntity result : results)
         {
@@ -168,14 +169,14 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
                     result.getOrphanTime());
         }
     }
-    
+
     @Override
     public void getContentUrlsKeepOrphaned(
             final ContentUrlHandler contentUrlHandler,
             final int maxResults)
     {
         List<ContentUrlEntity> results = template.selectList(SELECT_CONTENT_URLS_KEEP_ORPHANED,
-                                                                                      new RowBounds(0, maxResults));
+                new RowBounds(0, maxResults));
         // Pass the result to the callback
         for (ContentUrlEntity result : results)
         {
@@ -185,7 +186,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
                     result.getOrphanTime());
         }
     }
-    
+
     @Override
     public int updateContentUrlOrphanTime(Long id, Long orphanTime, Long oldOrphanTime)
     {
@@ -267,7 +268,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         idsEntity.setIds(new ArrayList<Long>(nodeIds));
         return template.selectList(SELECT_CONTENT_DATA_BY_NODE_IDS, idsEntity);
     }
-    
+
     @Override
     protected int updateContentDataEntity(ContentDataEntity entity)
     {
@@ -291,7 +292,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         }
         catch (DataIntegrityViolationException e)
         {
-            // Doesn't exist.  The node doesn't enforce a FK constraint, so we protect against this.
+            // Doesn't exist. The node doesn't enforce a FK constraint, so we protect against this.
         }
         // Issue the delete statement
         Map<String, Object> params = new HashMap<String, Object>(11);
@@ -322,7 +323,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
             catch (ConcurrencyFailureException e)
             {
                 // The DB may return results even though the row has just been
-                // deleted.  Since we are deleting the row, it doesn't matter
+                // deleted. Since we are deleting the row, it doesn't matter
                 // if it is deleted here or not.
             }
         }
@@ -336,7 +337,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         ContentUrlKeyEntity existingContentUrlKey = existing.getContentUrlKey();
         ContentUrlKeyEntity contentUrlKey = entity.getContentUrlKey();
         contentUrlKey.setContentUrlId(existing.getId());
-        if(existingContentUrlKey == null)
+        if (existingContentUrlKey == null)
         {
             ret = template.insert(INSERT_SYMMETRIC_KEY, contentUrlKey);
         }
@@ -362,7 +363,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         ContentUrlKeyEntity entity = new ContentUrlKeyEntity();
         entity.setMasterKeyAlias(masterKeyAlias);
         entity.setId(fromId);
-        List<ContentUrlKeyEntity> results = template.selectList(SELECT_SYMMETRIC_KEYS_BY_MASTER_KEY, 
+        List<ContentUrlKeyEntity> results = template.selectList(SELECT_SYMMETRIC_KEYS_BY_MASTER_KEY,
                 entity, new RowBounds(0, maxResults));
         return results;
     }
@@ -373,17 +374,17 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         Map<String, Integer> counts = new HashMap<>();
 
         List<SymmetricKeyCount> res = template.selectList(COUNT_SYMMETRIC_KEYS_FOR_MASTER_KEYS);
-        for(SymmetricKeyCount count : res)
+        for (SymmetricKeyCount count : res)
         {
             counts.put(count.getMasterKeyAlias(), count.getCount());
         }
 
         return counts;
     }
-    
+
     @Override
     public int countSymmetricKeysForMasterKeyAlias(String masterKeyAlias)
     {
-        return (Integer)template.selectOne(COUNT_SYMMETRIC_KEYS_BY_MASTER_KEY, masterKeyAlias);
+        return (Integer) template.selectOne(COUNT_SYMMETRIC_KEYS_BY_MASTER_KEY, masterKeyAlias);
     }
 }

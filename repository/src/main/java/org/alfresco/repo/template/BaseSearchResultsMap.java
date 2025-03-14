@@ -79,7 +79,7 @@ public abstract class BaseSearchResultsMap extends BaseTemplateMap
                 if (results.length() != 0)
                 {
                     NodeService nodeService = this.services.getNodeService();
-                    
+
                     nodes = new ArrayList<TemplateNode>(results.length());
                     for (ResultSetRow row : results)
                     {

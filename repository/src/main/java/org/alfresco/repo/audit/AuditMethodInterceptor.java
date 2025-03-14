@@ -33,11 +33,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import net.sf.acegisecurity.Authentication;
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.StackTraceUtil;
@@ -51,23 +55,14 @@ import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.transaction.TransactionService;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
-/** 
+/**
  * A method interceptor to wrap method invocations with auditing.
  * <p/>
- * <b><u>V3.2 Configuration</u>:</b>
- * As of V3.2, the pre- and post-invocation values are passed to the audit component
- * for processing.  Individual applications have to extract the desired audit values.
- * Values are audited before and after the invocation so that applications that desire
- * to extract derived data before the invocation can have a chance to do so; generally,
- * however, the post-invocation values will be the most useful.
+ * <b><u>V3.2 Configuration</u>:</b> As of V3.2, the pre- and post-invocation values are passed to the audit component for processing. Individual applications have to extract the desired audit values. Values are audited before and after the invocation so that applications that desire to extract derived data before the invocation can have a chance to do so; generally, however, the post-invocation values will be the most useful.
  * <p/>
- * The values passed to the audit component (assuming auditing is enabled and the
- * new configuration is being used) are:
+ * The values passed to the audit component (assuming auditing is enabled and the new configuration is being used) are:
+ * 
  * <pre>
  * /alfresco-api
  *    /pre
@@ -90,6 +85,7 @@ import org.apache.commons.logging.LogFactory;
  *             /no-error=&lt;null&gt;
  * 
  * </pre>
+ * 
  * Applications can remap the paths onto their configurations as appropriate.
  * <p/>
  * TODO: Audit configuration mapping needs to support conditionals
@@ -107,31 +103,32 @@ public class AuditMethodInterceptor implements MethodInterceptor
     public static final String AUDIT_SNIPPET_RESULT = "/result";
     public static final String AUDIT_SNIPPET_ERROR = "/error";
     public static final String AUDIT_SNIPPET_NO_ERROR = "/no-error";
-    
+
     private static final String NOT_RECORDABLE = "not auditable";
-    
+
     @SuppressWarnings("rawtypes")
-    private static final Class[] NON_RECORDABLE_CLASSES = new Class[] { InputStream.class,  OutputStream.class };
-    
+    private static final Class[] NON_RECORDABLE_CLASSES = new Class[]{InputStream.class, OutputStream.class};
+
     private static final Log logger = LogFactory.getLog(AuditMethodInterceptor.class);
 
     private BeanIdentifier beanIdentifier;
     private AuditComponent auditComponent;
     private TransactionService transactionService;
-    
+
     private ThreadPoolExecutor threadPoolExecutor;
 
     private final ThreadLocal<Boolean> inAudit = new ThreadLocal<Boolean>();
-    
+
     public AuditMethodInterceptor()
     {
         super();
     }
-    
+
     /**
      * Use the new audit configuration (default: <b>false</b>)
      * 
-     * @param useNewConfig              <tt>true</tt> to use the new audit configuration
+     * @param useNewConfig
+     *            <tt>true</tt> to use the new audit configuration
      */
     public void setUseNewConfig(boolean useNewConfig)
     {
@@ -157,11 +154,11 @@ public class AuditMethodInterceptor implements MethodInterceptor
     {
         this.threadPoolExecutor = threadPoolExecutor;
     }
-    
+
     public Object invoke(MethodInvocation mi) throws Throwable
     {
         // Shortcut if no audit values are required
-        if(!auditComponent.areAuditValuesRequired(AUDIT_PATH_API_ROOT))
+        if (!auditComponent.areAuditValuesRequired(AUDIT_PATH_API_ROOT))
         {
             return mi.proceed();
         }
@@ -171,14 +168,15 @@ public class AuditMethodInterceptor implements MethodInterceptor
             return proceed(mi);
         }
     }
-    
+
     /**
-     * Allow the given method invocation to proceed, auditing values before invocation and
-     * after returning or throwing.
+     * Allow the given method invocation to proceed, auditing values before invocation and after returning or throwing.
      * 
-     * @param mi                the invocation
-     * @return                  Returns the method return (if a value is not thrown)
-     * @throws Throwable        rethrows any exception generated by the invocation
+     * @param mi
+     *            the invocation
+     * @return Returns the method return (if a value is not thrown)
+     * @throws Throwable
+     *             rethrows any exception generated by the invocation
      * 
      * @since 3.2
      */
@@ -200,7 +198,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
                 // No annotation, so just continue as normal
                 return mi.proceed();
             }
-            
+
             // First get the argument map, if present
             Object[] args = mi.getArguments();
             Map<String, Serializable> namedArguments = getInvocationArguments(auditableDef, args);
@@ -212,15 +210,15 @@ public class AuditMethodInterceptor implements MethodInterceptor
                 return mi.proceed();
             }
             String methodName = mi.getMethod().getName();
-            
+
             return proceedWithAudit(mi, auditableDef, serviceName, methodName, namedArguments);
         }
         finally
         {
-            inAudit.set(wasInAudit);                       
+            inAudit.set(wasInAudit);
         }
     }
-    
+
     private Object proceedWithAudit(
             MethodInvocation mi,
             Auditable auditableDef,
@@ -241,13 +239,13 @@ public class AuditMethodInterceptor implements MethodInterceptor
             // Failure to audit must stop the process: ALF-11139
             throw new AlfrescoRuntimeException(
                     "Failed to audit pre-invocation: \n" +
-                    "   Invocation: " + mi,
+                            "   Invocation: " + mi,
                     e);
         }
         finally
         {
             inAudit.set(wasInAudit);
-        }        
+        }
         // Execute the call
         Object ret = null;
         Throwable thrown = null;
@@ -259,7 +257,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
         {
             thrown = e;
         }
-        
+
         // We don't ALWAYS want to record the return value
         Object auditRet = auditableDef.recordReturnedObject() ? ret : null;
         // Record that we have entered an audit method
@@ -273,13 +271,13 @@ public class AuditMethodInterceptor implements MethodInterceptor
             // Failure to audit must stop the process: ALF-11139
             throw new AlfrescoRuntimeException(
                     "Failed to audit post-invocation: \n" +
-                    "   Invocation: " + mi,
+                            "   Invocation: " + mi,
                     e);
         }
         finally
         {
             inAudit.set(wasInAudit);
-        }        
+        }
         // Done
         if (thrown != null)
         {
@@ -290,9 +288,9 @@ public class AuditMethodInterceptor implements MethodInterceptor
             return ret;
         }
     }
-    
+
     /**
-     * @return                  Returns the arguments mapped by name
+     * @return Returns the arguments mapped by name
      * 
      * @since 3.2
      */
@@ -301,13 +299,13 @@ public class AuditMethodInterceptor implements MethodInterceptor
         // Use the annotation to name the arguments
         String[] params = auditableDef.parameters();
         boolean[] recordable = auditableDef.recordable();
-        
+
         Map<String, Serializable> namedArgs = new HashMap<String, Serializable>(args.length * 2);
         for (int i = 0; i < args.length; i++)
         {
             if (i >= params.length)
             {
-                // The name list is finished.  Unnamed arguments are not recorded.
+                // The name list is finished. Unnamed arguments are not recorded.
                 break;
             }
             if (i < recordable.length)
@@ -332,14 +330,15 @@ public class AuditMethodInterceptor implements MethodInterceptor
         // Done
         return namedArgs;
     }
-    
+
     /**
-     * Returns a value that may be included in audit map data. Called for method arguments and return
-     * values. Not all values may be audited. Some cannot be converted to something that can be
-     * serialised or may only be read once (so would be damaged). String audit values may be trimmed.
-     * @param value to be audited.
+     * Returns a value that may be included in audit map data. Called for method arguments and return values. Not all values may be audited. Some cannot be converted to something that can be serialised or may only be read once (so would be damaged). String audit values may be trimmed.
+     * 
+     * @param value
+     *            to be audited.
      * @return Return {@link #NOT_RECORDABLE} if it is not possible to audit the value,a value that may be audited. May be null.
-     * @throws TypeConversionException if not possible to convert the original object.
+     * @throws TypeConversionException
+     *             if not possible to convert the original object.
      */
     private Serializable getRecordableValue(Object value)
     {
@@ -401,11 +400,12 @@ public class AuditMethodInterceptor implements MethodInterceptor
         }
         return audit;
     }
-    
+
     // Returns a non null value if the supplied value is a non auditable class.
     private boolean instanceofNonAuditClass(Object value)
     {
-        for (@SuppressWarnings("rawtypes") Class clazz: NON_RECORDABLE_CLASSES)
+        for (@SuppressWarnings("rawtypes")
+        Class clazz : NON_RECORDABLE_CLASSES)
         {
             if (clazz.isInstance(value))
             {
@@ -418,9 +418,12 @@ public class AuditMethodInterceptor implements MethodInterceptor
     /**
      * Audit values before the invocation
      * 
-     * @param serviceName       the service name
-     * @param methodName        the method name
-     * @param namedArguments    the named arguments passed to the invocation
+     * @param serviceName
+     *            the service name
+     * @param methodName
+     *            the method name
+     * @param namedArguments
+     *            the named arguments passed to the invocation
      * 
      * @since 3.2
      */
@@ -442,7 +445,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
             rootPath = AuditApplication.buildPath(AUDIT_PATH_API_PRE, serviceName, methodName, AUDIT_SNIPPET_ARGS);
             auditData = namedArguments;
         }
-        
+
         // Audit in a read-write txn
         Map<String, Serializable> auditedData = auditComponent.recordAuditValues(rootPath, auditData);
         // Done
@@ -450,20 +453,26 @@ public class AuditMethodInterceptor implements MethodInterceptor
         {
             logger.debug(
                     "Audited before invocation: \n" +
-                    "   Values: " + auditedData);
+                            "   Values: " + auditedData);
         }
         return auditedData;
     }
-    
+
     /**
      * Audit values after the invocation
      * 
-     * @param serviceName       the service name
-     * @param methodName        the method name
-     * @param namedArguments    the named arguments passed to the invocation
-     * @param ret               the result of the execution (may be <tt>null</tt>)
-     * @param thrown            the error thrown by the invocation (may be <tt>null</tt>)
-     * @param preAuditedData    the audited data from before the method call.
+     * @param serviceName
+     *            the service name
+     * @param methodName
+     *            the method name
+     * @param namedArguments
+     *            the named arguments passed to the invocation
+     * @param ret
+     *            the result of the execution (may be <tt>null</tt>)
+     * @param thrown
+     *            the error thrown by the invocation (may be <tt>null</tt>)
+     * @param preAuditedData
+     *            the audited data from before the method call.
      * 
      * @since 3.2
      */
@@ -472,7 +481,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
             Object ret, final Throwable thrown, Map<String, Serializable> preAuditedData)
     {
         final String rootPath = AuditApplication.buildPath(AUDIT_PATH_API_POST, serviceName, methodName);
-        
+
         final Map<String, Serializable> auditData = new HashMap<String, Serializable>(23);
         if (namedArguments.isEmpty())
         {
@@ -489,14 +498,14 @@ public class AuditMethodInterceptor implements MethodInterceptor
                         argValue);
             }
         }
-        
+
         // Add audited data prior to the method call, so it may be repeated
-        for (Entry<String, Serializable> entry: preAuditedData.entrySet())
+        for (Entry<String, Serializable> entry : preAuditedData.entrySet())
         {
             String path = AuditApplication.buildPath(AUDIT_SNIPPET_PRE_CALL_DATA, entry.getKey());
             auditData.put(path, entry.getValue());
         }
-        
+
         Serializable value = getRecordableValue(ret);
         if (value != null && value != NOT_RECORDABLE)
         {
@@ -506,11 +515,10 @@ public class AuditMethodInterceptor implements MethodInterceptor
         if (thrown != null)
         {
             // ALF-3055: an exception has occurred - make sure the audit occurs in a new thread
-            //     rather than a nested transaction to avoid contention for the same audit table
+            // rather than a nested transaction to avoid contention for the same audit table
             // ALF-12638: ensure that the new thread context matches the current thread context
             final Authentication authContext = AuthenticationUtil.getFullAuthentication();
-            threadPoolExecutor.execute(new Runnable()
-            {
+            threadPoolExecutor.execute(new Runnable() {
                 public void run()
                 {
                     Map<String, Serializable> auditedData;
@@ -521,20 +529,18 @@ public class AuditMethodInterceptor implements MethodInterceptor
                     auditData.put(AUDIT_SNIPPET_ERROR, SchemaBootstrap.trimStringForTextFields(sb.toString()));
 
                     // Ensure we have a transaction
-                    RetryingTransactionCallback<Map<String, Serializable>> auditCallback =
-                            new RetryingTransactionCallback<Map<String, Serializable>>()
-                    {
+                    RetryingTransactionCallback<Map<String, Serializable>> auditCallback = new RetryingTransactionCallback<Map<String, Serializable>>() {
                         public Map<String, Serializable> execute() throws Throwable
                         {
                             // Record thrown exceptions regardless of userFilter in case of failed authentication
                             // see MNT-11760
                             if (thrown instanceof AuthenticationException)
                             {
-                                  return auditComponent.recordAuditValuesWithUserFilter(rootPath, auditData, false);
+                                return auditComponent.recordAuditValuesWithUserFilter(rootPath, auditData, false);
                             }
                             else
                             {
-                                  return auditComponent.recordAuditValues(rootPath, auditData);
+                                return auditComponent.recordAuditValues(rootPath, auditData);
                             }
 
                         }
@@ -548,14 +554,14 @@ public class AuditMethodInterceptor implements MethodInterceptor
                     {
                         AuthenticationUtil.clearCurrentSecurityContext();
                     }
-                    
+
                     // Done
                     if (logger.isDebugEnabled() && auditedData.size() > 0)
                     {
                         logger.debug(
                                 "Audited after invocation: \n" +
-                                (thrown == null ? "" : "   Exception: " + thrown.getMessage() + "\n") +
-                                "   Values: " + auditedData);
+                                        (thrown == null ? "" : "   Exception: " + thrown.getMessage() + "\n") +
+                                        "   Values: " + auditedData);
                     }
                 }
             });
@@ -573,8 +579,8 @@ public class AuditMethodInterceptor implements MethodInterceptor
             {
                 logger.debug(
                         "Audited after invocation: \n" +
-                        (thrown == null ? "" : "   Exception: " + thrown.getMessage() + "\n") +
-                        "   Values: " + auditedData);
+                                (thrown == null ? "" : "   Exception: " + thrown.getMessage() + "\n") +
+                                "   Values: " + auditedData);
             }
         }
     }

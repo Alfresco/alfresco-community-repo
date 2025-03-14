@@ -28,6 +28,9 @@ package org.alfresco.repo.node.integrity;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -37,8 +40,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Event to check the target type of an association
@@ -50,7 +51,7 @@ import org.apache.commons.logging.LogFactory;
 public class AssocTargetTypeIntegrityEvent extends AbstractIntegrityEvent
 {
     private static Log logger = LogFactory.getLog(AssocTargetTypeIntegrityEvent.class);
-    
+
     public AssocTargetTypeIntegrityEvent(
             NodeService nodeService,
             DictionaryService dictionaryService,
@@ -59,7 +60,7 @@ public class AssocTargetTypeIntegrityEvent extends AbstractIntegrityEvent
     {
         super(nodeService, dictionaryService, targetNodeRef, assocTypeQName, null);
     }
-    
+
     public void checkIntegrity(List<IntegrityRecord> eventResults)
     {
         QName assocTypeQName = getTypeQName();
@@ -76,7 +77,7 @@ public class AssocTargetTypeIntegrityEvent extends AbstractIntegrityEvent
             }
             return;
         }
-        
+
         // get the association def
         AssociationDefinition assocDef = getAssocDef(eventResults, assocTypeQName);
         // the association definition must exist
@@ -84,19 +85,19 @@ public class AssocTargetTypeIntegrityEvent extends AbstractIntegrityEvent
         {
             IntegrityRecord result = new IntegrityRecord(
                     "Association type does not exist: \n" +
-                    "   Target Node: " + targetNodeRef + "\n" +
-                    "   Target Node Type: " + targetNodeTypeQName + "\n" +
-                    "   Association Type: " + assocTypeQName);
+                            "   Target Node: " + targetNodeRef + "\n" +
+                            "   Target Node Type: " + targetNodeTypeQName + "\n" +
+                            "   Association Type: " + assocTypeQName);
             eventResults.add(result);
             return;
         }
-        
+
         // perform required checks
         checkTargetType(eventResults, assocDef, targetNodeRef, targetNodeTypeQName);
     }
-    
+
     /**
-     * Checks that the target node type is valid for the association. 
+     * Checks that the target node type is valid for the association.
      */
     protected void checkTargetType(
             List<IntegrityRecord> eventResults,
@@ -113,10 +114,10 @@ public class AssocTargetTypeIntegrityEvent extends AbstractIntegrityEvent
             {
                 IntegrityRecord result = new IntegrityRecord(
                         "The association target type is incorrect: \n" +
-                        "   Target Node: " + targetNodeRef + "\n" +
-                        "   Association: " + assocDef + "\n" +
-                        "   Required Target Type: " + targetDef.getName() + "\n" +
-                        "   Actual Target Type: " + targetNodeTypeQName);
+                                "   Target Node: " + targetNodeRef + "\n" +
+                                "   Association: " + assocDef + "\n" +
+                                "   Required Target Type: " + targetDef.getName() + "\n" +
+                                "   Actual Target Type: " + targetNodeTypeQName);
                 eventResults.add(result);
             }
         }
@@ -157,10 +158,10 @@ public class AssocTargetTypeIntegrityEvent extends AbstractIntegrityEvent
                 {
                     IntegrityRecord result = new IntegrityRecord(
                             "The association target is missing the aspect required for this association: \n" +
-                            "   Target Node: " + targetNodeRef + "\n" +
-                            "   Association: " + assocDef + "\n" +
-                            "   Required Target Aspect: " + targetDef.getName() + "\n" +
-                            "   Actual Target Aspects: " + targetAspects);
+                                    "   Target Node: " + targetNodeRef + "\n" +
+                                    "   Association: " + assocDef + "\n" +
+                                    "   Required Target Aspect: " + targetDef.getName() + "\n" +
+                                    "   Actual Target Aspects: " + targetAspects);
                     eventResults.add(result);
                 }
             }
@@ -169,9 +170,9 @@ public class AssocTargetTypeIntegrityEvent extends AbstractIntegrityEvent
         {
             IntegrityRecord result = new IntegrityRecord(
                     "Unknown ClassDefinition subclass on the target definition: \n" +
-                    "   Target Node: " + targetNodeRef + "\n" +
-                    "   Association: " + assocDef + "\n" +
-                    "   Source Definition: " + targetDef.getName());
+                            "   Target Node: " + targetNodeRef + "\n" +
+                            "   Association: " + assocDef + "\n" +
+                            "   Source Definition: " + targetDef.getName());
             eventResults.add(result);
         }
     }

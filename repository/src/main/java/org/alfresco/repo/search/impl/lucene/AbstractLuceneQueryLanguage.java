@@ -27,9 +27,9 @@ package org.alfresco.repo.search.impl.lucene;
 
 import java.util.List;
 
-import org.alfresco.repo.search.IndexerAndSearcher;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.springframework.beans.factory.InitializingBean;
+
+import org.alfresco.repo.search.IndexerAndSearcher;
 
 /**
  * @author Andy
@@ -38,9 +38,9 @@ import org.springframework.beans.factory.InitializingBean;
 public abstract class AbstractLuceneQueryLanguage implements LuceneQueryLanguageSPI, InitializingBean
 {
     private String name;
-    
+
     private List<IndexerAndSearcher> factories;
-    
+
     @Override
     final public void setFactories(List<IndexerAndSearcher> factories)
     {

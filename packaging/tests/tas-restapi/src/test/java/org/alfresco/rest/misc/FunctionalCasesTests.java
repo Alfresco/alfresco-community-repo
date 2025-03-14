@@ -1,5 +1,8 @@
 package org.alfresco.rest.misc;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.SiteService.Visibility;
@@ -25,8 +28,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.Test;
 
 public class FunctionalCasesTests extends RestTest
 {
@@ -35,16 +36,12 @@ public class FunctionalCasesTests extends RestTest
     private RestFavoriteSiteModel restFavoriteSiteModel;
     private RestActivityModelsCollection activities;
     private FileModel file;
-    
+
     /**
-     * Scenario:
-     * 1. Add a site member as Manager
-     * 2. Update it's role to Collaborator
-     * 3. Update it's role to Contributor
-     * 4. Update it's role to Consumer
+     * Scenario: 1. Add a site member as Manager 2. Update it's role to Collaborator 3. Update it's role to Contributor 4. Update it's role to Consumer
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that manager is able to update manager with different roles and gets status code CREATED (201)")
     public void managerIsAbleToUpdateManagerWithDifferentRoles()
     {
@@ -52,38 +49,34 @@ public class FunctionalCasesTests extends RestTest
         testUser.setUserRole(UserRole.SiteManager);
         SiteModel publicSite = dataSite.usingUser(dataUser.getAdminUser()).createPublicRandomSite();
         restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingSite(publicSite).addPerson(testUser)
-               .assertThat().field("id").is(testUser.getUsername())
-               .and().field("role").is(testUser.getUserRole());
+                .assertThat().field("id").is(testUser.getUsername())
+                .and().field("role").is(testUser.getUserRole());
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
+
         testUser.setUserRole(UserRole.SiteCollaborator);
         updatedMember = restClient.withCoreAPI()
                 .usingSite(publicSite).updateSiteMember(testUser);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         updatedMember.assertThat().field("id").is(testUser.getUsername()).and().field("role").is(testUser.getUserRole());
-        
+
         testUser.setUserRole(UserRole.SiteContributor);
         updatedMember = restClient.withCoreAPI()
                 .usingSite(publicSite).updateSiteMember(testUser);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         updatedMember.assertThat().field("id").is(testUser.getUsername()).and().field("role").is(testUser.getUserRole());
-        
+
         testUser.setUserRole(UserRole.SiteConsumer);
         updatedMember = restClient.withCoreAPI()
                 .usingSite(publicSite).updateSiteMember(testUser);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         updatedMember.assertThat().field("id").is(testUser.getUsername()).and().field("role").is(testUser.getUserRole());
     }
-    
+
     /**
-     * Scenario:
-     * 1. Add a site member as Consumer
-     * 2. Update it's role to Contributor
-     * 3. Update it's role to Collaborator
-     * 4. Update it's role to Manager
+     * Scenario: 1. Add a site member as Consumer 2. Update it's role to Contributor 3. Update it's role to Collaborator 4. Update it's role to Manager
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that manager is able to update consumer with different roles and gets status code CREATED (201)")
     public void managerIsAbleToUpdateConsumerWithDifferentRoles()
     {
@@ -91,39 +84,35 @@ public class FunctionalCasesTests extends RestTest
         testUser.setUserRole(UserRole.SiteConsumer);
         SiteModel publicSite = dataSite.usingUser(dataUser.getAdminUser()).createPublicRandomSite();
         restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingSite(publicSite).addPerson(testUser)
-               .assertThat().field("id").is(testUser.getUsername())
-               .and().field("role").is(testUser.getUserRole());
+                .assertThat().field("id").is(testUser.getUsername())
+                .and().field("role").is(testUser.getUserRole());
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
+
         testUser.setUserRole(UserRole.SiteContributor);
         updatedMember = restClient.withCoreAPI()
                 .usingSite(publicSite).updateSiteMember(testUser);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         updatedMember.assertThat().field("id").is(testUser.getUsername()).and().field("role").is(testUser.getUserRole());
-        
+
         testUser.setUserRole(UserRole.SiteCollaborator);
         updatedMember = restClient.withCoreAPI()
                 .usingSite(publicSite).updateSiteMember(testUser);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         updatedMember.assertThat().field("id").is(testUser.getUsername()).and().field("role").is(testUser.getUserRole());
-        
+
         testUser.setUserRole(UserRole.SiteManager);
         updatedMember = restClient.withCoreAPI()
                 .usingSite(publicSite).updateSiteMember(testUser);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         updatedMember.assertThat().field("id").is(testUser.getUsername()).and().field("role").is(testUser.getUserRole());
     }
-    
+
     /**
-     * Scenario:
-     * 1. Create site membership request
-     * 2. Approve site membership request
-     * 3. Add site to Favorites
-     * 4. Delete site from Favorites
+     * Scenario: 1. Create site membership request 2. Approve site membership request 3. Add site to Favorites 4. Delete site from Favorites
      */
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE},
             executionType = ExecutionType.REGRESSION, description = "Approve request, add site to favorites, then delete it from favorites")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     public void approveRequestAddAndDeleteSiteFromFavorites() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -136,27 +125,21 @@ public class FunctionalCasesTests extends RestTest
         returnedCollection = restClient.authenticateUser(newMember).withCoreAPI().usingMe().getSiteMembershipRequests();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListDoesNotContain("id", moderatedSite.getId());
-        
+
         restFavoriteSiteModel = restClient.authenticateUser(newMember).withCoreAPI().usingUser(newMember).addFavoriteSite(moderatedSite);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restFavoriteSiteModel.assertThat().field("id").is(moderatedSite.getId());
-        
+
         restClient.authenticateUser(newMember).withCoreAPI().usingAuthUser().removeFavoriteSite(moderatedSite);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
-    
+
     /**
-     * Scenario:
-     * 1. Create site membership request
-     * 2. Reject site membership request
-     * 3. Add moderated site to Favorites
-     * 4. Create site membership request again
-     * 5. Approve site membership request
-     * 6. Delete member from site
+     * Scenario: 1. Create site membership request 2. Reject site membership request 3. Add moderated site to Favorites 4. Create site membership request again 5. Approve site membership request 6. Delete member from site
      */
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE},
             executionType = ExecutionType.REGRESSION, description = "Reject request, add moderated site to favorites, create request again and approve it")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     public void rejectRequestAddModeratedSiteToFavorites() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -169,30 +152,28 @@ public class FunctionalCasesTests extends RestTest
         returnedCollection = restClient.authenticateUser(newMember).withCoreAPI().usingMe().getSiteMembershipRequests();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListDoesNotContain("id", moderatedSite.getId());
-        
+
         restFavoriteSiteModel = restClient.authenticateUser(newMember).withCoreAPI().usingUser(newMember).addFavoriteSite(moderatedSite);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restFavoriteSiteModel.assertThat().field("id").is(moderatedSite.getId());
-        
+
         restClient.authenticateUser(newMember).withCoreAPI().usingMe().addSiteMembershipRequest(moderatedSite);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
+
         taskModel = restClient.authenticateUser(newMember).withWorkflowAPI().getTasks().getTaskModelByDescription(moderatedSite);
         workflow.approveSiteMembershipRequest(dataUser.getAdminUser().getUsername(), dataUser.getAdminUser().getPassword(), taskModel.getId(), true, "Accept");
-        
+
         restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingUser(newMember).deleteSiteMember(moderatedSite);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        
+
         restClient.withCoreAPI().usingSite(moderatedSite).getSiteMembers().assertThat().entriesListDoesNotContain("id", newMember.getUsername());
     }
-    
+
     /**
-     * Scenario:
-     * 1. Add file
-     * 2. Check file is included in person activities list
+     * Scenario: 1. Add file 2. Check file is included in person activities list
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Add a file and check that activity is included in person activities")
     public void addFileThenGetPersonActivities() throws Exception
     {
@@ -202,18 +183,16 @@ public class FunctionalCasesTests extends RestTest
         file = dataContent.usingUser(manager).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
         activities = restClient.authenticateUser(manager).withCoreAPI().usingAuthUser().getPersonActivitiesUntilEntriesCountIs(3);
         activities.assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("siteId", publicSite.getId())
-            .and().entriesListContains("activityType", "org.alfresco.documentlibrary.file-added")
-            .and().entriesListContains("activitySummary.objectId", file.getNodeRefWithoutVersion());
+                .and().entriesListContains("siteId", publicSite.getId())
+                .and().entriesListContains("activityType", "org.alfresco.documentlibrary.file-added")
+                .and().entriesListContains("activitySummary.objectId", file.getNodeRefWithoutVersion());
     }
-    
+
     /**
-     * Scenario:
-     * 1. Add a comment to a file
-     * 2. Check that comment is included in person activities list
+     * Scenario: 1. Add a comment to a file 2. Check that comment is included in person activities list
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Add a comment to a file and check that activity is included in person activities")
     public void addCommentThenGetPersonActivities() throws Exception
     {
@@ -224,18 +203,16 @@ public class FunctionalCasesTests extends RestTest
         restClient.authenticateUser(manager).withCoreAPI().usingResource(file).addComment("new comment");
         activities = restClient.authenticateUser(manager).withCoreAPI().usingAuthUser().getPersonActivitiesUntilEntriesCountIs(4);
         activities.assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("siteId", publicSite.getId())
-            .and().entriesListContains("activityType", "org.alfresco.comments.comment-created")
-            .and().entriesListContains("activitySummary.objectId", file.getNodeRefWithoutVersion());
+                .and().entriesListContains("siteId", publicSite.getId())
+                .and().entriesListContains("activityType", "org.alfresco.comments.comment-created")
+                .and().entriesListContains("activitySummary.objectId", file.getNodeRefWithoutVersion());
     }
-    
+
     /**
-     * Scenario:
-     * 1. Add file then delete it
-     * 2. Check action is included in person activities list
+     * Scenario: 1. Add file then delete it 2. Check action is included in person activities list
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Add a file, delete it and check that activity is included in person activities")
     public void addFileDeleteItThenGetPersonActivities() throws Exception
     {
@@ -246,20 +223,16 @@ public class FunctionalCasesTests extends RestTest
         dataContent.usingUser(manager).usingResource(file).deleteContent();
         activities = restClient.authenticateUser(manager).withCoreAPI().usingAuthUser().getPersonActivitiesUntilEntriesCountIs(4);
         activities.assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("siteId", publicSite.getId())
-            .and().entriesListContains("activityType", "org.alfresco.documentlibrary.file-deleted")
-            .and().entriesListContains("activitySummary.objectId", file.getNodeRefWithoutVersion());
+                .and().entriesListContains("siteId", publicSite.getId())
+                .and().entriesListContains("activityType", "org.alfresco.documentlibrary.file-deleted")
+                .and().entriesListContains("activitySummary.objectId", file.getNodeRefWithoutVersion());
     }
 
     /**
-     * 1. Post one comment
-     * 2. Get comment details
-     * 3. Update comment
-     * 4. Get again comment details
-     * 5. Delete comment
+     * 1. Post one comment 2. Get comment details 3. Update comment 4. Get again comment details 5. Delete comment
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS },
+    @Test(groups = {TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.COMMENTS},
             executionType = ExecutionType.REGRESSION,
             description = "Add comment to a file, then get comment details. Update it and check that get comment returns updated details. Delete comment then check that file has no comments.")
     public void addUpdateDeleteCommentThenGetCommentDetails() throws Exception
@@ -291,12 +264,10 @@ public class FunctionalCasesTests extends RestTest
     }
 
     /**
-     * 1. Post one comment
-     * 2. Delete comment
-     * 3. Post the same comment again
+     * 1. Post one comment 2. Delete comment 3. Post the same comment again
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS },
+    @Test(groups = {TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.COMMENTS},
             executionType = ExecutionType.REGRESSION,
             description = "Add a comment to a file, delete it, then added the same comment again.")
     public void checkThatADeletedCommentCanBePostedAgain() throws Exception
@@ -328,13 +299,11 @@ public class FunctionalCasesTests extends RestTest
     }
 
     /**
-     * Scenario:
-     * 1. join an user to a site
-     * 2. Check action is included in person activities list
+     * Scenario: 1. join an user to a site 2. Check action is included in person activities list
      */
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Create an user, join the user to a site and check that activity is included in person activities")
     public void joinUserToSiteThenGetPersonActivities() throws Exception
     {
@@ -347,43 +316,36 @@ public class FunctionalCasesTests extends RestTest
                 .entriesListContains("activityType", "org.alfresco.site.user-joined").and()
                 .entriesListContains("activitySummary.memberPersonId", userJoinSite.getUsername());
     }
-    
+
     /**
-     * Scenario:
-     * 1. Add user to private site
-     * 2. Remove user from private site
-     * 3. User creates membership request to the same private site
+     * Scenario: 1. Add user to private site 2. Remove user from private site 3. User creates membership request to the same private site
      */
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE},
             executionType = ExecutionType.REGRESSION, description = "Verify membership request by user after it was removed from site gets status code 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     public void userCanNotCreateMembershipRequestIfItWasRemovedFromPrivateSite() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
         newMember.setUserRole(UserRole.SiteCollaborator);
         SiteModel privateSite = dataSite.usingUser(dataUser.getAdminUser()).createPrivateRandomSite();
         restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingSite(privateSite).addPerson(newMember)
-               .assertThat().field("id").is(newMember.getUsername());
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);   
-        
+                .assertThat().field("id").is(newMember.getUsername());
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
         restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingUser(newMember).deleteSiteMember(privateSite);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        
+
         restClient.authenticateUser(newMember).withCoreAPI().usingMe().addSiteMembershipRequest(privateSite);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                  .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, newMember.getUsername(), privateSite.getTitle()));
+                .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, newMember.getUsername(), privateSite.getTitle()));
     }
-    
+
     /**
-     * Scenario:
-     * 1. User creates membership request to moderated site
-     * 2. Accept membership request
-     * 3. Remove user from moderated site
-     * 4. Add user on moderated site
+     * Scenario: 1. User creates membership request to moderated site 2. Accept membership request 3. Remove user from moderated site 4. Add user on moderated site
      */
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE},
             executionType = ExecutionType.REGRESSION, description = "Verify user can be added back after if was removed from site")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     public void userCanBeAddedAfterItWasRemovedFromSite() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -391,30 +353,26 @@ public class FunctionalCasesTests extends RestTest
         SiteModel moderatedSite = dataSite.usingUser(dataUser.getAdminUser()).createModeratedRandomSite();
         restClient.authenticateUser(newMember).withCoreAPI().usingMe().addSiteMembershipRequest(moderatedSite);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
+
         RestTaskModel taskModel = restClient.authenticateUser(newMember).withWorkflowAPI().getTasks().getTaskModelByDescription(moderatedSite);
         workflow.approveSiteMembershipRequest(dataUser.getAdminUser().getUsername(), dataUser.getAdminUser().getPassword(), taskModel.getId(), true, "Accept");
-        
+
         restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingUser(newMember).deleteSiteMember(moderatedSite);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         restClient.withCoreAPI().usingSite(moderatedSite).getSiteMembers().assertThat().entriesListDoesNotContain("id", newMember.getUsername());
 
         restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingSite(moderatedSite).addPerson(newMember)
-               .assertThat().field("id").is(newMember.getUsername());
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);   
+                .assertThat().field("id").is(newMember.getUsername());
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restClient.withCoreAPI().usingSite(moderatedSite).getSiteMembers().assertThat().entriesListContains("id", newMember.getUsername());
     }
 
     /**
-     * Scenario:
-     * 1. Create document in site
-     * 2. Add comment
-     * 3. Delete document
-     * 4. Get comments and check if the above comment was deleted
+     * Scenario: 1. Create document in site 2. Add comment 3. Delete document 4. Get comments and check if the above comment was deleted
      */
-    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS },
+    @TestRail(section = {TestGroup.REST_API, TestGroup.COMMENTS},
             executionType = ExecutionType.REGRESSION, description = "Check that a comment of a document was also removed after deleting the document")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION})
     public void checkTheCommentOfADocumentThatWasDeletedDoesNotExist() throws Exception
     {
         SiteModel publicSite = dataSite.usingUser(dataUser.getAdminUser()).createPublicRandomSite();
@@ -434,51 +392,45 @@ public class FunctionalCasesTests extends RestTest
     }
 
     /**
-     * Scenario:
-     * 1. Add user to private site
-     * 2. Add comment to a document of private site
-     * 3. Remove user from site
-     * 4. Get comments and check if the above comment was deleted
+     * Scenario: 1. Add user to private site 2. Add comment to a document of private site 3. Remove user from site 4. Get comments and check if the above comment was deleted
      */
-    @Bug(id="REPO-4854")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS },
+    @Bug(id = "REPO-4854")
+    @TestRail(section = {TestGroup.REST_API, TestGroup.COMMENTS},
             executionType = ExecutionType.REGRESSION, description = "Check that a comment of a document from a private site is not deleted after user is removed")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION})
     public void checkThatCommentIsNotDeletedWhenPrivateSiteMemberIsRemoved() throws Exception
     {
         UserModel newUser = dataUser.createRandomTestUser();
         newUser.setUserRole(UserRole.SiteManager);
         SiteModel privateSite = dataSite.usingUser(dataUser.getAdminUser()).createPrivateRandomSite();
         restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingSite(privateSite).addPerson(newUser);
-        
+
         file = dataContent.usingSite(privateSite).usingUser(dataUser.getAdminUser()).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         String newContent = "This is a new comment added by " + newUser.getUsername();
-        
+
         restClient.authenticateUser(newUser).withCoreAPI().usingResource(file).addComment(newContent)
-                   .assertThat().field("content").isNotEmpty()
-                   .and().field("content").is(newContent);
+                .assertThat().field("content").isNotEmpty()
+                .and().field("content").is(newContent);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
+
         restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingSite(privateSite).deleteSiteMember(newUser);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        Utility.sleep(200, 30000, () ->
-                restClient.withCoreAPI().usingSite(privateSite).getSiteMembers()
-                        .assertThat().entriesListDoesNotContain("id", newUser.getUsername()));
-        
+        Utility.sleep(200, 30000, () -> restClient.withCoreAPI().usingSite(privateSite).getSiteMembers()
+                .assertThat().entriesListDoesNotContain("id", newUser.getUsername()));
+
         RestCommentModelsCollection comments = restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingResource(file).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         comments.assertThat().entriesListContains("content", newContent)
-            .and().entriesListContains("createdBy.id", newUser.getUsername());
+                .and().entriesListContains("createdBy.id", newUser.getUsername());
     }
 
     /**
-     * Scenario:
-     * 1. Add one file to favorites then add a comment to this file
+     * Scenario: 1. Add one file to favorites then add a comment to this file
      */
-    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS },
+    @TestRail(section = {TestGroup.REST_API, TestGroup.COMMENTS},
             executionType = ExecutionType.REGRESSION,
             description = "Add one file to favorites then add a comment to this file")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION})
     public void commentAFavoriteFile() throws Exception
     {
         UserModel manager = dataUser.createRandomTestUser();
@@ -497,13 +449,12 @@ public class FunctionalCasesTests extends RestTest
     }
 
     /**
-     * Scenario:
-     * 1. Remove one file from favorites then add a comment to this file
+     * Scenario: 1. Remove one file from favorites then add a comment to this file
      */
-    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS },
+    @TestRail(section = {TestGroup.REST_API, TestGroup.COMMENTS},
             executionType = ExecutionType.REGRESSION,
             description = "Remove one file from favorites then add a comment to this file")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION})
     public void commentFileRemovedFromFavorites() throws Exception
     {
         UserModel manager = dataUser.createRandomTestUser();
@@ -525,17 +476,12 @@ public class FunctionalCasesTests extends RestTest
     }
 
     /**
-     * Scenario:
-     * 1. Add public site to favorites
-     * 2. Change site visibility to moderated
-     * 3. Check favorites
-     * 4. Change site visibility to private
-     * 5. Check favorites
+     * Scenario: 1. Add public site to favorites 2. Change site visibility to moderated 3. Check favorites 4. Change site visibility to private 5. Check favorites
      */
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES },
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES},
             executionType = ExecutionType.REGRESSION,
             description = "Check favorite sites after a favorite site visibility is changed")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void changeFavoriteSiteVisibilityThenCheckFavorites() throws Exception
     {
         UserModel manager = dataUser.createRandomTestUser();
@@ -577,20 +523,12 @@ public class FunctionalCasesTests extends RestTest
     }
 
     /**
-     * Scenario:
-     * 1. Regular user adds moderated site membership request
-     * 2. Site manager approves the request
-     * 3. Site manager updates the new member role to Manager
-     * 4. New member adds comment to a file on site
-     * 5. New member likes and rate one file
-     * 6. New member adds tags to a file
-     * 7. New member adds site to favorite
-     * 8. New member adds, then deletes a site member
+     * Scenario: 1. Regular user adds moderated site membership request 2. Site manager approves the request 3. Site manager updates the new member role to Manager 4. New member adds comment to a file on site 5. New member likes and rate one file 6. New member adds tags to a file 7. New member adds site to favorite 8. New member adds, then deletes a site member
      */
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES },
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES},
             executionType = ExecutionType.REGRESSION,
             description = "Check that a user who joins a moderated site as manager is able to comment, rate, tag an existing file from the site, add site to favorites, add and remove site members.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
     public void checkNewManagerActions() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -651,30 +589,19 @@ public class FunctionalCasesTests extends RestTest
                 .assertThat().entriesListDoesNotContain("id", testUser.getUsername());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
     /**
-     * Scenario:
-     * 1. Add user to site
-     * 2. Create folder
-     * 3. Create document
-     * 4. Add comment to the document
-     * 5. Like document
-     * 6. Update Comment
-     * 7. Update user role
-     * 8. Delete like rating
-     * 9. Delete site member
-     * 10. Delete comment
-     * 11. Get Activities
+     * Scenario: 1. Add user to site 2. Create folder 3. Create document 4. Add comment to the document 5. Like document 6. Update Comment 7. Update user role 8. Delete like rating 9. Delete site member 10. Delete comment 11. Get Activities
      *
      */
-    @Bug(id="REPO-1830")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets its activities with Rest API and response is successful")
+    @Bug(id = "REPO-1830")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES}, executionType = ExecutionType.REGRESSION, description = "Verify user gets its activities with Rest API and response is successful")
     public void userGetsItsPeopleActivities() throws Exception
-    {  
+    {
         UserModel newUser = dataUser.createRandomTestUser();
         SiteModel userSiteModel = dataSite.usingUser(dataUser.getAdminUser()).createPublicRandomSite();
-        
+
         dataUser.addUserToSite(newUser, userSiteModel, UserRole.SiteCollaborator);
         dataContent.usingUser(newUser).usingSite(userSiteModel).createFolder();
 
@@ -682,33 +609,33 @@ public class FunctionalCasesTests extends RestTest
         String newContent = "This is a new comment added by " + newUser.getUsername();
         RestCommentModel commentModel = restClient.authenticateUser(newUser).withCoreAPI().usingResource(fileInSite).addComment(newContent);
         restClient.authenticateUser(newUser).withCoreAPI().usingResource(fileInSite).likeDocument();
-        
+
         restClient.withCoreAPI().usingResource(fileInSite).updateComment(commentModel, "new Content");
         newUser.setUserRole(UserRole.SiteManager);
         restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingSite(userSiteModel).updateSiteMember(newUser);
-        
+
         restClient.authenticateUser(newUser).withCoreAPI().usingResource(fileInSite).deleteLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.withCoreAPI().usingResource(fileInSite).deleteComment(commentModel);  
+        restClient.withCoreAPI().usingResource(fileInSite).deleteComment(commentModel);
         restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingSite(userSiteModel).deleteSiteMember(newUser);
 
         RestActivityModelsCollection restActivityModelsCollection = restClient.authenticateUser(newUser).withCoreAPI().usingMe().getPersonActivitiesUntilEntriesCountIs(10);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restActivityModelsCollection.assertThat().paginationField("count").is("10");
-        
+
         restActivityModelsCollection = restClient.authenticateUser(newUser).withCoreAPI().usingMe().getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restActivityModelsCollection.assertThat().paginationField("count").is("10");
-        
+
         restActivityModelsCollection.assertThat().entriesListContains("activityType", ActivityType.USER_JOINED.toString()).assertThat()
-            .entriesListContains("activityType", ActivityType.FILE_ADDED.toString()).assertThat()
-            .entriesListContains("activityType", ActivityType.FOLDER_ADDED.toString()).assertThat()
-            .entriesListContains("activityType", ActivityType.COMMENT_CREATED.toString()).assertThat()
-            .entriesListContains("activityType", ActivityType.FILE_LIKED.toString()).assertThat()
-            .entriesListContains("activityType", ActivityType.COMMENT_UPDATED.toString()).assertThat()
-            .entriesListContains("activityType", ActivityType.USER_ROLE_CHANGED.toString()).assertThat()
-            .entriesListContains("activityType", ActivityType.COMMENT_DELETED.toString()).assertThat()
-            .entriesListContains("activityType", ActivityType.USER_LEFT.toString());
+                .entriesListContains("activityType", ActivityType.FILE_ADDED.toString()).assertThat()
+                .entriesListContains("activityType", ActivityType.FOLDER_ADDED.toString()).assertThat()
+                .entriesListContains("activityType", ActivityType.COMMENT_CREATED.toString()).assertThat()
+                .entriesListContains("activityType", ActivityType.FILE_LIKED.toString()).assertThat()
+                .entriesListContains("activityType", ActivityType.COMMENT_UPDATED.toString()).assertThat()
+                .entriesListContains("activityType", ActivityType.USER_ROLE_CHANGED.toString()).assertThat()
+                .entriesListContains("activityType", ActivityType.COMMENT_DELETED.toString()).assertThat()
+                .entriesListContains("activityType", ActivityType.USER_LEFT.toString());
     }
 
 }

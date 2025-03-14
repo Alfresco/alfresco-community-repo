@@ -26,12 +26,12 @@
 
 package org.alfresco.service.cmr.quickshare;
 
+import java.io.Serializable;
+
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.scheduled.SchedulableAction;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
 import org.alfresco.service.namespace.QName;
-
-import java.io.Serializable;
 
 /**
  * This interface defines the details for a quick share link expiry action.

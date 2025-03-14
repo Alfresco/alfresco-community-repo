@@ -41,4 +41,3 @@ public class InvalidDirectAccessUrlConfigException extends AlfrescoRuntimeExcept
         super(msg);
     }
 }
-

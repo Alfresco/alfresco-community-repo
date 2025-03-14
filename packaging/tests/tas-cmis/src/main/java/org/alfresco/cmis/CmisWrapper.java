@@ -1,28 +1,15 @@
 package org.alfresco.cmis;
 
-import org.alfresco.cmis.dsl.BaseObjectType;
-import org.alfresco.cmis.dsl.CheckIn;
-import org.alfresco.cmis.dsl.CmisAssertion;
-import org.alfresco.cmis.dsl.CmisUtil;
-import org.alfresco.cmis.dsl.DocumentVersioning;
-import org.alfresco.cmis.dsl.JmxUtil;
-import org.alfresco.cmis.dsl.QueryExecutor;
-import org.alfresco.utility.LogFactory;
-import org.alfresco.utility.Utility;
-import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.dsl.DSLContentModelAction;
-import org.alfresco.utility.dsl.DSLFile;
-import org.alfresco.utility.dsl.DSLFolder;
-import org.alfresco.utility.dsl.DSLProtocol;
-import org.alfresco.utility.exception.TestConfigurationException;
-import org.alfresco.utility.model.ContentModel;
-import org.alfresco.utility.model.DataListItemModel;
-import org.alfresco.utility.model.DataListModel;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FolderModel;
-import org.alfresco.utility.model.GroupModel;
-import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.UserModel;
+import static org.alfresco.utility.Utility.checkObjectIsInitialized;
+import static org.alfresco.utility.report.log.Step.STEP;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.FileableCmisObject;
@@ -53,15 +40,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-
-import static org.alfresco.utility.Utility.checkObjectIsInitialized;
-import static org.alfresco.utility.report.log.Step.STEP;
+import org.alfresco.cmis.dsl.BaseObjectType;
+import org.alfresco.cmis.dsl.CheckIn;
+import org.alfresco.cmis.dsl.CmisAssertion;
+import org.alfresco.cmis.dsl.CmisUtil;
+import org.alfresco.cmis.dsl.DocumentVersioning;
+import org.alfresco.cmis.dsl.JmxUtil;
+import org.alfresco.cmis.dsl.QueryExecutor;
+import org.alfresco.utility.LogFactory;
+import org.alfresco.utility.Utility;
+import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.dsl.DSLContentModelAction;
+import org.alfresco.utility.dsl.DSLFile;
+import org.alfresco.utility.dsl.DSLFolder;
+import org.alfresco.utility.dsl.DSLProtocol;
+import org.alfresco.utility.exception.TestConfigurationException;
+import org.alfresco.utility.model.ContentModel;
+import org.alfresco.utility.model.DataListItemModel;
+import org.alfresco.utility.model.DataListModel;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.GroupModel;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.UserModel;
 
 @Service
 @Scope(value = "prototype")
@@ -109,20 +110,20 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
             parameter.put(SessionParameter.BINDING_TYPE, BindingType.ATOMPUB.value());
             LOG.info("Using binding type [{}] to [{}] and credentials: {}", BindingType.ATOMPUB.value(), cmisURLPath, userModel.toString());
         }
-            else if (binding.equals(BindingType.WEBSERVICES.value()))
-            {
-                parameter.put(SessionParameter.WEBSERVICES_REPOSITORY_SERVICE, cmisURLPath);
-                parameter.put(SessionParameter.WEBSERVICES_NAVIGATION_SERVICE, cmisURLPath);
-                parameter.put(SessionParameter.WEBSERVICES_OBJECT_SERVICE, cmisURLPath);
-                parameter.put(SessionParameter.WEBSERVICES_VERSIONING_SERVICE, cmisURLPath);
-                parameter.put(SessionParameter.WEBSERVICES_DISCOVERY_SERVICE, cmisURLPath);
-                parameter.put(SessionParameter.WEBSERVICES_MULTIFILING_SERVICE, cmisURLPath);
-                parameter.put(SessionParameter.WEBSERVICES_RELATIONSHIP_SERVICE, cmisURLPath);
-                parameter.put(SessionParameter.WEBSERVICES_ACL_SERVICE, cmisURLPath);
-                parameter.put(SessionParameter.WEBSERVICES_POLICY_SERVICE, cmisURLPath);
-                parameter.put(SessionParameter.BINDING_TYPE, BindingType.WEBSERVICES.value());
-                LOG.info("Using binding type [{}] to [{}] and credentials: {}", BindingType.WEBSERVICES.value(), cmisURLPath, userModel.toString());
-            }
+        else if (binding.equals(BindingType.WEBSERVICES.value()))
+        {
+            parameter.put(SessionParameter.WEBSERVICES_REPOSITORY_SERVICE, cmisURLPath);
+            parameter.put(SessionParameter.WEBSERVICES_NAVIGATION_SERVICE, cmisURLPath);
+            parameter.put(SessionParameter.WEBSERVICES_OBJECT_SERVICE, cmisURLPath);
+            parameter.put(SessionParameter.WEBSERVICES_VERSIONING_SERVICE, cmisURLPath);
+            parameter.put(SessionParameter.WEBSERVICES_DISCOVERY_SERVICE, cmisURLPath);
+            parameter.put(SessionParameter.WEBSERVICES_MULTIFILING_SERVICE, cmisURLPath);
+            parameter.put(SessionParameter.WEBSERVICES_RELATIONSHIP_SERVICE, cmisURLPath);
+            parameter.put(SessionParameter.WEBSERVICES_ACL_SERVICE, cmisURLPath);
+            parameter.put(SessionParameter.WEBSERVICES_POLICY_SERVICE, cmisURLPath);
+            parameter.put(SessionParameter.BINDING_TYPE, BindingType.WEBSERVICES.value());
+            LOG.info("Using binding type [{}] to [{}] and credentials: {}", BindingType.WEBSERVICES.value(), cmisURLPath, userModel.toString());
+        }
 
         parameter.put(SessionParameter.CONNECT_TIMEOUT, "20000");
         parameter.put(SessionParameter.READ_TIMEOUT, "60000");
@@ -191,8 +192,10 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Create a new file
      * 
-     * @param fileModel {@link FileModel} file model to be created
-     * @param versioningState {@link VersioningState}
+     * @param fileModel
+     *            {@link FileModel} file model to be created
+     * @param versioningState
+     *            {@link VersioningState}
      * @return CmisWrapper
      */
     public CmisWrapper createFile(FileModel fileModel, VersioningState versioningState)
@@ -203,9 +206,12 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Create a new file
      * 
-     * @param fileModel {@link FileModel} file model to be created
-     * @param cmisBaseTypeId base type id (e.g. 'cmis:document')
-     * @param versioningState {@link VersioningState}
+     * @param fileModel
+     *            {@link FileModel} file model to be created
+     * @param cmisBaseTypeId
+     *            base type id (e.g. 'cmis:document')
+     * @param versioningState
+     *            {@link VersioningState}
      * @return CmisWrapper
      */
     public CmisWrapper createFile(FileModel fileModel, String cmisBaseTypeId, VersioningState versioningState)
@@ -238,8 +244,10 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Create new file from existing one (that was set in last resource)
      * 
-     * @param newfileModel {@link FileModel} file model to be created
-     * @param sourceFileModel {@link ContentModel} source file model
+     * @param newfileModel
+     *            {@link FileModel} file model to be created
+     * @param sourceFileModel
+     *            {@link ContentModel} source file model
      * @return CmisWrapper
      */
     public CmisWrapper createFileFromSource(FileModel newfileModel, ContentModel sourceFileModel)
@@ -250,9 +258,12 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Create new file from existing one with versioning state set to Major(that was set in last resource)
      * 
-     * @param newfileModel {@link FileModel} file model to be created
-     * @param sourceFileModel {@link ContentModel} source file model
-     * @param cmisBaseTypeId base type id (e.g. 'cmis:document')
+     * @param newfileModel
+     *            {@link FileModel} file model to be created
+     * @param sourceFileModel
+     *            {@link ContentModel} source file model
+     * @param cmisBaseTypeId
+     *            base type id (e.g. 'cmis:document')
      * @return CmisWrapper
      */
     public CmisWrapper createFileFromSource(FileModel newfileModel, ContentModel sourceFileModel, String cmisBaseTypeId)
@@ -263,9 +274,12 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Create new file from existing one (that was set in last resource)
      *
-     * @param newfileModel {@link FileModel} file model to be created
-     * @param sourceFileModel {@link ContentModel} source file model
-     * @param versioningState version(e.g. 'VersioningState.MAJOR')
+     * @param newfileModel
+     *            {@link FileModel} file model to be created
+     * @param sourceFileModel
+     *            {@link ContentModel} source file model
+     * @param versioningState
+     *            version(e.g. 'VersioningState.MAJOR')
      * @return CmisWrapper
      */
     public CmisWrapper createFileFromSource(FileModel newfileModel, ContentModel sourceFileModel, VersioningState versioningState)
@@ -276,10 +290,14 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Create new file from existing one (that was set in last resource)
      *
-     * @param newfileModel {@link FileModel} file model to be created
-     * @param sourceFileModel {@link ContentModel} source file model
-     * @param cmisBaseTypeId base type id (e.g. 'cmis:document')
-     * @param versioningState (e.g. 'VersioningState.MAJOR')
+     * @param newfileModel
+     *            {@link FileModel} file model to be created
+     * @param sourceFileModel
+     *            {@link ContentModel} source file model
+     * @param cmisBaseTypeId
+     *            base type id (e.g. 'cmis:document')
+     * @param versioningState
+     *            (e.g. 'VersioningState.MAJOR')
      * @return CmisWrapper
      */
     public CmisWrapper createFileFromSource(FileModel newfileModel, ContentModel sourceFileModel, String cmisBaseTypeId, VersioningState versioningState)
@@ -337,7 +355,8 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
      * Deletes this folder and all subfolders with specific parameters
      * 
      * @param allVersions
-     * @param unfile {@link UnfileObject}
+     * @param unfile
+     *            {@link UnfileObject}
      * @param continueOnFailure
      * @return current wrapper
      */
@@ -493,8 +512,7 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     }
 
     /**
-     * Update the properties of the last resource {@link ContentModel}.
-     * Example updateProperty("cmis:name", "test1234")
+     * Update the properties of the last resource {@link ContentModel}. Example updateProperty("cmis:name", "test1234")
      * 
      * @param property
      * @param value
@@ -565,7 +583,8 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Delete content stream and refresh document
      * 
-     * @param refresh boolean refresh resource
+     * @param refresh
+     *            boolean refresh resource
      * @return
      */
     public CmisWrapper deleteContent(boolean refresh)
@@ -579,7 +598,8 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Set the content stream for a document
      * 
-     * @param content String content to set
+     * @param content
+     *            String content to set
      * @param overwrite
      * @return
      */
@@ -627,7 +647,8 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Create relationship between a source document and a target document
      *
-     * @param targetContent {@link ContentModel}
+     * @param targetContent
+     *            {@link ContentModel}
      * @param relationType
      * @return
      */
@@ -646,8 +667,10 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Method allows you to file a document object in more than one folder.
      *
-     * @param destination - the destination folder to which this document will be added
-     * @param allVersions - if this parameter is true, then all versions of the document will be added to the destination folder
+     * @param destination
+     *            - the destination folder to which this document will be added
+     * @param allVersions
+     *            - if this parameter is true, then all versions of the document will be added to the destination folder
      * @return
      */
     public CmisWrapper addDocumentToFolder(FolderModel destination, boolean allVersions)
@@ -663,7 +686,8 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Method allows you to remove a document object from the given folder.
      *
-     * @param parentFolder - the folder from which this object should be removed
+     * @param parentFolder
+     *            - the folder from which this object should be removed
      * @return
      */
     public CmisWrapper removeDocumentFromFolder(FolderModel parentFolder)
@@ -841,9 +865,12 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Add new permission for user
      * 
-     * @param user UserModel user
-     * @param role UserRole role to add
-     * @param aclPropagation AclPropagation propagation
+     * @param user
+     *            UserModel user
+     * @param role
+     *            UserRole role to add
+     * @param aclPropagation
+     *            AclPropagation propagation
      * @return
      */
     public CmisWrapper addAcl(UserModel user, UserRole role, AclPropagation aclPropagation)
@@ -856,9 +883,12 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Add new permission for a group
      * 
-     * @param group GroupModel group
-     * @param role UserRole role to add
-     * @param aclPropagation AclPropagation propagation
+     * @param group
+     *            GroupModel group
+     * @param role
+     *            UserRole role to add
+     * @param aclPropagation
+     *            AclPropagation propagation
      * @return
      */
     public CmisWrapper addAcl(GroupModel group, UserRole role, AclPropagation aclPropagation)
@@ -871,8 +901,10 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Add new permission for a group
      * 
-     * @param group GroupModel group
-     * @param role UserRole role to add
+     * @param group
+     *            GroupModel group
+     * @param role
+     *            UserRole role to add
      * @return
      */
     public CmisWrapper addAcl(GroupModel group, UserRole role)
@@ -883,8 +915,10 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Add new permissions to user
      * 
-     * @param user {@link UserModel}
-     * @param permissions to add ({@link PermissionMapping} can be used)
+     * @param user
+     *            {@link UserModel}
+     * @param permissions
+     *            to add ({@link PermissionMapping} can be used)
      * @return
      */
     public CmisWrapper addAcl(UserModel user, String... permissions)
@@ -896,8 +930,10 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Add new permission for user
      * 
-     * @param user UserModel user
-     * @param role UserRole role to add
+     * @param user
+     *            UserModel user
+     * @param role
+     *            UserRole role to add
      * @return
      */
     public CmisWrapper addAcl(UserModel user, UserRole role)
@@ -906,13 +942,16 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     }
 
     /**
-     * Update permission for user.
-     * If the role to remove is invalid a {@link CmisConstraintException} is thrown.
+     * Update permission for user. If the role to remove is invalid a {@link CmisConstraintException} is thrown.
      * 
-     * @param user UserModel user
-     * @param newRole UserRole new role to add
-     * @param removeRole UserRole remove already added role
-     * @param aclPropagation AclPropagation
+     * @param user
+     *            UserModel user
+     * @param newRole
+     *            UserRole new role to add
+     * @param removeRole
+     *            UserRole remove already added role
+     * @param aclPropagation
+     *            AclPropagation
      * @return
      */
     public CmisWrapper applyAcl(UserModel user, UserRole newRole, UserRole removeRole, AclPropagation aclPropagation)
@@ -924,12 +963,14 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     }
 
     /**
-     * Update permission for user.
-     * If the role to remove is invalid a {@link CmisConstraintException} is thrown.
+     * Update permission for user. If the role to remove is invalid a {@link CmisConstraintException} is thrown.
      * 
-     * @param user UserModel user
-     * @param newRole UserRole new role to add
-     * @param removeRole UserRole remove already added role
+     * @param user
+     *            UserModel user
+     * @param newRole
+     *            UserRole new role to add
+     * @param removeRole
+     *            UserRole remove already added role
      * @return
      */
     public CmisWrapper applyAcl(UserModel user, UserRole newRole, UserRole removeRole)
@@ -938,12 +979,14 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     }
 
     /**
-     * Update permission for user.
-     * If the permission to remove is invalid a {@link CmisConstraintException} is thrown.
+     * Update permission for user. If the permission to remove is invalid a {@link CmisConstraintException} is thrown.
      * 
-     * @param user {@link UserModel }
-     * @param newPermission permissions to add ({@link PermissionMapping} can be used)
-     * @param removePermission permissions to remove ({@link PermissionMapping} can be used)
+     * @param user
+     *            {@link UserModel }
+     * @param newPermission
+     *            permissions to add ({@link PermissionMapping} can be used)
+     * @param removePermission
+     *            permissions to remove ({@link PermissionMapping} can be used)
      * @return
      */
     public CmisWrapper applyAcl(UserModel user, String newPermission, String removePermission)
@@ -957,9 +1000,12 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Remove permission from user
      * 
-     * @param user UserModel user
-     * @param removeRole UserRole role to remove
-     * @param aclPropagation AclPropagation
+     * @param user
+     *            UserModel user
+     * @param removeRole
+     *            UserRole role to remove
+     * @param aclPropagation
+     *            AclPropagation
      * @return
      */
     public CmisWrapper removeAcl(UserModel user, UserRole removeRole, AclPropagation aclPropagation)
@@ -973,8 +1019,10 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Remove permission from user
      * 
-     * @param user UserModel user
-     * @param removeRole UserRole role to remove
+     * @param user
+     *            UserModel user
+     * @param removeRole
+     *            UserRole role to remove
      * @return
      */
     public CmisWrapper removeAcl(UserModel user, UserRole removeRole)
@@ -1025,7 +1073,8 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Create a new data list type
      * 
-     * @param dataListModel {@link DataListModel}
+     * @param dataListModel
+     *            {@link DataListModel}
      * @return
      */
     public CmisWrapper createDataList(DataListModel dataListModel)
@@ -1044,7 +1093,8 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Create new data list item
      * 
-     * @param itemModel {@link DataListItemModel}
+     * @param itemModel
+     *            {@link DataListItemModel}
      * @return
      */
     public CmisWrapper createDataListItem(DataListItemModel itemModel)
@@ -1065,7 +1115,8 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Attach documents to existent item set in last resource
      * 
-     * @param documents {@link ContentModel} list of content to attach
+     * @param documents
+     *            {@link ContentModel} list of content to attach
      * @return
      */
     public CmisWrapper attachDocument(ContentModel... contents)
@@ -1086,8 +1137,10 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
     /**
      * Assign user to existent item set in last resource
      * 
-     * @param user {@link UserModel}
-     * @param relationType e.g. R:dl:issueAssignedTo, R:dl:assignee, R:dl:taskAssignee
+     * @param user
+     *            {@link UserModel}
+     * @param relationType
+     *            e.g. R:dl:issueAssignedTo, R:dl:assignee, R:dl:taskAssignee
      * @return
      */
     public CmisWrapper assignToUser(UserModel user, String relationType)
@@ -1099,22 +1152,23 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
         getSession().createRelationship(relProps);
         return this;
     }
-    
+
     /**
      * Add new secondary types
      * 
-     * @param secondaryTypes e.g. P:cm:effectivity, P:audio:audio, P:cm:dublincore
+     * @param secondaryTypes
+     *            e.g. P:cm:effectivity, P:audio:audio, P:cm:dublincore
      * @return
      */
-    public CmisWrapper addSecondaryTypes(String...secondaryTypes)
+    public CmisWrapper addSecondaryTypes(String... secondaryTypes)
     {
         CmisObject object = withCMISUtil().getCmisObject(getLastResource());
         List<String> secondaryTypesNew = new ArrayList<String>();
-        for(SecondaryType oldType : object.getSecondaryTypes())
+        for (SecondaryType oldType : object.getSecondaryTypes())
         {
             secondaryTypesNew.add(oldType.getId());
         }
-        for(String newType : secondaryTypes)
+        for (String newType : secondaryTypes)
         {
             secondaryTypesNew.add(newType);
         }

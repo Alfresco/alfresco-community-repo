@@ -46,7 +46,7 @@ public class BufferedRequest implements WrappingWebScriptRequest, AutoCloseable
     private TempOutputStream bufferStream;
     private InputStream contentStream;
     private BufferedReader contentReader;
-    
+
     public BufferedRequest(WebScriptRequest req, Supplier<TempOutputStream> streamFactory)
     {
         this.req = req;
@@ -97,8 +97,7 @@ public class BufferedRequest implements WrappingWebScriptRequest, AutoCloseable
                 contentStream.close();
             }
             catch (Exception ignore)
-            {
-            }
+            {}
             contentStream = null;
         }
         if (contentReader != null)
@@ -108,8 +107,7 @@ public class BufferedRequest implements WrappingWebScriptRequest, AutoCloseable
                 contentReader.close();
             }
             catch (Exception ignore)
-            {
-            }
+            {}
             contentReader = null;
         }
     }
@@ -125,15 +123,14 @@ public class BufferedRequest implements WrappingWebScriptRequest, AutoCloseable
                 bufferStream.destroy();
             }
             catch (Exception ignore)
-            {
-            }
+            {}
             bufferStream = null;
         }
     }
 
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WrappingWebScriptRequest#getNext()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WrappingWebScriptRequest#getNext() */
     @Override
     public WebScriptRequest getNext()
     {
@@ -141,29 +138,31 @@ public class BufferedRequest implements WrappingWebScriptRequest, AutoCloseable
     }
 
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#forceSuccessStatus()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#forceSuccessStatus() */
     @Override
     public boolean forceSuccessStatus()
     {
         return req.forceSuccessStatus();
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getAgent()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getAgent() */
     @Override
     public String getAgent()
     {
         return req.getAgent();
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getContent()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getContent() */
     @Override
     public Content getContent()
     {
         final Content wrapped = req.getContent();
-        return new Content(){
+        return new Content() {
 
             @Override
             public String getContent() throws IOException
@@ -183,13 +182,12 @@ public class BufferedRequest implements WrappingWebScriptRequest, AutoCloseable
                 return wrapped.getMimetype();
             }
 
-
             @Override
             public long getSize()
             {
                 return wrapped.getSize();
             }
-     
+
             @Override
             public InputStream getInputStream()
             {
@@ -228,177 +226,199 @@ public class BufferedRequest implements WrappingWebScriptRequest, AutoCloseable
             }
         };
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getContentType()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getContentType() */
     @Override
     public String getContentType()
     {
         return req.getContentType();
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getContextPath()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getContextPath() */
     @Override
     public String getContextPath()
     {
         return req.getContextPath();
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getExtensionPath()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getExtensionPath() */
     @Override
     public String getExtensionPath()
     {
         return req.getExtensionPath();
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getFormat()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getFormat() */
     @Override
     public String getFormat()
     {
         return req.getFormat();
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getFormatStyle()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getFormatStyle() */
     @Override
     public FormatStyle getFormatStyle()
     {
         return req.getFormatStyle();
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getHeader(java.lang.String)
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getHeader(java.lang.String) */
     @Override
     public String getHeader(String name)
     {
         return req.getHeader(name);
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getHeaderNames()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getHeaderNames() */
     @Override
     public String[] getHeaderNames()
     {
         return req.getHeaderNames();
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getHeaderValues(java.lang.String)
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getHeaderValues(java.lang.String) */
     @Override
     public String[] getHeaderValues(String name)
     {
         return req.getHeaderValues(name);
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getJSONCallback()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getJSONCallback() */
     @Override
     public String getJSONCallback()
     {
         return req.getJSONCallback();
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getParameter(java.lang.String)
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getParameter(java.lang.String) */
     @Override
     public String getParameter(String name)
     {
         return req.getParameter(name);
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getParameterNames()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getParameterNames() */
     @Override
     public String[] getParameterNames()
     {
         return req.getParameterNames();
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getParameterValues(java.lang.String)
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getParameterValues(java.lang.String) */
     @Override
     public String[] getParameterValues(String name)
     {
         return req.getParameterValues(name);
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getPathInfo()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getPathInfo() */
     @Override
     public String getPathInfo()
     {
         return req.getPathInfo();
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getQueryString()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getQueryString() */
     @Override
     public String getQueryString()
     {
         return req.getQueryString();
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getRuntime()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getRuntime() */
     @Override
     public Runtime getRuntime()
     {
         return req.getRuntime();
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getServerPath()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getServerPath() */
     @Override
     public String getServerPath()
     {
         return req.getServerPath();
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getServiceContextPath()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getServiceContextPath() */
     @Override
     public String getServiceContextPath()
     {
         return req.getServiceContextPath();
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getServiceMatch()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getServiceMatch() */
     @Override
     public Match getServiceMatch()
     {
         return req.getServiceMatch();
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getServicePath()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getServicePath() */
     @Override
     public String getServicePath()
     {
         return req.getServicePath();
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#getURL()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#getURL() */
     @Override
     public String getURL()
     {
         return req.getURL();
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#isGuest()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#isGuest() */
     @Override
     public boolean isGuest()
     {
         return req.isGuest();
     }
+
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptRequest#parseContent()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptRequest#parseContent() */
     @Override
     public Object parseContent()
     {

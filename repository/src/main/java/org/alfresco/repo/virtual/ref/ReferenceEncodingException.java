@@ -38,18 +38,18 @@ public class ReferenceEncodingException extends VirtualizationException
     }
 
     public ReferenceEncodingException(String message, Throwable cause, boolean enableSuppression,
-                boolean writableStackTrace)
+            boolean writableStackTrace)
     {
         super(message,
-              cause,
-              enableSuppression,
-              writableStackTrace);
+                cause,
+                enableSuppression,
+                writableStackTrace);
     }
 
     public ReferenceEncodingException(String message, Throwable cause)
     {
         super(message,
-              cause);
+                cause);
     }
 
     public ReferenceEncodingException(String message)

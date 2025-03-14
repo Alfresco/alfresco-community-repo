@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -41,6 +40,11 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -48,10 +52,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.PersonService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * WebDAV Authentication Filter Class for SSO linke SiteMinder and IChains
@@ -67,7 +67,7 @@ public class HTTPRequestAuthenticationFilter extends BaseAuthenticationFilter im
     private ServletContext m_context;
 
     private String httpServletRequestAuthHeaderName;
-    
+
     private AuthenticationComponent m_authComponent;
 
     // By default match everything if this is not set
@@ -98,9 +98,9 @@ public class HTTPRequestAuthenticationFilter extends BaseAuthenticationFilter im
         setTransactionService(serviceRegistry.getTransactionService());
         setPersonService((PersonService) ctx.getBean("PersonService")); // transactional and permission-checked
         m_authComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
-        
+
         httpServletRequestAuthHeaderName = config.getInitParameter("httpServletRequestAuthHeaderName");
-        if(httpServletRequestAuthHeaderName == null)
+        if (httpServletRequestAuthHeaderName == null)
         {
             httpServletRequestAuthHeaderName = "x-user";
         }
@@ -117,7 +117,7 @@ public class HTTPRequestAuthenticationFilter extends BaseAuthenticationFilter im
                 m_authPattern = null;
             }
         }
-        
+
     }
 
     /**
@@ -209,8 +209,7 @@ public class HTTPRequestAuthenticationFilter extends BaseAuthenticationFilter im
                 // Get the authorization header
 
                 user = transactionService.getRetryingTransactionHelper().doInTransaction(
-                        new RetryingTransactionHelper.RetryingTransactionCallback<SessionUser>()
-                        {
+                        new RetryingTransactionHelper.RetryingTransactionCallback<SessionUser>() {
 
                             public SessionUser execute() throws Throwable
                             {
@@ -250,7 +249,7 @@ public class HTTPRequestAuthenticationFilter extends BaseAuthenticationFilter im
                     if (logger.isTraceEnabled())
                     {
                         logger.trace("Logon via ticket from " + req.getRemoteHost() + " (" + req.getRemoteAddr() + ":" + req.getRemotePort() + ")" +
-                            " ticket=" + ticket);
+                                " ticket=" + ticket);
                     }
 
                     try
@@ -289,14 +288,14 @@ public class HTTPRequestAuthenticationFilter extends BaseAuthenticationFilter im
         chain.doFilter(req, resp);
     }
 
-    private void reject( HttpServletRequest httpReq, HttpServletResponse httpResp) throws IOException
+    private void reject(HttpServletRequest httpReq, HttpServletResponse httpResp) throws IOException
     {
         httpResp.setHeader("WWW-Authenticate", "BASIC realm=\"Alfresco DAV Server\"");
         httpResp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         httpResp.flushBuffer();
         return;
     }
-    
+
     /**
      * Cleanup filter resources
      */
@@ -306,8 +305,8 @@ public class HTTPRequestAuthenticationFilter extends BaseAuthenticationFilter im
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseAuthenticationFilter#getLogger()
-     */
+     * 
+     * @see org.alfresco.repo.webdav.auth.BaseAuthenticationFilter#getLogger() */
     @Override
     protected Log getLogger()
     {

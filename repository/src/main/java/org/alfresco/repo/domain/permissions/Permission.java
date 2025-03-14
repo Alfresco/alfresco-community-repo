@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.domain.permissions;
 
-
 /**
  * Entity for <b>alf_permission</b> persistence.
  * 
@@ -35,6 +34,8 @@ package org.alfresco.repo.domain.permissions;
 public interface Permission
 {
     public Long getId();
+
     public Long getTypeQNameId();
+
     public String getName();
 }

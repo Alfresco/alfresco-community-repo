@@ -25,11 +25,12 @@
  */
 package org.alfresco;
 
-import org.alfresco.util.testing.category.DBTests;
-import org.alfresco.util.testing.category.NonBuildTests;
 import org.junit.experimental.categories.Categories;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
+
+import org.alfresco.util.testing.category.DBTests;
+import org.alfresco.util.testing.category.NonBuildTests;
 
 @RunWith(Categories.class)
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
@@ -42,5 +43,4 @@ import org.junit.runners.Suite;
         org.alfresco.slingshot.web.scripts.SlingshotContentGetTest.class,
 })
 public class ShareServicesTestSuite
-{
-}
+{}

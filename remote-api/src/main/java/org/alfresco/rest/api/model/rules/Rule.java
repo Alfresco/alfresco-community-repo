@@ -175,8 +175,8 @@ public class Rule
     public String toString()
     {
         return "Rule{" + "id='" + id + '\'' + ", name='" + name + '\'' + ", description='" + description + '\'' + ", isEnabled=" + isEnabled + ", isInheritable=" + isInheritable
-            + ", isAsynchronous=" + isAsynchronous + ", isShared=" + isShared + ", errorScript='" + errorScript + '\'' + ", triggers=" + triggers + ", conditions=" + conditions
-            + ", actions=" + actions + '}';
+                + ", isAsynchronous=" + isAsynchronous + ", isShared=" + isShared + ", errorScript='" + errorScript + '\'' + ", triggers=" + triggers + ", conditions=" + conditions
+                + ", actions=" + actions + '}';
     }
 
     @Override

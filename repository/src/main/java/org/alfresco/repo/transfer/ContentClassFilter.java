@@ -51,20 +51,16 @@ public class ContentClassFilter extends AbstractNodeFilter
     private boolean directOnly = false;
 
     public ContentClassFilter()
-    {
-    }
+    {}
 
     public ContentClassFilter(QName... contentClasses)
     {
         setContentClasses(contentClasses);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.service.cmr.transfer.NodeFilter#accept(org.alfresco.service.cmr.repository.NodeRef,
-     * org.alfresco.service.ServiceRegistry)
-     */
+     * @see org.alfresco.service.cmr.transfer.NodeFilter#accept(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.ServiceRegistry) */
     public boolean accept(NodeRef thisNode)
     {
         if (!initialised)
@@ -151,9 +147,7 @@ public class ContentClassFilter extends AbstractNodeFilter
      * Specify whether the filter should exclude the specified classes of content.
      * 
      * @param exclude
-     *            If true then this filter will not accept content that is of any of the filtered classes of content. If
-     *            false then this filter will only accept content that has one or more of the filtered classes of
-     *            content. Defaults to false.
+     *            If true then this filter will not accept content that is of any of the filtered classes of content. If false then this filter will only accept content that has one or more of the filtered classes of content. Defaults to false.
      */
     public void setExclude(boolean exclude)
     {
@@ -161,9 +155,7 @@ public class ContentClassFilter extends AbstractNodeFilter
     }
 
     /**
-     * Specify whether the filter should only test against the content classes that have been supplied, or if it should
-     * also test against all subclasses of those classes. For example, if "directOnly" is true and "cm:content" is in
-     * the set of content classes then a node of type "cm:thumnail" will not be filtered.
+     * Specify whether the filter should only test against the content classes that have been supplied, or if it should also test against all subclasses of those classes. For example, if "directOnly" is true and "cm:content" is in the set of content classes then a node of type "cm:thumnail" will not be filtered.
      * 
      * @param directOnly
      *            If true then the filter only filters specifically the specified content classes. Defaults to false.

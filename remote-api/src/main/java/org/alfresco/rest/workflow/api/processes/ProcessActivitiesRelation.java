@@ -42,7 +42,7 @@ import org.alfresco.rest.workflow.api.model.Activity;
 public class ProcessActivitiesRelation implements RelationshipResourceAction.Read<Activity>
 {
     protected Activities activities;
-    
+
     public void setActivities(Activities activities)
     {
         this.activities = activities;

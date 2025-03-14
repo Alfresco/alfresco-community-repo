@@ -34,12 +34,13 @@ package org.alfresco.repo.security.sync;
 public class SynchronizeDirectoryDeleteZoneEvent extends SynchronizeDirectoryEvent
 {
     private String batchProcessNames[];
+
     public SynchronizeDirectoryDeleteZoneEvent(Object o, String zone, String batchProcessNames[])
     {
         super(o, zone);
         this.batchProcessNames = batchProcessNames;
     }
-    
+
     public String[] getBatchProcessNames()
     {
         return batchProcessNames;

@@ -31,6 +31,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQuery;
@@ -62,13 +66,9 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * Implementation of the document link service In addition to the document link
- * service, this class also provides a BeforeDeleteNodePolicy
+ * Implementation of the document link service In addition to the document link service, this class also provides a BeforeDeleteNodePolicy
  * 
  * @author Ana Bozianu
  * @since 5.1
@@ -121,13 +121,13 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
                 ApplicationModel.ASPECT_LINKED,
                 new JavaBehaviour(this, "beforeDeleteNode"));
 
-       //for app:filelink node types 
-       policyComponent.bindClassBehaviour(
+        // for app:filelink node types
+        policyComponent.bindClassBehaviour(
                 BeforeDeleteNodePolicy.QNAME,
                 ApplicationModel.TYPE_FILELINK,
                 new JavaBehaviour(this, "beforeDeleteLinkNode"));
 
-        //for app:folderlink node types 
+        // for app:folderlink node types
         policyComponent.bindClassBehaviour(
                 BeforeDeleteNodePolicy.QNAME,
                 ApplicationModel.TYPE_FOLDERLINK,
@@ -210,8 +210,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
         }
 
         // add linked aspect to the sourceNode - run as System
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
             public Void doWork() throws Exception
             {
                 behaviourFilter.disableBehaviour(source, ContentModel.ASPECT_AUDITABLE);
@@ -266,16 +265,16 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
         if (nameQName != null)
         {
             // Execute the canned query if there are links in the database
-            GetDoclinkNodesCannedQueryParams parameterBean = new GetDoclinkNodesCannedQueryParams(nodeRef.toString(), 
-                                                                                                  nameQName.getFirst(), 
-                                                                                                  pagingRequest.getMaxItems());
-            CannedQueryParameters params = new CannedQueryParameters(parameterBean, 
-                                                                     null, 
-                                                                     null, 
-                                                                     pagingRequest.getRequestTotalCountMax(), 
-                                                                     pagingRequest.getQueryExecutionId());
-            CannedQuery<Long> query = new GetDoclinkNodesCannedQuery(cannedQueryDAO, 
-                                                                     params);
+            GetDoclinkNodesCannedQueryParams parameterBean = new GetDoclinkNodesCannedQueryParams(nodeRef.toString(),
+                    nameQName.getFirst(),
+                    pagingRequest.getMaxItems());
+            CannedQueryParameters params = new CannedQueryParameters(parameterBean,
+                    null,
+                    null,
+                    pagingRequest.getRequestTotalCountMax(),
+                    pagingRequest.getQueryExecutionId());
+            CannedQuery<Long> query = new GetDoclinkNodesCannedQuery(cannedQueryDAO,
+                    params);
             CannedQueryResults<Long> results = query.execute();
 
             for (Long nodeId : results.getPage())
@@ -305,8 +304,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
 
         for (Long linkId : linkNodeIds)
         {
-            NodeRef linkNodeRef = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
-            {
+            NodeRef linkNodeRef = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>() {
                 public NodeRef doWork() throws Exception
                 {
                     NodeRef nodeRef = nodeService.getNodeRef(linkId);
@@ -378,8 +376,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
 
         if (nodeRefLinks.size() == 1 && nodeRefLinks.contains(linkNodeId))
         {
-            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-            {
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
                 public Void doWork() throws Exception
                 {
                     behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);

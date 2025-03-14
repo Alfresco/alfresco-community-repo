@@ -32,12 +32,16 @@ import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryBootstrap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.node.encryption.MetadataEncryptor;
-import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -51,11 +55,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.testing.category.NeverRunsTests;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 @Category(NeverRunsTests.class)
 public class MetadataEncryptorTests extends TestCase
@@ -65,7 +64,7 @@ public class MetadataEncryptorTests extends TestCase
     private static QName ENCRYPTED_PROP_QNAME = QName.createQName("http://www.alfresco.org/test/encryptedPropModel/1.0", "prop1");
 
     private static final Log logger = LogFactory.getLog(MetadataEncryptorTests.class);
-    
+
     private ConfigurableApplicationContext ctx = (ConfigurableApplicationContext) ApplicationContextHelper.getApplicationContext();
 
     private TransactionService transactionService;
@@ -73,38 +72,37 @@ public class MetadataEncryptorTests extends TestCase
     private TenantService tenantService;
     private DictionaryDAO dictionaryDAO;
     private MetadataEncryptor metadataEncryptor;
-    
+
     private StoreRef storeRef;
     private NodeRef rootNodeRef;
-    
+
     @Override
     public void setUp() throws Exception
     {
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
-//        txnHelper = transactionService.getRetryingTransactionHelper();
-        metadataEncryptor = (MetadataEncryptor)ctx.getBean("metadataEncryptor");
+        // txnHelper = transactionService.getRetryingTransactionHelper();
+        metadataEncryptor = (MetadataEncryptor) ctx.getBean("metadataEncryptor");
         nodeService = serviceRegistry.getNodeService();
-        tenantService = (TenantService)ctx.getBean("tenantService");
-        dictionaryDAO = (DictionaryDAO)ctx.getBean("dictionaryDAO");
+        tenantService = (TenantService) ctx.getBean("tenantService");
+        dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
 
         AuthenticationUtil.setRunAsUserSystem();
-        
+
         DictionaryBootstrap bootstrap = new DictionaryBootstrap();
         List<String> bootstrapModels = new ArrayList<String>();
         bootstrapModels.add("alfresco/model/dictionaryModel.xml");
         bootstrapModels.add(TEST_MODEL);
-//        List<String> labels = new ArrayList<String>();
-//        labels.add(TEST_BUNDLE);
+        // List<String> labels = new ArrayList<String>();
+        // labels.add(TEST_BUNDLE);
         bootstrap.setModels(bootstrapModels);
-//        bootstrap.setLabels(labels);
+        // bootstrap.setLabels(labels);
         bootstrap.setDictionaryDAO(dictionaryDAO);
         bootstrap.setTenantService(tenantService);
         bootstrap.bootstrap();
-        
+
         // create a first store directly
-        RetryingTransactionCallback<NodeRef> createStoreWork = new RetryingTransactionCallback<NodeRef>()
-        {
+        RetryingTransactionCallback<NodeRef> createStoreWork = new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute()
             {
                 StoreRef storeRef = nodeService.createStore(
@@ -115,35 +113,34 @@ public class MetadataEncryptorTests extends TestCase
         };
         rootNodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(createStoreWork);
     }
-    
+
     /**
      * Loads the test model required for building the node graphs
      */
-//    public static DictionaryService loadModel(ApplicationContext applicationContext)
-//    {
-//        DictionaryDAO dictionaryDao = (DictionaryDAO) applicationContext.getBean("dictionaryDAO");
-//        // load the system model
-//        ClassLoader cl = BaseNodeServiceTest.class.getClassLoader();
-//        InputStream modelStream = cl.getResourceAsStream("alfresco/model/contentModel.xml");
-//        assertNotNull(modelStream);
-//        M2Model model = M2Model.createModel(modelStream);
-//        dictionaryDao.putModel(model);
-//        // load the test model
-//        modelStream = cl.getResourceAsStream("org/alfresco/repo/node/BaseNodeServiceTest_model.xml");
-//        assertNotNull(modelStream);
-//        model = M2Model.createModel(modelStream);
-//        dictionaryDao.putModel(model);
-//        
-//        DictionaryComponent dictionary = new DictionaryComponent();
-//        dictionary.setDictionaryDAO(dictionaryDao);
-//        // done
-//        return dictionary;
-//    }
-    
+    // public static DictionaryService loadModel(ApplicationContext applicationContext)
+    // {
+    // DictionaryDAO dictionaryDao = (DictionaryDAO) applicationContext.getBean("dictionaryDAO");
+    // // load the system model
+    // ClassLoader cl = BaseNodeServiceTest.class.getClassLoader();
+    // InputStream modelStream = cl.getResourceAsStream("alfresco/model/contentModel.xml");
+    // assertNotNull(modelStream);
+    // M2Model model = M2Model.createModel(modelStream);
+    // dictionaryDao.putModel(model);
+    // // load the test model
+    // modelStream = cl.getResourceAsStream("org/alfresco/repo/node/BaseNodeServiceTest_model.xml");
+    // assertNotNull(modelStream);
+    // model = M2Model.createModel(modelStream);
+    // dictionaryDao.putModel(model);
+    //
+    // DictionaryComponent dictionary = new DictionaryComponent();
+    // dictionary.setDictionaryDAO(dictionaryDao);
+    // // done
+    // return dictionary;
+    // }
+
     public void testWithoutEncryption()
     {
-        RetryingTransactionCallback<Void> encryptionWork = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> encryptionWork = new RetryingTransactionCallback<Void>() {
             public Void execute()
             {
                 NodeRef nodeRef1 = nodeService.createNode(
@@ -154,21 +151,21 @@ public class MetadataEncryptorTests extends TestCase
 
                 try
                 {
-	                // Create a node using the thread's locale
-	                NodeRef nodeRef2 = nodeService.createNode(
-	                		nodeRef1,
-	                        ContentModel.ASSOC_CONTAINS,
-	                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, getName()),
-	                        ENCRYPTED_TYPE_QNAME,
-	                        Collections.singletonMap(ENCRYPTED_PROP_QNAME, (Serializable)"hello world")).getChildRef();
-	                fail("Should have generated an IllegalArgumentException");
+                    // Create a node using the thread's locale
+                    NodeRef nodeRef2 = nodeService.createNode(
+                            nodeRef1,
+                            ContentModel.ASSOC_CONTAINS,
+                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, getName()),
+                            ENCRYPTED_TYPE_QNAME,
+                            Collections.singletonMap(ENCRYPTED_PROP_QNAME, (Serializable) "hello world")).getChildRef();
+                    fail("Should have generated an IllegalArgumentException");
                 }
-                //catch(IntegrityException e)
-                catch(IllegalArgumentException e)
+                // catch(IntegrityException e)
+                catch (IllegalArgumentException e)
                 {
-                	// expected
+                    // expected
                 }
-                
+
                 return null;
             }
         };
@@ -178,8 +175,7 @@ public class MetadataEncryptorTests extends TestCase
 
     public void testWithEncryption()
     {
-        RetryingTransactionCallback<Void> encryptionWork = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> encryptionWork = new RetryingTransactionCallback<Void>() {
             public Void execute()
             {
                 NodeRef nodeRef1 = nodeService.createNode(
@@ -191,24 +187,24 @@ public class MetadataEncryptorTests extends TestCase
                 Map<QName, Serializable> allProperties = new PropertyMap();
                 allProperties.put(ENCRYPTED_PROP_QNAME, "ABC");
                 allProperties = metadataEncryptor.encrypt(allProperties);
-                
+
                 try
                 {
-	                NodeRef nodeRef2 = nodeService.createNode(
-	                		nodeRef1,
-	                        ContentModel.ASSOC_CONTAINS,
-	                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, getName()),
-	                        ENCRYPTED_TYPE_QNAME, allProperties).getChildRef();
-	                assertNotNull(nodeRef2);
+                    NodeRef nodeRef2 = nodeService.createNode(
+                            nodeRef1,
+                            ContentModel.ASSOC_CONTAINS,
+                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, getName()),
+                            ENCRYPTED_TYPE_QNAME, allProperties).getChildRef();
+                    assertNotNull(nodeRef2);
 
-	                Serializable encryptedPropertyValue = nodeService.getProperty(nodeRef2, ENCRYPTED_PROP_QNAME);
-	                Serializable decryptedPropertyValue = metadataEncryptor.decrypt(ENCRYPTED_PROP_QNAME, encryptedPropertyValue);
-	                assertEquals("ABC", decryptedPropertyValue);
+                    Serializable encryptedPropertyValue = nodeService.getProperty(nodeRef2, ENCRYPTED_PROP_QNAME);
+                    Serializable decryptedPropertyValue = metadataEncryptor.decrypt(ENCRYPTED_PROP_QNAME, encryptedPropertyValue);
+                    assertEquals("ABC", decryptedPropertyValue);
                 }
-                //catch(IntegrityException e)
-                catch(Throwable e)
+                // catch(IntegrityException e)
+                catch (Throwable e)
                 {
-                	fail();
+                    fail();
                 }
 
                 return null;
@@ -216,7 +212,7 @@ public class MetadataEncryptorTests extends TestCase
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(encryptionWork);
     }
-    
+
     /**
      * Clean up the test thread
      */

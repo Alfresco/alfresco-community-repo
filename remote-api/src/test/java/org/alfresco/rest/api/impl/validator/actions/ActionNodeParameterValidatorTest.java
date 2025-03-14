@@ -26,26 +26,32 @@
 
 package org.alfresco.rest.api.impl.validator.actions;
 
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+
 import static org.alfresco.model.ContentModel.TYPE_CATEGORY;
 import static org.alfresco.model.ContentModel.TYPE_FOLDER;
 import static org.alfresco.rest.api.impl.validator.actions.ActionNodeParameterValidator.NOT_A_CATEGORY;
 import static org.alfresco.rest.api.impl.validator.actions.ActionNodeParameterValidator.NOT_A_FOLDER;
 import static org.alfresco.rest.api.impl.validator.actions.ActionNodeParameterValidator.NO_PROPER_PERMISSIONS_FOR_NODE;
 import static org.alfresco.rest.api.impl.validator.actions.ActionNodeParameterValidator.REQUIRE_READ_PERMISSION_PARAMS;
-import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.CATEGORY;
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.NODE_REF;
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.TEXT;
 import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 import static org.alfresco.service.namespace.NamespaceService.DEFAULT_PREFIX;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import org.alfresco.repo.action.executer.CheckOutActionExecuter;
 import org.alfresco.repo.action.executer.CopyActionExecuter;
@@ -66,11 +72,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ActionNodeParameterValidatorTest
@@ -99,11 +100,9 @@ public class ActionNodeParameterValidatorTest
         final Action action = new Action();
         action.setActionDefinitionId(READ_RIGHTS_REQUIRED_DEFINITION_ID);
         action.setParams(Map.of(CATEGORY_NODE_REF_PARAM, NODE_ID));
-        ActionDefinition.ParameterDefinition parameterDef =
-                new ActionDefinition.ParameterDefinition(CATEGORY_NODE_REF_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
-        final ActionDefinition actionDefinition =
-                new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
-                        List.of(parameterDef));
+        ActionDefinition.ParameterDefinition parameterDef = new ActionDefinition.ParameterDefinition(CATEGORY_NODE_REF_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
+        final ActionDefinition actionDefinition = new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
+                List.of(parameterDef));
         given(actionsMock.getRuleActionDefinitionById(READ_RIGHTS_REQUIRED_DEFINITION_ID)).willReturn(actionDefinition);
         given(namespaceServiceMock.getPrefixes(NODE_REF.getNamespaceURI())).willReturn(List.of(DEFAULT_PREFIX));
         final NodeRef nodeRef = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, NODE_ID);
@@ -111,7 +110,7 @@ public class ActionNodeParameterValidatorTest
         given(permissionServiceMock.hasReadPermission(nodeRef)).willReturn(AccessStatus.ALLOWED);
         given(nodesMock.nodeMatches(nodeRef, Set.of(TYPE_CATEGORY), Collections.emptySet())).willReturn(true);
 
-        //when
+        // when
         objectUnderTest.validate(action);
 
         then(actionsMock).should().getRuleActionDefinitionById(READ_RIGHTS_REQUIRED_DEFINITION_ID);
@@ -131,18 +130,16 @@ public class ActionNodeParameterValidatorTest
         final Action action = new Action();
         action.setActionDefinitionId(COPY_ACTION);
         action.setParams(Map.of(DESTINATION_FOLDER_PARAM, NODE_ID));
-        ActionDefinition.ParameterDefinition parameterDef =
-                new ActionDefinition.ParameterDefinition(DESTINATION_FOLDER_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
-        final ActionDefinition actionDefinition =
-                new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
-                        List.of(parameterDef));
+        ActionDefinition.ParameterDefinition parameterDef = new ActionDefinition.ParameterDefinition(DESTINATION_FOLDER_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
+        final ActionDefinition actionDefinition = new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
+                List.of(parameterDef));
         given(actionsMock.getRuleActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
         given(namespaceServiceMock.getPrefixes(NODE_REF.getNamespaceURI())).willReturn(List.of(DEFAULT_PREFIX));
         final NodeRef nodeRef = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, NODE_ID);
         given(nodesMock.validateNode(NODE_ID)).willReturn(nodeRef);
         given(permissionServiceMock.hasReadPermission(nodeRef)).willReturn(AccessStatus.DENIED);
 
-        //when
+        // when
         assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() -> objectUnderTest.validate(action));
 
         then(actionsMock).should().getRuleActionDefinitionById(COPY_ACTION);
@@ -161,16 +158,14 @@ public class ActionNodeParameterValidatorTest
         final Action action = new Action();
         action.setActionDefinitionId(COPY_ACTION);
         action.setParams(Map.of(DESTINATION_FOLDER_PARAM, NODE_ID));
-        ActionDefinition.ParameterDefinition parameterDef =
-                new ActionDefinition.ParameterDefinition(DESTINATION_FOLDER_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
-        final ActionDefinition actionDefinition =
-                new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
-                        List.of(parameterDef));
+        ActionDefinition.ParameterDefinition parameterDef = new ActionDefinition.ParameterDefinition(DESTINATION_FOLDER_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
+        final ActionDefinition actionDefinition = new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
+                List.of(parameterDef));
         given(actionsMock.getRuleActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
         given(namespaceServiceMock.getPrefixes(NODE_REF.getNamespaceURI())).willReturn(List.of(DEFAULT_PREFIX));
         given(nodesMock.validateNode(NODE_ID)).willThrow(EntityNotFoundException.class);
 
-        //when
+        // when
         assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() -> objectUnderTest.validate(action));
 
         then(actionsMock).should().getRuleActionDefinitionById(COPY_ACTION);
@@ -188,11 +183,9 @@ public class ActionNodeParameterValidatorTest
         final Action action = new Action();
         action.setActionDefinitionId(COPY_ACTION);
         action.setParams(Map.of(DESTINATION_FOLDER_PARAM, NODE_ID));
-        ActionDefinition.ParameterDefinition parameterDef =
-                new ActionDefinition.ParameterDefinition(DESTINATION_FOLDER_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
-        final ActionDefinition actionDefinition =
-                new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
-                        List.of(parameterDef));
+        ActionDefinition.ParameterDefinition parameterDef = new ActionDefinition.ParameterDefinition(DESTINATION_FOLDER_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
+        final ActionDefinition actionDefinition = new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
+                List.of(parameterDef));
         given(actionsMock.getRuleActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
         given(namespaceServiceMock.getPrefixes(NODE_REF.getNamespaceURI())).willReturn(List.of(DEFAULT_PREFIX));
         final NodeRef nodeRef = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, NODE_ID);
@@ -201,7 +194,7 @@ public class ActionNodeParameterValidatorTest
         given(permissionServiceMock.hasPermission(nodeRef, PermissionService.WRITE)).willReturn(AccessStatus.ALLOWED);
         given(nodesMock.nodeMatches(nodeRef, Set.of(TYPE_FOLDER), Collections.emptySet())).willReturn(true);
 
-        //when
+        // when
         objectUnderTest.validate(action);
 
         then(actionsMock).should().getRuleActionDefinitionById(COPY_ACTION);
@@ -222,11 +215,9 @@ public class ActionNodeParameterValidatorTest
         final Action action = new Action();
         action.setActionDefinitionId(COPY_ACTION);
         action.setParams(Map.of(DESTINATION_FOLDER_PARAM, NODE_ID));
-        ActionDefinition.ParameterDefinition parameterDef =
-                new ActionDefinition.ParameterDefinition(DESTINATION_FOLDER_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
-        final ActionDefinition actionDefinition =
-                new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
-                        List.of(parameterDef));
+        ActionDefinition.ParameterDefinition parameterDef = new ActionDefinition.ParameterDefinition(DESTINATION_FOLDER_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
+        final ActionDefinition actionDefinition = new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
+                List.of(parameterDef));
         given(actionsMock.getRuleActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
         given(namespaceServiceMock.getPrefixes(NODE_REF.getNamespaceURI())).willReturn(List.of(DEFAULT_PREFIX));
         final NodeRef nodeRef = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, NODE_ID);
@@ -234,7 +225,7 @@ public class ActionNodeParameterValidatorTest
         given(permissionServiceMock.hasReadPermission(nodeRef)).willReturn(AccessStatus.ALLOWED);
         given(permissionServiceMock.hasPermission(nodeRef, PermissionService.WRITE)).willReturn(AccessStatus.DENIED);
 
-        //when
+        // when
         assertThatExceptionOfType(PermissionDeniedException.class).isThrownBy(() -> objectUnderTest.validate(action))
                 .withMessageContaining(NO_PROPER_PERMISSIONS_FOR_NODE + NODE_ID);
 
@@ -256,15 +247,13 @@ public class ActionNodeParameterValidatorTest
         action.setActionDefinitionId(COPY_ACTION);
         final String dummyParam = "dummyParam";
         action.setParams(Map.of(dummyParam, "dummyValue"));
-        ActionDefinition.ParameterDefinition parameterDef =
-                new ActionDefinition.ParameterDefinition(dummyParam, TEXT.toPrefixString(), false, true, null, null);
-        final ActionDefinition actionDefinition =
-                new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
-                        List.of(parameterDef));
+        ActionDefinition.ParameterDefinition parameterDef = new ActionDefinition.ParameterDefinition(dummyParam, TEXT.toPrefixString(), false, true, null, null);
+        final ActionDefinition actionDefinition = new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
+                List.of(parameterDef));
         given(actionsMock.getRuleActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
         given(namespaceServiceMock.getPrefixes(NODE_REF.getNamespaceURI())).willReturn(List.of(DEFAULT_PREFIX));
 
-        //when
+        // when
         objectUnderTest.validate(action);
 
         then(actionsMock).should().getRuleActionDefinitionById(COPY_ACTION);
@@ -281,11 +270,9 @@ public class ActionNodeParameterValidatorTest
         final Action action = new Action();
         action.setActionDefinitionId(COPY_ACTION);
         action.setParams(Map.of(DESTINATION_FOLDER_PARAM, NODE_ID));
-        ActionDefinition.ParameterDefinition parameterDef =
-                new ActionDefinition.ParameterDefinition(DESTINATION_FOLDER_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
-        final ActionDefinition actionDefinition =
-                new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
-                        List.of(parameterDef));
+        ActionDefinition.ParameterDefinition parameterDef = new ActionDefinition.ParameterDefinition(DESTINATION_FOLDER_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
+        final ActionDefinition actionDefinition = new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
+                List.of(parameterDef));
         given(actionsMock.getRuleActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
         given(namespaceServiceMock.getPrefixes(NODE_REF.getNamespaceURI())).willReturn(List.of(DEFAULT_PREFIX));
         final NodeRef nodeRef = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, NODE_ID);
@@ -294,7 +281,7 @@ public class ActionNodeParameterValidatorTest
         given(permissionServiceMock.hasPermission(nodeRef, PermissionService.WRITE)).willReturn(AccessStatus.ALLOWED);
         given(nodesMock.nodeMatches(nodeRef, Set.of(TYPE_FOLDER), Collections.emptySet())).willReturn(false);
 
-        //when
+        // when
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.validate(action))
                 .withMessageContaining(NOT_A_FOLDER + NODE_ID);
 
@@ -316,11 +303,9 @@ public class ActionNodeParameterValidatorTest
         final Action action = new Action();
         action.setActionDefinitionId(READ_RIGHTS_REQUIRED_DEFINITION_ID);
         action.setParams(Map.of(CATEGORY_NODE_REF_PARAM, NODE_ID));
-        ActionDefinition.ParameterDefinition parameterDef =
-                new ActionDefinition.ParameterDefinition(CATEGORY_NODE_REF_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
-        final ActionDefinition actionDefinition =
-                new ActionDefinition(READ_RIGHTS_REQUIRED_DEFINITION_ID, READ_RIGHTS_REQUIRED_DEFINITION_ID, null, null, null, false, false,
-                        List.of(parameterDef));
+        ActionDefinition.ParameterDefinition parameterDef = new ActionDefinition.ParameterDefinition(CATEGORY_NODE_REF_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
+        final ActionDefinition actionDefinition = new ActionDefinition(READ_RIGHTS_REQUIRED_DEFINITION_ID, READ_RIGHTS_REQUIRED_DEFINITION_ID, null, null, null, false, false,
+                List.of(parameterDef));
         given(actionsMock.getRuleActionDefinitionById(READ_RIGHTS_REQUIRED_DEFINITION_ID)).willReturn(actionDefinition);
         given(namespaceServiceMock.getPrefixes(NODE_REF.getNamespaceURI())).willReturn(List.of(DEFAULT_PREFIX));
         final NodeRef nodeRef = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, NODE_ID);
@@ -328,7 +313,7 @@ public class ActionNodeParameterValidatorTest
         given(permissionServiceMock.hasReadPermission(nodeRef)).willReturn(AccessStatus.ALLOWED);
         given(nodesMock.nodeMatches(nodeRef, Set.of(TYPE_CATEGORY), Collections.emptySet())).willReturn(false);
 
-        //when
+        // when
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.validate(action))
                 .withMessageContaining(NOT_A_CATEGORY + NODE_ID);
 
@@ -346,10 +331,9 @@ public class ActionNodeParameterValidatorTest
     @Test
     public void testGetDefinitionIds()
     {
-        final List<String> expectedIds =
-                List.of(CopyActionExecuter.NAME, MoveActionExecuter.NAME, CheckOutActionExecuter.NAME, ImporterActionExecuter.NAME,
-                        LinkCategoryActionExecuter.NAME, SimpleWorkflowActionExecuter.NAME, TransformActionExecuter.NAME,
-                        ImageTransformActionExecuter.NAME);
+        final List<String> expectedIds = List.of(CopyActionExecuter.NAME, MoveActionExecuter.NAME, CheckOutActionExecuter.NAME, ImporterActionExecuter.NAME,
+                LinkCategoryActionExecuter.NAME, SimpleWorkflowActionExecuter.NAME, TransformActionExecuter.NAME,
+                ImageTransformActionExecuter.NAME);
         final List<String> actualIds = objectUnderTest.getActionDefinitionIds();
 
         assertEquals(expectedIds, actualIds);

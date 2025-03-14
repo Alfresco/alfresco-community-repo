@@ -27,19 +27,19 @@ package org.alfresco.repo.domain.locale;
 
 import java.util.Locale;
 
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOAdaptor;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.util.Pair;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Abstract implementation for Locale DAO.
  * <p>
- * This provides basic services such as caching, but defers to the underlying implementation
- * for CRUD operations.
+ * This provides basic services such as caching, but defers to the underlying implementation for CRUD operations.
  * 
  * Since locales are system-wide and immutable, we can cache lookups in both directions.
  * 
@@ -49,7 +49,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public abstract class AbstractLocaleDAOImpl implements LocaleDAO
 {
     private static final String CACHE_REGION_LOCALE = "Locale";
-    
+
     /**
      * Cache for the Locale values:<br/>
      * KEY: ID<br/>
@@ -57,11 +57,12 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
      * VALUE KEY: Locale<br/>
      */
     private EntityLookupCache<Long, String, String> localeEntityCache;
-    
+
     /**
      * Set the cache that maintains the ID-Locale mappings and vice-versa (bi-directional)
      * 
-     * @param localeEntityCache        the cache
+     * @param localeEntityCache
+     *            the cache
      */
     public void setLocaleEntityCache(SimpleCache<Long, String> localeEntityCache)
     {
@@ -70,18 +71,17 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
                 CACHE_REGION_LOCALE,
                 new LocaleEntityCallbackDAO());
     }
-    
+
     /**
      * Default constructor.
      * <p>
-     * This sets up the DAO accessors to bypass any caching to handle the case where the caches are not
-     * supplied in the setters.
+     * This sets up the DAO accessors to bypass any caching to handle the case where the caches are not supplied in the setters.
      */
     protected AbstractLocaleDAOImpl()
     {
         this.localeEntityCache = new EntityLookupCache<Long, String, String>(new LocaleEntityCallbackDAO());
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -89,7 +89,7 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
     {
         return getLocalePairImpl(locale);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -97,7 +97,7 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
     {
         return getLocalePairImpl(null);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -107,7 +107,7 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
         {
             throw new IllegalArgumentException("Cannot look up entity by null ID.");
         }
-        
+
         Pair<Long, String> entityPair = localeEntityCache.getByKey(id);
         if (entityPair == null)
         {
@@ -124,10 +124,10 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
         {
             locale = DefaultTypeConverter.INSTANCE.convert(Locale.class, entityPair.getSecond());
         }
-        
+
         return new Pair<Long, Locale>(id, locale);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -135,7 +135,7 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
     {
         return getOrCreateLocalePairImpl(locale);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -143,13 +143,13 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
     {
         return getOrCreateLocalePairImpl(null);
     }
-    
+
     /**
      * Find the locale pair
      * 
-     * @param locale                the locale to get or <tt>null</tt> to indicate the
-     *                              {@link LocaleEntity#DEFAULT_LOCALE_SUBSTITUTE default locale}.
-     * @return                      Returns the locale pair (ID, Locale) or <tt>null</tt> if not found.
+     * @param locale
+     *            the locale to get or <tt>null</tt> to indicate the {@link LocaleEntity#DEFAULT_LOCALE_SUBSTITUTE default locale}.
+     * @return Returns the locale pair (ID, Locale) or <tt>null</tt> if not found.
      */
     private Pair<Long, Locale> getLocalePairImpl(Locale locale)
     {
@@ -164,12 +164,12 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
         {
             localeStr = DefaultTypeConverter.INSTANCE.convert(String.class, locale);
         }
-        
+
         if (localeStr == null)
         {
             throw new IllegalArgumentException("Cannot look up entity by null locale.");
         }
-        
+
         Pair<Long, String> entityPair = localeEntityCache.getByValue(localeStr);
         if (entityPair == null)
         {
@@ -180,13 +180,13 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
             return new Pair<Long, Locale>(entityPair.getFirst(), locale);
         }
     }
-    
+
     /**
      * Find or create the locale pair
      * 
-     * @param locale                the locale to get or <tt>null</tt> to indicate the
-     *                              {@link LocaleEntity#DEFAULT_LOCALE_SUBSTITUTE default locale}.
-     * @return                      Returns the locale pair (ID, Locale), never <tt>null
+     * @param locale
+     *            the locale to get or <tt>null</tt> to indicate the {@link LocaleEntity#DEFAULT_LOCALE_SUBSTITUTE default locale}.
+     * @return Returns the locale pair (ID, Locale), never <tt>null
      */
     private Pair<Long, Locale> getOrCreateLocalePairImpl(Locale locale)
     {
@@ -201,12 +201,12 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
         {
             localeStr = DefaultTypeConverter.INSTANCE.convert(String.class, locale);
         }
-        
+
         if (localeStr == null)
         {
             throw new IllegalArgumentException("Cannot look up entity by null locale.");
         }
-        
+
         Pair<Long, String> entityPair = localeEntityCache.getOrCreateByValue(localeStr);
         if (entityPair == null)
         {
@@ -214,7 +214,7 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
         }
         return new Pair<Long, Locale>(entityPair.getFirst(), locale);
     }
-    
+
     /**
      * Callback for <b>alf_locale</b> DAO
      */
@@ -238,7 +238,7 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
                 return new Pair<Long, String>(id, entity.getLocaleStr());
             }
         }
-        
+
         @Override
         public Pair<Long, String> findByValue(String localeStr)
         {
@@ -252,15 +252,17 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
                 return new Pair<Long, String>(entity.getId(), localeStr);
             }
         }
-        
+
         public Pair<Long, String> createValue(String localeStr)
         {
             LocaleEntity entity = createLocaleEntity(localeStr);
             return new Pair<Long, String>(entity.getId(), localeStr);
         }
     }
-    
+
     protected abstract LocaleEntity getLocaleEntity(Long id);
+
     protected abstract LocaleEntity getLocaleEntity(String locale);
+
     protected abstract LocaleEntity createLocaleEntity(String locale);
 }

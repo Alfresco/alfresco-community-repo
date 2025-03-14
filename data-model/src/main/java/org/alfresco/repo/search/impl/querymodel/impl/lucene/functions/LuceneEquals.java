@@ -41,7 +41,7 @@ import org.alfresco.repo.search.impl.querymodel.impl.lucene.QueryBuilderContext;
  * @author andyh
  *
  */
-public class LuceneEquals<Q, S, E extends Throwable> extends Equals  implements LuceneQueryBuilderComponent<Q, S, E>
+public class LuceneEquals<Q, S, E extends Throwable> extends Equals implements LuceneQueryBuilderComponent<Q, S, E>
 {
     /**
      * 
@@ -50,28 +50,24 @@ public class LuceneEquals<Q, S, E extends Throwable> extends Equals  implements 
     {
         super();
     }
-    
-    /*
-     * (non-Javadoc)
+
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery,
-     *      org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService,
-     *      java.lang.String)
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery, org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService, java.lang.String) */
     public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext)
             throws E
     {
         QueryParserAdaptor<Q, S, E> lqpa = luceneContext.getLuceneQueryParserAdaptor();
         setPropertyAndStaticArguments(functionArgs);
-       
+
         Q query = functionContext.buildLuceneEquality(lqpa, getPropertyName(), getStaticArgument().getValue(functionContext), PredicateMode.ANY, functionContext.getLuceneFunction(getFunctionArgument()));
-        
-        if(query == null)
+
+        if (query == null)
         {
-            throw new QueryModelException("No query time mapping for property  "+getPropertyArgument().getPropertyName()+", it should not be allowed in predicates");
+            throw new QueryModelException("No query time mapping for property  " + getPropertyArgument().getPropertyName() + ", it should not be allowed in predicates");
         }
-        
+
         return query;
     }
-    
+
 }

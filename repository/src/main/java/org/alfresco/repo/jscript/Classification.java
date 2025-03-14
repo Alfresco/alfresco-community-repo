@@ -28,6 +28,9 @@ package org.alfresco.repo.jscript;
 import java.util.Collection;
 import java.util.List;
 
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.service.ServiceRegistry;
@@ -37,11 +40,9 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Scriptable;
 
 /**
- * Support class for finding categories, finding root nodes for categories and creating root categories. 
+ * Support class for finding categories, finding root nodes for categories and creating root categories.
  * 
  * @author Andy Hind
  */
@@ -50,21 +51,23 @@ public final class Classification extends BaseScopableProcessorExtension
     private ServiceRegistry services;
 
     private StoreRef storeRef;
-    
+
     /**
      * Set the default store reference
      * 
-     * @param   storeRef the default store reference
+     * @param storeRef
+     *            the default store reference
      */
     public void setStoreUrl(String storeRef)
     {
         this.storeRef = new StoreRef(storeRef);
     }
-    
+
     /**
      * Set the service registry
      * 
-     * @param services  the service registry
+     * @param services
+     *            the service registry
      */
     public void setServiceRegistry(ServiceRegistry services)
     {
@@ -74,13 +77,14 @@ public final class Classification extends BaseScopableProcessorExtension
     /**
      * Find all the category nodes in a given classification.
      * 
-     * @param aspect String
+     * @param aspect
+     *            String
      * @return Scriptable
      */
     public Scriptable getAllCategoryNodes(String aspect)
     {
         Object[] cats = buildCategoryNodes(services.getCategoryService().getCategories(
-                            storeRef, createQName(aspect), CategoryService.Depth.ANY));
+                storeRef, createQName(aspect), CategoryService.Depth.ANY));
         return Context.getCurrentContext().newArray(getScope(), cats);
     }
 
@@ -100,12 +104,14 @@ public final class Classification extends BaseScopableProcessorExtension
         }
         return answer;
     }
-    
+
     /**
      * Create a root category in a classification.
      * 
-     * @param aspect String
-     * @param name String
+     * @param aspect
+     *            String
+     * @param name
+     *            String
      */
     public CategoryNode createRootCategory(String aspect, String name)
     {
@@ -114,19 +120,20 @@ public final class Classification extends BaseScopableProcessorExtension
 
         return categoryNode;
     }
-    
+
     /**
      * Get the category node from the category node reference.
      * 
-     * @param categoryRef   category node reference
-     * @return {@link CategoryNode} category node 
+     * @param categoryRef
+     *            category node reference
+     * @return {@link CategoryNode} category node
      */
     public CategoryNode getCategory(String categoryRef)
     {
         CategoryNode result = null;
         NodeRef categoryNodeRef = new NodeRef(categoryRef);
         if (services.getNodeService().exists(categoryNodeRef) == true &&
-            services.getDictionaryService().isSubClass(ContentModel.TYPE_CATEGORY, services.getNodeService().getType(categoryNodeRef)) == true)
+                services.getDictionaryService().isSubClass(ContentModel.TYPE_CATEGORY, services.getNodeService().getType(categoryNodeRef)) == true)
         {
             result = new CategoryNode(categoryNodeRef, this.services, getScope());
         }
@@ -136,13 +143,14 @@ public final class Classification extends BaseScopableProcessorExtension
     /**
      * Get the root categories in a classification.
      * 
-     * @param aspect String
+     * @param aspect
+     *            String
      * @return Scriptable
      */
     public Scriptable getRootCategories(String aspect)
     {
         Object[] cats = buildCategoryNodes(services.getCategoryService().getRootCategories(
-                            storeRef, createQName(aspect)));
+                storeRef, createQName(aspect)));
         return Context.getCurrentContext().newArray(getScope(), cats);
     }
 
@@ -152,7 +160,8 @@ public final class Classification extends BaseScopableProcessorExtension
      * @param aspect
      * @param filter
      * @param maxItems
-     * @param skipCount (offset)
+     * @param skipCount
+     *            (offset)
      * @return
      */
     public Scriptable getRootCategories(String aspect, String filter, int maxItems, int skipCount)
@@ -166,8 +175,10 @@ public final class Classification extends BaseScopableProcessorExtension
     /**
      * Get the category usage count.
      * 
-     * @param aspect String
-     * @param maxCount int
+     * @param aspect
+     *            String
+     * @param maxCount
+     *            int
      * @return Scriptable
      */
     public Scriptable getCategoryUsage(String aspect, int maxCount)
@@ -177,16 +188,17 @@ public final class Classification extends BaseScopableProcessorExtension
         int i = 0;
         for (Pair<NodeRef, Integer> topCat : topCats)
         {
-           tags[i++] = new Tag(new CategoryNode(topCat.getFirst(), this.services, getScope()), topCat.getSecond());
+            tags[i++] = new Tag(new CategoryNode(topCat.getFirst(), this.services, getScope()), topCat.getSecond());
         }
-        
+
         return Context.getCurrentContext().newArray(getScope(), tags);
     }
 
     /**
      * Build category nodes.
      * 
-     * @param cars  list of associations to category nodes
+     * @param cars
+     *            list of associations to category nodes
      * @return {@link Object}[] array of category nodes
      */
     private Object[] buildCategoryNodes(Collection<ChildAssociationRef> cars)
@@ -203,8 +215,9 @@ public final class Classification extends BaseScopableProcessorExtension
     /**
      * Create QName from string
      * 
-     * @param s QName string value
-     * @return {@link QName} qualified name object    
+     * @param s
+     *            QName string value
+     * @return {@link QName} qualified name object
      */
     private QName createQName(String s)
     {
@@ -219,7 +232,7 @@ public final class Classification extends BaseScopableProcessorExtension
         }
         return qname;
     }
-    
+
     /**
      * Tag class returned from getCategoryUsage().
      */
@@ -227,21 +240,21 @@ public final class Classification extends BaseScopableProcessorExtension
     {
         private CategoryNode categoryNode;
         private int frequency = 0;
-       
+
         public Tag(CategoryNode categoryNode, int frequency)
         {
             this.categoryNode = categoryNode;
             this.frequency = frequency;
         }
-       
+
         public CategoryNode getCategory()
         {
             return categoryNode;
         }
-       
+
         public int getFrequency()
         {
             return frequency;
         }
-     }
+    }
 }

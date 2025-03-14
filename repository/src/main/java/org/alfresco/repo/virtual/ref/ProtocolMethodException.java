@@ -38,18 +38,18 @@ public class ProtocolMethodException extends VirtualizationException
     }
 
     public ProtocolMethodException(String message, Throwable cause, boolean enableSuppression,
-                boolean writableStackTrace)
+            boolean writableStackTrace)
     {
         super(message,
-              cause,
-              enableSuppression,
-              writableStackTrace);
+                cause,
+                enableSuppression,
+                writableStackTrace);
     }
 
     public ProtocolMethodException(String message, Throwable cause)
     {
         super(message,
-              cause);
+                cause);
     }
 
     public ProtocolMethodException(String message)

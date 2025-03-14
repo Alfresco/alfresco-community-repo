@@ -30,6 +30,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ImapModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
@@ -45,7 +47,6 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 public class ImapUnsubscribedAspectPatch extends AbstractPatch
 {
@@ -67,8 +68,7 @@ public class ImapUnsubscribedAspectPatch extends AbstractPatch
         final List<ChildAssociationRef> users = nodeService.getChildAssocs(personService.getPeopleContainer(), ContentModel.ASSOC_CHILDREN, RegexQNamePattern.MATCH_ALL);
         final long maxNodeId = patchDAO.getMaxAdmNodeID();
 
-        BatchProcessWorkProvider<NodeRef> workProvider = new BatchProcessWorkProvider<NodeRef>()
-        {
+        BatchProcessWorkProvider<NodeRef> workProvider = new BatchProcessWorkProvider<NodeRef>() {
             final List<NodeRef> result = new ArrayList<NodeRef>();
 
             public int getTotalEstimatedWorkSize()
@@ -87,8 +87,7 @@ public class ImapUnsubscribedAspectPatch extends AbstractPatch
                 while (result.isEmpty() && minSearchNodeId < maxNodeId)
                 {
                     nodeDAO.getNodesWithAspects(Collections.singleton(ASPECT_NON_SUBSCRIBED), minSearchNodeId,
-                            minSearchNodeId + count, new NodeRefQueryCallback()
-                            {
+                            minSearchNodeId + count, new NodeRefQueryCallback() {
 
                                 public boolean handle(Pair<Long, NodeRef> nodePair)
                                 {
@@ -107,16 +106,13 @@ public class ImapUnsubscribedAspectPatch extends AbstractPatch
         BatchProcessor<NodeRef> batchProcessor = new BatchProcessor<NodeRef>("ImapUnsubscribedAspectPatch", transactionService.getRetryingTransactionHelper(), workProvider,
                 batchThreads, batchSize, applicationEventPublisher, null, 1000);
 
-        BatchProcessWorker<NodeRef> worker = new BatchProcessWorker<NodeRef>()
-        {
+        BatchProcessWorker<NodeRef> worker = new BatchProcessWorker<NodeRef>() {
 
             public void afterProcess() throws Throwable
-            {
-            }
+            {}
 
             public void beforeProcess() throws Throwable
-            {
-            }
+            {}
 
             public String getIdentifier(NodeRef entry)
             {

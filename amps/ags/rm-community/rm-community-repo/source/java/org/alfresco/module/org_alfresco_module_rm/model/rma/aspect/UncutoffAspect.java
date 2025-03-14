@@ -42,10 +42,8 @@ import org.alfresco.service.namespace.QName;
  * @author Mark Hibbins
  * @since 2.2
  */
-@BehaviourBean
-(
-   defaultType = "rma:uncutOff"
-)
+@BehaviourBean(
+        defaultType = "rma:uncutOff")
 public class UncutoffAspect extends BaseBehaviourBean
 {
     /**
@@ -53,11 +51,9 @@ public class UncutoffAspect extends BaseBehaviourBean
      *
      * Uncutoff aspect should not be copied.
      */
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            policy = "alf:getCopyCallback"
-    )
+            policy = "alf:getCopyCallback")
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
         return new DoNothingCopyBehaviourCallback();

@@ -29,8 +29,9 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.apache.commons.logging.Log;
+
+import org.alfresco.repo.workflow.WorkflowDeployer;
 
 /**
  * Empty Tenant Deployer Service implementation (for Single-Tenant / Single-Instance)
@@ -43,19 +44,17 @@ public class SingleTAdminServiceImpl implements TenantAdminService
      */
     @Override
     public void startTenants()
-    {
-    }
+    {}
 
     /**
      * NO-OP
      */
     @Override
     public void stopTenants()
-    {
-    }
+    {}
 
     /**
-     * @return          Returns <tt>false</tt> always
+     * @return Returns <tt>false</tt> always
      */
     @Override
     public boolean isEnabled()
@@ -68,40 +67,35 @@ public class SingleTAdminServiceImpl implements TenantAdminService
      */
     @Override
     public void deployTenants(final TenantDeployer deployer, Log logger)
-    {
-    }
-    
+    {}
+
     /**
      * NO-OP
      */
     @Override
     public void undeployTenants(final TenantDeployer deployer, Log logger)
-    {
-    }
-    
+    {}
+
     /**
      * NO-OP
      */
     @Override
     public void register(TenantDeployer tenantDeployer)
-    {
-    }
-    
+    {}
+
     /**
      * NO-OP
      */
     @Override
     public void unregister(TenantDeployer tenantDeployer)
-    {
-    }
+    {}
 
     /**
      * NO-OP
      */
     @Override
     public void register(WorkflowDeployer workflowDeployer)
-    {
-    }
+    {}
 
     /**
      * NO-OP
@@ -124,52 +118,54 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     }
 
     /**
-     * @return          Returns {@link TenantService#DEFAULT_DOMAIN} always
+     * @return Returns {@link TenantService#DEFAULT_DOMAIN} always
      */
     @Override
     public String getCurrentUserDomain()
     {
         return TenantService.DEFAULT_DOMAIN;
     }
-    
+
     /**
-     * @return          Returns {@link TenantService#DEFAULT_DOMAIN} always
+     * @return Returns {@link TenantService#DEFAULT_DOMAIN} always
      */
     @Override
     public String getUserDomain(String username)
     {
         return TenantService.DEFAULT_DOMAIN;
     }
-    
+
     /**
-     * @return          Returns the given <tt>username</tt> always
+     * @return Returns the given <tt>username</tt> always
      */
     @Override
     public String getBaseNameUser(String username)
     {
         return username;
     }
-    
+
     /**
-     * @return          Returns the given <tt>baseUserName</tt> always
+     * @return Returns the given <tt>baseUserName</tt> always
      */
     @Override
     public String getDomainUser(String baseUsername, String tenantDomain)
     {
         return baseUsername;
     }
-    
+
     /**
-     * @throws UnsupportedOperationException        always
+     * @throws UnsupportedOperationException
+     *             always
      */
     @Override
     public void createTenant(String tenantDomain, char[] adminRawPassword, String contentRoot)
     {
         throw new UnsupportedOperationException("Single tenant mode is active.");
     }
-    
+
     /**
-     * @throws UnsupportedOperationException        always
+     * @throws UnsupportedOperationException
+     *             always
      */
     @Override
     public void createTenant(String tenantDomain, char[] adminRawPassword, String contentRoot, String dbUrl)
@@ -178,7 +174,8 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     }
 
     /**
-     * @throws UnsupportedOperationException        always
+     * @throws UnsupportedOperationException
+     *             always
      */
     @Override
     public void createTenant(String tenantDomain, char[] adminRawPassword)
@@ -187,7 +184,8 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     }
 
     /**
-     * @throws UnsupportedOperationException        always
+     * @throws UnsupportedOperationException
+     *             always
      */
     @Override
     public void deleteTenant(String tenantDomain)
@@ -196,7 +194,8 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     }
 
     /**
-     * @throws UnsupportedOperationException        always
+     * @throws UnsupportedOperationException
+     *             always
      */
     @Override
     public void disableTenant(String tenantDomain)
@@ -205,7 +204,8 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     }
 
     /**
-     * @throws UnsupportedOperationException        always
+     * @throws UnsupportedOperationException
+     *             always
      */
     @Override
     public void enableTenant(String tenantDomain)
@@ -214,7 +214,8 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     }
 
     /**
-     * @throws UnsupportedOperationException        always
+     * @throws UnsupportedOperationException
+     *             always
      */
     @Override
     public boolean existsTenant(String tenantDomain)
@@ -223,7 +224,8 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     }
 
     /**
-     * @throws UnsupportedOperationException        always
+     * @throws UnsupportedOperationException
+     *             always
      */
     @Override
     public void exportTenant(String tenantDomain, File directoryDestination)
@@ -232,7 +234,8 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     }
 
     /**
-     * @throws UnsupportedOperationException        always
+     * @throws UnsupportedOperationException
+     *             always
      */
     @Override
     public Tenant getTenant(String tenantDomain)
@@ -241,7 +244,8 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     }
 
     /**
-     * @throws UnsupportedOperationException        always
+     * @throws UnsupportedOperationException
+     *             always
      */
     @Override
     public void importTenant(String tenantDomain, File directorySource, String rootContentStoreDir)
@@ -250,7 +254,8 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     }
 
     /**
-     * @throws UnsupportedOperationException        always
+     * @throws UnsupportedOperationException
+     *             always
      */
     @Override
     public boolean isEnabledTenant(String tenantDomain)

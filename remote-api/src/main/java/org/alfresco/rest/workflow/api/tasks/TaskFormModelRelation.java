@@ -42,17 +42,16 @@ public class TaskFormModelRelation implements RelationshipResourceAction.Read<Fo
 {
     private Tasks tasks;
 
-	public void setTasks(Tasks tasks)
-	{
-		this.tasks = tasks;
-	}
+    public void setTasks(Tasks tasks)
+    {
+        this.tasks = tasks;
+    }
 
     @Override
     public CollectionWithPagingInfo<FormModelElement> readAll(String entityResourceId,
-                Parameters params)
+            Parameters params)
     {
         return tasks.getTaskFormModel(entityResourceId, params.getPaging());
     }
-
 
 }

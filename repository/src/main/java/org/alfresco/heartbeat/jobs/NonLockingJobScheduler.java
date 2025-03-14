@@ -25,13 +25,13 @@
  */
 package org.alfresco.heartbeat.jobs;
 
-import org.alfresco.heartbeat.HBBaseDataCollector;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 
+import org.alfresco.heartbeat.HBBaseDataCollector;
+
 /**
- * This scheduler is responsible for the scheduling and unscheduling of non locking jobs {@link NonLockingJob}.
- * All repository nodes in a cluster will send data for collectors which have jobs scheduled by this scheduler.
+ * This scheduler is responsible for the scheduling and unscheduling of non locking jobs {@link NonLockingJob}. All repository nodes in a cluster will send data for collectors which have jobs scheduled by this scheduler.
  *
  * @author eknizat
  *

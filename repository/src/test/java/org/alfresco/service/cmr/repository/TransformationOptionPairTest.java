@@ -25,15 +25,15 @@
  */
 package org.alfresco.service.cmr.repository;
 
+import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.service.cmr.repository.TransformationOptionPair.Action;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals; 
+import org.alfresco.service.cmr.repository.TransformationOptionPair.Action;
 
 /**
  * Test TransformationOptionPair
@@ -44,7 +44,7 @@ import static org.junit.Assert.assertEquals;
 public class TransformationOptionPairTest
 {
     TransformationOptionPair pair;
-    
+
     @Before
     public void setUp() throws Exception
     {
@@ -140,7 +140,7 @@ public class TransformationOptionPairTest
         long actual = pair.getLimit();
         assertEquals("Getter did not return set value", value, actual);
     }
-    
+
     @Test
     public void testSetMaxClearLimit() throws Exception
     {
@@ -172,7 +172,7 @@ public class TransformationOptionPairTest
         pair.setMax(-1, message);
         pair.setLimit(1, message);
     }
-    
+
     @Test
     public void testMapMax() throws Exception
     {
@@ -180,16 +180,16 @@ public class TransformationOptionPairTest
         String limitKey = "Limit";
         String message = "Oh no the other value is set";
         pair.setMax(123, null);
-        
+
         Map<String, Object> optionsMap = new HashMap<String, Object>();
         pair.toMap(optionsMap, maxKey, limitKey);
-        
+
         TransformationOptionPair actual = new TransformationOptionPair();
         actual.set(optionsMap, maxKey, limitKey, message);
 
         assertEquals("Did not match original values", pair, actual);
     }
-    
+
     @Test
     public void testMapLimit() throws Exception
     {
@@ -197,16 +197,16 @@ public class TransformationOptionPairTest
         String limitKey = "Limit";
         String message = "Oh no the other value is set";
         pair.setLimit(123, null);
-        
+
         Map<String, Object> optionsMap = new HashMap<String, Object>();
         pair.toMap(optionsMap, maxKey, limitKey);
-        
+
         TransformationOptionPair actual = new TransformationOptionPair();
         actual.set(optionsMap, maxKey, limitKey, message);
 
         assertEquals("Did not match original values", pair, actual);
     }
-    
+
     @Test
     public void testMapBothSet() throws Exception
     {
@@ -214,11 +214,11 @@ public class TransformationOptionPairTest
         String limitKey = "Limit";
         String message = "Oh no the other value is set";
         pair.setLimit(123, null);
-        
+
         Map<String, Object> optionsMap = new HashMap<String, Object>();
         pair.toMap(optionsMap, maxKey, limitKey);
         optionsMap.put(maxKey, 456L); // Introduce error
-        
+
         String actual = null;
         TransformationOptionPair pair2 = new TransformationOptionPair();
         try
@@ -231,7 +231,7 @@ public class TransformationOptionPairTest
         }
         assertEquals("Expected an IllegalArgumentException message", message, actual);
     }
-    
+
     @Test
     public void testMapNeitherSet() throws Exception
     {
@@ -241,15 +241,15 @@ public class TransformationOptionPairTest
         String limitKey = "Limit";
         String message = "Oh no the other value is set";
         pair.setLimit(value, null);
-        
+
         Map<String, Object> optionsMap = new HashMap<String, Object>();
         optionsMap.put("AnotherKey", 456L);
-        
+
         pair.set(optionsMap, maxKey, limitKey, message);
         long actual = pair.getLimit();
         assertEquals("Original value should not be changed", value, actual);
     }
-    
+
     @Test
     public void testCombineOrder() throws Exception
     {
@@ -258,11 +258,11 @@ public class TransformationOptionPairTest
         pair.setMax(123, null);
         second.setMax(12, null);
         TransformationOptionPair combined = pair.combine(second);
-       
+
         TransformationOptionPair combinedOtherWay = second.combine(pair);
         assertEquals("The combine order should not matter", combined, combinedOtherWay);
     }
-    
+
     @Test
     public void testCombineMax() throws Exception
     {
@@ -275,7 +275,7 @@ public class TransformationOptionPairTest
         assertEquals("Expected the lower value", 12, combined.getValue());
         assertEquals("Expected the lower value", 12, combined.getMax());
     }
-    
+
     @Test
     public void testCombineLimit() throws Exception
     {
@@ -288,7 +288,7 @@ public class TransformationOptionPairTest
         assertEquals("Expected the lower value", 12, combined.getValue());
         assertEquals("Expected the lower value", 12, combined.getLimit());
     }
-    
+
     @Test
     public void testCombineMaxWins() throws Exception
     {
@@ -303,7 +303,7 @@ public class TransformationOptionPairTest
         assertEquals("Expected the lower value", 12, combined.getMax());
         assertEquals("Expected unset value", -1, combined.getLimit());
     }
-    
+
     @Test
     public void testCombineLimitWins() throws Exception
     {
@@ -318,7 +318,7 @@ public class TransformationOptionPairTest
         assertEquals("Expected the lower value", 12, combined.getLimit());
         assertEquals("Expected unset value", -1, combined.getMax());
     }
-    
+
     @Test
     public void testCombineDynamicChange() throws Exception
     {
@@ -339,21 +339,21 @@ public class TransformationOptionPairTest
         assertEquals("Expected the lower value", 10, combined.getLimit());
     }
 
-    @Test(expected=UnsupportedOperationException.class)
+    @Test(expected = UnsupportedOperationException.class)
     public void testCombineSetMax() throws Exception
     {
         TransformationOptionPair combined = pair.combine(pair); // may combine with itself
         combined.setMax(1, null);
     }
 
-    @Test(expected=UnsupportedOperationException.class)
+    @Test(expected = UnsupportedOperationException.class)
     public void testCombineSetLimit() throws Exception
     {
         TransformationOptionPair combined = pair.combine(pair); // may combine with itself
         combined.setLimit(1, null);
     }
 
-    @Test(expected=UnsupportedOperationException.class)
+    @Test(expected = UnsupportedOperationException.class)
     public void testCombineSetMap() throws Exception
     {
         TransformationOptionPair combined = pair.combine(pair); // may combine with itself

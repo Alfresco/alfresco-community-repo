@@ -30,10 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -44,7 +41,7 @@ import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Rule trigger abstract base 
+ * Rule trigger abstract base
  * 
  * @author Roy Wetherall
  */
@@ -55,7 +52,7 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
      */
     private Set<RuleType> ruleTypes = new HashSet<RuleType>();
     private Set<QName> ignoredAspects = Collections.emptySet();
-    private Set<QName> ignoredTypes=Collections.emptySet();
+    private Set<QName> ignoredTypes = Collections.emptySet();
 
     protected PolicyComponent policyComponent;
     protected NodeService nodeService;
@@ -63,13 +60,12 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
     protected AuthenticationComponent authenticationComponent;
     protected DictionaryService dictionaryService;
     protected RuleService ruleService;
-    
-    /** 
-     * Indicates whether the rule should be executed immediately or at the end of the transaction.
-     * By default this is false as all rules are executed at the end of the transaction.
+
+    /**
+     * Indicates whether the rule should be executed immediately or at the end of the transaction. By default this is false as all rules are executed at the end of the transaction.
      */
     protected boolean executeRuleImmediately = false;
-    
+
     /**
      * Set the policy component
      */
@@ -85,14 +81,14 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Set the content service
      */
-    public void setContentService(ContentService contentService) 
+    public void setContentService(ContentService contentService)
     {
-		this.contentService = contentService;
-	}
+        this.contentService = contentService;
+    }
 
     /**
      * Set the authenticationComponent
@@ -121,13 +117,14 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
     /**
      * Sets the values that indicates whether the rule should be executed immediately or not.
      * 
-     * @param executeRuleImmediately    true execute the rule immediaely, false otherwise
+     * @param executeRuleImmediately
+     *            true execute the rule immediaely, false otherwise
      */
     public void setExecuteRuleImmediately(boolean executeRuleImmediately)
     {
         this.executeRuleImmediately = executeRuleImmediately;
     }
-    
+
     /**
      * Registration of an interested rule type
      * 
@@ -138,11 +135,12 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
     }
 
     /**
-     * Trigger the rules that relate to any interested rule types for the node
-     * references passed. 
+     * Trigger the rules that relate to any interested rule types for the node references passed.
      * 
-     * @param nodeRef                   the node reference who rules are to be triggered
-     * @param actionedUponNodeRef       the node reference that will be actioned upon by the rules
+     * @param nodeRef
+     *            the node reference who rules are to be triggered
+     * @param actionedUponNodeRef
+     *            the node reference that will be actioned upon by the rules
      */
     protected void triggerRules(NodeRef nodeRef, NodeRef actionedUponNodeRef)
     {
@@ -151,39 +149,41 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
         {
             return;
         }
-    	// Do not trigger rules for rule and action type nodes
-    	if (ignoreTrigger(actionedUponNodeRef) == false)
-    	{
-	        for (RuleType ruleType : this.ruleTypes)
-	        {
-	            ruleType.triggerRuleType(nodeRef, actionedUponNodeRef, this.executeRuleImmediately);
-	        }
-    	}
+        // Do not trigger rules for rule and action type nodes
+        if (ignoreTrigger(actionedUponNodeRef) == false)
+        {
+            for (RuleType ruleType : this.ruleTypes)
+            {
+                ruleType.triggerRuleType(nodeRef, actionedUponNodeRef, this.executeRuleImmediately);
+            }
+        }
     }
-    
+
     /**
-     * Helper method to allow triggers to check if rules are enabled or disabled
-     * (ALF-10839: Eliminate rule discovery overhead on property update when rules have been disabled)
-     * @return          <tt>true</tt> if rules are enabled
+     * Helper method to allow triggers to check if rules are enabled or disabled (ALF-10839: Eliminate rule discovery overhead on property update when rules have been disabled)
+     * 
+     * @return <tt>true</tt> if rules are enabled
      */
     protected boolean areRulesEnabled()
     {
         return ruleService.isEnabled();
     }
-    
+
     /**
      * Indicate whether the trigger should be ignored or not
-     * @param actionedUponNodeRef	  actioned upon node reference
-     * @return boolean				  true if the trigger should be ignored, false otherwise
+     * 
+     * @param actionedUponNodeRef
+     *            actioned upon node reference
+     * @return boolean true if the trigger should be ignored, false otherwise
      */
     protected boolean ignoreTrigger(NodeRef actionedUponNodeRef)
     {
-    	boolean result = false;    	
-    	QName typeQName = nodeService.getType(actionedUponNodeRef);
-    	if (ignoredTypes.contains(typeQName))
-    	{
-    		result = true;
-    	}
+        boolean result = false;
+        QName typeQName = nodeService.getType(actionedUponNodeRef);
+        if (ignoredTypes.contains(typeQName))
+        {
+            result = true;
+        }
         for (QName aspectToIgnore : getIgnoredAspects())
         {
             if (nodeService.hasAspect(actionedUponNodeRef, aspectToIgnore))
@@ -191,23 +191,24 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
                 return true;
             }
         }
-    	return result;
+        return result;
     }
-    
+
     public Set<QName> getIgnoredAspects()
     {
         return ignoredAspects;
     }
-    
+
     /**
      * Converting String Aspects from Spring context to QNames
      *
-     * @param ignoredAspects List of ignoredAspects
+     * @param ignoredAspects
+     *            List of ignoredAspects
      */
     public void setIgnoredAspectsStr(List<String> ignoredAspects)
     {
         this.ignoredAspects = new HashSet<>(13);
-        
+
         // MNT-9885 fix.
         // Converts String Aspects to QNames and adds it to ignoredAspects.
         // If afterDictionaryInit#DictionaryListener is used for setting up ignored Aspects from Spring context the

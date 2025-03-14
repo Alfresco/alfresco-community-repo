@@ -26,11 +26,11 @@
 
 package org.alfresco.rest.framework.resource.parameters;
 
-import org.alfresco.rest.api.search.context.SearchContext;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.alfresco.rest.api.search.context.SearchContext;
 
 public class ArrayListPage<E> extends ArrayList<E> implements ListPage<E>
 {
@@ -58,10 +58,14 @@ public class ArrayListPage<E> extends ArrayList<E> implements ListPage<E>
                 final int start = paging.getSkipCount();
                 final int end = (paging.getMaxItems() == 0) ? list.size() : Math.min(list.size(), start + paging.getMaxItems());
                 this.hasMore = !(list.size() == end);
-            } else {
+            }
+            else
+            {
                 this.hasMore = false;
             }
-        } else {
+        }
+        else
+        {
             this.totalItems = 0;
             this.hasMore = false;
         }
@@ -115,7 +119,7 @@ public class ArrayListPage<E> extends ArrayList<E> implements ListPage<E>
         }
 
         final int start = paging.getSkipCount();
-        final int end = (paging.getMaxItems() == 0)? list.size() : Math.min(list.size(), start + paging.getMaxItems());
+        final int end = (paging.getMaxItems() == 0) ? list.size() : Math.min(list.size(), start + paging.getMaxItems());
         return list.subList(Math.min(start, end), end);
     }
 }

@@ -27,17 +27,17 @@ package org.alfresco.rest.api;
 
 import java.io.IOException;
 import java.util.regex.Pattern;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.web.scripts.TenantWebScriptServletRuntime;
-import org.alfresco.rest.framework.tools.ApiAssistant;
-import org.alfresco.rest.framework.tools.ResponseWriter;
 import org.springframework.extensions.config.ServerProperties;
 import org.springframework.extensions.surf.util.URLDecoder;
 import org.springframework.extensions.webscripts.*;
 import org.springframework.extensions.webscripts.servlet.ServletAuthenticatorFactory;
+
+import org.alfresco.repo.web.scripts.TenantWebScriptServletRuntime;
+import org.alfresco.rest.framework.tools.ApiAssistant;
+import org.alfresco.rest.framework.tools.ResponseWriter;
 
 public class PublicApiTenantWebScriptServletRuntime extends TenantWebScriptServletRuntime implements ResponseWriter
 {
@@ -52,8 +52,8 @@ public class PublicApiTenantWebScriptServletRuntime extends TenantWebScriptServl
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptRuntime#getScriptUrl()
-     */
+     * 
+     * @see org.alfresco.web.scripts.WebScriptRuntime#getScriptUrl() */
     @Override
     protected String getScriptUrl()
     {
@@ -61,7 +61,7 @@ public class PublicApiTenantWebScriptServletRuntime extends TenantWebScriptServl
         final String requestURI = req.getRequestURI();
         final String serviceContextPath = req.getContextPath() + req.getServletPath();
         String pathInfo;
-        
+
         if (serviceContextPath.length() > requestURI.length())
         {
             // NOTE: assume a redirect has taken place e.g. tomcat welcome-page
@@ -77,7 +77,7 @@ public class PublicApiTenantWebScriptServletRuntime extends TenantWebScriptServl
         {
             pathInfo = URLDecoder.decode(requestURI.substring(serviceContextPath.length()));
         }
-        
+
         // NOTE: must contain at least root / and single character for tenant name
         if (pathInfo.length() < 2 || pathInfo.equals("/"))
         {
@@ -86,12 +86,12 @@ public class PublicApiTenantWebScriptServletRuntime extends TenantWebScriptServl
         }
         else
         {
-            if(!pathInfo.substring(0, 6).toLowerCase().equals("/cmis/") && !pathInfo.equals("/discovery"))
+            if (!pathInfo.substring(0, 6).toLowerCase().equals("/cmis/") && !pathInfo.equals("/discovery"))
             {
                 // remove tenant
                 int idx = pathInfo.indexOf('/', 1);
                 pathInfo = pathInfo.substring(idx == -1 ? pathInfo.length() : idx);
-                if(pathInfo.equals("") || pathInfo.equals("/"))
+                if (pathInfo.equals("") || pathInfo.equals("/"))
                 {
                     // url path is just a tenant id -> get network request
                     pathInfo = PublicApiTenantWebScriptServletRequest.NETWORK_PATH;
@@ -103,48 +103,52 @@ public class PublicApiTenantWebScriptServletRuntime extends TenantWebScriptServl
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptRuntime#createRequest(org.alfresco.web.scripts.WebScriptMatch)
-     */
+     * 
+     * @see org.alfresco.web.scripts.WebScriptRuntime#createRequest(org.alfresco.web.scripts.WebScriptMatch) */
     @Override
     protected WebScriptRequest createRequest(Match match)
     {
-//    	try
-//    	{
-            // make the request input stream a BufferedInputStream so that the first x bytes can be reused.
-//	    	PublicApiHttpServletRequest wrapped = new PublicApiHttpServletRequest(req);
+        // try
+        // {
+        // make the request input stream a BufferedInputStream so that the first x bytes can be reused.
+        // PublicApiHttpServletRequest wrapped = new PublicApiHttpServletRequest(req);
 
-            // TODO: construct org.springframework.extensions.webscripts.servlet.WebScriptServletResponse when
-            //       org.alfresco.web.scripts.WebScriptServletResponse (deprecated) is removed
-            servletReq = new PublicApiTenantWebScriptServletRequest(this, req, match, serverProperties);
-            return servletReq;
-//    	}
-//    	catch(IOException e)
-//    	{
-//    		throw new AlfrescoRuntimeException("", e);
-//    	}
+        // TODO: construct org.springframework.extensions.webscripts.servlet.WebScriptServletResponse when
+        // org.alfresco.web.scripts.WebScriptServletResponse (deprecated) is removed
+        servletReq = new PublicApiTenantWebScriptServletRequest(this, req, match, serverProperties);
+        return servletReq;
+        // }
+        // catch(IOException e)
+        // {
+        // throw new AlfrescoRuntimeException("", e);
+        // }
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptContainer#getName()
-     */
+     * 
+     * @see org.alfresco.web.scripts.WebScriptContainer#getName() */
     public String getName()
     {
         return "PublicApiTenantServletRuntime";
     }
 
     @Override
-    protected void renderErrorResponse(Match match, Throwable exception, WebScriptRequest request, WebScriptResponse response) {
+    protected void renderErrorResponse(Match match, Throwable exception, WebScriptRequest request, WebScriptResponse response)
+    {
 
-        //If its cmis or not an exception then use the default behaviour
+        // If its cmis or not an exception then use the default behaviour
         if (CMIS_URI_PATTERN.matcher(req.getRequestURI()).matches() || !(exception instanceof Exception))
         {
             super.renderErrorResponse(match, exception, request, response);
         }
         else
         {
-            try {
-                renderException((Exception)exception, response, request, apiAssistant);
-            } catch (IOException e) {
+            try
+            {
+                renderException((Exception) exception, response, request, apiAssistant);
+            }
+            catch (IOException e)
+            {
                 logger.error("Internal error", e);
                 throw new WebScriptException("Internal error", e);
             }

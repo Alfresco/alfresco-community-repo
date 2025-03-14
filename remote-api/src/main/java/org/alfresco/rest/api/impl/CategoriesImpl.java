@@ -39,6 +39,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.Categories;
 import org.alfresco.rest.api.Nodes;
@@ -61,8 +64,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TypeConstraint;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 
 public class CategoriesImpl implements Categories
 {
@@ -82,7 +83,7 @@ public class CategoriesImpl implements Categories
     private final TypeConstraint typeConstraint;
 
     public CategoriesImpl(AuthorityService authorityService, CategoryService categoryService, Nodes nodes, NodeService nodeService,
-        PermissionService permissionService, TypeConstraint typeConstraint)
+            PermissionService permissionService, TypeConstraint typeConstraint)
     {
         this.authorityService = authorityService;
         this.categoryService = categoryService;
@@ -244,12 +245,12 @@ public class CategoriesImpl implements Categories
         verifyNodeType(contentNodeRef);
 
         final Collection<NodeRef> categoryNodeRefs = categoryLinks.stream()
-            .filter(Objects::nonNull)
-            .map(Category::getId)
-            .filter(StringUtils::isNotEmpty)
-            .distinct()
-            .map(id -> getCategoryNodeRef(storeRef, id))
-            .collect(Collectors.toList());
+                .filter(Objects::nonNull)
+                .map(Category::getId)
+                .filter(StringUtils::isNotEmpty)
+                .distinct()
+                .map(id -> getCategoryNodeRef(storeRef, id))
+                .collect(Collectors.toList());
 
         if (CollectionUtils.isEmpty(categoryNodeRefs) || isRootCategoryPresent(categoryNodeRefs))
         {
@@ -289,7 +290,7 @@ public class CategoriesImpl implements Categories
 
         final Collection<NodeRef> allCategories = removeCategory(contentNodeRef, categoryNodeRef);
 
-        if (allCategories.size()==0)
+        if (allCategories.size() == 0)
         {
             nodeService.removeAspect(contentNodeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE);
             nodeService.removeProperty(contentNodeRef, ContentModel.PROP_CATEGORIES);
@@ -332,24 +333,25 @@ public class CategoriesImpl implements Categories
     }
 
     /**
-     * This method gets category NodeRef for a given category id.
-     * If '-root-' is passed as category id, then it's retrieved as a call to {@link org.alfresco.service.cmr.search.CategoryService#getRootCategoryNodeRef}
-     * In all other cases it's retrieved as a node of a category type {@link #validateCategoryNode(String)}
-     * @param storeRef Reference to node store.
-     * @param nodeId category node id
+     * This method gets category NodeRef for a given category id. If '-root-' is passed as category id, then it's retrieved as a call to {@link org.alfresco.service.cmr.search.CategoryService#getRootCategoryNodeRef} In all other cases it's retrieved as a node of a category type {@link #validateCategoryNode(String)}
+     * 
+     * @param storeRef
+     *            Reference to node store.
+     * @param nodeId
+     *            category node id
      * @return NodRef of category node
      */
     private NodeRef getCategoryNodeRef(StoreRef storeRef, String nodeId)
     {
-        return PATH_ROOT.equals(nodeId) ?
-                categoryService.getRootCategoryNodeRef(storeRef)
-                        .orElseThrow(() -> new EntityNotFoundException(nodeId)) :
-                validateCategoryNode(nodeId);
+        return PATH_ROOT.equals(nodeId) ? categoryService.getRootCategoryNodeRef(storeRef)
+                .orElseThrow(() -> new EntityNotFoundException(nodeId)) : validateCategoryNode(nodeId);
     }
 
     /**
      * Validates if the node exists and is a category.
-     * @param nodeId (presumably) category node id
+     * 
+     * @param nodeId
+     *            (presumably) category node id
      * @return category NodeRef
      */
     private NodeRef validateCategoryNode(String nodeId)
@@ -401,8 +403,10 @@ public class CategoriesImpl implements Categories
     /**
      * Change category qualified name.
      *
-     * @param categoryNodeRef Category node reference.
-     * @param newName New name.
+     * @param categoryNodeRef
+     *            Category node reference.
+     * @param newName
+     *            New name.
      * @return Updated category.
      */
     private NodeRef changeCategoryName(final NodeRef categoryNodeRef, final String newName)
@@ -421,7 +425,8 @@ public class CategoriesImpl implements Categories
     /**
      * Validate if fixed category name is not empty.
      *
-     * @param fixedCategoryModel Fixed category model.
+     * @param fixedCategoryModel
+     *            Fixed category model.
      */
     private void validateCategoryFields(final Category fixedCategoryModel)
     {
@@ -444,8 +449,10 @@ public class CategoriesImpl implements Categories
     /**
      * Merge already present and new categories ignoring repeating ones.
      *
-     * @param currentCategories Already present categories.
-     * @param newCategories Categories which should be added.
+     * @param currentCategories
+     *            Already present categories.
+     * @param newCategories
+     *            Categories which should be added.
      * @return Merged categories.
      */
     private Collection<NodeRef> mergeCategories(final Serializable currentCategories, final Collection<NodeRef> newCategories)
@@ -464,8 +471,11 @@ public class CategoriesImpl implements Categories
 
     /**
      * Remove specified category from present categories.
-     * @param contentNodeRef the nodeRef that contains the categories.
-     * @param categoryToRemove category that should be removed.
+     * 
+     * @param contentNodeRef
+     *            the nodeRef that contains the categories.
+     * @param categoryToRemove
+     *            category that should be removed.
      * @return updated category list.
      */
     private Collection<NodeRef> removeCategory(final NodeRef contentNodeRef, final NodeRef categoryToRemove)
@@ -481,8 +491,10 @@ public class CategoriesImpl implements Categories
     /**
      * Add to or update node's property cm:categories containing linked category references.
      *
-     * @param nodeRef Node reference.
-     * @param categoryNodeRefs Category node references.
+     * @param nodeRef
+     *            Node reference.
+     * @param categoryNodeRefs
+     *            Category node references.
      */
     private void linkNodeToCategories(final NodeRef nodeRef, final Collection<NodeRef> categoryNodeRefs)
     {
@@ -502,21 +514,23 @@ public class CategoriesImpl implements Categories
     /**
      * Get categories by usage count. Result is a map of category IDs (short form - UUID) as key and usage count as value.
      *
-     * @param storeRef Reference to node store.
+     * @param storeRef
+     *            Reference to node store.
      * @return Map of categories IDs and usage count.
      */
     private Map<String, Integer> getCategoriesCount(final StoreRef storeRef)
     {
         final String idPrefix = storeRef + "/";
         return categoryService.getTopCategories(storeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE, Integer.MAX_VALUE)
-            .stream()
-            .collect(Collectors.toMap(pair -> pair.getFirst().toString().replace(idPrefix, StringUtils.EMPTY), Pair::getSecond));
+                .stream()
+                .collect(Collectors.toMap(pair -> pair.getFirst().toString().replace(idPrefix, StringUtils.EMPTY), Pair::getSecond));
     }
 
     /**
      * Get path for a given category in human-readable form.
      *
-     * @param category Category to provide path for.
+     * @param category
+     *            Category to provide path for.
      * @return Path for a category in human-readable form.
      */
     private String getCategoryPath(final Category category)

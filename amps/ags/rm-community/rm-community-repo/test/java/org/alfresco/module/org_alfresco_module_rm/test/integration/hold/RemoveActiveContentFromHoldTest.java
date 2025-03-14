@@ -31,12 +31,13 @@ import static org.alfresco.repo.security.authentication.AuthenticationUtil.getAd
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.extensions.webscripts.GUID;
+
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.webscripts.GUID;
 
 /**
  * Remove active content from hold integration tests
@@ -59,15 +60,11 @@ public class RemoveActiveContentFromHoldTest extends BaseRMTestCase
     }
 
     /**
-     * Given a piece of active content on hold
-     * When I try to remove the active content from the hold
-     * Then the active content is unfrozen
-     * And the active content is not contained within the hold
+     * Given a piece of active content on hold When I try to remove the active content from the hold Then the active content is unfrozen And the active content is not contained within the hold
      */
     public void testRemoveDocumentFromHold()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef hold;
             Integer before;
 
@@ -99,16 +96,11 @@ public class RemoveActiveContentFromHoldTest extends BaseRMTestCase
     }
 
     /**
-     * Given a piece of active content in multiple holds
-     * When I try to remove the active content from a single hold
-     * Then the active content is still frozen
-     * And the active content is not contained within the specified hold
-     * And is still added to any other holds
+     * Given a piece of active content in multiple holds When I try to remove the active content from a single hold Then the active content is still frozen And the active content is not contained within the specified hold And is still added to any other holds
      */
     public void testRemoveDocumentFromASingleHold()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef hold;
             private NodeRef hold2;
 
@@ -137,14 +129,11 @@ public class RemoveActiveContentFromHoldTest extends BaseRMTestCase
     }
 
     /**
-     * Given a piece of active content on hold
-     * When I try to remove the active content from the hold without permission
-     * Then an access denied exception is thrown
+     * Given a piece of active content on hold When I try to remove the active content from the hold without permission Then an access denied exception is thrown
      */
     public void testRemoveDocumentFromHoldFailsWithoutFilingPermission()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class) {
             private NodeRef hold;
 
             public void given()
@@ -165,14 +154,11 @@ public class RemoveActiveContentFromHoldTest extends BaseRMTestCase
     }
 
     /**
-     * Given a piece of active content on hold
-     * When I try to remove the active content from the hold without the remove hold capability
-     * Then an access denied exception is thrown
+     * Given a piece of active content on hold When I try to remove the active content from the hold without the remove hold capability Then an access denied exception is thrown
      */
     public void testRemoveDocumentFromHoldFailsWithoutRemoveHoldPermission()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class, powerUserName, false)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class, powerUserName, false) {
             private NodeRef hold;
 
             public void given()
@@ -181,7 +167,7 @@ public class RemoveActiveContentFromHoldTest extends BaseRMTestCase
                         (RunAsWork<Void>) () -> {
                             hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
                             holdService.addToHold(hold, dmDocument);
-                        return null;
+                            return null;
                         }, getAdminUserName());
             }
 

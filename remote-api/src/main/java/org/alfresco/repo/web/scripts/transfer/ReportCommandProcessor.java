@@ -28,21 +28,18 @@ package org.alfresco.repo.web.scripts.transfer;
 
 import java.io.BufferedInputStream;
 import java.io.OutputStream;
-import java.io.StringWriter;
-
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.alfresco.service.cmr.transfer.TransferException;
-import org.alfresco.service.cmr.transfer.TransferProgress;
-import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
-import org.springframework.extensions.webscripts.json.JSONWriter;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
+
+import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.cmr.transfer.TransferReceiver;
 
 /**
  * This command processor is used to get the server side transfer report.
@@ -58,15 +55,12 @@ public class ReportCommandProcessor implements CommandProcessor
 
     private final static Log logger = LogFactory.getLog(ReportCommandProcessor.class);
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.web.scripts.transfer.CommandProcessor#process(org.alfresco .web.scripts.WebScriptRequest,
-     * org.alfresco.web.scripts.WebScriptResponse)
-     */
+     * @see org.alfresco.repo.web.scripts.transfer.CommandProcessor#process(org.alfresco .web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse) */
     public int process(WebScriptRequest req, WebScriptResponse resp)
-    {   
-        //Read the transfer id from the request
+    {
+        // Read the transfer id from the request
         // Unwrap to a WebScriptServletRequest if we have one
         WebScriptServletRequest webScriptServletRequest = null;
         WebScriptRequest current = req;
@@ -85,18 +79,17 @@ public class ReportCommandProcessor implements CommandProcessor
             {
                 current = null;
             }
-        }
-        while (current != null);
+        } while (current != null);
         HttpServletRequest servletRequest = webScriptServletRequest.getHttpServletRequest();
         String transferId = servletRequest.getParameter("transferId");
 
-        if (transferId == null) 
+        if (transferId == null)
         {
             logger.debug("transferId is missing");
             resp.setStatus(Status.STATUS_BAD_REQUEST);
             return Status.STATUS_BAD_REQUEST;
         }
-        
+
         try
         {
             OutputStream out = resp.getOutputStream();
@@ -104,13 +97,13 @@ public class ReportCommandProcessor implements CommandProcessor
             {
                 resp.setContentType("text/xml");
                 resp.setContentEncoding("utf-8");
-            
+
                 BufferedInputStream br = new BufferedInputStream(receiver.getProgressMonitor().getLogInputStream(transferId));
                 try
                 {
                     byte[] buffer = new byte[1000];
                     int i = br.read(buffer);
-                    while(i > 0)
+                    while (i > 0)
                     {
                         out.write(buffer, 0, i);
                         i = br.read(buffer);
@@ -126,7 +119,7 @@ public class ReportCommandProcessor implements CommandProcessor
                 out.flush();
                 out.close();
             }
-         
+
             return Status.STATUS_OK;
         }
         catch (TransferException ex)

@@ -45,6 +45,10 @@ import net.sf.acegisecurity.DisabledException;
 import net.sf.acegisecurity.LockedException;
 import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.webscripts.GUID;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParamsImpl;
@@ -79,9 +83,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.webscripts.GUID;
 
 @SuppressWarnings("unchecked")
 @Category(OwnJVMTestsCategory.class)
@@ -122,11 +123,11 @@ public class AuthenticationTest extends TestCase
     private PolicyComponent policyComponent;
     private BehaviourFilter behaviourFilter;
 
-    private SimpleCache<String, CacheEntry> authenticationCache;    
+    private SimpleCache<String, CacheEntry> authenticationCache;
     private SimpleCache<String, NodeRef> immutableSingletonCache;
 
-    private static final String TEST_RUN = System.currentTimeMillis()+"";
-    private static final String TEST_TENANT_DOMAIN = TEST_RUN+".my.test";
+    private static final String TEST_RUN = System.currentTimeMillis() + "";
+    private static final String TEST_TENANT_DOMAIN = TEST_RUN + ".my.test";
     private static final String DEFAULT_ADMIN_PW = "admin";
     private static final String TENANT_ADMIN_PW = DEFAULT_ADMIN_PW + TEST_TENANT_DOMAIN;
 
@@ -146,9 +147,9 @@ public class AuthenticationTest extends TestCase
         {
             throw new AlfrescoRuntimeException(
                     "A previous tests did not clean up transaction: " +
-                    AlfrescoTransactionSupport.getTransactionId());
+                            AlfrescoTransactionSupport.getTransactionId());
         }
-        
+
         dialect = (Dialect) ctx.getBean("dialect");
         nodeService = (NodeService) ctx.getBean("nodeService");
         authorityService = (AuthorityService) ctx.getBean("authorityService");
@@ -160,8 +161,8 @@ public class AuthenticationTest extends TestCase
         pubAuthenticationService = (MutableAuthenticationService) ctx.getBean("AuthenticationService");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         authenticationComponentImpl = (AuthenticationComponent) ctx.getBean("authenticationComponent");
-        pubPersonService =  (PersonService) ctx.getBean("PersonService");
-        personService =  (PersonService) ctx.getBean("personService");
+        pubPersonService = (PersonService) ctx.getBean("PersonService");
+        personService = (PersonService) ctx.getBean("personService");
         policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
         behaviourFilter = (BehaviourFilter) ctx.getBean("policyBehaviourFilter");
         authenticationCache = (SimpleCache<String, CacheEntry>) ctx.getBean("authenticationCache");
@@ -173,21 +174,20 @@ public class AuthenticationTest extends TestCase
 
         ChildApplicationContextFactory sysAdminSubsystem = (ChildApplicationContextFactory) ctx.getBean("sysAdmin");
         assertNotNull("sysAdminSubsystem", sysAdminSubsystem);
-        ApplicationContext sysAdminCtx  = sysAdminSubsystem.getApplicationContext();
+        ApplicationContext sysAdminCtx = sysAdminSubsystem.getApplicationContext();
         sysAdminParams = (SysAdminParamsImpl) sysAdminCtx.getBean("sysAdminParams");
 
         dao = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
-        
+
         // Let's look inside the alfresco authentication subsystem to get the DAO-wired authentication manager
         ChildApplicationContextManager authenticationChain = (ChildApplicationContextManager) ctx.getBean("Authentication");
         ApplicationContext subsystem = authenticationChain.getApplicationContext(authenticationChain.getInstanceIds().iterator().next());
         authenticationManager = (AuthenticationManager) subsystem.getBean("authenticationManager");
 
         transactionService = (TransactionService) ctx.getBean(ServiceRegistry.TRANSACTION_SERVICE.getLocalName());
-        
+
         // Clean up before we start trying to create the test user
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -203,7 +203,7 @@ public class AuthenticationTest extends TestCase
                 }
             }
         }, false, true);
-        
+
         userTransaction = transactionService.getUserTransaction();
         userTransaction.begin();
 
@@ -220,9 +220,9 @@ public class AuthenticationTest extends TestCase
         Map<QName, Serializable> props = createPersonProperties("Andy");
         personAndyNodeRef = nodeService.createNode(typesNodeRef, children, ContentModel.TYPE_PERSON, container, props).getChildRef();
         assertNotNull(personAndyNodeRef);
-        
+
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-        
+
         authenticationComponent.clearCurrentSecurityContext();
     }
 
@@ -238,7 +238,7 @@ public class AuthenticationTest extends TestCase
         dao.setPolicyComponent(policyComponent);
         dao.setAuthenticationCache(authenticationCache);
         dao.setSingletonCache(immutableSingletonCache);
-        
+
         if (dao.userExists("andy"))
         {
             dao.deleteUser("andy");
@@ -247,7 +247,7 @@ public class AuthenticationTest extends TestCase
         {
             dao.deleteUser("Andy");
         }
-        
+
         if (personService.personExists("andy"))
         {
             personService.deletePerson("andy");
@@ -280,33 +280,33 @@ public class AuthenticationTest extends TestCase
     {
         assertNull(AuthenticationUtil.getFullAuthentication());
         assertNull(AuthenticationUtil.getRunAsAuthentication());
-      
+
         authenticationComponent.setSystemUserAsCurrentUser();
         pubAuthenticationService.createAuthentication("andy", "andy".toCharArray());
-        
+
         pubAuthenticationService.clearCurrentSecurityContext();
-        
+
         assertNull(AuthenticationUtil.getFullAuthentication());
         assertNull(AuthenticationUtil.getRunAsAuthentication());
-        
+
         // Authenticate
         pubAuthenticationService.authenticate("andy", "andy".toCharArray());
-        
+
         // Get current user name
         String userName = pubAuthenticationService.getCurrentUserName();
         assertEquals("andy", userName);
-        
+
         // Get ticket
         String ticket = pubAuthenticationService.getCurrentTicket();
         assertEquals("andy", ticketComponent.getAuthorityForTicket(ticket));
-        
+
         // Get logged in user ...
         // Get userName
         userName = pubAuthenticationService.getCurrentUserName();
         assertEquals("andy", userName);
         // get Person
         assertTrue(pubPersonService.personExists(userName));
-        
+
         AuthenticationUtil.runAs(new RunAsWork<Void>() {
 
             public Void doWork() throws Exception
@@ -314,35 +314,35 @@ public class AuthenticationTest extends TestCase
                 // TODO Auto-generated method stub
                 assertEquals("andy", ticketComponent.getAuthorityForTicket(pubAuthenticationService.getCurrentTicket()));
                 return null;
-            }}, AuthenticationUtil.getSystemUserName());
-        
+            }
+        }, AuthenticationUtil.getSystemUserName());
+
         pubPersonService.getPerson(userName);
         assertTrue(pubPersonService.personExists(userName));
         // re-getTicket
         String newticket = pubAuthenticationService.getCurrentTicket();
         assertEquals(ticket, newticket);
         assertEquals("andy", ticketComponent.getAuthorityForTicket(newticket));
-        
-        
+
         userName = pubAuthenticationService.getCurrentUserName();
         assertEquals("andy", userName);
-        
+
         // new TX
-        
-        //userTransaction.commit();
-        //userTransaction = transactionService.getUserTransaction();
-        //userTransaction.begin();
-        
+
+        // userTransaction.commit();
+        // userTransaction = transactionService.getUserTransaction();
+        // userTransaction.begin();
+
         pubAuthenticationService.validate(ticket);
         userName = pubAuthenticationService.getCurrentUserName();
         assertEquals("andy", userName);
-        
+
         pubAuthenticationService.validate(newticket);
         userName = pubAuthenticationService.getCurrentUserName();
         assertEquals("andy", userName);
-        
+
     }
-    
+
     public void xtestScalability()
     {
         long create = 0;
@@ -381,7 +381,7 @@ public class AuthenticationTest extends TestCase
         pubAuthenticationService.authenticate("Andy", "auth1".toCharArray());
         String ticket1 = pubAuthenticationService.getCurrentTicket();
         pubAuthenticationService.authenticate("Andy", "auth1".toCharArray());
-        if(ticketComponent.getUseSingleTicketPerUser())
+        if (ticketComponent.getUseSingleTicketPerUser())
         {
             assertTrue(ticket1.equals(pubAuthenticationService.getCurrentTicket()));
         }
@@ -390,7 +390,7 @@ public class AuthenticationTest extends TestCase
             assertFalse(ticket1.equals(pubAuthenticationService.getCurrentTicket()));
         }
     }
-    
+
     public void testGuest()
     {
         authenticationService.authenticate(AuthenticationUtil.getGuestUserName(), "".toCharArray());
@@ -402,7 +402,7 @@ public class AuthenticationTest extends TestCase
     public void testCreateUsers()
     {
         authenticationService.createAuthentication(AuthenticationUtil.getGuestUserName(), DONT_CARE_PASSWORD);
-        authenticationService.authenticate(AuthenticationUtil.getGuestUserName(),DONT_CARE_PASSWORD);
+        authenticationService.authenticate(AuthenticationUtil.getGuestUserName(), DONT_CARE_PASSWORD);
         // Guest is treated like any other user
         assertEquals(AuthenticationUtil.getGuestUserName(), authenticationService.getCurrentUserName());
 
@@ -410,7 +410,7 @@ public class AuthenticationTest extends TestCase
         authenticationService.authenticate("Andy", DONT_CARE_PASSWORD);
         assertEquals("Andy", authenticationService.getCurrentUserName());
 
-        if (! tenantService.isEnabled())
+        if (!tenantService.isEnabled())
         {
             authenticationService.createAuthentication("Mr.Woof.Banana@chocolate.chip.cookie.com", DONT_CARE_PASSWORD);
             authenticationService.authenticate("Mr.Woof.Banana@chocolate.chip.cookie.com", DONT_CARE_PASSWORD);
@@ -432,7 +432,7 @@ public class AuthenticationTest extends TestCase
             // Expected exception
         }
     }
-    
+
     private RepositoryAuthenticationDao createRepositoryAuthenticationDao()
     {
         RepositoryAuthenticationDao dao = new RepositoryAuthenticationDao();
@@ -449,14 +449,12 @@ public class AuthenticationTest extends TestCase
     }
 
     /**
-     * Test for ALF-20680
-     * Test of the {@link RepositoryAuthenticationDao#getUserFolderLocation(String)} in multitenancy
+     * Test for ALF-20680 Test of the {@link RepositoryAuthenticationDao#getUserFolderLocation(String)} in multitenancy
      */
     public void testAuthenticateMultiTenant()
     {
         // Create a tenant domain
-        TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Object>()
-        {
+        TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Object>() {
             public Object doWork() throws Exception
             {
                 if (!tenantAdminService.existsTenant(TEST_TENANT_DOMAIN))
@@ -478,7 +476,7 @@ public class AuthenticationTest extends TestCase
     {
         String hashedPassword = dao.getMD4HashedPassword(userName);
         assertNotNull(hashedPassword);
-        assertEquals(compositePasswordEncoder.encode("md4",password, null), hashedPassword);
+        assertEquals(compositePasswordEncoder.encode("md4", password, null), hashedPassword);
     }
 
     /**
@@ -518,7 +516,7 @@ public class AuthenticationTest extends TestCase
     public void testCreateAndyUserAndUpdatePassword()
     {
         RepositoryAuthenticationDao dao = createRepositoryAuthenticationDao();
-        
+
         dao.createUser("Andy", "cabbage".toCharArray());
         assertNotNull(dao.getUserOrNull("Andy"));
 
@@ -532,7 +530,7 @@ public class AuthenticationTest extends TestCase
         assertTrue("Credentials unexpectedly expired", andyDetails.isCredentialsNonExpired());
         assertTrue("User unexpectedly disabled", andyDetails.isEnabled());
         assertNotSame("Password was not hashed", "cabbage", andyDetails.getPassword());
-        assertTrue("Failed to recalculate same password hash", compositePasswordEncoder.matches(compositePasswordEncoder.getPreferredEncoding(),"cabbage", andyDetails.getPassword(), originalSalt));
+        assertTrue("Failed to recalculate same password hash", compositePasswordEncoder.matches(compositePasswordEncoder.getPreferredEncoding(), "cabbage", andyDetails.getPassword(), originalSalt));
         assertEquals("User does not have a single authority", 1, andyDetails.getAuthorities().length);
 
         dao.updateUser("Andy", "carrot".toCharArray());
@@ -547,7 +545,7 @@ public class AuthenticationTest extends TestCase
         assertTrue("Updated account is not enabled", newDetails.isEnabled());
         assertNotSame("Updated account contains unhashed password", "carrot", newDetails.getPassword());
         assertEquals("Updated account should have a single authority", 1, newDetails.getAuthorities().length);
-        assertTrue("Failed to validate updated password hash", compositePasswordEncoder.matches(compositePasswordEncoder.getPreferredEncoding(),"carrot", newDetails.getPassword(), updatedSalt));
+        assertTrue("Failed to validate updated password hash", compositePasswordEncoder.matches(compositePasswordEncoder.getPreferredEncoding(), "carrot", newDetails.getPassword(), updatedSalt));
         assertNotSame("Expected salt to be replaced when password was updated", originalSalt, updatedSalt);
 
         // Update back to first password again.
@@ -562,14 +560,14 @@ public class AuthenticationTest extends TestCase
         assertFalse("Should not be a cache entry for 'Andy'.", authenticationCache.contains("Andy"));
         assertNull("DAO should report that 'Andy' does not exist.", dao.getUserOrNull("Andy"));
     }
-    
-    /** 
+
+    /**
      * <a href="https://issues.alfresco.com/jira/browse/ALF-19301">ALF-19301: Unsafe usage of transactions around authenticationCache</a>
      */
     public void testStaleAuthenticationCacheRecovery()
     {
         RepositoryAuthenticationDao dao = createRepositoryAuthenticationDao();
-        
+
         assertFalse("Must start with no cache entry for 'Andy'.", authenticationCache.contains("Andy"));
 
         dao.createUser("Andy", "cabbage".toCharArray());
@@ -577,28 +575,28 @@ public class AuthenticationTest extends TestCase
         assertNotNull(andyNodeRef);
         assertTrue("Andy's node should exist. ", nodeService.exists(andyNodeRef));
 
-        // So the cache should be populated.  Now, remove Andy's node but without having policies fire.
+        // So the cache should be populated. Now, remove Andy's node but without having policies fire.
         behaviourFilter.disableBehaviour(andyNodeRef);
         nodeService.deleteNode(andyNodeRef);
-        
+
         assertTrue("Should still have an entry for 'Andy'.", authenticationCache.contains("Andy"));
-        
+
         assertNull("Invalid node should be detected for 'Andy'.", dao.getUserOrNull("Andy"));
         assertFalse("Cache entry should have been removed for 'Andy'.", authenticationCache.contains("Andy"));
     }
-    
+
     /**
      * Test for use without txn.
      */
     public void testRepositoryAuthenticationDaoWithoutTxn() throws Exception
     {
         RepositoryAuthenticationDao dao = createRepositoryAuthenticationDao();
-        
+
         dao.createUser("Andy", "cabbage".toCharArray());
-        authenticationCache.remove("Andy");                 // Make sure we query
-        
+        authenticationCache.remove("Andy"); // Make sure we query
+
         this.userTransaction.commit();
-        
+
         // Now get the user out of a transaction
         dao.userExists("Andy");
         assertTrue("Should now have an entry for 'Andy'.", authenticationCache.contains("Andy"));
@@ -706,16 +704,13 @@ public class AuthenticationTest extends TestCase
     public void testCreateAuthenticationWhileRunningAsSystem() throws Exception
     {
         userTransaction.rollback();
-        RunAsWork<Object> authWorkAsMuppet = new RunAsWork<Object>()
-        {
+        RunAsWork<Object> authWorkAsMuppet = new RunAsWork<Object>() {
             public Object doWork() throws Exception
             {
-                RunAsWork<Object> authWorkAsSystem = new RunAsWork<Object>()
-                {
+                RunAsWork<Object> authWorkAsSystem = new RunAsWork<Object>() {
                     public Object doWork() throws Exception
                     {
-                        RetryingTransactionCallback<Object> txnWork = new RetryingTransactionCallback<Object>()
-                        {
+                        RetryingTransactionCallback<Object> txnWork = new RetryingTransactionCallback<Object>() {
                             public Object execute() throws Throwable
                             {
                                 pubAuthenticationService.createAuthentication("blah", "pwd".toCharArray());
@@ -731,17 +726,17 @@ public class AuthenticationTest extends TestCase
         };
         AuthenticationUtil.runAs(authWorkAsMuppet, "muppet");
     }
-    
+
     public void testPushAndPopAuthentication() throws Exception
     {
         AuthenticationUtil.setFullyAuthenticatedUser("user1");
         assertEquals("user1", AuthenticationUtil.getFullyAuthenticatedUser());
         assertEquals("user1", AuthenticationUtil.getRunAsUser());
-        
+
         AuthenticationUtil.setRunAsUser("user2");
         assertEquals("user1", AuthenticationUtil.getFullyAuthenticatedUser());
         assertEquals("user2", AuthenticationUtil.getRunAsUser());
-        
+
         AuthenticationUtil.pushAuthentication();
 
         AuthenticationUtil.setFullyAuthenticatedUser("user3");
@@ -879,10 +874,10 @@ public class AuthenticationTest extends TestCase
     }
 
     public void testTicketExpiryMode()
-    {   
+    {
         ticketsCache.clear();
         usernameToTicketIdCache.clear();
-        
+
         InMemoryTicketComponentImpl tc = new InMemoryTicketComponentImpl();
         tc.setOneOff(false);
         tc.setTicketsExpire(true);
@@ -994,7 +989,7 @@ public class AuthenticationTest extends TestCase
 
             }
         }
-        
+
         synchronized (this)
         {
             try
@@ -1017,7 +1012,6 @@ public class AuthenticationTest extends TestCase
         {
 
         }
-        
 
         dao.deleteUser("Andy");
         // assertNull(dao.getUserOrNull("Andy"));
@@ -1187,7 +1181,7 @@ public class AuthenticationTest extends TestCase
 
         String ticket2 = authenticationService.getCurrentTicket();
 
-        if(ticketComponent.getUseSingleTicketPerUser())
+        if (ticketComponent.getUseSingleTicketPerUser())
         {
             assertTrue(ticket1.equals(ticket2));
         }
@@ -1849,6 +1843,7 @@ public class AuthenticationTest extends TestCase
 
         // authenticationService.deleteAuthentication("andy");
     }
+
     public void testAuthenticationServiceImpl()
     {
         Set<String> domains = authenticationService.getDomains();
@@ -1908,16 +1903,16 @@ public class AuthenticationTest extends TestCase
     public void testLoginNotExistingTenant()
     {
         boolean wasEnabled = AuthenticationUtil.isMtEnabled();
-        
+
         try
         {
             tenantAdminService.createTenant(GUID.generate() + "test1.test", "admin".toCharArray());
-            
+
             String notExistingTenant = GUID.generate() + "tenant.test";
             String userName = "user@" + notExistingTenant;
-            
+
             assertFalse(tenantAdminService.existsTenant(notExistingTenant));
-            
+
             try
             {
                 pubAuthenticationService.authenticate(userName, GUID.generate().toCharArray());
@@ -1942,8 +1937,7 @@ public class AuthenticationTest extends TestCase
         final String user1 = GUID.generate();
         final String user2 = GUID.generate();
 
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -1978,10 +1972,8 @@ public class AuthenticationTest extends TestCase
         }
     }
 
-    
     /**
-     * Tests the scenario where a user logs in after the system has been upgraded.
-     * Their password should get re-hashed using the preferred encoding.
+     * Tests the scenario where a user logs in after the system has been upgraded. Their password should get re-hashed using the preferred encoding.
      */
     public void testRehashedPasswordOnAuthentication()
     {
@@ -2128,15 +2120,17 @@ public class AuthenticationTest extends TestCase
     {
         String SOME_PASSWORD = "1 passw0rd";
         String defaultencoding = compositePasswordEncoder.getPreferredEncoding();
-        String user1 = "uzer"+GUID.generate();
-        String user2 = "uzer"+GUID.generate();
+        String user1 = "uzer" + GUID.generate();
+        String user2 = "uzer" + GUID.generate();
         List<String> encs = Arrays.asList("bcrypt10", "md4");
 
-        final String myTestDomain = TEST_TENANT_DOMAIN+"my.test";
+        final String myTestDomain = TEST_TENANT_DOMAIN + "my.test";
 
         TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Object>() {
-            public Object doWork() throws Exception {
-                if (!tenantAdminService.existsTenant(myTestDomain)) {
+            public Object doWork() throws Exception
+            {
+                if (!tenantAdminService.existsTenant(myTestDomain))
+                {
                     tenantAdminService.createTenant(myTestDomain, TENANT_ADMIN_PW.toCharArray(), null);
                 }
                 return null;
@@ -2146,9 +2140,9 @@ public class AuthenticationTest extends TestCase
         for (String enc : encs)
         {
             compositePasswordEncoder.setPreferredEncoding(enc);
-            String hash = compositePasswordEncoder.encodePreferred(SOME_PASSWORD,null);
-            assertCreateHashed(SOME_PASSWORD, hash, null, user1+ TenantService.SEPARATOR + myTestDomain);
-            assertCreateHashed(SOME_PASSWORD, null, SOME_PASSWORD.toCharArray(), user2+ TenantService.SEPARATOR + myTestDomain);
+            String hash = compositePasswordEncoder.encodePreferred(SOME_PASSWORD, null);
+            assertCreateHashed(SOME_PASSWORD, hash, null, user1 + TenantService.SEPARATOR + myTestDomain);
+            assertCreateHashed(SOME_PASSWORD, null, SOME_PASSWORD.toCharArray(), user2 + TenantService.SEPARATOR + myTestDomain);
         }
         compositePasswordEncoder.setPreferredEncoding(defaultencoding);
     }

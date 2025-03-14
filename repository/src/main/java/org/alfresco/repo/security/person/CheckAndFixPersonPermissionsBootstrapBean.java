@@ -27,6 +27,11 @@ package org.alfresco.repo.security.person;
 
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -34,21 +39,16 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEvent;
 
 /**
- * Check and fix permission for people. For each person check the permission config matches that configured for the
- * person service.
+ * Check and fix permission for people. For each person check the permission config matches that configured for the person service.
  * 
  * @author andyh
  */
 public class CheckAndFixPersonPermissionsBootstrapBean extends AbstractLifecycleBean
 {
-    protected final static Log log = LogFactory.getLog(CheckAndFixPersonPermissionsBootstrapBean.class);  
-    
+    protected final static Log log = LogFactory.getLog(CheckAndFixPersonPermissionsBootstrapBean.class);
+
     private NodeService nodeService;
 
     private PersonService personService;
@@ -78,7 +78,7 @@ public class CheckAndFixPersonPermissionsBootstrapBean extends AbstractLifecycle
     {
         this.permissionsManager = permissionsManager;
     }
-    
+
     public void setExcludedUsers(Set<String> excludedUsers)
     {
         this.excludedUsers = excludedUsers;
@@ -94,21 +94,20 @@ public class CheckAndFixPersonPermissionsBootstrapBean extends AbstractLifecycle
 
     private int checkandFixPermissions()
     {
-        Integer count = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Integer>()
-        {
+        Integer count = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Integer>() {
             public Integer execute() throws Exception
             {
                 int count = 0;
-                
+
                 Set<NodeRef> people = personService.getAllPeople();
                 for (NodeRef person : people)
                 {
                     String uid = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(person, ContentModel.PROP_USERNAME));
-                    if((excludedUsers != null) && excludedUsers.contains(uid))
+                    if ((excludedUsers != null) && excludedUsers.contains(uid))
                     {
                         continue;
                     }
-                    if(!permissionsManager.validatePermissions(person, uid, uid))
+                    if (!permissionsManager.validatePermissions(person, uid, uid))
                     {
                         permissionsManager.setPermissions(person, uid, uid);
                         count++;

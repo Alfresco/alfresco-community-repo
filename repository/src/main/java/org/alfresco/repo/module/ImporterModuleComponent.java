@@ -33,7 +33,6 @@ import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.util.PropertyCheck;
 
-
 /**
  * Generic module component that can be wired up to import data into the system.
  * 
@@ -48,10 +47,10 @@ public class ImporterModuleComponent extends AbstractModuleComponent
     private List<Properties> bootstrapViews;
 
     /**
-     * Set the helper that has details of the store to load the data into.
-     * Alfresco has a set of predefined importers for all the common stores in use.
+     * Set the helper that has details of the store to load the data into. Alfresco has a set of predefined importers for all the common stores in use.
      * 
-     * @param importer the bootstrap bean that performs the store bootstrap.
+     * @param importer
+     *            the bootstrap bean that performs the store bootstrap.
      */
     public void setImporter(ImporterBootstrap importer)
     {
@@ -62,7 +61,8 @@ public class ImporterModuleComponent extends AbstractModuleComponent
      * Set a list of bootstrap views to import.<br/>
      * This is an alternative to {@link #setBootstrapViews(List)}.
      * 
-     * @param bootstrapView the bootstrap data location
+     * @param bootstrapView
+     *            the bootstrap data location
      * 
      * @see ImporterBootstrap#setBootstrapViews(List)
      */
@@ -75,7 +75,8 @@ public class ImporterModuleComponent extends AbstractModuleComponent
      * Set a list of bootstrap views to import.<br/>
      * This is an alternative to {@link #setBootstrapView(Properties)}.
      * 
-     * @param bootstrapViews the bootstrap data locations
+     * @param bootstrapViews
+     *            the bootstrap data locations
      * 
      * @see ImporterBootstrap#setBootstrapViews(List)
      */
@@ -111,7 +112,7 @@ public class ImporterModuleComponent extends AbstractModuleComponent
         }
         // modify the bootstrapper
         importer.setBootstrapViews(views);
-        importer.setUseExistingStore(true);              // allow import into existing store
+        importer.setUseExistingStore(true); // allow import into existing store
 
         importer.bootstrap();
         // Done

@@ -25,13 +25,14 @@
  */
 package org.alfresco.repo.domain.qname.ibatis;
 
+import org.mybatis.spring.SqlSessionTemplate;
+
 import org.alfresco.repo.domain.qname.AbstractQNameDAOImpl;
 import org.alfresco.repo.domain.qname.NamespaceEntity;
 import org.alfresco.repo.domain.qname.QNameEntity;
-import org.mybatis.spring.SqlSessionTemplate;
 
 /**
- * iBatis-specific extension of the QName and Namespace abstract DAO 
+ * iBatis-specific extension of the QName and Namespace abstract DAO
  * 
  * @author Derek Hulley
  * @since 3.4
@@ -49,12 +50,12 @@ public class QNameDAOImpl extends AbstractQNameDAOImpl
     private static final String DELETE_QNAME = "alfresco.qname.delete_QName";
 
     private SqlSessionTemplate template;
-    
-    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
+
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate)
     {
         this.template = sqlSessionTemplate;
     }
-    
+
     @Override
     protected NamespaceEntity findNamespaceEntityById(Long id)
     {
@@ -82,7 +83,7 @@ public class QNameDAOImpl extends AbstractQNameDAOImpl
         template.insert(INSERT_NS, entity);
         return entity;
     }
-    
+
     @Override
     protected int updateNamespaceEntity(NamespaceEntity entity, String uri)
     {
@@ -99,7 +100,7 @@ public class QNameDAOImpl extends AbstractQNameDAOImpl
         entity = template.selectOne(SELECT_QNAME_BY_ID, entity);
         return entity;
     }
-    
+
     @Override
     protected QNameEntity findQNameEntityByNamespaceAndLocalName(Long nsId, String localName)
     {
@@ -120,7 +121,7 @@ public class QNameDAOImpl extends AbstractQNameDAOImpl
         template.insert(INSERT_QNAME, entity);
         return entity;
     }
-    
+
     @Override
     protected int updateQNameEntity(QNameEntity entity, Long nsId, String localName)
     {

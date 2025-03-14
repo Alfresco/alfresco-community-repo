@@ -30,20 +30,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import org.alfresco.repo.client.config.ClientAppConfig.ClientApp;
-import org.alfresco.service.cmr.repository.TemporalSourceOptions;
-import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.testing.category.LuceneTests;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.Collections;
 import java.util.Map;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+
+import org.alfresco.repo.client.config.ClientAppConfig.ClientApp;
+import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.LuceneTests;
 
 /**
  * This class contains tests for the class {@link ClientAppConfig}
@@ -60,8 +58,8 @@ public class ClientAppConfigTest
     public void setUp() throws Exception
     {
         ApplicationContextHelper.closeApplicationContext();
-        context = ApplicationContextHelper.getApplicationContext(new String[] { ApplicationContextHelper.CONFIG_LOCATIONS[0],
-                "classpath:org/alfresco/repo/client/config/test-repo-clients-apps-context.xml" });
+        context = ApplicationContextHelper.getApplicationContext(new String[]{ApplicationContextHelper.CONFIG_LOCATIONS[0],
+                "classpath:org/alfresco/repo/client/config/test-repo-clients-apps-context.xml"});
 
         clientAppConfig = context.getBean("clientAppConfigTest", ClientAppConfig.class);
     }
@@ -108,7 +106,7 @@ public class ClientAppConfigTest
         // Try to add a property into an unmodifiable map
         try
         {
-            client4.getProperties().put("newProperty"," test value");
+            client4.getProperties().put("newProperty", " test value");
             fail("Shouldn't be able to modify the client's processed properties.");
         }
         catch (UnsupportedOperationException ex)
@@ -118,7 +116,7 @@ public class ClientAppConfigTest
 
         // Try to add a client into an unmodifiable map
         ClientApp newClient = new ClientApp("testClient" + System.currentTimeMillis(),
-                    "http://localhost:8085/testclient", Collections.singletonMap("sharedLinkBaseUrl", "http://localhost:8085/test-client/s"));
+                "http://localhost:8085/testclient", Collections.singletonMap("sharedLinkBaseUrl", "http://localhost:8085/test-client/s"));
         try
         {
             clients.put(newClient.getName(), newClient);

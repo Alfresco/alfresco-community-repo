@@ -39,7 +39,7 @@ public class RestoreNodeReport implements Serializable
     private static final long serialVersionUID = 7375879981852517364L;
 
     /**
-     * Represents the state of a restore process. 
+     * Represents the state of a restore process.
      */
     public static enum RestoreStatus
     {
@@ -51,33 +51,27 @@ public class RestoreNodeReport implements Serializable
             {
                 return true;
             }
-            
+
         },
         /** the node to restore was missing */
         FAILURE_INVALID_ARCHIVE_NODE
-        {
-        },
+        {},
         /** the destination parent of the restore operation was missing */
         FAILURE_INVALID_PARENT
-        {
-        },
+        {},
         /** the permissions required for either reading or writing were invalid */
         FAILURE_PERMISSION
-        {
-        },
+        {},
         /** there was an integrity failure after the node was restored */
         FAILURE_INTEGRITY
-        {
-        },
+        {},
         /** duplicate child name not allowed **/
         FAILURE_DUPLICATE_CHILD_NODE_NAME
-        {
-        },
+        {},
         /** the problem was not well-recognized */
         FAILURE_OTHER
-        {
-        };
-        
+        {};
+
         /**
          * 
          * @return Returns <tt>true</tt> if the status represents a successful state
@@ -87,28 +81,28 @@ public class RestoreNodeReport implements Serializable
             return false;
         }
     }
-    
+
     private NodeRef archivedNodeRef;
     private NodeRef targetParentNodeRef;
     private NodeRef restoredNodeRef;
     private RestoreStatus status;
     private Throwable cause;
-    
+
     /* package */ RestoreNodeReport(NodeRef archivedNodeRef)
     {
         this.archivedNodeRef = archivedNodeRef;
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(100);
         sb.append("RestoreNodeReport")
-          .append("[ archived=").append(archivedNodeRef)
-          .append(", restored=").append(restoredNodeRef)
-          .append(", parent=").append(targetParentNodeRef)
-          .append(", status=").append(status)
-          .append(", err=").append((cause == null ? "<none>" : cause.getMessage()));
+                .append("[ archived=").append(archivedNodeRef)
+                .append(", restored=").append(restoredNodeRef)
+                .append(", parent=").append(targetParentNodeRef)
+                .append(", status=").append(status)
+                .append(", err=").append((cause == null ? "<none>" : cause.getMessage()));
         return sb.toString();
     }
 

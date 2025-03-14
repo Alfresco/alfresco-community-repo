@@ -34,15 +34,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.search.impl.solr.facet.SolrFacetModel;
-import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties.CustomProperties;
-import org.alfresco.repo.search.impl.solr.facet.SolrFacetService;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -54,16 +47,22 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.repo.search.impl.solr.facet.SolrFacetModel;
+import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties.CustomProperties;
+import org.alfresco.repo.search.impl.solr.facet.SolrFacetService;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+
 /**
- * This class is an abstract base class for the various web script controllers
- * in the SolrFacetService.
+ * This class is an abstract base class for the various web script controllers in the SolrFacetService.
  * 
  * @author Jamal Kaabi-Mofrad
  */
 public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeWebScript
 {
     private static final Log logger = LogFactory.getLog(AbstractSolrFacetConfigAdminWebScript.class);
-    
+
     protected static final String PARAM_FILTER_ID = "filterID";
     protected static final String PARAM_FACET_QNAME = "facetQName";
     protected static final String PARAM_DISPLAY_NAME = "displayName";
@@ -87,7 +86,8 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
     protected NamespaceService namespaceService;
 
     /**
-     * @param facetService the facetService to set
+     * @param facetService
+     *            the facetService to set
      */
     public void setFacetService(SolrFacetService facetService)
     {
@@ -95,7 +95,8 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
     }
 
     /**
-     * @param namespaceService the namespaceService to set
+     * @param namespaceService
+     *            the namespaceService to set
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -133,7 +134,7 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
         }
         catch (Exception ex)
         {
-            throw new JSONException("JSONObject[" + value +"] is not an instance of [" + clazz.getName() +"]");
+            throw new JSONException("JSONObject[" + value + "] is not an instance of [" + clazz.getName() + "]");
         }
     }
 
@@ -156,16 +157,16 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
 
             QName name = resolveToQName(getValue(String.class, jsonObj.opt(CUSTOM_PARAM_NAME), null));
             validateMandatoryCustomProps(name, CUSTOM_PARAM_NAME);
-            
+
             Serializable value = null;
             Object customPropValue = jsonObj.opt(CUSTOM_PARAM_VALUE);
             validateMandatoryCustomProps(customPropValue, CUSTOM_PARAM_VALUE);
-            
-            if(customPropValue instanceof JSONArray)
+
+            if (customPropValue instanceof JSONArray)
             {
                 JSONArray array = (JSONArray) customPropValue;
                 ArrayList<Serializable> list = new ArrayList<>(array.length());
-                for(int j = 0; j < array.length(); j++)
+                for (int j = 0; j < array.length(); j++)
                 {
                     list.add(getSerializableValue(array.get(j)));
                 }
@@ -175,8 +176,8 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
             {
                 value = getSerializableValue(customPropValue);
             }
-            
-           customProps.add(new CustomProperties(name, value));
+
+            customProps.add(new CustomProperties(name, value));
         }
 
         if (logger.isDebugEnabled() && customProps.size() > 0)
@@ -218,7 +219,7 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
         if (matcher.find())
         {
             throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST,
-                        "Invalid Filter Id. The characters \" * \\ < > ? / : | are not allowed. The Filter Id cannot end with a dot.");
+                    "Invalid Filter Id. The characters \" * \\ < > ? / : | are not allowed. The Filter Id cannot end with a dot.");
         }
     }
 
@@ -238,11 +239,11 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
         {
             return typeQName;
         }
-        if(qnameStr.charAt(0) == QName.NAMESPACE_BEGIN && qnameStr.indexOf("solrfacetcustomproperty") < 0)
+        if (qnameStr.charAt(0) == QName.NAMESPACE_BEGIN && qnameStr.indexOf("solrfacetcustomproperty") < 0)
         {
             throw new JSONException("Invalid name in the Custom Properties JSON. Namespace URL must be [" + SolrFacetModel.SOLR_FACET_CUSTOM_PROPERTY_URL + "]");
         }
-        else if(qnameStr.charAt(0) == QName.NAMESPACE_BEGIN)
+        else if (qnameStr.charAt(0) == QName.NAMESPACE_BEGIN)
         {
             typeQName = QName.createQName(qnameStr);
         }
@@ -256,40 +257,53 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
         }
         return typeQName;
     }
-    
+
     /**
      * Retrieves the named parameter as an integer, if the parameter is not present the default value is returned.
      * 
-     * @param req The WebScript request
-     * @param paramName The name of parameter to look for.
-     * @param defaultValue The default value that should be returned if parameter is not present in request or is negative.
+     * @param req
+     *            The WebScript request
+     * @param paramName
+     *            The name of parameter to look for.
+     * @param defaultValue
+     *            The default value that should be returned if parameter is not present in request or is negative.
      * @return The request parameter or default value
-     * @throws WebScriptException if the named parameter cannot be converted to int (HTTP rsp 400).
+     * @throws WebScriptException
+     *             if the named parameter cannot be converted to int (HTTP rsp 400).
      */
     protected int getNonNegativeIntParameter(WebScriptRequest req, String paramName, int defaultValue)
     {
         final String paramString = req.getParameter(paramName);
-        
+
         final int result;
-        
+
         if (paramString != null)
         {
             try
             {
                 final int paramInt = Integer.valueOf(paramString);
-                
-                if   (paramInt < 0) { result = defaultValue; }
-                else                { result = paramInt; }
+
+                if (paramInt < 0)
+                {
+                    result = defaultValue;
+                }
+                else
+                {
+                    result = paramInt;
+                }
             }
-            catch (NumberFormatException e) 
+            catch (NumberFormatException e)
             {
                 throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
             }
         }
-        else { result = defaultValue; }
-        
+        else
+        {
+            result = defaultValue;
+        }
+
         return result;
     }
-    
+
     abstract protected Map<String, Object> unprotectedExecuteImpl(WebScriptRequest req, Status status, Cache cache);
 }

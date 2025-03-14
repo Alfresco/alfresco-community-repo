@@ -2,33 +2,31 @@ package org.alfresco.rest.nodes;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestNodeAssociationModelCollection;
 import org.alfresco.rest.model.RestNodeBodyModel;
 import org.alfresco.rest.model.RestNodeChildAssocModelCollection;
 import org.alfresco.rest.model.RestNodeChildAssociationModel;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.model.RestNodeModelsCollection;
-import org.alfresco.rest.model.RestNodeAssociationModelCollection;
 import org.alfresco.rest.model.builder.NodesBuilder;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.Test;
 
 /**
- * Handles tests related to
- * api-explorer/#!/nodes/children
- * api-explorer/#!/nodes/secondary-children
- * api-explorer/#!/nodes/parents
+ * Handles tests related to api-explorer/#!/nodes/children api-explorer/#!/nodes/secondary-children api-explorer/#!/nodes/parents
  */
 public class NodesParentChildrenTests extends RestTest
 {
-    @TestRail(section = { TestGroup.REST_API,TestGroup.NODES }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.SANITY,
             description = "Verify new folder node is created as children on -my- posting as JSON content type")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})    
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
     public void createNewFolderNodeViaJason() throws Exception
     {
         restClient.authenticateUser(dataContent.getAdminUser());
@@ -41,73 +39,66 @@ public class NodesParentChildrenTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         newNode.assertThat().field("aspectNames").contains("cm:auditable")
-               .assertThat().field("isFolder").is(true)
-               .assertThat().field("isFile").is(false)
-               .assertThat().field("name").contains(node.getName());
+                .assertThat().field("isFolder").is(true)
+                .assertThat().field("isFile").is(false)
+                .assertThat().field("name").contains(node.getName());
     }
 
-    @TestRail(section = { TestGroup.REST_API,TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.REGRESSION,
             description = "Verify new folder node is created as children on -my- posting as MultiPart content type")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
     public void createNewFolderNodeWithMultiPartForms() throws Exception
     {
-        //configuring multipart form
+        // configuring multipart form
         restClient.authenticateUser(dataContent.getAdminUser())
-                  .configureRequestSpec()
-                    .addMultiPart("filedata", Utility.getResourceTestDataFile("restapi-resource"))
-                    .addFormParam("renditions", "doclib")
-                    .addFormParam("autoRename", true);
+                .configureRequestSpec()
+                .addMultiPart("filedata", Utility.getResourceTestDataFile("restapi-resource"))
+                .addFormParam("renditions", "doclib")
+                .addFormParam("autoRename", true);
 
         RestNodeModel newNode = restClient.withCoreAPI().usingNode(ContentModel.my()).createNode();
-        restClient.assertStatusCodeIs(HttpStatus.CREATED); 
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
         newNode.assertThat().field("aspectNames").contains("cm:auditable")
-               .assertThat().field("isFolder").is(false)
-               .assertThat().field("isFile").is(true)
-               .assertThat().field("name").contains("restapi-resource");
+                .assertThat().field("isFolder").is(false)
+                .assertThat().field("isFile").is(true)
+                .assertThat().field("name").contains("restapi-resource");
     }
 
-    @TestRail(section = { TestGroup.REST_API,TestGroup.NODES }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.SANITY,
             description = "Verify list children when listing with relativePath and pagination")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
     public void checkRelativePathAndPaginationOnCreateChildrenNode() throws Exception
     {
-        /*
-         * Given we have a folder hierarchy folder1/folder2/folder3 and folder3 containing 3 files file1, file2, and file3
-         */
+        /* Given we have a folder hierarchy folder1/folder2/folder3 and folder3 containing 3 files file1, file2, and file3 */
         NodesBuilder nodesBuilder = restClient.authenticateUser(dataUser.getAdminUser())
-                                              .withCoreAPI().usingNode(ContentModel.my())
-                                              .defineNodes();
+                .withCoreAPI().usingNode(ContentModel.my())
+                .defineNodes();
         nodesBuilder
-            .folder("F1")
-            .folder("F2")
-            .folder("F3")
+                .folder("F1")
+                .folder("F2")
+                .folder("F3")
                 .file("f1")
                 .file("f2")
                 .file("f3");
-              
-        RestNodeModelsCollection returnedFiles = restClient.withParams("maxItems=2", 
-                                                               "skipCount=1", 
-                                                               String.format("relativePath=%s/%s", nodesBuilder.getNode("F2").getName(), nodesBuilder.getNode("F3").getName()))
-                                                               .withCoreAPI().usingNode(nodesBuilder.getNode("F1").toContentModel()).listChildren();
+
+        RestNodeModelsCollection returnedFiles = restClient.withParams("maxItems=2",
+                "skipCount=1",
+                String.format("relativePath=%s/%s", nodesBuilder.getNode("F2").getName(), nodesBuilder.getNode("F3").getName()))
+                .withCoreAPI().usingNode(nodesBuilder.getNode("F1").toContentModel()).listChildren();
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
-        /*
-         * Then I receive file2 and file3
-         */
+        /* Then I receive file2 and file3 */
         returnedFiles.assertThat().entriesListCountIs(2);
         returnedFiles.getEntries().get(0).onModel().assertThat().field("id").is(nodesBuilder.getNode("f2").getId());
         returnedFiles.getEntries().get(1).onModel().assertThat().field("id").is(nodesBuilder.getNode("f3").getId());
     }
 
     /**
-     * Sanity check for the following api endpoints
-     * POST       /nodes/{nodeId}/secondary-children
-     * GET        /nodes/{nodeId}/secondary-children
-     * DELETE     /nodes/{nodeId}/secondary-children/{childId}
+     * Sanity check for the following api endpoints POST /nodes/{nodeId}/secondary-children GET /nodes/{nodeId}/secondary-children DELETE /nodes/{nodeId}/secondary-children/{childId}
      */
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Check /secondary-children (create, list, delete) api calls")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
+    @TestRail(section = {TestGroup.REST_API,
+            TestGroup.NODES}, executionType = ExecutionType.SANITY, description = "Check /secondary-children (create, list, delete) api calls")
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
     public void checkSecondaryChildrenApi() throws Exception
     {
         STEP("1. Create a folder hierarchy folder1/folder2, with folder2 containing 3 files: f1, f2, and f3");
@@ -117,9 +108,9 @@ public class NodesParentChildrenTests extends RestTest
         nodesBuilder
                 .folder("F1")
                 .folder("F2")
-                       .file("f1")
-                       .file("f2")
-                       .file("f3");
+                .file("f1")
+                .file("f2")
+                .file("f3");
 
         STEP("2. Create secondary child associations model objects");
         RestNodeChildAssociationModel childAssoc1 = new RestNodeChildAssociationModel(nodesBuilder.getNode("f1").getId(), "cm:contains");
@@ -128,7 +119,7 @@ public class NodesParentChildrenTests extends RestTest
 
         STEP("3. Create secondary child associations using POST /nodes/{nodeId}/secondary-children");
         RestNodeChildAssocModelCollection secondaryChildAssoc = restClient.withCoreAPI().usingNode(nodesBuilder.getNode("F1").toContentModel())
-            .addSecondaryChildren(childAssoc1, childAssoc2, childAssoc3);
+                .addSecondaryChildren(childAssoc1, childAssoc2, childAssoc3);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         secondaryChildAssoc.getEntryByIndex(0).assertThat().field("childId").is(childAssoc1.getChildId());
         secondaryChildAssoc.getEntryByIndex(1).assertThat().field("childId").is(childAssoc2.getChildId());
@@ -150,24 +141,23 @@ public class NodesParentChildrenTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         secondaryChildren.assertThat().entriesListCountIs(2);
         secondaryChildren.getEntryByIndex(0).assertThat()
-                                            .field("id").is(secondaryChildAssoc.getEntryByIndex(1).getChildId()).and()
-                                            .field("parentId").is(nodesBuilder.getNode("F2").getId())
-                                            .getAssociation().assertThat()
-                                                             .field("isPrimary").is(false).and()
-                                                             .field("assocType").is("cm:contains");
+                .field("id").is(secondaryChildAssoc.getEntryByIndex(1).getChildId()).and()
+                .field("parentId").is(nodesBuilder.getNode("F2").getId())
+                .getAssociation().assertThat()
+                .field("isPrimary").is(false).and()
+                .field("assocType").is("cm:contains");
         secondaryChildren.getEntryByIndex(1).assertThat()
-                                            .field("id").is(secondaryChildAssoc.getEntryByIndex(2).getChildId())
-                                            .getAssociation().assertThat()
-                                                             .field("assocType").is("cm:preferenceImage");
+                .field("id").is(secondaryChildAssoc.getEntryByIndex(2).getChildId())
+                .getAssociation().assertThat()
+                .field("assocType").is("cm:preferenceImage");
     }
 
     /**
-     * Sanity check for the following api endpoint
-     * GET        /nodes/{nodeId}/parents
+     * Sanity check for the following api endpoint GET /nodes/{nodeId}/parents
      */
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Check that GET /parents retrieves primary and secondary parents for a node")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
+    @TestRail(section = {TestGroup.REST_API,
+            TestGroup.NODES}, executionType = ExecutionType.SANITY, description = "Check that GET /parents retrieves primary and secondary parents for a node")
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
     public void checkGetNodeParents() throws Exception
     {
         STEP("1. Create a folder hierarchy folder1/folder2, with folder2 containing file f1");
@@ -177,7 +167,7 @@ public class NodesParentChildrenTests extends RestTest
         nodesBuilder
                 .folder("F1")
                 .folder("F2")
-                       .file("f1");
+                .file("f1");
 
         STEP("2. Create secondary child associations using POST /nodes/{nodeId}/secondary-children");
         RestNodeChildAssociationModel childAssoc = new RestNodeChildAssociationModel(nodesBuilder.getNode("f1").getId(), "cm:contains");
@@ -194,11 +184,11 @@ public class NodesParentChildrenTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         parents.assertThat().entriesListCountIs(1);
         parents.getEntryByIndex(0).assertThat()
-               .field("isFolder").is("true").and()
-               .field("isFile").is(false).and()
-               .field("name").is(nodesBuilder.getNode("F1").getName())
-               .getAssociation().assertThat()
-                                 .field("isPrimary").is(false).and()
-                                 .field("assocType").is("cm:contains");
+                .field("isFolder").is("true").and()
+                .field("isFile").is(false).and()
+                .field("name").is(nodesBuilder.getNode("F1").getName())
+                .getAssociation().assertThat()
+                .field("isPrimary").is(false).and()
+                .field("assocType").is("cm:contains");
     }
 }

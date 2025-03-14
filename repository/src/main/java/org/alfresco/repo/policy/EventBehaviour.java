@@ -30,18 +30,17 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.rawevents.AbstractEventProducer;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Event based Behaviour. <br/>
  * <p/>
- * A client uses an <code>EventBehaviour</code> to bind a send event behaviour
- * to a Class-level Policy. <br/>
+ * A client uses an <code>EventBehaviour</code> to bind a send event behaviour to a Class-level Policy. <br/>
  * <p/>
- * The event behavior delegates the generation of the event to a method pointer.
- * The pointer is represented by an instance object and method name.
+ * The event behavior delegates the generation of the event to a method pointer. The pointer is represented by an instance object and method name.
  * <p/>
  * 
  * @author Cristian Turlica
@@ -110,7 +109,7 @@ public class EventBehaviour extends BaseBehaviour
         if (proxy == null)
         {
             InvocationHandler handler = getInvocationHandler(eventProducer, endpointUri, instance, method, policy);
-            proxy = Proxy.newProxyInstance(policy.getClassLoader(), new Class[] { policy }, handler);
+            proxy = Proxy.newProxyInstance(policy.getClassLoader(), new Class[]{policy}, handler);
             proxies.put(policy, proxy);
         }
         return (T) proxy;

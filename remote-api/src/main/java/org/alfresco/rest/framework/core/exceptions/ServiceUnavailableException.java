@@ -25,8 +25,6 @@
  */
 package org.alfresco.rest.framework.core.exceptions;
 
-import java.io.Serializable;
-
 /**
  * A service is currently unavailable.
  */

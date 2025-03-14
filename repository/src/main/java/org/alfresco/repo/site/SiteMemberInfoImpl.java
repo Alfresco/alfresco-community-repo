@@ -49,10 +49,12 @@ public class SiteMemberInfoImpl implements SiteMemberInfo, Serializable
     /**
      * Constructor
      * 
-     * @param memberName The name of an individual or a group
-     * @param memberRole The role of the individual or group
-     * @param isMemberOfGroup Whether a member belongs to a group with access
-     *            rights to the site or not
+     * @param memberName
+     *            The name of an individual or a group
+     * @param memberRole
+     *            The role of the individual or group
+     * @param isMemberOfGroup
+     *            Whether a member belongs to a group with access rights to the site or not
      */
     public SiteMemberInfoImpl(String memberName, String memberRole, boolean isMemberOfGroup)
     {
@@ -100,15 +102,30 @@ public class SiteMemberInfoImpl implements SiteMemberInfo, Serializable
     @Override
     public boolean equals(Object obj)
     {
-        if (this == obj) { return true; }
-        if (obj == null) { return false; }
-        if (!(obj instanceof SiteMemberInfoImpl)) { return false; }
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (!(obj instanceof SiteMemberInfoImpl))
+        {
+            return false;
+        }
         SiteMemberInfoImpl other = (SiteMemberInfoImpl) obj;
         if (this.memberName == null)
         {
-            if (other.memberName != null) { return false; }
+            if (other.memberName != null)
+            {
+                return false;
+            }
         }
-        else if (!this.memberName.equals(other.memberName)) { return false; }
+        else if (!this.memberName.equals(other.memberName))
+        {
+            return false;
+        }
         return true;
     }
 }

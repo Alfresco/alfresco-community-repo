@@ -31,19 +31,19 @@ public abstract class BaseConstraint implements Constraint
 {
 
     private Occur occur = Occur.DEFAULT;
-    
+
     private float boost = 1.0f;
-    
+
     public BaseConstraint()
     {
-      
+
     }
 
     public Occur getOccur()
     {
-      return occur;
+        return occur;
     }
-    
+
     public void setOccur(Occur occur)
     {
         this.occur = occur;

@@ -36,17 +36,17 @@ import org.alfresco.query.PagingResults;
  */
 public interface NetworksService
 {
-	/**
-	 * Get the currently authenticated user's specific network membership
-	 * 
-	 */
-	Network getNetwork(String networkId);
+    /**
+     * Get the currently authenticated user's specific network membership
+     * 
+     */
+    Network getNetwork(String networkId);
 
-	/**
-	 * Get the currently authenticated user's network memberships, sorted in ascending order by networkId
-	 * 
-	 */
-	PagingResults<Network> getNetworks(PagingRequest pagingRequest);
-	
-	String getUserDefaultNetwork(String user);
+    /**
+     * Get the currently authenticated user's network memberships, sorted in ascending order by networkId
+     * 
+     */
+    PagingResults<Network> getNetworks(PagingRequest pagingRequest);
+
+    String getUserDefaultNetwork(String user);
 }

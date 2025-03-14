@@ -34,10 +34,9 @@ public class Deployment
     String name;
     String category;
     Date deployedAt;
-    
+
     public Deployment()
-    {
-    }
+    {}
 
     public Deployment(org.activiti.engine.repository.Deployment deployment)
     {
@@ -66,7 +65,7 @@ public class Deployment
     {
         this.id = id;
     }
-    
+
     public String getCategory()
     {
         return category;

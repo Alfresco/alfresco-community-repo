@@ -30,18 +30,13 @@ import static org.alfresco.utility.report.log.Step.STEP;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.testng.Assert;
 
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TagModel;
-import org.testng.Assert;
 
 /**
- * Handles single Tag Entry JSON response
- * "entry":
- * {
- * "tag":"addedtag-c7444-1474370805346"
- * "id":"f45c4d06-f4df-42d7-a118-29121557d284"
- * }
+ * Handles single Tag Entry JSON response "entry": { "tag":"addedtag-c7444-1474370805346" "id":"f45c4d06-f4df-42d7-a118-29121557d284" }
  * 
  * @author Corina Nechifor
  */
@@ -136,4 +131,4 @@ public class RestTagModel extends TagModel implements IRestModel<RestTagModel>
             return tag;
         }
     }
-}    
+}

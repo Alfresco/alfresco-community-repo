@@ -27,12 +27,12 @@ package org.alfresco.repo.security.permissions.impl.acegi;
 
 import java.util.Iterator;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.security.AccessStatus;
-
 import net.sf.acegisecurity.ConfigAttributeDefinition;
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 import net.sf.acegisecurity.vote.AffirmativeBased;
+
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.security.AccessStatus;
 
 public class AffirmativeBasedAccessDecisionManger extends AffirmativeBased
 {

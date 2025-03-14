@@ -26,7 +26,11 @@
 
 package org.alfresco.rest.api.nodes;
 
+import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.webscripts.Status;
 
 import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
 import org.alfresco.rest.api.DirectAccessUrlHelper;
@@ -50,10 +54,6 @@ import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.extensions.webscripts.Status;
-
-import java.util.List;
 
 /**
  * Node renditions.
@@ -120,7 +120,7 @@ public class NodeRenditionsRelation implements RelationshipResourceAction.Read<R
     }
 
     @WebApiDescription(title = "Download rendition", description = "Download rendition")
-    @BinaryProperties({ "content" })
+    @BinaryProperties({"content"})
     @Override
     public BinaryResource readProperty(String nodeId, String renditionId, Parameters parameters)
     {
@@ -129,9 +129,9 @@ public class NodeRenditionsRelation implements RelationshipResourceAction.Read<R
     }
 
     @Operation("request-direct-access-url")
-    @WebApiParam (name = "directAccessUrlRequest", title = "Request direct access url", description = "Options for direct access url request", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
+    @WebApiParam(name = "directAccessUrlRequest", title = "Request direct access url", description = "Options for direct access url request", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
     @WebApiDescription(title = "Request content url",
-            description="Generates a direct access URL.",
+            description = "Generates a direct access URL.",
             successStatus = HttpServletResponse.SC_OK)
     public DirectAccessUrl requestContentDirectUrl(String nodeId, String renditionId, DirectAccessUrlRequest directAccessUrlRequest, Parameters parameters, WithResponse withResponse)
     {

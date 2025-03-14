@@ -34,8 +34,13 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import org.alfresco.error.AlfrescoRuntimeException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.extensions.surf.util.I18NUtil;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
@@ -52,17 +57,13 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
 
 /**
  * Base implementation of the patch. This class ensures that the patch is thread- and transaction-safe.
  * 
  * @author Derek Hulley
  */
-public abstract class AbstractPatch implements Patch,  ApplicationEventPublisherAware
+public abstract class AbstractPatch implements Patch, ApplicationEventPublisherAware
 {
     /**
      * I18N message when properties not set.
@@ -100,11 +101,10 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     int percentComplete = 0;
     /** start time * */
     long startTime;
-    
-    /** whether the patch must be deferred (not to be executed in bootstrap) or not */
-    private boolean deferred = false;    
 
-    
+    /** whether the patch must be deferred (not to be executed in bootstrap) or not */
+    private boolean deferred = false;
+
     // Does the patch require an enclosing transaction?
     private boolean requiresTransaction = true;
 
@@ -129,7 +129,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
         this.targetSchema = -1;
         this.force = false;
         this.applied = false;
-        this.applyToTenants = true;     // by default, apply to each tenant, if tenant service is enabled
+        this.applyToTenants = true; // by default, apply to each tenant, if tenant service is enabled
         this.dependsOn = Collections.emptyList();
         this.alternatives = Collections.emptyList();
         this.ignored = false;
@@ -140,13 +140,13 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     {
         StringBuilder sb = new StringBuilder(256);
         sb.append("Patch")
-          .append("[ id=").append(id)
-          .append(", description=").append(description)
-          .append(", fixesFromSchema=").append(fixesFromSchema)
-          .append(", fixesToSchema=").append(fixesToSchema)
-          .append(", targetSchema=").append(targetSchema)
-          .append(", ignored=").append(ignored)
-          .append("]");
+                .append("[ id=").append(id)
+                .append(", description=").append(description)
+                .append(", fixesFromSchema=").append(fixesFromSchema)
+                .append(", fixesToSchema=").append(fixesToSchema)
+                .append(", targetSchema=").append(targetSchema)
+                .append(", ignored=").append(ignored)
+                .append("]");
         return sb.toString();
     }
 
@@ -187,7 +187,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     {
         this.authenticationContext = authenticationContext;
     }
-    
+
     public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
         this.tenantAdminService = tenantAdminService;
@@ -210,7 +210,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
         {
             throw new AlfrescoRuntimeException("Mandatory property not set: patchService");
         }
-        if(false == isIgnored())
+        if (false == isIgnored())
         {
             patchService.registerPatch(this);
         }
@@ -239,12 +239,12 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     {
         this.requiresTransaction = requiresTransaction;
     }
-    
+
     public boolean requiresTransaction()
     {
         return requiresTransaction;
     }
-    
+
     /**
      * Set the smallest schema number that this patch may be applied to.
      * 
@@ -291,8 +291,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     }
 
     /**
-     * Set the schema version that this patch attempts to take the existing schema to. This is for informational
-     * purposes only, acting as an indicator of intention rather than having any specific effect.
+     * Set the schema version that this patch attempts to take the existing schema to. This is for informational purposes only, acting as an indicator of intention rather than having any specific effect.
      * 
      * @param version
      *            a schema version number that must be greater than the {@link #fixesToSchema max fix schema number}
@@ -315,10 +314,10 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     }
 
     /**
-     * Set the flag that forces the patch to be forcefully applied.  This allows patches to be overridden to induce execution
-     * regardless of the upgrade or installation versions, or even if the patch has been executed before.
+     * Set the flag that forces the patch to be forcefully applied. This allows patches to be overridden to induce execution regardless of the upgrade or installation versions, or even if the patch has been executed before.
      * 
-     * @param force         <tt>true</tt> to force the patch to be applied
+     * @param force
+     *            <tt>true</tt> to force the patch to be applied
      */
     public void setForce(boolean force)
     {
@@ -338,7 +337,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     {
         this.description = description;
     }
-    
+
     /**
      * @return the ignored
      */
@@ -348,7 +347,8 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     }
 
     /**
-     * @param ignored the ignored to set
+     * @param ignored
+     *            the ignored to set
      */
     public void setIgnored(boolean ignored)
     {
@@ -377,10 +377,10 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     }
 
     /**
-     * Set all anti-dependencies.  If any of the patches in the list have already been executed, then
-     * this one need not be.
+     * Set all anti-dependencies. If any of the patches in the list have already been executed, then this one need not be.
      * 
-     * @param alternatives          a list of alternative patches
+     * @param alternatives
+     *            a list of alternative patches
      */
     public void setAlternatives(List<Patch> alternatives)
     {
@@ -407,15 +407,14 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
             throw new PatchException(ERR_PROPERTY_NOT_SET, name, this);
         }
     }
-    
+
     public void setApplyToTenants(boolean applyToTenants)
     {
         this.applyToTenants = applyToTenants;
     }
 
     /**
-     * Check that the schema version properties have been set appropriately. Derived classes can override this method to
-     * perform their own validation provided that this method is called by the derived class.
+     * Check that the schema version properties have been set appropriately. Derived classes can override this method to perform their own validation provided that this method is called by the derived class.
      */
     protected void checkProperties()
     {
@@ -434,19 +433,18 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
         {
             throw new AlfrescoRuntimeException(
                     "Patch properties 'fixesFromSchema', 'fixesToSchema' and 'targetSchema' " +
-                    "have not all been set on this patch: \n"
-                    + "   patch: " + this);
+                            "have not all been set on this patch: \n"
+                            + "   patch: " + this);
         }
     }
 
     private String applyWithTxns() throws Exception
     {
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
             logger.debug("call applyInternal for main context id:" + id);
         }
-        RetryingTransactionCallback<String> patchWork = new RetryingTransactionCallback<String>()
-        {
+        RetryingTransactionCallback<String> patchWork = new RetryingTransactionCallback<String>() {
             public String execute() throws Exception
             {
                 // downgrade integrity checking
@@ -467,17 +465,16 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
             String temp = applyInternal();
             sb.append(temp);
         }
-        
+
         if ((tenantAdminService != null) && tenantAdminService.isEnabled() && applyToTenants)
         {
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("call applyInternal for all tennants");
             }
             final List<Tenant> tenants = tenantAdminService.getAllTenants();
-                        
-            BatchProcessWorkProvider<Tenant> provider = new BatchProcessWorkProvider<Tenant>()
-            {
+
+            BatchProcessWorkProvider<Tenant> provider = new BatchProcessWorkProvider<Tenant>() {
                 Iterator<Tenant> i = tenants.iterator();
 
                 @Override
@@ -496,8 +493,8 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
                 {
                     // return chunks of 10 tenants
                     ArrayList<Tenant> chunk = new ArrayList<Tenant>(100);
-                    
-                    while(i.hasNext() && chunk.size() <= 100)
+
+                    while (i.hasNext() && chunk.size() <= 100)
                     {
                         chunk.add(i.next());
                     }
@@ -509,14 +506,13 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
                     "AbstractPatch Processor for " + id,
                     transactionHelper,
                     provider, // collection of tenants
-                    10, // worker threads, 
+                    10, // worker threads,
                     100, // batch size 100,
                     applicationEventPublisher,
                     logger,
                     1000);
-            
-            BatchProcessWorker<Tenant> worker = new BatchProcessWorker<Tenant>()
-            {
+
+            BatchProcessWorker<Tenant> worker = new BatchProcessWorker<Tenant>() {
                 @Override
                 public String getIdentifier(Tenant entry)
                 {
@@ -526,7 +522,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
                 @Override
                 public void beforeProcess() throws Throwable
                 {
-                    
+
                 }
 
                 @Override
@@ -534,34 +530,33 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
                 {
                     String tenantDomain = entry.getTenantDomain();
                     @SuppressWarnings("unused")
-                    String tenantReport = AuthenticationUtil.runAs(new RunAsWork<String>()
-                    {
+                    String tenantReport = AuthenticationUtil.runAs(new RunAsWork<String>() {
                         public String doWork() throws Exception
                         {
                             return applyInternal();
                         }
-                    }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));                    
+                    }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
                 }
 
                 @Override
                 public void afterProcess() throws Throwable
                 {
-                    
+
                 }
             };
-            
+
             // Now do the work
             @SuppressWarnings("unused")
             int numberOfInvocations = batchProcessor.process(worker, true);
-            
+
             if (logger.isDebugEnabled())
             {
                 logger.debug("batch worker finished processing id:" + id);
             }
-            
+
             if (batchProcessor.getTotalErrorsLong() > 0)
             {
-                sb.append("\n" + " and failure during update of tennants total success: " + batchProcessor.getSuccessfullyProcessedEntriesLong() + " number of errors: " +batchProcessor.getTotalErrorsLong() + " lastError" + batchProcessor.getLastError());
+                sb.append("\n" + " and failure during update of tennants total success: " + batchProcessor.getSuccessfullyProcessedEntriesLong() + " number of errors: " + batchProcessor.getTotalErrorsLong() + " lastError" + batchProcessor.getLastError());
             }
             else
             {
@@ -572,12 +567,12 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
         // Done
         return sb.toString();
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public String applyAsync() throws PatchException
-    {    
+    {
         return apply(true);
     }
 
@@ -590,7 +585,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     {
         return apply(false);
     }
-    
+
     private String apply(boolean async)
     {
         if (!async)
@@ -600,14 +595,14 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
             {
                 return I18NUtil.getMessage(MSG_DEFERRED);
             }
-  
+
             // ensure that this has not been executed already
             if (applied)
             {
                 throw new AlfrescoRuntimeException("The patch has already been executed: \n" + "   patch: " + this);
             }
         }
-        
+
         // check properties
         checkProperties();
 
@@ -618,8 +613,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
 
         try
         {
-            AuthenticationUtil.RunAsWork<String> applyPatchWork = new AuthenticationUtil.RunAsWork<String>()
-            {
+            AuthenticationUtil.RunAsWork<String> applyPatchWork = new AuthenticationUtil.RunAsWork<String>() {
                 public String doWork() throws Exception
                 {
                     return applyWithTxns();
@@ -679,9 +673,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     }
 
     /**
-     * This method does the work. All transactions and thread-safety will be taken care of by this class. Any exception
-     * will result in the transaction being rolled back. Integrity checks are downgraded for the duration of the
-     * transaction.
+     * This method does the work. All transactions and thread-safety will be taken care of by this class. Any exception will result in the transaction being rolled back. Integrity checks are downgraded for the duration of the transaction.
      * 
      * @return Returns the report (only success messages).
      * @see #apply()
@@ -693,8 +685,10 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     /**
      * Support to report patch completion and estimated completion time.
      * 
-     * @param estimatedTotal long
-     * @param currentInteration long
+     * @param estimatedTotal
+     *            long
+     * @param currentInteration
+     *            long
      */
     protected void reportProgress(long estimatedTotal, long currentInteration)
     {
@@ -744,10 +738,12 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
             }
         }
     }
-    
+
     /**
      * Should the patch be deferred? And not run at bootstrap.
-     * @param deferred boolean
+     * 
+     * @param deferred
+     *            boolean
      */
     public void setDeferred(boolean deferred)
     {
@@ -757,7 +753,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     public boolean isDeferred()
     {
         return this.deferred;
-    }    
+    }
 
     private int getReportingInterval(long soFar, long toGo)
     {

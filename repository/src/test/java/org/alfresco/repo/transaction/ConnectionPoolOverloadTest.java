@@ -30,20 +30,19 @@ import static org.junit.Assert.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-
 import jakarta.transaction.UserTransaction;
+
+import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.transaction.ConnectionPoolException;
-import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.springframework.context.ApplicationContext;
 
 /**
  * A test designed to catch ConnectionPoolException
@@ -81,7 +80,7 @@ public class ConnectionPoolOverloadTest
         {
             throw new IllegalArgumentException("The db.pool.max property is not valid.");
         }
-        
+
         String dbPoolWaitMaxProp = properties.getProperty("db.pool.wait.max");
         if (PropertyCheck.isValidPropertyString(dbPoolWaitMaxProp))
         {
@@ -91,10 +90,10 @@ public class ConnectionPoolOverloadTest
         {
             throw new IllegalArgumentException("The db.pool.wait.max property is not valid.");
         }
-        
+
         dbPoolWaitMax = dbPoolWaitMax == -1 ? 100 : dbPoolWaitMax;
     }
-    
+
     @Test
     public void testOverload() throws Exception
     {
@@ -192,14 +191,14 @@ public class ConnectionPoolOverloadTest
                 interrupt();
                 fail("Thread should fail with ConnectionPoolException.");
             }
-            
+
             try
             {
-                sleep(dbPoolWaitMax*2);
+                sleep(dbPoolWaitMax * 2);
             }
             catch (InterruptedException e)
             {
-               interrupt();
+                interrupt();
             }
             interrupt();
         }
@@ -214,8 +213,7 @@ public class ConnectionPoolOverloadTest
                     txnTL.get().rollback();
                 }
                 catch (Exception e)
-                {
-                }
+                {}
             }
             super.interrupt();
         }

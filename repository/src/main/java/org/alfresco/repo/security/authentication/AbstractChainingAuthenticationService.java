@@ -30,14 +30,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
+
 /**
- * A base class for chaining authentication services. Where appropriate, methods will 'chain' across multiple
- * {@link AuthenticationService} instances, as returned by {@link #getUsableAuthenticationServices()}.
+ * A base class for chaining authentication services. Where appropriate, methods will 'chain' across multiple {@link AuthenticationService} instances, as returned by {@link #getUsableAuthenticationServices()}.
  * 
  * @author dward
  */
@@ -68,8 +68,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
     protected abstract List<AuthenticationService> getUsableAuthenticationServices();
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#createAuthentication(java.lang.String, char[])
-     */
+     * 
+     * @see org.alfresco.service.cmr.security.AuthenticationService#createAuthentication(java.lang.String, char[]) */
     public void createAuthentication(String userName, char[] password) throws AuthenticationException
     {
         if (getMutableAuthenticationService() == null)
@@ -81,8 +81,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#updateAuthentication(java.lang.String, char[], char[])
-     */
+     * 
+     * @see org.alfresco.service.cmr.security.AuthenticationService#updateAuthentication(java.lang.String, char[], char[]) */
     public void updateAuthentication(String userName, char[] oldPassword, char[] newPassword)
             throws AuthenticationException
     {
@@ -141,19 +141,20 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
     public boolean isAuthenticationMutable(String userName)
     {
         MutableAuthenticationService mutableAuthenticationService = getMutableAuthenticationService();
-        return mutableAuthenticationService == null ? false : mutableAuthenticationService
-                .isAuthenticationMutable(userName);
+        return mutableAuthenticationService == null ? false
+                : mutableAuthenticationService
+                        .isAuthenticationMutable(userName);
     }
 
-    
     /**
      * {@inheritDoc}
      */
     public boolean isAuthenticationCreationAllowed()
     {
         MutableAuthenticationService mutableAuthenticationService = getMutableAuthenticationService();
-        return mutableAuthenticationService == null ? false : mutableAuthenticationService
-                .isAuthenticationCreationAllowed();
+        return mutableAuthenticationService == null ? false
+                : mutableAuthenticationService
+                        .isAuthenticationCreationAllowed();
     }
 
     /**
@@ -184,8 +185,9 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
                 if (logger.isTraceEnabled())
                 {
                     logger.trace(
-                        "Not that important: Exception in chaining the verification of authentication enabled for user: " + AuthenticationUtil
-                            .maskUsername(userName) + " . Message: " + e.getMessage(), e);
+                            "Not that important: Exception in chaining the verification of authentication enabled for user: " + AuthenticationUtil
+                                    .maskUsername(userName) + " . Message: " + e.getMessage(),
+                            e);
                 }
             }
         }
@@ -216,9 +218,7 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
             {
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug("authenticate " + AuthenticationUtil.maskUsername(userName) + " with " + getId(authService) + (counter == 0 ?
-                        " FAILED (end of chain)" :
-                        " failed (try next in chain)") + "message: " + e.getMessage(), e);
+                    logger.debug("authenticate " + AuthenticationUtil.maskUsername(userName) + " with " + getId(authService) + (counter == 0 ? " FAILED (end of chain)" : " failed (try next in chain)") + "message: " + e.getMessage(), e);
                 }
                 // Ignore and chain
             }
@@ -229,9 +229,10 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
 
     /**
      * Should be overridden to returns the ID of the authService for use in debug.
-     * @param authService in question.
-     * @return the ID of the authService. This implementation has no way to work 
-     *         this out so returns the simple class name.
+     * 
+     * @param authService
+     *            in question.
+     * @return the ID of the authService. This implementation has no way to work this out so returns the simple class name.
      */
     protected String getId(AuthenticationService authService)
     {
@@ -298,7 +299,7 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         // it doesn't exist in any of the authentication components
         return false;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -629,7 +630,5 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         }
         return defaultGuestUserNames;
     }
-    
-    
 
 }

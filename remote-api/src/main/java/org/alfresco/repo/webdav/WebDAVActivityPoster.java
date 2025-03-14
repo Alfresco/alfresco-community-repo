@@ -37,16 +37,17 @@ public interface WebDAVActivityPoster
     /**
      * @param siteId
      * @param tenantDomain
-     * @param path the path to the folder or <code>null</code> for files
+     * @param path
+     *            the path to the folder or <code>null</code> for files
      * @param nodeInfo
      * @throws WebDAVServerException
      */
     void postFileFolderAdded(
-                String siteId,
-                String tenantDomain,
-                String path,
-                FileInfo nodeInfo) throws WebDAVServerException;
-    
+            String siteId,
+            String tenantDomain,
+            String path,
+            FileInfo nodeInfo) throws WebDAVServerException;
+
     /**
      * @param siteId
      * @param tenantDomain
@@ -54,10 +55,10 @@ public interface WebDAVActivityPoster
      * @throws WebDAVServerException
      */
     void postFileFolderUpdated(
-                String siteId,
-                String tenantDomain,
-                FileInfo nodeInfo) throws WebDAVServerException;
-    
+            String siteId,
+            String tenantDomain,
+            FileInfo nodeInfo) throws WebDAVServerException;
+
     /**
      * @param siteId
      * @param tenantDomain
@@ -67,9 +68,9 @@ public interface WebDAVActivityPoster
      * @throws WebDAVServerException
      */
     void postFileFolderDeleted(
-                String siteId,
-                String tenantDomain,
-                String parentPath,
-                FileInfo parentNodeInfo,
-                FileInfo contentNodeInfo) throws WebDAVServerException;
+            String siteId,
+            String tenantDomain,
+            String parentPath,
+            FileInfo parentNodeInfo,
+            FileInfo contentNodeInfo) throws WebDAVServerException;
 }

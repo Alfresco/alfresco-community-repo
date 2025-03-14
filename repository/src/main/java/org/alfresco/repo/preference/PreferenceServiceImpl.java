@@ -33,6 +33,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryPageDetails;
@@ -62,10 +67,6 @@ import org.alfresco.traitextender.Extensible;
 import org.alfresco.traitextender.Trait;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Preference Service Implementation
@@ -75,68 +76,70 @@ import org.json.JSONObject;
 public class PreferenceServiceImpl implements PreferenceService, Extensible
 {
     private static final Log log = LogFactory.getLog(PreferenceServiceImpl.class);
-    
+
     private static final String SHARE_SITES_PREFERENCE_KEY = "org.alfresco.share.sites.favourites.";
     private static final int SHARE_SITES_PREFERENCE_KEY_LEN = SHARE_SITES_PREFERENCE_KEY.length();
     private static final String EXT_SITES_PREFERENCE_KEY = "org.alfresco.ext.sites.favourites.";
-    
-    /** Node service */    
+
+    /** Node service */
     private NodeService nodeService;
     private ContentService contentService;
     private PersonService personService;
     private PermissionService permissionService;
-    
+
     /** Authentication Service */
     private AuthenticationContext authenticationContext;
     private AuthorityService authorityService;
 
     private final ExtendedTrait<PreferenceServiceTrait> preferenceServiceTrait;
-    
+
     public PreferenceServiceImpl()
     {
-        preferenceServiceTrait=new ExtendedTrait<PreferenceServiceTrait>(createPreferenceServiceTrait());
+        preferenceServiceTrait = new ExtendedTrait<PreferenceServiceTrait>(createPreferenceServiceTrait());
     }
+
     /**
      * Set the node service
      * 
-     * @param nodeService   the node service
+     * @param nodeService
+     *            the node service
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
     }
-    
+
     /**
      * Set the person service
      * 
-     * @param personService     the person service
+     * @param personService
+     *            the person service
      */
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
     }
-    
+
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
     }
-    
+
     public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
         this.authenticationContext = authenticationContext;
     }
-    
+
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
     }
-    
-    
+
     /**
      * @see org.alfresco.service.cmr.preference.PreferenceService#getPreferences(java.lang.String)
      */
@@ -144,7 +147,7 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
     {
         return getPreferences(userName, null);
     }
-    
+
     private JSONObject getPreferencesObject(String userName) throws JSONException
     {
         JSONObject jsonPrefs = null;
@@ -154,14 +157,14 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
         if (personNodeRef == null)
         {
             throw new AlfrescoRuntimeException("Cannot get preferences for " + userName
-                + " because he/she does not exist."); 
+                    + " because he/she does not exist.");
         }
 
         String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
         boolean isSystem = AuthenticationUtil.isRunAsUserTheSystemUser() || authenticationContext.isSystemUserName(currentUserName);
         if (isSystem || userName.equals(currentUserName)
-                    || personService.getUserIdentifier(userName).equals(personService.getUserIdentifier(currentUserName))
-                    || authorityService.isAdminAuthority(currentUserName))
+                || personService.getUserIdentifier(userName).equals(personService.getUserIdentifier(currentUserName))
+                || authorityService.isAdminAuthority(currentUserName))
         {
             // Check for preferences aspect
             if (this.nodeService.hasAspect(personNodeRef, ContentModel.ASPECT_PREFERENCES) == true)
@@ -182,7 +185,7 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
             throw new AccessDeniedException("The current user " + currentUserName
                     + " does not have sufficient permissions to get the preferences of the user " + userName);
         }
-        
+
         return jsonPrefs;
     }
 
@@ -192,9 +195,9 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
         try
         {
             JSONObject jsonPrefs = getPreferencesObject(userName);
-            if(jsonPrefs != null)
+            if (jsonPrefs != null)
             {
-                if(jsonPrefs.has(preferenceName))
+                if (jsonPrefs.has(preferenceName))
                 {
                     preferenceValue = String.valueOf(jsonPrefs.get(preferenceName));
                 }
@@ -208,35 +211,35 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
         return preferenceValue;
     }
 
-    @SuppressWarnings({ "unchecked" })
+    @SuppressWarnings({"unchecked"})
     public Map<String, Serializable> getPreferences(String userName, String preferenceFilter)
     {
-        if (log.isTraceEnabled()) 
-        { 
-            log.trace("getPreferences(" + userName + ", " + preferenceFilter + ")"); 
+        if (log.isTraceEnabled())
+        {
+            log.trace("getPreferences(" + userName + ", " + preferenceFilter + ")");
         }
-        
+
         Map<String, Serializable> preferences = new TreeMap<String, Serializable>();
-        
+
         try
         {
             JSONObject jsonPrefs = getPreferencesObject(userName);
-            if(jsonPrefs != null)
+            if (jsonPrefs != null)
             {
                 // Build hash from preferences stored in the repository
                 Iterator<String> keys = jsonPrefs.keys();
                 while (keys.hasNext())
                 {
-                    String key = (String)keys.next();
-                    Serializable value = (Serializable)jsonPrefs.get(key);
+                    String key = (String) keys.next();
+                    Serializable value = (Serializable) jsonPrefs.get(key);
 
-                    if(key.startsWith(SHARE_SITES_PREFERENCE_KEY))
+                    if (key.startsWith(SHARE_SITES_PREFERENCE_KEY))
                     {
                         // CLOUD-1518: convert site preferences on the fly
                         // convert keys as follows:
-                        //   <SHARE_SITES_PREFERENCE_KEY>.<siteId>.favourited -> <SHARE_SITES_PREFERENCE_KEY>.<siteId>
-                        //   <SHARE_SITES_PREFERENCE_KEY>.<siteId>.createdAt -> <EXT_SITES_PREFERENCE_KEY>.<siteId>.createdAt
-                        if(key.endsWith(".favourited"))
+                        // <SHARE_SITES_PREFERENCE_KEY>.<siteId>.favourited -> <SHARE_SITES_PREFERENCE_KEY>.<siteId>
+                        // <SHARE_SITES_PREFERENCE_KEY>.<siteId>.createdAt -> <EXT_SITES_PREFERENCE_KEY>.<siteId>.createdAt
+                        if (key.endsWith(".favourited"))
                         {
                             int idx = key.indexOf(".favourited");
                             String siteId = key.substring(SHARE_SITES_PREFERENCE_KEY_LEN, idx);
@@ -244,8 +247,8 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
                             sb.append(siteId);
                             key = sb.toString();
                         }
-    
-                        else if(key.endsWith(".createdAt"))
+
+                        else if (key.endsWith(".createdAt"))
                         {
                             int idx = key.indexOf(".createdAt");
                             String siteId = key.substring(SHARE_SITES_PREFERENCE_KEY_LEN, idx);
@@ -254,18 +257,18 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
                             sb.append(".createdAt");
                             key = sb.toString();
                         }
-                        else if(preferences.containsKey(key))
+                        else if (preferences.containsKey(key))
                         {
                             // Ensure that the values of the following form (the only other important form in this case) does not
                             // override those on the lhs from above:
-                            //   <SHARE_SITES_PREFERENCE_KEY>.<siteId>
+                            // <SHARE_SITES_PREFERENCE_KEY>.<siteId>
                             continue;
                         }
                     }
 
                     if (preferenceFilter == null ||
-                        preferenceFilter.length() == 0 ||
-                        matchPreferenceNames(key, preferenceFilter))
+                            preferenceFilter.length() == 0 ||
+                            matchPreferenceNames(key, preferenceFilter))
                     {
                         preferences.put(key, value);
                     }
@@ -277,14 +280,14 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
             throw new AlfrescoRuntimeException("Can not get preferences for " + userName + " because there was an error parsing the JSON data.", exception);
         }
 
-        if (log.isTraceEnabled()) 
-        { 
-            log.trace("result = " + preferences); 
+        if (log.isTraceEnabled())
+        {
+            log.trace("result = " + preferences);
         }
-        
+
         return preferences;
     }
-    
+
     public PagingResults<Pair<String, Serializable>> getPagedPreferences(String userName, String preferenceFilter, PagingRequest pagingRequest)
     {
         final Map<String, Serializable> prefs = getPreferences(userName, preferenceFilter);
@@ -298,16 +301,16 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
 
         final List<Pair<String, Serializable>> page = new ArrayList<Pair<String, Serializable>>(pageSize);
         Iterator<Map.Entry<String, Serializable>> it = prefs.entrySet().iterator();
-        for(int counter = 0; counter < end && it.hasNext(); counter++)
+        for (int counter = 0; counter < end && it.hasNext(); counter++)
         {
             Map.Entry<String, Serializable> pref = it.next();
 
-            if(counter < skipCount)
+            if (counter < skipCount)
             {
                 continue;
             }
-            
-            if(counter > end - 1)
+
+            if (counter > end - 1)
             {
                 break;
             }
@@ -315,8 +318,7 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
             page.add(new Pair<String, Serializable>(pref.getKey(), pref.getValue()));
         }
 
-        return new PagingResults<Pair<String, Serializable>>()
-        {
+        return new PagingResults<Pair<String, Serializable>>() {
             @Override
             public List<Pair<String, Serializable>> getPage()
             {
@@ -347,8 +349,10 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
     /**
      * Matches the preference name to the partial preference name provided
      * 
-     * @param name preference name
-     * @param matchTo match to the partial preference name provided
+     * @param name
+     *            preference name
+     * @param matchTo
+     *            match to the partial preference name provided
      * @return boolean true if matches, false otherwise
      */
     private boolean matchPreferenceNames(String name, String matchTo)
@@ -361,7 +365,7 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
         matchTo = matchTo.replace(".", "+");
         String[] matchToArr = matchTo.split("\\+");
 
-        if(matchToArr.length > nameArr.length)
+        if (matchToArr.length > nameArr.length)
         {
             return false;
         }
@@ -380,7 +384,7 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
         return result;
     }
 
-    @Extend(traitAPI=PreferenceServiceTrait.class,extensionAPI=PreferenceServiceExtension.class)
+    @Extend(traitAPI = PreferenceServiceTrait.class, extensionAPI = PreferenceServiceExtension.class)
     public void setPreferences(final String userName, final Map<String, Serializable> preferences)
     {
         // Get the user node reference
@@ -388,13 +392,12 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
         if (personNodeRef == null)
         {
             throw new AlfrescoRuntimeException("Cannot update preferences for " + userName
-                + " because he/she does not exist.");
+                    + " because he/she does not exist.");
         }
-        
+
         if (userCanWritePreferences(userName, personNodeRef))
         {
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
-            {
+            AuthenticationUtil.runAs(new RunAsWork<Object>() {
                 public Object doWork() throws Exception
                 {
                     // Apply the preferences aspect if required
@@ -422,7 +425,7 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
                             String key = entry.getKey();
 
                             // CLOUD-1518: remove extraneous site preferences, if present
-                            if(key.startsWith(SHARE_SITES_PREFERENCE_KEY))
+                            if (key.startsWith(SHARE_SITES_PREFERENCE_KEY))
                             {
                                 // remove any extraneous keys, if present
                                 String siteId = key.substring(SHARE_SITES_PREFERENCE_KEY_LEN);
@@ -431,23 +434,23 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
                                 sb.append(siteId);
                                 sb.append(".favourited");
                                 String testKey = sb.toString();
-                                if(jsonPrefs.has(testKey))
+                                if (jsonPrefs.has(testKey))
                                 {
                                     jsonPrefs.remove(testKey);
                                 }
-                                
+
                                 sb = new StringBuilder(SHARE_SITES_PREFERENCE_KEY);
                                 sb.append(siteId);
                                 sb.append(".createdAt");
                                 testKey = sb.toString();
-                                if(jsonPrefs.has(testKey))
+                                if (jsonPrefs.has(testKey))
                                 {
                                     jsonPrefs.remove(testKey);
                                 }
                             }
-                            
+
                             Serializable value = entry.getValue();
-                            if(value != null && value.equals("CURRENT_DATE"))
+                            if (value != null && value.equals("CURRENT_DATE"))
                             {
                                 Date date = new Date();
                                 value = ISO8601DateFormat.format(date);
@@ -488,7 +491,7 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
     {
         clearPreferences(userName, null);
     }
-    
+
     public void clearPreferences(final String userName, final String preferenceFilter)
     {
         // Get the user node reference
@@ -496,13 +499,12 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
         if (personNodeRef == null)
         {
             throw new AlfrescoRuntimeException("Cannot update preferences for " + userName
-                + " because he/she does not exist.");
+                    + " because he/she does not exist.");
         }
-        
+
         if (userCanWritePreferences(userName, personNodeRef))
         {
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
-            {
+            AuthenticationUtil.runAs(new RunAsWork<Object>() {
                 public Object doWork() throws Exception
                 {
                     if (PreferenceServiceImpl.this.nodeService
@@ -530,7 +532,7 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
                                     final String key = (String) keys.next();
 
                                     if (preferenceFilter == null || preferenceFilter.length() == 0 ||
-                                        matchPreferenceNames(key, preferenceFilter) == true)
+                                            matchPreferenceNames(key, preferenceFilter) == true)
                                     {
                                         removeKeys.add(key);
                                     }
@@ -569,11 +571,12 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
     }
 
     /**
-     * Helper to encapsulate the test for whether the currently authenticated user can write to the
-     * preferences objects for the given username and person node reference.
+     * Helper to encapsulate the test for whether the currently authenticated user can write to the preferences objects for the given username and person node reference.
      * 
-     * @param userName          Username owner of the preferences object for modification test 
-     * @param personNodeRef     Non-null person representing the given username
+     * @param userName
+     *            Username owner of the preferences object for modification test
+     * @param personNodeRef
+     *            Non-null person representing the given username
      * 
      * @return true if they are allowed to write to the user preferences, false otherwise
      */
@@ -585,7 +588,7 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
                 authenticationContext.isSystemUserName(currentUserName) ||
                 permissionService.hasPermission(personNodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED);
     }
-    
+
     public static class PageDetails
     {
         private boolean hasMoreItems = false;
@@ -629,25 +632,23 @@ public class PreferenceServiceImpl implements PreferenceService, Extensible
             return pageSize;
         }
     }
-    
+
     @Override
     public <M extends Trait> ExtendedTrait<M> getTrait(Class<? extends M> traitAPI)
     {
         return (ExtendedTrait<M>) preferenceServiceTrait;
     }
-    
+
     public PreferenceServiceTrait createPreferenceServiceTrait()
     {
-        return new PreferenceServiceTrait()
-        {
+        return new PreferenceServiceTrait() {
 
             @Override
             public void setPreferences(final String userName, final Map<String, Serializable> preferences)
-                        throws Throwable
+                    throws Throwable
             {
 
-                AJExtender.run(new AJExtender.ExtensionBypass<Void>()
-                {
+                AJExtender.run(new AJExtender.ExtensionBypass<Void>() {
                     @Override
                     public Void run()
                     {

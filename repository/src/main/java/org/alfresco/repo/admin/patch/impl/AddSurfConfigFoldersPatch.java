@@ -26,6 +26,13 @@
 
 package org.alfresco.repo.admin.patch.impl;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
@@ -35,17 +42,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteService;
-import org.springframework.extensions.surf.util.I18NUtil;
-
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 /**
- * A patch to add folders into
- * {@literal /app:company_home/st:sites/cm:surf-config} folder and optionally
- * sets their permission.
+ * A patch to add folders into {@literal /app:company_home/st:sites/cm:surf-config} folder and optionally sets their permission.
  * 
  * @author Jamal Kaabi-Mofrad
  */

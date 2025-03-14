@@ -34,10 +34,9 @@ import org.alfresco.jlan.server.auth.acl.UserAccessControl;
  */
 public class UserAccessControlBean extends AccessControlBean
 {
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.filesys.config.acl.AccessControlBean#toAccessControl()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.filesys.config.acl.AccessControlBean#toAccessControl() */
     @Override
     public AccessControl toAccessControl()
     {

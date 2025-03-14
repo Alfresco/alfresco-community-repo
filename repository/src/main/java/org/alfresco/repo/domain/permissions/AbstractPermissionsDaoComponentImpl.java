@@ -25,14 +25,15 @@
  */
 package org.alfresco.repo.domain.permissions;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.cache.SimpleCache;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.security.permissions.ACEType;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
@@ -53,8 +54,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.util.GUID;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Common support for permisisons dao
@@ -88,7 +87,9 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
     /**
      * Set the ACL DAO component
-     * @param aclDaoComponent AclDAO
+     * 
+     * @param aclDaoComponent
+     *            AclDAO
      */
     public void setAclDAO(AclDAO aclDaoComponent)
     {
@@ -130,7 +131,9 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
     /**
      * Set the default DAO
-     * @param defaultACLDAO AccessControlListDAO
+     * 
+     * @param defaultACLDAO
+     *            AccessControlListDAO
      */
     public void setDefaultACLDAO(AccessControlListDAO defaultACLDAO)
     {
@@ -249,11 +252,11 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
             AccessControlList info = aclDaoComponent.getAccessControlList(acl.getId());
 
             SimpleNodePermissionEntry cached = info.getCachedSimpleNodePermissionEntry();
-            if(cached != null)
+            if (cached != null)
             {
                 return cached;
             }
-            
+
             ArrayList<SimplePermissionEntry> spes = new ArrayList<SimplePermissionEntry>(info.getEntries().size());
             for (AccessControlEntry entry : info.getEntries())
             {
@@ -261,12 +264,12 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
                 spes.add(spe);
             }
             SimpleNodePermissionEntry snpe = new SimpleNodePermissionEntry(nodeRef, acl.getInherits(), spes);
-            
+
             info.setCachedSimpleNodePermissionEntry(snpe);
             return snpe;
         }
     }
-    
+
     private SimpleNodePermissionEntry createSimpleNodePermissionEntry(StoreRef storeRef)
     {
         Acl acl = getACLDAO(storeRef).getAccessControlList(storeRef);
@@ -362,8 +365,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
     }
 
     /**
-     * Deletes all permission entries (access control list entries) that match the given criteria. Note that the access
-     * control list for the node is not deleted.
+     * Deletes all permission entries (access control list entries) that match the given criteria. Note that the access control list for the node is not deleted.
      */
     public void deletePermission(NodeRef nodeRef, String authority, PermissionReference permission)
     {
@@ -391,7 +393,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         {
             return;
         }
-        
+
         switch (acl.getAclType())
         {
         case FIXED:
@@ -481,7 +483,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
     public void setInheritParentPermissions(NodeRef nodeRef, boolean inheritParentPermissions)
     {
-        
+
         Acl acl = getAccessControlList(nodeRef);
         if ((acl == null) && (inheritParentPermissions == INHERIT_PERMISSIONS_DEFAULT))
         {
@@ -510,12 +512,10 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         getACLDAO(nodeRef).updateChangedAcls(nodeRef, all);
     }
 
-    
-    
     public void deletePermission(StoreRef storeRef, String authority, PermissionReference permission)
     {
         Acl acl = getAccessControlList(storeRef);
-        if(acl == null)
+        if (acl == null)
         {
             return;
         }
@@ -530,13 +530,13 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
     private Acl getMutableAccessControlList(StoreRef storeRef)
     {
         Acl acl = getACLDAO(storeRef).getAccessControlList(storeRef);
-        if(acl == null)
+        if (acl == null)
         {
             SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
             properties.setAclType(ACLType.DEFINING);
             properties.setInherits(false);
             properties.setVersioned(false);
-            
+
             acl = aclDaoComponent.createAccessControlList(properties);
             getACLDAO(storeRef).setAccessControlList(storeRef, acl);
         }
@@ -555,13 +555,13 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
     private Acl getAccessControlList(StoreRef storeRef)
     {
-       return getACLDAO(storeRef).getAccessControlList(storeRef);
+        return getACLDAO(storeRef).getAccessControlList(storeRef);
     }
 
     public void deletePermissions(StoreRef storeRef, String authority)
     {
         Acl acl = getAccessControlList(storeRef);
-        if(acl == null)
+        if (acl == null)
         {
             return;
         }
@@ -574,24 +574,22 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
     public void deletePermissions(StoreRef storeRef)
     {
-        getACLDAO(storeRef).setAccessControlList(storeRef, null);   
+        getACLDAO(storeRef).setAccessControlList(storeRef, null);
     }
 
     public void setPermission(StoreRef storeRef, String authority, PermissionReference permission, boolean allow)
     {
         Acl acl = getMutableAccessControlList(storeRef);
-    
+
         SimpleAccessControlEntry entry = new SimpleAccessControlEntry();
         entry.setAuthority(authority);
         entry.setPermission(permission);
         entry.setAccessStatus(allow ? AccessStatus.ALLOWED : AccessStatus.DENIED);
         entry.setAceType(ACEType.ALL);
         entry.setPosition(Integer.valueOf(0));
-        aclDaoComponent.setAccessControlEntry(acl.getId(), entry); 
+        aclDaoComponent.setAccessControlEntry(acl.getId(), entry);
     }
 
-    
-    
     public NodePermissionEntry getPermissions(StoreRef storeRef)
     {
         // Create the object if it is not found.
@@ -619,14 +617,14 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         {
             npe = createSimpleNodePermissionEntry(storeRef);
         }
-       
+
         return npe;
     }
 
     public AccessControlListProperties getAccessControlListProperties(NodeRef nodeRef)
     {
         Acl acl = getACLDAO(nodeRef).getAccessControlList(nodeRef);
-        if(acl == null)
+        if (acl == null)
         {
             return null;
         }
@@ -635,12 +633,12 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
     protected abstract CreationReport createAccessControlList(NodeRef nodeRef, boolean inherit, Acl existing);
 
-    
     /**
-     * Internal class used for reporting the collateral damage when creating an new ACL entry 
+     * Internal class used for reporting the collateral damage when creating an new ACL entry
+     * 
      * @author andyh
      *
-     */        
+     */
     static class CreationReport
     {
         Acl created;
@@ -656,7 +654,8 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         /**
          * Set the change list
          * 
-         * @param changes List<AclChange>
+         * @param changes
+         *            List<AclChange>
          */
         public void setChanges(List<AclChange> changes)
         {
@@ -665,7 +664,9 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
         /**
          * Set the ACL that was created
-         * @param created Acl
+         * 
+         * @param created
+         *            Acl
          */
         public void setCreated(Acl created)
         {
@@ -674,6 +675,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
         /**
          * Get the change list
+         * 
          * @return - the change list
          */
         public List<AclChange> getChanges()
@@ -683,6 +685,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
         /**
          * Get the created ACL
+         * 
          * @return - the acl
          */
         public Acl getCreated()

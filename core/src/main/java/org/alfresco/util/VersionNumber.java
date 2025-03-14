@@ -26,8 +26,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 /**
  * Immutable class to encapsulate a version number string.
  * 
- * A valid version number string can be made up of any number of numberical parts 
- * all delimited by '.'.
+ * A valid version number string can be made up of any number of numberical parts all delimited by '.'.
  * 
  * @author Roy Wetherall
  */
@@ -40,10 +39,10 @@ public final class VersionNumber implements Comparable<VersionNumber>, Serializa
     public static final VersionNumber VERSION_ZERO = new VersionNumber("0");
     /** A convenient '999' version */
     public static final VersionNumber VERSION_BIG = new VersionNumber("999");
-    
+
     /** Version delimeter */
     private static final String DELIMITER = "\\.";
-    
+
     /** Version parts */
     private final int[] parts;
 
@@ -52,7 +51,8 @@ public final class VersionNumber implements Comparable<VersionNumber>, Serializa
      * 
      * A AlfrescoRuntimeException will be throw if an invalid version is encountered.
      * 
-     * @param version   the version string
+     * @param version
+     *            the version string
      */
     public VersionNumber(String version)
     {
@@ -62,7 +62,7 @@ public final class VersionNumber implements Comparable<VersionNumber>, Serializa
         {
             throw new AlfrescoRuntimeException("The version string '" + version + "' is invalid.");
         }
-        
+
         try
         {
             // Set the parts of the version
@@ -77,31 +77,32 @@ public final class VersionNumber implements Comparable<VersionNumber>, Serializa
         }
         catch (NumberFormatException e)
         {
-            throw new AlfrescoRuntimeException("The version string '" + version + "' is invalid.");   
+            throw new AlfrescoRuntimeException("The version string '" + version + "' is invalid.");
         }
     }
-    
+
     /**
      * Get the various parts of the version
      * 
-     * @return  array containing the parts of the version
+     * @return array containing the parts of the version
      */
     public int[] getParts()
     {
         return this.parts.clone();
     }
-    
+
     /**
-     * Compares the passed version to this.  Determines whether they are equal, greater or less than this version.
+     * Compares the passed version to this. Determines whether they are equal, greater or less than this version.
      * 
-     * @param obj  the other version number
-     * @return  -1 if the passed version is less that this, 0 if they are equal, 1 if the passed version is greater
+     * @param obj
+     *            the other version number
+     * @return -1 if the passed version is less that this, 0 if they are equal, 1 if the passed version is greater
      */
     public int compareTo(VersionNumber obj)
     {
         int result = 0;
 
-        VersionNumber that = (VersionNumber)obj;
+        VersionNumber that = (VersionNumber) obj;
         int length = 0;
         if (this.parts.length > that.parts.length)
         {
@@ -111,12 +112,12 @@ public final class VersionNumber implements Comparable<VersionNumber>, Serializa
         {
             length = that.parts.length;
         }
-        
+
         for (int index = 0; index < length; index++)
         {
             int thisPart = this.getPart(index);
             int thatPart = that.getPart(index);
-            
+
             if (thisPart > thatPart)
             {
                 result = 1;
@@ -128,15 +129,16 @@ public final class VersionNumber implements Comparable<VersionNumber>, Serializa
                 break;
             }
         }
-        
+
         return result;
     }
-    
+
     /**
      * Helper method to the the part based on the index, if an invalid index is supplied 0 is returned.
      * 
-     * @param index     the index
-     * @return          the part value, 0 if the index is invalid
+     * @param index
+     *            the index
+     * @return the part value, 0 if the index is invalid
      */
     public int getPart(int index)
     {
@@ -147,7 +149,7 @@ public final class VersionNumber implements Comparable<VersionNumber>, Serializa
         }
         return result;
     }
-    
+
     /**
      * Hash code implementation
      */
@@ -167,7 +169,7 @@ public final class VersionNumber implements Comparable<VersionNumber>, Serializa
             return parts[0];
         }
     }
-    
+
     /**
      * Equals implementation
      */
@@ -185,7 +187,7 @@ public final class VersionNumber implements Comparable<VersionNumber>, Serializa
         VersionNumber that = (VersionNumber) obj;
         return this.compareTo(that) == 0;
     }
-    
+
     @Override
     public String toString()
     {

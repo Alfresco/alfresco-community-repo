@@ -25,16 +25,17 @@
  */
 package org.alfresco.repo.domain.propval;
 
-import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
-import org.alfresco.repo.domain.schema.SchemaBootstrap;
-import org.alfresco.test_category.OwnJVMTestsCategory;
+import static org.junit.Assert.assertEquals;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.assertEquals;
+import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
+import org.alfresco.repo.domain.schema.SchemaBootstrap;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 
 /**
  * @see PropertyTypeConverter
@@ -46,20 +47,20 @@ import static org.junit.Assert.assertEquals;
 public class PropertyTypeConverterTest
 {
     private int stringLen;
-    
+
     @Before
     public void setMaxStringLength()
     {
         stringLen = SchemaBootstrap.getMaxStringLength();
         SchemaBootstrap.setMaxStringLength(2000, new MySQLInnoDBDialect());
     }
-    
+
     @After
     public void resetMaxStringLength()
     {
         SchemaBootstrap.setMaxStringLength(stringLen, new MySQLInnoDBDialect());
     }
-    
+
     @Test
     public void testGetPersistentTypeForStrings()
     {

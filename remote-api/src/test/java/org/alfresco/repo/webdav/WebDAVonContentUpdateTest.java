@@ -34,30 +34,9 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.UserTransaction;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
-import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.policy.JavaBehaviour;
-import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.cmr.lock.LockService;
-import org.alfresco.service.cmr.lock.LockStatus;
-import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.GUID;
-import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.After;
@@ -69,9 +48,27 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
+import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.lock.LockStatus;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.LuceneTests;
+
 /**
- * Unit test for MNT-10966: 4.1.7 breaks onContentUpdate policies when using webdav
- * Implemented on base of PutMethodTest which was introduced by alex.mukha.
+ * Unit test for MNT-10966: 4.1.7 breaks onContentUpdate policies when using webdav Implemented on base of PutMethodTest which was introduced by alex.mukha.
  *
  * @author viachaslau.tsikhanovich, alex.mukha
  */
@@ -102,19 +99,18 @@ public class WebDAVonContentUpdateTest
     private NodeRef companyHomeNodeRef;
     private StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
 
-	private boolean flag;
-	private int counter = 0;
+    private boolean flag;
+    private int counter = 0;
     private NamespaceService namespaceService;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception
     {
-        ctx = ApplicationContextHelper.getApplicationContext(new String[]
-            {
+        ctx = ApplicationContextHelper.getApplicationContext(new String[]{
                 "classpath:alfresco/application-context.xml",
                 "classpath:alfresco/web-scripts-application-context.xml",
                 "classpath:alfresco/remote-api-context.xml"
-            });
+        });
     }
 
     @Before
@@ -131,7 +127,7 @@ public class WebDAVonContentUpdateTest
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-        repositoryHelper = (Repository)ctx.getBean("repositoryHelper");
+        repositoryHelper = (Repository) ctx.getBean("repositoryHelper");
         companyHomeNodeRef = repositoryHelper.getCompanyHome();
 
         InputStream testDataIS = getClass().getClassLoader().getResourceAsStream(TEST_DATA_FILE_NAME);
@@ -185,9 +181,9 @@ public class WebDAVonContentUpdateTest
         try
         {
             executeMethod(WebDAV.METHOD_LOCK, fileName, davLockInfoFile, null);
-            
+
             List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(storeRef),
-                "/app:company_home/cm:" + fileName , null, namespaceService, false);
+                    "/app:company_home/cm:" + fileName, null, namespaceService, false);
             fileNoderef = refs.get(0);
 
             assertEquals("File should be locked", LockStatus.LOCK_OWNER, lockService.getLockStatus(fileNoderef));
@@ -209,7 +205,7 @@ public class WebDAVonContentUpdateTest
         try
         {
             executeMethod(WebDAV.METHOD_PUT, fileName, testDataFile, headers);
-            
+
             assertTrue("File does not exist.", nodeService.exists(fileNoderef));
             assertEquals("Filename is not correct", fileName, nodeService.getProperty(fileNoderef, ContentModel.PROP_NAME));
             assertTrue("Expected return status is " + HttpServletResponse.SC_NO_CONTENT + ", but returned is " + response.getStatus(),
@@ -247,7 +243,7 @@ public class WebDAVonContentUpdateTest
         }
 
         assertTrue("onContentUpdate policies were not triggered", flag);
-        assertEquals("onContentUpdate policies should be triggered only once",  counter, 1);
+        assertEquals("onContentUpdate policies should be triggered only once", counter, 1);
 
         if (fileNoderef != null)
         {
@@ -260,10 +256,14 @@ public class WebDAVonContentUpdateTest
      * <p>
      * Sets content to request from a test file
      * 
-     * @param methodName Method name to prepare, should be initialized (PUT, LOCK, UNLOCK are supported)
-     * @param fileName the name of the file set to the context, can be used with path, i.e. "path/to/file/fileName.txt"
-     * @param content If <b>not null</b> adds test content to the request
-     * @param headers to set to request, can be null
+     * @param methodName
+     *            Method name to prepare, should be initialized (PUT, LOCK, UNLOCK are supported)
+     * @param fileName
+     *            the name of the file set to the context, can be used with path, i.e. "path/to/file/fileName.txt"
+     * @param content
+     *            If <b>not null</b> adds test content to the request
+     * @param headers
+     *            to set to request, can be null
      * @throws Exception
      */
     private void executeMethod(String methodName, String fileName, byte[] content, Map<String, String> headers) throws Exception

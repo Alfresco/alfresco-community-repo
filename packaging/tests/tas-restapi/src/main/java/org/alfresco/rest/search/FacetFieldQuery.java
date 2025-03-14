@@ -46,40 +46,46 @@ package org.alfresco.rest.search;
 import org.alfresco.utility.model.TestModel;
 
 /**
- * Pojo to represent facet field query.
- *         {"",""},
+ * Pojo to represent facet field query. {"",""},
  **/
 public class FacetFieldQuery extends TestModel
 {
-    
+
     private String field;
     private String prefix;
-    
-    public FacetFieldQuery() {}
+
+    public FacetFieldQuery()
+    {}
+
     public FacetFieldQuery(String field)
     {
         this.field = field;
     }
+
     public FacetFieldQuery(String field, String prefix)
     {
         this.field = field;
         this.prefix = prefix;
     }
+
     public String getField()
     {
         return field;
     }
+
     public void setField(String field)
     {
         this.field = field;
     }
+
     public String getPrefix()
     {
         return prefix;
     }
+
     public void setPrefix(String prefix)
     {
         this.prefix = prefix;
     }
-    
+
 }

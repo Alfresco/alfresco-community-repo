@@ -25,7 +25,6 @@
  */
 package org.alfresco.rest.workflow.api.model;
 
-
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
@@ -38,28 +37,33 @@ public class Variable
     protected String name;
     protected String type;
     protected Object value;
-    
+
     public String getName()
     {
         return this.name;
     }
+
     public void setName(String name)
     {
         this.name = name;
     }
+
     public String getType()
     {
         return this.type;
     }
+
     public void setType(String type)
     {
         this.type = type;
     }
-    @JsonSerialize(include= JsonSerialize.Inclusion.ALWAYS)
+
+    @JsonSerialize(include = JsonSerialize.Inclusion.ALWAYS)
     public Object getValue()
     {
         return this.value;
     }
+
     public void setValue(Object value)
     {
         this.value = value;

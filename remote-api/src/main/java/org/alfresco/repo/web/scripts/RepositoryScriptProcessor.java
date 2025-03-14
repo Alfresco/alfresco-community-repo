@@ -27,15 +27,10 @@ package org.alfresco.repo.web.scripts;
 
 import java.io.InputStream;
 import java.io.Reader;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.jscript.ValueConverter;
-import org.alfresco.scripts.ScriptException;
-import org.alfresco.service.cmr.repository.ScriptLocation;
-import org.alfresco.service.cmr.repository.ScriptService;
 import org.springframework.extensions.webscripts.MultiScriptLoader;
 import org.springframework.extensions.webscripts.ScriptContent;
 import org.springframework.extensions.webscripts.ScriptLoader;
@@ -44,6 +39,10 @@ import org.springframework.extensions.webscripts.SearchPath;
 import org.springframework.extensions.webscripts.Store;
 import org.springframework.extensions.webscripts.WebScriptException;
 
+import org.alfresco.repo.jscript.ValueConverter;
+import org.alfresco.scripts.ScriptException;
+import org.alfresco.service.cmr.repository.ScriptLocation;
+import org.alfresco.service.cmr.repository.ScriptService;
 
 /**
  * Repository (server-tier) Web Script Processor
@@ -60,9 +59,9 @@ public class RepositoryScriptProcessor implements ScriptProcessor
     // Javascript Converter
     private final ValueConverter valueConverter = new ValueConverter();
 
-    
     /**
-     * @param scriptService ScriptService
+     * @param scriptService
+     *            ScriptService
      */
     public void setScriptService(ScriptService scriptService)
     {
@@ -70,7 +69,8 @@ public class RepositoryScriptProcessor implements ScriptProcessor
     }
 
     /**
-     * @param searchPath SearchPath
+     * @param searchPath
+     *            SearchPath
      */
     public void setSearchPath(SearchPath searchPath)
     {
@@ -78,18 +78,18 @@ public class RepositoryScriptProcessor implements ScriptProcessor
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.ScriptProcessor#findScript(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.web.scripts.ScriptProcessor#findScript(java.lang.String) */
     public ScriptContent findScript(String path)
     {
         return scriptLoader.getScript(path);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.ScriptProcessor#executeScript(java.lang.String, java.util.Map)
-     */
+     * 
+     * @see org.alfresco.web.scripts.ScriptProcessor#executeScript(java.lang.String, java.util.Map) */
     public Object executeScript(String path, Map<String, Object> model)
-        throws ScriptException
+            throws ScriptException
     {
         // locate script within web script stores
         ScriptContent scriptContent = findScript(path);
@@ -102,30 +102,30 @@ public class RepositoryScriptProcessor implements ScriptProcessor
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.ScriptProcessor#executeScript(org.alfresco.web.scripts.ScriptContent, java.util.Map)
-     */
+     * 
+     * @see org.alfresco.web.scripts.ScriptProcessor#executeScript(org.alfresco.web.scripts.ScriptContent, java.util.Map) */
     public Object executeScript(ScriptContent content, Map<String, Object> model)
     {
-        return scriptService.executeScript("javascript", new RepositoryScriptLocation(content), model);        
+        return scriptService.executeScript("javascript", new RepositoryScriptLocation(content), model);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.ScriptProcessor#unwrapValue(java.lang.Object)
-     */
+     * 
+     * @see org.alfresco.web.scripts.ScriptProcessor#unwrapValue(java.lang.Object) */
     public Object unwrapValue(Object value)
     {
         return valueConverter.convertValueForJava(value);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.ScriptProcessor#reset()
-     */
+     * 
+     * @see org.alfresco.web.scripts.ScriptProcessor#reset() */
     public void reset()
     {
         init();
         this.scriptService.resetScriptProcessors();
     }
-    
+
     /**
      * Register script loader from each Web Script Store with Script Processor
      */
@@ -144,63 +144,62 @@ public class RepositoryScriptProcessor implements ScriptProcessor
         scriptLoader = new MultiScriptLoader(loaders.toArray(new ScriptLoader[loaders.size()]));
     }
 
-    
     /**
      * Script Location Facade
      */
     private static class RepositoryScriptLocation implements ScriptLocation
     {
         private ScriptContent content;
-        
+
         private RepositoryScriptLocation(ScriptContent content)
         {
             this.content = content;
         }
-        
+
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.repository.ScriptLocation#getInputStream()
-         */
+         * 
+         * @see org.alfresco.service.cmr.repository.ScriptLocation#getInputStream() */
         public InputStream getInputStream()
         {
             return content.getInputStream();
         }
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.repository.ScriptLocation#getReader()
-         */
+         * 
+         * @see org.alfresco.service.cmr.repository.ScriptLocation#getReader() */
         public Reader getReader()
         {
             return content.getReader();
         }
-        
+
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.repository.ScriptLocation#isCachable()
-         */
+         * 
+         * @see org.alfresco.service.cmr.repository.ScriptLocation#isCachable() */
         public boolean isCachable()
         {
             return content.isCachable();
         }
-        
+
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.repository.ScriptLocation#isSecure()
-         */
+         * 
+         * @see org.alfresco.service.cmr.repository.ScriptLocation#isSecure() */
         public boolean isSecure()
         {
             return content.isSecure();
         }
-        
+
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.repository.ScriptLocation#getPath()
-         */
+         * 
+         * @see org.alfresco.service.cmr.repository.ScriptLocation#getPath() */
         public String getPath()
         {
             return content.getPath();
         }
-        
+
         @Override
         public String toString()
         {
-        	return content.getPathDescription();
+            return content.getPathDescription();
         }
     }
 }

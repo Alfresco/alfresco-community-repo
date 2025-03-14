@@ -43,9 +43,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.QName;
 
 /**
- * A helper class used to start workflows. The builder is a stateful object that
- * accumulates the various parameters and package items used to start the
- * workflow. The workflow is started when the build() method is called.
+ * A helper class used to start workflows. The builder is a stateful object that accumulates the various parameters and package items used to start the workflow. The workflow is started when the build() method is called.
  * 
  * @author Nick Smith
  * @since 3.4
@@ -58,22 +56,22 @@ public class WorkflowBuilder
 
     private final Map<QName, Serializable> params = new HashMap<QName, Serializable>();
     private NodeRef packageNode = null;
-    
+
     public WorkflowBuilder(WorkflowDefinition definition,
-                WorkflowService workflowService,
-                NodeService nodeService,
-                BehaviourFilter behaviourFilter)
+            WorkflowService workflowService,
+            NodeService nodeService,
+            BehaviourFilter behaviourFilter)
     {
         this.workflowService = workflowService;
         this.packageMgr = new PackageManager(workflowService, nodeService, behaviourFilter, null);
         this.definition = definition;
     }
-    
+
     public void addParameter(QName name, Serializable value)
     {
         params.put(name, value);
     }
-    
+
     public void addAssociationParameter(QName name, List<NodeRef> values)
     {
         if (values instanceof Serializable)
@@ -81,26 +79,28 @@ public class WorkflowBuilder
             params.put(name, (Serializable) values);
         }
     }
-    
+
     /**
-     * @param packageNode the packageNode to set
+     * @param packageNode
+     *            the packageNode to set
      */
     public void setPackageNode(NodeRef packageNode)
     {
         this.packageNode = packageNode;
     }
-    
+
     public void addPackageItems(List<NodeRef> items)
     {
         packageMgr.addItems(items);
     }
-    
+
     public WorkflowInstance build()
     {
         NodeRef packageRef = packageMgr.create(packageNode);
         params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
         WorkflowPath path = workflowService.startWorkflow(definition.getId(), params);
-        if (path.isActive()){
+        if (path.isActive())
+        {
             signalStartTask(path);
         }
         return path.getInstance();

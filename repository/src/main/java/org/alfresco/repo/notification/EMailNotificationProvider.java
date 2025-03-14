@@ -31,6 +31,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
@@ -48,9 +52,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.ModelUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * EMail notification provider implementation
@@ -64,90 +65,97 @@ public class EMailNotificationProvider implements NotificationProvider
     private static final String MSG_DEFAULT_SENDER_USED = "default-sender-used";
     private static final String MSG_NO_RECIPIENTS = "no-recipients";
     private static final String MSG_NO_BODY_OR_TEMPLATE = "no-body-or-template";
-    
+
     /** Log */
-    private static Log logger = LogFactory.getLog(EMailNotificationProvider.class); 
-    
+    private static Log logger = LogFactory.getLog(EMailNotificationProvider.class);
+
     /** Name of provider */
     public final static String NAME = "email";
-    
+
     /** Notification service */
     private NotificationService notificationService;
-    
+
     /** Node service */
     private NodeService nodeService;
-    
+
     /** Action service */
     private ActionService actionService;
-    
+
     /** Person service */
     private PersonService personService;
-    
+
     /** Repository object */
     private Repository repository;
 
     /** File folder service */
     private FileFolderService fileFolderService;
-    
+
     /** Repository administration service */
     private RepoAdminService repoAdminService;
-    
+
     /**
-     * @param notificationService   notification service
+     * @param notificationService
+     *            notification service
      */
     public void setNotificationService(NotificationService notificationService)
     {
         this.notificationService = notificationService;
     }
-    
+
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
-     * @param actionService action service
+     * @param actionService
+     *            action service
      */
     public void setActionService(ActionService actionService)
     {
         this.actionService = actionService;
     }
-    
+
     /**
-     * @param personService person service
+     * @param personService
+     *            person service
      */
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
     }
-    
+
     /**
-     * @param repository    repository object
+     * @param repository
+     *            repository object
      */
     public void setRepository(Repository repository)
     {
         this.repository = repository;
     }
-    
+
     /**
-     * @param repoAdminService  repository administration serviceS
+     * @param repoAdminService
+     *            repository administration serviceS
      */
     public void setRepoAdminService(RepoAdminService repoAdminService)
     {
         this.repoAdminService = repoAdminService;
     }
-    
+
     /**
-     * @param fileFolderService file folder service
+     * @param fileFolderService
+     *            file folder service
      */
     public void setFileFolderService(FileFolderService fileFolderService)
     {
         this.fileFolderService = fileFolderService;
     }
-    
+
     /**
      * Init method registers provider with notification service.
      */
@@ -155,7 +163,7 @@ public class EMailNotificationProvider implements NotificationProvider
     {
         notificationService.register(this);
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.notification.NotificationProvider#getName()
      */
@@ -164,7 +172,7 @@ public class EMailNotificationProvider implements NotificationProvider
     {
         return NAME;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.notification.NotificationProvider#sendNotification(org.alfresco.service.cmr.notification.NotificationContext)
      */
@@ -172,7 +180,7 @@ public class EMailNotificationProvider implements NotificationProvider
     public void sendNotification(NotificationContext notificationContext)
     {
         Action mail = actionService.createAction(MailActionExecuter.NAME);
-        
+
         // Set from parameter
         String from = notificationContext.getFrom();
         if (from != null && from.length() != 0)
@@ -190,20 +198,20 @@ public class EMailNotificationProvider implements NotificationProvider
                 }
             }
         }
-        
+
         // Set to parameter
         List<String> to = notificationContext.getTo();
         if (to == null || to.size() == 0)
         {
-            errorEncountered(notificationContext, 
-                             I18NUtil.getMessage(MSG_NO_RECIPIENTS, notificationContext.getDocument()));
+            errorEncountered(notificationContext,
+                    I18NUtil.getMessage(MSG_NO_RECIPIENTS, notificationContext.getDocument()));
             return;
         }
         else
         {
-            mail.setParameterValue(MailActionExecuter.PARAM_TO_MANY, (Serializable)to);
-        }        
-        
+            mail.setParameterValue(MailActionExecuter.PARAM_TO_MANY, (Serializable) to);
+        }
+
         // Set subject
         String subject = notificationContext.getSubject();
         if (subject != null)
@@ -221,7 +229,7 @@ public class EMailNotificationProvider implements NotificationProvider
             mail.setParameterValue(MailActionExecuter.PARAM_LOCALE, userLocale);
         }
 
-        // Set body 
+        // Set body
         String body = notificationContext.getBody();
         if (body != null && body.length() != 0)
         {
@@ -233,8 +241,8 @@ public class EMailNotificationProvider implements NotificationProvider
             String template = notificationContext.getBodyTemplate();
             if (template == null)
             {
-                errorEncountered(notificationContext, 
-                                 I18NUtil.getMessage(MSG_NO_BODY_OR_TEMPLATE, notificationContext.getDocument()));
+                errorEncountered(notificationContext,
+                        I18NUtil.getMessage(MSG_NO_BODY_OR_TEMPLATE, notificationContext.getDocument()));
                 return;
             }
             else
@@ -244,41 +252,43 @@ public class EMailNotificationProvider implements NotificationProvider
                     template = fileFolderService.getLocalizedSibling(new NodeRef(template)).toString();
                 }
                 mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, template);
-                mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, 
-                                       (Serializable)buildTemplateModel(notificationContext.getTemplateArgs()));
+                mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL,
+                        (Serializable) buildTemplateModel(notificationContext.getTemplateArgs()));
             }
         }
-        
+
         // Set ignore failure
         mail.setParameterValue(MailActionExecuter.PARAM_IGNORE_SEND_FAILURE, Boolean.valueOf(notificationContext.isIgnoreNotificationFailure()));
-        
+
         // Execute mail action upon document
-        actionService.executeAction(mail, notificationContext.getDocument(), false, notificationContext.isAsyncNotification());       
+        actionService.executeAction(mail, notificationContext.getDocument(), false, notificationContext.isAsyncNotification());
     }
-    
+
     /**
-     * Gets the email for the given user name.  Returns null if none set.
+     * Gets the email for the given user name. Returns null if none set.
      * 
-     * @param user  user name
-     * @return {@link String}   user email
+     * @param user
+     *            user name
+     * @return {@link String} user email
      */
     private String getEMailFromUser(String user)
     {
-        String email =  null;
-        
+        String email = null;
+
         NodeRef person = personService.getPerson(user);
         if (person != null)
         {
-            email = (String)nodeService.getProperty(person, ContentModel.PROP_EMAIL);
+            email = (String) nodeService.getProperty(person, ContentModel.PROP_EMAIL);
         }
-        
+
         return email;
     }
-    
+
     /**
      * Build the model for the body template.
      * 
-     * @param templateArgs  template args provided by the notification context
+     * @param templateArgs
+     *            template args provided by the notification context
      * @return {@link Map}<{@link String},{@link Serializable}> template model values
      */
     private Map<String, Serializable> buildTemplateModel(Map<String, Serializable> templateArgs)
@@ -294,25 +304,27 @@ public class EMailNotificationProvider implements NotificationProvider
             model.put(TemplateService.KEY_USER_HOME, repository.getUserHome(person));
         }
         model.put(TemplateService.KEY_PRODUCT_NAME, ModelUtil.getProductName(repoAdminService));
-        
+
         // Put the notification context information in the model?
         // TODO
-        
+
         if (templateArgs != null && templateArgs.size() != 0)
         {
             // Put the provided args in the model
-            model.put("args", (Serializable)templateArgs);
+            model.put("args", (Serializable) templateArgs);
         }
-        
+
         // All done
         return model;
     }
-    
+
     /**
      * Deals with an error when it is encountered
      * 
-     * @param notificationContext   notification context
-     * @param message               error message
+     * @param notificationContext
+     *            notification context
+     * @param message
+     *            error message
      */
     private void errorEncountered(NotificationContext notificationContext, String message)
     {
@@ -320,10 +332,10 @@ public class EMailNotificationProvider implements NotificationProvider
         {
             logger.warn(message);
         }
-        
+
         if (notificationContext.isIgnoreNotificationFailure() == false)
         {
             throw new AlfrescoRuntimeException(message);
-        } 
+        }
     }
 }

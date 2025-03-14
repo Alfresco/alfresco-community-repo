@@ -28,10 +28,11 @@ package org.alfresco.repo.activities.feed;
 import java.util.Map;
 
 import org.json.JSONException;
+
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 
 /**
- * Builder interface for creating the model passed to activities feed email templates. 
+ * Builder interface for creating the model passed to activities feed email templates.
  *
  * @author Alex Miller
  */

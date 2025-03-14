@@ -32,10 +32,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
-import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+
+import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
+import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 
 /**
  * A representation of a Audit App in JUnit Test

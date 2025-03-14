@@ -25,11 +25,11 @@
  */
 package org.alfresco.rest.api;
 
+import java.util.List;
+
 import org.alfresco.rest.api.model.Comment;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
-
-import java.util.List;
 
 /**
  * 
@@ -39,7 +39,10 @@ import java.util.List;
 public interface Comments
 {
     public Comment createComment(String nodeId, Comment comment);
+
     public Comment updateComment(String nodeId, Comment comment);
+
     public void deleteComment(String nodeId, String commentNodeId);
+
     public CollectionWithPagingInfo<Comment> getComments(String nodeId, Paging paging, List<String> include);
 }

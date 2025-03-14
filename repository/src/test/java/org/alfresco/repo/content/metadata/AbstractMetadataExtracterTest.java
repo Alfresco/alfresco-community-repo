@@ -52,6 +52,8 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import junit.framework.TestCase;
+import org.joda.time.DateTimeZone;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.MiscContextTestSuite;
 import org.alfresco.model.ContentModel;
@@ -67,8 +69,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.TempFileProvider;
-import org.joda.time.DateTimeZone;
-import org.springframework.context.ApplicationContext;
 
 /**
  * @see org.alfresco.repo.content.metadata.MetadataExtracter
@@ -77,12 +77,11 @@ import org.springframework.context.ApplicationContext;
  */
 public abstract class AbstractMetadataExtracterTest extends TestCase
 {
-   /**
-    * This context will be fetched each time, but almost always
-    *  will have been cached by {@link ApplicationContextHelper}
-    */
+    /**
+     * This context will be fetched each time, but almost always will have been cached by {@link ApplicationContextHelper}
+     */
     protected ApplicationContext ctx;
-    
+
     public static final String QUICK_TITLE = "The quick brown fox jumps over the lazy dog";
     public static final String QUICK_DESCRIPTION = "Pangram, fox, dog, Gym class featuring a brown fox and lazy dog";
     public static final String QUICK_CREATOR = "Nevin Nollop";
@@ -101,22 +100,22 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
     public void setUp() throws Exception
     {
         // Grab the context, which will normally have been
-        //  cached by the ApplicationContextHelper
+        // cached by the ApplicationContextHelper
         ctx = MiscContextTestSuite.getMinimalContext();
-        
+
         this.mimetypeMap = (MimetypeMap) ctx.getBean("mimetypeService");
         this.dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
-        
+
         // perform a little cleaning up
         long now = System.currentTimeMillis();
         TempFileProvider.TempFileCleanerJob.removeFiles(now);
-        
+
         TimeZone tz = TimeZone.getTimeZone("GMT");
         TimeZone.setDefault(tz);
         // Joda time has already grabbed the JVM zone so re-set it here
         DateTimeZone.setDefault(DateTimeZone.forTimeZone(tz));
     }
-    
+
     /**
      * Check that all objects are present
      */
@@ -127,17 +126,17 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
         File sourceFile = AbstractContentTransformerTest.loadQuickTestFile("txt");
         assertNotNull("quick.* files should be available from Tests", sourceFile);
     }
-    
+
     protected void testExtractFromMimetype(String mimetype) throws Exception
     {
         try
         {
             Map<QName, Serializable> properties = extractFromMimetype(mimetype);
             // check we got something
-            
+
             assertFalse("extractFromMimetype should return at least some properties, none found for " + mimetype,
                     properties.isEmpty());
-            
+
             // check common metadata
             testCommonMetadata(mimetype, properties);
             // check file-type specific metadata
@@ -145,9 +144,9 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
         }
         catch (FileNotFoundException e)
         {
-            // The test file is not there.  We won't fail it.
-           System.err.println("No test file found for mime type " + mimetype + 
-                 ", skipping extraction test - " + e.getMessage());
+            // The test file is not there. We won't fail it.
+            System.err.println("No test file found for mime type " + mimetype +
+                    ", skipping extraction test - " + e.getMessage());
         }
     }
 
@@ -176,78 +175,74 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
     }
 
     /**
-     * Tests that we can get the common metadata correctly
-     *  from the file.
-     * You only need to override this if your test data file
-     *  doesn't have the usual Nevin Nollop/quick brown fox 
-     *  data in it.
+     * Tests that we can get the common metadata correctly from the file. You only need to override this if your test data file doesn't have the usual Nevin Nollop/quick brown fox data in it.
      */
     protected void testCommonMetadata(String mimetype, Map<QName, Serializable> properties)
     {
-       // One of Creator or Author
-       if(!skipAuthorCheck(mimetype)) 
-       {
-          if(properties.containsKey(ContentModel.PROP_CREATOR)) 
-          {
-             assertEquals(
-                   "Property " + ContentModel.PROP_CREATOR + " not found for mimetype " + mimetype,
-                   QUICK_CREATOR,
-                   DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_CREATOR)));
-          } 
-          else if(properties.containsKey(ContentModel.PROP_AUTHOR)) 
-          {
-             assertEquals(
-                   "Property " + ContentModel.PROP_AUTHOR + " not found for mimetype " + mimetype,
-                   QUICK_CREATOR,
-                   DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_AUTHOR)));
-          } 
-          else 
-          {
-             fail("Expected one property out of " + ContentModel.PROP_CREATOR + " and " + 
-                   ContentModel.PROP_AUTHOR + " but found neither of them for " + mimetype);
-          }
-       }
-       
-       // Title and description
-       assertEquals(
+        // One of Creator or Author
+        if (!skipAuthorCheck(mimetype))
+        {
+            if (properties.containsKey(ContentModel.PROP_CREATOR))
+            {
+                assertEquals(
+                        "Property " + ContentModel.PROP_CREATOR + " not found for mimetype " + mimetype,
+                        QUICK_CREATOR,
+                        DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_CREATOR)));
+            }
+            else if (properties.containsKey(ContentModel.PROP_AUTHOR))
+            {
+                assertEquals(
+                        "Property " + ContentModel.PROP_AUTHOR + " not found for mimetype " + mimetype,
+                        QUICK_CREATOR,
+                        DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_AUTHOR)));
+            }
+            else
+            {
+                fail("Expected one property out of " + ContentModel.PROP_CREATOR + " and " +
+                        ContentModel.PROP_AUTHOR + " but found neither of them for " + mimetype);
+            }
+        }
+
+        // Title and description
+        assertEquals(
                 "Property " + ContentModel.PROP_TITLE + " not found for mimetype " + mimetype,
                 QUICK_TITLE,
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_TITLE)));
-       if (!skipDescriptionCheck(mimetype)) 
-       {
-           assertEquals(
-                   "Property " + ContentModel.PROP_DESCRIPTION + " not found for mimetype " + mimetype,
-                   QUICK_DESCRIPTION,
-                   DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_DESCRIPTION)));
-       }
+        if (!skipDescriptionCheck(mimetype))
+        {
+            assertEquals(
+                    "Property " + ContentModel.PROP_DESCRIPTION + " not found for mimetype " + mimetype,
+                    QUICK_DESCRIPTION,
+                    DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_DESCRIPTION)));
+        }
     }
+
     protected abstract void testFileSpecificMetadata(String mimetype, Map<QName, Serializable> properties);
-    
+
     /**
-     * This method can be overridden to cause the author/creator property check to be skipped.
-     * The default behaviour is for the check not to be skipped for all MIME types.
+     * This method can be overridden to cause the author/creator property check to be skipped. The default behaviour is for the check not to be skipped for all MIME types.
      * 
-     * @param mimetype String
+     * @param mimetype
+     *            String
      * @return <code>true</code> to skip the checks, else <code>false</code>
      */
     protected boolean skipAuthorCheck(String mimetype)
     {
         return false;
     }
-    
+
     /**
-     * This method can be overridden to cause the description property check to be skipped.
-     * The default behaviour is for the check not to be skipped for all MIME types.
+     * This method can be overridden to cause the description property check to be skipped. The default behaviour is for the check not to be skipped for all MIME types.
      * 
-     * @param mimetype String
+     * @param mimetype
+     *            String
      * @return <code>true</code> to skip the checks, else <code>false</code>
      */
     protected boolean skipDescriptionCheck(String mimetype)
     {
         return false;
     }
-    
-    
+
     public void testZeroLengthFile() throws Exception
     {
         MetadataExtracter extractor = getExtracter();
@@ -272,18 +267,18 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
             assertEquals("There should not be any new properties", 0, properties.size());
         }
     }
-    
-    
-    protected static void assertContains(String message, String needle, String haystack) 
+
+    protected static void assertContains(String message, String needle, String haystack)
     {
-       if(haystack.indexOf(needle) > -1) 
-       {
-          return;
-       }
-       fail(message);
+        if (haystack.indexOf(needle) > -1)
+        {
+            return;
+        }
+        fail(message);
     }
-    protected static void assertContains(String needle, String haystack) 
+
+    protected static void assertContains(String needle, String haystack)
     {
-       assertContains("'" + needle + "' wasn't found in '" + haystack + "'", needle, haystack);
+        assertContains("'" + needle + "' wasn't found in '" + haystack + "'", needle, haystack);
     }
 }

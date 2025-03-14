@@ -41,11 +41,20 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -76,17 +85,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
-import org.alfresco.util.testing.category.LuceneTests;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentCaptor;
-import org.springframework.test.context.transaction.TestTransaction;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
  * Unit test for RepoTransferReceiverImpl
@@ -109,7 +107,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
     private PolicyComponent policyComponent;
     private Repository repositoryHelper;
     private NamespaceService namespaceService;
-    
+
     @Before
     public void before() throws Exception
     {
@@ -130,7 +128,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         this.searchService = (SearchService) this.applicationContext.getBean("searchService");
         this.repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
         this.namespaceService = (NamespaceService) this.applicationContext.getBean("namespaceService");
-        this.dummyContent = "This is some dummy content.";        
+        this.dummyContent = "This is some dummy content.";
         this.dummyContentBytes = dummyContent.getBytes("UTF-8");
         authenticationComponent.setSystemUserAsCurrentUser();
 
@@ -143,16 +141,16 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
     public void testDelete()
     {
         log.debug("start testDelete");
-        
+
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
         final String uuid = GUID.generate();
-        class TestContext 
+        class TestContext
         {
             ChildAssociationRef childAssoc;
-        };
-        
-        RetryingTransactionCallback<TestContext> setupCB = new RetryingTransactionCallback<TestContext>()
-        {
+        }
+        ;
+
+        RetryingTransactionCallback<TestContext> setupCB = new RetryingTransactionCallback<TestContext>() {
 
             @Override
             public TestContext execute() throws Throwable
@@ -161,16 +159,15 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 NodeRef companyHome = repositoryHelper.getCompanyHome();
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>();
                 props.put(ContentModel.PROP_NAME, uuid);
-                tc.childAssoc = nodeService.createNode(companyHome, ContentModel.ASSOC_CONTAINS, 
+                tc.childAssoc = nodeService.createNode(companyHome, ContentModel.ASSOC_CONTAINS,
                         QName.createQName(NamespaceService.APP_MODEL_1_0_URI, uuid), ContentModel.TYPE_CONTENT, props);
                 return tc;
             }
         };
-        
+
         final TestContext tc = tran.doInTransaction(setupCB, false, true);
-        
-        RetryingTransactionCallback<Void> deleteCB = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> deleteCB = new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -179,11 +176,10 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        
+
         tran.doInTransaction(deleteCB, false, true);
-        
-        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -198,30 +194,30 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        
+
         tran.doInTransaction(validateCB, false, true);
-        
+
     }
-    
+
     /**
      * Tests start and end with regard to locking.
+     * 
      * @throws Exception
      */
     public void DISABLED_testStartAndEnd() throws Exception
     {
         log.debug("start testStartAndEnd");
-        
+
         RetryingTransactionHelper trx = transactionService.getRetryingTransactionHelper();
-       
-        RetryingTransactionCallback<Void> cb = new RetryingTransactionCallback<Void>()
-        {
-            
+
+        RetryingTransactionCallback<Void> cb = new RetryingTransactionCallback<Void>() {
+
             @Override
             public Void execute() throws Throwable
             {
                 log.debug("about to call start");
                 String transferId = receiver.start("1234", true, receiver.getVersion());
-                
+
                 File stagingFolder = null;
                 try
                 {
@@ -242,7 +238,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                     {
                         // Expected
                     }
-                
+
                     Thread.sleep(300);
                     try
                     {
@@ -253,44 +249,44 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                     {
                         // Expected
                     }
-                
+
                     try
                     {
                         receiver.end(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()).toString());
-//                      fail("Successfully ended with transfer id that doesn't own lock.");
+                        // fail("Successfully ended with transfer id that doesn't own lock.");
                     }
                     catch (TransferException ex)
                     {
                         // Expected
                     }
-                } 
+                }
                 finally
                 {
                     log.debug("about to call end");
                     receiver.end(transferId);
-                    
+
                     /**
                      * Check clean-up
                      */
-                    if(stagingFolder != null)
+                    if (stagingFolder != null)
                     {
                         assertFalse(stagingFolder.exists());
                     }
                 }
-       
+
                 return null;
             }
         };
-        
-        long oldRefreshTime = receiver.getLockRefreshTime();  
+
+        long oldRefreshTime = receiver.getLockRefreshTime();
         try
         {
             receiver.setLockRefreshTime(500);
-        
+
             for (int i = 0; i < 5; i++)
             {
                 log.info("test iteration:" + i);
-                
+
                 trx.doInTransaction(cb, false, true);
             }
         }
@@ -299,24 +295,24 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
             receiver.setLockRefreshTime(oldRefreshTime);
         }
     }
-    
+
     /**
      * Tests start and end with regard to locking.
      * 
      * Going to cut down the timeout to a very short period, the lock should expire
+     * 
      * @throws Exception
      */
     public void DISABLED_testLockTimeout() throws Exception
     {
         log.info("start testLockTimeout");
-        
+
         RetryingTransactionHelper trx = transactionService.getRetryingTransactionHelper();
-        
+
         /**
          * Simulates a client starting a transfer and then "going away";
          */
-        RetryingTransactionCallback<Void> startWithoutAnythingElse = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> startWithoutAnythingElse = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -325,9 +321,8 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        
-        RetryingTransactionCallback<Void> slowTransfer = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> slowTransfer = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -339,19 +334,17 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        
-        
+
         long lockRefreshTime = receiver.getLockRefreshTime();
         long lockTimeOut = receiver.getLockTimeOut();
-        
+
         try
         {
             receiver.setLockRefreshTime(500);
             receiver.setLockTimeOut(200);
-        
+
             /**
-             * This test simulates a client that starts a transfer and then "goes away".  
-             * We kludge the timeouts to far shorter than normal to make the test run in a reasonable time.
+             * This test simulates a client that starts a transfer and then "goes away". We kludge the timeouts to far shorter than normal to make the test run in a reasonable time.
              */
             for (int i = 0; i < 3; i++)
             {
@@ -367,13 +360,13 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
             {
                 // Expect to go here.
             }
-        } 
+        }
         finally
         {
             receiver.setLockRefreshTime(lockRefreshTime);
             receiver.setLockTimeOut(lockTimeOut);
         }
-        
+
         log.info("end testLockTimeout");
     }
 
@@ -431,17 +424,16 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
     public void testBasicCommit() throws Exception
     {
         log.info("start testBasicCommit");
-        
+
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
-        
+
         class TestContext
         {
             TransferManifestNode node = null;
             String transferId = null;
         }
-        
-        RetryingTransactionCallback<TestContext> setupCB = new RetryingTransactionCallback<TestContext>()
-        {
+
+        RetryingTransactionCallback<TestContext> setupCB = new RetryingTransactionCallback<TestContext>() {
             @Override
             public TestContext execute() throws Throwable
             {
@@ -450,29 +442,27 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 return tc;
             }
         };
-        
+
         final TestContext tc = tran.doInTransaction(setupCB, false, true);
-        
-        RetryingTransactionCallback<Void> doPrepareCB = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> doPrepareCB = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
                 tc.transferId = receiver.start("1234", true, receiver.getVersion());
-                
+
                 List<TransferManifestNode> nodes = new ArrayList<TransferManifestNode>();
                 nodes.add(tc.node);
                 String snapshot = createSnapshot(nodes);
 
                 receiver.saveSnapshot(tc.transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
                 receiver.saveContent(tc.transferId, tc.node.getUuid(), new ByteArrayInputStream(dummyContentBytes));
-            
+
                 return null;
             }
         };
-  
-        RetryingTransactionCallback<Void> doCommitCB = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> doCommitCB = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -481,9 +471,8 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        
-        RetryingTransactionCallback<Void> doEndCB = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> doEndCB = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -491,7 +480,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        
+
         try
         {
             tran.doInTransaction(doPrepareCB, false, true);
@@ -499,14 +488,13 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         }
         finally
         {
-            if(tc.transferId != null)
+            if (tc.transferId != null)
             {
                 tran.doInTransaction(doEndCB, false, true);
             }
         }
 
-        RetryingTransactionCallback<Void> doValidateCB = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> doValidateCB = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -516,7 +504,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        
+
         tran.doInTransaction(doValidateCB, false, true);
     }
 
@@ -530,7 +518,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
     {
         log.info("start testMoreComplexCommit");
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
-        
+
         class TestContext
         {
             List<TransferManifestNode> nodes = new ArrayList<TransferManifestNode>();
@@ -547,15 +535,15 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
             TransferManifestNormalNode node11 = null;
             TransferManifestNode node12 = null;
             String transferId = null;
-        };
+        }
+        ;
 
-        RetryingTransactionCallback<TestContext> setupCB = new RetryingTransactionCallback<TestContext>()
-        {
+        RetryingTransactionCallback<TestContext> setupCB = new RetryingTransactionCallback<TestContext>() {
             @Override
             public TestContext execute() throws Throwable
             {
                 TestContext tc = new TestContext();
-           
+
                 tc.node1 = createContentNode();
                 tc.nodes.add(tc.node1);
                 tc.node2 = createContentNode();
@@ -583,15 +571,14 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
 
                 associatePeers(tc.node1, tc.node2);
                 moveNode(tc.node2, tc.node11);
-                
+
                 return tc;
             }
         };
-        
+
         final TestContext tc = tran.doInTransaction(setupCB, false, true);
-  
-        RetryingTransactionCallback<Void> doPrepareCB = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> doPrepareCB = new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -603,14 +590,13 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
 
                 for (TransferManifestNode node : tc.nodes)
                 {
-                     receiver.saveContent(tc.transferId, node.getUuid(), new ByteArrayInputStream(dummyContentBytes));
+                    receiver.saveContent(tc.transferId, node.getUuid(), new ByteArrayInputStream(dummyContentBytes));
                 }
                 return null;
             }
         };
 
-        RetryingTransactionCallback<Void> doCommitCB = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> doCommitCB = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -620,8 +606,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        RetryingTransactionCallback<Void> doEndCB = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> doEndCB = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -630,7 +615,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        
+
         try
         {
             tran.doInTransaction(doPrepareCB, false, true);
@@ -638,14 +623,13 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         }
         finally
         {
-            if(tc.transferId != null)
+            if (tc.transferId != null)
             {
                 tran.doInTransaction(doEndCB, false, true);
             }
         }
-        
-        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -657,13 +641,13 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 {
                     assertTrue(nodeService.exists(node.getNodeRef()));
                 }
-               
+
                 return null;
             }
         };
         tran.doInTransaction(validateCB, false, true);
     }
-    
+
     /**
      * Test Node Delete And Restore
      * 
@@ -674,18 +658,17 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
     public void testNodeDeleteAndRestore() throws Exception
     {
         log.info("start testNodeDeleteAndRestore");
-        
+
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
-        
-        final TransferServicePolicies.OnEndInboundTransferPolicy mockedPolicyHandler = 
-            mock(TransferServicePolicies.OnEndInboundTransferPolicy.class);
-        
+
+        final TransferServicePolicies.OnEndInboundTransferPolicy mockedPolicyHandler = mock(TransferServicePolicies.OnEndInboundTransferPolicy.class);
+
         policyComponent.bindClassBehaviour(
                 TransferServicePolicies.OnEndInboundTransferPolicy.QNAME,
-                TransferModel.TYPE_TRANSFER_RECORD, 
+                TransferModel.TYPE_TRANSFER_RECORD,
                 new JavaBehaviour(mockedPolicyHandler, "onEndInboundTransfer", NotificationFrequency.EVERY_EVENT));
-        
-        class TestContext 
+
+        class TestContext
         {
             String transferId;
             TransferManifestNormalNode node1;
@@ -705,15 +688,15 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
             TransferManifestDeletedNode deletedNode11;
             List<TransferManifestNode> nodes;
             String errorMsgId;
-        };
-        
-        RetryingTransactionCallback<TestContext> setupCB = new RetryingTransactionCallback<TestContext>()
-        {
+        }
+        ;
+
+        RetryingTransactionCallback<TestContext> setupCB = new RetryingTransactionCallback<TestContext>() {
             @Override
             public TestContext execute() throws Throwable
             {
                 TestContext tc = new TestContext();
-                
+
                 tc.nodes = new ArrayList<TransferManifestNode>();
                 tc.node1 = createContentNode();
                 tc.nodes.add(tc.node1);
@@ -746,15 +729,14 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 tc.deletedNode8 = createDeletedNode(tc.node8);
                 tc.deletedNode2 = createDeletedNode(tc.node2);
                 tc.deletedNode11 = createDeletedNode(tc.node11);
-           
+
                 return tc;
             }
         };
-        
+
         final TestContext tc = tran.doInTransaction(setupCB, false, true);
-        
-        RetryingTransactionCallback<Void> doFirstPrepareCB = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> doFirstPrepareCB = new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -768,24 +750,22 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 {
                     receiver.saveContent(tc.transferId, node.getUuid(), new ByteArrayInputStream(dummyContentBytes));
                 }
-             
+
                 return null;
             }
         };
-        
-        RetryingTransactionCallback<Void> doCommitCB = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> doCommitCB = new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
             {
                 receiver.commit(tc.transferId);
-                
+
                 return null;
             }
         };
-        RetryingTransactionCallback<Void> doEndCB = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> doEndCB = new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -795,9 +775,8 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        
-        RetryingTransactionCallback<Void> validateFirstCB = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> validateFirstCB = new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -809,9 +788,9 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 ArgumentCaptor<Set> createdNodesCaptor = ArgumentCaptor.forClass(Set.class);
                 ArgumentCaptor<Set> updatedNodesCaptor = ArgumentCaptor.forClass(Set.class);
                 ArgumentCaptor<Set> deletedNodesCaptor = ArgumentCaptor.forClass(Set.class);
-                verify(mockedPolicyHandler, times(1)).onEndInboundTransfer(transferIdCaptor.capture(), 
-                        createdNodesCaptor.capture(), 
-                        updatedNodesCaptor.capture(), 
+                verify(mockedPolicyHandler, times(1)).onEndInboundTransfer(transferIdCaptor.capture(),
+                        createdNodesCaptor.capture(),
+                        updatedNodesCaptor.capture(),
                         deletedNodesCaptor.capture());
                 assertEquals(tc.transferId, transferIdCaptor.getValue());
                 Set capturedCreatedNodes = createdNodesCaptor.getValue();
@@ -825,15 +804,14 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-  
-        
+
         /**
          * First transfer test here
          */
         try
         {
             tran.doInTransaction(doFirstPrepareCB, false, true);
-            //MNT-15847 ensure that all onEndInboundTransfer calls from setupCB are not
+            // MNT-15847 ensure that all onEndInboundTransfer calls from setupCB are not
             // counted in validateFirstCB
             reset(mockedPolicyHandler);
             tran.doInTransaction(doCommitCB, false, true);
@@ -841,41 +819,39 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         }
         finally
         {
-            if(tc.transferId != null)
+            if (tc.transferId != null)
             {
                 tran.doInTransaction(doEndCB, false, true);
             }
         }
-        
+
         /**
          * Second transfer this time with some deleted nodes,
          * 
          * nodes 8, 2, and 11 (11 and 2 are parent/child)
          */
         reset(mockedPolicyHandler);
-        
+
         logger.debug("part 2 - transfer some deleted nodes");
-        
-        RetryingTransactionCallback<Void> doSecondPrepareCB = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> doSecondPrepareCB = new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
             {
                 // Now delete nodes 8, 2, and 11 (11 and 2 are parent/child)
                 tc.transferId = receiver.start("1234", true, receiver.getVersion());
-                String snapshot = createSnapshot(Arrays.asList(new TransferManifestNode[] { tc.deletedNode8, 
+                String snapshot = createSnapshot(Arrays.asList(new TransferManifestNode[]{tc.deletedNode8,
                         tc.deletedNode2,
-                        tc.deletedNode11 }));
+                        tc.deletedNode11}));
                 log.debug(snapshot);
                 receiver.saveSnapshot(tc.transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
-             
+
                 return null;
             }
         };
-        
-        RetryingTransactionCallback<Void> validateSecondCB = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> validateSecondCB = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -883,9 +859,9 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 ArgumentCaptor<Set> createdNodesCaptor = ArgumentCaptor.forClass(Set.class);
                 ArgumentCaptor<Set> updatedNodesCaptor = ArgumentCaptor.forClass(Set.class);
                 ArgumentCaptor<Set> deletedNodesCaptor = ArgumentCaptor.forClass(Set.class);
-                verify(mockedPolicyHandler, times(1)).onEndInboundTransfer(transferIdCaptor.capture(), 
-                        createdNodesCaptor.capture(), 
-                        updatedNodesCaptor.capture(), 
+                verify(mockedPolicyHandler, times(1)).onEndInboundTransfer(transferIdCaptor.capture(),
+                        createdNodesCaptor.capture(),
+                        updatedNodesCaptor.capture(),
                         deletedNodesCaptor.capture());
                 assertEquals(tc.transferId, transferIdCaptor.getValue());
                 Set capturedDeletedNodes = deletedNodesCaptor.getValue();
@@ -893,29 +869,29 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 assertTrue(capturedDeletedNodes.contains(tc.deletedNode8.getNodeRef()));
                 assertTrue(capturedDeletedNodes.contains(tc.deletedNode2.getNodeRef()));
                 assertTrue(capturedDeletedNodes.contains(tc.deletedNode11.getNodeRef()));
-                
+
                 log.debug("Test success of transfer...");
                 TransferProgress progress = receiver.getProgressMonitor().getProgress(tc.transferId);
                 assertEquals(TransferProgress.Status.COMPLETE, progress.getStatus());
 
-                NodeRef archiveNode8 = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, tc.node8.getNodeRef().getId()); 
-                NodeRef archiveNode2 = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, tc.node2.getNodeRef().getId()); 
-                NodeRef archiveNode11 = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, tc.node11.getNodeRef().getId()); 
+                NodeRef archiveNode8 = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, tc.node8.getNodeRef().getId());
+                NodeRef archiveNode2 = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, tc.node2.getNodeRef().getId());
+                NodeRef archiveNode11 = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, tc.node11.getNodeRef().getId());
 
                 assertTrue(nodeService.exists(archiveNode8));
                 assertTrue(nodeService.hasAspect(archiveNode8, ContentModel.ASPECT_ARCHIVED));
                 log.debug("Successfully tested existence of archive node: " + archiveNode8);
-                
+
                 assertTrue(nodeService.exists(archiveNode2));
                 assertTrue(nodeService.hasAspect(archiveNode2, ContentModel.ASPECT_ARCHIVED));
                 log.debug("Successfully tested existence of archive node: " + archiveNode2);
-                
+
                 assertTrue(nodeService.exists(archiveNode11));
                 assertTrue(nodeService.hasAspect(archiveNode11, ContentModel.ASPECT_ARCHIVED));
                 log.debug("Successfully tested existence of archive node: " + archiveNode11);
-                
+
                 log.debug("Successfully tested existence of all archive nodes");
-                
+
                 log.debug("Testing existence of original node: " + tc.node8.getNodeRef());
                 assertFalse(nodeService.exists(tc.node8.getNodeRef()));
 
@@ -924,14 +900,14 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
 
                 log.debug("Testing existence of original node: " + tc.node11.getNodeRef());
                 assertFalse(nodeService.exists(tc.node11.getNodeRef()));
-                
+
                 log.debug("Successfully tested non-existence of all original nodes");
-                
+
                 log.debug("Progress indication: " + progress.getCurrentPosition() + "/" + progress.getEndPosition());
                 return null;
             }
         };
-        
+
         try
         {
             tran.doInTransaction(doSecondPrepareCB, false, true);
@@ -940,40 +916,37 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         }
         finally
         {
-            if(tc.transferId != null)
+            if (tc.transferId != null)
             {
                 tran.doInTransaction(doEndCB, false, true);
             }
         }
-        
+
         logger.debug("part 3 - restore orphan node which should fail");
         System.out.println("Now try to restore orphan node 2.");
         /**
-         * A third transfer.  Expect an "orphan" failure, since its parent (node11) is deleted
+         * A third transfer. Expect an "orphan" failure, since its parent (node11) is deleted
          */
         reset(mockedPolicyHandler);
 
         String errorMsgId = null;
-        
-        RetryingTransactionCallback<Void> doThirdPrepareCB = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> doThirdPrepareCB = new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
             {
                 tc.transferId = receiver.start("1234", true, receiver.getVersion());
-                String snapshot = createSnapshot(Arrays.asList(new TransferManifestNode[] { tc.node2 }));
+                String snapshot = createSnapshot(Arrays.asList(new TransferManifestNode[]{tc.node2}));
                 log.debug(snapshot);
                 receiver.saveSnapshot(tc.transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
                 receiver.saveContent(tc.transferId, tc.node2.getUuid(), new ByteArrayInputStream(dummyContentBytes));
-             
+
                 return null;
             }
         };
-        
 
-        RetryingTransactionCallback<Void> doCommitExpectingFailCB = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> doCommitExpectingFailCB = new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -992,23 +965,21 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                     ArgumentCaptor<Set> createdNodesCaptor = ArgumentCaptor.forClass(Set.class);
                     ArgumentCaptor<Set> updatedNodesCaptor = ArgumentCaptor.forClass(Set.class);
                     ArgumentCaptor<Set> deletedNodesCaptor = ArgumentCaptor.forClass(Set.class);
-                    
-                    verify(mockedPolicyHandler, times(1)).onEndInboundTransfer(transferIdCaptor.capture(), 
+
+                    verify(mockedPolicyHandler, times(1)).onEndInboundTransfer(transferIdCaptor.capture(),
                             createdNodesCaptor.capture(), updatedNodesCaptor.capture(), deletedNodesCaptor.capture());
-                    
+
                     assertEquals(tc.transferId, transferIdCaptor.getValue());
                     assertTrue(createdNodesCaptor.getValue().isEmpty());
                     assertTrue(updatedNodesCaptor.getValue().isEmpty());
                     assertTrue(deletedNodesCaptor.getValue().isEmpty());
                 }
-       
-                
+
                 return null;
             }
         };
-        
-        RetryingTransactionCallback<Void> validateThirdCB = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> validateThirdCB = new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -1022,7 +993,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        
+
         try
         {
             tran.doInTransaction(doThirdPrepareCB, false, true);
@@ -1030,45 +1001,28 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         }
         finally
         {
-            if(tc.transferId != null)
+            if (tc.transferId != null)
             {
                 tran.doInTransaction(doEndCB, false, true);
             }
         }
-        
+
         tran.doInTransaction(validateThirdCB, false, true);
-        
+
         log.debug("start testNodeDeleteAndRestore");
-    
+
     }
 
     /**
-     * Test for fault raised as ALF-2772
-     * (https://issues.alfresco.com/jira/browse/ALF-2772) When transferring
-     * nodes it shouldn't matter the order in which they appear in the snapshot.
-     * That is to say, it shouldn't matter if a child node is listed before its
-     * parent node.
+     * Test for fault raised as ALF-2772 (https://issues.alfresco.com/jira/browse/ALF-2772) When transferring nodes it shouldn't matter the order in which they appear in the snapshot. That is to say, it shouldn't matter if a child node is listed before its parent node.
      * 
-     * Typically this is true, but in the special case where the parent node is
-     * being restored from the target's archive store then there is a fault. The
-     * process should be:
+     * Typically this is true, but in the special case where the parent node is being restored from the target's archive store then there is a fault. The process should be:
      * 
-     * 1. Process child node 
-     * 2. Fail to find parent node 
-     * 3. Place child node in temporary location and mark as an orphan 
-     * 4. Process parent node 
-     * 5. Create node to correspond to parent node 
-     * 6. "Re-parent" orphaned child node with parent node
+     * 1. Process child node 2. Fail to find parent node 3. Place child node in temporary location and mark as an orphan 4. Process parent node 5. Create node to correspond to parent node 6. "Re-parent" orphaned child node with parent node
      * 
-     * However, in the case where the parent node is found in the target's
-     * archive store, the process is actually:
+     * However, in the case where the parent node is found in the target's archive store, the process is actually:
      * 
-     * 1. Process child node 
-     * 2. Fail to find parent node 
-     * 3. Place child node in temporary location and mark as an orphan 
-     * 4. Process parent node 
-     * 5. Find corresponding parent node in archive store and restore it 
-     * 6. Update corresponding parent node
+     * 1. Process child node 2. Fail to find parent node 3. Place child node in temporary location and mark as an orphan 4. Process parent node 5. Find corresponding parent node in archive store and restore it 6. Update corresponding parent node
      * 
      * Note that, in this case, we are not re-parenting the orphan as we should be.
      * 
@@ -1079,7 +1033,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
     {
         log.debug("start testJira_ALF_2772");
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
-        
+
         class TestContext
         {
             TransferManifestNormalNode node1 = null;
@@ -1087,32 +1041,31 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
             TransferManifestNormalNode node11 = null;
             TransferManifestDeletedNode deletedNode11 = null;
             String transferId = null;
-        };
-        
-        RetryingTransactionCallback<TestContext> setupCB = new RetryingTransactionCallback<TestContext>()
-        {
+        }
+        ;
+
+        RetryingTransactionCallback<TestContext> setupCB = new RetryingTransactionCallback<TestContext>() {
             @Override
             public TestContext execute() throws Throwable
             {
                 TestContext tc = new TestContext();
-                
+
                 tc.node1 = createContentNode();
                 tc.node2 = createContentNode();
                 tc.node11 = createFolderNode();
-                
+
                 associatePeers(tc.node1, tc.node2);
                 moveNode(tc.node2, tc.node11);
-                
+
                 tc.deletedNode11 = createDeletedNode(tc.node11);
-                
+
                 return tc;
             }
         };
-        
+
         final TestContext tc = tran.doInTransaction(setupCB, false, true);
-        
-        RetryingTransactionCallback<Void> doEndCB = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> doEndCB = new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -1123,9 +1076,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
             }
         };
 
-
-        RetryingTransactionCallback<Void> doFirstCB = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> doFirstCB = new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -1133,10 +1084,10 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 tc.transferId = receiver.start("1234", true, receiver.getVersion());
 
                 List<TransferManifestNode> nodes = new ArrayList<TransferManifestNode>();
-                
-                //First we'll just send a folder node
+
+                // First we'll just send a folder node
                 nodes.add(tc.node11);
-                
+
                 String snapshot = createSnapshot(nodes);
                 log.debug(snapshot);
                 receiver.saveSnapshot(tc.transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
@@ -1151,11 +1102,11 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 {
                     assertTrue(nodeService.exists(node.getNodeRef()));
                 }
-                
+
                 return null;
             }
         };
-        
+
         /**
          * First we'll just send a folder node
          */
@@ -1165,35 +1116,31 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         }
         finally
         {
-            if(tc.transferId != null)
+            if (tc.transferId != null)
             {
                 tran.doInTransaction(doEndCB, false, true);
             }
         }
-        
-        
-                
-        RetryingTransactionCallback<Void> doSecondCB = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> doSecondCB = new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
             {
                 tc.transferId = receiver.start("1234", true, receiver.getVersion());
-                String snapshot = createSnapshot(Arrays.asList(new TransferManifestNode[] { tc.deletedNode11 }));
+                String snapshot = createSnapshot(Arrays.asList(new TransferManifestNode[]{tc.deletedNode11}));
                 log.debug(snapshot);
                 receiver.saveSnapshot(tc.transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
                 receiver.commit(tc.transferId);
-               
+
                 return null;
             }
         };
-        
-        RetryingTransactionCallback<Void> doValidateSecondCB = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> doValidateSecondCB = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
-            {     
+            {
                 TransferProgress progress = receiver.getProgressMonitor().getProgress(tc.transferId);
                 assertEquals(TransferProgress.Status.COMPLETE, progress.getStatus());
 
@@ -1201,20 +1148,20 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 assertTrue(nodeService.exists(archivedNodeRef));
                 assertTrue(nodeService.hasAspect(archivedNodeRef, ContentModel.ASPECT_ARCHIVED));
                 log.debug("Successfully tested existence of archive node: " + tc.deletedNode11.getNodeRef());
-                
+
                 log.debug("Successfully tested existence of all archive nodes");
-                
+
                 log.debug("Testing existence of original node: " + tc.node11.getNodeRef());
                 assertFalse(nodeService.exists(tc.node11.getNodeRef()));
 
                 log.debug("Successfully tested non-existence of all original nodes");
-                
+
                 log.debug("Progress indication: " + progress.getCurrentPosition() + "/" + progress.getEndPosition());
-                
+
                 return null;
             }
         };
-        
+
         /**
          * Then delete a folder node
          */
@@ -1225,44 +1172,41 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         }
         finally
         {
-            if(tc.transferId != null)
+            if (tc.transferId != null)
             {
                 tran.doInTransaction(doEndCB, false, true);
             }
         }
-        
 
         /**
          * Finally we transfer node2 and node11 (in that order)
          */
-        RetryingTransactionCallback<Void> doThirdCB = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> doThirdCB = new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
             {
-              
+
                 tc.transferId = receiver.start("1234", true, receiver.getVersion());
-                String snapshot = createSnapshot(Arrays.asList(new TransferManifestNode[] { tc.node2, tc.node11 }));
+                String snapshot = createSnapshot(Arrays.asList(new TransferManifestNode[]{tc.node2, tc.node11}));
                 log.debug(snapshot);
                 receiver.saveSnapshot(tc.transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
                 receiver.saveContent(tc.transferId, tc.node2.getUuid(), new ByteArrayInputStream(dummyContentBytes));
                 receiver.commit(tc.transferId);
-                
+
                 return null;
             }
         };
-        
-        RetryingTransactionCallback<Void> doValidateThirdCB = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> doValidateThirdCB = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
-            {     
-                
+            {
+
                 return null;
             }
         };
-        
+
         /**
          * Then delete a folder node
          */
@@ -1273,7 +1217,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         }
         finally
         {
-            if(tc.transferId != null)
+            if (tc.transferId != null)
             {
                 tran.doInTransaction(doEndCB, false, true);
             }
@@ -1282,8 +1226,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
     }
 
     /**
-     * Test for fault raised as MNT-11057
-     * (https://issues.alfresco.com/jira/browse/MNT-11057) Bug in replication process on Aliens.
+     * Test for fault raised as MNT-11057 (https://issues.alfresco.com/jira/browse/MNT-11057) Bug in replication process on Aliens.
      *
      * @throws Exception
      */
@@ -1295,7 +1238,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         String folder2Name = "H2";
         String folder3Name = "H3";
 
-        //Step 1 transfer from repo A (H1 -> H2)
+        // Step 1 transfer from repo A (H1 -> H2)
         TestTransaction.start();
 
         String transferIdA1 = receiver.start("transferFromRepoA1", true, receiver.getVersion());
@@ -1317,7 +1260,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         {
             String snapshot = createSnapshot(nodesA1, "repo A");
             log.debug(snapshot);
-            
+
             receiver.saveSnapshot(transferIdA1, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
 
             for (TransferManifestNode node : nodesA1)
@@ -1338,7 +1281,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
             TestTransaction.end();
         }
 
-        //Step 2 trasfer from repo B (H1 -> H3)
+        // Step 2 trasfer from repo B (H1 -> H3)
         TestTransaction.start();
 
         String transferIdB1 = receiver.start("transferFromRepoB1", true, receiver.getVersion());
@@ -1402,8 +1345,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         TestTransaction.flagForCommit();
         TestTransaction.end();
 
-
-        //Step 3 transfer from repo A again (H2 is moved to newly created H3 on A: H1 -> H3 -> H2)
+        // Step 3 transfer from repo A again (H2 is moved to newly created H3 on A: H1 -> H3 -> H2)
         TestTransaction.start();
         try
         {
@@ -1413,9 +1355,9 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
             receiver.saveSnapshot(transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
             receiver.commit(transferId);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            if(ex instanceof NullPointerException)
+            if (ex instanceof NullPointerException)
             {
                 fail("Test of MNT-11057 failed: " + ex.getMessage());
             }
@@ -1427,8 +1369,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
             TestTransaction.end();
         }
     }
-    
-    
+
     @Test
     public void testAsyncCommit() throws Exception
     {
@@ -1531,7 +1472,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
     {
         log.info("start testAsyncCommitWithSummaryReport");
         Properties properties = (Properties) this.applicationContext.getBean("global-properties");
-        //save the value of this summary report property to restore later
+        // save the value of this summary report property to restore later
         String prevValue = properties.getProperty(TransferCommons.TS_SIMPLE_REPORT);
         try
         {
@@ -1553,14 +1494,14 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
             }
         }
     }
-    
+
     @Test
     public void testAsyncCommitWithOutSummaryReport() throws Exception
     {
         log.info("start testAsyncCommitWithOutSummaryReport");
 
         Properties properties = (Properties) this.applicationContext.getBean("global-properties");
-        //save the value of this summary report property to restore later
+        // save the value of this summary report property to restore later
         String prevValue = properties.getProperty(TransferCommons.TS_SIMPLE_REPORT);
         try
         {
@@ -1601,7 +1542,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
 
         NodeRef summaryReportsParentFolder = null;
         String summaryReportsLocation = "/app:company_home/app:dictionary/app:transfers/app:inbound_transfer_records";
-        //properties.getProperty("spaces.transfer_summary_report.location"); getting the property from the properties bean does not work
+        // properties.getProperty("spaces.transfer_summary_report.location"); getting the property from the properties bean does not work
         summaryReportsParentFolder = getSummaryReportsParentFolder(summaryReportsLocation);
 
         assertTrue(fileFolderService.getFileInfo(summaryReportsParentFolder).isFolder());
@@ -1656,6 +1597,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
 
     /**
      * move transfer node to new parent.
+     * 
      * @param childNode
      * @param newParent
      */
@@ -1743,7 +1685,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
     /**
      * @return
      */
-    private TransferManifestNormalNode createContentNode(/*String transferId*/) throws Exception
+    private TransferManifestNormalNode createContentNode(/* String transferId */) throws Exception
     {
         TransferManifestNormalNode node = new TransferManifestNormalNode();
         String uuid = GUID.generate();
@@ -1753,7 +1695,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         byte[] dummyContent = "This is some dummy content.".getBytes("UTF-8");
 
         node.setType(ContentModel.TYPE_CONTENT);
-        
+
         /**
          * Get guest home
          */
@@ -1793,7 +1735,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         node.setUuid(uuid);
 
         node.setType(ContentModel.TYPE_FOLDER);
-        
+
         NodeRef parentFolder = repositoryHelper.getGuestHome();
 
         String nodeName = folderName == null ? uuid + ".folder" + getNameSuffix() : folderName;

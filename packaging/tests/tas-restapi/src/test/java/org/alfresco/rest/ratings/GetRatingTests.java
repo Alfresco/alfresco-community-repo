@@ -1,5 +1,12 @@
 package org.alfresco.rest.ratings;
 
+import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
@@ -15,12 +22,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
 
 public class GetRatingTests extends RestTest
 {
@@ -50,9 +51,9 @@ public class GetRatingTests extends RestTest
         document = dataContent.usingSite(siteModel).usingAdmin().createContent(DocumentType.TEXT_PLAIN);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS},
             executionType = ExecutionType.SANITY, description = "Verify user with Manager role is able to retrieve rating of a document")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY})
     public void managerIsAbleToRetrieveRating() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -69,9 +70,9 @@ public class GetRatingTests extends RestTest
         restRatingModel.assertThat().field("id").is("fiveStar").and().field("myRating").is("5");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS},
             executionType = ExecutionType.REGRESSION, description = "Verify user with Collaborator role is able to retrieve rating of a document")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void collaboratorIsAbleToRetrieveRating() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
@@ -88,9 +89,9 @@ public class GetRatingTests extends RestTest
         restRatingModel.assertThat().field("id").is("fiveStar").and().field("myRating").is("5");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS},
             executionType = ExecutionType.REGRESSION, description = "Verify user with Contributor role is able to retrieve rating of a document")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void contributorIsAbleToRetrieveRating() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
@@ -107,9 +108,9 @@ public class GetRatingTests extends RestTest
         restRatingModel.assertThat().field("id").is("fiveStar").and().field("myRating").is("5");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS},
             executionType = ExecutionType.REGRESSION, description = "Verify user with Consumer role is able to retrieve rating of a document")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void consumerIsAbleToRetrieveRating() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
@@ -126,9 +127,9 @@ public class GetRatingTests extends RestTest
         restRatingModel.assertThat().field("id").is("fiveStar").and().field("myRating").is("5");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS},
             executionType = ExecutionType.REGRESSION, description = "Verify admin user is able to retrieve rating of a document")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void adminIsAbleToRetrieveRating() throws Exception
     {
         FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
@@ -148,10 +149,10 @@ public class GetRatingTests extends RestTest
         restRatingModel.assertThat().field("id").is("fiveStar").and().field("myRating").is("5");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS},
             executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to retrieve rating of a document")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
-//    @Bug(id = "MNT-16904", description = "It fails only on environment with tenants")
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY})
+    // @Bug(id = "MNT-16904", description = "It fails only on environment with tenants")
     public void unauthenticatedUserIsNotAbleToRetrieveRating() throws Exception
     {
         restClient.authenticateUser(adminUser);
@@ -167,9 +168,9 @@ public class GetRatingTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS},
             executionType = ExecutionType.REGRESSION, description = "Check that using invalid ratingId for get rating call returns status code 400.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void checkInvalidRatingIdStatusCode() throws Exception
     {
         restClient.authenticateUser(adminUser).withCoreAPI();
@@ -179,9 +180,9 @@ public class GetRatingTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.INVALID_RATING, "invalid ratingId"));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS},
             executionType = ExecutionType.REGRESSION, description = "Check that using invalid node ID for get rating call returns status code 404.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void getRatingUsingInvalidNodeId() throws Exception
     {
         document.setNodeRef(RandomStringUtils.randomAlphanumeric(20));
@@ -191,9 +192,9 @@ public class GetRatingTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, document.getNodeRef()));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS},
             executionType = ExecutionType.REGRESSION, description = "Get rating of a file that has only likes.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void getRatingOfFileThatHasOnlyLikes() throws Exception
     {
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).likeDocument();
@@ -208,9 +209,9 @@ public class GetRatingTests extends RestTest
         restRatingModel.getAggregate().assertThat().field("numberOfRatings").is("0");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS},
             executionType = ExecutionType.REGRESSION, description = "Get rating of a file that has only stars.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void getRatingOfFileThatHasOnlyStars() throws Exception
     {
         restClient.authenticateUser(userModel).withCoreAPI().usingResource(document).rateStarsToDocument(5);
@@ -225,9 +226,9 @@ public class GetRatingTests extends RestTest
         restRatingModel.getAggregate().assertThat().field("numberOfRatings").is("0");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS},
             executionType = ExecutionType.REGRESSION, description = "Get rating of a file that has likes and stars.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void getRatingOfFileThatHasLikesAndStars() throws Exception
     {
         restClient.authenticateUser(userModel).withCoreAPI().usingResource(document).likeDocument();
@@ -244,9 +245,9 @@ public class GetRatingTests extends RestTest
         restRatingModel.getAggregate().assertThat().field("numberOfRatings").is("1");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS},
             executionType = ExecutionType.REGRESSION, description = "Get rating of a folder that has only likes.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void getRatingOfFolderThatHasOnlyLikes() throws Exception
     {
         FolderModel firstFolderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
@@ -258,9 +259,9 @@ public class GetRatingTests extends RestTest
         restRatingModel.getAggregate().assertThat().field("numberOfRatings").is("1");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS},
             executionType = ExecutionType.REGRESSION, description = "Get rating of a file that has no ratings.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void getRatingOfFileThatHasNoRatings() throws Exception
     {
         restRatingModel = restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).getLikeRating();
@@ -272,8 +273,8 @@ public class GetRatingTests extends RestTest
         restRatingModel.getAggregate().assertThat().field("numberOfRatings").is("0");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, description = "Check default error schema")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS}, executionType = ExecutionType.REGRESSION, description = "Check default error schema")
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void checkDefaultErrorSchema() throws Exception
     {
         FileModel document = dataContent.usingSite(siteModel).usingAdmin().createContent(DocumentType.TEXT_PLAIN);
@@ -287,9 +288,9 @@ public class GetRatingTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS}, executionType = ExecutionType.REGRESSION,
             description = "Get rating of a folder that has only stars")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void getRatingOfFolderThatHasOnlyStars() throws Exception
     {
         FolderModel folder = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
@@ -301,9 +302,9 @@ public class GetRatingTests extends RestTest
                 .assertThat().field("average").is("3.0");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS}, executionType = ExecutionType.REGRESSION,
             description = "Get rating of a folder that has both likes and stars")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void getRatingOfFolderThatHasLikedAndStars() throws Exception
     {
         FolderModel folder = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
@@ -322,9 +323,9 @@ public class GetRatingTests extends RestTest
                 .assertThat().field("myRating").is("true");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS}, executionType = ExecutionType.REGRESSION,
             description = "Get rating of a folder that has no ratings")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void getRatingOfFolderThatHasNoRatings() throws Exception
     {
         FolderModel folder = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
@@ -336,9 +337,9 @@ public class GetRatingTests extends RestTest
         restRatingModel.getAggregate().assertThat().field("numberOfRatings").is("0");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS}, executionType = ExecutionType.REGRESSION,
             description = "Get rating of a folder after rating was deleted")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void getDeletedRatingOfAFolder() throws Exception
     {
         FolderModel folder = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
@@ -356,9 +357,9 @@ public class GetRatingTests extends RestTest
                 .getAggregate().assertThat().field("numberOfRatings").is("0");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS}, executionType = ExecutionType.REGRESSION,
             description = "Get rating of a file after rating was deleted")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void getDeletedRatingOfAFile() throws Exception
     {
         FileModel file = dataContent.usingUser(adminUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
@@ -376,9 +377,9 @@ public class GetRatingTests extends RestTest
                 .getAggregate().assertThat().field("numberOfRatings").is("0");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS}, executionType = ExecutionType.REGRESSION,
             description = "Get rating of another user as admin")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void getRatingOfAnotherUserAsAdmin() throws Exception
     {
         FileModel file = dataContent.usingUser(adminUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
@@ -394,9 +395,9 @@ public class GetRatingTests extends RestTest
                 .getAggregate().assertThat().field("numberOfRatings").is("1");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS}, executionType = ExecutionType.REGRESSION,
             description = "Get rating of admin with another user")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void getRatingOfAdminWithAnotherUser() throws Exception
     {
         FileModel file = dataContent.usingUser(managerUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
@@ -412,8 +413,8 @@ public class GetRatingTests extends RestTest
                 .getAggregate().assertThat().field("numberOfRatings").is("1");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, description = "Get five star rating")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS}, executionType = ExecutionType.REGRESSION, description = "Get five star rating")
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void getFiveStarRating() throws Exception
     {
         FileModel file = dataContent.usingUser(managerUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
@@ -424,8 +425,8 @@ public class GetRatingTests extends RestTest
                 .getAggregate().assertThat().field("numberOfRatings").is("1").assertThat().field("average").is("5.0");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, description = "Get one star rating")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS}, executionType = ExecutionType.REGRESSION, description = "Get one star rating")
+    @Test(groups = {TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION})
     public void getOneStarRating() throws Exception
     {
         FileModel file = dataContent.usingUser(managerUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);

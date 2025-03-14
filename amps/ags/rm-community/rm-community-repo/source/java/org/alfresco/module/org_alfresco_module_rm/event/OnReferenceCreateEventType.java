@@ -54,8 +54,8 @@ import org.alfresco.service.namespace.QName;
  */
 @BehaviourBean
 public class OnReferenceCreateEventType extends SimpleRecordsManagementEventTypeImpl
-                                        implements RecordsManagementModel,
-                                                   OnCreateReference
+        implements RecordsManagementModel,
+        OnCreateReference
 {
     /** Records management action service */
     private RecordsManagementActionService recordsManagementActionService;
@@ -67,7 +67,8 @@ public class OnReferenceCreateEventType extends SimpleRecordsManagementEventType
     private QName reference;
 
     /**
-     * @param dispositionService    the disposition service to set
+     * @param dispositionService
+     *            the disposition service to set
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -75,7 +76,8 @@ public class OnReferenceCreateEventType extends SimpleRecordsManagementEventType
     }
 
     /**
-     * @param recordsManagementActionService the recordsManagementActionService to set
+     * @param recordsManagementActionService
+     *            the recordsManagementActionService to set
      */
     public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
     {
@@ -105,16 +107,13 @@ public class OnReferenceCreateEventType extends SimpleRecordsManagementEventType
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnCreateReference#onCreateReference(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
             type = "rma:record",
-            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
     public void onCreateReference(final NodeRef fromNodeRef, final NodeRef toNodeRef, final QName reference)
     {
-        AuthenticationUtil.RunAsWork<Object> work = new AuthenticationUtil.RunAsWork<Object>()
-        {
+        AuthenticationUtil.RunAsWork<Object> work = new AuthenticationUtil.RunAsWork<Object>() {
             public Object doWork()
             {
                 // Check whether it is the reference type we care about
@@ -128,7 +127,7 @@ public class OnReferenceCreateEventType extends SimpleRecordsManagementEventType
                         {
                             RecordsManagementEvent rmEvent = getRecordsManagementEventService().getEvent(event.getEventName());
                             if (!event.isEventComplete() &&
-                                rmEvent.getType().equals(getName()))
+                                    rmEvent.getType().equals(getName()))
                             {
                                 // Complete the event
                                 Map<String, Serializable> params = new HashMap<>(3);

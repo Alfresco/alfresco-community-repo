@@ -62,7 +62,8 @@ public class IsRecordTypeEvaluator extends RecordsManagementActionConditionEvalu
     /**
      * Sets the node service
      *
-     * @param nodeService The node service
+     * @param nodeService
+     *            The node service
      */
     public void setNodeService(NodeService nodeService)
     {

@@ -22,12 +22,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * A class that keeps track of the VM shutdown status.  It can be
- * used by threads as a singleton to check if the
- * VM shutdown status has been activated.
+ * A class that keeps track of the VM shutdown status. It can be used by threads as a singleton to check if the VM shutdown status has been activated.
  * <p>
- * <b>NOTE: </b> In order to prevent a proliferation of shutdown hooks,
- *      it is advisable to use instances as singletons only. 
+ * <b>NOTE: </b> In order to prevent a proliferation of shutdown hooks, it is advisable to use instances as singletons only.
  * <p>
  * This component should be used by long-running, but interruptable processes.
  * 
@@ -37,7 +34,7 @@ public class VmShutdownListener
 {
     private Log logger;
     private volatile boolean vmShuttingDown;
-    
+
     /**
      * Constructs this instance to listen to the VM shutdown call.
      *
@@ -45,10 +42,9 @@ public class VmShutdownListener
     public VmShutdownListener(final String name)
     {
         logger = LogFactory.getLog(VmShutdownListener.class);
-        
+
         vmShuttingDown = false;
-        Runnable shutdownRunnable = new Runnable()
-        {
+        Runnable shutdownRunnable = new Runnable() {
             public void run()
             {
                 vmShuttingDown = true;
@@ -56,7 +52,7 @@ public class VmShutdownListener
                 {
                     logger.debug("VM shutdown detected by listener " + name);
                 }
-            };  
+            };
         };
         Thread shutdownThread = new Thread(shutdownRunnable, "ShutdownListener-" + name);
         Runtime.getRuntime().addShutdownHook(shutdownThread);

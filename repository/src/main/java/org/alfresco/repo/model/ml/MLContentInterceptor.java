@@ -27,6 +27,11 @@ package org.alfresco.repo.model.ml;
 
 import java.util.Set;
 
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -34,12 +39,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Replaces content readers according to the empty translation status.
@@ -52,19 +52,19 @@ import org.apache.commons.logging.LogFactory;
 public class MLContentInterceptor implements MethodInterceptor
 {
     private static Log logger = LogFactory.getLog(MLContentInterceptor.class);
-    
+
     /** Direct access to the NodeService */
     private NodeService nodeService;
     /** Direct access to the ContentService */
     private ContentService contentService;
     /** Direct access to the ML Content Service */
     private MultilingualContentService multilingualContentService;
-    
+
     public void setNodeService(NodeService bean)
     {
         this.nodeService = bean;
     }
-    
+
     public void setContentService(ContentService directContentService)
     {
         this.contentService = directContentService;
@@ -80,22 +80,22 @@ public class MLContentInterceptor implements MethodInterceptor
         String methodName = invocation.getMethod().getName();
 
         Object ret = null;
-        
+
         if (methodName.equals("getReader"))
         {
             Object[] args = invocation.getArguments();
-            
+
             NodeRef nodeRef = (NodeRef) args[0];
-            
+
             // Shortcut it if the node is not an empty translation
             Set<QName> aspects = nodeService.getAspects(nodeRef);
             if (!aspects.contains(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT) ||
-                !aspects.contains(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+                    !aspects.contains(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
             {
                 // It is not a ML document or we expect that there is no translation
                 return invocation.proceed();
             }
-            
+
             // Get the content property required
             QName propertyQName = null;
             if (args.length == 1)
@@ -124,9 +124,9 @@ public class MLContentInterceptor implements MethodInterceptor
                 {
                     logger.debug(
                             "Converted reader for empty translation: \n" +
-                            "   Empty Translation: " + nodeRef + "\n" +
-                            "   Pivot Translation: " + pivotNodeRef + "\n" +
-                            "   Reader:            " + pivotContentReader);
+                                    "   Empty Translation: " + nodeRef + "\n" +
+                                    "   Pivot Translation: " + pivotNodeRef + "\n" +
+                                    "   Reader:            " + pivotContentReader);
                 }
                 ret = pivotContentReader;
             }

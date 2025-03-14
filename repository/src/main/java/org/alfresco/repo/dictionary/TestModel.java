@@ -29,13 +29,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import org.alfresco.repo.cache.DefaultSimpleCache;
-import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.tenant.SingleTServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.util.ThreadPoolExecutorFactoryBean;
 import org.alfresco.util.cache.DefaultAsynchronouslyRefreshedCacheRegistry;
-
 
 /**
  * Test Model Definitions
@@ -45,14 +42,13 @@ public class TestModel
     /**
      * Test model
      * 
-     * Java command line client
-     * <br />
-     * Syntax:
-     * <br />
+     * Java command line client <br />
+     * Syntax: <br />
      * TestModel [-h] [model filename]*
      * <p>
      * Returns 0 for success.
-     * @throws Exception 
+     * 
+     * @throws Exception
      */
     public static void main(String[] args) throws Exception
     {
@@ -61,7 +57,7 @@ public class TestModel
             System.out.println("TestModel [model filename]*");
             System.exit(1);
         }
-        
+
         System.out.println("Testing dictionary model definitions...");
 
         // construct list of models to test
@@ -75,22 +71,22 @@ public class TestModel
         bootstrapModels.add("alfresco/model/bpmModel.xml");
 
         // include models specified on command line
-        for (String arg: args)
+        for (String arg : args)
         {
             bootstrapModels.add(arg);
         }
-        
+
         for (String model : bootstrapModels)
         {
             System.out.println(" " + model);
         }
-        
-        // construct dictionary dao        
+
+        // construct dictionary dao
         TenantService tenantService = new SingleTServiceImpl();
 
         DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(tenantService);
-        
+
         initDictionaryCaches(dictionaryDAO, tenantService);
 
         // bootstrap dao
@@ -101,11 +97,11 @@ public class TestModel
             bootstrap.setDictionaryDAO(dictionaryDAO);
             bootstrap.bootstrap();
             System.out.println("Models are valid.");
-            
+
             System.exit(0); // Success
-            
+
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             System.out.println("Found an invalid model...");
             Throwable t = e;
@@ -117,7 +113,7 @@ public class TestModel
             System.exit(2); // Not Success
         }
     }
-    
+
     private static void initDictionaryCaches(DictionaryDAOImpl dictionaryDAO, TenantService tenantService) throws Exception
     {
         CompiledModelsCache compiledModelsCache = new CompiledModelsCache();

@@ -1,5 +1,9 @@
 package org.alfresco.rest.workflow.tasks;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.*;
@@ -7,9 +11,6 @@ import org.alfresco.utility.model.*;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Created by Claudia Agache on 2/3/2017.
@@ -22,7 +23,7 @@ public class GetTaskFormModelTests extends RestTest
     TaskModel taskModel;
     RestFormModelsCollection returnedCollection;
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         adminUser = dataUser.getAdminUser();
@@ -31,8 +32,8 @@ public class GetTaskFormModelTests extends RestTest
         fileModel = dataContent.usingUser(userModel).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
             executionType = ExecutionType.SANITY, description = "Verify admin user gets all task form models with Rest API and response is successful (200)")
     public void adminGetsTaskFormModels() throws Exception
     {
@@ -54,14 +55,14 @@ public class GetTaskFormModelTests extends RestTest
                 "{http://www.alfresco.org/model/bpm/1.0}packageItemActionGroup",
                 "{http://www.alfresco.org/model/bpm/1.0}completionDate"};
 
-        for(String formQualifiedName :  qualifiedNames)
+        for (String formQualifiedName : qualifiedNames)
         {
             returnedCollection.assertThat().entriesListContains("qualifiedName", formQualifiedName);
         }
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
             executionType = ExecutionType.SANITY, description = "Verify user involved in task gets all the task form models with Rest API and response is successful (200)")
     public void involvedUserGetsTaskFormModels() throws Exception
     {
@@ -71,10 +72,10 @@ public class GetTaskFormModelTests extends RestTest
         returnedCollection.assertThat().entriesListIsNotEmpty();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
             executionType = ExecutionType.REGRESSION,
             description = "Verify that non involved user in task cannot get form models with Rest API and response is FORBIDDEN (403)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void nonInvolvedUserCannotGetTaskFormModels() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userModel)
@@ -87,10 +88,10 @@ public class GetTaskFormModelTests extends RestTest
                 .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
             executionType = ExecutionType.REGRESSION,
             description = "Verify user involved in task cannot get task form models with invalid task id")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void getTaskFormModelsInvalidTaskId() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userModel)
@@ -103,10 +104,10 @@ public class GetTaskFormModelTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "0000"));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
             executionType = ExecutionType.REGRESSION,
             description = "Verify user involved in task cannot get task form models with invalid task id")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void getTaskFormModelsEmptyTaskId() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userModel)
@@ -119,10 +120,10 @@ public class GetTaskFormModelTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
             executionType = ExecutionType.REGRESSION,
             description = "Verify user involved in task can get completed task form models")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void getTaskFormModelsForCompletedTask() throws Exception
     {
         UserModel assignedUser = dataUser.createRandomTestUser();
@@ -137,8 +138,8 @@ public class GetTaskFormModelTests extends RestTest
         returnedCollection.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
             executionType = ExecutionType.REGRESSION, description = "Verify admin user gets all task form models with properties parameter applied and response is successful (200)")
     public void adminGetsTaskFormModelsWithPropertiesParameter() throws Exception
     {
@@ -148,20 +149,20 @@ public class GetTaskFormModelTests extends RestTest
         returnedCollection.assertThat().entriesListIsNotEmpty();
         returnedCollection.getOneRandomEntry().onModel()
                 .assertThat()
-                    .field("qualifiedName").isNotEmpty().and()
-                    .field("required").isNotEmpty().and()
-                    .field("dataType").isNull().and()
-                    .field("name").isNull().and()
-                    .field("title").isNull().and()
-                    .field("defaultValue").isNull().and()
-                    .field("allowedValues").isNull().and()
-                    .fieldsCount().is(2);
-        }
+                .field("qualifiedName").isNotEmpty().and()
+                .field("required").isNotEmpty().and()
+                .field("dataType").isNull().and()
+                .field("name").isNull().and()
+                .field("title").isNull().and()
+                .field("defaultValue").isNull().and()
+                .field("allowedValues").isNull().and()
+                .fieldsCount().is(2);
+    }
 
     @Bug(id = "MNT-17438")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify admin gets task form model with valid skipCount parameter applied using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void getTaskFormModelWithValidSkipCount() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(userModel);
@@ -176,13 +177,13 @@ public class GetTaskFormModelTests extends RestTest
         formModelsWithSkipCount
                 .assertThat().entriesListDoesNotContain("name", firstTaskFormModel.getName())
                 .assertThat().entriesListDoesNotContain("name", secondTaskFormModel.getName())
-                .assertThat().entriesListCountIs(returnedCollection.getEntries().size()-2);
+                .assertThat().entriesListCountIs(returnedCollection.getEntries().size() - 2);
         formModelsWithSkipCount.assertThat().paginationField("skipCount").is("2");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify admin doesn't get task form model with negative skipCount parameter applied using REST API")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void getTaskFormModelWithNegativeSkipCount() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(userModel);
@@ -195,9 +196,9 @@ public class GetTaskFormModelTests extends RestTest
                 .statusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify admin doesn't get task form model with non numeric skipCount parameter applied using REST API")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void getTaskFormModelWithNonNumericSkipCount() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(userModel);
@@ -207,9 +208,9 @@ public class GetTaskFormModelTests extends RestTest
     }
 
     @Bug(id = "MNT-17438")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify admin gets task form model with valid maxItems parameter applied using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void getTaskFormModelWithValidMaxItems() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(userModel);
@@ -228,9 +229,9 @@ public class GetTaskFormModelTests extends RestTest
         formModelsWithMaxItems.assertThat().paginationField("maxItems").is("2");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify admin doesn't get task form model with negative maxItems parameter applied using REST API")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void getTaskFormModelWithNegativeMaxItems() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(userModel);
@@ -243,9 +244,9 @@ public class GetTaskFormModelTests extends RestTest
                 .statusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify admin doesn't get task form model with non numeric maxItems parameter applied using REST API")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void getTaskFormModelWithNonNumericMaxItems() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(userModel);

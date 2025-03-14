@@ -42,7 +42,8 @@ public class ProtectedProperty extends ProtectedModelArtifact
     private boolean allwaysAllowNew = false;
 
     /**
-     * @param allwaysAllowNew   true if always allow new, false otherwise
+     * @param allwaysAllowNew
+     *            true if always allow new, false otherwise
      */
     public void setAllwaysAllowNew(boolean allwaysAllowNew)
     {
@@ -50,7 +51,7 @@ public class ProtectedProperty extends ProtectedModelArtifact
     }
 
     /**
-     * @return  true if always allow new, false otherwise
+     * @return true if always allow new, false otherwise
      */
     public boolean isAllwaysAllowNew()
     {

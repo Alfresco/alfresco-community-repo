@@ -38,18 +38,18 @@ import org.alfresco.repo.tenant.TenantUtil;
  */
 public class DefaultPathGenerator implements PathGenerator
 {
-	public void generatePath(HttpServletRequest req, StringBuilder url, String repositoryId, Binding binding)
-	{
-	    url.append(binding.toString());
-	    url.append("/");
-	    if(repositoryId != null)
-	    {
-	        url.append(repositoryId);
-	    }
-	    else
-	    {
-	        url.append(TenantUtil.DEFAULT_TENANT);
-	    }
-	}
+    public void generatePath(HttpServletRequest req, StringBuilder url, String repositoryId, Binding binding)
+    {
+        url.append(binding.toString());
+        url.append("/");
+        if (repositoryId != null)
+        {
+            url.append(repositoryId);
+        }
+        else
+        {
+            url.append(TenantUtil.DEFAULT_TENANT);
+        }
+    }
 
 }

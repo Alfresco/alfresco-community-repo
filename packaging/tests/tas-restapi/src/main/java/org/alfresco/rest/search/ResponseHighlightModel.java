@@ -48,8 +48,10 @@ import java.util.Objects;
 
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
+
 /**
- * Pojo which represents the search response that includes the highlighting info. 
+ * Pojo which represents the search response that includes the highlighting info.
+ * 
  * @author Michael Suzuki
  *
  */
@@ -58,23 +60,27 @@ public class ResponseHighlightModel extends TestModel implements IRestModel<Resp
     private ResponseHighlightModel model;
     private String field;
     private List<String> snippets;
-    
+
     public String getField()
     {
         return field;
     }
+
     public void setField(String field)
     {
         this.field = field;
     }
+
     public List<String> getSnippets()
     {
         return snippets;
     }
+
     public void setSnippets(List<String> snippets)
     {
         this.snippets = snippets;
     }
+
     @Override
     public ResponseHighlightModel onModel()
     {

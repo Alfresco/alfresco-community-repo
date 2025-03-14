@@ -28,6 +28,11 @@ package org.alfresco.repo.web.scripts.invite;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -36,16 +41,9 @@ import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
 import org.alfresco.service.cmr.invitation.InvitationExceptionUserError;
 import org.alfresco.service.cmr.invitation.InvitationService;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * Web Script invoked by Invitee to either accept (response='accept') an
- * invitation from a Site Manager (Inviter) to join a Site as a Site
- * Collaborator, or to reject (response='reject') an invitation that has already
- * been sent out
+ * Web Script invoked by Invitee to either accept (response='accept') an invitation from a Site Manager (Inviter) to join a Site as a Site Collaborator, or to reject (response='reject') an invitation that has already been sent out
  * 
  * @author glen dot johnson at alfresco dot com
  */
@@ -55,39 +53,33 @@ public class InviteResponse extends DeclarativeWebScript
     private static final String RESPONSE_REJECT = "reject";
     private static final String MODEL_PROP_KEY_RESPONSE = "response";
     private static final String MODEL_PROP_KEY_SITE_SHORT_NAME = "siteShortName";
-    
+
     // request parameter names
     private static final String PARAM_INVITEE_USER_NAME = "inviteeUserName";
-    
+
     // properties for services
     private InvitationService invitationService;
     private TenantService tenantService;
-    
-    
+
     public void setInvitationService(InvitationService invitationService)
     {
         this.invitationService = invitationService;
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-    
-    /*
-     * (non-Javadoc)
+
+    /* (non-Javadoc)
      * 
-     * @see
-     * org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco
-     * .web.scripts.WebScriptRequest,
-     * org.alfresco.web.scripts.WebScriptResponse)
-     */
+     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco .web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse) */
     @Override
     protected Map<String, Object> executeImpl(final WebScriptRequest req, final Status status)
     {
         String tenantDomain = TenantService.DEFAULT_DOMAIN;
         final String inviteeUserName = req.getParameter(PARAM_INVITEE_USER_NAME);
-        
+
         if (tenantService.isEnabled())
         {
             if (inviteeUserName != null)
@@ -95,10 +87,9 @@ public class InviteResponse extends DeclarativeWebScript
                 tenantDomain = tenantService.getUserDomain(inviteeUserName);
             }
         }
-        
+
         // run as system user
-        return TenantUtil.runAsSystemTenant(new TenantRunAsWork<Map<String, Object>>()
-        {
+        return TenantUtil.runAsSystemTenant(new TenantRunAsWork<Map<String, Object>>() {
             public Map<String, Object> doWork() throws Exception
             {
                 String oldUser = null;
@@ -121,18 +112,18 @@ public class InviteResponse extends DeclarativeWebScript
             }
         }, tenantDomain);
     }
-    
+
     private Map<String, Object> execute(WebScriptRequest req, Status status)
     {
         // initialise model to pass on for template to render
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         String inviteId = req.getServiceMatch().getTemplateVars().get("inviteId");
         String inviteTicket = req.getServiceMatch().getTemplateVars().get("inviteTicket");
-               
+
         // Check that the task is still open.
-        //if(inviteStart)
-        
+        // if(inviteStart)
+
         // process response
         String action = req.getServiceMatch().getTemplateVars().get("action");
         if (action.equals("accept"))
@@ -155,7 +146,7 @@ public class InviteResponse extends DeclarativeWebScript
         }
         else if (action.equals("reject"))
         {
-            try 
+            try
             {
                 Invitation invitation = invitationService.reject(inviteId, "Rejected");
                 // add model properties for template to render
@@ -177,7 +168,7 @@ public class InviteResponse extends DeclarativeWebScript
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                     "action " + action + " is not supported by this webscript.");
         }
-        
+
         return model;
     }
 }

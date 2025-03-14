@@ -39,7 +39,6 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.util.GUID;
 
-
 /**
  * Transaction Behaviour Queue.
  * 
@@ -49,40 +48,46 @@ public class TransactionBehaviourQueue implements TransactionListener
 {
     /** Id used in equals and hash */
     private String id = GUID.generate();
-    
+
     // Transaction Keys for Behaviour Execution state
     private static final String QUEUE_CONTEXT_KEY = TransactionBehaviourQueue.class.getName() + ".context";
-    
-    
+
     /**
      * Queue a behaviour for end-of-transaction execution
-     *  
-     * @param <P> P extends Policy
-     * @param behaviour Behaviour
-     * @param definition PolicyDefinition<P>
-     * @param policyInterface P
-     * @param method Method
-     * @param args Object[]
+     * 
+     * @param <P>
+     *            P extends Policy
+     * @param behaviour
+     *            Behaviour
+     * @param definition
+     *            PolicyDefinition
+     *            <P>
+     * @param policyInterface
+     *            P
+     * @param method
+     *            Method
+     * @param args
+     *            Object[]
      */
     @SuppressWarnings("unchecked")
     public <P extends Policy> void queue(Behaviour behaviour, PolicyDefinition<P> definition, P policyInterface, Method method, Object[] args)
     {
         // Construct queue context, if required
-        QueueContext queueContext = (QueueContext)AlfrescoTransactionSupport.getResource(QUEUE_CONTEXT_KEY);
+        QueueContext queueContext = (QueueContext) AlfrescoTransactionSupport.getResource(QUEUE_CONTEXT_KEY);
         if (queueContext == null)
         {
             queueContext = new QueueContext();
             AlfrescoTransactionSupport.bindResource(QUEUE_CONTEXT_KEY, queueContext);
             AlfrescoTransactionSupport.bindListener(this);
         }
-        
+
         // Determine if behaviour instance has already been queued
-        
+
         // Identity of ExecutionContext is Behaviour + KEY argument(s)
-        ExecutionInstanceKey key = new  ExecutionInstanceKey(behaviour, definition.getArguments(), args);
-        
+        ExecutionInstanceKey key = new ExecutionInstanceKey(behaviour, definition.getArguments(), args);
+
         ExecutionContext executionContext = queueContext.index.get(key);
-        
+
         if (executionContext == null)
         {
             // Context does not exist
@@ -119,22 +124,20 @@ public class TransactionBehaviourQueue implements TransactionListener
             }
         }
     }
-    
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.transaction.TransactionListener#flush()
-     */
+     * 
+     * @see org.alfresco.repo.transaction.TransactionListener#flush() */
     public void flush()
-    {
-    }
+    {}
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.transaction.TransactionListener#beforeCommit(boolean)
-     */
+     * 
+     * @see org.alfresco.repo.transaction.TransactionListener#beforeCommit(boolean) */
     @SuppressWarnings("unchecked")
     public void beforeCommit(boolean readOnly)
     {
-        QueueContext queueContext = (QueueContext)AlfrescoTransactionSupport.getResource(QUEUE_CONTEXT_KEY);
+        QueueContext queueContext = (QueueContext) AlfrescoTransactionSupport.getResource(QUEUE_CONTEXT_KEY);
         ExecutionContext context = queueContext.queue.poll();
         while (context != null)
         {
@@ -145,26 +148,23 @@ public class TransactionBehaviourQueue implements TransactionListener
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.transaction.TransactionListener#beforeCompletion()
-     */
+     * 
+     * @see org.alfresco.repo.transaction.TransactionListener#beforeCompletion() */
     public void beforeCompletion()
-    {
-    }
+    {}
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.transaction.TransactionListener#afterCommit()
-     */
+     * 
+     * @see org.alfresco.repo.transaction.TransactionListener#afterCommit() */
     public void afterCommit()
-    {
-    }
+    {}
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.transaction.TransactionListener#afterRollback()
-     */
+     * 
+     * @see org.alfresco.repo.transaction.TransactionListener#afterRollback() */
     public void afterRollback()
-    {
-    }
-    
+    {}
+
     /**
      * Execution Instance Key - to uniquely identify an ExecutionContext
      */
@@ -173,7 +173,7 @@ public class TransactionBehaviourQueue implements TransactionListener
         public ExecutionInstanceKey(Behaviour behaviour, Arg[] argDefs, Object[] args)
         {
             this.behaviour = behaviour;
-            
+
             for (int i = 0; i < argDefs.length; i++)
             {
                 if (argDefs[i].equals(Arg.KEY))
@@ -182,16 +182,16 @@ public class TransactionBehaviourQueue implements TransactionListener
                 }
             }
         }
-        
+
         Behaviour behaviour;
         ArrayList<Object> keys = new ArrayList<Object>();
-        
+
         /**
          * @see java.lang.Object#hashCode()
          */
         @Override
         public int hashCode()
-        {   
+        {
             int key = behaviour.hashCode();
             for (int i = 0; i < keys.size(); i++)
             {
@@ -199,7 +199,7 @@ public class TransactionBehaviourQueue implements TransactionListener
             }
             return key;
         }
-        
+
         /**
          * @see java.lang.Object#equals(java.lang.Object)
          */
@@ -213,14 +213,14 @@ public class TransactionBehaviourQueue implements TransactionListener
             if (obj instanceof ExecutionInstanceKey)
             {
                 ExecutionInstanceKey that = (ExecutionInstanceKey) obj;
-                if(this.behaviour.equals(that.behaviour))
+                if (this.behaviour.equals(that.behaviour))
                 {
-                    if(keys.size() != that.keys.size())
+                    if (keys.size() != that.keys.size())
                     {
                         // different number of keys
                         return false;
                     }
-                    if(keys.containsAll(that.keys))
+                    if (keys.containsAll(that.keys))
                     {
                         // yes keys are equal
                         return true;
@@ -241,7 +241,8 @@ public class TransactionBehaviourQueue implements TransactionListener
     /**
      * Execute behaviour as described in execution context
      * 
-     * @param context ExecutionContext
+     * @param context
+     *            ExecutionContext
      */
     private void execute(ExecutionContext context)
     {
@@ -263,7 +264,7 @@ public class TransactionBehaviourQueue implements TransactionListener
             throw new AlfrescoRuntimeException("Failed to execute transaction-level behaviour " + context.method + " in transaction " + AlfrescoTransactionSupport.getTransactionId() + " : " + msg, e.getTargetException());
         }
     }
-    
+
     /**
      * @see java.lang.Object#hashCode()
      */
@@ -272,7 +273,7 @@ public class TransactionBehaviourQueue implements TransactionListener
     {
         return this.id.hashCode();
     }
-    
+
     /**
      * @see java.lang.Object#equals(java.lang.Object)
      */
@@ -293,7 +294,7 @@ public class TransactionBehaviourQueue implements TransactionListener
             return false;
         }
     }
-    
+
     /**
      * Behaviour execution Context
      * 
@@ -305,8 +306,7 @@ public class TransactionBehaviourQueue implements TransactionListener
         Object[] args;
         P policyInterface;
     }
-    
-    
+
     /**
      * Queue Context
      */
@@ -317,5 +317,5 @@ public class TransactionBehaviourQueue implements TransactionListener
         Map<ExecutionInstanceKey, ExecutionContext> index = new HashMap<ExecutionInstanceKey, ExecutionContext>();
         boolean committed = false;
     }
-        
+
 }

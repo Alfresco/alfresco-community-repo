@@ -41,8 +41,10 @@ public class DBResultSetRow extends AbstractResultSetRow
 {
 
     /**
-     * @param resultSet ResultSet
-     * @param index int
+     * @param resultSet
+     *            ResultSet
+     * @param index
+     *            int
      */
     public DBResultSetRow(ResultSet resultSet, int index)
     {
@@ -51,8 +53,8 @@ public class DBResultSetRow extends AbstractResultSetRow
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.ResultSetRow#getNodeRefs()
-     */
+     * 
+     * @see org.alfresco.service.cmr.search.ResultSetRow#getNodeRefs() */
     @Override
     public Map<String, NodeRef> getNodeRefs()
     {
@@ -60,8 +62,8 @@ public class DBResultSetRow extends AbstractResultSetRow
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.ResultSetRow#getNodeRef(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.service.cmr.search.ResultSetRow#getNodeRef(java.lang.String) */
     @Override
     public NodeRef getNodeRef(String selectorName)
     {
@@ -69,8 +71,8 @@ public class DBResultSetRow extends AbstractResultSetRow
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.ResultSetRow#getScores()
-     */
+     * 
+     * @see org.alfresco.service.cmr.search.ResultSetRow#getScores() */
     @Override
     public Map<String, Float> getScores()
     {
@@ -78,8 +80,8 @@ public class DBResultSetRow extends AbstractResultSetRow
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.ResultSetRow#getScore(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.service.cmr.search.ResultSetRow#getScore(java.lang.String) */
     @Override
     public float getScore(String selectorName)
     {
@@ -93,5 +95,4 @@ public class DBResultSetRow extends AbstractResultSetRow
         return rs.getNodeService().getProperties(rs.getNodeRef(getIndex()));
     }
 
-  
 }

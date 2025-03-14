@@ -25,19 +25,19 @@
  */
 package org.alfresco.rest.api.tests.client.data;
 
-import org.alfresco.rest.api.model.AssocChild;
-import org.alfresco.rest.api.model.AssocTarget;
-import org.alfresco.rest.api.model.ClassDefinition;
-import org.alfresco.rest.api.model.NodePermissions;
+import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import org.alfresco.rest.api.model.AssocChild;
+import org.alfresco.rest.api.model.AssocTarget;
+import org.alfresco.rest.api.model.ClassDefinition;
+import org.alfresco.rest.api.model.NodePermissions;
 
 /**
  * Representation of a node - initially for client tests for Nodes (aka File Folder) API
@@ -88,12 +88,11 @@ public class Node
     protected List<AssocTarget> targets;
 
     protected SearchResultEntry search;
-    
+
     protected Boolean isFavorite;
 
     public Node()
-    {
-    }
+    {}
 
     public String getId()
     {
@@ -357,7 +356,7 @@ public class Node
     {
         this.search = search;
     }
-    
+
     public Boolean getIsFavorite()
     {
         return isFavorite;
@@ -424,7 +423,7 @@ public class Node
         if (aspectNames != null)
         {
             assertNotNull(other.getAspectNames());
-            assertEquals("Expected: "+aspectNames+", actual: "+other.getAspectNames(), aspectNames.size(), other.getAspectNames().size());
+            assertEquals("Expected: " + aspectNames + ", actual: " + other.getAspectNames(), aspectNames.size(), other.getAspectNames().size());
             for (String aspectName : aspectNames)
             {
                 assertTrue(other.getAspectNames().contains(aspectName));
@@ -439,7 +438,7 @@ public class Node
         {
             assertNotNull(other.getProperties());
             assertEquals(properties.size(), other.getProperties().size());
-            for (Map.Entry<String,Object> e : properties.entrySet())
+            for (Map.Entry<String, Object> e : properties.entrySet())
             {
                 Object otherObj = other.getProperties().get(e.getKey());
                 assertEquals(e.getValue(), otherObj); // TODO fix !
@@ -485,7 +484,7 @@ public class Node
         if (allowableOperations != null)
         {
             assertNotNull(other.getAllowableOperations());
-            assertEquals("Expected: "+allowableOperations+", actual: "+other.getAllowableOperations(), allowableOperations.size(), other.getAllowableOperations().size());
+            assertEquals("Expected: " + allowableOperations + ", actual: " + other.getAllowableOperations(), allowableOperations.size(), other.getAllowableOperations().size());
             for (String allowableOperation : allowableOperations)
             {
                 assertTrue(other.getAllowableOperations().contains(allowableOperation));

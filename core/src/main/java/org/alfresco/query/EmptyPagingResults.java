@@ -24,8 +24,7 @@ import java.util.List;
 import org.alfresco.util.Pair;
 
 /**
- * An always empty {@link PagingResults}, used when you know
- *  you can short circuit a query when no results are found.
+ * An always empty {@link PagingResults}, used when you know you can short circuit a query when no results are found.
  * 
  * @author Nick Burch
  * @since 4.0
@@ -37,30 +36,30 @@ public class EmptyPagingResults<R> implements PagingResults<R>
      */
     public List<R> getPage()
     {
-       return Collections.emptyList();
+        return Collections.emptyList();
     }
-    
+
     /**
-     * No more items remain 
+     * No more items remain
      */
     public boolean hasMoreItems()
     {
-       return false;
+        return false;
     }
-    
+
     /**
      * There are no results
      */
     public Pair<Integer, Integer> getTotalResultCount()
     {
-       return new Pair<Integer,Integer>(0,0);
+        return new Pair<Integer, Integer>(0, 0);
     }
-    
+
     /**
      * There is no unique query ID, as no query was done
      */
     public String getQueryExecutionId()
     {
-       return null;
+        return null;
     }
 }

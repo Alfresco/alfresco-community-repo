@@ -33,6 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -44,8 +47,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
 
 public class WorkflowPermissionInterceptor implements MethodInterceptor
 {
@@ -70,8 +71,8 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
         {
             Object result = invocation.proceed();
             WorkflowTask wt = (WorkflowTask) result;
-            if (isInitiatorOrAssignee(wt, currentUser) || fromSameParallelReviewWorkflow(wt, currentUser) || 
-                        isStartTaskOfProcessInvolvedIn(wt, currentUser))
+            if (isInitiatorOrAssignee(wt, currentUser) || fromSameParallelReviewWorkflow(wt, currentUser) ||
+                    isStartTaskOfProcessInvolvedIn(wt, currentUser))
             {
                 return result;
             }
@@ -82,12 +83,12 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
             }
 
         }
-        
-        if(methodName.equals("getStartTask"))
+
+        if (methodName.equals("getStartTask"))
         {
             Object result = invocation.proceed();
             WorkflowTask wt = (WorkflowTask) result;
-            
+
             if (isInitiatorOrAssignee(wt, currentUser) || isUserPartOfProcess(wt, currentUser))
             {
                 return result;
@@ -97,7 +98,7 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
                 String taskId = (String) invocation.getArguments()[0];
                 throw new AccessDeniedException("Accessing task with id='" + taskId + "' is not allowed for user '" + currentUser + "'");
             }
-            
+
         }
 
         if (methodName.equals("updateTask") || methodName.equals("endTask"))
@@ -124,7 +125,7 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
             for (WorkflowTask wt : rawList)
             {
                 if (isInitiatorOrAssignee(wt, currentUser) || fromSameParallelReviewWorkflow(wt, currentUser)
-                            || isStartTaskOfProcessInvolvedIn(wt, currentUser))
+                        || isStartTaskOfProcessInvolvedIn(wt, currentUser))
                 {
                     resultList.add(wt);
                 }
@@ -147,14 +148,14 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
         Map<QName, Serializable> props = wt.getProperties();
 
         String ownerName = (String) props.get(ContentModel.PROP_OWNER);
-		//fix for MNT-14366; if owner value can't be found on workflow properties because initiator nodeRef no longer exists
-		//get owner from initiatorhome nodeRef owner property
+        // fix for MNT-14366; if owner value can't be found on workflow properties because initiator nodeRef no longer exists
+        // get owner from initiatorhome nodeRef owner property
         if (ownerName == null)
         {
-            NodeRef initiatorHomeNodeRef = (NodeRef)props.get( QName.createQName("", WorkflowConstants.PROP_INITIATOR_HOME));
-            if (initiatorHomeNodeRef != null )
+            NodeRef initiatorHomeNodeRef = (NodeRef) props.get(QName.createQName("", WorkflowConstants.PROP_INITIATOR_HOME));
+            if (initiatorHomeNodeRef != null)
             {
-                ownerName = (String)nodeService.getProperty(initiatorHomeNodeRef, ContentModel.PROP_OWNER);
+                ownerName = (String) nodeService.getProperty(initiatorHomeNodeRef, ContentModel.PROP_OWNER);
             }
         }
         if (userName != null && userName.equalsIgnoreCase(ownerName))
@@ -188,11 +189,11 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
         return false;
     }
 
-    private boolean isStartTaskOfProcessInvolvedIn(WorkflowTask wt, String userName) 
+    private boolean isStartTaskOfProcessInvolvedIn(WorkflowTask wt, String userName)
     {
         return wt.getId().contains(ActivitiConstants.START_TASK_PREFIX) && isUserPartOfProcess(wt, userName);
     }
-    
+
     private boolean fromSameParallelReviewWorkflow(WorkflowTask wt, String userName)
     {
         // check whether this is parallel review workflow, "parallel" will match all parallel workflows (any engine)
@@ -203,7 +204,7 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
             tasksQuery.setActive(null);
             tasksQuery.setProcessId(wt.getPath().getInstance().getId());
             List<WorkflowTask> allWorkflowTasks = workflowService.queryTasks(tasksQuery, true);
-            
+
             for (WorkflowTask task : allWorkflowTasks)
             {
                 if (isInitiatorOrAssignee(task, userName))
@@ -215,7 +216,7 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
         }
         return false;
     }
-    
+
     private boolean isUserPartOfProcess(WorkflowTask wt, String userName)
     {
         WorkflowTaskQuery tasksQuery = new WorkflowTaskQuery();
@@ -223,7 +224,7 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
         tasksQuery.setActive(null);
         tasksQuery.setProcessId(wt.getPath().getInstance().getId());
         List<WorkflowTask> allWorkflowTasks = workflowService.queryTasks(tasksQuery, true);
-        
+
         for (WorkflowTask task : allWorkflowTasks)
         {
             if (isInitiatorOrAssignee(task, userName))
@@ -294,7 +295,7 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
     {
         this.workflowService = workflowService;
     }
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;

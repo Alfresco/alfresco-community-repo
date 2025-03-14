@@ -27,10 +27,11 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
+import org.apache.chemistry.opencmis.commons.PropertyIds;
+
 import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
  * Accessor for the CMIS Checkin Comment
@@ -42,8 +43,10 @@ public class CheckinCommentProperty extends AbstractProperty
     /**
      * Construct
      * 
-     * @param serviceRegistry ServiceRegistry
-     * @param connector CMISConnector
+     * @param serviceRegistry
+     *            ServiceRegistry
+     * @param connector
+     *            CMISConnector
      */
     public CheckinCommentProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {

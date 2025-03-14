@@ -29,8 +29,15 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.heartbeat.HBDataCollectorServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -48,13 +55,6 @@ import org.alfresco.service.license.LicenseService;
 import org.alfresco.service.license.LicenseService.LicenseChangeHandler;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.VersionNumber;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * Implementation of Descriptor Service.
@@ -62,12 +62,12 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  * @author David Caruana
  */
 public class DescriptorServiceImpl extends AbstractLifecycleBean
-                                    implements DescriptorService, InitializingBean, LicenseChangeHandler
+        implements DescriptorService, InitializingBean, LicenseChangeHandler
 {
     private DescriptorDAO serverDescriptorDAO;
     private DescriptorDAO currentRepoDescriptorDAO;
     private DescriptorDAO installedRepoDescriptorDAO;
-    
+
     private TransactionService transactionService;
     private LicenseService licenseService;
     private RepoUsageComponent repoUsageComponent;
@@ -75,14 +75,14 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
     @SuppressWarnings("unused")
 
     private boolean isBootstrapped;
-    
+
     /**
      * The version of the software
      */
     private Descriptor serverDescriptor;
     private Descriptor currentRepoDescriptor;
     private Descriptor installedRepoDescriptor;
-    
+
     // License changes must hold a synchronized lock on licenseLock so that these changes can by synchronized on
     // startup (in a single JVM) BUT at the point of setting the currentRepoDescriptor they must also obtain the
     // currentRepoDescriptorLock.writeLock. This is required for the situation where the database change takes a long
@@ -230,7 +230,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         if (this.licenseService == null)
         {
             throw new IllegalStateException("Not bootstrapped");
-        }        
+        }
         return this.licenseService.getLicense();
     }
 
@@ -243,18 +243,16 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         // Ensure that we force a writable txn for this operation
         final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
         txnHelper.setForceWritable(true);
-        
-        final RetryingTransactionCallback<String> loadCallback = new RetryingTransactionCallback<String>()
-        {
+
+        final RetryingTransactionCallback<String> loadCallback = new RetryingTransactionCallback<String>() {
             @Override
             public String execute() throws Throwable
             {
-                return licenseService.loadLicense();      
+                return licenseService.loadLicense();
             }
         };
         // ... and we have to be 'system' for this, too
-        String result = AuthenticationUtil.runAs(new RunAsWork<String>()
-        {
+        String result = AuthenticationUtil.runAs(new RunAsWork<String>() {
             public String doWork() throws Exception
             {
                 return txnHelper.doInTransaction(loadCallback, false, true);
@@ -267,7 +265,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         }
         return result;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -277,18 +275,16 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         // Ensure that we force a writable txn for this operation
         final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
         txnHelper.setForceWritable(true);
-        
-        final RetryingTransactionCallback<String> loadCallback = new RetryingTransactionCallback<String>()
-        {
+
+        final RetryingTransactionCallback<String> loadCallback = new RetryingTransactionCallback<String>() {
             @Override
             public String execute() throws Throwable
             {
-                return licenseService.loadLicense(licenseStream);      
+                return licenseService.loadLicense(licenseStream);
             }
         };
         // ... and we have to be 'system' for this, too
-        String result = AuthenticationUtil.runAs(new RunAsWork<String>()
-        {
+        String result = AuthenticationUtil.runAs(new RunAsWork<String>() {
             public String doWork() throws Exception
             {
                 return txnHelper.doInTransaction(loadCallback, false, true);
@@ -301,7 +297,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         }
         return result;
     }
-    
+
     /**
      * On bootstrap load the special services for LicenseComponent
      * 
@@ -310,8 +306,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        AuthenticationUtil.RunAsWork<Void> bootstrapWork = new RunAsWork<Void>()
-        {
+        AuthenticationUtil.RunAsWork<Void> bootstrapWork = new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -324,7 +319,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         // Broadcast that the descriptor service is now available
         ((ApplicationContext) event.getSource()).publishEvent(new DescriptorServiceAvailableEvent(this));
     }
-    
+
     private void bootstrap()
     {
         logger.debug("onBootstrap");
@@ -332,16 +327,15 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         // We force write mode
         RetryingTransactionHelper helper = transactionService.getRetryingTransactionHelper();
         helper.setForceWritable(true);
-        
+
         // create the initial installed descriptor
-        RetryingTransactionCallback<Descriptor> getDescriptorCallback = new RetryingTransactionCallback<Descriptor>()
-        {
-            public Descriptor execute() 
+        RetryingTransactionCallback<Descriptor> getDescriptorCallback = new RetryingTransactionCallback<Descriptor>() {
+            public Descriptor execute()
             {
                 return installedRepoDescriptorDAO.getDescriptor();
             }
         };
-        Descriptor installed =  helper.doInTransaction(getDescriptorCallback, false, false);
+        Descriptor installed = helper.doInTransaction(getDescriptorCallback, false, false);
         if (installed != null)
         {
             installedRepoDescriptor = installed;
@@ -350,18 +344,14 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         {
             installedRepoDescriptor = new UnknownDescriptor();
         }
-        
-        /*
-         *  Initialize license service if on classpath.  
-         *  If no class exists a dummy license service is used.
-         *  Make the LicenseService available in the context.
-         */
+
+        /* Initialize license service if on classpath. If no class exists a dummy license service is used. Make the LicenseService available in the context. */
         licenseService = (LicenseService) constructSpecialService("org.alfresco.enterprise.license.LicenseComponent");
         if (licenseService == null)
         {
             // No license server code - install a dummy license service instead
             licenseService = new NOOPLicenseService();
-        } 
+        }
         ApplicationContext applicationContext = getApplicationContext();
         if (applicationContext instanceof ConfigurableApplicationContext)
         {
@@ -372,12 +362,11 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         // Register HeartBeat with LicenseService
         licenseService.registerOnLicenseChange((LicenseChangeHandler) hbDataCollectorService);
 
-
         // Now listen for future license changes
         licenseService.registerOnLicenseChange(this);
-        
+
         try
-        {   
+        {
             // Verify license has side effect of loading any new licenses
             licenseService.verifyLicense();
         }
@@ -385,7 +374,8 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         {
             // Swallow Licence Exception Here
             // Don't log error: It'll be reported by other means
-        };
+        }
+        ;
     }
 
     @Override
@@ -410,8 +400,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
     }
 
     /**
-     * Constructs a special service whose dependencies cannot or should not be injected declaratively. Examples include
-     * the license component and heartbeat service that are intentionally left unconfigurable.
+     * Constructs a special service whose dependencies cannot or should not be injected declaratively. Examples include the license component and heartbeat service that are intentionally left unconfigurable.
      * 
      * @param className
      *            the class name
@@ -422,13 +411,11 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         try
         {
             Class<?> componentClass = Class.forName(className);
-            Constructor<?> constructor = componentClass.getConstructor(new Class[]
-            {
-                ApplicationContext.class
+            Constructor<?> constructor = componentClass.getConstructor(new Class[]{
+                    ApplicationContext.class
             });
-            return constructor.newInstance(new Object[]
-            {
-                getApplicationContext()
+            return constructor.newInstance(new Object[]{
+                    getApplicationContext()
             });
         }
         catch (ClassNotFoundException e)
@@ -451,10 +438,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
     private class NOOPLicenseService implements LicenseService
     {
         /**
-         * Ensures that a repository Descriptor is available.
-         * This is done here to prevent flip-flopping on the license mode
-         * during startup i.e. the Enterprise mode will be set once when
-         * the real license is validated.
+         * Ensures that a repository Descriptor is available. This is done here to prevent flip-flopping on the license mode during startup i.e. the Enterprise mode will be set once when the real license is validated.
          */
         public void verifyLicense() throws LicenseException
         {
@@ -464,8 +448,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
                 {
                     final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
 
-                    RetryingTransactionCallback<Void> nopLoadLicense = new RetryingTransactionCallback<Void>()
-                    {
+                    RetryingTransactionCallback<Void> nopLoadLicense = new RetryingTransactionCallback<Void>() {
                         @Override
                         public Void execute()
                         {
@@ -481,7 +464,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         }
 
         /**
-         * @return              <tt>true</tt> always
+         * @return <tt>true</tt> always
          */
         public boolean isLicenseValid()
         {
@@ -489,7 +472,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         }
 
         /**
-         * @return              <tt>null</tt> always
+         * @return <tt>null</tt> always
          */
         public LicenseDescriptor getLicense() throws LicenseException
         {
@@ -500,13 +483,12 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
          * NO NOP
          */
         public void shutdown()
-        {
-        }
+        {}
 
         @Override
         public void registerOnLicenseChange(LicenseChangeHandler callback)
         {
-           
+
         }
 
         @Override
@@ -531,7 +513,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
     private class UnknownDescriptor implements Descriptor
     {
         /**
-         * @return              <b>Unknown</b> always
+         * @return <b>Unknown</b> always
          */
         public String getId()
         {
@@ -539,7 +521,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         }
 
         /**
-         * @return              <b>Unknown</b> always
+         * @return <b>Unknown</b> always
          */
         public String getName()
         {
@@ -547,7 +529,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         }
 
         /**
-         * @return              <b>Unknown</b> always
+         * @return <b>Unknown</b> always
          */
         public String getVersionMajor()
         {
@@ -555,7 +537,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         }
 
         /**
-         * @return              <b>Unknown</b> always
+         * @return <b>Unknown</b> always
          */
         public String getVersionMinor()
         {
@@ -563,7 +545,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         }
 
         /**
-         * @return              <b>Unknown</b> always
+         * @return <b>Unknown</b> always
          */
         public String getVersionRevision()
         {
@@ -571,7 +553,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         }
 
         /**
-         * @return              <b>Unknown</b> always
+         * @return <b>Unknown</b> always
          */
         public String getVersionLabel()
         {
@@ -579,7 +561,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         }
 
         /**
-         * @return              <b>Unknown</b> always
+         * @return <b>Unknown</b> always
          */
         public String getVersionBuild()
         {
@@ -587,7 +569,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         }
 
         /**
-         * @return              <b>0.0.0</b> always
+         * @return <b>0.0.0</b> always
          */
         public VersionNumber getVersionNumber()
         {
@@ -595,7 +577,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         }
 
         /**
-         * @return              <b>Unknown</b> always
+         * @return <b>Unknown</b> always
          */
         public String getVersion()
         {
@@ -603,7 +585,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         }
 
         /**
-         * @return              <b>Unknown</b> always
+         * @return <b>Unknown</b> always
          */
         public String getEdition()
         {
@@ -611,7 +593,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         }
 
         /**
-         * @return              <b>0</b> always
+         * @return <b>0</b> always
          */
         public int getSchema()
         {
@@ -619,7 +601,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         }
 
         /**
-         * @return              Empty <tt>String[]</tt> always
+         * @return Empty <tt>String[]</tt> always
          */
         public String[] getDescriptorKeys()
         {
@@ -627,7 +609,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         }
 
         /**
-         * @return              <tt>null</tt> always
+         * @return <tt>null</tt> always
          */
         public String getDescriptor(String key)
         {
@@ -635,7 +617,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         }
 
         /**
-         * @return              <b>Unknown</b> always
+         * @return <b>Unknown</b> always
          */
         @Override
         public LicenseMode getLicenseMode()
@@ -752,30 +734,29 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
             }
         }
     }
-    
+
     @Override
     public void onLicenseChange(final LicenseDescriptor licenseDescriptor)
     {
         synchronized (licenseLock)
         {
             logger.debug("Received changed license descriptor: " + licenseDescriptor);
-                    
-            RetryingTransactionCallback<RepoUsage> updateLicenseCallback = new RetryingTransactionCallback<RepoUsage>()
-            {
+
+            RetryingTransactionCallback<RepoUsage> updateLicenseCallback = new RetryingTransactionCallback<RepoUsage>() {
                 public RepoUsage execute()
                 {
                     // Configure the license restrictions
                     RepoUsage.LicenseMode newMode = licenseDescriptor.getLicenseMode();
                     Long expiryTime = licenseDescriptor.getValidUntil() == null ? null : licenseDescriptor.getValidUntil().getTime();
                     RepoUsage restrictions = new RepoUsage(
-                            System.currentTimeMillis(), 
-                            licenseDescriptor.getMaxUsers(), 
-                            licenseDescriptor.getMaxDocs(), 
+                            System.currentTimeMillis(),
+                            licenseDescriptor.getMaxUsers(),
+                            licenseDescriptor.getMaxDocs(),
                             newMode,
                             expiryTime,
                             false);
                     repoUsageComponent.setRestrictions(restrictions);
-                    
+
                     // Reset usage upon loading the unlimited license
                     if (restrictions.getUsers() == null)
                     {
@@ -826,8 +807,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
             if (isCurrentRepoDescriptorIsNull())
             {
                 final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-                RetryingTransactionCallback<Void> nopLoadLicense = new RetryingTransactionCallback<Void>()
-                {
+                RetryingTransactionCallback<Void> nopLoadLicense = new RetryingTransactionCallback<Void>() {
                     @Override
                     public Void execute()
                     {
@@ -843,9 +823,10 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         }
     }
 
-	@Override
-	public boolean isBootstrapped() {
-		
-		return isBootstrapped;
-	}
+    @Override
+    public boolean isBootstrapped()
+    {
+
+        return isBootstrapped;
+    }
 }

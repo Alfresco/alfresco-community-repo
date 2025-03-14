@@ -25,10 +25,10 @@
  */
 package org.alfresco.service.cmr.search;
 
-import org.alfresco.api.AlfrescoPublicApi;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Parameters used for search Interval sets.
@@ -44,11 +44,11 @@ public class IntervalSet
 
     @JsonCreator
     public IntervalSet(
-                @JsonProperty("start") String start,
-                @JsonProperty("end") String end,
-                @JsonProperty("label") String label,
-                @JsonProperty("startInclusive") Boolean startInclusive,
-                @JsonProperty("endInclusive") Boolean endInclusive)
+            @JsonProperty("start") String start,
+            @JsonProperty("end") String end,
+            @JsonProperty("label") String label,
+            @JsonProperty("startInclusive") Boolean startInclusive,
+            @JsonProperty("endInclusive") Boolean endInclusive)
     {
         this.start = start;
         this.end = end;
@@ -92,35 +92,36 @@ public class IntervalSet
         StringBuilder sb = new StringBuilder("{!afts");
         if (label != null && !label.isEmpty())
         {
-            sb.append(" key="+label);
+            sb.append(" key=" + label);
         }
         sb.append("}")
-          .append(toRange());
+                .append(toRange());
         return sb.toString();
     }
 
     public String toRange()
     {
         StringBuilder sb = new StringBuilder("");
-        sb.append(startInclusive?"[":"(")
-          .append(start)
-          .append(","+end)
-          .append(endInclusive?"]":")");
+        sb.append(startInclusive ? "[" : "(")
+                .append(start)
+                .append("," + end)
+                .append(endInclusive ? "]" : ")");
         return sb.toString();
     }
 
     /**
      * Returns a valid AFTS query for this Interval Set
+     * 
      * @return a query
      */
     public String toAFTSQuery()
     {
         StringBuilder sb = new StringBuilder("");
-        sb.append(startInclusive?"[":"<")
-                    .append("\"").append(start).append("\"")
-                    .append(" TO ")
-                    .append("\"").append(end).append("\"")
-                    .append(endInclusive?"]":">");
+        sb.append(startInclusive ? "[" : "<")
+                .append("\"").append(start).append("\"")
+                .append(" TO ")
+                .append("\"").append(end).append("\"")
+                .append(endInclusive ? "]" : ">");
         return sb.toString();
     }
 
@@ -128,12 +129,12 @@ public class IntervalSet
     public String toString()
     {
         return "IntervalSet{" +
-                    "start=" + start +
-                    ", end=" + end +
-                    ", label='" + label + '\'' +
-                    ", startInclusive=" + startInclusive +
-                    ", endInclusive=" + endInclusive +
-                    '}';
+                "start=" + start +
+                ", end=" + end +
+                ", label='" + label + '\'' +
+                ", startInclusive=" + startInclusive +
+                ", endInclusive=" + endInclusive +
+                '}';
     }
 
     @Override

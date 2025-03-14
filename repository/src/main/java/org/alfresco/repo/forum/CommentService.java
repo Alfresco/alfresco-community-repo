@@ -25,13 +25,13 @@
  */
 package org.alfresco.repo.forum;
 
+import java.util.Map;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ForumModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.repository.NodeRef;
-
-import java.util.Map;
 
 /**
  * A service for handling comments.
@@ -42,20 +42,21 @@ import java.util.Map;
 public interface CommentService
 {
     /**
-     * Thi method retrieves the ancestor in the repository containment hierarchy having the
-     * {@link ForumModel#ASPECT_DISCUSSABLE fm:discussable} aspect.
+     * Thi method retrieves the ancestor in the repository containment hierarchy having the {@link ForumModel#ASPECT_DISCUSSABLE fm:discussable} aspect.
      * 
-     * @param descendantNodeRef The nodeRef which descends from the f:discussable node.
+     * @param descendantNodeRef
+     *            The nodeRef which descends from the f:discussable node.
      * @return the fm:discussable ancestor if there is one, else <tt>null</tt>
-     * @throws AlfrescoRuntimeException if the specified expectedNodeType is not correct.
+     * @throws AlfrescoRuntimeException
+     *             if the specified expectedNodeType is not correct.
      */
     NodeRef getDiscussableAncestor(NodeRef descendantNodeRef);
-    
+
     /**
-     * This method retrieves the {@link ForumModel#TYPE_TOPIC fm:topic} NodeRef which holds the Share comments for
-     * the specified {@link ForumModel#ASPECT_DISCUSSABLE fm:discussable} node.
+     * This method retrieves the {@link ForumModel#TYPE_TOPIC fm:topic} NodeRef which holds the Share comments for the specified {@link ForumModel#ASPECT_DISCUSSABLE fm:discussable} node.
      * 
-     * @param discussableNode the node whose Share comments are sought.
+     * @param discussableNode
+     *            the node whose Share comments are sought.
      * @return the fm:topic NodeRef, if one exists, else <tt>null</tt>.
      */
     NodeRef getShareCommentsTopic(NodeRef discussableNode);
@@ -63,28 +64,37 @@ public interface CommentService
     /**
      * Creates a comment for the discussableNode
      * 
-     * @param discussableNode the node in Share which is being commented on .
-     * @param title - title of the comment
-     * @param comment - body of the comment
-     * @param suppressRollups - should it suppressRollups
+     * @param discussableNode
+     *            the node in Share which is being commented on .
+     * @param title
+     *            - title of the comment
+     * @param comment
+     *            - body of the comment
+     * @param suppressRollups
+     *            - should it suppressRollups
      * @return NodeRef - the created node reference
      */
     NodeRef createComment(NodeRef discussableNode, String title, String comment, boolean suppressRollups);
-    
+
     /**
      * Updates the comment
      * 
-     * @param commentNodeRef the comment node.
-     * @param title - title of the comment
-     * @param comment - body of the comment
+     * @param commentNodeRef
+     *            the comment node.
+     * @param title
+     *            - title of the comment
+     * @param comment
+     *            - body of the comment
      */
     void updateComment(NodeRef commentNodeRef, String title, String comment);
 
     /**
      * Returns a paged list of comments.
      * 
-     * @param discussableNode the node which is being commented on .
-     * @param paging paging.
+     * @param discussableNode
+     *            the node which is being commented on .
+     * @param paging
+     *            paging.
      * @return a list of comment nodes
      */
     PagingResults<NodeRef> listComments(NodeRef discussableNode, PagingRequest paging);
@@ -92,7 +102,8 @@ public interface CommentService
     /**
      * Deletes the comment for the discussableNode
      * 
-     * @param commentNodeRef the node in Share which is being commented on.
+     * @param commentNodeRef
+     *            the node in Share which is being commented on.
      */
     void deleteComment(NodeRef commentNodeRef);
 
@@ -104,7 +115,7 @@ public interface CommentService
      * @return
      */
     Map<String, Boolean> getCommentPermissions(NodeRef discussableNode, NodeRef commentNodeRef);
-    
+
     String CAN_EDIT = "canEdit";
     String CAN_DELETE = "canDelete";
 }

@@ -32,14 +32,14 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 import junit.framework.TestCase;
-
-import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
-import org.alfresco.service.cmr.email.EmailService;
-import org.alfresco.util.ApplicationContextHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
+
+import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
+import org.alfresco.service.cmr.email.EmailService;
+import org.alfresco.util.ApplicationContextHelper;
 
 public class EmailServerTest extends TestCase
 {
@@ -47,19 +47,19 @@ public class EmailServerTest extends TestCase
      * Services used by the tests
      */
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-    
+
     private EmailServer emailServer;
-    
+
     // Linux-based env. should use port bigger than 1024
     private final int DEFAULT_TEST_PORT = 2225;
     private final String TEST_HOST = "localhost";
     private final int TEST_CLIENT_TIMEOUT = 20000;
-    
+
     private final short SHUTDOWN_SLEEP_TIME = 1000;
 
     private EmailService emailService;
     private int currentPort;
-    
+
     @Before
     @Override
     public void setUp() throws Exception
@@ -68,9 +68,9 @@ public class EmailServerTest extends TestCase
         assertNotNull("emailSubsystem", emailSubsystem);
         ApplicationContext emailCtx = emailSubsystem.getApplicationContext();
         emailServer = (EmailServer) emailCtx.getBean("emailServer");
-        emailService = (EmailService)emailCtx.getBean("emailService");       
+        emailService = (EmailService) emailCtx.getBean("emailService");
         assertNotNull("emailService", emailService);
-        
+
         // MNT-14417
         shutdownServer();
     }
@@ -78,97 +78,77 @@ public class EmailServerTest extends TestCase
     @After
     public void tearDown() throws Exception
     {
-    	// MNT-14417
+        // MNT-14417
         shutdownServer();
     }
 
-    /*
-     * Check null reverse-path if 
-     * email.server.auth.enabled=false
-     *  and 
-     * email.inbound.unknownUser isn't set
+    /* Check null reverse-path if email.server.auth.enabled=false and email.inbound.unknownUser isn't set
      * 
-     * Null reverse-path must be disallowed
-     */
+     * Null reverse-path must be disallowed */
     @Test
     public void testDisallowedNulableFromUser() throws Exception
     {
         emailServer.setEnableTLS(false);
-        
+
         emailServer.setAuthenticate(false);
         emailServer.setUnknownUser(null);
-        
+
         // MNT-14417
         startupServer();
 
         String[] response = getMailFromNullableResponse(TEST_HOST, getServerPort());
         checkResponse(response);
-        
+
         // expects smth. like: "504 some data"
         // we are expect error code first
         assertTrue("Response should have error code", response[1].indexOf("5") == 0);
     }
-    
-    /*
-     * Check null reverse-path if 
-     * email.server.auth.enabled=true
-     *  and 
-     * email.inbound.unknownUser isn't set
+
+    /* Check null reverse-path if email.server.auth.enabled=true and email.inbound.unknownUser isn't set
      * 
-     * Null reverse-path must be allowed
-     */
+     * Null reverse-path must be allowed */
     @Test
     public void testAllowedNulableFromUserWithAuth() throws Exception
     {
         emailServer.setEnableTLS(false);
-        
+
         emailServer.setAuthenticate(true);
         emailServer.setUnknownUser(null);
-        
+
         // MNT-14417
         startupServer();
 
         String[] response = getMailFromNullableResponse(TEST_HOST, getServerPort());
         checkResponse(response);
-        
+
         // expects smth. like: "250 some data"
         // we aren't expect error code
         assertTrue("Response should have error code", response[1].indexOf("2") == 0);
     }
-    
-    /*
-     * Check null reverse-path if 
-     * email.server.auth.enabled=false
-     *  and 
-     * email.inbound.unknownUser is set
+
+    /* Check null reverse-path if email.server.auth.enabled=false and email.inbound.unknownUser is set
      * 
-     * Null reverse-path must be allowed
-     */
+     * Null reverse-path must be allowed */
     @Test
     public void testAllowedNulableFromUserWithAnonymous() throws Exception
     {
         emailServer.setEnableTLS(false);
-        
+
         emailServer.setAuthenticate(false);
         emailServer.setUnknownUser("anonymous");
-        
+
         // MNT-14417
         startupServer();
 
         String[] response = getMailFromNullableResponse(TEST_HOST, getServerPort());
         checkResponse(response);
-        
+
         // expects smth. like: "250 some data"
         // we aren't expect error code
         assertTrue("Response should have error code", response[1].indexOf("2") == 0);
     }
-    
-    /*
-     * Check for data accepting if "From" user absent
-     * and 
-     * "email.inbound.unknownUser" isn't set
-     * email.server.auth.enabled=true
-     */
+
+    /* Check for data accepting if "From" user absent and "email.inbound.unknownUser" isn't set email.server.auth.enabled=true */
     @Test
     public void testForDataAcceptingIfUserIsEmpty() throws Exception
     {
@@ -181,28 +161,27 @@ public class EmailServerTest extends TestCase
 
         emailServer.setAuthenticate(true);
         emailServer.setEnableTLS(false);
-        
+
         // MNT-14417
         startupServer();
-        
-        String[] request = new String[] 
-                {
-                   "MAIL FROM:<>\r\n",
-                   "RCPT TO:<buffy@sunnydale.high>\r\n",
-                   "DATA\r\n",
-                   "Hello world\r\n.\r\n",
-                   "QUIT\r\n"
-                };
+
+        String[] request = new String[]{
+                "MAIL FROM:<>\r\n",
+                "RCPT TO:<buffy@sunnydale.high>\r\n",
+                "DATA\r\n",
+                "Hello world\r\n.\r\n",
+                "QUIT\r\n"
+        };
         String[] response = getResponse(TEST_HOST, getServerPort(), request);
-        
+
         checkResponse(response);
-        
+
         assertTrue("Response incorrect", response.length > 4);
         // expects smth. like: "554 some data"
         // we are expect error code
         assertTrue("Response should have error code", response[4].indexOf("5") == 0);
     }
-    
+
     private void startupServer()
     {
         currentPort = DEFAULT_TEST_PORT;
@@ -234,20 +213,20 @@ public class EmailServerTest extends TestCase
             throw new RuntimeException("Unable to start email server");
         }
     }
-    
+
     // MNT-14417: wait for a while to avoid "java.net.BindException: Address already in use"
     private void shutdownServer() throws InterruptedException
     {
-    	emailServer.onShutdown(null);
-    	Thread.sleep(SHUTDOWN_SLEEP_TIME);
-    	emailServer.setEnabled(false);
+        emailServer.onShutdown(null);
+        Thread.sleep(SHUTDOWN_SLEEP_TIME);
+        emailServer.setEnabled(false);
     }
-    
+
     private int getServerPort()
     {
         return currentPort;
     }
-    
+
     private void checkResponse(String[] response)
     {
         assertNotNull("Client hasn't response", response);
@@ -259,7 +238,7 @@ public class EmailServerTest extends TestCase
         // Send null reverse-path
         return getResponse(host, port, new String[]{"MAIL FROM:<>\r\n", "QUIT\r\n"});
     }
-    
+
     private String[] getResponse(String host, int port, String requestStrings[]) throws Exception
     {
         Socket sock = new Socket(host, port);
@@ -272,7 +251,7 @@ public class EmailServerTest extends TestCase
         {
             // Read first server response. It is smth. like: ESMTP SubEthaSMTP 3.1.6
             response.add(in.readLine());
-            
+
             for (String reqStr : requestStrings)
             {
                 out.print(reqStr);
@@ -280,10 +259,10 @@ public class EmailServerTest extends TestCase
                 response.add(in.readLine());
             }
 
-//            for (String s : response)
-//            {
-//                System.out.println(s);
-//            }
+            // for (String s : response)
+            // {
+            // System.out.println(s);
+            // }
             return response.toArray(new String[response.size()]);
         }
         finally

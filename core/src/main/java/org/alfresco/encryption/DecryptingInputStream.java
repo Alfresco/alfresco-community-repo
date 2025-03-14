@@ -21,7 +21,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
-
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -32,10 +31,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * An input stream that encrypts data produced by a {@link EncryptingOutputStream}. A lightweight yet secure hybrid
- * encryption scheme is used. A random symmetric key is decrypted using the receiver's private key. The supplied data is
- * then decrypted using the symmetric key and read on a streaming basis. When the end of the stream is reached or the
- * stream is closed, a HMAC checksum of the entire stream contents is validated.
+ * An input stream that encrypts data produced by a {@link EncryptingOutputStream}. A lightweight yet secure hybrid encryption scheme is used. A random symmetric key is decrypted using the receiver's private key. The supplied data is then decrypted using the symmetric key and read on a streaming basis. When the end of the stream is reached or the stream is closed, a HMAC checksum of the entire stream contents is validated.
  */
 public class DecryptingInputStream extends InputStream
 {
@@ -163,8 +159,7 @@ public class DecryptingInputStream extends InputStream
     }
 
     /**
-     * Reads the next block of data, adding it to the HMAC checksum. Strips the header recording the number of bytes in
-     * the block.
+     * Reads the next block of data, adding it to the HMAC checksum. Strips the header recording the number of bytes in the block.
      * 
      * @return the data block, or <code>null</code> if the end of the stream has been reached
      * @throws IOException
@@ -176,8 +171,7 @@ public class DecryptingInputStream extends InputStream
     }
 
     /**
-     * Reads the next block of data, optionally adding it to the HMAC checksum. Strips the header recording the number
-     * of bytes in the block.
+     * Reads the next block of data, optionally adding it to the HMAC checksum. Strips the header recording the number of bytes in the block.
      * 
      * @param updateMac
      *            should the block be added to the HMAC checksum?
@@ -227,10 +221,9 @@ public class DecryptingInputStream extends InputStream
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.io.InputStream#read()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see java.io.InputStream#read() */
     @Override
     public int read() throws IOException
     {
@@ -243,20 +236,18 @@ public class DecryptingInputStream extends InputStream
         return bytesRead == -1 ? -1 : buf[0] & 0xFF;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.io.InputStream#read(byte[])
-     */
+    /* (non-Javadoc)
+     * 
+     * @see java.io.InputStream#read(byte[]) */
     @Override
     public int read(final byte b[]) throws IOException
     {
         return read(b, 0, b.length);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.io.InputStream#read(byte[], int, int)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see java.io.InputStream#read(byte[], int, int) */
     @Override
     public int read(final byte b[], int off, final int len) throws IOException
     {
@@ -322,20 +313,18 @@ public class DecryptingInputStream extends InputStream
         return bytesToRead == len ? -1 : len - bytesToRead;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.io.InputStream#available()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see java.io.InputStream#available() */
     @Override
     public int available() throws IOException
     {
         return this.currentDataBlock == null ? 0 : this.currentDataBlock.length - this.currentDataPos;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.io.InputStream#close()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see java.io.InputStream#close() */
     @Override
     public void close() throws IOException
     {

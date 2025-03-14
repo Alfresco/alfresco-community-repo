@@ -36,9 +36,7 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Specifies a constraint on a property value, as for e.g.
- * ContentModel.PROP_NAME, to be applied to queries given in the virtual folder
- * template.
+ * Specifies a constraint on a property value, as for e.g. ContentModel.PROP_NAME, to be applied to queries given in the virtual folder template.
  *
  * @author Bogdan Horje
  */
@@ -53,7 +51,7 @@ public class PropertyValueConstraint extends VirtualQueryConstraintDecorator
     private NamespacePrefixResolver nspResolver;
 
     public PropertyValueConstraint(VirtualQueryConstraint decoratedConstraint, QName property, Serializable value,
-                NamespacePrefixResolver nspResolver)
+            NamespacePrefixResolver nspResolver)
     {
         super(decoratedConstraint);
         this.property = property;
@@ -63,7 +61,7 @@ public class PropertyValueConstraint extends VirtualQueryConstraintDecorator
 
     @Override
     public SearchParameters applyDecorations(ActualEnvironment environment, SearchParameters searchParameters,
-                VirtualQuery query) throws VirtualizationException
+            VirtualQuery query) throws VirtualizationException
     {
         // TODO: allow custom language and not only constraint appliers
 
@@ -87,7 +85,7 @@ public class PropertyValueConstraint extends VirtualQueryConstraintDecorator
         // TODO: introduce and use operator
 
         theQuery = "(" + theQuery + ")" + " and " + "( " + "=" + property.toPrefixString(this.nspResolver) + ":"
-                    +"\""+value.toString() + "\" )";
+                + "\"" + value.toString() + "\" )";
 
         constrainedParameters.setQuery(theQuery);
 

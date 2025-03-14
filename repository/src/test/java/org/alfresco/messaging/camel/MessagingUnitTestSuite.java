@@ -34,5 +34,5 @@ import org.junit.runners.Suite;
         org.alfresco.messaging.camel.CamelComponentsTest.class,
         org.alfresco.messaging.camel.CamelRoutesTest.class
 })
-public class MessagingUnitTestSuite {
-}
+public class MessagingUnitTestSuite
+{}

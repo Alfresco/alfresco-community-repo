@@ -31,25 +31,29 @@ import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.alfresco.rest.framework.Api;
-import org.alfresco.rest.framework.resource.actions.interfaces.ResourceAction;
 import org.springframework.http.HttpMethod;
 
+import org.alfresco.rest.framework.Api;
+import org.alfresco.rest.framework.resource.actions.interfaces.ResourceAction;
+
 /**
- * Describes a resource and its properties.  Metadata about what functions
- * the resource can perform and what properties it has.
+ * Describes a resource and its properties. Metadata about what functions the resource can perform and what properties it has.
  *
  * @author Gethin James
  * @author janv
  */
 public class ResourceMetadata
 {
-    public enum RESOURCE_TYPE {ENTITY, RELATIONSHIP, PROPERTY, OPERATION};
+    public enum RESOURCE_TYPE
+    {
+        ENTITY, RELATIONSHIP, PROPERTY, OPERATION
+    };
+
     private final String uniqueId;
     private final RESOURCE_TYPE type;
     private final List<ResourceOperation> operations;
     private final String parentResource;
-    
+
     @JsonIgnore
     private final Api api;
 
@@ -58,30 +62,33 @@ public class ResourceMetadata
 
     @SuppressWarnings("unchecked")
     public ResourceMetadata(String uniqueId, RESOURCE_TYPE type, List<ResourceOperation> operations, Api api,
-                            Set<Class<? extends ResourceAction>> apiDeleted,
-                            Set<Class<? extends ResourceAction>> apiNoAuth,
-                            String parentResource)
+            Set<Class<? extends ResourceAction>> apiDeleted,
+            Set<Class<? extends ResourceAction>> apiNoAuth,
+            String parentResource)
     {
         super();
         this.uniqueId = uniqueId;
         this.type = type;
-        this.operations = (List<ResourceOperation>) (operations==null?Collections.emptyList():operations);
+        this.operations = (List<ResourceOperation>) (operations == null ? Collections.emptyList() : operations);
         this.api = api;
-        this.apiDeleted  = (Set<Class<? extends ResourceAction>>) (apiDeleted==null?Collections.emptySet():apiDeleted);
-        this.apiNoAuth  = (Set<Class<? extends ResourceAction>>) (apiNoAuth==null?Collections.emptySet():apiNoAuth);
-        this.parentResource = parentResource!=null?(parentResource.startsWith("/")?parentResource:"/"+parentResource):null;
+        this.apiDeleted = (Set<Class<? extends ResourceAction>>) (apiDeleted == null ? Collections.emptySet() : apiDeleted);
+        this.apiNoAuth = (Set<Class<? extends ResourceAction>>) (apiNoAuth == null ? Collections.emptySet() : apiNoAuth);
+        this.parentResource = parentResource != null ? (parentResource.startsWith("/") ? parentResource : "/" + parentResource) : null;
     }
 
     /**
      * Gets the operation for the specified HTTPMethod
-     * @param supportedMethod HttpMethod
+     * 
+     * @param supportedMethod
+     *            HttpMethod
      * @return null if the operation is not supported
      */
     public ResourceOperation getOperation(HttpMethod supportedMethod)
     {
         for (ResourceOperation ops : operations)
         {
-            if (ops.getHttpMethod().equals(supportedMethod)) return ops;
+            if (ops.getHttpMethod().equals(supportedMethod))
+                return ops;
         }
         return null;
     }
@@ -89,7 +96,8 @@ public class ResourceMetadata
     /**
      * Gets the data type of the resource parameter
      *
-     * @param operation {@code ResourceOperation} object
+     * @param operation
+     *            {@code ResourceOperation} object
      * @return The data type of the resource parameter
      */
     public Class getObjectType(ResourceOperation operation)
@@ -106,15 +114,17 @@ public class ResourceMetadata
 
     /**
      * Indicates if this resource action is no longer supported.
+     * 
      * @return true if it is no longer supported
      */
     public boolean isDeleted(Class<? extends ResourceAction> resourceAction)
     {
-       return apiDeleted.contains(resourceAction);
+        return apiDeleted.contains(resourceAction);
     }
 
     /**
      * Indicates if this resource action supports unauthenticated access.
+     * 
      * @param resourceAction
      * @return
      */
@@ -151,9 +161,7 @@ public class ResourceMetadata
         return this.api;
     }
 
-    /*
-     * @see java.lang.Object#toString()
-     */
+    /* @see java.lang.Object#toString() */
     @Override
     public String toString()
     {
@@ -190,21 +198,21 @@ public class ResourceMetadata
     {
         return this.parentResource;
     }
-//
-//    /**
-//     * Gets the properties for the specified http method. That are available to be changed by a url path.
-//     * Matches the first operation.
-//     * @param httpMethod
-//     * @return If not found returns an empty list
-//     */
-//    public List<String> getAddressableProperties(HttpMethod httpMethod)
-//    {
-//        for (ResourceOperation ops : operations)
-//        {
-//            if (ops.getHttpMethod().equals(httpMethod))return ops.getAddressableProperties();
-//        }
-//        return Collections.emptyList();
-//    }
-//
-  
+    //
+    // /**
+    // * Gets the properties for the specified http method. That are available to be changed by a url path.
+    // * Matches the first operation.
+    // * @param httpMethod
+    // * @return If not found returns an empty list
+    // */
+    // public List<String> getAddressableProperties(HttpMethod httpMethod)
+    // {
+    // for (ResourceOperation ops : operations)
+    // {
+    // if (ops.getHttpMethod().equals(httpMethod))return ops.getAddressableProperties();
+    // }
+    // return Collections.emptyList();
+    // }
+    //
+
 }

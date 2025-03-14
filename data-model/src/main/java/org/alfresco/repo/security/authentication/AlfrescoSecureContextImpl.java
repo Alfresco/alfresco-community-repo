@@ -152,17 +152,17 @@ public class AlfrescoSecureContextImpl implements AlfrescoSecureContext
             builder.append("Real authentication = " + AuthenticationUtil.getMaskedUsername(realAuthentication));
         }
         builder.append(", ");
-        
+
         if (effectiveAuthentication == null)
         {
             builder.append("Effective authentication = null");
         }
         else
         {
-            builder.append("Effective authentication = " +AuthenticationUtil.getMaskedUsername(effectiveAuthentication));
+            builder.append("Effective authentication = " + AuthenticationUtil.getMaskedUsername(effectiveAuthentication));
         }
         builder.append(", ");
-        
+
         return builder.toString();
     }
 

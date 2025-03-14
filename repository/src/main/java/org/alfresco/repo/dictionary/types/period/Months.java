@@ -29,15 +29,16 @@ import java.util.Calendar;
 
 /**
  * Months
+ * 
  * @author andyh
  *
  */
-public class Months extends  AbstractCalendarPeriodProvider
+public class Months extends AbstractCalendarPeriodProvider
 {
     /**
      * 
      */
-    public static final String PERIOD_TYPE = "month"; 
+    public static final String PERIOD_TYPE = "month";
 
     public String getPeriodType()
     {

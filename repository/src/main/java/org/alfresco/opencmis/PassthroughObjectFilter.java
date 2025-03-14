@@ -29,10 +29,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 public class PassthroughObjectFilter implements ObjectFilter
 {
-	@Override
-	public boolean filter(NodeRef nodeRef)
-	{
-		return false;
-	}
+    @Override
+    public boolean filter(NodeRef nodeRef)
+    {
+        return false;
+    }
 
 }

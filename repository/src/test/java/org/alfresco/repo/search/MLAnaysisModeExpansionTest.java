@@ -42,7 +42,7 @@ public class MLAnaysisModeExpansionTest extends TestCase
     {
         super(arg0);
     }
-    
+
     public void testIdentity()
     {
         Locale locale = Locale.UK;
@@ -51,7 +51,7 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertEquals(1, locales.size());
         assertTrue(locales.contains(locale));
     }
-    
+
     public void testIdentityAndAll()
     {
         Locale locale = Locale.UK;
@@ -61,7 +61,7 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertTrue(locales.contains(locale));
         assertTrue(locales.contains(new Locale("", "", "")));
     }
-    
+
     public void testAll()
     {
         Locale locale = Locale.UK;
@@ -70,7 +70,7 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertEquals(1, locales.size());
         assertTrue(locales.contains(new Locale("", "", "")));
     }
-    
+
     public void testContaining()
     {
         Locale locale = Locale.UK;
@@ -80,7 +80,7 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertTrue(locales.contains(new Locale("en", "", "")));
         assertTrue(locales.contains(new Locale("en", "GB", "")));
     }
-    
+
     public void testContainingAndAll()
     {
         Locale locale = Locale.UK;
@@ -96,7 +96,7 @@ public class MLAnaysisModeExpansionTest extends TestCase
     {
         HashSet<Locale> locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.LOCALE_AND_ALL_CONTAINED_LOCALES, new Locale("en", "", ""), false));
-        assertTrue(locales.size()>= 9);
+        assertTrue(locales.size() >= 9);
         assertTrue(locales.contains(new Locale("en", "", "")));
         assertTrue(locales.contains(new Locale("en", "AU", "")));
         assertTrue(locales.contains(new Locale("en", "GB", "")));
@@ -105,19 +105,19 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertTrue(locales.contains(new Locale("en", "CA", "")));
         assertTrue(locales.contains(new Locale("en", "IE", "")));
         assertTrue(locales.contains(new Locale("en", "NZ", "")));
-        assertTrue(locales.contains(new Locale("en", "IN", "")));      
+        assertTrue(locales.contains(new Locale("en", "IN", "")));
     }
-    
+
     public void testLang()
     {
         HashSet<Locale> locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.LOCALE_AND_ALL_CONTAINED_LOCALES, new Locale("en", "GB", ""), false));
         assertTrue(locales.size() >= 1);
         assertTrue(locales.contains(new Locale("en", "GB", "")));
-        
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.ALL_LANGUAGES, new Locale("en", "GB", ""), false));
-        assertTrue(locales.size()>= 9);
+        assertTrue(locales.size() >= 9);
         assertTrue(locales.contains(new Locale("en", "", "")));
         assertTrue(locales.contains(new Locale("en", "AU", "")));
         assertTrue(locales.contains(new Locale("en", "GB", "")));
@@ -126,11 +126,11 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertTrue(locales.contains(new Locale("en", "CA", "")));
         assertTrue(locales.contains(new Locale("en", "IE", "")));
         assertTrue(locales.contains(new Locale("en", "NZ", "")));
-        assertTrue(locales.contains(new Locale("en", "IN", ""))); 
-        
+        assertTrue(locales.contains(new Locale("en", "IN", "")));
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.ALL_LANGUAGES_AND_ALL, new Locale("en", "GB", ""), false));
-        assertTrue(locales.size()>= 10);
+        assertTrue(locales.size() >= 10);
         assertTrue(locales.contains(new Locale("", "", "")));
         assertTrue(locales.contains(new Locale("en", "", "")));
         assertTrue(locales.contains(new Locale("en", "AU", "")));
@@ -140,38 +140,38 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertTrue(locales.contains(new Locale("en", "CA", "")));
         assertTrue(locales.contains(new Locale("en", "IE", "")));
         assertTrue(locales.contains(new Locale("en", "NZ", "")));
-        assertTrue(locales.contains(new Locale("en", "IN", ""))); 
+        assertTrue(locales.contains(new Locale("en", "IN", "")));
     }
-    
+
     public void testExactLang()
     {
         HashSet<Locale> locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.LOCALE_AND_ALL_CONTAINED_LOCALES, new Locale("en", "GB", ""), false));
         assertTrue(locales.size() >= 1);
         assertTrue(locales.contains(new Locale("en", "GB", "")));
-        
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.EXACT_LANGUAGE, new Locale("en", "GB", ""), false));
         assertEquals(1, locales.size());
         assertTrue(locales.contains(new Locale("en", "", "")));
-        
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.EXACT_LANGUAGE_AND_ALL, new Locale("en", "GB", ""), false));
         assertEquals(2, locales.size());
         assertTrue(locales.contains(new Locale("", "", "")));
         assertTrue(locales.contains(new Locale("en", "", "")));
     }
-    
+
     public void testCountry()
     {
         HashSet<Locale> locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.LOCALE_AND_ALL_CONTAINED_LOCALES, new Locale("en", "GB", ""), false));
         assertTrue(locales.size() >= 1);
         assertTrue(locales.contains(new Locale("en", "GB", "")));
-        
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.ALL_COUNTRIES, new Locale("en", "", ""), false));
-        assertTrue(locales.size()>= 9);
+        assertTrue(locales.size() >= 9);
         assertTrue(locales.contains(new Locale("en", "", "")));
         assertTrue(locales.contains(new Locale("en", "AU", "")));
         assertTrue(locales.contains(new Locale("en", "GB", "")));
@@ -180,16 +180,16 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertTrue(locales.contains(new Locale("en", "CA", "")));
         assertTrue(locales.contains(new Locale("en", "IE", "")));
         assertTrue(locales.contains(new Locale("en", "NZ", "")));
-        assertTrue(locales.contains(new Locale("en", "IN", ""))); 
-        
+        assertTrue(locales.contains(new Locale("en", "IN", "")));
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.ALL_COUNTRIES, new Locale("en", "GB", ""), false));
         assertTrue(locales.size() >= 1);
         assertTrue(locales.contains(new Locale("en", "GB", "")));
-        
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.ALL_COUNTRIES_AND_ALL, new Locale("en", "", ""), false));
-        assertTrue(locales.size()>= 10);
+        assertTrue(locales.size() >= 10);
         assertTrue(locales.contains(new Locale("", "", "")));
         assertTrue(locales.contains(new Locale("en", "", "")));
         assertTrue(locales.contains(new Locale("en", "AU", "")));
@@ -199,30 +199,30 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertTrue(locales.contains(new Locale("en", "CA", "")));
         assertTrue(locales.contains(new Locale("en", "IE", "")));
         assertTrue(locales.contains(new Locale("en", "NZ", "")));
-        assertTrue(locales.contains(new Locale("en", "IN", ""))); 
-        
+        assertTrue(locales.contains(new Locale("en", "IN", "")));
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.ALL_COUNTRIES_AND_ALL, new Locale("en", "GB", ""), false));
         assertTrue(locales.size() >= 2);
         assertTrue(locales.contains(new Locale("", "", "")));
         assertTrue(locales.contains(new Locale("en", "GB", "")));
     }
-    
+
     public void testExactCountry()
     {
         HashSet<Locale> locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.LOCALE_AND_ALL_CONTAINED_LOCALES, new Locale("en", "GB", ""), false));
         assertTrue(locales.size() >= 1);
         assertTrue(locales.contains(new Locale("en", "GB", "")));
-        
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.EXACT_COUNRTY, new Locale("en", "GB", ""), false));
         assertEquals(1, locales.size());
         assertTrue(locales.contains(new Locale("en", "GB", "")));
-        
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.EXACT_COUNRTY, new Locale("en", "", ""), false));
-        assertTrue(locales.size()>= 9);
+        assertTrue(locales.size() >= 9);
         assertTrue(locales.contains(new Locale("en", "", "")));
         assertTrue(locales.contains(new Locale("en", "AU", "")));
         assertTrue(locales.contains(new Locale("en", "GB", "")));
@@ -231,17 +231,17 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertTrue(locales.contains(new Locale("en", "CA", "")));
         assertTrue(locales.contains(new Locale("en", "IE", "")));
         assertTrue(locales.contains(new Locale("en", "NZ", "")));
-        assertTrue(locales.contains(new Locale("en", "IN", ""))); 
-        
+        assertTrue(locales.contains(new Locale("en", "IN", "")));
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.EXACT_COUNTRY_AND_ALL, new Locale("en", "GB", ""), false));
         assertEquals(2, locales.size());
         assertTrue(locales.contains(new Locale("", "", "")));
         assertTrue(locales.contains(new Locale("en", "GB", "")));
-        
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.EXACT_COUNTRY_AND_ALL, new Locale("en", "", ""), false));
-        assertTrue(locales.size()>= 10);
+        assertTrue(locales.size() >= 10);
         assertTrue(locales.contains(new Locale("", "", "")));
         assertTrue(locales.contains(new Locale("en", "", "")));
         assertTrue(locales.contains(new Locale("en", "AU", "")));
@@ -251,10 +251,9 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertTrue(locales.contains(new Locale("en", "CA", "")));
         assertTrue(locales.contains(new Locale("en", "IE", "")));
         assertTrue(locales.contains(new Locale("en", "NZ", "")));
-        assertTrue(locales.contains(new Locale("en", "IN", ""))); 
+        assertTrue(locales.contains(new Locale("en", "IN", "")));
     }
-    
-    
+
     public void testIdentityWC()
     {
         Locale locale = Locale.UK;
@@ -263,7 +262,7 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertEquals(1, locales.size());
         assertTrue(locales.contains(locale));
     }
-    
+
     public void testIdentityAndAllWC()
     {
         Locale locale = Locale.UK;
@@ -274,7 +273,7 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertTrue(locales.contains(new Locale("", "", "")));
         assertTrue(locales.contains(new Locale("*", "", "")));
     }
-    
+
     public void testAllWC()
     {
         Locale locale = Locale.UK;
@@ -284,7 +283,7 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertTrue(locales.contains(new Locale("", "", "")));
         assertTrue(locales.contains(new Locale("*", "", "")));
     }
-    
+
     public void testContainingWC()
     {
         Locale locale = Locale.UK;
@@ -294,7 +293,7 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertTrue(locales.contains(new Locale("en", "", "")));
         assertTrue(locales.contains(new Locale("en", "GB", "")));
     }
-    
+
     public void testContainingAndAllWC()
     {
         Locale locale = Locale.UK;
@@ -312,10 +311,10 @@ public class MLAnaysisModeExpansionTest extends TestCase
         HashSet<Locale> locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.LOCALE_AND_ALL_CONTAINED_LOCALES, new Locale("en", "", ""), true));
         assertEquals(2, locales.size());
-        assertTrue(locales.contains(new Locale("en", "*", ""))); 
-        assertTrue(locales.contains(new Locale("en", "", ""))); 
+        assertTrue(locales.contains(new Locale("en", "*", "")));
+        assertTrue(locales.contains(new Locale("en", "", "")));
     }
-    
+
     public void testLangWC()
     {
         HashSet<Locale> locales = new HashSet<Locale>();
@@ -323,13 +322,13 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertEquals(2, locales.size());
         assertTrue(locales.contains(new Locale("en", "GB", "")));
         assertTrue(locales.contains(new Locale("en", "GB", "*")));
-        
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.ALL_LANGUAGES, new Locale("en", "GB", ""), true));
         assertEquals(2, locales.size());
         assertTrue(locales.contains(new Locale("en", "", "")));
         assertTrue(locales.contains(new Locale("en", "*", "")));
-        
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.ALL_LANGUAGES_AND_ALL, new Locale("en", "GB", ""), true));
         assertEquals(4, locales.size());
@@ -338,7 +337,7 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertTrue(locales.contains(new Locale("en", "", "")));
         assertTrue(locales.contains(new Locale("en", "*", "")));
     }
-    
+
     public void testExactLangWC()
     {
         HashSet<Locale> locales = new HashSet<Locale>();
@@ -346,12 +345,12 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertEquals(2, locales.size());
         assertTrue(locales.contains(new Locale("en", "GB", "")));
         assertTrue(locales.contains(new Locale("en", "GB", "*")));
-        
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.EXACT_LANGUAGE, new Locale("en", "GB", ""), true));
         assertEquals(1, locales.size());
         assertTrue(locales.contains(new Locale("en", "", "")));
-        
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.EXACT_LANGUAGE_AND_ALL, new Locale("en", "GB", ""), true));
         assertEquals(3, locales.size());
@@ -359,7 +358,7 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertTrue(locales.contains(new Locale("*", "", "")));
         assertTrue(locales.contains(new Locale("en", "", "")));
     }
-    
+
     public void testCountryWC()
     {
         HashSet<Locale> locales = new HashSet<Locale>();
@@ -367,19 +366,19 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertEquals(2, locales.size());
         assertTrue(locales.contains(new Locale("en", "GB", "")));
         assertTrue(locales.contains(new Locale("en", "GB", "*")));
-        
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.ALL_COUNTRIES, new Locale("en", "", ""), true));
         assertEquals(2, locales.size());
         assertTrue(locales.contains(new Locale("en", "", "")));
         assertTrue(locales.contains(new Locale("en", "*", "")));
-        
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.ALL_COUNTRIES, new Locale("en", "GB", ""), true));
         assertEquals(2, locales.size());
         assertTrue(locales.contains(new Locale("en", "GB", "")));
         assertTrue(locales.contains(new Locale("en", "GB", "*")));
-        
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.ALL_COUNTRIES_AND_ALL, new Locale("en", "", ""), true));
         assertEquals(4, locales.size());
@@ -387,7 +386,7 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertTrue(locales.contains(new Locale("*", "", "")));
         assertTrue(locales.contains(new Locale("en", "", "")));
         assertTrue(locales.contains(new Locale("en", "*", "")));
-  
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.ALL_COUNTRIES_AND_ALL, new Locale("en", "GB", ""), true));
         assertEquals(4, locales.size());
@@ -396,7 +395,7 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertTrue(locales.contains(new Locale("en", "GB", "")));
         assertTrue(locales.contains(new Locale("en", "GB", "*")));
     }
-    
+
     public void testExactCountryWC()
     {
         HashSet<Locale> locales = new HashSet<Locale>();
@@ -404,25 +403,25 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertEquals(2, locales.size());
         assertTrue(locales.contains(new Locale("en", "GB", "")));
         assertTrue(locales.contains(new Locale("en", "GB", "*")));
-        
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.EXACT_COUNRTY, new Locale("en", "GB", ""), true));
         assertEquals(1, locales.size());
         assertTrue(locales.contains(new Locale("en", "GB", "")));
-        
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.EXACT_COUNRTY, new Locale("en", "", ""), true));
         assertEquals(2, locales.size());
         assertTrue(locales.contains(new Locale("en", "", "")));
         assertTrue(locales.contains(new Locale("en", "*", "")));
-        
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.EXACT_COUNTRY_AND_ALL, new Locale("en", "GB", ""), true));
         assertEquals(3, locales.size());
         assertTrue(locales.contains(new Locale("", "", "")));
         assertTrue(locales.contains(new Locale("*", "", "")));
         assertTrue(locales.contains(new Locale("en", "GB", "")));
-        
+
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.EXACT_COUNTRY_AND_ALL, new Locale("en", "", ""), true));
         assertTrue(locales.contains(new Locale("", "", "")));
@@ -430,5 +429,5 @@ public class MLAnaysisModeExpansionTest extends TestCase
         assertTrue(locales.contains(new Locale("en", "", "")));
         assertTrue(locales.contains(new Locale("en", "*", "")));
     }
-    
+
 }

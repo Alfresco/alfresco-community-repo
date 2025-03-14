@@ -31,39 +31,31 @@ import org.alfresco.service.cmr.security.AccessStatus;
 
 /**
  * A simple object representation of a permission entry.
- *  
+ * 
  * @author andyh
  */
 public final class SimplePermissionEntry extends AbstractPermissionEntry
 {
-    
-    /*
-     * The node ref to which the permissoin applies
-     */
+
+    /* The node ref to which the permissoin applies */
     private NodeRef nodeRef;
-    
-    /*
-     * The permission reference - as a simple permission reference
-     */
+
+    /* The permission reference - as a simple permission reference */
     private PermissionReference permissionReference;
-    
-    /*
-     * The authority to which the permission aplies
-     */
+
+    /* The authority to which the permission aplies */
     private String authority;
-    
-    /*
-     * The access mode for the permission
-     */
+
+    /* The access mode for the permission */
     private AccessStatus accessStatus;
-    
+
     private int position;
-    
+
     public SimplePermissionEntry(NodeRef nodeRef, PermissionReference permissionReference, String authority, AccessStatus accessStatus)
     {
-       this(nodeRef, permissionReference, authority, accessStatus, 0);
+        this(nodeRef, permissionReference, authority, accessStatus, 0);
     }
-    
+
     public SimplePermissionEntry(NodeRef nodeRef, PermissionReference permissionReference, String authority, AccessStatus accessStatus, int position)
     {
         super();
@@ -81,7 +73,7 @@ public final class SimplePermissionEntry extends AbstractPermissionEntry
 
     public String getAuthority()
     {
-       return authority;
+        return authority;
     }
 
     public NodeRef getNodeRef()

@@ -42,8 +42,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ParameterCheck;
 
 /**
- * Executes JavaScript virtual folders templates ensuring their required context and the
- * {@link VirtualFolderDefinition} post execution JSON map result unmarshalling.
+ * Executes JavaScript virtual folders templates ensuring their required context and the {@link VirtualFolderDefinition} post execution JSON map result unmarshalling.
  * 
  * @author Bogdan Horje
  */
@@ -89,7 +88,7 @@ public class TemplateResourceProcessor implements ResourceProcessor<VirtualFolde
     public VirtualFolderDefinition process(Resource resource) throws ResourceProcessingError
     {
         ParameterCheck.mandatory("resource",
-                                 resource);
+                resource);
 
         if (resource instanceof ClasspathResource)
         {
@@ -106,13 +105,11 @@ public class TemplateResourceProcessor implements ResourceProcessor<VirtualFolde
     }
 
     /**
-     * Processes the JavaScript template given by the {@link ClasspathResource}
-     * and creates a {@link VirtualFolderDefinition} (composite) structure that
-     * represents the virtual folder.
+     * Processes the JavaScript template given by the {@link ClasspathResource} and creates a {@link VirtualFolderDefinition} (composite) structure that represents the virtual folder.
      * 
-     * @param A {@link ClasspathResource} reference.
-     * @return A {@link VirtualFolderDefinition} reference that represents the
-     *         structure (tree of nodes) of the virtual folder.
+     * @param A
+     *            {@link ClasspathResource} reference.
+     * @return A {@link VirtualFolderDefinition} reference that represents the structure (tree of nodes) of the virtual folder.
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -122,9 +119,9 @@ public class TemplateResourceProcessor implements ResourceProcessor<VirtualFolde
         try
         {
             result = context.getActualEnviroment().executeScript(classpath.getClasspath(),
-                                                                 createScriptParameters(context));
+                    createScriptParameters(context));
             return asVirtualStructure(context,
-                                      (Map<String, Object>) result);
+                    (Map<String, Object>) result);
         }
         catch (ActualEnvironmentException e)
         {
@@ -133,13 +130,11 @@ public class TemplateResourceProcessor implements ResourceProcessor<VirtualFolde
     }
 
     /**
-     * Processes the JavaScript template given by the {@link RepositoryResource}
-     * and creates a {@link VirtualFolderDefinition} (composite) structure that
-     * represents the virtual folder.
+     * Processes the JavaScript template given by the {@link RepositoryResource} and creates a {@link VirtualFolderDefinition} (composite) structure that represents the virtual folder.
      * 
-     * @param A {@link RepositoryResource} reference.
-     * @return A {@link VirtualFolderDefinition} reference that represents the
-     *         structure (tree of nodes) of the virtual folder.
+     * @param A
+     *            {@link RepositoryResource} reference.
+     * @return A {@link VirtualFolderDefinition} reference that represents the structure (tree of nodes) of the virtual folder.
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -150,9 +145,9 @@ public class TemplateResourceProcessor implements ResourceProcessor<VirtualFolde
         {
             NodeRef templateNodeRef = repositoryResource.getLocation().asNodeRef(context.getActualEnviroment());
             result = context.getActualEnviroment().executeScript(templateNodeRef,
-                                                                 createScriptParameters(context));
+                    createScriptParameters(context));
             return asVirtualStructure(context,
-                                      (Map<String, Object>) result);
+                    (Map<String, Object>) result);
         }
         catch (ActualEnvironmentException e)
         {
@@ -163,7 +158,8 @@ public class TemplateResourceProcessor implements ResourceProcessor<VirtualFolde
     /**
      * Adds the script virtual context to the parameters of the context.
      * 
-     * @param context A {@link VirtualContext} reference.
+     * @param context
+     *            A {@link VirtualContext} reference.
      * @return A map of context parameters.
      * @throws ActualEnvironmentException
      */
@@ -172,18 +168,17 @@ public class TemplateResourceProcessor implements ResourceProcessor<VirtualFolde
         Map<String, Object> parameters = context.getParameters();
         Object scriptContext = context.getActualEnviroment().createScriptVirtualContext(context);
         parameters.put(VirtualContext.CONTEXT_PARAM,
-                       scriptContext);
+                scriptContext);
         return parameters;
     }
 
     /**
-     * Creates a filing rule based on the criteria (path, classification: type,
-     * aspects) given in the template.
+     * Creates a filing rule based on the criteria (path, classification: type, aspects) given in the template.
      * 
-     * @param context The context in which the virtualization process takes
-     *            place.
-     * @param filing A map containing the filing criteria used to create the
-     *            rule.
+     * @param context
+     *            The context in which the virtualization process takes place.
+     * @param filing
+     *            A map containing the filing criteria used to create the rule.
      * @return A {@link FilingRule} reference.
      * @throws ResourceProcessingError
      */
@@ -235,28 +230,27 @@ public class TemplateResourceProcessor implements ResourceProcessor<VirtualFolde
         else
         {
             return new TemplateFilingRule(context.getActualEnviroment(),
-                                          path,
-                                          type,
-                                          new HashSet<String>(aspects),
-                                          properties);
+                    path,
+                    type,
+                    new HashSet<String>(aspects),
+                    properties);
 
         }
 
     }
 
     /**
-     * Creates a query based on the details: language, store, query statement
-     * given in the template.
+     * Creates a query based on the details: language, store, query statement given in the template.
      * 
-     * @param context The context in which the virtualization process takes
-     *            place.
-     * @param search A map containing the details that define the query:
-     *            language, store, query statement.
+     * @param context
+     *            The context in which the virtualization process takes place.
+     * @param search
+     *            A map containing the details that define the query: language, store, query statement.
      * @return an {@link AlfrescoVirtualQuery} reference.
      * @throws ResourceProcessingError
      */
     protected VirtualQuery asVirtualQuery(VirtualContext context, Map<String, Object> search)
-                throws ResourceProcessingError
+            throws ResourceProcessingError
     {
         if (search == null)
         {
@@ -270,23 +264,22 @@ public class TemplateResourceProcessor implements ResourceProcessor<VirtualFolde
         String query = (String) mapSearch.get(QUERY_KEY);
 
         return new VirtualQueryImpl(store,
-                                        language,
-                                        query);
+                language,
+                query);
     }
 
     /**
-     * Creates a {@link VirtualFolderDefinition} that represents the structure
-     * of the virtual folder.
+     * Creates a {@link VirtualFolderDefinition} that represents the structure of the virtual folder.
      * 
-     * @param context The context in which the virtualization process takes
-     *            place.
-     * @param result A map containing the details that define the virtual
-     *            entries.
+     * @param context
+     *            The context in which the virtualization process takes place.
+     * @param result
+     *            A map containing the details that define the virtual entries.
      * @return a {@link VirtualFolderDefinition} reference.
      * @throws ResourceProcessingError
      */
     protected VirtualFolderDefinition asVirtualStructure(VirtualContext context, Map<String, Object> result)
-                throws ResourceProcessingError
+            throws ResourceProcessingError
     {
         try
         {
@@ -305,11 +298,11 @@ public class TemplateResourceProcessor implements ResourceProcessor<VirtualFolde
 
             @SuppressWarnings("unchecked")
             VirtualQuery virtualQuery = asVirtualQuery(context,
-                                                       (Map<String, Object>) mapResult.get(SEARCH_KEY));
+                    (Map<String, Object>) mapResult.get(SEARCH_KEY));
             virtualStructure.setQuery(virtualQuery);
 
             FilingRule filingRule = asFilingRule(context,
-                                                 mapResult.get(FILING_KEY));
+                    mapResult.get(FILING_KEY));
             if (filingRule == null)
             {
                 filingRule = new NullFilingRule(context.getActualEnviroment());
@@ -333,7 +326,7 @@ public class TemplateResourceProcessor implements ResourceProcessor<VirtualFolde
                 for (Map<String, Object> node : nodes)
                 {
                     VirtualFolderDefinition child = asVirtualStructure(context,
-                                                                       node);
+                            node);
                     virtualStructure.addChild(child);
                 }
             }

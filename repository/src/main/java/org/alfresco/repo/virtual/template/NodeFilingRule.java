@@ -48,13 +48,13 @@ public class NodeFilingRule implements FilingRule
     @Override
     public FilingData createFilingData(FilingParameters parameters) throws VirtualizationException
     {
-        NodeRef filingNodeRef = filingNodeRefFor(parameters); 
+        NodeRef filingNodeRef = filingNodeRefFor(parameters);
         return new FilingData(filingNodeRef,
-                              parameters.getAssocTypeQName(),
-                              parameters.getAssocQName(),
-                              parameters.getNodeTypeQName(),
-                              Collections.<QName> emptySet(),
-                              parameters.getProperties());
+                parameters.getAssocTypeQName(),
+                parameters.getAssocQName(),
+                parameters.getNodeTypeQName(),
+                Collections.<QName> emptySet(),
+                parameters.getProperties());
     }
 
     @Override

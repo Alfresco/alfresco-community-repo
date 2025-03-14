@@ -26,14 +26,14 @@
 
 package org.alfresco.repo.quickshare;
 
+import java.io.Serializable;
+import java.util.Date;
+
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
 import org.alfresco.service.cmr.quickshare.QuickShareLinkExpiryAction;
 import org.alfresco.service.namespace.QName;
-
-import java.io.Serializable;
-import java.util.Date;
 
 /**
  * Quick share link expiry action implementation class.
@@ -51,9 +51,12 @@ public class QuickShareLinkExpiryActionImpl extends ActionImpl implements QuickS
     private ScheduledPersistedAction schedule;
 
     /**
-     * @param id          the action id
-     * @param sharedId    a unique name for the quick share link expiry action.
-     * @param description the action description
+     * @param id
+     *            the action id
+     * @param sharedId
+     *            a unique name for the quick share link expiry action.
+     * @param description
+     *            the action description
      */
     public QuickShareLinkExpiryActionImpl(String id, String sharedId, String description)
     {

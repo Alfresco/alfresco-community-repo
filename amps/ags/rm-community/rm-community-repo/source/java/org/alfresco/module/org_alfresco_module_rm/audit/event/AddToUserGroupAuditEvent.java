@@ -56,7 +56,8 @@ public class AddToUserGroupAuditEvent extends AuditEvent implements OnCreateChil
     /**
      * Sets the node service
      *
-     * @param nodeService nodeService to set
+     * @param nodeService
+     *            nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {

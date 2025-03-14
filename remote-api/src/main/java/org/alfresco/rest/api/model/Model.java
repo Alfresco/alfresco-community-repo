@@ -28,15 +28,14 @@ package org.alfresco.rest.api.model;
 
 public class Model implements Comparable<Model>
 {
-    private String  id;
-    private String  author;
-    private String  description;
-    private String  namespaceUri;
-    private String  namespacePrefix;
+    private String id;
+    private String author;
+    private String description;
+    private String namespaceUri;
+    private String namespacePrefix;
 
     public Model()
-    {
-    }
+    {}
 
     public Model(String name, String author, String description, String namespaceUri, String namespacePrefix)
     {

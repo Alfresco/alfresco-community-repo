@@ -32,22 +32,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.imap.exception.AlfrescoImapFolderException;
-import org.alfresco.repo.imap.exception.AlfrescoImapRuntimeException;
-import org.alfresco.util.Utf7;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.icegreen.greenmail.imap.AuthorizationException;
 import com.icegreen.greenmail.imap.ImapHostManager;
 import com.icegreen.greenmail.store.FolderException;
 import com.icegreen.greenmail.store.MailFolder;
 import com.icegreen.greenmail.user.GreenMailUser;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.repo.imap.exception.AlfrescoImapFolderException;
+import org.alfresco.repo.imap.exception.AlfrescoImapRuntimeException;
+import org.alfresco.util.Utf7;
 
 /**
- * This Host Manager is assumed to be session local, i.e. there is one instance per IMAP TCP connection. This means that
- * it can locally cache items being interacted with during the session and its knowledge of which folders / messages do
- * or do not exist will match that of the client.
+ * This Host Manager is assumed to be session local, i.e. there is one instance per IMAP TCP connection. This means that it can locally cache items being interacted with during the session and its knowledge of which folders / messages do or do not exist will match that of the client.
  * 
  * @author Mike Shavnev
  * @author David Ward
@@ -56,11 +54,12 @@ public class AlfrescoImapHostManager implements ImapHostManager
 {
     private ImapService imapService;
     private Map<String, AlfrescoImapFolder> folderCache;
-    
+
     private static Log logger = LogFactory.getLog(AlfrescoImapHostManager.class);
-    
+
     /**
-     * @param imapService ImapService
+     * @param imapService
+     *            ImapService
      */
     public AlfrescoImapHostManager(ImapService imapService)
     {
@@ -78,12 +77,12 @@ public class AlfrescoImapHostManager implements ImapHostManager
     }
 
     /**
-     * Returns an collection of mailboxes. Method searches mailboxes under mount points defined for a specific user.
-     * Mount points include user's IMAP Virtualised Views and Email Archive Views. This method serves LIST command
-     * of the IMAP protocol.
+     * Returns an collection of mailboxes. Method searches mailboxes under mount points defined for a specific user. Mount points include user's IMAP Virtualised Views and Email Archive Views. This method serves LIST command of the IMAP protocol.
      * 
-     * @param user User making the request
-     * @param mailboxPattern String name of a mailbox possible including a wildcard.
+     * @param user
+     *            User making the request
+     * @param mailboxPattern
+     *            String name of a mailbox possible including a wildcard.
      * @return Collection of mailboxes matching the pattern.
      * @throws com.icegreen.greenmail.store.FolderException
      */
@@ -103,13 +102,12 @@ public class AlfrescoImapHostManager implements ImapHostManager
     }
 
     /**
-     * Returns an collection of subscribed mailboxes. To appear in search result mailboxes should have
-     * {http://www.alfresco.org/model/imap/1.0}subscribed property specified for user. Method searches
-     * subscribed mailboxes under mount points defined for a specific user. Mount points include user's
-     * IMAP Virtualised Views and Email Archive Views. This method serves LSUB command of the IMAP protocol.
+     * Returns an collection of subscribed mailboxes. To appear in search result mailboxes should have {http://www.alfresco.org/model/imap/1.0}subscribed property specified for user. Method searches subscribed mailboxes under mount points defined for a specific user. Mount points include user's IMAP Virtualised Views and Email Archive Views. This method serves LSUB command of the IMAP protocol.
      * 
-     * @param user User making the request
-     * @param mailboxPattern String name of a mailbox possible including a wildcard.
+     * @param user
+     *            User making the request
+     * @param mailboxPattern
+     *            String name of a mailbox possible including a wildcard.
      * @return Collection of mailboxes matching the pattern.
      * @throws com.icegreen.greenmail.store.FolderException
      */
@@ -130,19 +128,20 @@ public class AlfrescoImapHostManager implements ImapHostManager
     }
 
     /**
-     * Renames an existing mailbox. The specified mailbox must already exist, the requested name must not exist
-     * already but must be able to be created and the user must have rights to delete the existing mailbox and
-     * create a mailbox with the new name. Any inferior hierarchical names must also be renamed. If INBOX is renamed,
-     * the contents of INBOX are transferred to a new mailbox with the new name, but INBOX is not deleted.
-     * If INBOX has inferior mailbox these are not renamed. This method serves RENAME command of the IMAP
-     * protocol. <p/> Method searches mailbox under mount points defined for a specific user. Mount points
-     * include user's IMAP Virtualised Views and Email Archive Views.
+     * Renames an existing mailbox. The specified mailbox must already exist, the requested name must not exist already but must be able to be created and the user must have rights to delete the existing mailbox and create a mailbox with the new name. Any inferior hierarchical names must also be renamed. If INBOX is renamed, the contents of INBOX are transferred to a new mailbox with the new name, but INBOX is not deleted. If INBOX has inferior mailbox these are not renamed. This method serves RENAME command of the IMAP protocol.
+     * <p/>
+     * Method searches mailbox under mount points defined for a specific user. Mount points include user's IMAP Virtualised Views and Email Archive Views.
      * 
-     * @param user User making the request.
-     * @param oldMailboxName String name of the existing folder
-     * @param newMailboxName String target new name
-     * @throws com.icegreen.greenmail.store.FolderException if an existing folder with the new name.
-     * @throws AlfrescoImapFolderException if user does not have rights to create the new mailbox.
+     * @param user
+     *            User making the request.
+     * @param oldMailboxName
+     *            String name of the existing folder
+     * @param newMailboxName
+     *            String target new name
+     * @throws com.icegreen.greenmail.store.FolderException
+     *             if an existing folder with the new name.
+     * @throws AlfrescoImapFolderException
+     *             if user does not have rights to create the new mailbox.
      */
     public void renameMailbox(GreenMailUser user, String oldMailboxName, String newMailboxName) throws FolderException, AuthorizationException
     {
@@ -167,15 +166,17 @@ public class AlfrescoImapHostManager implements ImapHostManager
     }
 
     /**
-     * Returns a reference to a newly created mailbox. The request should specify a mailbox that does not
-     * already exist on this server, that could exist on this server and that the user has rights to create.
-     * This method serves CREATE command of the IMAP protocol.
+     * Returns a reference to a newly created mailbox. The request should specify a mailbox that does not already exist on this server, that could exist on this server and that the user has rights to create. This method serves CREATE command of the IMAP protocol.
      * 
-     * @param user User making the request.
-     * @param mailboxName String name of the target
+     * @param user
+     *            User making the request.
+     * @param mailboxName
+     *            String name of the target
      * @return an Mailbox reference.
-     * @throws com.icegreen.greenmail.store.FolderException if mailbox already exists
-     * @throws AlfrescoImapFolderException if user does not have rights to create the new mailbox.
+     * @throws com.icegreen.greenmail.store.FolderException
+     *             if mailbox already exists
+     * @throws AlfrescoImapFolderException
+     *             if user does not have rights to create the new mailbox.
      */
     public MailFolder createMailbox(GreenMailUser user, String mailboxName) throws AuthorizationException, FolderException
     {
@@ -193,12 +194,16 @@ public class AlfrescoImapHostManager implements ImapHostManager
     }
 
     /**
-     * Deletes an existing MailBox. Specified mailbox must already exist on this server, and the user
-     * must have rights to delete it. <p/> This method serves DELETE command of the IMAP protocol.
+     * Deletes an existing MailBox. Specified mailbox must already exist on this server, and the user must have rights to delete it.
+     * <p/>
+     * This method serves DELETE command of the IMAP protocol.
      * 
-     * @param user User making the request.
-     * @param mailboxName String name of the target
-     * @throws com.icegreen.greenmail.store.FolderException if mailbox has a non-selectable store with children
+     * @param user
+     *            User making the request.
+     * @param mailboxName
+     *            String name of the target
+     * @throws com.icegreen.greenmail.store.FolderException
+     *             if mailbox has a non-selectable store with children
      */
     public void deleteMailbox(GreenMailUser user, String mailboxName) throws FolderException, AuthorizationException
     {
@@ -220,15 +225,22 @@ public class AlfrescoImapHostManager implements ImapHostManager
     }
 
     /**
-     * Returns a reference to an existing Mailbox. The requested mailbox must already exists on this server and the
-     * requesting user must have at least lookup rights. <p/> It is also can be used by to obtain hierarchy delimiter
-     * by the LIST command: <p/> C: 2 list "" "" <p/> S: * LIST () "." "" <p/> S: 2 OK LIST completed.
+     * Returns a reference to an existing Mailbox. The requested mailbox must already exists on this server and the requesting user must have at least lookup rights.
      * <p/>
-     * Method searches mailbox under mount points defined for a specific user. Mount points include user's IMAP
-     * Virtualised Views and Email Archive Views.
+     * It is also can be used by to obtain hierarchy delimiter by the LIST command:
+     * <p/>
+     * C: 2 list "" ""
+     * <p/>
+     * S: * LIST () "." ""
+     * <p/>
+     * S: 2 OK LIST completed.
+     * <p/>
+     * Method searches mailbox under mount points defined for a specific user. Mount points include user's IMAP Virtualised Views and Email Archive Views.
      * 
-     * @param user User making the request.
-     * @param mailboxName String name of the target.
+     * @param user
+     *            User making the request.
+     * @param mailboxName
+     *            String name of the target.
      * @return an Mailbox reference.
      */
     public MailFolder getFolder(GreenMailUser user, String mailboxName)
@@ -249,7 +261,9 @@ public class AlfrescoImapHostManager implements ImapHostManager
     }
 
     /**
-     * Simply calls {@link #getFolder(GreenMailUser, String)}. <p/> Added to implement {@link ImapHostManager}.
+     * Simply calls {@link #getFolder(GreenMailUser, String)}.
+     * <p/>
+     * Added to implement {@link ImapHostManager}.
      */
     public MailFolder getFolder(final GreenMailUser user, final String mailboxName, boolean mustExist)
             throws FolderException
@@ -275,7 +289,8 @@ public class AlfrescoImapHostManager implements ImapHostManager
     /**
      * Returns a reference to the user's INBOX.
      * 
-     * @param user The user making the request.
+     * @param user
+     *            The user making the request.
      * @return The user's Inbox.
      */
     public MailFolder getInbox(GreenMailUser user) throws FolderException
@@ -284,7 +299,9 @@ public class AlfrescoImapHostManager implements ImapHostManager
     }
 
     /**
-     * Not supported. May be used by GreenMailUser.create() method. <p/> Added to implement {@link ImapHostManager}.
+     * Not supported. May be used by GreenMailUser.create() method.
+     * <p/>
+     * Added to implement {@link ImapHostManager}.
      */
     public void createPrivateMailAccount(GreenMailUser user) throws FolderException
     {
@@ -296,8 +313,10 @@ public class AlfrescoImapHostManager implements ImapHostManager
      * <p/>
      * This method serves SUBSCRIBE command of the IMAP protocol.
      * 
-     * @param user User making the request
-     * @param mailbox String representation of a mailbox name.
+     * @param user
+     *            User making the request
+     * @param mailbox
+     *            String representation of a mailbox name.
      */
     public void subscribe(GreenMailUser user, String mailbox) throws FolderException
     {
@@ -314,10 +333,14 @@ public class AlfrescoImapHostManager implements ImapHostManager
     }
 
     /**
-     * Unsubscribes from a given mailbox. <p/> This method serves UNSUBSCRIBE command of the IMAP protocol.
+     * Unsubscribes from a given mailbox.
+     * <p/>
+     * This method serves UNSUBSCRIBE command of the IMAP protocol.
      * 
-     * @param user User making the request
-     * @param mailbox String representation of a mailbox name.
+     * @param user
+     *            User making the request
+     * @param mailbox
+     *            String representation of a mailbox name.
      */
     public void unsubscribe(GreenMailUser user, String mailbox) throws FolderException
     {
@@ -339,7 +362,7 @@ public class AlfrescoImapHostManager implements ImapHostManager
     public List<?> getAllMessages()
     {
         throw new UnsupportedOperationException();
-    }    
+    }
 
     private String getUnqualifiedMailboxPattern(AlfrescoImapUser user, String mailboxPattern)
     {
@@ -351,7 +374,6 @@ public class AlfrescoImapHostManager implements ImapHostManager
         }
         return mailboxPattern;
     }
-
 
     /**
      * Caches returned mail folder collection and converts to a generic MailFolder collection.
@@ -378,7 +400,7 @@ public class AlfrescoImapHostManager implements ImapHostManager
         }
         return result;
     }
-    
+
     /**
      * Caches a returned mail folder and converts to a generic MailFolder.
      * 

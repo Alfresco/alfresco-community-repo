@@ -29,6 +29,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.extensions.webscripts.TestWebScriptServer;
+
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -37,9 +40,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.EqualsHelper;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.extensions.webscripts.TestWebScriptServer;
-
 
 /**
  * Stand-alone Web Script Test Server
@@ -59,7 +59,7 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
             AuthenticationUtil.setRunAsUserSystem();
             testServer.rep();
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             StringWriter strWriter = new StringWriter();
             PrintWriter printWriter = new PrintWriter(strWriter);
@@ -72,21 +72,19 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
         }
     }
 
-    private final static String[] CONFIG_LOCATIONS = new String[]
-    {
-        "classpath:alfresco/application-context.xml",
-        "classpath:alfresco/web-scripts-application-context.xml",
-        "classpath:alfresco/web-scripts-application-context-test.xml"
+    private final static String[] CONFIG_LOCATIONS = new String[]{
+            "classpath:alfresco/application-context.xml",
+            "classpath:alfresco/web-scripts-application-context.xml",
+            "classpath:alfresco/web-scripts-application-context-test.xml"
     };
-    
+
     /** A static reference to the application context being used */
     private static ClassPathXmlApplicationContext ctx;
     private static String appendedTestConfiguration;
-    
+
     private RetryingTransactionHelper retryingTransactionHelper;
     private AuthenticationService authenticationService;
-    
-    
+
     /**
      * Sets helper that provides transaction callbacks
      */
@@ -94,9 +92,10 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
     {
         this.retryingTransactionHelper = retryingTransactionHelper;
     }
-    
+
     /**
-     * @param authenticationService AuthenticationService
+     * @param authenticationService
+     *            AuthenticationService
      */
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
@@ -118,15 +117,15 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
     {
         return getTestServer(null);
     }
-    
+
     /**
      * Start up a context and get the server bean.
      * <p>
-     * This method will close and restart the application context only if the configuration has
-     * changed.
+     * This method will close and restart the application context only if the configuration has changed.
      * 
-     * @param appendTestConfigLocation      additional context file to include in the application context
-     * @return  Test Server
+     * @param appendTestConfigLocation
+     *            additional context file to include in the application context
+     * @return Test Server
      */
     public static synchronized TestWebScriptServer getTestServer(String appendTestConfigLocation)
     {
@@ -153,7 +152,7 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
                 // There is already a context with the required configuration
             }
         }
-        
+
         // Check if we need to start/restart the context
         if (TestWebScriptRepoServer.ctx == null || (TestWebScriptRepoServer.ctx != null && !TestWebScriptRepoServer.ctx.isActive()))
         {
@@ -165,31 +164,32 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
             }
             else
             {
-                configLocations = new String[CONFIG_LOCATIONS.length+1];
+                configLocations = new String[CONFIG_LOCATIONS.length + 1];
                 System.arraycopy(CONFIG_LOCATIONS, 0, configLocations, 0, CONFIG_LOCATIONS.length);
                 configLocations[CONFIG_LOCATIONS.length] = appendTestConfigLocation;
             }
-            
-            TestWebScriptRepoServer.ctx = (ClassPathXmlApplicationContext)ApplicationContextHelper.getApplicationContext(configLocations);
-            
-//            TestWebScriptRepoServer.ctx = new ClassPathXmlApplicationContext(configLocations);
+
+            TestWebScriptRepoServer.ctx = (ClassPathXmlApplicationContext) ApplicationContextHelper.getApplicationContext(configLocations);
+
+            // TestWebScriptRepoServer.ctx = new ClassPathXmlApplicationContext(configLocations);
             TestWebScriptRepoServer.appendedTestConfiguration = appendTestConfigLocation;
         }
-        
+
         // Get the bean
-        TestWebScriptServer testServer = (TestWebScriptRepoServer)TestWebScriptRepoServer.ctx.getBean("webscripts.test");
+        TestWebScriptServer testServer = (TestWebScriptRepoServer) TestWebScriptRepoServer.ctx.getBean("webscripts.test");
         return testServer;
     }
-    
+
     /**
      * Interpret a single command using the BufferedReader passed in for any data needed.
      * 
-     * @param line The unparsed command
+     * @param line
+     *            The unparsed command
      * @return The textual output of the command.
      */
     @Override
     protected String interpretCommand(final String line)
-        throws IOException
+            throws IOException
     {
         try
         {
@@ -197,8 +197,7 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
             {
                 try
                 {
-                    retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-                    {
+                    retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
                         public Object execute() throws Exception
                         {
                             authenticationService.validate(username);
@@ -213,14 +212,13 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
                 }
             }
         }
-        catch(AuthenticationException e)
+        catch (AuthenticationException e)
         {
             executeCommand("user " + getDefaultUserName());
         }
-        
+
         // execute command in context of currently selected user
-        return AuthenticationUtil.runAs(new RunAsWork<String>()
-        {
+        return AuthenticationUtil.runAs(new RunAsWork<String>() {
             @SuppressWarnings("synthetic-access")
             public String doWork() throws Exception
             {

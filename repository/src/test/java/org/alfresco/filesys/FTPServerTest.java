@@ -41,6 +41,17 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.net.PrintCommandListener;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPReply;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.jlan.ftp.FTPConfigSection;
 import org.alfresco.jlan.server.config.ServerConfigurationAccessor;
 import org.alfresco.model.ContentModel;
@@ -59,22 +70,9 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
-import org.apache.commons.net.PrintCommandListener;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPFile;
-import org.apache.commons.net.ftp.FTPReply;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
-
 
 /**
- * End to end JUNIT test of the FTP server
- * Uses the commons-net ftp client library to connect to the
- * Alfresco FTP server.
+ * End to end JUNIT test of the FTP server Uses the commons-net ftp client library to connect to the Alfresco FTP server.
  */
 @Category(BaseSpringTestsCategory.class)
 public class FTPServerTest
@@ -106,15 +104,15 @@ public class FTPServerTest
         applicationContext = ApplicationContextHelper.getApplicationContext();
 
         NodeService nodeService = (NodeService) applicationContext.getBean("nodeService");
-        personService = (PersonService)applicationContext.getBean("personService");
-        authenticationService = (MutableAuthenticationService)applicationContext.getBean("AuthenticationService");
+        personService = (PersonService) applicationContext.getBean("personService");
+        authenticationService = (MutableAuthenticationService) applicationContext.getBean("AuthenticationService");
         AuthenticationComponent authenticationComponent = (AuthenticationComponent) applicationContext.getBean(
-            "authenticationComponent");
+                "authenticationComponent");
         TransactionService transactionService = (TransactionService) applicationContext.getBean("transactionService");
-        repositoryHelper = (Repository)applicationContext.getBean("repositoryHelper");
-        permissionService = (PermissionService)applicationContext.getBean("permissionService");
-        ServerConfigurationAccessor fileServerConfiguration = (ServerConfigurationAccessor)applicationContext.getBean("fileServerConfiguration");
-        ftpConfigSection = (FTPConfigSection) fileServerConfiguration.getConfigSection( FTPConfigSection.SectionName);
+        repositoryHelper = (Repository) applicationContext.getBean("repositoryHelper");
+        permissionService = (PermissionService) applicationContext.getBean("permissionService");
+        ServerConfigurationAccessor fileServerConfiguration = (ServerConfigurationAccessor) applicationContext.getBean("fileServerConfiguration");
+        ftpConfigSection = (FTPConfigSection) fileServerConfiguration.getConfigSection(FTPConfigSection.SectionName);
 
         assertNotNull("nodeService is null", nodeService);
         assertNotNull("repositoryHelper is null", repositoryHelper);
@@ -148,7 +146,8 @@ public class FTPServerTest
     /**
      * Simple test that connects to the inbuilt ftp server and logs on
      *
-     * @throws Exception may throw Exception
+     * @throws Exception
+     *             may throw Exception
      */
     @Test
     public void testFTPConnect() throws Exception
@@ -175,10 +174,10 @@ public class FTPServerTest
     }
 
     /**
-     * Simple negative test that connects to the inbuilt ftp server and attempts to
-     * log on with the wrong password.
+     * Simple negative test that connects to the inbuilt ftp server and attempts to log on with the wrong password.
      *
-     * @throws Exception may throw Exception
+     * @throws Exception
+     *             may throw Exception
      */
     @Test
     public void testFTPConnectNegative() throws Exception
@@ -199,12 +198,12 @@ public class FTPServerTest
             boolean isLoggedIn = ftp.login(USER_ADMIN, "garbage");
             assertFalse("admin login should not be successful", isLoggedIn);
 
-            // now attempt to list the files and check that the command does not 
+            // now attempt to list the files and check that the command does not
             // succeed
             FTPFile[] files = ftp.listFiles();
 
             assertNotNull("files should not be null", files);
-            assertEquals("there should be no files",0, files.length);
+            assertEquals("there should be no files", 0, files.length);
             reply = ftp.getReplyCode();
 
             assertTrue("FTP server should respond negatively", FTPReply.isNegativePermanent(reply));
@@ -219,7 +218,8 @@ public class FTPServerTest
     /**
      * Test CWD for FTP server
      *
-     * @throws Exception may throw Exception
+     * @throws Exception
+     *             may throw Exception
      */
     @Test
     public void testCWD() throws Exception
@@ -244,16 +244,16 @@ public class FTPServerTest
             reply = ftp.getReplyCode();
             assertTrue("FTP server refused connection", FTPReply.isPositiveCompletion(reply));
 
-            assertEquals("there should be only 1 file",1, files.length);
+            assertEquals("there should be only 1 file", 1, files.length);
 
             boolean isFileFound = false;
-            for(FTPFile file : files)
+            for (FTPFile file : files)
             {
                 final String fileName = file.getName();
                 LOGGER.debug("File name = {}", fileName);
                 assertTrue("file is not a directory", file.isDirectory());
 
-                if(fileName.equalsIgnoreCase("Alfresco"))
+                if (fileName.equalsIgnoreCase("Alfresco"))
                 {
                     isFileFound = true;
                 }
@@ -273,15 +273,15 @@ public class FTPServerTest
             assertTrue("able to change to nonexistent /Garbage", FTPReply.isNegativePermanent(reply));
 
             reply = ftp.cwd("/Alfresco/User Homes");
-            assertTrue("unable to change to /Alfresco/User Homes",FTPReply.isPositiveCompletion(reply));
+            assertTrue("unable to change to /Alfresco/User Homes", FTPReply.isPositiveCompletion(reply));
 
             // Wild card
             reply = ftp.cwd("/Alfresco/User*Homes");
             assertTrue("unable to change to /Alfresco User*Homes/", FTPReply.isPositiveCompletion(reply));
 
-//            // Single char pattern match
-//            reply = ftp.cwd("/Alfre?co");
-//            assertTrue("Unable to match single char /Alfre?co", FTPReply.isPositiveCompletion(reply));
+            // // Single char pattern match
+            // reply = ftp.cwd("/Alfre?co");
+            // assertTrue("Unable to match single char /Alfre?co", FTPReply.isPositiveCompletion(reply));
 
             // two level folder
             reply = ftp.cwd("/Alfresco/Data Dictionary");
@@ -300,7 +300,6 @@ public class FTPServerTest
             reply = ftp.cwd("Data Dictionary");
             assertTrue("test should end in being in the tree of Data Dictionary", FTPReply.isPositiveCompletion(reply));
 
-
         }
         finally
         {
@@ -311,7 +310,9 @@ public class FTPServerTest
 
     /**
      * Test CRUD for FTP server
-     * @throws Exception may throw Exception
+     * 
+     * @throws Exception
+     *             may throw Exception
      */
     @Test
     public void testCRUD() throws Exception
@@ -361,9 +362,9 @@ public class FTPServerTest
             assertEquals("there should be no files", 0, files.length);
 
             // Create a file
-            String file1Content1="test file 1 content";
+            String file1Content1 = "test file 1 content";
             String file1Name = "testFile1.txt";
-            ftp.appendFile(file1Name , new ByteArrayInputStream(file1Content1.getBytes(StandardCharsets.UTF_8)));
+            ftp.appendFile(file1Name, new ByteArrayInputStream(file1Content1.getBytes(StandardCharsets.UTF_8)));
 
             // Get the new file
             FTPFile[] files2 = ftp.listFiles();
@@ -377,7 +378,7 @@ public class FTPServerTest
 
             // Update the file contents
             String file1Content2 = "That's how it is says Pooh!";
-            ftp.storeFile(file1Name , new ByteArrayInputStream(file1Content2.getBytes(StandardCharsets.UTF_8)));
+            ftp.storeFile(file1Name, new ByteArrayInputStream(file1Content2.getBytes(StandardCharsets.UTF_8)));
 
             InputStream is2 = ftp.retrieveFileStream(file1Name);
 
@@ -400,12 +401,7 @@ public class FTPServerTest
     }
 
     /**
-     * Test of obscure path names in the FTP server
-     * RFC959 states that paths are constructed thus...
-     * <string> ::= <char> | <char><string>
-     * <pathname> ::= <string>
-     * <char> ::= any of the 128 ASCII characters except <CR> and <LF>
-     *  So we need to check how high characters and problematic are encoded
+     * Test of obscure path names in the FTP server RFC959 states that paths are constructed thus... <string> ::= <char> | <char><string> <pathname> ::= <string> <char> ::= any of the 128 ASCII characters except <CR> and <LF> So we need to check how high characters and problematic are encoded
      */
     @Test
     public void testPathNames() throws Exception
@@ -455,24 +451,22 @@ public class FTPServerTest
             assertTrue("with brackets", ftp.makeDirectory("space()"));
             assertTrue("with hash curley  brackets", ftp.makeDirectory("space{}"));
 
-
-            //Pound sign U+00A3
-            //Yen Sign U+00A5
-            //Capital Omega U+03A9
+            // Pound sign U+00A3
+            // Yen Sign U+00A5
+            // Capital Omega U+03A9
 
             assertTrue("with pound sign", ftp.makeDirectory("pound \u00A3.world"));
             assertTrue("with yen sign", ftp.makeDirectory("yen \u00A5.world"));
 
             // Test steps that do not work
             // assertTrue("with omega", ftp.makeDirectory("omega \u03A9.world"));
-            // assertTrue("with obscure ASCII chars", ftp.makeDirectory("?/.,<>"));    
+            // assertTrue("with obscure ASCII chars", ftp.makeDirectory("?/.,<>"));
         }
         finally
         {
             // clean up tree if left over from previous run
             ftp.disconnect();
         }
-
 
     }
 
@@ -520,7 +514,7 @@ public class FTPServerTest
 
             ftp.cwd(path1);
 
-            String file1Content2="That's how it is says Pooh!";
+            String file1Content2 = "That's how it is says Pooh!";
             ftp.storeFile("FileA.txt", new ByteArrayInputStream(file1Content2.getBytes(StandardCharsets.UTF_8)));
 
             assertTrue("unable to rename", ftp.rename("FileA.txt", "FILEA.TXT"));
@@ -533,17 +527,13 @@ public class FTPServerTest
             ftp.disconnect();
         }
 
-
     } // test Rename Case
 
-
     /**
-     * Create a user other than "admin" who has access to a set of files.
-     * Create a folder containing test.docx as user one
-     * Update that file as user two.
-     * Check user one can see user two's changes.
+     * Create a user other than "admin" who has access to a set of files. Create a folder containing test.docx as user one Update that file as user two. Check user one can see user two's changes.
      *
-     * @throws Exception may throw Exception
+     * @throws Exception
+     *             may throw Exception
      */
     @Test
     public void testTwoUserUpdate() throws Exception
@@ -593,12 +583,12 @@ public class FTPServerTest
             // Create a file as user one
             String file1Content1 = "test file 1 content";
             String file1Name = "test.docx";
-            boolean isAppend = ftpOne.appendFile(file1Name , new ByteArrayInputStream(file1Content1.getBytes(StandardCharsets.UTF_8)));
+            boolean isAppend = ftpOne.appendFile(file1Name, new ByteArrayInputStream(file1Content1.getBytes(StandardCharsets.UTF_8)));
             assertTrue("user one should be able to append file", isAppend);
 
             // Update the file as user two
             String file1Content2 = "test file content updated";
-            boolean isStored = ftpTwo.storeFile(file1Name , new ByteArrayInputStream(file1Content2.getBytes(StandardCharsets.UTF_8)));
+            boolean isStored = ftpTwo.storeFile(file1Name, new ByteArrayInputStream(file1Content2.getBytes(StandardCharsets.UTF_8)));
             assertTrue("user two should be able to store file", isStored);
 
             // User one should read user2's content
@@ -626,17 +616,16 @@ public class FTPServerTest
     }
 
     /**
-     * Test a quota failure exception over FTP.
-     * A file should not exist after a create and quota exception.
+     * Test a quota failure exception over FTP. A file should not exist after a create and quota exception.
      */
     @Test
     public void testFtpQuotaAndFtp() throws Exception
     {
         // Enable usages
-        ContentUsageImpl contentUsage = (ContentUsageImpl)applicationContext.getBean("contentUsageImpl");
+        ContentUsageImpl contentUsage = (ContentUsageImpl) applicationContext.getBean("contentUsageImpl");
         contentUsage.setEnabled(true);
         contentUsage.init();
-        UserUsageTrackingComponent userUsageTrackingComponent = (UserUsageTrackingComponent)applicationContext.getBean("userUsageTrackingComponent");
+        UserUsageTrackingComponent userUsageTrackingComponent = (UserUsageTrackingComponent) applicationContext.getBean("userUsageTrackingComponent");
         userUsageTrackingComponent.setEnabled(true);
         userUsageTrackingComponent.bootstrapInternal();
 
@@ -662,14 +651,12 @@ public class FTPServerTest
             isDirectoryChanged = ftpOne.changeWorkingDirectory(USER_THREE);
             assertTrue("user one unable to cd to " + USER_THREE, isDirectoryChanged);
 
-            /*
-             * Create a file as user three which is bigger than the quota
-             */
+            /* Create a file as user three which is bigger than the quota */
             String file3Content3 = "test file 3 content that needs to be greater than 100 bytes to result in a quota exception being thrown";
             String file1Name = "test.docx";
 
             // Should not be success
-            boolean isAppend = ftpOne.appendFile(file1Name , new ByteArrayInputStream(file3Content3.getBytes(StandardCharsets.UTF_8)));
+            boolean isAppend = ftpOne.appendFile(file1Name, new ByteArrayInputStream(file3Content3.getBytes(StandardCharsets.UTF_8)));
             assertFalse("user one can ignore quota", isAppend);
 
             boolean isDeleted = ftpOne.deleteFile(file1Name);
@@ -695,7 +682,8 @@ public class FTPServerTest
     /**
      * Test Setting the modification time FTP server
      *
-     * @throws Exception may throw Exception
+     * @throws Exception
+     *             may throw Exception
      */
     @Test
     public void testModificationTime() throws Exception
@@ -747,8 +735,7 @@ public class FTPServerTest
             // Create a file
             String file1Content1 = "test file 1 content";
             String file1Name = "testFile1.txt";
-            ftp.appendFile(file1Name , new ByteArrayInputStream(file1Content1.getBytes(StandardCharsets.UTF_8)));
-
+            ftp.appendFile(file1Name, new ByteArrayInputStream(file1Content1.getBytes(StandardCharsets.UTF_8)));
 
             String pathname = "/Alfresco/User Homes" + "/" + path1 + "/" + path2 + "/" + file1Name;
 
@@ -799,11 +786,10 @@ public class FTPServerTest
 
             ftp.disconnect();
         }
-    }  // test set time
+    } // test set time
 
     /**
-     * Test for Passive Mode -> FTPCommand.Pasv command with external address functionality.
-     * see MNT-16433
+     * Test for Passive Mode -> FTPCommand.Pasv command with external address functionality. see MNT-16433
      */
     @Test
     public void testFTPConnectExternalAddressSet() throws Exception
@@ -834,7 +820,7 @@ public class FTPServerTest
                 assertEquals("Client should be in passive mode now", FTPClient.PASSIVE_REMOTE_DATA_CONNECTION_MODE, ftp.getDataConnectionMode());
 
                 reply = ftp.getReplyCode();
-                //see https://www.ietf.org/rfc/rfc959.txt
+                // see https://www.ietf.org/rfc/rfc959.txt
                 assertEquals("reply code should be 227", 227, reply);
 
                 String replyLine = ftp.getReplyString();
@@ -856,7 +842,7 @@ public class FTPServerTest
         }
         finally
         {
-            //always revert back to default, or the other tests will fail
+            // always revert back to default, or the other tests will fail
             ftpConfigSection.setFTPExternalAddress(null);
         }
     }
@@ -880,10 +866,10 @@ public class FTPServerTest
     {
         FTPClient ftp = new FTPClient();
         ftp.setIpAddressFromPasvResponse(true);
-        if(LOGGER.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
             ftp.addProtocolCommandListener(new PrintCommandListener(
-                                       new PrintWriter(System.out)));
+                    new PrintWriter(System.out)));
         }
         ftp.connect(HOSTNAME, ftpConfigSection.getFTPPort());
         return ftp;
@@ -891,9 +877,12 @@ public class FTPServerTest
 
     /**
      * Test quality utility to read an input stream into a string.
-     * @param is the inputStream to convert
+     * 
+     * @param is
+     *            the inputStream to convert
      * @return the content of the stream in a string.
-     * @throws IOException may throw Exception
+     * @throws IOException
+     *             may throw Exception
      */
     private String inputStreamToString(InputStream is) throws IOException
     {
@@ -924,9 +913,13 @@ public class FTPServerTest
 
     /**
      * create a test user
-     * @param userName the username
-     * @param password the password
-     * @param quota the sizeQuota
+     * 
+     * @param userName
+     *            the username
+     * @param password
+     *            the password
+     * @param quota
+     *            the sizeQuota
      */
     private void createUser(String userName, String password, long quota)
     {
@@ -941,7 +934,7 @@ public class FTPServerTest
             ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
             ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
 
-            if(quota > 0)
+            if (quota > 0)
             {
                 ppOne.put(ContentModel.PROP_SIZE_QUOTA, quota);
             }

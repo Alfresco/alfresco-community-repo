@@ -40,6 +40,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.zip.CRC32;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
@@ -80,8 +83,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Component providing data for SOLR tracking
@@ -100,15 +101,14 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
     private TenantService tenantService;
     private DictionaryService dictionaryService;
     private boolean enabled = true;
-    private boolean cacheAncestors =true;
+    private boolean cacheAncestors = true;
     private TypeIndexFilter typeIndexFilter;
     private AspectIndexFilter aspectIndexFilter;
     private ShardRegistry shardRegistry;
     private NamespaceService namespaceService;
 
     private static Log logger = LogFactory.getLog(SOLRTrackingComponentImpl.class);
-    
-    
+
     @Override
     public boolean isEnabled()
     {
@@ -122,7 +122,8 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
     }
 
     /**
-     * @param cacheAncestors the cacheAncestors to set
+     * @param cacheAncestors
+     *            the cacheAncestors to set
      */
     public void setCacheAncestors(boolean cacheAncestors)
     {
@@ -196,7 +197,7 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
 
     /**
      * Initialize
-     */    
+     */
     public void init()
     {
         PropertyCheck.mandatory(this, "solrDAO", searchDAO);
@@ -212,49 +213,47 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
         PropertyCheck.mandatory(this, "aspectIndexFilter", aspectIndexFilter);
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
     }
-    
+
     @Override
     public List<AclChangeSet> getAclChangeSets(Long minAclChangeSetId, Long fromCommitTime, Long maxAclChangeSetId, Long toCommitTime, int maxResults)
     {
-        if(enabled)
+        if (enabled)
         {
             List<AclChangeSet> changesets = searchDAO.getAclChangeSets(minAclChangeSetId, fromCommitTime, maxAclChangeSetId, toCommitTime, maxResults);
             return changesets;
         }
         else
         {
-            return Collections.<AclChangeSet>emptyList();
+            return Collections.<AclChangeSet> emptyList();
         }
     }
 
     @Override
     public List<Acl> getAcls(List<Long> aclChangeSetIds, Long minAclId, int maxResults)
     {
-        if(enabled)
+        if (enabled)
         {
             List<Acl> acls = searchDAO.getAcls(aclChangeSetIds, minAclId, maxResults);
             return acls;
         }
         else
         {
-            return Collections.<Acl>emptyList();
+            return Collections.<Acl> emptyList();
         }
     }
 
     @Override
     public List<AclReaders> getAclsReaders(List<Long> aclIds)
     {
-        if(enabled)
+        if (enabled)
         {
             // We don't want the caches to lie and we may not be part of the cluster
             aclDAO.setCheckAclConsistency();
 
-            /*
-             * This is an N+1 query that should, in theory, make use of cached ACL readers data.
-             */
+            /* This is an N+1 query that should, in theory, make use of cached ACL readers data. */
 
             Map<Long, String> aclChangeSetTenant = new HashMap<Long, String>(aclIds.size());
-            
+
             List<AclReaders> aclsReaders = new ArrayList<AclReaders>(aclIds.size() * 10);
             for (Long aclId : aclIds)
             {
@@ -264,13 +263,13 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
                 readers.setReaders(readersSet);
                 Set<String> deniedSet = permissionService.getReadersDenied(aclId);
                 readers.setDenied(deniedSet);
-                
+
                 Long aclChangeSetId = aclDAO.getAccessControlList(aclId).getProperties().getAclChangeSetId();
                 readers.setAclChangeSetId(aclChangeSetId);
-                
+
                 if (AuthenticationUtil.isMtEnabled())
                 {
-                	// MT - for now, derive the tenant for acl (via acl change set)
+                    // MT - for now, derive the tenant for acl (via acl change set)
                     String tenantDomain = aclChangeSetTenant.get(aclChangeSetId);
                     if (tenantDomain == null)
                     {
@@ -284,18 +283,18 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
                     }
                     readers.setTenantDomain(tenantDomain);
                 }
-                
+
                 aclsReaders.add(readers);
             }
-            
+
             return aclsReaders;
         }
         else
         {
-            return Collections.<AclReaders>emptyList();
+            return Collections.<AclReaders> emptyList();
         }
     }
-    
+
     private String getTenant(long aclId, long aclChangeSetId)
     {
         String tenantDomain = getAclTenant(aclId);
@@ -303,7 +302,7 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
         {
             List<Long> aclChangeSetIds = new ArrayList<Long>(1);
             aclChangeSetIds.add(aclChangeSetId);
-            
+
             List<Acl> acls = searchDAO.getAcls(aclChangeSetIds, null, 1024);
             for (Acl acl : acls)
             {
@@ -313,7 +312,7 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
                     break;
                 }
             }
-            
+
             if (tenantDomain == null)
             {
                 // tenant not found - log warning ?
@@ -322,7 +321,7 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
         }
         return tenantDomain;
     }
-    
+
     private String getAclTenant(long aclId)
     {
         List<Long> nodeIds = aclDAO.getADMNodesByAcl(aclId, 1);
@@ -330,48 +329,49 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
         {
             return null;
         }
-        
+
         nodeDAO.setCheckNodeConsistency();
         Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(nodeIds.get(0));
         if (nodePair == null)
         {
             return null;
         }
-        
+
         return tenantService.getDomain(nodePair.getSecond().getStoreRef().getIdentifier());
     }
-    
+
     @Override
     public List<Transaction> getTransactions(Long minTxnId, Long fromCommitTime, Long maxTxnId, Long toCommitTime, int maxResults)
     {
-        if(enabled)
+        if (enabled)
         {
             List<Transaction> txns = searchDAO.getTransactions(minTxnId, fromCommitTime, maxTxnId, toCommitTime, maxResults);
             return txns;
         }
         else
         {
-            return Collections.<Transaction>emptyList();
-        } 
+            return Collections.<Transaction> emptyList();
+        }
     }
 
     /**
      * {@inheritDoc}
      */
-	public void getNodes(NodeParameters nodeParameters, NodeQueryCallback callback)
-	{
-	    if(enabled)
-	    {
-	        QName shardPropertQName = null;
-	        QName shardPropertyType = null;
+    public void getNodes(NodeParameters nodeParameters, NodeQueryCallback callback)
+    {
+        if (enabled)
+        {
+            QName shardPropertQName = null;
+            QName shardPropertyType = null;
 
-	        if(nodeParameters.getShardProperty() != null)
-	        {
-	            PropertyDefinition pdef = QueryParserUtils.matchPropertyDefinition(NamespaceService.CONTENT_MODEL_1_0_URI, namespaceService, dictionaryService, nodeParameters.getShardProperty());
-	            if(pdef == null)
-	            {
-	                logger.warn("Invalid shard property: "+nodeParameters.getShardProperty());
-	            } else
+            if (nodeParameters.getShardProperty() != null)
+            {
+                PropertyDefinition pdef = QueryParserUtils.matchPropertyDefinition(NamespaceService.CONTENT_MODEL_1_0_URI, namespaceService, dictionaryService, nodeParameters.getShardProperty());
+                if (pdef == null)
+                {
+                    logger.warn("Invalid shard property: " + nodeParameters.getShardProperty());
+                }
+                else
                 {
                     shardPropertyType = pdef.getDataType().getName();
 
@@ -381,21 +381,21 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
                             && !shardPropertyType.equals(DataTypeDefinition.INT)
                             && !shardPropertyType.equals(DataTypeDefinition.LONG))
                     {
-                        logger.warn("Unsupported shard property type: "+(pdef.getDataType().getName() + " for " +nodeParameters.getShardProperty()));
+                        logger.warn("Unsupported shard property type: " + (pdef.getDataType().getName() + " for " + nodeParameters.getShardProperty()));
                     }
                     else
                     {
                         shardPropertQName = pdef.getName();
                     }
                 }
-	        }
+            }
 
+            List<Node> nodes = searchDAO.getNodes(nodeParameters, shardPropertQName, shardPropertyType);
 
-	        List<Node> nodes = searchDAO.getNodes(nodeParameters, shardPropertQName, shardPropertyType);
-
-	        for (Node node : nodes)
-	        {
-                if (shardRegistry != null){
+            for (Node node : nodes)
+            {
+                if (shardRegistry != null)
+                {
                     shardRegistry.getShardInstanceByTransactionTimestamp(
                             nodeParameters.getCoreName(),
                             node.getTransaction().getCommitTimeMs()).ifPresent(
@@ -403,34 +403,34 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
 
                 }
 
-	            callback.handleNode(node);
-	        }
-	    }
-	}
+                callback.handleNode(node);
+            }
+        }
+    }
 
-	/**
-	 * A dumb iterator that iterates over longs in sequence.
-	 */
-	private static class SequenceIterator implements Iterable<Long>, Iterator<Long>
-	{
-	    private long fromId;
-	    private long toId;
-	    private long counter;
-	    private int maxResults;
-	    private boolean inUse = false;
+    /**
+     * A dumb iterator that iterates over longs in sequence.
+     */
+    private static class SequenceIterator implements Iterable<Long>, Iterator<Long>
+    {
+        private long fromId;
+        private long toId;
+        private long counter;
+        private int maxResults;
+        private boolean inUse = false;
 
-	    SequenceIterator(Long fromId, Long toId, int maxResults)
-	    {
-	        this.fromId = (fromId == null ? 1 : fromId.longValue());
-	        this.toId = (toId == null ? Long.MAX_VALUE : toId.longValue());
-	        this.maxResults = maxResults;
-	        this.counter = this.fromId;
-	    }
-	    
+        SequenceIterator(Long fromId, Long toId, int maxResults)
+        {
+            this.fromId = (fromId == null ? 1 : fromId.longValue());
+            this.toId = (toId == null ? Long.MAX_VALUE : toId.longValue());
+            this.maxResults = maxResults;
+            this.counter = this.fromId;
+        }
+
         @Override
         public Iterator<Long> iterator()
         {
-            if(inUse)
+            if (inUse)
             {
                 throw new IllegalStateException("Already in use");
             }
@@ -442,7 +442,7 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
         @Override
         public boolean hasNext()
         {
-            return ((counter - this.fromId) < maxResults) &&  counter <= toId;
+            return ((counter - this.fromId) < maxResults) && counter <= toId;
         }
 
         @Override
@@ -456,11 +456,11 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
         {
             throw new UnsupportedOperationException();
         }
-	}
+    }
 
     private boolean isCategorised(AspectDefinition aspDef)
     {
-        if(aspDef == null)
+        if (aspDef == null)
         {
             return false;
         }
@@ -483,13 +483,13 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
         }
         return false;
     }
-    
+
     static class CategoryPaths
     {
         Collection<Pair<Path, QName>> paths;
         List<ChildAssociationRef> categoryParents;
-        
-        CategoryPaths( Collection<Pair<Path, QName>> paths, List<ChildAssociationRef> categoryParents)
+
+        CategoryPaths(Collection<Pair<Path, QName>> paths, List<ChildAssociationRef> categoryParents)
         {
             this.paths = paths;
             this.categoryParents = categoryParents;
@@ -510,10 +510,9 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
         {
             return categoryParents;
         }
-        
-        
+
     }
-    
+
     private CategoryPaths getCategoryPaths(NodeRef nodeRef, Set<QName> aspects, Map<QName, Serializable> properties)
     {
         ArrayList<Pair<Path, QName>> categoryPaths = new ArrayList<Pair<Path, QName>>();
@@ -553,11 +552,11 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
                     try
                     {
                         Pair<Long, NodeRef> pair = nodeDAO.getNodePair(catRef);
-                        if(pair != null)
+                        if (pair != null)
                         {
                             for (Path path : nodeDAO.getPaths(pair, false))
                             {
-                                aspectPaths.add(new Pair<Path, QName>(path, aspDef.getName()));   
+                                aspectPaths.add(new Pair<Path, QName>(path, aspDef.getName()));
                             }
                         }
                     }
@@ -584,8 +583,7 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
 
         return new CategoryPaths(categoryPaths, categoryParents);
     }
-    
-    
+
     private List<Long> preCacheNodes(NodeMetaDataParameters nodeMetaDataParameters)
     {
         int maxResults = nodeMetaDataParameters.getMaxResults();
@@ -594,7 +592,7 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
         List<Long> nodeIds = null;
         Iterable<Long> iterable = null;
         List<Long> allNodeIds = nodeMetaDataParameters.getNodeIds();
-        if(allNodeIds != null)
+        if (allNodeIds != null)
         {
             int toIndex = (maxResults > allNodeIds.size() ? allNodeIds.size() : maxResults);
             nodeIds = isLimitSet ? allNodeIds.subList(0, toIndex) : nodeMetaDataParameters.getNodeIds();
@@ -607,19 +605,19 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
             nodeIds = new ArrayList<Long>(isLimitSet ? maxResults : 100); // TODO better default here?
             iterable = new SequenceIterator(fromNodeId, toNodeId, maxResults);
             int counter = 1;
-            for(Long nodeId : iterable)
+            for (Long nodeId : iterable)
             {
-                if(isLimitSet && counter++ > maxResults)
+                if (isLimitSet && counter++ > maxResults)
                 {
                     break;
                 }
                 nodeIds.add(nodeId);
             }
         }
-        
+
         // Pre-evaluate ancestors so we can bulk load them
         List<Long> ancestors;
-        if(cacheAncestors)
+        if (cacheAncestors)
         {
             ancestors = cacheAncestors(nodeIds);
         }
@@ -629,15 +627,17 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
         }
         // Ensure that we get fresh node references
         nodeDAO.setCheckNodeConsistency();
-        // bulk load nodes and their ancestors      
+        // bulk load nodes and their ancestors
         nodeDAO.cacheNodesById(ancestors);
-        
+
         return nodeIds;
     }
-    
+
     /**
      * Does a 'breadth first' search of ancestors, caching as it goes
-     * @param nodeIds initial list of nodes to visit
+     * 
+     * @param nodeIds
+     *            initial list of nodes to visit
      * @return all visited nodes, in no particular order
      */
     private List<Long> cacheAncestors(List<Long> nodeIds)
@@ -651,8 +651,7 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
         {
             if (visited.add(nodeId) && (nodeDAO.getNodeIdStatus(nodeId) != null) && (false == nodeDAO.getNodeIdStatus(nodeId).isDeleted()))
             {
-                nodeDAO.getParentAssocs(nodeId, null, null, null, new ChildAssocRefQueryCallback()
-                {
+                nodeDAO.getParentAssocs(nodeId, null, null, null, new ChildAssocRefQueryCallback() {
                     @Override
                     public boolean preLoadNodes()
                     {
@@ -675,12 +674,11 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
 
                     @Override
                     public void done()
-                    {
-                    }
+                    {}
                 });
             }
             final boolean nodeIdEqualsLastCached = (nodeId == null && lastCached == null) ||
-                                                   (nodeId != null && nodeId.equals(lastCached));
+                    (nodeId != null && nodeId.equals(lastCached));
             if (nodeIdEqualsLastCached && !toVisit.isEmpty())
             {
                 nodeDAO.cacheNodesById(toVisit);
@@ -688,7 +686,7 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
             }
         }
         return new ArrayList<Long>(visited);
-    }    
+    }
 
     /** Get properties that we want to be indexed. */
     protected Map<QName, Serializable> getProperties(Long nodeId)
@@ -698,10 +696,10 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
         nodeDAO.setCheckNodeConsistency();
         Map<QName, Serializable> sourceProps = nodeDAO.getNodeProperties(nodeId);
         Map<QName, Serializable> props = new HashMap<>(sourceProps.size());
-        for(QName propertyQName : sourceProps.keySet())
+        for (QName propertyQName : sourceProps.keySet())
         {
             PropertyDefinition propDef = dictionaryService.getProperty(propertyQName);
-            if(propDef != null && propDef.isIndexed())
+            if (propDef != null && propDef.isIndexed())
             {
                 props.put(propertyQName, sourceProps.get(propertyQName));
             }
@@ -712,18 +710,17 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
 
     public long getCRC(Long nodeId)
     {
-        //Status status = nodeDAO.getNodeIdStatus(nodeId);
-        //Set<QName> aspects = getNodeAspects(nodeId);
-        //Map<QName, Serializable> props = getProperties(nodeId);
-        
-        //Category membership does not cascade to children - only the node needs reindexing, not its children
-        //This was producing cascade updates that were not required
+        // Status status = nodeDAO.getNodeIdStatus(nodeId);
+        // Set<QName> aspects = getNodeAspects(nodeId);
+        // Map<QName, Serializable> props = getProperties(nodeId);
+
+        // Category membership does not cascade to children - only the node needs reindexing, not its children
+        // This was producing cascade updates that were not required
         ////CategoryPaths categoryPaths = new CategoryPaths(new ArrayList<Pair<Path, QName>>(), new ArrayList<ChildAssociationRef>());
         ////categoryPaths = getCategoryPaths(status.getNodeRef(), aspects, props);
 
         final List<ChildAssociationRef> parentAssocs = new ArrayList<ChildAssociationRef>(100);
-        nodeDAO.getParentAssocs(nodeId, null, null, null, new ChildAssocRefQueryCallback()
-        {
+        nodeDAO.getParentAssocs(nodeId, null, null, null, new ChildAssocRefQueryCallback() {
             @Override
             public boolean preLoadNodes()
             {
@@ -746,16 +743,15 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
 
             @Override
             public void done()
-            {
-            }
+            {}
         });
-//        for(ChildAssociationRef ref : categoryPaths.getCategoryParents())
-//        {
-//            parentAssocs.add(tenantService.getBaseName(ref, true));
-//        }
+        // for(ChildAssociationRef ref : categoryPaths.getCategoryParents())
+        // {
+        // parentAssocs.add(tenantService.getBaseName(ref, true));
+        // }
 
         CRC32 crc = new CRC32();
-        for(ChildAssociationRef car : parentAssocs)
+        for (ChildAssociationRef car : parentAssocs)
         {
             try
             {
@@ -769,7 +765,7 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
         return crc.getValue();
 
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -778,11 +774,11 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
             MetaDataResultsFilter resultFilter,
             NodeMetaDataQueryCallback callback)
     {
-        if(false == enabled)
+        if (false == enabled)
         {
             return;
         }
-                
+
         NodeMetaDataQueryRowHandler rowHandler = new NodeMetaDataQueryRowHandler(callback);
         boolean includeType = (resultFilter == null ? true : resultFilter.getIncludeType());
         boolean includeProperties = (resultFilter == null ? true : resultFilter.getIncludeProperties());
@@ -794,10 +790,10 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
         boolean includeOwner = (resultFilter == null ? true : resultFilter.getIncludeOwner());
         boolean includeChildIds = (resultFilter == null ? true : resultFilter.getIncludeChildIds());
         boolean includeTxnId = (resultFilter == null ? true : resultFilter.getIncludeTxnId());
-        
+
         List<Long> nodeIds = preCacheNodes(nodeMetaDataParameters);
 
-        for(Long nodeId : nodeIds)
+        for (Long nodeId : nodeIds)
         {
             Status status = nodeDAO.getNodeIdStatus(nodeId);
             if (status == null)
@@ -808,55 +804,54 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
                 continue;
             }
             NodeRef nodeRef = status.getNodeRef();
-            
+
             NodeRef unversionedNodeRef = null;
-            if(isVersionNodeRef(nodeRef))
+            if (isVersionNodeRef(nodeRef))
             {
-            	unversionedNodeRef = convertVersionNodeRefToVersionedNodeRef(VersionUtil.convertNodeRef(nodeRef));
+                unversionedNodeRef = convertVersionNodeRefToVersionedNodeRef(VersionUtil.convertNodeRef(nodeRef));
             }
-          
+
             NodeMetaData nodeMetaData = new NodeMetaData();
             nodeMetaData.setNodeId(nodeId);
-  
-            if(includeNodeRef)
+
+            if (includeNodeRef)
             {
                 nodeMetaData.setNodeRef(tenantService.getBaseName(nodeRef, true));
             }
-            
-            if(includeTxnId)
+
+            if (includeTxnId)
             {
                 nodeMetaData.setTxnId(status.getDbTxnId());
             }
-            
-            if(status.isDeleted())
+
+            if (status.isDeleted())
             {
                 rowHandler.processResult(nodeMetaData);
                 continue;
             }
-            
+
             Map<QName, Serializable> props = null;
             Set<QName> aspects = null;
 
             Status unversionedStatus = null;
-            if(unversionedNodeRef != null)
+            if (unversionedNodeRef != null)
             {
-            	unversionedStatus = nodeDAO.getNodeRefStatus(unversionedNodeRef);
+                unversionedStatus = nodeDAO.getNodeRefStatus(unversionedNodeRef);
             }
 
-            if(unversionedStatus != null)
+            if (unversionedStatus != null)
             {
-            	nodeMetaData.setAclId(nodeDAO.getNodeAclId(unversionedStatus.getDbId()));
+                nodeMetaData.setAclId(nodeDAO.getNodeAclId(unversionedStatus.getDbId()));
             }
             else
             {
-            	nodeMetaData.setAclId(nodeDAO.getNodeAclId(nodeId));
+                nodeMetaData.setAclId(nodeDAO.getNodeAclId(nodeId));
             }
 
-            
-            if(includeType)
+            if (includeType)
             {
                 QName nodeType = getNodeType(nodeId);
-                if(nodeType != null)
+                if (nodeType != null)
                 {
                     nodeMetaData.setNodeType(nodeType);
                 }
@@ -864,7 +859,7 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
                 {
                     QName typeQName = null;
                     TypeDefinition typeDefinition = null;
-                    
+
                     String errorMessage = "NodeId " + nodeId + " with nodeRef " + nodeRef;
 
                     typeQName = nodeDAO.getNodeType(nodeId);
@@ -876,14 +871,14 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
                     {
                         errorMessage += " has no type.";
                     }
-                    
+
                     throw new AlfrescoRuntimeException(errorMessage + " It will be ignored by SOLR.");
                 }
             }
 
-            if(includeProperties)
+            if (includeProperties)
             {
-                if(props == null)
+                if (props == null)
                 {
                     props = getProperties(nodeId);
                 }
@@ -891,10 +886,10 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
             }
             else
             {
-                nodeMetaData.setProperties(Collections.<QName, Serializable>emptyMap());
+                nodeMetaData.setProperties(Collections.<QName, Serializable> emptyMap());
             }
 
-            if(includeAspects || includePaths || includeParentAssociations)
+            if (includeAspects || includePaths || includeParentAssociations)
             {
                 aspects = getNodeAspects(nodeId);
             }
@@ -903,9 +898,9 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
             boolean ignoreLargeMetadata = (typeIndexFilter.shouldBeIgnored(getNodeType(nodeId)) || aspectIndexFilter.shouldBeIgnored(getNodeAspects(nodeId)));
 
             CategoryPaths categoryPaths = new CategoryPaths(new ArrayList<Pair<Path, QName>>(), new ArrayList<ChildAssociationRef>());
-            if(!ignoreLargeMetadata && (includePaths || includeParentAssociations))
+            if (!ignoreLargeMetadata && (includePaths || includeParentAssociations))
             {
-                if(props == null)
+                if (props == null)
                 {
                     props = getProperties(nodeId);
                 }
@@ -917,8 +912,7 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
                 // check if parent should be ignored
                 final List<Long> parentIds = new LinkedList<Long>();
                 final List<ChildAssociationRef> parentAssocs = new ArrayList<ChildAssociationRef>(100);
-                nodeDAO.getParentAssocs(nodeId, null, null, true, new ChildAssocRefQueryCallback()
-                {
+                nodeDAO.getParentAssocs(nodeId, null, null, true, new ChildAssocRefQueryCallback() {
                     @Override
                     public boolean preLoadNodes()
                     {
@@ -941,8 +935,7 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
 
                     @Override
                     public void done()
-                    {
-                    }
+                    {}
                 });
 
                 if (!parentIds.isEmpty())
@@ -961,13 +954,13 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
 
                 if (includeParentAssociations)
                 {
-                    for(ChildAssociationRef ref : categoryPaths.getCategoryParents())
+                    for (ChildAssociationRef ref : categoryPaths.getCategoryParents())
                     {
                         parentAssocs.add(tenantService.getBaseName(ref, true));
                     }
 
                     CRC32 crc = new CRC32();
-                    for(ChildAssociationRef car : parentAssocs)
+                    for (ChildAssociationRef car : parentAssocs)
                     {
                         try
                         {
@@ -983,19 +976,18 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
             }
 
             nodeMetaData.setTenantDomain(tenantService.getDomain(nodeRef.getStoreRef().getIdentifier()));
-            
-            if(includeChildAssociations || includeChildIds)
+
+            if (includeChildAssociations || includeChildIds)
             {
                 final List<ChildAssociationRef> childAssocs = new ArrayList<ChildAssociationRef>(100);
                 final List<Long> childIds = new ArrayList<Long>(100);
-                nodeDAO.getChildAssocs(nodeId, null, null, null, null, null, new ChildAssocRefQueryCallback()
-                {
+                nodeDAO.getChildAssocs(nodeId, null, null, null, null, null, new ChildAssocRefQueryCallback() {
                     @Override
                     public boolean preLoadNodes()
                     {
                         return false;
                     }
-                    
+
                     @Override
                     public boolean orderResults()
                     {
@@ -1042,11 +1034,10 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
                         }
                         return true;
                     }
-                    
+
                     @Override
                     public void done()
-                    {
-                    }
+                    {}
                 });
                 nodeMetaData.setChildAssocs(childAssocs);
                 nodeMetaData.setChildIds(childIds);
@@ -1065,9 +1056,9 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
                 {
                     paths.add(new Pair<Path, QName>(catPair.getFirst().getBaseNamePath(tenantService), catPair.getSecond()));
                 }
-                if(unversionedStatus !=  null)
+                if (unversionedStatus != null)
                 {
-                    List<Path>  unversionedPaths = nodeDAO.getPaths(new Pair<Long, NodeRef>(unversionedStatus.getDbId(), unversionedStatus.getNodeRef()), false);
+                    List<Path> unversionedPaths = nodeDAO.getPaths(new Pair<Long, NodeRef>(unversionedStatus.getDbId(), unversionedStatus.getNodeRef()), false);
                     for (Path path : unversionedPaths)
                     {
                         paths.add(new Pair<Path, QName>(path.getBaseNamePath(tenantService), null));
@@ -1079,7 +1070,7 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
                 // Calculate name path
                 Collection<Collection<String>> namePaths = new ArrayList<Collection<String>>(2);
                 nodeMetaData.setNamePaths(namePaths);
-                for (Pair<Path, QName>  catPair : paths)
+                for (Pair<Path, QName> catPair : paths)
                 {
                     Path path = catPair.getFirst();
 
@@ -1105,7 +1096,7 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
                         if (childNodeName == null)
                         {
                             // We have hit a non-name node, which acts as a root for cm:name
-                            // DH: There is no particular constraint here.  This is just a decision made.
+                            // DH: There is no particular constraint here. This is just a decision made.
                             namePath.clear();
                             // We have to continue down the path as there could be a name path lower down
                             continue NEXT_ELEMENT;
@@ -1122,51 +1113,51 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
                 }
             }
 
-            if(includeOwner)
+            if (includeOwner)
             {
                 // cached in OwnableService
                 nodeMetaData.setOwner(ownableService.getOwner(status.getNodeRef()));
             }
- 
+
             rowHandler.processResult(nodeMetaData);
         }
     }
 
     private boolean isVersionNodeRef(NodeRef nodeRef)
     {
-    	return nodeRef.getStoreRef().getProtocol().equals(VersionModel.STORE_PROTOCOL) || nodeRef.getStoreRef().getIdentifier().equals(Version2Model.STORE_ID);
+        return nodeRef.getStoreRef().getProtocol().equals(VersionModel.STORE_PROTOCOL) || nodeRef.getStoreRef().getIdentifier().equals(Version2Model.STORE_ID);
     }
-    
+
     @SuppressWarnings("deprecation")
-	protected NodeRef convertVersionNodeRefToVersionedNodeRef(NodeRef versionNodeRef)
+    protected NodeRef convertVersionNodeRefToVersionedNodeRef(NodeRef versionNodeRef)
     {
-    	Status status = nodeDAO.getNodeRefStatus(versionNodeRef);
+        Status status = nodeDAO.getNodeRefStatus(versionNodeRef);
         if (status == null)
         {
-        	return versionNodeRef;
+            return versionNodeRef;
         }
-    	
+
         Map<QName, Serializable> properties = nodeDAO.getNodeProperties(status.getDbId());
-        
+
         NodeRef nodeRef = null;
-        
+
         // Switch VersionStore depending on configured impl
         if (versionNodeRef.getStoreRef().getIdentifier().equals(Version2Model.STORE_ID))
         {
             // V2 version store (eg. workspace://version2Store)
-            nodeRef = (NodeRef)properties.get(Version2Model.PROP_QNAME_FROZEN_NODE_REF);
-        } 
+            nodeRef = (NodeRef) properties.get(Version2Model.PROP_QNAME_FROZEN_NODE_REF);
+        }
         else if (versionNodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
         {
             // Deprecated V1 version store (eg. workspace://lightWeightVersionStore)
             nodeRef = new NodeRef((String) properties.get(VersionModel.PROP_QNAME_FROZEN_NODE_STORE_PROTOCOL),
-                                  (String) properties.get(VersionModel.PROP_QNAME_FROZEN_NODE_STORE_ID),
-                                  (String) properties.get(VersionModel.PROP_QNAME_FROZEN_NODE_ID));
+                    (String) properties.get(VersionModel.PROP_QNAME_FROZEN_NODE_STORE_ID),
+                    (String) properties.get(VersionModel.PROP_QNAME_FROZEN_NODE_ID));
         }
-        
+
         return nodeRef;
     }
-    
+
     private QName getNodeType(Long nodeId)
     {
         QName result = nodeDAO.getNodeType(nodeId);
@@ -1182,10 +1173,10 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
             return aspects;
         }
         Set<QName> sourceAspects = nodeDAO.getNodeAspects(nodeId);
-        for(QName aspectQName : sourceAspects)
+        for (QName aspectQName : sourceAspects)
         {
             AspectDefinition aspect = dictionaryService.getAspect(aspectQName);
-            if(aspect != null)
+            if (aspect != null)
             {
                 aspects.add(aspectQName);
             }
@@ -1198,7 +1189,7 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
      */
     public AlfrescoModel getModel(QName modelName)
     {
-        if(enabled)
+        if (enabled)
         {
             ModelDefinition modelDef = dictionaryService.getModel(modelName);
             return (modelDef != null ? new AlfrescoModel(modelDef) : null);
@@ -1214,24 +1205,24 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
      */
     public List<AlfrescoModelDiff> getModelDiffs(Map<QName, Long> models)
     {
-        if(false == enabled)
+        if (false == enabled)
         {
-            return Collections.<AlfrescoModelDiff>emptyList();
+            return Collections.<AlfrescoModelDiff> emptyList();
         }
-        
+
         List<AlfrescoModelDiff> diffs = new ArrayList<AlfrescoModelDiff>();
 
         // get all models the repository knows about and add each to a list with its checksum
         Collection<QName> allModels = dictionaryService.getAllModels();
 
         // look for changed and removed models
-        for(QName modelName : models.keySet())
+        for (QName modelName : models.keySet())
         {
-            if(allModels.contains(modelName))
+            if (allModels.contains(modelName))
             {
                 Long checksum = models.get(modelName);
                 AlfrescoModel serverModel = getModel(modelName);
-                if(serverModel.getChecksum() != checksum.longValue())
+                if (serverModel.getChecksum() != checksum.longValue())
                 {
                     // model has changed, add the changed server model
                     diffs.add(new AlfrescoModelDiff(modelName,
@@ -1241,15 +1232,15 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
             else
             {
                 // model no longer exists, just add it's name
-            	diffs.add(new AlfrescoModelDiff(modelName,
+                diffs.add(new AlfrescoModelDiff(modelName,
                         AlfrescoModelDiff.TYPE.REMOVED, null, null));
             }
         }
 
         // look for new models
-        for(QName modelName : allModels)
+        for (QName modelName : allModels)
         {
-            if(!models.containsKey(modelName))
+            if (!models.containsKey(modelName))
             {
                 // new model, add the model xml and checksum
                 AlfrescoModel model = getModel(modelName);
@@ -1258,33 +1249,33 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
             }
         }
 
-//        for(AlfrescoModelDiff diff : diffs)
-//        {
-//            if(diff.getType() != TYPE.REMOVED)
-//            {
-//                CompiledModel cm = ((DictionaryDAOImpl)dictionaryDAO).getCompiledModel(QName.createQName(diff.getModelName()));
-//                File file = TempFileProvider.createTempFile(cm.getM2Model().getChecksum(XMLBindingType.DEFAULT)+ cm.getM2Model().getNamespaces().get(0).getPrefix(), ".xml");
-//                FileOutputStream os;
-//                try
-//                {
-//                    os = new FileOutputStream(file);
-//                    cm.getM2Model().toXML(os);
-//                    os.flush();
-//                    os.close();
-//
-//                }
-//                catch (IOException e)
-//                {
-//                    // TODO Auto-generated catch block
-//                    e.printStackTrace();
-//                }
-//            }
-//
-//        }
-        
+        // for(AlfrescoModelDiff diff : diffs)
+        // {
+        // if(diff.getType() != TYPE.REMOVED)
+        // {
+        // CompiledModel cm = ((DictionaryDAOImpl)dictionaryDAO).getCompiledModel(QName.createQName(diff.getModelName()));
+        // File file = TempFileProvider.createTempFile(cm.getM2Model().getChecksum(XMLBindingType.DEFAULT)+ cm.getM2Model().getNamespaces().get(0).getPrefix(), ".xml");
+        // FileOutputStream os;
+        // try
+        // {
+        // os = new FileOutputStream(file);
+        // cm.getM2Model().toXML(os);
+        // os.flush();
+        // os.close();
+        //
+        // }
+        // catch (IOException e)
+        // {
+        // // TODO Auto-generated catch block
+        // e.printStackTrace();
+        // }
+        // }
+        //
+        // }
+
         return diffs;
     }
-    
+
     /**
      * Class that passes results from a result entity into the client callback
      */
@@ -1298,7 +1289,7 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
             this.callback = callback;
             this.more = true;
         }
-        
+
         public void processResult(Node row)
         {
             if (!more)
@@ -1306,11 +1297,11 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
                 // No more results required
                 return;
             }
-            
+
             more = callback.handleNode(row);
         }
     }
-    
+
     /**
      * Class that passes results from a result entity into the client callback
      */
@@ -1324,7 +1315,7 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
             this.callback = callback;
             this.more = true;
         }
-        
+
         public void processResult(NodeMetaData row)
         {
             if (!more)
@@ -1332,7 +1323,7 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
                 // No more results required
                 return;
             }
-            
+
             more = callback.handleNodeMetaData(row);
         }
     }
@@ -1343,18 +1334,18 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
         nodeDAO.setCheckNodeConsistency();
         return nodeDAO.getMaxTxnCommitTime();
     }
-    
+
     @Override
     public Long getMaxTxnId()
     {
-        long maxCommitTime = System.currentTimeMillis()+1L;
+        long maxCommitTime = System.currentTimeMillis() + 1L;
         nodeDAO.setCheckNodeConsistency();
         return nodeDAO.getMaxTxnIdByCommitTime(maxCommitTime);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.solr.SOLRTrackingComponent#getMaxChangeSetCommitTime()
-     */
+     * 
+     * @see org.alfresco.repo.solr.SOLRTrackingComponent#getMaxChangeSetCommitTime() */
     @Override
     public Long getMaxChangeSetCommitTime()
     {
@@ -1362,30 +1353,30 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.solr.SOLRTrackingComponent#getMaxChangeSetId()
-     */
+     * 
+     * @see org.alfresco.repo.solr.SOLRTrackingComponent#getMaxChangeSetId() */
     @Override
     public Long getMaxChangeSetId()
     {
-        long maxCommitTime = System.currentTimeMillis()+1L;
+        long maxCommitTime = System.currentTimeMillis() + 1L;
         return aclDAO.getMaxChangeSetIdByCommitTime(maxCommitTime);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.solr.SOLRTrackingComponent#registerShardState(org.alfresco.repo.index.ShardState)
-     */
+     * 
+     * @see org.alfresco.repo.solr.SOLRTrackingComponent#registerShardState(org.alfresco.repo.index.ShardState) */
     @Override
     public void registerShardState(ShardState shardState)
     {
-       if(shardRegistry != null)
-       {
-           shardRegistry.registerShardState(shardState);
-       }
+        if (shardRegistry != null)
+        {
+            shardRegistry.registerShardState(shardState);
+        }
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.solr.SOLRTrackingComponent#getShardRegistry()
-     */
+     * 
+     * @see org.alfresco.repo.solr.SOLRTrackingComponent#getShardRegistry() */
     @Override
     public ShardRegistry getShardRegistry()
     {

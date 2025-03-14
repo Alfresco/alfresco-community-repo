@@ -32,33 +32,7 @@ import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TaskModel;
 
 /**
- * Handles single Task JSON response
- * Example:
- * "entry": {
-          "id": "string",
-          "processId": "string",
-          "processDefinitionId": "string",
-          "activityDefinitionId": "string",
-          "name": "string",
-          "description": "string",
-          "dueAt": "2016-10-11T09:53:02.549Z",
-          "startedAt": "2016-10-11T09:53:02.549Z",
-          "endedAt": "2016-10-11T09:53:02.549Z",
-          "durationInMs": 0,
-          "priority": 0,
-          "owner": "string",
-          "assignee": "string",
-          "formResourceKey": "string",
-          "state": "unclaimed",
-          "variables": [
-            {
-              "scope": "string",
-              "name": "string",
-              "value": 0,
-              "type": "string"
-            }
-          ]
-        }
+ * Handles single Task JSON response Example: "entry": { "id": "string", "processId": "string", "processDefinitionId": "string", "activityDefinitionId": "string", "name": "string", "description": "string", "dueAt": "2016-10-11T09:53:02.549Z", "startedAt": "2016-10-11T09:53:02.549Z", "endedAt": "2016-10-11T09:53:02.549Z", "durationInMs": 0, "priority": 0, "owner": "string", "assignee": "string", "formResourceKey": "string", "state": "unclaimed", "variables": [ { "scope": "string", "name": "string", "value": 0, "type": "string" } ] }
  * 
  * @author Cristina Axinte
  *
@@ -203,5 +177,5 @@ public class RestTaskModel extends TaskModel implements IRestModel<RestTaskModel
     {
         this.description = description;
     }
-    
-}    
+
+}

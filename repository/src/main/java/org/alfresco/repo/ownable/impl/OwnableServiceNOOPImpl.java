@@ -53,7 +53,7 @@ public class OwnableServiceNOOPImpl implements OwnableService
     }
 
     public void takeOwnership(NodeRef nodeRef)
-    {   
+    {
         // No action.
     }
 

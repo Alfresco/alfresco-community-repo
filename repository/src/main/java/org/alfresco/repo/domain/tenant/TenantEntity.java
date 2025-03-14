@@ -29,7 +29,6 @@ import java.io.Serializable;
 
 import org.alfresco.util.EqualsHelper;
 
-
 /**
  * Entity for <b>alf_tenant</b> persistence.
  * 
@@ -45,29 +44,28 @@ public class TenantEntity implements Serializable
     private Boolean enabled;
     private String contentRoot; // root folder path or url
     private String dbUrl;
-    
+
     /**
      * Default constructor
      */
     /* package */ TenantEntity()
-    {
-    }
-    
+    {}
+
     public TenantEntity(String tenantDomain)
     {
         this.tenantDomain = tenantDomain;
     }
-    
+
     public Long getVersion()
     {
         return version;
     }
-    
+
     public void setVersion(Long version)
     {
         this.version = version;
     }
-    
+
     public void incrementVersion()
     {
         if (this.version >= Long.MAX_VALUE)
@@ -79,12 +77,12 @@ public class TenantEntity implements Serializable
             this.version++;
         }
     }
-    
+
     public String getTenantDomain()
     {
         return tenantDomain;
     }
-    
+
     /* package */ void setTenantDomain(String tenantDomain)
     {
         this.tenantDomain = tenantDomain;
@@ -130,13 +128,12 @@ public class TenantEntity implements Serializable
         this.dbUrl = dbUrl;
     }
 
-    
     @Override
     public int hashCode()
     {
         return (tenantDomain == null ? 0 : tenantDomain.hashCode());
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -146,7 +143,7 @@ public class TenantEntity implements Serializable
         }
         else if (obj instanceof TenantEntity)
         {
-            TenantEntity that = (TenantEntity)obj;
+            TenantEntity that = (TenantEntity) obj;
             return (EqualsHelper.nullSafeEquals(this.tenantDomain.toLowerCase(), that.tenantDomain.toLowerCase()));
         }
         else
@@ -154,19 +151,19 @@ public class TenantEntity implements Serializable
             return false;
         }
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("TenantEntity")
-          .append("[ tenantDomain=").append(tenantDomain)
-          .append(", version=").append(version)
-          .append(", enabled=").append(enabled)
-          .append(", contentRoot=").append(contentRoot)
-          .append(", dbUrl=").append(dbUrl)
-          .append(", tenantName=").append(tenantName)
-          .append("]");
+                .append("[ tenantDomain=").append(tenantDomain)
+                .append(", version=").append(version)
+                .append(", enabled=").append(enabled)
+                .append(", contentRoot=").append(contentRoot)
+                .append(", dbUrl=").append(dbUrl)
+                .append(", tenantName=").append(tenantName)
+                .append("]");
         return sb.toString();
     }
 }

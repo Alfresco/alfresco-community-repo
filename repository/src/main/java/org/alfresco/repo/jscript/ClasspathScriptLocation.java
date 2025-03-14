@@ -29,32 +29,34 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.scripts.ScriptException;
 import org.alfresco.service.cmr.repository.ScriptLocation;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Classpath script location object.
  * 
  * @author Roy Wetherall
  */
-public class ClasspathScriptLocation implements ScriptLocation 
+public class ClasspathScriptLocation implements ScriptLocation
 {
-	/** Classpath location **/
-	private final String location;
-	
-	/**
-	 * Constructor
-	 * 
-	 * @param location	the classpath location
-	 */
-	public ClasspathScriptLocation(String location)
-	{
-		ParameterCheck.mandatory("Location", location);
-		this.location = location;
-	}
-    
+    /** Classpath location **/
+    private final String location;
+
+    /**
+     * Constructor
+     * 
+     * @param location
+     *            the classpath location
+     */
+    public ClasspathScriptLocation(String location)
+    {
+        ParameterCheck.mandatory("Location", location);
+        this.location = location;
+    }
+
     /**
      * @see org.alfresco.service.cmr.repository.ScriptLocation#getInputStream()
      */
@@ -68,12 +70,12 @@ public class ClasspathScriptLocation implements ScriptLocation
         return stream;
     }
 
-	/**
-	 * @see org.alfresco.service.cmr.repository.ScriptLocation#getReader()
-	 */
-	public Reader getReader() 
-	{
-		Reader reader = null;
+    /**
+     * @see org.alfresco.service.cmr.repository.ScriptLocation#getReader()
+     */
+    public Reader getReader()
+    {
+        Reader reader = null;
         try
         {
             InputStream stream = getClass().getClassLoader().getResourceAsStream(location);
@@ -87,18 +89,18 @@ public class ClasspathScriptLocation implements ScriptLocation
         {
             throw new ScriptException("Failed to load classpath resource '" + location + "': " + err.getMessage(), err);
         }
-        
+
         return reader;
-	}
-    
-	/**
+    }
+
+    /**
      * @see org.alfresco.service.cmr.repository.ScriptLocation#getPath()
      */
     public String getPath()
     {
         return this.location;
     }
-    
+
     public boolean isCachable()
     {
         return true;
@@ -120,7 +122,7 @@ public class ClasspathScriptLocation implements ScriptLocation
         {
             return false;
         }
-        ClasspathScriptLocation other = (ClasspathScriptLocation)obj;
+        ClasspathScriptLocation other = (ClasspathScriptLocation) obj;
         return this.location.equals(other.location);
     }
 

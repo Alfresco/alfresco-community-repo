@@ -29,8 +29,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * This is a copy of the SortDefinition class found in data-model.  Due to the use of a very old version
- * of Jackson it is necessary to duplicate this class rather than reuse it.
+ * This is a copy of the SortDefinition class found in data-model. Due to the use of a very old version of Jackson it is necessary to duplicate this class rather than reuse it.
  *
  * @author Gethin James
  */
@@ -43,8 +42,8 @@ public class SortDef
 
     @JsonCreator
     public SortDef(@JsonProperty("type") String type,
-                   @JsonProperty("field")  String field,
-                   @JsonProperty("ascending") boolean ascending)
+            @JsonProperty("field") String field,
+            @JsonProperty("ascending") boolean ascending)
     {
         this.type = type;
         this.field = field;

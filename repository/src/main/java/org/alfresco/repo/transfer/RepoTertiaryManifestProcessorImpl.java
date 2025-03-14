@@ -30,6 +30,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.transfer.CorrespondingNodeResolver.ResolvedParentChildPair;
 import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
@@ -39,36 +42,35 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @author mrogers
  * 
- * The tertiary manifest processor performs a third parse of the snapshot file.
+ *         The tertiary manifest processor performs a third parse of the snapshot file.
  * 
- * For a complete transfer it is responsible for deleting any replicated nodes 
- * which exist in the target repository that do not exist in the source repository.
+ *         For a complete transfer it is responsible for deleting any replicated nodes which exist in the target repository that do not exist in the source repository.
  * 
- * If the transfer is not "sync" then this processor does nothing.
+ *         If the transfer is not "sync" then this processor does nothing.
  */
 public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessorBase
 {
     private NodeService nodeService;
     private AlienProcessor alienProcessor;
     CorrespondingNodeResolver nodeResolver;
-    
+
     private static final Log log = LogFactory.getLog(RepoTertiaryManifestProcessorImpl.class);
 
     /**
-     *  Is this a "sync" transfer.  If not then does nothing.
+     * Is this a "sync" transfer. If not then does nothing.
      */
     boolean isSync = false;
     String manifestRepositoryId;
 
     /**
-     * @param receiver TransferReceiver
-     * @param transferId String
+     * @param receiver
+     *            TransferReceiver
+     * @param transferId
+     *            String
      */
     public RepoTertiaryManifestProcessorImpl(TransferReceiver receiver, String transferId)
     {
@@ -77,17 +79,17 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
 
     protected void endManifest()
     {
-        //NOOP
+        // NOOP
     }
-    
+
     protected void processNode(TransferManifestDeletedNode node)
     {
-        //NOOP
+        // NOOP
     }
 
     protected void processNode(TransferManifestNormalNode node)
     {
-        
+
         if (log.isDebugEnabled())
         {
             log.debug("Processing node with incoming noderef of " + node.getNodeRef());
@@ -97,20 +99,20 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
         /**
          * This processor only does processes sync requests.
          */
-        if(isSync)
-        {  
+        if (isSync)
+        {
             ChildAssociationRef primaryParentAssoc = node.getPrimaryParentAssoc();
-        
+
             CorrespondingNodeResolver.ResolvedParentChildPair resolvedNodes = nodeResolver.resolveCorrespondingNode(node
-                .getNodeRef(), primaryParentAssoc, node.getParentPath());    
-        
+                    .getNodeRef(), primaryParentAssoc, node.getParentPath());
+
             NodeRef nodeRef = resolvedNodes.resolvedChild;
-                               
-            if(nodeService.exists(nodeRef))
+
+            if (nodeService.exists(nodeRef))
             {
                 log.debug("destination node exists - check the children");
-                
-                //TODO Use more efficient query here.
+
+                // TODO Use more efficient query here.
                 List<ChildAssociationRef> expectedChildren = node.getChildAssocs();
 
                 if (log.isDebugEnabled())
@@ -143,9 +145,9 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
                     log.debug("Expected children:");
                 }
 
-                for(ChildAssociationRef ref : expectedChildren)
+                for (ChildAssociationRef ref : expectedChildren)
                 {
-                    if(log.isDebugEnabled())
+                    if (log.isDebugEnabled())
                     {
                         log.debug("Expecting child node " + ref);
                     }
@@ -197,7 +199,7 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
                         expectedChildNodeRefs.add(childRef);
                     }
                 }
-                
+
                 List<ChildAssociationRef> actualChildren = nodeService.getChildAssocs(nodeRef);
 
                 /**
@@ -208,10 +210,10 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
                     log.debug("Traversing ACTUAL children:");
                 }
 
-                for(ChildAssociationRef child : actualChildren)
+                for (ChildAssociationRef child : actualChildren)
                 {
                     log.debug("checking child: " + child);
-                    if(child.isPrimary())
+                    if (child.isPrimary())
                     {
                         if (log.isTraceEnabled())
                         {
@@ -219,13 +221,12 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
                         }
 
                         /**
-                         * yes it is a primary assoc
-                         * should it be there ?
+                         * yes it is a primary assoc should it be there ?
                          */
                         NodeRef childNodeRef = child.getChildRef();
                         Path actualChildPath = nodeService.getPath(childNodeRef);
 
-                        if(!expectedChildNodeRefs.contains(childNodeRef) && !expectedChildNodePaths.contains(actualChildPath))
+                        if (!expectedChildNodeRefs.contains(childNodeRef) && !expectedChildNodePaths.contains(actualChildPath))
                         {
                             if (log.isDebugEnabled())
                             {
@@ -233,19 +234,17 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
                             }
 
                             /**
-                             * An unexpected child - if this node has been transferred then
-                             * it may need to be deleted.  
-                             *  
-                             * If from another repository then we have to prune the alien children 
-                             * rather than deleting it.
+                             * An unexpected child - if this node has been transferred then it may need to be deleted.
+                             * 
+                             * If from another repository then we have to prune the alien children rather than deleting it.
                              */
-                            if(nodeService.hasAspect(childNodeRef, TransferModel.ASPECT_TRANSFERRED))
+                            if (nodeService.hasAspect(childNodeRef, TransferModel.ASPECT_TRANSFERRED))
                             {
                                 log.debug("an unexpected transferred child node:" + child);
                                 logComment("Transfer sync mode - checking unexpected child node:" + child);
                                 String fromRepositoryId = (String) nodeService.getProperty(childNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID);
-                                
-                                // Yes this is a transferred node.  When syncing we only delete nodes that are "from" 
+
+                                // Yes this is a transferred node. When syncing we only delete nodes that are "from"
                                 // the system that is transferring to this repo.
 
                                 if (log.isDebugEnabled())
@@ -253,16 +252,15 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
                                     log.debug("'manifestRepositoryId': " + manifestRepositoryId);
                                 }
 
-                                if(fromRepositoryId != null &&  manifestRepositoryId != null)
+                                if (fromRepositoryId != null && manifestRepositoryId != null)
                                 {
-                                    if(nodeService.hasAspect(childNodeRef, TransferModel.ASPECT_ALIEN))
+                                    if (nodeService.hasAspect(childNodeRef, TransferModel.ASPECT_ALIEN))
                                     {
-                                         /**
-                                         * This node can't be deleted since it contains alien content
-                                         * it needs to be "pruned" of the transferring repo's content instead.
+                                        /**
+                                         * This node can't be deleted since it contains alien content it needs to be "pruned" of the transferring repo's content instead.
                                          */
                                         log.debug("node to be deleted contains alien content so needs to be pruned." + childNodeRef);
-                                        logComment("Transfer sync mode - node contains alien content so can't be deleted. " +  childNodeRef);
+                                        logComment("Transfer sync mode - node contains alien content so can't be deleted. " + childNodeRef);
                                         alienProcessor.pruneNode(childNodeRef, manifestRepositoryId);
                                     }
                                     else
@@ -275,14 +273,14 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
 
                                         String initialRepositoryId = (String) nodeService.getProperty(childNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID);
 
-                                        if(manifestRepositoryId.equalsIgnoreCase(initialRepositoryId))
+                                        if (manifestRepositoryId.equalsIgnoreCase(initialRepositoryId))
                                         {
                                             if (log.isDebugEnabled())
                                             {
                                                 log.debug("Replication is initiated from the same repository from which this node was transferred! Deleting");
                                             }
                                             // Yes the manifest repository Id and the from repository Id match.
-                                            // Destination node if from the transferring repo and needs to be deleted. 
+                                            // Destination node if from the transferring repo and needs to be deleted.
                                             logDeleted(node.getNodeRef(), childNodeRef, nodeService.getPath(childNodeRef).toString());
                                             logSummaryDeleted(node.getNodeRef(), childNodeRef, nodeService.getPath(childNodeRef).toString());
                                             nodeService.deleteNode(childNodeRef);
@@ -306,31 +304,29 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
                     }
                 }
             }
-        
+
             else
             {
                 log.debug("not sync mode - do nothing");
             }
         }
     }
-    
+
     protected void processHeader(TransferManifestHeader header)
     {
         isSync = header.isSync();
         log.debug("isSync :" + isSync);
-        
+
         manifestRepositoryId = header.getRepositoryId();
-        log.debug("fromRepositoryId:" +  manifestRepositoryId);
+        log.debug("fromRepositoryId:" + manifestRepositoryId);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.transfer.manifest.TransferManifestProcessor#startTransferManifest()
-     */
+     * @see org.alfresco.repo.transfer.manifest.TransferManifestProcessor#startTransferManifest() */
     protected void startManifest()
     {
-        //NOOP
+        // NOOP
     }
 
     /**
@@ -341,7 +337,7 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setAlienProcessor(AlienProcessor alienProcessor)
     {
         this.alienProcessor = alienProcessor;
@@ -351,7 +347,7 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
     {
         return alienProcessor;
     }
-    
+
     /**
      * @param nodeResolver
      *            the nodeResolver to set

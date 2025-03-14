@@ -44,26 +44,25 @@ public class AuditQueryParameters
     private Long auditToTime;
     private Long searchKeyId;
     private Long searchValueId;
-    
+
     public AuditQueryParameters()
-    {
-    }
-    
+    {}
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("AuditEntryParameters")
-          .append("[ forward=").append(forward)
-          .append(", auditAppNameId=").append(auditAppNameId)
-          .append(", auditUserId=").append(auditUserId)
-          .append(", auditFromId=").append(auditFromId == null ? null : auditFromId)
-          .append(", auditToId=").append(auditToId == null ? null : auditToId)
-          .append(", auditFromTime=").append(auditFromTime == null ? null : new Date(auditFromTime))
-          .append(", auditToTime=").append(auditToTime == null ? null : new Date(auditToTime))
-          .append(", searchKeyId=").append(searchKeyId)
-          .append(", searchValueId=").append(searchValueId)
-          .append("]");
+                .append("[ forward=").append(forward)
+                .append(", auditAppNameId=").append(auditAppNameId)
+                .append(", auditUserId=").append(auditUserId)
+                .append(", auditFromId=").append(auditFromId == null ? null : auditFromId)
+                .append(", auditToId=").append(auditToId == null ? null : auditToId)
+                .append(", auditFromTime=").append(auditFromTime == null ? null : new Date(auditFromTime))
+                .append(", auditToTime=").append(auditToTime == null ? null : new Date(auditToTime))
+                .append(", searchKeyId=").append(searchKeyId)
+                .append(", searchValueId=").append(searchValueId)
+                .append("]");
         return sb.toString();
     }
 
@@ -76,7 +75,7 @@ public class AuditQueryParameters
     {
         this.forward = forward;
     }
-    
+
     public boolean isForwardTrue()
     {
         return true;
@@ -161,9 +160,9 @@ public class AuditQueryParameters
     {
         this.searchValueId = searchValueId;
     }
-    
+
     /**
-     * @return              Returns <tt>true</tt> if this object includes a key- or value-based search
+     * @return Returns <tt>true</tt> if this object includes a key- or value-based search
      */
     public boolean isKeyOrValueSearch()
     {

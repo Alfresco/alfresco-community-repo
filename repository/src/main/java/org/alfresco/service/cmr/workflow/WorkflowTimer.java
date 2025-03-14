@@ -33,43 +33,42 @@ import org.alfresco.api.AlfrescoPublicApi;
 public class WorkflowTimer
 {
     /** Timer Id */
-	@Deprecated
+    @Deprecated
     public String id;
 
     /** Transition Name */
-	@Deprecated
+    @Deprecated
     public String name;
 
     /** Associated Workflow Path */
-	@Deprecated
+    @Deprecated
     public WorkflowPath path;
-    
+
     /** Associated Workflow Task (if any) */
-	@Deprecated
+    @Deprecated
     public WorkflowTask task;
-    
+
     /** Due Date */
-	@Deprecated
+    @Deprecated
     public Date dueDate;
 
     /** Error */
-	@Deprecated
+    @Deprecated
     public String error;
-    
-    
-    
-    public WorkflowTimer(String id, String name, WorkflowPath path,
-			WorkflowTask task, Date dueDate, String error) {
-		super();
-		this.id = id;
-		this.name = name;
-		this.path = path;
-		this.task = task;
-		this.dueDate = dueDate;
-		this.error = error;
-	}
 
-	/**
+    public WorkflowTimer(String id, String name, WorkflowPath path,
+            WorkflowTask task, Date dueDate, String error)
+    {
+        super();
+        this.id = id;
+        this.name = name;
+        this.path = path;
+        this.task = task;
+        this.dueDate = dueDate;
+        this.error = error;
+    }
+
+    /**
      * @return the id
      */
     public String getId()
@@ -117,11 +116,9 @@ public class WorkflowTimer
         return error;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see java.lang.Object#toString()
-     */
+     * @see java.lang.Object#toString() */
     @Override
     public String toString()
     {

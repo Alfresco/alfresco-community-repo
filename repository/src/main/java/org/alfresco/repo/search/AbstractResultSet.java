@@ -63,7 +63,7 @@ public abstract class AbstractResultSet implements ResultSet
     {
         // default to do nothing
     }
-    
+
     public List<NodeRef> getNodeRefs()
     {
         ArrayList<NodeRef> nodeRefs = new ArrayList<NodeRef>(length());
@@ -87,11 +87,12 @@ public abstract class AbstractResultSet implements ResultSet
     /**
      * Bulk fetch results in the cache
      * 
-     * @param bulkFetch boolean
+     * @param bulkFetch
+     *            boolean
      */
     public boolean setBulkFetch(boolean bulkFetch)
     {
-    	return false;
+        return false;
     }
 
     /**
@@ -107,11 +108,12 @@ public abstract class AbstractResultSet implements ResultSet
     /**
      * Set the bulk fetch size
      * 
-     * @param bulkFetchSize int
+     * @param bulkFetchSize
+     *            int
      */
     public int setBulkFetchSize(int bulkFetchSize)
     {
-    	return 0;
+        return 0;
     }
 
     /**
@@ -127,9 +129,9 @@ public abstract class AbstractResultSet implements ResultSet
     @Override
     public List<Pair<String, Integer>> getFieldFacet(String field)
     {
-        return Collections.<Pair<String, Integer>>emptyList();
+        return Collections.<Pair<String, Integer>> emptyList();
     }
-    
+
     @Override
     public Map<String, Integer> getFacetQueries()
     {
@@ -141,6 +143,7 @@ public abstract class AbstractResultSet implements ResultSet
     {
         return Collections.emptyMap();
     }
+
     @Override
     public SpellCheckResult getSpellCheckResult()
     {

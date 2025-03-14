@@ -32,6 +32,9 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.virtual.ActualEnvironment;
 import org.alfresco.repo.virtual.ActualEnvironmentException;
@@ -46,25 +49,14 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Content type and aspect based virtualization strategy. <br>
  * Virtualizes nodes by associating their types or aspects with a template. <br>
- * A type or an aspect {@link QName} prefixed string form is associated with a
- * vanilla template that has the same name as the type or aspect prefixed name
- * with ':' replaced by '_' and it is <code>.json</code> postfixed. The template
- * is located at predefined templates repository path. <br>
+ * A type or an aspect {@link QName} prefixed string form is associated with a vanilla template that has the same name as the type or aspect prefixed name with ':' replaced by '_' and it is <code>.json</code> postfixed. The template is located at predefined templates repository path. <br>
  * Example: <br>
- * If the templates repository path is
- * <code>Data Dictionary/Virtual Folders</code> the <code>cm:author</code>
- * aspect will be associated with a vanilla template found by the
- * <code>Data Dictionary/Virtual Folders/cm_author.json</code> path. <br>
- * Considering all aspects for vitualization can degrade performance so the set
- * of aspects considered for virtualization can be limited to a predefined
- * accepted {@link QName} prefix set by setting a comma separated list of
- * accepted prefixes through {@link #setAspectPrefixFilter(String)}.
+ * If the templates repository path is <code>Data Dictionary/Virtual Folders</code> the <code>cm:author</code> aspect will be associated with a vanilla template found by the <code>Data Dictionary/Virtual Folders/cm_author.json</code> path. <br>
+ * Considering all aspects for vitualization can degrade performance so the set of aspects considered for virtualization can be limited to a predefined accepted {@link QName} prefix set by setting a comma separated list of accepted prefixes through {@link #setAspectPrefixFilter(String)}.
  * 
  * @author Bogdan Horje
  */
@@ -80,11 +72,9 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
 
     /**
      * Thread local solving template in process indicator.<br>
-     * Used to prevent infinite recursion when solving templates within type
-     * virtualized folders.
+     * Used to prevent infinite recursion when solving templates within type virtualized folders.
      */
-    private ThreadLocal<Boolean> solvingTemplate = new ThreadLocal<Boolean>()
-    {
+    private ThreadLocal<Boolean> solvingTemplate = new ThreadLocal<Boolean>() {
         protected Boolean initialValue()
         {
             return false;
@@ -98,7 +88,7 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
 
     private QNamePattern[] createFilters()
     {
-        QNamePattern[] qnamePatternFilters = new QNamePattern[] {};
+        QNamePattern[] qnamePatternFilters = new QNamePattern[]{};
 
         if (namespacePrefixResolver != null && filters != null)
         {
@@ -107,7 +97,7 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
         else
         {
             logger.debug("Could not reset qName filters with NameSpacePrefixResolver=" + namespacePrefixResolver
-                        + " and filters=" + filters);
+                    + " and filters=" + filters);
         }
 
         return qnamePatternFilters;
@@ -137,10 +127,10 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
 
                 String[] components = filters[i].split(":");
                 if (components == null || components.length != 2 || components[0].trim().isEmpty()
-                            || components[1].trim().isEmpty())
+                        || components[1].trim().isEmpty())
                 {
                     throw new IllegalArgumentException("Illegal filters string " + filtersString
-                                + ". Expected <prefix>:<name> | <prefix>:'*' instead of " + filters[i]);
+                            + ". Expected <prefix>:<name> | <prefix>:'*' instead of " + filters[i]);
                 }
                 try
                 {
@@ -163,13 +153,13 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
                     Pattern.compile(localName);
 
                     RegexQNamePattern qNamePattern = new RegexQNamePattern(uri,
-                                                                           localName);
+                            localName);
 
                     if (!qNamePattern.isMatch(QName.createQName(uri,
-                                                                components[1])))
+                            components[1])))
                     {
                         throw new IllegalArgumentException("Illegal filters string " + filtersString
-                                    + " due to invalid regexp translatrion in  " + filters[i] + " as " + qNamePattern);
+                                + " due to invalid regexp translatrion in  " + filters[i] + " as " + qNamePattern);
 
                     }
                     patterns.add(qNamePattern);
@@ -179,8 +169,8 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
                     if (logger.isDebugEnabled())
                     {
                         logger.debug("Illegal filters string " + filtersString + " due to unregistered name space in  "
-                                                 + filters[i],
-                                     e);
+                                + filters[i],
+                                e);
                     }
                 }
                 catch (PatternSyntaxException e)
@@ -188,21 +178,21 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
                     if (logger.isDebugEnabled())
                     {
                         logger.debug("Illegal filters string " + filtersString
-                                                 + " due to invalid regexp translation in  " + filters[i],
-                                     e);
+                                + " due to invalid regexp translation in  " + filters[i],
+                                e);
                     }
                 }
             }
 
         }
 
-        return patterns.toArray(new QNamePattern[] {});
+        return patterns.toArray(new QNamePattern[]{});
     }
 
     public void setQnameFilters(String filters)
     {
         ParameterCheck.mandatoryString("filters",
-                                       filters);
+                filters);
         this.filters = filters;
     }
 
@@ -228,7 +218,7 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
         try
         {
             return templateNodeFor(env,
-                                   nodeRef) != null;
+                    nodeRef) != null;
         }
         finally
         {
@@ -242,7 +232,7 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
         String extension = ".json";
         String typePrefixString = type.toPrefixString(namespacePrefixResolver);
         String typeTemplateContentName = typePrefixString.replaceAll(":",
-                                                                     "_");
+                "_");
         return typeTemplateContentName + extension;
     }
 
@@ -276,8 +266,8 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
                 String typeTemplateNodeName = templateNodeNameForType(nodeType);
 
                 templateNode = env.getChildByName(templatesContainerNode,
-                                                  ContentModel.ASSOC_CONTAINS,
-                                                  typeTemplateNodeName);
+                        ContentModel.ASSOC_CONTAINS,
+                        typeTemplateNodeName);
             }
 
             if (templateNode == null)
@@ -290,8 +280,8 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
                     {
                         String aspectTemplateNodeName = templateNodeNameForType(aspect);
                         templateNode = env.getChildByName(templatesContainerNode,
-                                                          ContentModel.ASSOC_CONTAINS,
-                                                          aspectTemplateNodeName);
+                                ContentModel.ASSOC_CONTAINS,
+                                aspectTemplateNodeName);
 
                         if (templateNode != null)
                         {
@@ -307,13 +297,13 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
         catch (PatternSyntaxException e)
         {
             logger.error("Invalid type method type and aspect in qName filter ",
-                         e);
+                    e);
             return null;
         }
         catch (Exception e)
         {
             logger.error("Type virtualization template search failed.",
-                         e);
+                    e);
             return null;
         }
     }
@@ -331,10 +321,10 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
             solvingTemplate.set(true);
 
             NodeRef templateNode = templateNodeFor(env,
-                                                   nodeRef);
+                    nodeRef);
             return newVirtualReference(Protocols.VANILLA.protocol,
-                                       templateNode,
-                                       nodeRef);
+                    templateNode,
+                    nodeRef);
         }
         catch (VirtualizationException e)
         {

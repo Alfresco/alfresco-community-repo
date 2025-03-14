@@ -42,13 +42,13 @@ public class TenantBasicDataSource extends BasicDataSource
         // tenant-specific
         this.setUrl(tenantUrl);
         this.setMaxTotal(tenantMaxActive == -1 ? bds.getMaxTotal() : tenantMaxActive);
-        
+
         // defaults/overrides - see also 'baseDefaultDataSource' (core-services-context.xml + repository.properties)
-        
+
         this.setDriverClassName(bds.getDriverClassName());
         this.setUsername(bds.getUsername());
         this.setPassword(bds.getPassword());
-        
+
         this.setInitialSize(bds.getInitialSize());
         this.setMinIdle(bds.getMinIdle());
         this.setMaxIdle(bds.getMaxIdle());

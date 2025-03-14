@@ -58,7 +58,8 @@ public class ContentStorageInfo
 
     public Map<String, String> getStorageProperties()
     {
-        if (storageProperties == null) {
+        if (storageProperties == null)
+        {
             storageProperties = new HashMap<>();
         }
         return storageProperties;

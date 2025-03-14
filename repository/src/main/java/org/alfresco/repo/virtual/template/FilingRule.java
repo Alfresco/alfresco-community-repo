@@ -30,8 +30,7 @@ import org.alfresco.repo.virtual.VirtualizationException;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * A rule for filing (storing in a physical location) content that is created in
- * a virtual folder.
+ * A rule for filing (storing in a physical location) content that is created in a virtual folder.
  *
  * @author Bogdan Horje
  */

@@ -36,7 +36,7 @@ import org.apache.commons.logging.LogFactory;
 public class DefaultLockStoreFactory implements LockStoreFactory
 {
     private static final Log log = LogFactory.getLog(DefaultLockStoreFactory.class);
-    
+
     @Override
     public LockStore createLockStore()
     {

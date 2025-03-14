@@ -25,6 +25,11 @@
  */
 package org.alfresco.repo.action.executer;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -35,10 +40,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Is sub class evaluator test
@@ -54,19 +55,19 @@ public class SetPropertyValueActionExecuterTest extends BaseSpringTest
     private NodeRef rootNodeRef;
     private NodeRef nodeRef;
     private SetPropertyValueActionExecuter executer;
-    
+
     private final static String ID = GUID.generate();
-    
+
     private final static String TEST_VALUE = "TestValue";
 
     @Before
     public void before() throws Exception
     {
-        this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
-        
-        AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
+        this.nodeService = (NodeService) this.applicationContext.getBean("nodeService");
+
+        AuthenticationComponent authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
-        
+
         // Create the store and get the root node
         this.testStoreRef = this.nodeService.createStore(
                 StoreRef.PROTOCOL_WORKSPACE, "Test_"
@@ -79,11 +80,11 @@ public class SetPropertyValueActionExecuterTest extends BaseSpringTest
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}testnode"),
                 ContentModel.TYPE_CONTENT).getChildRef();
-        
-        // Get the executer instance 
-        this.executer = (SetPropertyValueActionExecuter)this.applicationContext.getBean(SetPropertyValueActionExecuter.NAME);
+
+        // Get the executer instance
+        this.executer = (SetPropertyValueActionExecuter) this.applicationContext.getBean(SetPropertyValueActionExecuter.NAME);
     }
-    
+
     /**
      * Test execution
      */
@@ -95,13 +96,13 @@ public class SetPropertyValueActionExecuterTest extends BaseSpringTest
         action.setParameterValue(SetPropertyValueActionExecuter.PARAM_PROPERTY, ContentModel.PROP_NAME);
         action.setParameterValue(SetPropertyValueActionExecuter.PARAM_VALUE, TEST_VALUE);
         this.executer.execute(action, this.nodeRef);
-        
+
         // Check that the property value has been set
         assertEquals(TEST_VALUE, this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_NAME));
-        
+
         // Check what happens when a bad property name is set
         action.setParameterValue(SetPropertyValueActionExecuter.PARAM_PROPERTY, QName.createQName("{test}badProperty"));
-        
+
         try
         {
             this.executer.execute(action, this.nodeRef);

@@ -37,14 +37,11 @@ public class GetChildByIdMethod extends AbstractProtocolMethod<Reference>
     }
 
     /**
-     * Provides a child {@link Reference} obtained from the parent
-     * {@link Reference} and the childId. The inner template path is obtained
-     * from the parent {@link Reference} and then the childId String is
-     * concatenated to it. The child {@link Reference} is created by calling
-     * Protocol#replaceTemplatePathMethod with the new id String as a parameter.
+     * Provides a child {@link Reference} obtained from the parent {@link Reference} and the childId. The inner template path is obtained from the parent {@link Reference} and then the childId String is concatenated to it. The child {@link Reference} is created by calling Protocol#replaceTemplatePathMethod with the new id String as a parameter.
      * 
      * @param virtualProtocol
-     * @param reference the parent {@link Reference}
+     * @param reference
+     *            the parent {@link Reference}
      * @return the child {@link Reference}
      * @throws ProtocolMethodException
      */
@@ -60,6 +57,6 @@ public class GetChildByIdMethod extends AbstractProtocolMethod<Reference>
         pathBuilder.append(childId);
 
         return virtualProtocol.replaceTemplatePath(reference,
-                                                   pathBuilder.toString());
+                pathBuilder.toString());
     }
 }

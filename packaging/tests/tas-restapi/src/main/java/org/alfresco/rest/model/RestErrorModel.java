@@ -85,16 +85,16 @@ public class RestErrorModel
     public static String UNEXPECTED_TENANT = "Unexpected tenant: %s (contains %s)";
     public static String DELETE_LAST_MANAGER = "Can't remove last manager of site %s";
     public static String RATING_OUT_OF_BOUNDS = "Rating is out of bounds.";
-    public static String ACCEPT_ME= "Please accept me";
+    public static String ACCEPT_ME = "Please accept me";
     public static String NO_WORKFLOW_DEFINITION_FOUND = "No workflow definition could be found with key '%s'.";
     public static String INVALID_USER_ID = "%s is not a valid person user id";
     public static String TASK_ALREADY_CLAIMED = "The task is already claimed by another user.";
     public static String INVALID_SELECT = "An invalid SELECT query was received";
     public static String DELEGATING_ASSIGNEE_PROVIDED = "When delegating a task, assignee should be selected and provided in the request.";
-    public static String INVALID_NAMEPACE_PREFIX="Namespace prefix %s is not mapped to a namespace URI";
-    public static String FOR_INPUT_STRING ="For input string: \"%s\"";
-    public static String UNRECOGNIZED_FIELD ="Unrecognized field \"%s\"";
-    
+    public static String INVALID_NAMEPACE_PREFIX = "Namespace prefix %s is not mapped to a namespace URI";
+    public static String FOR_INPUT_STRING = "For input string: \"%s\"";
+    public static String UNRECOGNIZED_FIELD = "Unrecognized field \"%s\"";
+
     public static String LOCAL_NAME_CONSISTANCE = "A QName must consist of a local name";
     public static String INVALID_PARAMETER_WHO = "Parameter who should be one of [me, others]";
     public static String NOT_FAVOURITE_SITE = "Site %s is not a favourite site";

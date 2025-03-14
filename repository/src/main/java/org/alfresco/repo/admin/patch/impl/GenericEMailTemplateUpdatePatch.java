@@ -45,43 +45,47 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public abstract class GenericEMailTemplateUpdatePatch extends AbstractPatch
 {
     /** Content service */
-	protected ContentService contentService;
-    
-	/** File folder service */
+    protected ContentService contentService;
+
+    /** File folder service */
     protected FileFolderService fileFolderService;
-    
+
     /** Indicates whether to update the base file or not */
     private boolean updateBaseFile = true;
-    
+
     /** Indicates whether to create a sibling if it's missing (rather than just update) */
     private boolean createSiblingIfMissing = true;
-    
+
     /**
-     * @param contentService	content service
+     * @param contentService
+     *            content service
      */
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
     }
-    
+
     /**
-     * @param fileFolderService     file folder service 
+     * @param fileFolderService
+     *            file folder service
      */
     public void setFileFolderService(FileFolderService fileFolderService)
     {
         this.fileFolderService = fileFolderService;
     }
-    
+
     /**
-     * @param createSiblingIfMissing boolean
+     * @param createSiblingIfMissing
+     *            boolean
      */
     public void setCreateSiblingIfMissing(boolean createSiblingIfMissing)
     {
         this.createSiblingIfMissing = createSiblingIfMissing;
     }
-    
+
     /**
-     * @param updateBaseFile boolean
+     * @param updateBaseFile
+     *            boolean
      */
     public void setUpdateBaseFile(boolean updateBaseFile)
     {
@@ -101,22 +105,22 @@ public abstract class GenericEMailTemplateUpdatePatch extends AbstractPatch
             {
                 updateContent(baseTemplate, getPath(), getBaseFileName(), false);
             }
-            
+
             for (String siblingFile : getSiblingFiles())
             {
                 updateSiblingContent(baseTemplate, getPath(), siblingFile);
-            }            
+            }
         }
     }
-    
+
     protected abstract NodeRef getBaseTemplate();
-    
+
     protected abstract String getPath();
-    
+
     protected abstract String getBaseFileName();
-    
+
     protected abstract String[] getLocales();
-    
+
     protected List<String> getSiblingFiles()
     {
         List<String> siblingFiles = new ArrayList<String>(getLocales().length);
@@ -126,18 +130,18 @@ public abstract class GenericEMailTemplateUpdatePatch extends AbstractPatch
         }
         return siblingFiles;
     }
-    
+
     private String makeSiblingFileName(String baseFileName, String locale)
     {
         int index = baseFileName.lastIndexOf(".");
         StringBuilder builder = new StringBuilder();
         builder.append(baseFileName.substring(0, index))
-               .append("_")
-               .append(locale)
-               .append(baseFileName.substring(index));
-        return builder.toString();        
+                .append("_")
+                .append(locale)
+                .append(baseFileName.substring(index));
+        return builder.toString();
     }
-    
+
     private void updateSiblingContent(NodeRef nodeRef, String path, String fileName)
     {
         NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
@@ -155,12 +159,12 @@ public abstract class GenericEMailTemplateUpdatePatch extends AbstractPatch
             }
         }
     }
-    
+
     private void updateContent(NodeRef nodeRef, String path, String fileName, boolean newFile)
     {
         // Make versionable
         nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, null);
-        
+
         // Update content
         InputStream is = this.getClass().getClassLoader().getResourceAsStream(path + fileName);
         if (is != null)

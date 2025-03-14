@@ -28,13 +28,14 @@ package org.alfresco.repo.forms.processor.workflow;
 
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.PROP_DATA_PREFIX;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.PropertyFieldDefinition;
 import org.alfresco.repo.forms.processor.node.TransientFieldProcessor;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Transient field processor for the "message" property.
@@ -52,17 +53,17 @@ public class MessageFieldProcessor extends TransientFieldProcessor
     private static final String MSG_DESCRIPTION = "form_service.message.description";
 
     private static final Log LOGGER = LogFactory.getLog(MessageFieldProcessor.class);
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.node.TransientFieldProcessor#makeTransientPropertyDefinition()
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.node.TransientFieldProcessor#makeTransientPropertyDefinition() */
     @Override
     protected FieldDefinition makeTransientFieldDefinition()
     {
         PropertyFieldDefinition fieldDef = new PropertyFieldDefinition(KEY, DATA_TYPE);
         fieldDef.setRepeating(false);
         fieldDef.setProtectedField(true);
-        
+
         fieldDef.setLabel(I18NUtil.getMessage(MSG_LABEL));
         fieldDef.setDescription(I18NUtil.getMessage(MSG_DESCRIPTION));
         fieldDef.setDataKeyName(PROP_DATA_PREFIX + KEY);
@@ -70,8 +71,8 @@ public class MessageFieldProcessor extends TransientFieldProcessor
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.AbstractFieldProcessor#getLogger()
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.AbstractFieldProcessor#getLogger() */
     @Override
     protected Log getLogger()
     {
@@ -79,8 +80,8 @@ public class MessageFieldProcessor extends TransientFieldProcessor
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.AbstractFieldProcessor#getRegistryKey()
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.AbstractFieldProcessor#getRegistryKey() */
     @Override
     protected String getRegistryKey()
     {

@@ -57,7 +57,7 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
     private static final long serialVersionUID = 2014688399588268994L;
 
     private Map<String, ResultSet> wrapped;
-    
+
     private Map<NodeRef, CMISNodeInfo> nodeInfos;
 
     private LimitBy limitBy;
@@ -86,11 +86,9 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
         this.nodeInfos = new HashMap<NodeRef, CMISNodeInfo>();
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSet#close()
-     */
+     * @see org.alfresco.cmis.search.CMISResultSet#close() */
     public void close()
     {
         // results sets can be used for more than one selector so we need to
@@ -106,31 +104,25 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
         }
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSet#getMetaData()
-     */
+     * @see org.alfresco.cmis.search.CMISResultSet#getMetaData() */
     public CMISResultSetMetaData getMetaData()
     {
         return new CMISResultSetMetaData(options, query, limitBy, cmisDictionaryService, alfrescoDictionaryService);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSet#getRow(int)
-     */
+     * @see org.alfresco.cmis.search.CMISResultSet#getRow(int) */
     public CMISResultSetRow getRow(int i)
     {
         return new CMISResultSetRow(this, i, getScores(i), nodeService, getNodeRefs(i), nodeInfos, query, cmisDictionaryService);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSet#hasMore()
-     */
+     * @see org.alfresco.cmis.search.CMISResultSet#hasMore() */
     public boolean hasMore()
     {
         for (ResultSet resultSet : wrapped.values())
@@ -143,11 +135,9 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
         return false;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSet#length()
-     */
+     * @see org.alfresco.cmis.search.CMISResultSet#length() */
     public int getLength()
     {
         for (ResultSet resultSet : wrapped.values())
@@ -157,21 +147,17 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
         throw new IllegalStateException();
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSet#start()
-     */
+     * @see org.alfresco.cmis.search.CMISResultSet#start() */
     public int getStart()
     {
         return options.getSkipCount();
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see java.lang.Iterable#iterator()
-     */
+     * @see java.lang.Iterable#iterator() */
     public Iterator<CMISResultSetRow> iterator()
     {
         return new CMISResultSetRowIterator(this);
@@ -221,10 +207,12 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
         if (refs.size() == 1)
         {
             return refs.values().iterator().next();
-        } else if (allNodeRefsEqual(refs))
+        }
+        else if (allNodeRefsEqual(refs))
         {
             return refs.values().iterator().next();
-        } else
+        }
+        else
         {
             throw new IllegalStateException("Ambiguous selector");
         }
@@ -238,7 +226,8 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
             if (last == null)
             {
                 last = current;
-            } else
+            }
+            else
             {
                 if (!last.equals(current))
                 {
@@ -270,10 +259,12 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
         if (scores.size() == 1)
         {
             return scores.values().iterator().next();
-        } else if (allScoresEqual(scores))
+        }
+        else if (allScoresEqual(scores))
         {
             return scores.values().iterator().next();
-        } else
+        }
+        else
         {
             throw new IllegalStateException("Ambiguous selector");
         }
@@ -287,7 +278,8 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
             if (last == null)
             {
                 last = current;
-            } else
+            }
+            else
             {
                 if (!last.equals(current))
                 {
@@ -306,7 +298,8 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
     /**
      * Bulk fetch results in the cache - not supported here
      * 
-     * @param bulkFetch boolean
+     * @param bulkFetch
+     *            boolean
      */
     public boolean setBulkFetch(boolean bulkFetch)
     {
@@ -326,7 +319,8 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
     /**
      * Set the bulk fetch size
      * 
-     * @param bulkFetchSize int
+     * @param bulkFetchSize
+     *            int
      */
     public int setBulkFetchSize(int bulkFetchSize)
     {
@@ -342,16 +336,16 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
     {
         return 0;
     }
-    
+
     @Override
     public List<Pair<String, Integer>> getFieldFacet(String field)
     {
-        return Collections.<Pair<String, Integer>>emptyList();
+        return Collections.<Pair<String, Integer>> emptyList();
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound()
-     */
+     * 
+     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound() */
     @Override
     public long getNumberFound()
     {

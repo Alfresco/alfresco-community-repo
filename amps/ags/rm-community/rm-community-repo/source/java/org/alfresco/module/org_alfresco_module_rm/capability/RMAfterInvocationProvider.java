@@ -45,6 +45,11 @@ import net.sf.acegisecurity.ConfigAttribute;
 import net.sf.acegisecurity.ConfigAttributeDefinition;
 import net.sf.acegisecurity.afterinvocation.AfterInvocationProvider;
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
+import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -65,18 +70,13 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSet;
-import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * RM After Invocation Provider
  */
 @SuppressWarnings("unused")
 public class RMAfterInvocationProvider extends RMSecurityCommon
-                                       implements AfterInvocationProvider, InitializingBean
+        implements AfterInvocationProvider, InitializingBean
 {
     private static Log logger = LogFactory.getLog(RMAfterInvocationProvider.class);
 
@@ -100,7 +100,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
 
     public void afterPropertiesSet()
     {
-        //Do nothing
+        // Do nothing
     }
 
     /**
@@ -136,7 +136,8 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
     /**
      * Sets the authentication util
      *
-     * @param authenticationUtil The authentication util to set
+     * @param authenticationUtil
+     *            The authentication util to set
      */
     public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
     {
@@ -299,7 +300,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         for (ConfigAttributeDefintion cad : supportedDefinitions)
         {
             if ((cad.parent && parentResult == AccessDecisionVoter.ACCESS_DENIED)
-                        || (!cad.parent && childResult == AccessDecisionVoter.ACCESS_DENIED))
+                    || (!cad.parent && childResult == AccessDecisionVoter.ACCESS_DENIED))
             {
                 throw new AccessDeniedException("Access Denied");
             }
@@ -369,7 +370,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             }
 
             if ((cad.parent && parentReadCheck != AccessDecisionVoter.ACCESS_GRANTED)
-                        || (childReadCheck != AccessDecisionVoter.ACCESS_GRANTED))
+                    || (childReadCheck != AccessDecisionVoter.ACCESS_GRANTED))
             {
                 throw new AccessDeniedException("Access Denied");
             }
@@ -538,33 +539,33 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
 
             if (!nodeService.exists(returnedObject.getNodeRef(i)))
             {
-            	inclusionMask.set(i, false);
+                inclusionMask.set(i, false);
             }
             else
             {
-	            int parentCheckRead = checkRead(returnedObject.getChildAssocRef(i).getParentRef());
-	            int childCheckRead = checkRead(returnedObject.getNodeRef(i));
+                int parentCheckRead = checkRead(returnedObject.getChildAssocRef(i).getParentRef());
+                int childCheckRead = checkRead(returnedObject.getNodeRef(i));
 
-	            for (ConfigAttributeDefintion cad : supportedDefinitions)
-	            {
-	                NodeRef testNodeRef = returnedObject.getNodeRef(i);
-	                int checkRead = childCheckRead;
-	                if (cad.parent)
-	                {
-	                    testNodeRef = returnedObject.getChildAssocRef(i).getParentRef();
-	                    checkRead = parentCheckRead;
-	                }
+                for (ConfigAttributeDefintion cad : supportedDefinitions)
+                {
+                    NodeRef testNodeRef = returnedObject.getNodeRef(i);
+                    int checkRead = childCheckRead;
+                    if (cad.parent)
+                    {
+                        testNodeRef = returnedObject.getChildAssocRef(i).getParentRef();
+                        checkRead = parentCheckRead;
+                    }
 
-	                if (isUnfiltered(testNodeRef))
-	                {
-	                    continue;
-	                }
+                    if (isUnfiltered(testNodeRef))
+                    {
+                        continue;
+                    }
 
-	                if (inclusionMask.get(i) && (testNodeRef != null) && (checkRead != AccessDecisionVoter.ACCESS_GRANTED))
-	                {
-	                    inclusionMask.set(i, false);
-	                }
-	            }
+                    if (inclusionMask.get(i) && (testNodeRef != null) && (checkRead != AccessDecisionVoter.ACCESS_GRANTED))
+                    {
+                        inclusionMask.set(i, false);
+                    }
+                }
             }
 
             // Bug out if we are limiting by size
@@ -613,7 +614,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         return new QueryEngineResults(answer);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private Collection decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Collection returnedObject)
     {
         if (returnedObject == null)
@@ -667,7 +668,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             // NOTE: for reference - the "maxPermissionChecks" has never been honoured by this loop (since previously the count was not being incremented)
             if (count >= targetResultCount)
             {
-                // We have enough results.  We stop without cutoff.
+                // We have enough results. We stop without cutoff.
                 break;
             }
             else if (count >= maxPermissionChecks)
@@ -767,8 +768,8 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                     }
 
                     if (allowed &&
-                        testNodeRef != null &&
-                        checkRead(testNodeRef) != AccessDecisionVoter.ACCESS_GRANTED)
+                            testNodeRef != null &&
+                            checkRead(testNodeRef) != AccessDecisionVoter.ACCESS_GRANTED)
                     {
                         allowed = false;
                         // No point evaluating more ConfigAttributeDefintions
@@ -789,10 +790,10 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         int sizeOriginal = returnedObject.size();
         int checksRemaining = sizeOriginal - count;
         // Note: There are use-cases where unmodifiable collections are passing through.
-        //       So make sure that the collection needs modification at all
+        // So make sure that the collection needs modification at all
         if (keepValues.size() < sizeOriginal)
         {
-            // There are values that need to be removed.  We have to modify the collection.
+            // There are values that need to be removed. We have to modify the collection.
             try
             {
                 returnedObject.clear();

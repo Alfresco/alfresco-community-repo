@@ -33,15 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.domain.node.Node;
-import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.search.SearchTrackingComponent;
-import org.alfresco.repo.search.SearchTrackingComponent.NodeQueryCallback;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.solr.NodeParameters;
-import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -52,6 +43,16 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.repo.domain.node.Node;
+import org.alfresco.repo.domain.qname.QNameDAO;
+import org.alfresco.repo.search.SearchTrackingComponent;
+import org.alfresco.repo.search.SearchTrackingComponent.NodeQueryCallback;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.solr.NodeParameters;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Support for SOLR: Get a list of nodes in the given transactions.
@@ -65,23 +66,23 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class NodesGet extends DeclarativeWebScript
 {
     protected static final Log logger = LogFactory.getLog(NodesGet.class);
-    
+
     private SearchTrackingComponent searchTrackingComponent;
-    
+
     private TenantService tenantService;
-    
+
     private QNameDAO qnameDAO;
-    
+
     public void setSearchTrackingComponent(SearchTrackingComponent searchTrackingComponent)
     {
         this.searchTrackingComponent = searchTrackingComponent;
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
-    }       
-    
+    }
+
     public void setQnameDAO(QNameDAO qnameDAO)
     {
         this.qnameDAO = qnameDAO;
@@ -93,7 +94,7 @@ public class NodesGet extends DeclarativeWebScript
         try
         {
             Content content = req.getContent();
-            if(content == null)
+            if (content == null)
             {
                 throw new WebScriptException("Failed to convert request to String");
             }
@@ -105,70 +106,70 @@ public class NodesGet extends DeclarativeWebScript
 
             Long fromNodeId = o.has("fromNodeId") ? o.getLong("fromNodeId") : null;
             Long toNodeId = o.has("toNodeId") ? o.getLong("toNodeId") : null;
-            
+
             Set<QName> excludeAspects = null;
-            if(o.has("excludeAspects"))
+            if (o.has("excludeAspects"))
             {
                 JSONArray aExcludeAspects = o.getJSONArray("excludeAspects");
                 excludeAspects = new HashSet<QName>(aExcludeAspects.length());
-                for(int i = 0; i < aExcludeAspects.length(); i++)
+                for (int i = 0; i < aExcludeAspects.length(); i++)
                 {
                     excludeAspects.add(QName.createQName(aExcludeAspects.getString(i).trim()));
                 }
             }
 
             Set<QName> includeAspects = null;
-            if(o.has("includeAspects"))
+            if (o.has("includeAspects"))
             {
                 JSONArray aIncludeAspects = o.getJSONArray("includeAspects");
                 includeAspects = new HashSet<QName>(aIncludeAspects.length());
-                for(int i = 0; i < aIncludeAspects.length(); i++)
+                for (int i = 0; i < aIncludeAspects.length(); i++)
                 {
                     includeAspects.add(QName.createQName(aIncludeAspects.getString(i).trim()));
                 }
             }
-            
+
             Set<QName> excludeNodeTypes = null;
-            if(o.has("excludeNodeTypes"))
+            if (o.has("excludeNodeTypes"))
             {
                 JSONArray aExcludeNodeTypes = o.getJSONArray("excludeNodeTypes");
                 excludeNodeTypes = new HashSet<QName>(aExcludeNodeTypes.length());
-                for(int i = 0; i < aExcludeNodeTypes.length(); i++)
+                for (int i = 0; i < aExcludeNodeTypes.length(); i++)
                 {
                     excludeNodeTypes.add(QName.createQName(aExcludeNodeTypes.getString(i).trim()));
                 }
             }
 
             Set<QName> includeNodeTypes = null;
-            if(o.has("includeNodeTypes"))
+            if (o.has("includeNodeTypes"))
             {
                 JSONArray aIncludeNodeTypes = o.getJSONArray("includeNodeTypes");
                 includeNodeTypes = new HashSet<QName>(aIncludeNodeTypes.length());
-                for(int i = 0; i < aIncludeNodeTypes.length(); i++)
+                for (int i = 0; i < aIncludeNodeTypes.length(); i++)
                 {
                     includeNodeTypes.add(QName.createQName(aIncludeNodeTypes.getString(i).trim()));
                 }
             }
-            
+
             // 0 or Integer.MAX_VALUE => ignore
             int maxResults = o.has("maxResults") ? o.getInt("maxResults") : 0;
-            
+
             String storeProtocol = o.has("storeProtocol") ? o.getString("storeProtocol") : null;
             String storeIdentifier = o.has("storeIdentifier") ? o.getString("storeIdentifier") : null;
             String coreName = o.has("coreName") ? o.getString("coreName") : null;
-            
+
             List<Long> txnIds = null;
-            if(aTxnIds != null)
+            if (aTxnIds != null)
             {
                 txnIds = new ArrayList<Long>(aTxnIds.length());
-                for(int i = 0; i < aTxnIds.length(); i++)
+                for (int i = 0; i < aTxnIds.length(); i++)
                 {
                     txnIds.add(aTxnIds.getLong(i));
                 }
             }
-            
+
             String shardProperty = o.has("shardProperty") ? o.getString("shardProperty") : null;
-            
+
             NodeParameters nodeParameters = new NodeParameters();
             nodeParameters.setTransactionIds(txnIds);
             nodeParameters.setFromTxnId(fromTxnId);
@@ -182,9 +183,8 @@ public class NodesGet extends DeclarativeWebScript
             nodeParameters.setShardProperty(shardProperty);
             nodeParameters.setCoreName(coreName);
 
-            
             StoreRef storeRef = null;
-            
+
             if (AuthenticationUtil.isMtEnabled())
             {
                 // MT - use Java filter (post query) and then add tenant context for each node
@@ -196,29 +196,29 @@ public class NodesGet extends DeclarativeWebScript
                 nodeParameters.setStoreProtocol(storeProtocol);
                 nodeParameters.setStoreIdentifier(storeIdentifier);
             }
-            
+
             nodeParameters.setMaxResults(maxResults);
-            
+
             WebNodeQueryCallback nodeQueryCallback = new WebNodeQueryCallback(maxResults, storeRef, tenantService, qnameDAO);
 
             searchTrackingComponent.getNodes(nodeParameters, nodeQueryCallback);
-            
+
             Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
             List<NodeRecord> nodes = nodeQueryCallback.getNodes();
             model.put("nodes", nodes);
-            
+
             if (logger.isDebugEnabled())
             {
                 logger.debug("Result: \n\tRequest: " + req + "\n\tModel: " + model);
             }
-            
+
             return model;
         }
-        catch(IOException e)
+        catch (IOException e)
         {
             throw new WebScriptException("IO exception parsing request", e);
         }
-        catch(JSONException e)
+        catch (JSONException e)
         {
             throw new WebScriptException("Invalid JSON", e);
         }
@@ -231,7 +231,7 @@ public class NodesGet extends DeclarativeWebScript
         private final boolean isDeleted;
         private final String nodeRef;
         private final String tenant;
-        private final Long aclId; 
+        private final Long aclId;
         private final String shardPropertyValue;
         private final Integer explicitShardId;
 
@@ -294,24 +294,24 @@ public class NodesGet extends DeclarativeWebScript
     private class WebNodeQueryCallback implements NodeQueryCallback
     {
         private ArrayList<NodeRecord> nodes;
-        
+
         private StoreRef storeRef;
-        
+
         private TenantService tenantService;
-        
+
         private QNameDAO qnameDAO;
-        
+
         public WebNodeQueryCallback(int count, StoreRef storeRef, TenantService tenantService, QNameDAO qnameDAO)
         {
             super();
-            
+
             this.storeRef = storeRef;
             this.tenantService = tenantService;
             this.qnameDAO = qnameDAO;
-           
+
             nodes = new ArrayList<NodeRecord>(count == 0 || count == Integer.MAX_VALUE ? 100 : count);
         }
-        
+
         @Override
         public boolean handleNode(Node node)
         {
@@ -329,11 +329,11 @@ public class NodesGet extends DeclarativeWebScript
             {
                 nodes.add(new NodeRecord(node, qnameDAO, tenantService));
             }
-            
+
             // continue - get next node
             return true;
         }
-        
+
         public List<NodeRecord> getNodes()
         {
             return nodes;

@@ -30,6 +30,9 @@ import java.util.List;
 import java.util.Locale;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
@@ -48,9 +51,6 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.testing.category.DBTests;
 import org.alfresco.util.testing.category.PerformanceTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * @see ContentDataDAO
@@ -67,22 +67,21 @@ public class ContentDataDAOTest extends TestCase
     private RetryingTransactionHelper txnHelper;
     private ContentDataDAO contentDataDAO;
     private ContentStore contentStore;
-    
+
     @Override
     public void setUp() throws Exception
     {
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
         txnHelper = transactionService.getRetryingTransactionHelper();
-        
+
         contentDataDAO = (ContentDataDAO) ctx.getBean("contentDataDAO");
         contentStore = new FileContentStore(ctx, TempFileProvider.getTempDir());
     }
-    
+
     private Pair<Long, ContentData> create(final ContentData contentData)
     {
-        RetryingTransactionCallback<Pair<Long, ContentData>> callback = new RetryingTransactionCallback<Pair<Long, ContentData>>()
-        {
+        RetryingTransactionCallback<Pair<Long, ContentData>> callback = new RetryingTransactionCallback<Pair<Long, ContentData>>() {
             public Pair<Long, ContentData> execute() throws Throwable
             {
                 Pair<Long, ContentData> contentDataPair = contentDataDAO.createContentData(contentData);
@@ -91,11 +90,10 @@ public class ContentDataDAOTest extends TestCase
         };
         return txnHelper.doInTransaction(callback, false, false);
     }
-    
+
     private Pair<Long, ContentData> update(final Long id, final ContentData contentData)
     {
-        RetryingTransactionCallback<Pair<Long, ContentData>> callback = new RetryingTransactionCallback<Pair<Long, ContentData>>()
-        {
+        RetryingTransactionCallback<Pair<Long, ContentData>> callback = new RetryingTransactionCallback<Pair<Long, ContentData>>() {
             public Pair<Long, ContentData> execute() throws Throwable
             {
                 contentDataDAO.updateContentData(id, contentData);
@@ -104,11 +102,10 @@ public class ContentDataDAOTest extends TestCase
         };
         return txnHelper.doInTransaction(callback, false, false);
     }
-    
+
     private void delete(final Long id)
     {
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 contentDataDAO.deleteContentData(id);
@@ -117,14 +114,13 @@ public class ContentDataDAOTest extends TestCase
         };
         txnHelper.doInTransaction(callback, false, false);
     }
-    
+
     /**
      * Retrieves and checks the ContentData for equality
      */
     private Pair<Long, ContentData> getAndCheck(final Long contentDataId, ContentData checkContentData)
     {
-        RetryingTransactionCallback<Pair<Long, ContentData>> callback = new RetryingTransactionCallback<Pair<Long, ContentData>>()
-        {
+        RetryingTransactionCallback<Pair<Long, ContentData>> callback = new RetryingTransactionCallback<Pair<Long, ContentData>>() {
             public Pair<Long, ContentData> execute() throws Throwable
             {
                 Pair<Long, ContentData> contentDataPair = contentDataDAO.getContentData(contentDataId);
@@ -136,7 +132,7 @@ public class ContentDataDAOTest extends TestCase
         assertEquals("ContentData retrieved not the same as persisted: ", checkContentData, resultPair.getSecond());
         return resultPair;
     }
-    
+
     private ContentData getContentData()
     {
         ContentContext contentCtx = new ContentContext(null, null);
@@ -149,7 +145,7 @@ public class ContentDataDAOTest extends TestCase
                 Locale.FRENCH);
         return contentData;
     }
-    
+
     public void testGetWithInvalidId()
     {
         try
@@ -162,31 +158,32 @@ public class ContentDataDAOTest extends TestCase
             // Expected
         }
     }
-    
+
     /**
      * Check that the <code>ContentData</code> is decoded and persisted correctly.
      */
     public void testCreateContentDataSimple() throws Exception
     {
         ContentData contentData = getContentData();
-        
+
         Pair<Long, ContentData> resultPair = create(contentData);
         getAndCheck(resultPair.getFirst(), contentData);
     }
-    
+
     /**
      * Check that the <code>ContentData</code> is decoded and persisted correctly.
      */
     public void testCreateContentDataNulls() throws Exception
     {
         ContentData contentData = new ContentData(null, null, 0L, null, null);
-        
+
         Pair<Long, ContentData> resultPair = create(contentData);
         getAndCheck(resultPair.getFirst(), contentData);
     }
-    
+
     /**
      * Ensure that upper and lowercase URLs don't clash
+     * 
      * @throws Exception
      */
     public void testEnsureCaseSensitiveStorage() throws Exception
@@ -198,17 +195,16 @@ public class ContentDataDAOTest extends TestCase
         String contentUrlLower = contentData.getContentUrl().toLowerCase();
         ContentData contentDataLower = new ContentData(
                 contentUrlLower, MimetypeMap.MIMETYPE_TEXT_PLAIN, 0L, "utf-8", new Locale("fr"));
-        
+
         Pair<Long, ContentData> resultPairUpper = create(contentDataUpper);
         getAndCheck(resultPairUpper.getFirst(), contentDataUpper);
-        
+
         Pair<Long, ContentData> resultPairLower = create(contentDataLower);
         getAndCheck(resultPairLower.getFirst(), contentDataLower);
     }
 
     /**
-     * the caveat to {@link #testEnsureCaseSensitiveStorage()} is that mimetypes
-     * must be normalized to lowercase.
+     * the caveat to {@link #testEnsureCaseSensitiveStorage()} is that mimetypes must be normalized to lowercase.
      *
      * @throws Exception
      */
@@ -242,11 +238,11 @@ public class ContentDataDAOTest extends TestCase
         // Check the mimetype has been lowercased
         assertEquals("text/html", result.getSecond().getMimetype());
     }
-    
+
     public void testDelete() throws Exception
     {
         ContentData contentData = getContentData();
-        
+
         Pair<Long, ContentData> resultPair = create(contentData);
         getAndCheck(resultPair.getFirst(), contentData);
         delete(resultPair.getFirst());
@@ -260,7 +256,7 @@ public class ContentDataDAOTest extends TestCase
             // Expected
         }
     }
-    
+
     public void testContentUrlCrud() throws Exception
     {
         assertNull("Expect null return fetching a URL by ID", contentDataDAO.getContentUrl(0L));
@@ -282,7 +278,7 @@ public class ContentDataDAOTest extends TestCase
         assertEquals("The size does not match.", size, contentUrlEntity.getSize());
         assertEquals("The content URL does not match.", url, contentUrlEntity.getContentUrl());
     }
-    
+
     /**
      * Check that orphaned content can be re-instated.
      */
@@ -295,7 +291,7 @@ public class ContentDataDAOTest extends TestCase
         // Now create a ContentData with the same URL
         create(contentData);
     }
-    
+
     public void testContentUrl_FetchingOrphansNoLimit() throws Exception
     {
         ContentData contentData = getContentData();
@@ -304,11 +300,10 @@ public class ContentDataDAOTest extends TestCase
         delete(resultPair.getFirst());
         // The content URL is orphaned
         final String contentUrlOrphaned = contentData.getContentUrl();
-        final boolean[] found = new boolean[] {false}; 
-        
+        final boolean[] found = new boolean[]{false};
+
         // Iterate over all orphaned content URLs and ensure that we hit the one we just orphaned
-        ContentUrlHandler handler = new ContentUrlHandler()
-        {
+        ContentUrlHandler handler = new ContentUrlHandler() {
             public void handle(Long id, String contentUrl, Long orphanTime)
             {
                 // Check
@@ -326,7 +321,7 @@ public class ContentDataDAOTest extends TestCase
         contentDataDAO.getContentUrlsOrphaned(handler, Long.MAX_VALUE, Integer.MAX_VALUE);
         assertTrue("Newly-orphaned content URL not found", found[0]);
     }
-    
+
     public void testContentUrl_FetchingOrphansWithLimit() throws Exception
     {
         // Orphan some content
@@ -337,11 +332,10 @@ public class ContentDataDAOTest extends TestCase
             getAndCheck(resultPair.getFirst(), contentData);
             delete(resultPair.getFirst());
         }
-        final int[] count = new int[] {0}; 
-        
+        final int[] count = new int[]{0};
+
         // Iterate over all orphaned content URLs and ensure that we hit the one we just orphaned
-        ContentUrlHandler handler = new ContentUrlHandler()
-        {
+        ContentUrlHandler handler = new ContentUrlHandler() {
             public void handle(Long id, String contentUrl, Long orphanTime)
             {
                 // Check
@@ -355,31 +349,28 @@ public class ContentDataDAOTest extends TestCase
         contentDataDAO.getContentUrlsOrphaned(handler, Long.MAX_VALUE, 5);
         assertEquals("Expected exactly 5 results callbacks", 5, count[0]);
     }
-    
-    private static final String[] MIMETYPES = new String[]
-                                                         {
-                                                            MimetypeMap.MIMETYPE_ACP,
-                                                            MimetypeMap.MIMETYPE_EXCEL,
-                                                            MimetypeMap.MIMETYPE_IMAGE_JPEG,
-                                                            MimetypeMap.MIMETYPE_JAVASCRIPT,
-                                                            MimetypeMap.MIMETYPE_RSS
-                                                         };
-    private static final String[] ENCODINGS = new String[]
-                                                         {
-                                                            "utf-8",
-                                                            "ascii",
-                                                            "latin1",
-                                                            "wibbles",
-                                                            "iso-whatever"
-                                                         };
-    private static final Locale[] LOCALES = new Locale[]
-                                                         {
-                                                            Locale.FRENCH,
-                                                            Locale.CHINESE,
-                                                            Locale.ITALIAN,
-                                                            Locale.JAPANESE,
-                                                            Locale.ENGLISH
-                                                         };
+
+    private static final String[] MIMETYPES = new String[]{
+            MimetypeMap.MIMETYPE_ACP,
+            MimetypeMap.MIMETYPE_EXCEL,
+            MimetypeMap.MIMETYPE_IMAGE_JPEG,
+            MimetypeMap.MIMETYPE_JAVASCRIPT,
+            MimetypeMap.MIMETYPE_RSS
+    };
+    private static final String[] ENCODINGS = new String[]{
+            "utf-8",
+            "ascii",
+            "latin1",
+            "wibbles",
+            "iso-whatever"
+    };
+    private static final Locale[] LOCALES = new Locale[]{
+            Locale.FRENCH,
+            Locale.CHINESE,
+            Locale.ITALIAN,
+            Locale.JAPANESE,
+            Locale.ENGLISH
+    };
 
     private List<Pair<Long, ContentData>> speedTestWrite(String name, int total)
     {
@@ -398,7 +389,7 @@ public class ContentDataDAOTest extends TestCase
                     contentData = new ContentData(
                             contentUrl,
                             MIMETYPES[k],
-                            (long) j*k,
+                            (long) j * k,
                             ENCODINGS[k],
                             LOCALES[k]);
                     Pair<Long, ContentData> pair = create(contentData);
@@ -419,7 +410,7 @@ public class ContentDataDAOTest extends TestCase
         // Done
         return pairs;
     }
-    
+
     private void speedTestRead(String name, List<Pair<Long, ContentData>> pairs)
     {
         System.out.println("Starting read speed test: " + name);
@@ -449,7 +440,7 @@ public class ContentDataDAOTest extends TestCase
         }
         // Done
     }
-    
+
     @Category(PerformanceTests.class)
     public void testCreateSpeedIndividualTxns()
     {
@@ -460,16 +451,14 @@ public class ContentDataDAOTest extends TestCase
     @Category(PerformanceTests.class)
     public void testCreateSpeedSingleTxn()
     {
-        RetryingTransactionCallback<List<Pair<Long, ContentData>>> writeCallback = new RetryingTransactionCallback<List<Pair<Long, ContentData>>>()
-        {
+        RetryingTransactionCallback<List<Pair<Long, ContentData>>> writeCallback = new RetryingTransactionCallback<List<Pair<Long, ContentData>>>() {
             public List<Pair<Long, ContentData>> execute() throws Throwable
             {
                 return speedTestWrite(getName(), 10000);
             }
         };
         final List<Pair<Long, ContentData>> pairs = txnHelper.doInTransaction(writeCallback, false, false);
-        RetryingTransactionCallback<Void> readCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> readCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 speedTestRead(getName(), pairs);

@@ -42,7 +42,8 @@ public class QNameTypeEditor extends PropertyEditorSupport
     private NamespaceService namespaceService;
 
     /**
-     * @param namespaceService  namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public QNameTypeEditor(NamespaceService namespaceService)
     {

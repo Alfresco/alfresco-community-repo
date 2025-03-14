@@ -43,9 +43,10 @@ public class RenditionServiceException extends AlfrescoRuntimeException
     /**
      * Constructs a Rendition Service Exception with the specified message.
      * 
-     * @param message   the message string
+     * @param message
+     *            the message string
      */
-    public RenditionServiceException(String message) 
+    public RenditionServiceException(String message)
     {
         super(message);
         this.renditionDefinition = null;
@@ -54,10 +55,12 @@ public class RenditionServiceException extends AlfrescoRuntimeException
     /**
      * Constructs a Rendition Service Exception with the specified message and source exception.
      * 
-     * @param message   the message string
-     * @param source    the source exception
+     * @param message
+     *            the message string
+     * @param source
+     *            the source exception
      */
-    public RenditionServiceException(String message, Throwable source) 
+    public RenditionServiceException(String message, Throwable source)
     {
         super(message, source);
         this.renditionDefinition = null;
@@ -66,26 +69,30 @@ public class RenditionServiceException extends AlfrescoRuntimeException
     /**
      * Constructs a Rendition Service Exception with the specified message and {@link RenditionDefinition}.
      * 
-     * @param message the message string.
-     * @param renditionDefinition the rendition definition.
+     * @param message
+     *            the message string.
+     * @param renditionDefinition
+     *            the rendition definition.
      * @since 3.5.0
      */
-    public RenditionServiceException(String message, RenditionDefinition renditionDefinition) 
+    public RenditionServiceException(String message, RenditionDefinition renditionDefinition)
     {
         super(message);
         this.renditionDefinition = renditionDefinition;
     }
-    
+
     /**
-     * Constructs a Rendition Service Exception with the specified message, {@link RenditionDefinition} and
-     * source exception
-     * .
-     * @param message the message string.
-     * @param renditionDefinition the rendition definition.
-     * @param source the source exception.
+     * Constructs a Rendition Service Exception with the specified message, {@link RenditionDefinition} and source exception .
+     * 
+     * @param message
+     *            the message string.
+     * @param renditionDefinition
+     *            the rendition definition.
+     * @param source
+     *            the source exception.
      * @since 3.5.0
      */
-    public RenditionServiceException(String message, RenditionDefinition renditionDefinition, Throwable source) 
+    public RenditionServiceException(String message, RenditionDefinition renditionDefinition, Throwable source)
     {
         super(message, source);
         this.renditionDefinition = renditionDefinition;
@@ -93,6 +100,7 @@ public class RenditionServiceException extends AlfrescoRuntimeException
 
     /**
      * Retrieves the {@link RenditionDefinition} associated with this exception.
+     * 
      * @return the rendition definition, which may be <tt>null</tt>.
      * @since 3.5.0
      */

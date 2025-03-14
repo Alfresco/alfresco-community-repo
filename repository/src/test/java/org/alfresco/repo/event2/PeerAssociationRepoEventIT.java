@@ -28,6 +28,8 @@ package org.alfresco.repo.event2;
 
 import java.util.List;
 
+import org.junit.Test;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.event.v1.model.EventData;
 import org.alfresco.repo.event.v1.model.EventType;
@@ -36,7 +38,6 @@ import org.alfresco.repo.event.v1.model.PeerAssociationResource;
 import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.junit.Test;
 
 /**
  * @author Chris Shields
@@ -57,21 +58,19 @@ public class PeerAssociationRepoEventIT extends AbstractContextAwareRepoEvent
 
         resultRepoEvent = getRepoEventWithoutWait(2);
         assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
-        
-        retryingTransactionHelper.doInTransaction(() ->
-                nodeService.createAssociation(
-                        content1NodeRef,
-                        content2NodeRef,
-                        ContentModel.ASSOC_ORIGINAL));
+
+        retryingTransactionHelper.doInTransaction(() -> nodeService.createAssociation(
+                content1NodeRef,
+                content2NodeRef,
+                ContentModel.ASSOC_ORIGINAL));
 
         List<AssociationRef> peerAssociationRefs = retryingTransactionHelper.doInTransaction(
-                () ->
-                        nodeService.getSourceAssocs(content2NodeRef, ContentModel.ASSOC_ORIGINAL));
+                () -> nodeService.getSourceAssocs(content2NodeRef, ContentModel.ASSOC_ORIGINAL));
         assertEquals(1, peerAssociationRefs.size());
 
         checkNumOfEvents(4);
 
-        final RepoEvent<EventData<PeerAssociationResource>> peerAssocRepoEvent = getFilteredEvent(EventType.PEER_ASSOC_CREATED,0);
+        final RepoEvent<EventData<PeerAssociationResource>> peerAssocRepoEvent = getFilteredEvent(EventType.PEER_ASSOC_CREATED, 0);
 
         assertEquals("Wrong repo event type.",
                 EventType.PEER_ASSOC_CREATED.getType(),
@@ -117,21 +116,19 @@ public class PeerAssociationRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
 
         retryingTransactionHelper.doInTransaction(() -> {
-                    nodeService.createAssociation(
-                            content1NodeRef,
-                            content2NodeRef,
-                            ContentModel.ASSOC_ORIGINAL);
+            nodeService.createAssociation(
+                    content1NodeRef,
+                    content2NodeRef,
+                    ContentModel.ASSOC_ORIGINAL);
 
-                    nodeService.createAssociation(
-                            content3NodeRef,
-                            content2NodeRef,
-                            ContentModel.ASSOC_ORIGINAL);
-                    return null;
-                });
+            nodeService.createAssociation(
+                    content3NodeRef,
+                    content2NodeRef,
+                    ContentModel.ASSOC_ORIGINAL);
+            return null;
+        });
 
-
-        List<AssociationRef> peerAssociationRefs = retryingTransactionHelper.doInTransaction(() ->
-                nodeService.getSourceAssocs(content2NodeRef, ContentModel.ASSOC_ORIGINAL));
+        List<AssociationRef> peerAssociationRefs = retryingTransactionHelper.doInTransaction(() -> nodeService.getSourceAssocs(content2NodeRef, ContentModel.ASSOC_ORIGINAL));
 
         assertEquals(2, peerAssociationRefs.size());
 
@@ -140,7 +137,7 @@ public class PeerAssociationRepoEventIT extends AbstractContextAwareRepoEvent
         List<RepoEvent<EventData<PeerAssociationResource>>> peerAssocRepoEvent = getFilteredEvents(EventType.PEER_ASSOC_CREATED);
 
         // we should have 2 assoc.peer.Created events
-        assertEquals("Wrong association events number",2, peerAssocRepoEvent.size());
+        assertEquals("Wrong association events number", 2, peerAssocRepoEvent.size());
     }
 
     @Test
@@ -177,8 +174,7 @@ public class PeerAssociationRepoEventIT extends AbstractContextAwareRepoEvent
             return null;
         });
 
-        List<AssociationRef> peerAssociationRefs = retryingTransactionHelper.doInTransaction(() ->
-                nodeService.getSourceAssocs(content2NodeRef, ContentModel.ASSOC_ORIGINAL));
+        List<AssociationRef> peerAssociationRefs = retryingTransactionHelper.doInTransaction(() -> nodeService.getSourceAssocs(content2NodeRef, ContentModel.ASSOC_ORIGINAL));
 
         assertEquals(2, peerAssociationRefs.size());
 
@@ -187,7 +183,7 @@ public class PeerAssociationRepoEventIT extends AbstractContextAwareRepoEvent
         List<RepoEvent<EventData<PeerAssociationResource>>> peerAssocRepoEvent = getFilteredEvents(EventType.PEER_ASSOC_CREATED);
 
         // we should have 2 assoc.peer.Created events
-        assertEquals("Wrong association events number",2, peerAssocRepoEvent.size());
+        assertEquals("Wrong association events number", 2, peerAssocRepoEvent.size());
 
         assertEquals("Wrong source",
                 content1NodeRef.getId(),
@@ -210,7 +206,6 @@ public class PeerAssociationRepoEventIT extends AbstractContextAwareRepoEvent
                 getPeerAssocResource(peerAssocRepoEvent.get(1)).getAssocType());
     }
 
-
     @Test
     public void testRemovePeerAssociation()
     {
@@ -226,36 +221,32 @@ public class PeerAssociationRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
 
         // Create peer association
-        retryingTransactionHelper.doInTransaction(() ->
-                nodeService.createAssociation(
-                        content1NodeRef,
-                        content2NodeRef,
-                        ContentModel.ASSOC_ORIGINAL));
-        
+        retryingTransactionHelper.doInTransaction(() -> nodeService.createAssociation(
+                content1NodeRef,
+                content2NodeRef,
+                ContentModel.ASSOC_ORIGINAL));
+
         List<AssociationRef> peerAssociationRefs = retryingTransactionHelper.doInTransaction(
-                () ->
-                        nodeService.getSourceAssocs(content2NodeRef, ContentModel.ASSOC_ORIGINAL));
+                () -> nodeService.getSourceAssocs(content2NodeRef, ContentModel.ASSOC_ORIGINAL));
         assertEquals(1, peerAssociationRefs.size());
-        
+
         checkNumOfEvents(4);
 
         // Remove peer association
-        retryingTransactionHelper.doInTransaction(() -> 
-        {
-                nodeService.removeAssociation(
-                        content1NodeRef,
-                        content2NodeRef,
-                        ContentModel.ASSOC_ORIGINAL);
-                return null;
+        retryingTransactionHelper.doInTransaction(() -> {
+            nodeService.removeAssociation(
+                    content1NodeRef,
+                    content2NodeRef,
+                    ContentModel.ASSOC_ORIGINAL);
+            return null;
         });
-        
+
         peerAssociationRefs = retryingTransactionHelper.doInTransaction(
-                () ->
-                        nodeService.getSourceAssocs(content2NodeRef, ContentModel.ASSOC_ORIGINAL));
+                () -> nodeService.getSourceAssocs(content2NodeRef, ContentModel.ASSOC_ORIGINAL));
         assertEquals(0, peerAssociationRefs.size());
 
         checkNumOfEvents(6);
-        
+
         // Check the peer assoc created event
         final RepoEvent<EventData<PeerAssociationResource>> peerAssocRepoEvent = getFilteredEvent(EventType.PEER_ASSOC_CREATED, 0);
 
@@ -323,7 +314,6 @@ public class PeerAssociationRepoEventIT extends AbstractContextAwareRepoEvent
                 peerAssociationResource2.getAssocType());
     }
 
-
     @Test
     public void testAddAndRemovePeerAssociationSameTransaction()
     {
@@ -342,23 +332,22 @@ public class PeerAssociationRepoEventIT extends AbstractContextAwareRepoEvent
 
         // Create peer association
         retryingTransactionHelper.doInTransaction(() ->
-                
-                {
-                    nodeService.createAssociation(
-                            content1NodeRef,
-                            content2NodeRef,
-                            ContentModel.ASSOC_ORIGINAL);
 
-                    nodeService.removeAssociation(
-                            content1NodeRef,
-                            content2NodeRef,
-                            ContentModel.ASSOC_ORIGINAL);
-                    return null;
-                });
-        
+        {
+            nodeService.createAssociation(
+                    content1NodeRef,
+                    content2NodeRef,
+                    ContentModel.ASSOC_ORIGINAL);
+
+            nodeService.removeAssociation(
+                    content1NodeRef,
+                    content2NodeRef,
+                    ContentModel.ASSOC_ORIGINAL);
+            return null;
+        });
+
         List<AssociationRef> peerAssociationRefs = retryingTransactionHelper.doInTransaction(
-                () ->
-                        nodeService.getSourceAssocs(content2NodeRef, ContentModel.ASSOC_ORIGINAL));
+                () -> nodeService.getSourceAssocs(content2NodeRef, ContentModel.ASSOC_ORIGINAL));
         assertEquals(0, peerAssociationRefs.size());
 
         checkNumOfEvents(2);

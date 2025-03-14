@@ -33,8 +33,8 @@ import org.alfresco.error.AlfrescoRuntimeException;
 public class InvitationException extends AlfrescoRuntimeException
 {
     private static final long serialVersionUID = -3925105163386197586L;
-    
-    public InvitationException(String msgId, Object ... args)
+
+    public InvitationException(String msgId, Object... args)
     {
         super(msgId, args);
     }

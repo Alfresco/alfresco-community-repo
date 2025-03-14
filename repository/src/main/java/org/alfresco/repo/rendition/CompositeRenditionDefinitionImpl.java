@@ -53,8 +53,10 @@ public class CompositeRenditionDefinitionImpl extends RenditionDefinitionImpl im
     private final ActionList<RenditionDefinition> actions = new ActionListImpl<RenditionDefinition>();
 
     /**
-     * @param id - the action id
-     * @param renditionName - a unique name for the rendering action
+     * @param id
+     *            - the action id
+     * @param renditionName
+     *            - a unique name for the rendering action
      */
     public CompositeRenditionDefinitionImpl(String id, QName renditionName)
     {
@@ -81,10 +83,11 @@ public class CompositeRenditionDefinitionImpl extends RenditionDefinitionImpl im
     }
 
     /**
-     * @param index int
-     * @param action RenditionDefinition
-     * @see org.alfresco.service.cmr.action.ActionList#addAction(int,
-     *      org.alfresco.service.cmr.action.Action)
+     * @param index
+     *            int
+     * @param action
+     *            RenditionDefinition
+     * @see org.alfresco.service.cmr.action.ActionList#addAction(int, org.alfresco.service.cmr.action.Action)
      */
     public void addAction(int index, RenditionDefinition action)
     {
@@ -92,7 +95,8 @@ public class CompositeRenditionDefinitionImpl extends RenditionDefinitionImpl im
     }
 
     /**
-     * @param action RenditionDefinition
+     * @param action
+     *            RenditionDefinition
      * @see org.alfresco.service.cmr.action.ActionList#addAction(org.alfresco.service.cmr.action.Action)
      */
     public void addAction(RenditionDefinition action)
@@ -101,7 +105,8 @@ public class CompositeRenditionDefinitionImpl extends RenditionDefinitionImpl im
     }
 
     /**
-     * @param index int
+     * @param index
+     *            int
      * @return RenditionDefinition
      * @see org.alfresco.service.cmr.action.ActionList#getAction(int)
      */
@@ -128,7 +133,8 @@ public class CompositeRenditionDefinitionImpl extends RenditionDefinitionImpl im
     }
 
     /**
-     * @param action RenditionDefinition
+     * @param action
+     *            RenditionDefinition
      * @return int
      * @see org.alfresco.service.cmr.action.ActionList#indexOfAction(org.alfresco.service.cmr.action.Action)
      */
@@ -138,7 +144,8 @@ public class CompositeRenditionDefinitionImpl extends RenditionDefinitionImpl im
     }
 
     /**
-     * @param action RenditionDefinition
+     * @param action
+     *            RenditionDefinition
      * @see org.alfresco.service.cmr.action.ActionList#removeAction(org.alfresco.service.cmr.action.Action)
      */
     public void removeAction(RenditionDefinition action)
@@ -155,10 +162,11 @@ public class CompositeRenditionDefinitionImpl extends RenditionDefinitionImpl im
     }
 
     /**
-     * @param index int
-     * @param action RenditionDefinition
-     * @see org.alfresco.service.cmr.action.ActionList#setAction(int,
-     *      org.alfresco.service.cmr.action.Action)
+     * @param index
+     *            int
+     * @param action
+     *            RenditionDefinition
+     * @see org.alfresco.service.cmr.action.ActionList#setAction(int, org.alfresco.service.cmr.action.Action)
      */
     public void setAction(int index, RenditionDefinition action)
     {

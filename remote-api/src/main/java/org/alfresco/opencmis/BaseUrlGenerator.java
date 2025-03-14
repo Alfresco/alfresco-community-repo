@@ -37,8 +37,11 @@ import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
  */
 public interface BaseUrlGenerator
 {
-	String getContextPath(HttpServletRequest httpReq);
-	String getServletPath(HttpServletRequest req);
-	String getBaseUrl(HttpServletRequest req, String repositoryId, Binding binding);
-	String getRequestURI(HttpServletRequest req, String repositoryId, String operation, String id);
+    String getContextPath(HttpServletRequest httpReq);
+
+    String getServletPath(HttpServletRequest req);
+
+    String getBaseUrl(HttpServletRequest req, String repositoryId, Binding binding);
+
+    String getRequestURI(HttpServletRequest req, String repositoryId, String operation, String id);
 }

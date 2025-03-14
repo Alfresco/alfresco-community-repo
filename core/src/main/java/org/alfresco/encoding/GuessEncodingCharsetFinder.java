@@ -25,8 +25,7 @@ import java.nio.charset.CharsetEncoder;
 import com.glaforge.i18n.io.CharsetToolkit;
 
 /**
- * Uses the <a href="http://glaforge.free.fr/wiki/index.php?wiki=GuessEncoding">Guess Encoding</a>
- * library.
+ * Uses the <a href="http://glaforge.free.fr/wiki/index.php?wiki=GuessEncoding">Guess Encoding</a> library.
  * 
  * @since 2.1
  * @author Derek Hulley
@@ -40,7 +39,7 @@ public class GuessEncodingCharsetFinder extends AbstractCharactersetFinder
     protected Charset detectCharsetImpl(byte[] buffer) throws Exception
     {
         CharsetToolkit charsetToolkit = new CharsetToolkit(buffer, DUMMY_CHARSET);
-        charsetToolkit.setEnforce8Bit(true);            // Force the default instead of a guess
+        charsetToolkit.setEnforce8Bit(true); // Force the default instead of a guess
         Charset charset = charsetToolkit.guessEncoding();
         if (charset == DUMMY_CHARSET)
         {
@@ -51,7 +50,7 @@ public class GuessEncodingCharsetFinder extends AbstractCharactersetFinder
             return charset;
         }
     }
-    
+
     /**
      * A dummy charset to detect a default hit.
      */
@@ -59,7 +58,7 @@ public class GuessEncodingCharsetFinder extends AbstractCharactersetFinder
     {
         DummyCharset()
         {
-            super("dummy", new String[] {});
+            super("dummy", new String[]{});
         }
 
         @Override
@@ -79,6 +78,6 @@ public class GuessEncodingCharsetFinder extends AbstractCharactersetFinder
         {
             throw new UnsupportedOperationException();
         }
-        
+
     }
 }

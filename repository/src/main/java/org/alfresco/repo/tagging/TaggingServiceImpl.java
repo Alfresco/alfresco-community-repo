@@ -57,6 +57,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
@@ -100,22 +105,18 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Tagging service implementation
  * 
  * @author Roy Wetherall
  */
-public class TaggingServiceImpl implements TaggingService, 
-                                           TransactionListener,
-                                           BeforeDeleteNodePolicy,
-                                           OnMoveNodePolicy,
-                                           OnCopyCompletePolicy,
-                                           BeforeCopyPolicy
+public class TaggingServiceImpl implements TaggingService,
+        TransactionListener,
+        BeforeDeleteNodePolicy,
+        OnMoveNodePolicy,
+        OnCopyCompletePolicy,
+        BeforeCopyPolicy
 {
     protected static final String TAGGING_AUDIT_APPLICATION_NAME = "Alfresco Tagging Service";
     protected static final String TAGGING_AUDIT_ROOT_PATH = "/tagging";
@@ -123,7 +124,7 @@ public class TaggingServiceImpl implements TaggingService,
     protected static final String TAGGING_AUDIT_KEY_TAGS = "tags";
 
     private static Log logger = LogFactory.getLog(TaggingServiceImpl.class);
-    
+
     private static Collator collator = Collator.getInstance();
 
     private NodeService nodeService;
@@ -144,8 +145,7 @@ public class TaggingServiceImpl implements TaggingService,
     /** Parameters Include count */
     private static final String PARAM_INCLUDE_COUNT = "count";
 
-
-    private static Set<String> FORBIDDEN_TAGS_SEQUENCES = new HashSet<String>(Arrays.asList(new String[] {NEXT_TAG_DELIMITER, TAG_DETAILS_DELIMITER}));
+    private static Set<String> FORBIDDEN_TAGS_SEQUENCES = new HashSet<String>(Arrays.asList(new String[]{NEXT_TAG_DELIMITER, TAG_DETAILS_DELIMITER}));
 
     /** Policy behaviour */
     private JavaBehaviour updateTagBehaviour;
@@ -168,7 +168,8 @@ public class TaggingServiceImpl implements TaggingService,
     }
 
     /**
-     * @param nodeServiceInternal           service to use when permission checks are not required
+     * @param nodeServiceInternal
+     *            service to use when permission checks are not required
      */
     public void setNodeServiceInternal(NodeService nodeServiceInternal)
     {
@@ -182,7 +183,7 @@ public class TaggingServiceImpl implements TaggingService,
     {
         this.searchService = searchService;
     }
-    
+
     /**
      * Set the action service
      */
@@ -198,7 +199,7 @@ public class TaggingServiceImpl implements TaggingService,
     {
         this.contentService = contentService;
     }
-    
+
     /**
      * Set the namespace service
      */
@@ -206,7 +207,7 @@ public class TaggingServiceImpl implements TaggingService,
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * Policy component
      */
@@ -214,7 +215,7 @@ public class TaggingServiceImpl implements TaggingService,
     {
         this.policyComponent = policyComponent;
     }
-    
+
     /**
      * Set the audit component
      */
@@ -225,6 +226,7 @@ public class TaggingServiceImpl implements TaggingService,
 
     /**
      * Set the event generator.
+     * 
      * @param eventGenerator
      */
     public void setEventGenerator(EventGenerator eventGenerator)
@@ -240,79 +242,76 @@ public class TaggingServiceImpl implements TaggingService,
         // Register policy behaviours
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
-                ContentModel.ASPECT_TAGGABLE, 
+                ContentModel.ASPECT_TAGGABLE,
                 new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.EVERY_EVENT));
-        
+
         // Create tag behaviour
         createTagBehaviour = new JavaBehaviour(this, "createTags", NotificationFrequency.FIRST_EVENT);
         this.policyComponent.bindClassBehaviour(
-                OnCreateNodePolicy.QNAME, 
-                ContentModel.ASPECT_TAGGABLE, 
+                OnCreateNodePolicy.QNAME,
+                ContentModel.ASPECT_TAGGABLE,
                 createTagBehaviour);
-        
+
         // We need to register on content and folders, rather than
-        //  tagable, so we can pick up when things start and
-        //  stop being tagged
+        // tagable, so we can pick up when things start and
+        // stop being tagged
         updateTagBehaviour = new JavaBehaviour(this, "updateTags", NotificationFrequency.EVERY_EVENT);
         this.policyComponent.bindClassBehaviour(
                 OnUpdatePropertiesPolicy.QNAME,
-                ContentModel.TYPE_CONTENT, 
+                ContentModel.TYPE_CONTENT,
                 updateTagBehaviour);
         this.policyComponent.bindClassBehaviour(
                 OnUpdatePropertiesPolicy.QNAME,
-                ContentModel.TYPE_FOLDER, 
+                ContentModel.TYPE_FOLDER,
                 updateTagBehaviour);
-        
+
         // We need to know when you move or copy nodes
         this.policyComponent.bindClassBehaviour(
-              OnMoveNodePolicy.QNAME,
-              ContentModel.ASPECT_TAGGABLE, 
-              new JavaBehaviour(this, "onMoveNode", NotificationFrequency.EVERY_EVENT));
+                OnMoveNodePolicy.QNAME,
+                ContentModel.ASPECT_TAGGABLE,
+                new JavaBehaviour(this, "onMoveNode", NotificationFrequency.EVERY_EVENT));
         this.policyComponent.bindClassBehaviour(
-              BeforeCopyPolicy.QNAME,
-              ContentModel.ASPECT_TAGGABLE, 
-              new JavaBehaviour(this, "beforeCopy", NotificationFrequency.EVERY_EVENT));
+                BeforeCopyPolicy.QNAME,
+                ContentModel.ASPECT_TAGGABLE,
+                new JavaBehaviour(this, "beforeCopy", NotificationFrequency.EVERY_EVENT));
         this.policyComponent.bindClassBehaviour(
-              OnCopyCompletePolicy.QNAME,
-              ContentModel.ASPECT_TAGGABLE, 
-              new JavaBehaviour(this, "onCopyComplete", NotificationFrequency.EVERY_EVENT));
-        
+                OnCopyCompletePolicy.QNAME,
+                ContentModel.ASPECT_TAGGABLE,
+                new JavaBehaviour(this, "onCopyComplete", NotificationFrequency.EVERY_EVENT));
+
         this.policyComponent.bindClassBehaviour(
-              OnCheckOut.QNAME,
-              ContentModel.ASPECT_TAGGABLE, 
-              new JavaBehaviour(this, "afterCheckOut", NotificationFrequency.EVERY_EVENT));
+                OnCheckOut.QNAME,
+                ContentModel.ASPECT_TAGGABLE,
+                new JavaBehaviour(this, "afterCheckOut", NotificationFrequency.EVERY_EVENT));
     }
-    
+
     /**
-     * Called after a copy / delete / move, to trigger a 
-     *  tag scope update of all the tags on the node.
-     * Will update all parent tag scopes for the node, by either 
-     *  adding or removing all tags from the node (based on the 
-     *  isAdd parameter).
+     * Called after a copy / delete / move, to trigger a tag scope update of all the tags on the node. Will update all parent tag scopes for the node, by either adding or removing all tags from the node (based on the isAdd parameter).
      */
     private void updateAllScopeTags(NodeRef nodeRef, Boolean isAdd)
     {
-       ChildAssociationRef assocRef = this.nodeService.getPrimaryParent(nodeRef);
-       if (assocRef != null)
-       {
-          updateAllScopeTags(nodeRef, assocRef.getParentRef(), isAdd);
-       }
+        ChildAssociationRef assocRef = this.nodeService.getPrimaryParent(nodeRef);
+        if (assocRef != null)
+        {
+            updateAllScopeTags(nodeRef, assocRef.getParentRef(), isAdd);
+        }
     }
+
     @SuppressWarnings("unchecked")
     private void updateAllScopeTags(NodeRef nodeRef, NodeRef parentNodeRef, Boolean isAdd)
     {
         if (parentNodeRef != null)
         {
             // Grab an currently pending changes for this node
-            Map<NodeRef, Map<String, Boolean>> allQueuedUpdates = (Map<NodeRef, Map<String, Boolean>>)AlfrescoTransactionSupport.getResource(TAG_UPDATES);
+            Map<NodeRef, Map<String, Boolean>> allQueuedUpdates = (Map<NodeRef, Map<String, Boolean>>) AlfrescoTransactionSupport.getResource(TAG_UPDATES);
             Map<String, Boolean> nodeQueuedUpdates = null;
             if (allQueuedUpdates != null)
             {
                 nodeQueuedUpdates = allQueuedUpdates.get(nodeRef);
             }
-            
+
             // Record the changes for the node, cancelling out existing
-            //  changes if needed
+            // changes if needed
             List<String> tags = getTags(nodeRef);
             Map<String, Boolean> tagUpdates = new HashMap<String, Boolean>(tags.size());
             for (String tag : tags)
@@ -321,7 +320,7 @@ public class TaggingServiceImpl implements TaggingService,
 
                 if (nodeQueuedUpdates != null)
                 {
-                    Boolean queuedOp = (Boolean)nodeQueuedUpdates.get(tag);
+                    Boolean queuedOp = (Boolean) nodeQueuedUpdates.get(tag);
                     if ((queuedOp != null) && (queuedOp.booleanValue() == isAdd.booleanValue()))
                     {
                         // dequeue - will be handled synchronously
@@ -329,28 +328,26 @@ public class TaggingServiceImpl implements TaggingService,
                     }
                 }
             }
-            
+
             // Find the parent tag scopes and update them
             updateTagScope(parentNodeRef, tagUpdates);
         }
     }
-    
+
     /**
      * @see BeforeDeleteNodePolicy#beforeDeleteNode(NodeRef)
      */
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-       if (this.nodeService.exists(nodeRef) == true &&          
-           this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == true && !this.nodeService.hasAspect(nodeRef, ASPECT_WORKING_COPY))
-       {
-           updateAllScopeTags(nodeRef, Boolean.FALSE);
-       }
+        if (this.nodeService.exists(nodeRef) == true &&
+                this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == true && !this.nodeService.hasAspect(nodeRef, ASPECT_WORKING_COPY))
+        {
+            updateAllScopeTags(nodeRef, Boolean.FALSE);
+        }
     }
-    
+
     /**
-     * Fired once per node, before a copy overrides one node (which is possibly newly created) with the contents
-     * of another one.
-     * We should remove any tags from the scope, as they'll shortly be overwritten.
+     * Fired once per node, before a copy overrides one node (which is possibly newly created) with the contents of another one. We should remove any tags from the scope, as they'll shortly be overwritten.
      */
     public void beforeCopy(QName classRef, NodeRef sourceNodeRef, NodeRef targetNodeRef)
     {
@@ -361,8 +358,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
 
     /**
-     * Fired once per node that was copied, after the copy has completed. 
-     * We need to add in all the tags to the scope.
+     * Fired once per node that was copied, after the copy has completed. We need to add in all the tags to the scope.
      */
     public void onCopyComplete(QName classRef, NodeRef sourceNodeRef, NodeRef targetNodeRef, boolean copyToNewNode,
             Map<NodeRef, NodeRef> copyMap)
@@ -379,13 +375,13 @@ public class TaggingServiceImpl implements TaggingService,
         NodeRef oldParent = oldChildAssocRef.getParentRef();
         NodeRef newRef = newChildAssocRef.getChildRef();
         NodeRef newParent = newChildAssocRef.getParentRef();
-        
+
         // Do nothing if it's a "rename" not a move
         if (oldParent.equals(newParent))
         {
             return;
         }
-        
+
         // It has moved somewhere
         // Remove the tags from the old location
         if (this.nodeService.hasAspect(oldRef, ContentModel.ASPECT_TAGGABLE))
@@ -418,19 +414,19 @@ public class TaggingServiceImpl implements TaggingService,
         NodeRef nodeRef = childAssocRef.getChildRef();
         Map<QName, Serializable> before = new HashMap<QName, Serializable>(0);
         Map<QName, Serializable> after = nodeService.getProperties(nodeRef);
-        
+
         updateTags(nodeRef, before, after);
     }
-    
+
     /**
      * Update tag policy behaviour
      */
     @SuppressWarnings("unchecked")
     public void updateTags(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        List<NodeRef> beforeNodeRefs = (List<NodeRef>)before.get(ContentModel.PROP_TAGS);
-        List<NodeRef> afterNodeRefs = (List<NodeRef>)after.get(ContentModel.PROP_TAGS);
-        
+        List<NodeRef> beforeNodeRefs = (List<NodeRef>) before.get(ContentModel.PROP_TAGS);
+        List<NodeRef> afterNodeRefs = (List<NodeRef>) after.get(ContentModel.PROP_TAGS);
+
         if (beforeNodeRefs == null && afterNodeRefs != null)
         {
             // Queue all the after's for addition to the tag scopes
@@ -455,7 +451,7 @@ public class TaggingServiceImpl implements TaggingService,
         }
         else if (afterNodeRefs != null && beforeNodeRefs != null)
         {
-            //Create a copy of the afterNodeRefs so we don't affect the properties we were given
+            // Create a copy of the afterNodeRefs so we don't affect the properties we were given
             afterNodeRefs = new ArrayList<NodeRef>(afterNodeRefs);
             for (NodeRef beforeNodeRef : beforeNodeRefs)
             {
@@ -478,12 +474,12 @@ public class TaggingServiceImpl implements TaggingService,
             }
         }
     }
-    
+
     public String getTagName(NodeRef nodeRef)
     {
-        return (String)nodeService.getProperty(nodeRef, PROP_NAME);
+        return (String) nodeService.getProperty(nodeRef, PROP_NAME);
     }
-    
+
     /**
      * @see TaggingService#isTag(StoreRef, String)
      */
@@ -502,7 +498,7 @@ public class TaggingServiceImpl implements TaggingService,
         tag = tag.toLowerCase();
 
         return getTagNodeRef(storeRef, tag, true);
-    }  
+    }
 
     /**
      * @see TaggingService#deleteTag(StoreRef, String)
@@ -511,23 +507,23 @@ public class TaggingServiceImpl implements TaggingService,
     {
         // Lower the case of the tag
         tag = tag.toLowerCase();
-        
+
         // Find nodes which are tagged with the 'soon to be deleted' tag.
         List<NodeRef> taggedNodes = this.findTaggedNodes(storeRef, tag);
-        
+
         // Clear the tag from the found nodes
         for (NodeRef taggedNode : taggedNodes)
         {
             this.removeTag(taggedNode, tag);
         }
-        
+
         NodeRef tagNodeRef = getTagNodeRef(storeRef, tag);
         if (tagNodeRef != null)
         {
             this.categoryService.deleteCategory(tagNodeRef);
         }
     }
-    
+
     public NodeRef changeTag(StoreRef storeRef, String existingTag, String newTag)
     {
         if (existingTag == null)
@@ -579,12 +575,12 @@ public class TaggingServiceImpl implements TaggingService,
     public List<String> getTags(StoreRef storeRef)
     {
         ParameterCheck.mandatory("storeRef", storeRef);
-        
+
         Collection<ChildAssociationRef> rootCategories = this.categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE);
         List<String> result = new ArrayList<String>(rootCategories.size());
         for (ChildAssociationRef rootCategory : rootCategories)
         {
-            String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), PROP_NAME);
+            String name = (String) this.nodeService.getProperty(rootCategory.getChildRef(), PROP_NAME);
             result.add(name);
         }
         return result;
@@ -610,23 +606,23 @@ public class TaggingServiceImpl implements TaggingService,
             {
                 continue;
             }
-            String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), PROP_NAME);
+            String name = (String) this.nodeService.getProperty(rootCategory.getChildRef(), PROP_NAME);
             result.add(name);
             if (index == endIndex)
             {
                 break;
             }
         }
-        return new Pair<List<String>, Integer> (result, totalCount);
+        return new Pair<List<String>, Integer>(result, totalCount);
     }
-    
+
     /**
      * @see TaggingService#getTags(StoreRef, String)
      */
     public List<String> getTags(StoreRef storeRef, String filter)
     {
         ParameterCheck.mandatory("storeRef", storeRef);
-        
+
         List<String> result = null;
         if (filter == null || filter.length() == 0)
         {
@@ -638,14 +634,14 @@ public class TaggingServiceImpl implements TaggingService,
             result = new ArrayList<String>(rootCategories.size());
             for (ChildAssociationRef rootCategory : rootCategories)
             {
-                String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), PROP_NAME);
+                String name = (String) this.nodeService.getProperty(rootCategory.getChildRef(), PROP_NAME);
                 if (name.contains(filter.toLowerCase()) == true)
                 {
                     result.add(name);
                 }
             }
         }
-        
+
         return result;
     }
 
@@ -675,14 +671,14 @@ public class TaggingServiceImpl implements TaggingService,
                 {
                     continue;
                 }
-                String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), PROP_NAME);
-                    result.add(name);
+                String name = (String) this.nodeService.getProperty(rootCategory.getChildRef(), PROP_NAME);
+                result.add(name);
                 if (index == endIndex)
                 {
                     break;
                 }
             }
-            return new Pair<List<String>, Integer> (result, totalCount);
+            return new Pair<List<String>, Integer>(result, totalCount);
         }
     }
 
@@ -700,16 +696,15 @@ public class TaggingServiceImpl implements TaggingService,
         return tagsByCountMap;
     }
 
-
     /**
      * @see TaggingService#hasTag(NodeRef, String)
      */
     public boolean hasTag(NodeRef nodeRef, String tag)
     {
         List<String> tags = getTags(nodeRef);
-        return (tags.contains(tag.toLowerCase()));        
+        return (tags.contains(tag.toLowerCase()));
     }
-    
+
     /**
      * @see TaggingService#addTag(NodeRef, String)
      */
@@ -718,7 +713,7 @@ public class TaggingServiceImpl implements TaggingService,
     {
         NodeRef newTagNodeRef = null;
 
-        if(tagName == null)
+        if (tagName == null)
         {
             throw new IllegalArgumentException("Must provide a non-null tag");
         }
@@ -729,10 +724,10 @@ public class TaggingServiceImpl implements TaggingService,
         {
             // Lower the case of the tag
             String tag = tagName.toLowerCase();
-            
+
             // Get the tag node reference
             newTagNodeRef = getTagNodeRef(nodeRef.getStoreRef(), tag, true);
-            
+
             List<NodeRef> tagNodeRefs = new ArrayList<NodeRef>(5);
             if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == false)
             {
@@ -742,18 +737,18 @@ public class TaggingServiceImpl implements TaggingService,
             else
             {
                 // Get the current tags
-                List<NodeRef> currentTagNodes = (List<NodeRef>)nodeService.getProperty(nodeRef, ContentModel.PROP_TAGS);
+                List<NodeRef> currentTagNodes = (List<NodeRef>) nodeService.getProperty(nodeRef, ContentModel.PROP_TAGS);
                 if (currentTagNodes != null)
                 {
                     tagNodeRefs = currentTagNodes;
                 }
             }
-            
+
             // Add the new tag (assuming it's not already been added
             if (tagNodeRefs.contains(newTagNodeRef) == false)
             {
                 tagNodeRefs.add(newTagNodeRef);
-                nodeService.setProperty(nodeRef, ContentModel.PROP_TAGS, (Serializable)tagNodeRefs);
+                nodeService.setProperty(nodeRef, ContentModel.PROP_TAGS, (Serializable) tagNodeRefs);
                 queueTagUpdate(nodeRef, tag, true);
             }
         }
@@ -762,10 +757,10 @@ public class TaggingServiceImpl implements TaggingService,
             updateTagBehaviour.enable();
             createTagBehaviour.enable();
         }
-        
+
         return newTagNodeRef;
     }
-    
+
     /**
      * @see TaggingService#addTags(NodeRef, List)
      */
@@ -779,19 +774,21 @@ public class TaggingServiceImpl implements TaggingService,
         }
         return ret;
     }
-    
+
     /**
      * Gets the node reference for a given tag.
      * <p>
      * Returns null if tag is not present.
      * 
-     * @param storeRef      store reference
-     * @param tag           tag
-     * @return NodeRef      tag node reference or null not exist
+     * @param storeRef
+     *            store reference
+     * @param tag
+     *            tag
+     * @return NodeRef tag node reference or null not exist
      */
     public NodeRef getTagNodeRef(StoreRef storeRef, String tag)
     {
-        return getTagNodeRef(storeRef, tag, false); 
+        return getTagNodeRef(storeRef, tag, false);
     }
 
     /**
@@ -799,10 +796,13 @@ public class TaggingServiceImpl implements TaggingService,
      * <p>
      * Returns null if tag is not present and not created.
      * 
-     * @param storeRef      store reference
-     * @param tag           tag
-     * @param create        create a node if one doesn't exist?
-     * @return NodeRef      tag node reference or null not exist
+     * @param storeRef
+     *            store reference
+     * @param tag
+     *            tag
+     * @param create
+     *            create a node if one doesn't exist?
+     * @return NodeRef tag node reference or null not exist
      */
     private NodeRef getTagNodeRef(StoreRef storeRef, String tag, boolean create)
     {
@@ -813,7 +813,7 @@ public class TaggingServiceImpl implements TaggingService,
                 throw new IllegalArgumentException("Tag name must not contain " + StringEscapeUtils.escapeJava(forbiddenSequence) + " char sequence");
             }
         }
-        
+
         NodeRef tagNodeRef = null;
         Collection<ChildAssociationRef> results = this.categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, tag, create);
         if (!results.isEmpty())
@@ -835,22 +835,22 @@ public class TaggingServiceImpl implements TaggingService,
         {
             // Lower the case of the tag
             tag = tag.toLowerCase();
-            
+
             // Check for the taggable aspect
             if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == true)
-            {        
+            {
                 // Get the tag node reference
                 NodeRef newTagNodeRef = getTagNodeRef(nodeRef.getStoreRef(), tag);
                 if (newTagNodeRef != null)
                 {
                     // Get the current tags
-                    List<NodeRef> currentTagNodes = (List<NodeRef>)this.nodeService.getProperty(nodeRef, ContentModel.PROP_TAGS);
+                    List<NodeRef> currentTagNodes = (List<NodeRef>) this.nodeService.getProperty(nodeRef, ContentModel.PROP_TAGS);
                     if (currentTagNodes != null &&
-                        currentTagNodes.size() != 0 &&
-                        currentTagNodes.contains(newTagNodeRef) == true)
+                            currentTagNodes.size() != 0 &&
+                            currentTagNodes.contains(newTagNodeRef) == true)
                     {
                         currentTagNodes.remove(newTagNodeRef);
-                        this.nodeService.setProperty(nodeRef, ContentModel.PROP_TAGS, (Serializable)currentTagNodes);
+                        this.nodeService.setProperty(nodeRef, ContentModel.PROP_TAGS, (Serializable) currentTagNodes);
                         queueTagUpdate(nodeRef, tag, false);
                     }
                 }
@@ -861,8 +861,8 @@ public class TaggingServiceImpl implements TaggingService,
             updateTagBehaviour.enable();
             createTagBehaviour.enable();
         }
-    }  
-    
+    }
+
     /**
      * @see TaggingService#removeTags(NodeRef, List)
      */
@@ -885,7 +885,7 @@ public class TaggingServiceImpl implements TaggingService,
         if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == true)
         {
             // Get the current tags
-            List<NodeRef> currentTagNodes = (List<NodeRef>)this.nodeService.getProperty(nodeRef, ContentModel.PROP_TAGS);
+            List<NodeRef> currentTagNodes = (List<NodeRef>) this.nodeService.getProperty(nodeRef, ContentModel.PROP_TAGS);
             if (currentTagNodes != null)
             {
                 final int totalItems = currentTagNodes.size();
@@ -896,13 +896,12 @@ public class TaggingServiceImpl implements TaggingService,
 
                 final List<Pair<NodeRef, String>> sortedTags = new ArrayList<Pair<NodeRef, String>>(size);
                 // grab all tags and sort (assume fairly low number of tags)
-                for(NodeRef tagNode : currentTagNodes)
+                for (NodeRef tagNode : currentTagNodes)
                 {
-                    String tag = (String)this.nodeService.getProperty(tagNode, PROP_NAME);
-                    sortedTags.add(new Pair<NodeRef, String>(tagNode, tag));            		
+                    String tag = (String) this.nodeService.getProperty(tagNode, PROP_NAME);
+                    sortedTags.add(new Pair<NodeRef, String>(tagNode, tag));
                 }
-                Collections.sort(sortedTags, new Comparator<Pair<NodeRef, String>>()
-                {
+                Collections.sort(sortedTags, new Comparator<Pair<NodeRef, String>>() {
                     @Override
                     public int compare(Pair<NodeRef, String> o1, Pair<NodeRef, String> o2)
                     {
@@ -914,11 +913,11 @@ public class TaggingServiceImpl implements TaggingService,
 
                 final List<Pair<NodeRef, String>> result = new ArrayList<Pair<NodeRef, String>>(size);
                 Iterator<Pair<NodeRef, String>> it = sortedTags.iterator();
-                for(int count = 0; count < end && it.hasNext(); count++)
+                for (int count = 0; count < end && it.hasNext(); count++)
                 {
                     Pair<NodeRef, String> tagPair = it.next();
 
-                    if(count < skipCount)
+                    if (count < skipCount)
                     {
                         continue;
                     }
@@ -928,8 +927,7 @@ public class TaggingServiceImpl implements TaggingService,
                 currentTagNodes = null;
                 final boolean hasMoreItems = end < totalItems;
 
-                return new PagingResults<Pair<NodeRef, String>>()
-                {
+                return new PagingResults<Pair<NodeRef, String>>() {
                     @Override
                     public List<Pair<NodeRef, String>> getPage()
                     {
@@ -974,7 +972,7 @@ public class TaggingServiceImpl implements TaggingService,
         ParameterCheck.mandatory("storeRef", storeRef);
 
         PagingResults<ChildAssociationRef> rootCategories = categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, pagingRequest, true,
-            exactNamesFilter, alikeNamesFilter);
+                exactNamesFilter, alikeNamesFilter);
 
         return mapPagingResult(rootCategories,
                 (childAssociation) -> new Pair<>(childAssociation.getChildRef(), childAssociation.getQName().getLocalName()));
@@ -993,32 +991,31 @@ public class TaggingServiceImpl implements TaggingService,
 
         Map<String, Long> tagsByCountMap = new HashMap<>();
 
-        if(parameterIncludes.contains(PARAM_INCLUDE_COUNT))
+        if (parameterIncludes.contains(PARAM_INCLUDE_COUNT))
         {
             tagsByCountMap = calculateCount(storeRef);
 
-            for (Map.Entry<String, Long> entry : tagsMap.entrySet()) {
+            for (Map.Entry<String, Long> entry : tagsMap.entrySet())
+            {
                 entry.setValue(Optional.ofNullable(tagsByCountMap.get(entry.getKey())).orElse(0L));
             }
         }
 
-        //check if we should sort results. Can only sort by one parameter, default order is ascending
+        // check if we should sort results. Can only sort by one parameter, default order is ascending
         if (sorting != null)
         {
             if (sorting.getFirst().equals("tag"))
             {
                 if (!sorting.getSecond())
                 {
-                    Stream<Map.Entry<String,Long>> sortedTags =
-                            tagsMap.entrySet().stream()
-                                    .sorted(Collections.reverseOrder(Map.Entry.comparingByKey()));
+                    Stream<Map.Entry<String, Long>> sortedTags = tagsMap.entrySet().stream()
+                            .sorted(Collections.reverseOrder(Map.Entry.comparingByKey()));
                     tagsMap = sortedTags.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
                 }
                 else
                 {
-                    Stream<Map.Entry<String,Long>> sortedTags =
-                            tagsMap.entrySet().stream()
-                                    .sorted(Map.Entry.comparingByKey());
+                    Stream<Map.Entry<String, Long>> sortedTags = tagsMap.entrySet().stream()
+                            .sorted(Map.Entry.comparingByKey());
                     tagsMap = sortedTags.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
                 }
             }
@@ -1031,16 +1028,14 @@ public class TaggingServiceImpl implements TaggingService,
 
                 if (!sorting.getSecond())
                 {
-                    Stream<Map.Entry<String, Long>> sortedTags =
-                            tagsMap.entrySet().stream()
-                                    .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
+                    Stream<Map.Entry<String, Long>> sortedTags = tagsMap.entrySet().stream()
+                            .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
                     tagsMap = sortedTags.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
                 }
                 else
                 {
-                    Stream<Map.Entry<String,Long>> sortedTags =
-                            tagsMap.entrySet().stream()
-                                    .sorted(Map.Entry.comparingByValue());
+                    Stream<Map.Entry<String, Long>> sortedTags = tagsMap.entrySet().stream()
+                            .sorted(Map.Entry.comparingByValue());
                     tagsMap = sortedTags.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
                 }
             }
@@ -1055,7 +1050,7 @@ public class TaggingServiceImpl implements TaggingService,
 
         return tagNodeRefMap;
     }
-    
+
     /**
      * @see TaggingService#getTags(NodeRef)
      */
@@ -1063,30 +1058,30 @@ public class TaggingServiceImpl implements TaggingService,
     public List<String> getTags(NodeRef nodeRef)
     {
         List<String> result = new ArrayList<String>(10);
-        
+
         // Check for the taggable aspect
         if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == true)
         {
             // Get the current tags
-            List<NodeRef> currentTagNodes = (List<NodeRef>)this.nodeService.getProperty(nodeRef, ContentModel.PROP_TAGS);
+            List<NodeRef> currentTagNodes = (List<NodeRef>) this.nodeService.getProperty(nodeRef, ContentModel.PROP_TAGS);
             if (currentTagNodes != null)
             {
                 for (NodeRef currentTagNode : currentTagNodes)
                 {
-                    String tag = (String)this.nodeService.getProperty(currentTagNode, PROP_NAME);
+                    String tag = (String) this.nodeService.getProperty(currentTagNode, PROP_NAME);
                     result.add(tag);
                 }
             }
         }
-        
+
         return result;
     }
-    
+
     /**
      * @see TaggingService#setTags(NodeRef, List)
      */
     public void setTags(NodeRef nodeRef, List<String> tags)
-    {  
+    {
         updateTagBehaviour.disable();
         createTagBehaviour.disable();
         try
@@ -1097,23 +1092,23 @@ public class TaggingServiceImpl implements TaggingService,
                 // Add the aspect
                 this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_TAGGABLE, null);
             }
-            
+
             // Get the current list of tags
             List<String> oldTags = getTags(nodeRef);
-            
+
             for (String tag : tags)
-            {   
+            {
                 // Lower the case of the tag
                 tag = tag.toLowerCase();
-                
+
                 // Get the tag node reference
                 NodeRef newTagNodeRef = getTagNodeRef(nodeRef.getStoreRef(), tag, true);
-                
+
                 if (tagNodeRefs.contains(newTagNodeRef) == false)
-                {            
+                {
                     // Add to the list
                     tagNodeRefs.add(newTagNodeRef);
-                    
+
                     // Trigger scope update
                     if (oldTags.contains(tag) == false)
                     {
@@ -1126,15 +1121,15 @@ public class TaggingServiceImpl implements TaggingService,
                     }
                 }
             }
-            
+
             // Remove the old tags from the tag scope
             for (String oldTag : oldTags)
             {
                 queueTagUpdate(nodeRef, oldTag, false);
             }
-            
+
             // Update category property
-            this.nodeService.setProperty(nodeRef, ContentModel.PROP_TAGS, (Serializable)tagNodeRefs);
+            this.nodeService.setProperty(nodeRef, ContentModel.PROP_TAGS, (Serializable) tagNodeRefs);
         }
         finally
         {
@@ -1142,15 +1137,15 @@ public class TaggingServiceImpl implements TaggingService,
             createTagBehaviour.enable();
         }
     }
-    
+
     /**
      * @see TaggingService#clearTags(NodeRef)
      */
     public void clearTags(NodeRef nodeRef)
     {
-        setTags(nodeRef, Collections.<String>emptyList());
+        setTags(nodeRef, Collections.<String> emptyList());
     }
-    
+
     /**
      * @see TaggingService#isTagScope(NodeRef)
      */
@@ -1159,7 +1154,7 @@ public class TaggingServiceImpl implements TaggingService,
         // Determines whether the node has the tag scope aspect
         return this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGSCOPE);
     }
-     
+
     /**
      * @see TaggingService#addTagScope(NodeRef)
      */
@@ -1169,20 +1164,20 @@ public class TaggingServiceImpl implements TaggingService,
         {
             // Add the tag scope aspect
             this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_TAGSCOPE, null);
-            
+
             // Refresh the tag scope
             refreshTagScope(nodeRef, false);
-        }        
+        }
     }
-    
+
     /**
      * @see TaggingService#refreshTagScope(NodeRef, boolean)
      */
     public void refreshTagScope(NodeRef nodeRef, boolean async)
     {
-        if (this.nodeService.exists(nodeRef) == true && 
-            this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGSCOPE) == true)
-        {            
+        if (this.nodeService.exists(nodeRef) == true &&
+                this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGSCOPE) == true)
+        {
             Action action = this.actionService.createAction(RefreshTagScopeActionExecuter.NAME);
             this.actionService.executeAction(action, nodeRef, false, async);
         }
@@ -1205,25 +1200,26 @@ public class TaggingServiceImpl implements TaggingService,
     public TagScope findTagScope(NodeRef nodeRef)
     {
         TagScope tagScope = null;
-        
+
         if (this.nodeService.exists(nodeRef) == true)
         {
             List<NodeRef> tagScopeNodeRefs = new ArrayList<NodeRef>(3);
             getTagScopes(nodeRef, tagScopeNodeRefs, true);
             if (tagScopeNodeRefs.size() != 0)
-            {                
+            {
                 tagScope = new TagScopeImpl(tagScopeNodeRefs.get(0), getTagDetails(tagScopeNodeRefs.get(0)));
             }
         }
-        
+
         return tagScope;
     }
-    
+
     /**
      * Gets the tag details list for a given tag scope node reference
      * 
-     * @param nodeRef               tag scope node reference
-     * @return List<TagDetails>     ordered list of tag details for the tag scope
+     * @param nodeRef
+     *            tag scope node reference
+     * @return List<TagDetails> ordered list of tag details for the tag scope
      */
     private List<TagDetails> getTagDetails(NodeRef nodeRef)
     {
@@ -1242,7 +1238,7 @@ public class TaggingServiceImpl implements TaggingService,
     public List<TagScope> findAllTagScopes(NodeRef nodeRef)
     {
         List<TagScope> result = null;
-        
+
         if (this.nodeService.exists(nodeRef) == true)
         {
             List<NodeRef> tagScopeNodeRefs = new ArrayList<NodeRef>(3);
@@ -1260,7 +1256,7 @@ public class TaggingServiceImpl implements TaggingService,
                 result = Collections.emptyList();
             }
         }
-        
+
         return result;
     }
 
@@ -1268,27 +1264,31 @@ public class TaggingServiceImpl implements TaggingService,
      * Traverses up the node's primary parent placing ALL found tag scope's in a list.
      * <p>
      * 
-     * @param nodeRef      node reference
-     * @param tagScopes    list of tag scopes
+     * @param nodeRef
+     *            node reference
+     * @param tagScopes
+     *            list of tag scopes
      */
     private void getTagScopes(NodeRef nodeRef, List<NodeRef> tagScopes)
     {
         getTagScopes(nodeRef, tagScopes, false);
     }
-    
+
     /**
      * Traverses up the node's primary parent placing found tag scope's in a list.
      * <p>
      * If none are found then the list is empty.
      * 
-     * @param nodeRef      node reference
-     * @param tagScopes    list of tag scopes
-     * @param firstOnly    true => only return first tag scope that is found
+     * @param nodeRef
+     *            node reference
+     * @param tagScopes
+     *            list of tag scopes
+     * @param firstOnly
+     *            true => only return first tag scope that is found
      */
     private void getTagScopes(final NodeRef nodeRef, List<NodeRef> tagScopes, boolean firstOnly)
     {
-        Boolean hasAspect = AuthenticationUtil.runAs(new RunAsWork<Boolean>()
-        {
+        Boolean hasAspect = AuthenticationUtil.runAs(new RunAsWork<Boolean>() {
             @Override
             public Boolean doWork() throws Exception
             {
@@ -1304,9 +1304,8 @@ public class TaggingServiceImpl implements TaggingService,
                 return;
             }
         }
-        
-        NodeRef parent = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-        {
+
+        NodeRef parent = AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
             @Override
             public NodeRef doWork() throws Exception
             {
@@ -1319,7 +1318,7 @@ public class TaggingServiceImpl implements TaggingService,
                 return result;
             }
         }, AuthenticationUtil.getSystemUserName());
-        
+
         if (parent != null)
         {
             getTagScopes(parent, tagScopes, firstOnly);
@@ -1333,21 +1332,24 @@ public class TaggingServiceImpl implements TaggingService,
     {
         // Lower the case of the tag
         tag = tag.toLowerCase();
-        ResultSet resultSet= null;
-        
+        ResultSet resultSet = null;
+
         try
         {
             // Do the search for nodes
             resultSet = this.searchService.query(
-                storeRef, 
-                LANGUAGE_LUCENE,
-                "+PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"");
+                    storeRef,
+                    LANGUAGE_LUCENE,
+                    "+PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"");
             List<NodeRef> nodeRefs = resultSet.getNodeRefs();
             return nodeRefs;
         }
         finally
         {
-            if(resultSet != null) {resultSet.close();}
+            if (resultSet != null)
+            {
+                resultSet.close();
+            }
         }
     }
 
@@ -1358,35 +1360,39 @@ public class TaggingServiceImpl implements TaggingService,
     {
         // Lower the case of the tag
         tag = tag.toLowerCase();
-        
+
         // Get path
         Path nodePath = this.nodeService.getPath(nodeRef);
         String pathString = nodePath.toPrefixString(this.namespaceService);
         ResultSet resultSet = null;
-        
+
         try
         {
             // Do query
             resultSet = this.searchService.query(
-                storeRef, 
-                LANGUAGE_LUCENE,
-                "+PATH:\"" + pathString + "//*\" +PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"");
+                    storeRef,
+                    LANGUAGE_LUCENE,
+                    "+PATH:\"" + pathString + "//*\" +PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"");
             List<NodeRef> nodeRefs = resultSet.getNodeRefs();
             return nodeRefs;
         }
         finally
         {
-            if(resultSet != null) {resultSet.close();}
+            if (resultSet != null)
+            {
+                resultSet.close();
+            }
         }
     }
-    
+
     /**
      * Helper method that takes an input stream and converts it into a list of tag details
      * 
-     * @param is                    input stream
-     * @return List<TagDetails>     list of tag details
+     * @param is
+     *            input stream
+     * @return List<TagDetails> list of tag details
      */
-    /*package*/ static List<TagDetails> readTagDetails(InputStream is)
+    /* package */ static List<TagDetails> readTagDetails(InputStream is)
     {
         List<TagDetails> result = new ArrayList<TagDetails>(25);
         BufferedReader reader = null;
@@ -1397,11 +1403,11 @@ public class TaggingServiceImpl implements TaggingService,
             while (nextLine != null)
             {
                 String[] values = nextLine.split("\\" + TAG_DETAILS_DELIMITER);
-                if(values.length == 1)
+                if (values.length == 1)
                 {
-                    if(logger.isDebugEnabled())
+                    if (logger.isDebugEnabled())
                     {
-                        logger.debug("No count for tag "+values[0]);
+                        logger.debug("No count for tag " + values[0]);
                     }
                 }
                 else if (values.length > 1)
@@ -1409,23 +1415,23 @@ public class TaggingServiceImpl implements TaggingService,
                     try
                     {
                         result.add(new TagDetailsImpl(values[0], Integer.parseInt(values[1])));
-                        if(values.length > 2)
+                        if (values.length > 2)
                         {
-                            if(logger.isDebugEnabled())
+                            if (logger.isDebugEnabled())
                             {
                                 logger.debug("Ignoring extra guff for tag: " + values[0]);
                             }
                         }
                     }
-                    catch(NumberFormatException nfe)
+                    catch (NumberFormatException nfe)
                     {
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
-                            logger.debug("Invalid tag count for " + values[0] + "<"+values[1]+">");
+                            logger.debug("Invalid tag count for " + values[0] + "<" + values[1] + ">");
                         }
                     }
                 }
-                
+
                 nextLine = reader.readLine();
             }
         }
@@ -1435,22 +1441,28 @@ public class TaggingServiceImpl implements TaggingService,
         }
         finally
         {
-            try { reader.close(); } catch (Exception e) {}
+            try
+            {
+                reader.close();
+            }
+            catch (Exception e)
+            {}
         }
-        
-        return result;        
+
+        return result;
     }
-    
+
     /**
      * Helper method to convert a list of tag details into a string.
      * 
-     * @param tagDetails    list of tag details
-     * @return String       string of tag details
+     * @param tagDetails
+     *            list of tag details
+     * @return String string of tag details
      */
-    /*package*/ static String tagDetailsToString(List<TagDetails> tagDetails)
+    /* package */ static String tagDetailsToString(List<TagDetails> tagDetails)
     {
         StringBuffer result = new StringBuffer(255);
-        
+
         boolean bFirst = true;
         for (TagDetails details : tagDetails)
         {
@@ -1462,94 +1474,89 @@ public class TaggingServiceImpl implements TaggingService,
             {
                 bFirst = false;
             }
-            
+
             result.append(details.getName());
             result.append(TAG_DETAILS_DELIMITER);
             result.append(details.getCount());
         }
-            
+
         return result.toString();
     }
 
     // ===== Methods Dealing with TagScope Updates ==== //
-    
+
     public static final String TAG_UPDATES = "tagUpdates";
-    
+
     /**
-     * Triggers an async update of all the relevant tag scopes when a tag is 
-     *  added or removed from a node.
-     * Uses the audit service as a persisted queue to hold the list of changes,
-     *  and triggers an sync action to work on the entries in the queue for us.
-     *  This should avoid contention problems and race conditions.
+     * Triggers an async update of all the relevant tag scopes when a tag is added or removed from a node. Uses the audit service as a persisted queue to hold the list of changes, and triggers an sync action to work on the entries in the queue for us. This should avoid contention problems and race conditions.
      * 
-     * @param nodeRef       node reference
-     * @param updates Map<String, Boolean>
+     * @param nodeRef
+     *            node reference
+     * @param updates
+     *            Map<String, Boolean>
      */
     private void updateTagScope(NodeRef nodeRef, Map<String, Boolean> updates)
     {
-       // First up, locate all the tag scopes for this node
-       // (Need to do a recursive search up to the root)
-       ArrayList<NodeRef> tagScopeNodeRefs = new ArrayList<NodeRef>(3);
-       getTagScopes(nodeRef, tagScopeNodeRefs);
-       
-       if(tagScopeNodeRefs.size() == 0)
-       {
-          if(logger.isDebugEnabled())
-          {
-             logger.debug("No tag scopes found for " + nodeRef + " so no scope updates needed");
-          }
-          return;
-       }
-       
-       // Turn from tag+yes/no into tag+1/-1
-       // (Later we may roll things up better to be tag+#/-#)
-       HashMap<String,Integer> changes = new HashMap<String, Integer>(updates.size());
-       for(String tag : updates.keySet())
-       {
-          int val = -1;
-          if(updates.get(tag))
-             val = 1;
-          changes.put(tag, val);
-       }
-       
-       // Next, queue the updates for each tag scope
-       for(NodeRef tagScopeNode : tagScopeNodeRefs)
-       {
-          Map<String,Serializable> auditValues = new HashMap<String, Serializable>();
-          auditValues.put(TAGGING_AUDIT_KEY_TAGS, changes);
-          auditValues.put(TAGGING_AUDIT_KEY_NODEREF, tagScopeNode.toString());
-          auditComponent.recordAuditValues(TAGGING_AUDIT_ROOT_PATH, auditValues);
-       }
-       if(logger.isDebugEnabled())
-       {
-          logger.debug("Queueing async tag scope updates to tag scopes " + tagScopeNodeRefs + " of " + changes);
-       }
-       
-       // Finally, trigger the action to process the updates
-       // This will happen asynchronously
-       Action action = this.actionService.createAction(UpdateTagScopesActionExecuter.NAME);
-       action.setParameterValue(UpdateTagScopesActionExecuter.PARAM_TAG_SCOPES, tagScopeNodeRefs); 
-       this.actionService.executeAction(action, null, false, true);
+        // First up, locate all the tag scopes for this node
+        // (Need to do a recursive search up to the root)
+        ArrayList<NodeRef> tagScopeNodeRefs = new ArrayList<NodeRef>(3);
+        getTagScopes(nodeRef, tagScopeNodeRefs);
+
+        if (tagScopeNodeRefs.size() == 0)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("No tag scopes found for " + nodeRef + " so no scope updates needed");
+            }
+            return;
+        }
+
+        // Turn from tag+yes/no into tag+1/-1
+        // (Later we may roll things up better to be tag+#/-#)
+        HashMap<String, Integer> changes = new HashMap<String, Integer>(updates.size());
+        for (String tag : updates.keySet())
+        {
+            int val = -1;
+            if (updates.get(tag))
+                val = 1;
+            changes.put(tag, val);
+        }
+
+        // Next, queue the updates for each tag scope
+        for (NodeRef tagScopeNode : tagScopeNodeRefs)
+        {
+            Map<String, Serializable> auditValues = new HashMap<String, Serializable>();
+            auditValues.put(TAGGING_AUDIT_KEY_TAGS, changes);
+            auditValues.put(TAGGING_AUDIT_KEY_NODEREF, tagScopeNode.toString());
+            auditComponent.recordAuditValues(TAGGING_AUDIT_ROOT_PATH, auditValues);
+        }
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Queueing async tag scope updates to tag scopes " + tagScopeNodeRefs + " of " + changes);
+        }
+
+        // Finally, trigger the action to process the updates
+        // This will happen asynchronously
+        Action action = this.actionService.createAction(UpdateTagScopesActionExecuter.NAME);
+        action.setParameterValue(UpdateTagScopesActionExecuter.PARAM_TAG_SCOPES, tagScopeNodeRefs);
+        this.actionService.executeAction(action, null, false, true);
     }
-    
+
     /**
-     * Records the fact that the given tag for the given node will need to
-     *  be added or removed from its parent tags scopes.
-     * {@link #updateTagScope(NodeRef, Map)} will schedule the update
-     *  to occur, and an async action will do it. 
+     * Records the fact that the given tag for the given node will need to be added or removed from its parent tags scopes. {@link #updateTagScope(NodeRef, Map)} will schedule the update to occur, and an async action will do it.
      */
     @SuppressWarnings("unchecked")
     private void queueTagUpdate(NodeRef nodeRef, String tag, boolean add)
     {
-        // Get the updates map        
-        Map<NodeRef, Map<String, Boolean>> updates = (Map<NodeRef, Map<String, Boolean>>)AlfrescoTransactionSupport.getResource(TAG_UPDATES);
+        // Get the updates map
+        Map<NodeRef, Map<String, Boolean>> updates = (Map<NodeRef, Map<String, Boolean>>) AlfrescoTransactionSupport.getResource(TAG_UPDATES);
         if (updates == null)
         {
-            updates = new HashMap<NodeRef, Map<String,Boolean>>(10);
+            updates = new HashMap<NodeRef, Map<String, Boolean>>(10);
             AlfrescoTransactionSupport.bindResource(TAG_UPDATES, updates);
             AlfrescoTransactionSupport.bindListener(this);
         }
-        
+
         // Add the details of the update to the map
         Map<String, Boolean> nodeDetails = updates.get(nodeRef);
         if (nodeDetails == null)
@@ -1569,31 +1576,30 @@ public class TaggingServiceImpl implements TaggingService,
             else if (currentValue.booleanValue() != add)
             {
                 // If the boolean value is different then the tag had been added and removed or
-                // removed and then added in the same transaction.  In both cases the net change is none.
+                // removed and then added in the same transaction. In both cases the net change is none.
                 // So remove the entry in the update map
                 nodeDetails.remove(tag);
             }
             // Otherwise do nothing because we have already noted the update
         }
-        
+
     }
-    
+
     // ===== Transaction Listener Callback Methods ===== //
-    
+
     /**
      * @see TransactionListener#afterCommit()
      */
     public void afterCommit()
     {
-        
+
     }
 
     /**
      * @see TransactionListener#afterRollback()
      */
     public void afterRollback()
-    {
-    }
+    {}
 
     /**
      * @see TransactionListener#beforeCommit(boolean)
@@ -1601,7 +1607,7 @@ public class TaggingServiceImpl implements TaggingService,
     @SuppressWarnings("unchecked")
     public void beforeCommit(boolean readOnly)
     {
-        Map<NodeRef, Map<String, Boolean>> updates = (Map<NodeRef, Map<String, Boolean>>)AlfrescoTransactionSupport.getResource(TAG_UPDATES);
+        Map<NodeRef, Map<String, Boolean>> updates = (Map<NodeRef, Map<String, Boolean>>) AlfrescoTransactionSupport.getResource(TAG_UPDATES);
         if (updates != null)
         {
             for (NodeRef nodeRef : updates.keySet())
@@ -1624,16 +1630,14 @@ public class TaggingServiceImpl implements TaggingService,
      * @see TransactionListener#beforeCompletion()
      */
     public void beforeCompletion()
-    {
-    }
+    {}
 
     /**
      * @see TransactionListener#flush()
      */
     public void flush()
-    {
-    }
-    
+    {}
+
     public void afterCheckOut(NodeRef workingCopy)
     {
         if (this.nodeService.exists(workingCopy) == true && this.nodeService.hasAspect(workingCopy, ContentModel.ASPECT_TAGGABLE) == true
@@ -1706,13 +1710,15 @@ public class TaggingServiceImpl implements TaggingService,
         try
         {
             return tagNames.stream()
-                .map(String::toLowerCase)
-                .peek(tagName -> categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, tagName, false).stream()
-                    .filter(association -> Objects.nonNull(association.getChildRef()))
-                    .findAny()
-                    .ifPresent(association -> { throw new DuplicateChildNodeNameException(association.getParentRef(), association.getTypeQName(), tagName, null); }))
-                .map(tagName -> new Pair<>(tagName, getTagNodeRef(storeRef, tagName, true)))
-                .collect(Collectors.toList());
+                    .map(String::toLowerCase)
+                    .peek(tagName -> categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, tagName, false).stream()
+                            .filter(association -> Objects.nonNull(association.getChildRef()))
+                            .findAny()
+                            .ifPresent(association -> {
+                                throw new DuplicateChildNodeNameException(association.getParentRef(), association.getTypeQName(), tagName, null);
+                            }))
+                    .map(tagName -> new Pair<>(tagName, getTagNodeRef(storeRef, tagName, true)))
+                    .collect(Collectors.toList());
         }
         finally
         {
@@ -1723,14 +1729,13 @@ public class TaggingServiceImpl implements TaggingService,
 
     private <T, R> PagingResults<R> mapPagingResult(final PagingResults<T> pagingResults, final Function<T, R> mapper)
     {
-        return new PagingResults<R>()
-        {
+        return new PagingResults<R>() {
             @Override
             public List<R> getPage()
             {
                 return pagingResults.getPage().stream()
-                    .map(mapper)
-                    .collect(Collectors.toList());
+                        .map(mapper)
+                        .collect(Collectors.toList());
             }
 
             @Override

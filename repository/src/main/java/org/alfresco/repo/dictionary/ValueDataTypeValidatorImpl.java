@@ -26,6 +26,8 @@
 
 package org.alfresco.repo.dictionary;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -34,7 +36,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author Jamal Kaabi-Mofrad
@@ -84,7 +85,7 @@ public class ValueDataTypeValidatorImpl implements ValueDataTypeValidator
         DataTypeDefinition typeDef = this.dictionaryService.getDataType(typeQName);
         if (typeDef == null)
         {
-            throw new AlfrescoRuntimeException(MSG_DATA_TYPE_UNKNOWN, new Object[] { typeQName.toPrefixString() });
+            throw new AlfrescoRuntimeException(MSG_DATA_TYPE_UNKNOWN, new Object[]{typeQName.toPrefixString()});
         }
 
         if (DataTypeDefinition.BOOLEAN.equals(typeQName))
@@ -101,14 +102,14 @@ public class ValueDataTypeValidatorImpl implements ValueDataTypeValidator
             {
                 if (DataTypeDefinition.DATE.equals(typeQName))
                 {
-                    throw new AlfrescoRuntimeException(MSG_INVALID_DATE, new Object[] { value });
+                    throw new AlfrescoRuntimeException(MSG_INVALID_DATE, new Object[]{value});
                 }
                 if (DataTypeDefinition.DATETIME.equals(typeQName))
                 {
-                    throw new AlfrescoRuntimeException(MSG_INVALID_DATETIME, new Object[] { value });
+                    throw new AlfrescoRuntimeException(MSG_INVALID_DATETIME, new Object[]{value});
                 }
 
-                throw new AlfrescoRuntimeException(MSG_INVALID_VALUE, new Object[] { value, typeQName.toPrefixString() });
+                throw new AlfrescoRuntimeException(MSG_INVALID_VALUE, new Object[]{value, typeQName.toPrefixString()});
             }
         }
     }
@@ -117,7 +118,7 @@ public class ValueDataTypeValidatorImpl implements ValueDataTypeValidator
     {
         if (!("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)))
         {
-            throw new AlfrescoRuntimeException(MSG_INVALID_BOOLEAN_VALUE, new Object[] { value });
+            throw new AlfrescoRuntimeException(MSG_INVALID_BOOLEAN_VALUE, new Object[]{value});
         }
     }
 

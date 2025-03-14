@@ -25,19 +25,20 @@
  */
 package org.alfresco.repo.rendition2;
 
+import java.io.IOException;
+import java.util.Map;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ParameterCheck;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.IOException;
-import java.util.Map;
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ParameterCheck;
 
 /**
  * Transform Request processor executes transformation based on TransformRequest event.
@@ -67,7 +68,8 @@ public class TransformRequestProcessor implements Processor
         this.transactionService = transactionService;
     }
 
-    @Override public void process(Exchange exchange) throws Exception
+    @Override
+    public void process(Exchange exchange) throws Exception
     {
         String body = (String) exchange.getMessage().getBody();
 
@@ -124,24 +126,22 @@ public class TransformRequestProcessor implements Processor
         String requestId = event.getRequestId();
 
         TransformDefinition transformDefinition = new TransformDefinition(transformName, targetMediaType, transformOptions,
-            clientData, replyQueue, requestId, null);
+                clientData, replyQueue, requestId, null);
 
         NodeRef nodeRef = new NodeRef(event.getNodeRef());
 
         AuthenticationUtil.runAs(
-            (AuthenticationUtil.RunAsWork<Void>) () -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
-                renditionService2.transform(nodeRef, transformDefinition);
+                (AuthenticationUtil.RunAsWork<Void>) () -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+                    renditionService2.transform(nodeRef, transformDefinition);
 
-                return null;
-            }), AuthenticationUtil.getSystemUserName());
+                    return null;
+                }), AuthenticationUtil.getSystemUserName());
     }
 
     String processReplyQueue(String replyQueue)
     {
         // Strip "jms:" or "queue://" prefix from the reply queue if provided, it is the responsibility of the
         // TransformReply Provider to specify the proper protocol of the replyQueue.
-        return replyQueue.startsWith("jms:") ?
-            replyQueue.substring("jms:".length()) :
-            replyQueue.startsWith("queue://") ? replyQueue.substring("queue://".length()) : replyQueue;
+        return replyQueue.startsWith("jms:") ? replyQueue.substring("jms:".length()) : replyQueue.startsWith("queue://") ? replyQueue.substring("queue://".length()) : replyQueue;
     }
 }

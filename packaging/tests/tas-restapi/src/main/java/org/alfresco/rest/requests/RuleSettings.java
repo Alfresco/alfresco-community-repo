@@ -31,10 +31,11 @@
  */
 package org.alfresco.rest.requests;
 
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestRuleSettingsModel;
-import org.springframework.http.HttpMethod;
 
 public class RuleSettings extends ModelRequest<FolderRules>
 {

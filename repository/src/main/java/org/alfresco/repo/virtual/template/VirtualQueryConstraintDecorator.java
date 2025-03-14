@@ -31,8 +31,7 @@ import org.alfresco.repo.virtual.VirtualizationException;
 import org.alfresco.service.cmr.search.SearchParameters;
 
 /**
- * {@link SearchParameters} decorator delegate implementation if a query
- * constraint.
+ * {@link SearchParameters} decorator delegate implementation if a query constraint.
  *
  * @author Bogdan Horje
  */
@@ -48,24 +47,22 @@ public abstract class VirtualQueryConstraintDecorator implements VirtualQueryCon
 
     @Override
     public final SearchParameters apply(ActualEnvironment environment, VirtualQuery query)
-                throws VirtualizationException
+            throws VirtualizationException
     {
         SearchParameters searchParametersToDecorate = decoratedConstraint.apply(environment,
-                                                                                query);
+                query);
 
         return applyDecorations(environment,
-                                searchParametersToDecorate,
-                                query);
+                searchParametersToDecorate,
+                query);
     }
 
     /**
      * @param environment
      * @param searchParameters
      * @param query
-     * @return a new {@link SearchParameters} instance containing the given
-     *         parameters values with additional decorations/changes enforced by
-     *         this decorator constraint
+     * @return a new {@link SearchParameters} instance containing the given parameters values with additional decorations/changes enforced by this decorator constraint
      */
     protected abstract SearchParameters applyDecorations(ActualEnvironment environment,
-                SearchParameters searchParameters, VirtualQuery query);
+            SearchParameters searchParameters, VirtualQuery query);
 }

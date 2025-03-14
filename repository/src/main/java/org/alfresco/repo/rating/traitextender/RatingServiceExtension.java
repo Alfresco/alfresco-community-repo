@@ -29,5 +29,5 @@ import org.alfresco.service.cmr.rating.RatingService;
 
 public interface RatingServiceExtension extends RatingService
 {
-    
+
 }

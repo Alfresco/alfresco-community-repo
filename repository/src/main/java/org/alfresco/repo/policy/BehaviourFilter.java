@@ -32,11 +32,10 @@ import org.alfresco.service.namespace.QName;
 /**
  * Contract disabling and enabling policy behaviours.
  * <p/>
- * Since 4.0, the behaviour enabling/disabling is recorded using reference counting,
- * meaning that the outermost disable call in a stack has an effective veto.  Use
- * proper try-finally patterns to ensure behaviour is released after it is no longer
- * needed.
- * <pre><code>
+ * Since 4.0, the behaviour enabling/disabling is recorded using reference counting, meaning that the outermost disable call in a stack has an effective veto. Use proper try-finally patterns to ensure behaviour is released after it is no longer needed.
+ * 
+ * <pre>
+ * <code>
  * behaviourFilter.disableBehaviour(abc);
  * try
  * {
@@ -55,7 +54,8 @@ import org.alfresco.service.namespace.QName;
  * {
  *     behaviourFilter.enableBehaviour(abc);
  * }
- * </code></pre>
+ * </code>
+ * </pre>
  * 
  * @see org.alfresco.repo.policy.PolicyComponent
  * 
@@ -68,49 +68,48 @@ public interface BehaviourFilter
      * @deprecated Since 4.0 use {@link #enableBehaviour(NodeRef)}
      */
     public void enableBehaviours(NodeRef nodeRef);
-    
+
     /**
      * @deprecated Since 4.0 use {@link #enableBehaviour(NodeRef)}
      */
     public void disableAllBehaviours();
-    
+
     /**
      * @deprecated Since 4.0 use {@link #disableBehaviour()}
      */
     public void enableAllBehaviours();
-    
+
     /**
      * Disable behaviour for all types
      * <p>
      * The change applies <b>ONLY</b> to the current transaction.
      */
     public void disableBehaviour();
-    
+
     /**
-     * Disable behaviour for a type or aspect for all nodes.
+     * Disable behaviour for a type or aspect for all nodes. <br>
+     * Given a direct instance of className (ie. not a subclass) all behaviour is disabled (including superclass behaviour). </br>
      * <br>
-     * Given a direct instance of className (ie. not a subclass) 
-     * all behaviour is disabled (including superclass behaviour).
-     * </br>
-     * <br>The same as calling {@link #disableBehaviour(QName, boolean)} with <code>false</code></br>
+     * The same as calling {@link #disableBehaviour(QName, boolean)} with <code>false</code></br>
      * <p>
      * The change applies <b>ONLY</b> to the current transaction.
      *
-     * @param className         the type/aspect behaviour to disable
+     * @param className
+     *            the type/aspect behaviour to disable
      */
     public void disableBehaviour(QName className);
 
     /**
-     * Disable behaviour for a type or aspect for all nodes.
+     * Disable behaviour for a type or aspect for all nodes. <br>
+     * Given an instance of className (including instances that are subclasses of className, if includeSubClasses is true) all behaviour is disabled (including superclass behaviour). </br>
      * <br>
-     * Given an instance of className (including instances that are subclasses of className, if includeSubClasses is true) 
-     * all behaviour is disabled (including superclass behaviour).
-     * </br>
-     * <br>Successive calls (within the current transaction) will overwrite the filter for this class.</br>
+     * Successive calls (within the current transaction) will overwrite the filter for this class.</br>
      * The change applies <b>ONLY</b> to the current transaction.
      * 
-     * @param className the type/aspect behaviour to disable
-     * @param includeSubClasses set to <code>true</code> to disable the behaviours of subclasses
+     * @param className
+     *            the type/aspect behaviour to disable
+     * @param includeSubClasses
+     *            set to <code>true</code> to disable the behaviours of subclasses
      * 
      * @since 5.1
      */
@@ -121,15 +120,18 @@ public interface BehaviourFilter
      * <p>
      * The change applies <b>ONLY</b> to the current transaction.
      * 
-     * @param nodeRef           the node to disable for
-     * @param className         the type/aspect behaviour to disable
+     * @param nodeRef
+     *            the node to disable for
+     * @param className
+     *            the type/aspect behaviour to disable
      */
     public void disableBehaviour(NodeRef nodeRef, QName className);
-    
+
     /**
      * Disable all behaviours for a given node
      * 
-     * @param nodeRef           the node to disable for
+     * @param nodeRef
+     *            the node to disable for
      */
     public void disableBehaviour(NodeRef nodeRef);
 
@@ -139,33 +141,37 @@ public interface BehaviourFilter
      * The change applies <b>ONLY</b> to the current transaction.
      */
     public void enableBehaviour();
-    
+
     /**
-     * Enable behaviour for all nodes
-     * <br>This is also applied to the to the disabled behaviours with {@link #disableBehaviour(QName, boolean)}</br>
+     * Enable behaviour for all nodes <br>
+     * This is also applied to the to the disabled behaviours with {@link #disableBehaviour(QName, boolean)}</br>
      * <p>
      * The change applies <b>ONLY</b> to the current transaction.
      * 
-     * @param className         the type/aspect behaviour to enable
+     * @param className
+     *            the type/aspect behaviour to enable
      */
     public void enableBehaviour(QName className);
-    
+
     /**
      * Enable behaviour for specific node
      * <p>
      * The change applies <b>ONLY</b> to the current transaction.
      * 
-     * @param nodeRef           the node to enable for
-     * @param className         the type/aspect behaviour to enable or <tt>null</tt> for all classes
+     * @param nodeRef
+     *            the node to enable for
+     * @param className
+     *            the type/aspect behaviour to enable or <tt>null</tt> for all classes
      */
     public void enableBehaviour(NodeRef nodeRef, QName className);
-    
+
     /**
      * Enable behaviour for a specific node
      * <p>
      * The change applies <b>ONLY</b> to the current transaction.
      * 
-     * @param nodeRef           the node to enable for
+     * @param nodeRef
+     *            the node to enable for
      * 
      * @since 4.0
      */
@@ -176,53 +182,55 @@ public interface BehaviourFilter
      * <p>
      * The change applies <b>ONLY</b> to the current transaction.
      * 
-     * @return              true => behaviour is enabled
+     * @return true => behaviour is enabled
      * 
      * @since 4.0
      */
     public boolean isEnabled();
-    
+
     /**
      * Determine if behaviour is enabled for a class.
      * <p>
      * The change applies <b>ONLY</b> to the current transaction.
      * 
-     * @param className     the behaviour to test for
-     * @return              true => behaviour is enabled
+     * @param className
+     *            the behaviour to test for
+     * @return true => behaviour is enabled
      */
     public boolean isEnabled(QName className);
 
     /**
      * Determine if behaviour is enabled for specific node and class.
-     * <p> 
-     * Note: A node behaviour is enabled only when:
-     *       a) the behaviour is not disabled across all nodes
-     *       b) the behaviour is not disabled specifically for the provided node
+     * <p>
+     * Note: A node behaviour is enabled only when: a) the behaviour is not disabled across all nodes b) the behaviour is not disabled specifically for the provided node
      * <p>
      * The change applies <b>ONLY</b> to the current transaction.
      * 
-     * @param nodeRef       the node to test for
-     * @param className     the behaviour to test for
-     * @return              true => behaviour is enabled
+     * @param nodeRef
+     *            the node to test for
+     * @param className
+     *            the behaviour to test for
+     * @return true => behaviour is enabled
      */
     public boolean isEnabled(NodeRef nodeRef, QName className);
-    
+
     /**
      * Determine if behaviour is enabled for a specific node.
      * <p>
      * The change applies <b>ONLY</b> to the current transaction.
      * 
-     * @param nodeRef       the node to test for
-     * @return              true => behaviour is enabled
+     * @param nodeRef
+     *            the node to test for
+     * @return true => behaviour is enabled
      */
     public boolean isEnabled(NodeRef nodeRef);
-    
+
     /**
      * Determine if any behaviours have been disabled or altered.
      * <p>
      * The change applies <b>ONLY</b> to the current transaction.
      * 
-     * @return               true => behaviours have been altered
+     * @return true => behaviours have been altered
      */
     public boolean isActivated();
 }

@@ -35,8 +35,7 @@ public class Dialect
     private final TypeNames typeNames = new TypeNames();
 
     protected Dialect()
-    {
-    }
+    {}
 
     public String toString()
     {
@@ -44,28 +43,30 @@ public class Dialect
     }
 
     /**
-     * Subclasses register a type name for the given type code and maximum
-     * column length. <tt>$l</tt> in the type name with be replaced by the
-     * column length (if appropriate).
+     * Subclasses register a type name for the given type code and maximum column length. <tt>$l</tt> in the type name with be replaced by the column length (if appropriate).
      *
-     * @param code The {@link java.sql.Types} typecode
-     * @param capacity The maximum length of database type
-     * @param name The database type name
+     * @param code
+     *            The {@link java.sql.Types} typecode
+     * @param capacity
+     *            The maximum length of database type
+     * @param name
+     *            The database type name
      */
     protected void registerColumnType(int code, int capacity, String name)
     {
-        typeNames.put( code, capacity, name );
+        typeNames.put(code, capacity, name);
     }
 
     /**
-     * Subclasses register a type name for the given type code. <tt>$l</tt> in
-     * the type name with be replaced by the column length (if appropriate).
+     * Subclasses register a type name for the given type code. <tt>$l</tt> in the type name with be replaced by the column length (if appropriate).
      *
-     * @param code The {@link java.sql.Types} typecode
-     * @param name The database type name
+     * @param code
+     *            The {@link java.sql.Types} typecode
+     * @param name
+     *            The database type name
      */
     protected void registerColumnType(int code, String name)
     {
-        typeNames.put( code, name );
+        typeNames.put(code, name);
     }
 }

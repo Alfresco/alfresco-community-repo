@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.annotation.Resource;
 
 import org.activiti.engine.HistoryService;
@@ -48,6 +47,18 @@ import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.i18n.MessageService;
@@ -73,17 +84,6 @@ import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.testing.category.NeverRunsTests;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Nick Smith
@@ -91,9 +91,9 @@ import org.springframework.transaction.annotation.Transactional;
  * @since 3.4.e
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"classpath:test-database-context.xml",
-            "classpath:activiti/test-activiti-component-context.xml",
-            "classpath:alfresco/activiti-context.xml"})
+@ContextConfiguration(locations = {"classpath:test-database-context.xml",
+        "classpath:activiti/test-activiti-component-context.xml",
+        "classpath:alfresco/activiti-context.xml"})
 @Transactional
 @Category(NeverRunsTests.class)
 public class AbstractActivitiComponentTest
@@ -109,52 +109,52 @@ public class AbstractActivitiComponentTest
     protected static final String TEST_JOB_KEY = "testAdhoc";
     protected static final String TEST_JOB_DEF = "activiti/testJob.bpmn20.xml";
     protected static final String TEST_DIAGRAM_DEF = "activiti/testDiagram.bpmn20.xml";
-    
+
     protected static final String XML = MimetypeMap.MIMETYPE_XML;
 
     @Autowired
     protected ProcessEngine processEngine;
 
-    @Resource(name="activitiWorkflowEngine")
+    @Resource(name = "activitiWorkflowEngine")
     protected ActivitiWorkflowEngine workflowEngine;
-    @Resource(name="activitiRuntimeService")
+    @Resource(name = "activitiRuntimeService")
     protected RuntimeService runtime;
-    @Resource(name="activitiRepositoryService")
+    @Resource(name = "activitiRepositoryService")
     protected RepositoryService repo;
-    @Resource(name="activitiTaskService")
+    @Resource(name = "activitiTaskService")
     protected TaskService taskService;
-    @Resource(name="activitiHistoryService")
+    @Resource(name = "activitiHistoryService")
     protected HistoryService historyService;
-    @Resource(name="activitiManagementService")
+    @Resource(name = "activitiManagementService")
     protected ManagementService managementService;
-    
+
     @Resource
     protected MessageService messageService;
 
-    @Resource(name="NamespaceService")
+    @Resource(name = "NamespaceService")
     protected NamespaceService namespaceService;
 
-    @Resource(name="DictionaryService")
+    @Resource(name = "DictionaryService")
     protected DictionaryService dictionaryService;
 
-    @Resource(name="NodeService")
+    @Resource(name = "NodeService")
     protected NodeService nodeService;
-    
-    @Resource(name="searchService")
+
+    @Resource(name = "searchService")
     protected SearchService unprotectedSearchService;
-    
+
     @Resource
     protected PermissionService permissionService;
-    
-    @Resource(name="PersonService")
+
+    @Resource(name = "PersonService")
     protected PersonService personService;
-    
+
     @Resource
     protected AuthorityDAO authorityDAO;
-    
+
     @Resource
     protected ServiceRegistry serviceRegistry;
-    
+
     protected static final NodeRef rootNode = new NodeRef("workspace://root/");
     protected static final NodeRef companyHomeNode = new NodeRef("workspace://companyHome/");
     protected static final NodeRef adminPersonNode = new NodeRef("workspace://admin/");
@@ -163,7 +163,7 @@ public class AbstractActivitiComponentTest
     protected static final NodeRef testGroupNode = new NodeRef("workspace://testGroup/");
     protected static final NodeRef testWorkflowPackage = new NodeRef("workspace://testPackage/");
     protected static final NodeRef testWorkflowContext = new NodeRef("workspace://testContext/");
-    
+
     protected WorkflowDefinition deployTestTaskDefinition()
     {
         return deployDefinition(TEST_TASK_DEF);
@@ -173,22 +173,22 @@ public class AbstractActivitiComponentTest
     {
         return deployDefinition(TEST_ADHOC_DEF);
     }
-    
+
     protected WorkflowDefinition deployTestSignallingDefinition()
     {
         return deployDefinition(TEST_SIGNALLING_DEF);
     }
-    
+
     protected WorkflowDefinition deployTestJobDefinition()
     {
         return deployDefinition(TEST_JOB_DEF);
     }
-    
+
     protected WorkflowDefinition deployTestDiagramDefinition()
     {
         return deployDefinition(TEST_DIAGRAM_DEF);
     }
-    
+
     protected WorkflowDefinition deployDefinition(String resource)
     {
         InputStream input = getInputStream(resource);
@@ -200,10 +200,9 @@ public class AbstractActivitiComponentTest
     protected InputStream getInputStream(String resource)
     {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        InputStream input= classLoader.getResourceAsStream(resource);
+        InputStream input = classLoader.getResourceAsStream(resource);
         return input;
     }
-
 
     @Before
     public void setUp() throws Exception
@@ -220,17 +219,17 @@ public class AbstractActivitiComponentTest
         Repository repoHelper = mock(Repository.class);
         when(repoHelper.getCompanyHome()).thenReturn(companyHomeNode);
         workflowEngine.setRepositoryHelper(repoHelper);
-        
+
         // Also add custom type
         // TODO: Should come from configuration
         ScriptNodeVariableType variableType = new ScriptNodeVariableType();
         variableType.setServiceRegistry(serviceRegistry);
-        
-//        ((ProcessEngineImpl)processEngine).getProcessEngineConfiguration().getVariableTypes().addType(variableType, 1);
-        
-        // Use util to set current user to admin 
+
+        // ((ProcessEngineImpl)processEngine).getProcessEngineConfiguration().getVariableTypes().addType(variableType, 1);
+
+        // Use util to set current user to admin
         AuthenticationUtil.setFullyAuthenticatedUser("admin");
-        
+
         workflowEngine.afterPropertiesSet();
     }
 
@@ -244,25 +243,25 @@ public class AbstractActivitiComponentTest
         when(serviceRegistry.getDictionaryService()).thenReturn(dictionaryService);
         when(serviceRegistry.getPermissionService()).thenReturn(permissionService);
     }
-    
+
     private void mockAuthorityDAO()
     {
-       when(authorityDAO.authorityExists(TEST_USER)).thenReturn(true);
-       when(authorityDAO.authorityExists(TEST_GROUP)).thenReturn(true);
-    
-       // We will return dummy node refs to authorities testUser and testGroup
-       when(authorityDAO.getAuthorityNodeRefOrNull(TEST_USER)).thenReturn(testUserNode);
-       when(authorityDAO.getAuthorityNodeRefOrNull(TEST_GROUP)).thenReturn(testGroupNode);
+        when(authorityDAO.authorityExists(TEST_USER)).thenReturn(true);
+        when(authorityDAO.authorityExists(TEST_GROUP)).thenReturn(true);
+
+        // We will return dummy node refs to authorities testUser and testGroup
+        when(authorityDAO.getAuthorityNodeRefOrNull(TEST_USER)).thenReturn(testUserNode);
+        when(authorityDAO.getAuthorityNodeRefOrNull(TEST_GROUP)).thenReturn(testGroupNode);
     }
 
     private void mockPersonService()
     {
         // Checking if admin exists
         when(personService.personExists("admin")).thenReturn(true);
-        
+
         // Return reference to Admin person
         when(personService.getPerson("admin")).thenReturn(adminPersonNode);
-        
+
         // Check if test-user exists
         when(personService.personExists(TEST_USER)).thenReturn(true);
         when(personService.getPerson(TEST_USER)).thenReturn(testUserNode);
@@ -278,19 +277,19 @@ public class AbstractActivitiComponentTest
     {
         // Return root store
         when(nodeService.getRootNode(new StoreRef("workspace://SpacesStore"))).thenReturn(rootNode);
-        
+
         // Return company home and it's type
         when(nodeService.exists(companyHomeNode)).thenReturn(true);
         when(nodeService.getType((NodeRef) any())).thenReturn(QName.createQName("cm:folder"));
-        
+
         // Return admin's home property
         when(nodeService.getProperty(adminPersonNode, ContentModel.PROP_HOMEFOLDER)).thenReturn(adminHomeNode);
-        
+
         // Return testUser and testGroup types
         when(nodeService.getType(testUserNode)).thenReturn(ContentModel.TYPE_PERSON);
         when(nodeService.getType(testGroupNode)).thenReturn(ContentModel.TYPE_AUTHORITY);
     }
-    
+
     private void mockSearchService()
     {
         // When searching for company home, return single node
@@ -300,75 +299,72 @@ public class AbstractActivitiComponentTest
     private void mockDictionaryService()
     {
         Mockito.reset(dictionaryService);
-        when(dictionaryService.getType((QName)any())).thenAnswer(new Answer<TypeDefinition>()
-        {
+        when(dictionaryService.getType((QName) any())).thenAnswer(new Answer<TypeDefinition>() {
             @Override
             public TypeDefinition answer(InvocationOnMock invocation) throws Throwable
             {
                 QName name = (QName) invocation.getArguments()[0];
                 TypeDefinition type = mock(TypeDefinition.class);
-           
+
                 when(type.getName()).thenReturn(name);
                 return type;
             }
         });
-        
-        when(dictionaryService.getAnonymousType((QName)any())).thenAnswer(new Answer<TypeDefinition>()
-                    {
-                        @Override
-                        public TypeDefinition answer(InvocationOnMock invocation) throws Throwable
-                        {
-                            QName name = (QName) invocation.getArguments()[0];
-                            TypeDefinition type = mock(TypeDefinition.class);
-                       
-                            when(type.getName()).thenReturn(name);
-                            
-                            // Add a default value
-                            Map<QName, PropertyDefinition> props = new HashMap<QName, PropertyDefinition>();
-                            QName qname = QName.createQName("http://test", "myProp");
-                            
-                            
-                            DataTypeDefinition qNameDef = mock(DataTypeDefinition.class);
-                            when(qNameDef.getName()).thenReturn(DataTypeDefinition.QNAME);
-                            when(qNameDef.getJavaClassName()).thenReturn(QName.class.getName());
-                            
-                            // Create dummy property type
-                            DataTypeDefinition def = mock(DataTypeDefinition.class);
-                            when(def.getName()).thenReturn(DataTypeDefinition.TEXT);
-                            when(def.getJavaClassName()).thenReturn(String.class.getName());
-                            
-                            // Create dummy property definition
-                            PropertyDefinition prop = mock(PropertyDefinition.class);
-                            when(prop.getName()).thenReturn(qname);
-                            when(prop.getDefaultValue()).thenReturn("Default value");
-                            when(prop.getDataType()).thenReturn(def);
-                            
-                            // Also add description
-                            PropertyDefinition description = mock(PropertyDefinition.class);
-                            when(description.getName()).thenReturn(WorkflowModel.PROP_DESCRIPTION);
-                            when(description.getDataType()).thenReturn(def);
-                            
-                            // Add outcome property name
-                            PropertyDefinition outcomePropertyName = mock(PropertyDefinition.class);
-                            when(outcomePropertyName.getName()).thenReturn(WorkflowModel.PROP_OUTCOME_PROPERTY_NAME);
-                            when(outcomePropertyName.getDataType()).thenReturn(qNameDef);
-                            when(outcomePropertyName.getDefaultValue()).thenReturn("{http://test}testOutcome");
-                            
-                           // Add outcome property
-                            PropertyDefinition outcomeProperty = mock(PropertyDefinition.class);
-                            when(outcomeProperty.getName()).thenReturn(QName.createQName("http://test", "testOutcome"));
-                            when(outcomeProperty.getDataType()).thenReturn(def);
-                            
-                            props.put(qname, prop);
-                            props.put(WorkflowModel.PROP_DESCRIPTION, description);
-                            props.put(WorkflowModel.PROP_OUTCOME_PROPERTY_NAME, outcomePropertyName);
-                            props.put(QName.createQName("http://test", "testOutcome"), outcomeProperty);
-                            
-                            when(type.getProperties()).thenReturn(props);
-                            return type;
-                        }
-                    });
-        
+
+        when(dictionaryService.getAnonymousType((QName) any())).thenAnswer(new Answer<TypeDefinition>() {
+            @Override
+            public TypeDefinition answer(InvocationOnMock invocation) throws Throwable
+            {
+                QName name = (QName) invocation.getArguments()[0];
+                TypeDefinition type = mock(TypeDefinition.class);
+
+                when(type.getName()).thenReturn(name);
+
+                // Add a default value
+                Map<QName, PropertyDefinition> props = new HashMap<QName, PropertyDefinition>();
+                QName qname = QName.createQName("http://test", "myProp");
+
+                DataTypeDefinition qNameDef = mock(DataTypeDefinition.class);
+                when(qNameDef.getName()).thenReturn(DataTypeDefinition.QNAME);
+                when(qNameDef.getJavaClassName()).thenReturn(QName.class.getName());
+
+                // Create dummy property type
+                DataTypeDefinition def = mock(DataTypeDefinition.class);
+                when(def.getName()).thenReturn(DataTypeDefinition.TEXT);
+                when(def.getJavaClassName()).thenReturn(String.class.getName());
+
+                // Create dummy property definition
+                PropertyDefinition prop = mock(PropertyDefinition.class);
+                when(prop.getName()).thenReturn(qname);
+                when(prop.getDefaultValue()).thenReturn("Default value");
+                when(prop.getDataType()).thenReturn(def);
+
+                // Also add description
+                PropertyDefinition description = mock(PropertyDefinition.class);
+                when(description.getName()).thenReturn(WorkflowModel.PROP_DESCRIPTION);
+                when(description.getDataType()).thenReturn(def);
+
+                // Add outcome property name
+                PropertyDefinition outcomePropertyName = mock(PropertyDefinition.class);
+                when(outcomePropertyName.getName()).thenReturn(WorkflowModel.PROP_OUTCOME_PROPERTY_NAME);
+                when(outcomePropertyName.getDataType()).thenReturn(qNameDef);
+                when(outcomePropertyName.getDefaultValue()).thenReturn("{http://test}testOutcome");
+
+                // Add outcome property
+                PropertyDefinition outcomeProperty = mock(PropertyDefinition.class);
+                when(outcomeProperty.getName()).thenReturn(QName.createQName("http://test", "testOutcome"));
+                when(outcomeProperty.getDataType()).thenReturn(def);
+
+                props.put(qname, prop);
+                props.put(WorkflowModel.PROP_DESCRIPTION, description);
+                props.put(WorkflowModel.PROP_OUTCOME_PROPERTY_NAME, outcomePropertyName);
+                props.put(QName.createQName("http://test", "testOutcome"), outcomeProperty);
+
+                when(type.getProperties()).thenReturn(props);
+                return type;
+            }
+        });
+
         // Mock type inheritance for person nodes
         when(dictionaryService.isSubClass(ContentModel.TYPE_PERSON, ContentModel.TYPE_PERSON)).thenReturn(true);
     }
@@ -385,8 +381,8 @@ public class AbstractActivitiComponentTest
     public void tearDown()
     {
         List<ProcessDefinition> defs = repo.createProcessDefinitionQuery()
-            .processDefinitionKey(TEST_TASK_KEY)
-            .list();
+                .processDefinitionKey(TEST_TASK_KEY)
+                .list();
         HashSet<String> deployments = new HashSet<String>(defs.size());
         for (ProcessDefinition def : defs)
         {
@@ -395,8 +391,8 @@ public class AbstractActivitiComponentTest
         for (String deployment : deployments)
         {
             List<ProcessDefinition> definitions = repo.createProcessDefinitionQuery()
-                .deploymentId(deployment)
-                .list();
+                    .deploymentId(deployment)
+                    .list();
             for (ProcessDefinition def : definitions)
             {
                 killInstances(def);
@@ -404,8 +400,8 @@ public class AbstractActivitiComponentTest
             repo.deleteDeployment(deployment);
         }
     }
-    
-        public String mapQNameToName(QName name)
+
+    public String mapQNameToName(QName name)
     {
         // NOTE: Map names using old conversion scheme (i.e. : -> _) as well as
         // new scheme (i.e. } -> _)
@@ -417,17 +413,16 @@ public class AbstractActivitiComponentTest
         }
         return nameStr.replace(':', '_');
     }
-    
 
     private void killInstances(ProcessDefinition def)
     {
         List<ProcessInstance> instances = runtime.createProcessInstanceQuery()
-            .processDefinitionId(def.getId())
-            .list();
+                .processDefinitionId(def.getId())
+                .list();
         for (ProcessInstance instance : instances)
         {
             runtime.deleteProcessInstance(instance.getId(), "For test");
         }
     }
-    
+
 }

@@ -32,10 +32,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.Iterator;
 
-import org.alfresco.tools.RenameUser.User;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import org.alfresco.tools.RenameUser.User;
 
 /**
  * Unit test for RenameUser. {@link org.alfresco.repo.security.person.PersonTest} contains integration tests.
@@ -68,7 +69,7 @@ public class RenameUserTest
             file.delete();
         }
     }
-    
+
     private void createFile(String content) throws Exception
     {
         file = File.createTempFile("RenameUserTest", ".txt");
@@ -85,20 +86,20 @@ public class RenameUserTest
         renameUser.processArgs(args);
         renameUser.context.validate();
     }
-    
-    // Check that the expected (supplied) usernames are in the context 
+
+    // Check that the expected (supplied) usernames are in the context
     private void assertUsers(String... usernames)
     {
-        int length = usernames.length/2;
-        assertEquals("Must have an even number of usernames passed to assertUsers", usernames.length, length*2);
-        
+        int length = usernames.length / 2;
+        assertEquals("Must have an even number of usernames passed to assertUsers", usernames.length, length * 2);
+
         assertEquals(length, renameUser.context.userCount());
         Iterator<User> iterator = renameUser.context.iterator();
-        for (int i=0; i<length; i++)
+        for (int i = 0; i < length; i++)
         {
             User user = iterator.next();
-            assertEquals(usernames[i*2], user.getOldUsername());
-            assertEquals(usernames[i*2+1], user.getNewUsername());
+            assertEquals(usernames[i * 2], user.getOldUsername());
+            assertEquals(usernames[i * 2 + 1], user.getNewUsername());
         }
     }
 
@@ -107,9 +108,9 @@ public class RenameUserTest
     {
         // Reset the password to be sure we are picking up the correct value.
         args[3] = "password";
-        
+
         renameUser.processArgs(args);
-        
+
         assertEquals("admin", renameUser.context.getUsername());
         assertEquals("password", renameUser.context.getPassword());
     }
@@ -118,7 +119,7 @@ public class RenameUserTest
     public void testCmdLineUsernames() throws Exception
     {
         renameUser.processArgs(args);
-        
+
         assertUsers("oldUsername", "newUsername");
     }
 
@@ -127,7 +128,7 @@ public class RenameUserTest
     {
         createFile("oldUsername1,newUsername1\n");
         processArgsAndValidate();
-        
+
         assertUsers("oldUsername1", "newUsername1");
     }
 
@@ -136,7 +137,7 @@ public class RenameUserTest
     {
         createFile(" oldUsername1 , newUsername1 \n");
         processArgsAndValidate();
-        
+
         assertUsers("oldUsername1", "newUsername1");
     }
 
@@ -144,11 +145,11 @@ public class RenameUserTest
     public void testFileMultipleUsernames() throws Exception
     {
         createFile("oldUsername1,newUsername1\n" +
-                   "oldUsername2,newUsername2\n");
+                "oldUsername2,newUsername2\n");
         processArgsAndValidate();
-        
+
         assertUsers("oldUsername1", "newUsername1",
-                    "oldUsername2", "newUsername2");
+                "oldUsername2", "newUsername2");
     }
 
     @Test
@@ -156,16 +157,16 @@ public class RenameUserTest
     {
         createFile("oldUsername1,newUsername1");
         processArgsAndValidate();
-        
+
         assertUsers("oldUsername1", "newUsername1");
     }
-    
+
     @Test
     public void testEmptyLines() throws Exception
     {
         createFile("\n\noldUsername1,newUsername1\n\n");
         processArgsAndValidate();
-        
+
         assertUsers("oldUsername1", "newUsername1");
     }
 
@@ -174,11 +175,11 @@ public class RenameUserTest
     {
         createFile("#A header comment\noldUsername1,newUsername1  #end of line comment\n\n");
         processArgsAndValidate();
-        
+
         assertUsers("oldUsername1", "newUsername1");
     }
 
-    @Test(expected=ToolArgumentException.class)
+    @Test(expected = ToolArgumentException.class)
     public void testBadFilename() throws Exception
     {
         createFile("oldUsername1,newUsername1\n");
@@ -186,42 +187,42 @@ public class RenameUserTest
         processArgsAndValidate();
     }
 
-    @Test(expected=ToolArgumentException.class)
+    @Test(expected = ToolArgumentException.class)
     public void testFileNoUsernames() throws Exception
     {
         createFile("#A comment\n");
         processArgsAndValidate();
     }
 
-    @Test(expected=ToolArgumentException.class)
+    @Test(expected = ToolArgumentException.class)
     public void testTooManyUsernamesOnALine() throws Exception
     {
         createFile("\nname1,name2,name3\n");
         processArgsAndValidate();
     }
 
-    @Test(expected=ToolArgumentException.class)
+    @Test(expected = ToolArgumentException.class)
     public void testDuplicateNewUsername() throws Exception
     {
         createFile("name1,name2\nname3,name1\n");
         processArgsAndValidate();
     }
 
-    @Test(expected=ToolArgumentException.class)
+    @Test(expected = ToolArgumentException.class)
     public void testDuplicateOldUsername() throws Exception
     {
         createFile("name1,name2\nname2,name3\n");
         processArgsAndValidate();
     }
 
-    @Test(expected=ToolArgumentException.class)
+    @Test(expected = ToolArgumentException.class)
     public void testSameUsernameCmdLine() throws Exception
     {
         args[5] = "oldUsername";
         processArgsAndValidate();
     }
 
-    @Test(expected=ToolArgumentException.class)
+    @Test(expected = ToolArgumentException.class)
     public void testSameUsernameFile() throws Exception
     {
         createFile("name1,name1");

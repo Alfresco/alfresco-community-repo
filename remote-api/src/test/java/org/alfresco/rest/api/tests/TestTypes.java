@@ -26,19 +26,20 @@
 
 package org.alfresco.rest.api.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.apache.commons.httpclient.HttpStatus;
+import org.junit.Test;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Type;
-import org.apache.commons.httpclient.HttpStatus;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
 public class TestTypes extends BaseModelApiTest
 {
@@ -169,7 +170,6 @@ public class TestTypes extends BaseModelApiTest
         otherParams.put("include", "associations");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
         assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(10));
-
 
         for (int i = 0; i < types.getList().size(); i++)
         {
@@ -305,7 +305,6 @@ public class TestTypes extends BaseModelApiTest
         testGetTypeExceptions("type:");
         testGetTypeExceptions("type");
     }
-
 
     private void testGetTypeExceptions(String typeId)
     {

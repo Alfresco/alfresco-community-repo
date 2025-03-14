@@ -27,11 +27,8 @@
 package org.alfresco.traitextender;
 
 /**
- * An {@link ExtensionPoint} spring bean wrapper with spring registering
- * life-cycle management.<br>
- * Works in conjunction with {@link SpringBeanExtension}s and
- * {@link SpringExtensionBundle}s to define spring based {@link ExtensionBundle}
- * s of singleton extensions.
+ * An {@link ExtensionPoint} spring bean wrapper with spring registering life-cycle management.<br>
+ * Works in conjunction with {@link SpringBeanExtension}s and {@link SpringExtensionBundle}s to define spring based {@link ExtensionBundle} s of singleton extensions.
  *
  * @author Bogdan Horje
  */
@@ -51,9 +48,9 @@ public class SpringExtensionPoint
         this.extension = extension;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void register(RegistryExtensionBundle bundle, SpringBeanExtension<?, ?> extensionBean)
-                throws InvalidExtension
+            throws InvalidExtension
     {
 
         try
@@ -71,13 +68,13 @@ public class SpringExtensionPoint
             if (!extensionBean.acceptsTraitClass(traitAPI))
             {
                 throw new InvalidExtension("Unsupported trait class : " + traitAPI + " in extension point targeting "
-                            + extensionBean);
+                        + extensionBean);
             }
 
             bundle.register(new ExtensionPoint(extensionAPI,
-                                               traitAPI),
-                            new SingletonExtensionFactory(extensionBean,
-                                                          extensionAPI));
+                    traitAPI),
+                    new SingletonExtensionFactory(extensionBean,
+                            extensionAPI));
 
         }
         catch (InvalidExtension error)
@@ -87,7 +84,7 @@ public class SpringExtensionPoint
         catch (ClassNotFoundException error)
         {
             throw new InvalidExtension("Extension point definition class not found.",
-                                       error);
+                    error);
         }
 
     }

@@ -37,10 +37,21 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.validator.routines.EmailValidator;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.mail.MailException;
+import org.springframework.mail.MailPreparationException;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.mail.javamail.MimeMessagePreparator;
+import org.springframework.util.StringUtils;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -74,57 +85,23 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.UrlUtil;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.validator.routines.EmailValidator;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.mail.MailException;
-import org.springframework.mail.MailPreparationException;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.mail.javamail.MimeMessagePreparator;
-import org.springframework.util.StringUtils;
 
 /**
  * Mail action executor implementation.
  * <p/>
- * <em>Note on executing this action as System:</em> it is allowed to execute {@link #NAME mail} actions as system.
- * However there is a limitation if you do so. Because the system user is not a normal user and specifically because
- * there is no corresponding {@link ContentModel#TYPE_PERSON cm:person} node for system, it is not possible to use
- * any reference to that person in the associated email template. Various email templates use a '{@link TemplateNode person}' object
- * in the FTL model to access things like first name, last name etc.
- * In the case of mail actions sent while running as system, none of these will be available.
+ * <em>Note on executing this action as System:</em> it is allowed to execute {@link #NAME mail} actions as system. However there is a limitation if you do so. Because the system user is not a normal user and specifically because there is no corresponding {@link ContentModel#TYPE_PERSON cm:person} node for system, it is not possible to use any reference to that person in the associated email template. Various email templates use a '{@link TemplateNode person}' object in the FTL model to access things like first name, last name etc. In the case of mail actions sent while running as system, none of these will be available.
  * 
  * @author Roy Wetherall
  */
 
-/*
- * mrogers
-Thinking over MNT-11488 last night I was considering the requirements for a single message for each action and the possibility of a "bulk mail action." that sends many messages. However it occurs to me that we already have this split in the API (Although i couldn't find any documentation which has left the expected functionality confused and the implementation adrift.) So I'm changing my guidance.
-There is a need to document (javadoc) the interface so we tie down expected behaviour. And then refactor since the code is confused.
-Here's my thinking:
-If the to_many parameter is set then it should be a "bulk" email which sends many individual messages.
-If the to_many parameter is incompatible with the TO parameter which will be is ignored or will throw an Illegal Argument Exception.
-If the to_many parameter is incompatible with the proposed CC parameter which will be is ignored or will throw an Illegal Argument Exception.
-If the to_many parameter is incompatible with the proposed BCC parameter which will be is ignored or will throw an Illegal Argument Exception.
-If the to_many parameter is not specified then it results in a single message regardless of other settings. 
-We should probably add CC and BCC parameters which can be specified alonside TO
-We should make TO multi-valued
-If we allow multiple TO then the single message is only in the locale appropriate to the first TO.
-We should allow a list of USER authority name or a email address in TO or TO_MANY.
-We should probably also allow GROUP authority names in TO and TO_MANY however for now lets just make sure it works with TO_MANY
-Other implications follow through from this big switch approach and affect the implementation.
-For example should we allow PARAM_SEND_AFTER_COMMIT for bulk email (since it makes implementation hard.) 
-Likewise the template handling with locale is clarified. For bulk its an individual message so it has an individual locale.
-And with a bulk email we should probably carry on sending even after errors and then have some sort of bulk report of errors.
-TEMPLATES can be used with either TO and TO_MANY
-*/
+/* mrogers Thinking over MNT-11488 last night I was considering the requirements for a single message for each action and the possibility of a "bulk mail action." that sends many messages. However it occurs to me that we already have this split in the API (Although i couldn't find any documentation which has left the expected functionality confused and the implementation adrift.) So I'm changing my guidance. There is a need to document (javadoc) the interface so we tie down expected behaviour. And then refactor since the code is confused. Here's my thinking: If the to_many parameter is set then it should be a "bulk" email which sends many individual messages. If the to_many parameter is incompatible with the TO parameter which will be is ignored or will throw an Illegal Argument Exception. If the to_many parameter is incompatible with the proposed CC parameter which will be is ignored or will throw an Illegal Argument Exception. If the to_many parameter is incompatible with the
+ * proposed BCC parameter which will be is ignored or will throw an Illegal Argument Exception. If the to_many parameter is not specified then it results in a single message regardless of other settings. We should probably add CC and BCC parameters which can be specified alonside TO We should make TO multi-valued If we allow multiple TO then the single message is only in the locale appropriate to the first TO. We should allow a list of USER authority name or a email address in TO or TO_MANY. We should probably also allow GROUP authority names in TO and TO_MANY however for now lets just make sure it works with TO_MANY Other implications follow through from this big switch approach and affect the implementation. For example should we allow PARAM_SEND_AFTER_COMMIT for bulk email (since it makes implementation hard.) Likewise the template handling with locale is clarified. For bulk its an individual message so it has an individual locale. And with a bulk email we should probably carry on
+ * sending even after errors and then have some sort of bulk report of errors. TEMPLATES can be used with either TO and TO_MANY */
 public class MailActionExecuter extends ActionExecuterAbstractBase
-                                implements InitializingBean, TestModeable
+        implements InitializingBean, TestModeable
 {
     private static Log logger = LogFactory.getLog(MailActionExecuter.class);
-    
+
     /**
      * Action executor constants
      */
@@ -144,91 +121,88 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     public static final String PARAM_TEMPLATE_MODEL = "template_model";
     public static final String PARAM_IGNORE_SEND_FAILURE = "ignore_send_failure";
     public static final String PARAM_SEND_AFTER_COMMIT = "send_after_commit";
-   
+
     /**
      * From address
      */
     private static final String FROM_ADDRESS = "alfresco@alfresco.org";
-    
+
     /**
      * The java mail sender
      */
     private JavaMailSender mailService;
-    
+
     /**
      * The Template service
      */
     private TemplateService templateService;
-    
+
     /**
      * The Person service
      */
     private PersonService personService;
-    
+
     /**
      * The Authentication service
      */
     private AuthenticationService authService;
-    
+
     /**
      * The Node Service
      */
     private NodeService nodeService;
-    
+
     /**
      * The Authority Service
      */
     private AuthorityService authorityService;
-    
+
     /**
      * The Service registry
      */
     private ServiceRegistry serviceRegistry;
-    
+
     /**
      * System Administration parameters, including URL information
      */
     private SysAdminParams sysAdminParams;
-    
+
     /**
      * The Preference Service
      */
     private PreferenceService preferenceService;
-    
+
     /**
      * The Tenant Service
      */
     private TenantService tenantService;
-    
+
     /**
      * Mail header encoding scheme
      */
     private String headerEncoding = null;
-    
+
     /**
      * Default from address
      */
     private String fromDefaultAddress = null;
-    
+
     /**
      * Is the from field enabled? Or must we always use the default address.
      */
     private boolean fromEnabled = true;
-    
-    
+
     private boolean sendTestMessage = false;
     private String testMessageTo = null;
     private String testMessageSubject = "Test message";
     private String testMessageText = "This is a test message.";
 
     private boolean validateAddresses = true;
-    
+
     /**
-     * Test mode prevents email messages from being sent.
-     * It is used when unit testing when we don't actually want to send out email messages.
+     * Test mode prevents email messages from being sent. It is used when unit testing when we don't actually want to send out email messages.
      * 
-     * MER 20/11/2009 This is a quick and dirty fix. It should be replaced by being 
-     * "mocked out" or some other better way of running the unit tests. 
+     * MER 20/11/2009 This is a quick and dirty fix. It should be replaced by being "mocked out" or some other better way of running the unit tests.
      */
     private boolean testMode = false;
     private MimeMessage lastTestMessage;
@@ -237,84 +211,94 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     private TemplateImageResolver imageResolver;
 
     /**
-     * @param javaMailSender    the java mail sender
+     * @param javaMailSender
+     *            the java mail sender
      */
-    public void setMailService(JavaMailSender javaMailSender) 
+    public void setMailService(JavaMailSender javaMailSender)
     {
         this.mailService = javaMailSender;
     }
-    
+
     /**
-     * @param templateService   the TemplateService
+     * @param templateService
+     *            the TemplateService
      */
     public void setTemplateService(TemplateService templateService)
     {
         this.templateService = templateService;
     }
-    
+
     /**
-     * @param personService     the PersonService
+     * @param personService
+     *            the PersonService
      */
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
     }
-    
+
     public void setPreferenceService(PreferenceService preferenceService)
     {
         this.preferenceService = preferenceService;
     }
-    
+
     /**
-     * @param authService       the AuthenticationService
+     * @param authService
+     *            the AuthenticationService
      */
     public void setAuthenticationService(AuthenticationService authService)
     {
         this.authService = authService;
     }
-    
+
     /**
-     * @param serviceRegistry   the ServiceRegistry
+     * @param serviceRegistry
+     *            the ServiceRegistry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
     }
-    
+
     /**
-     * @param authorityService  the AuthorityService
+     * @param authorityService
+     *            the AuthorityService
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
     }
-    
+
     /**
-     * @param nodeService       the NodeService to set.
+     * @param nodeService
+     *            the NodeService to set.
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
-     * @param tenantService       the TenantService to set.
+     * @param tenantService
+     *            the TenantService to set.
      */
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-    
+
     /**
-     * @param headerEncoding     The mail header encoding to set.
+     * @param headerEncoding
+     *            The mail header encoding to set.
      */
     public void setHeaderEncoding(String headerEncoding)
     {
         this.headerEncoding = headerEncoding;
     }
-    
+
     /**
-     * @param fromAddress   The default mail address.
+     * @param fromAddress
+     *            The default mail address.
      */
     public void setFromAddress(String fromAddress)
     {
@@ -325,27 +309,27 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     {
         this.sysAdminParams = sysAdminParams;
     }
-    
+
     public void setImageResolver(TemplateImageResolver imageResolver)
     {
         this.imageResolver = imageResolver;
     }
-    
+
     public void setTestMessageTo(String testMessageTo)
     {
         this.testMessageTo = testMessageTo;
     }
-    
+
     public String getTestMessageTo()
     {
         return testMessageTo;
     }
-    
+
     public void setTestMessageSubject(String testMessageSubject)
     {
         this.testMessageSubject = testMessageSubject;
     }
-    
+
     public void setTestMessageText(String testMessageText)
     {
         this.testMessageText = testMessageText;
@@ -355,30 +339,29 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     {
         this.sendTestMessage = sendTestMessage;
     }
-    
+
     /**
-     * This stores an email address which, if it is set, overrides ALL email recipients sent from
-     * this class. It is intended for dev/test usage only !!
+     * This stores an email address which, if it is set, overrides ALL email recipients sent from this class. It is intended for dev/test usage only !!
      */
     private String testModeRecipient;
 
     /**
      * Send a test message
      * 
-     * @return true, message sent 
-     * @throws AlfrescoRuntimeException 
+     * @return true, message sent
+     * @throws AlfrescoRuntimeException
      */
-    public boolean sendTestMessage() 
+    public boolean sendTestMessage()
     {
-        if(testMessageTo == null || testMessageTo.length() == 0)
+        if (testMessageTo == null || testMessageTo.length() == 0)
         {
             throw new AlfrescoRuntimeException("email.outbound.err.test.no.to");
         }
-        if(testMessageSubject == null || testMessageSubject.length() == 0)
+        if (testMessageSubject == null || testMessageSubject.length() == 0)
         {
             throw new AlfrescoRuntimeException("email.outbound.err.test.no.subject");
         }
-        if(testMessageText == null || testMessageText.length() == 0)
+        if (testMessageText == null || testMessageText.length() == 0)
         {
             throw new AlfrescoRuntimeException("email.outbound.err.test.no.text");
         }
@@ -386,9 +369,9 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         params.put(PARAM_TO, testMessageTo);
         params.put(PARAM_SUBJECT, testMessageSubject);
         params.put(PARAM_TEXT, testMessageText);
-        
+
         Action ruleAction = serviceRegistry.getActionService().createAction(NAME, params);
-        
+
         MimeMessageHelper message = prepareEmail(ruleAction, null,
                 new Pair<String, Locale>(testMessageTo, getLocaleForUser(testMessageTo)), getFrom(ruleAction));
         try
@@ -400,9 +383,9 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         {
             onFail();
             StringBuffer txt = new StringBuffer();
-            
+
             txt.append(me.getClass().getName() + ", " + me.getMessage());
-            
+
             Throwable cause = me.getCause();
             while (cause != null)
             {
@@ -410,14 +393,14 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 txt.append(cause.getClass().getName() + ", " + cause.getMessage());
                 cause = cause.getCause();
             }
-            
+
             Object[] args = {testMessageTo, txt.toString()};
             throw new AlfrescoRuntimeException("email.outbound.err.send.failed", args, me);
         }
-        
+
         return true;
     }
-    
+
     public void setTestModeRecipient(String testModeRecipient)
     {
         this.testModeRecipient = testModeRecipient;
@@ -428,23 +411,21 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         this.validateAddresses = validateAddresses;
     }
 
-    
     @Override
     public void init()
     {
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
             logger.debug("Init called, testMessageTo=" + testMessageTo);
         }
-        
+
         numberSuccessfulSends.set(0);
         numberFailedSends.set(0);
-        
+
         super.init();
         if (sendTestMessage && testMessageTo != null)
         {
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
-            {
+            AuthenticationUtil.runAs(new RunAsWork<Object>() {
                 public Object doWork() throws Exception
                 {
                     Map<String, Serializable> params = new HashMap<String, Serializable>();
@@ -469,9 +450,9 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         {
             fromDefaultAddress = FROM_ADDRESS;
         }
-        
+
     }
-    
+
     /**
      * Send an email message
      * 
@@ -480,56 +461,56 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     @Override
     protected void executeImpl(
             final Action ruleAction,
-            final NodeRef actionedUponNodeRef) 
+            final NodeRef actionedUponNodeRef)
     {
 
-        //Prepare our messages before the commit, in-case of deletes
-        MimeMessageHelper[] messages = null; 
+        // Prepare our messages before the commit, in-case of deletes
+        MimeMessageHelper[] messages = null;
         if (validNodeRefIfPresent(actionedUponNodeRef))
         {
             messages = prepareEmails(ruleAction, actionedUponNodeRef);
         }
         final MimeMessageHelper[] finalMessages = messages;
-        
-        //Send out messages
-        if(finalMessages!=null){
+
+        // Send out messages
+        if (finalMessages != null)
+        {
             if (sendAfterCommit(ruleAction))
             {
-                AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
-                {
+                AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter() {
                     @Override
                     public void afterCommit()
                     {
                         RetryingTransactionHelper helper = serviceRegistry.getTransactionService().getRetryingTransactionHelper();
-                        helper.doInTransaction(new RetryingTransactionCallback<Void>()
-                        {
+                        helper.doInTransaction(new RetryingTransactionCallback<Void>() {
                             @Override
                             public Void execute() throws Throwable
                             {
-                                for (MimeMessageHelper message : finalMessages) {
+                                for (MimeMessageHelper message : finalMessages)
+                                {
                                     sendEmail(ruleAction, message);
                                 }
-                                
+
                                 return null;
                             }
                         }, false, true);
                     }
                 });
             }
-            else 
+            else
             {
-                    for (MimeMessageHelper message : finalMessages) {
+                for (MimeMessageHelper message : finalMessages)
+                {
                     if (message != null)
                     {
                         sendEmail(ruleAction, message);
                     }
-                    }
+                }
             }
         }
 
     }
-    
-    
+
     private boolean validNodeRefIfPresent(NodeRef actionedUponNodeRef)
     {
         if (actionedUponNodeRef == null)
@@ -545,17 +526,17 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             return nodeService.exists(actionedUponNodeRef);
         }
     }
-    
+
     private boolean sendAfterCommit(Action action)
     {
         Boolean sendAfterCommit = (Boolean) action.getParameterValue(PARAM_SEND_AFTER_COMMIT);
         return sendAfterCommit == null ? false : sendAfterCommit.booleanValue();
     }
-    
+
     private MimeMessageHelper[] prepareEmails(final Action ruleAction, final NodeRef actionedUponNodeRef)
     {
         Serializable ref = ruleAction.getParameterValue(PARAM_TEMPLATE);
-        String templateRef = (ref instanceof NodeRef ? ((NodeRef)ref).toString() : (String)ref);
+        String templateRef = (ref instanceof NodeRef ? ((NodeRef) ref).toString() : (String) ref);
         if (templateRef == null)
         {
             // send as bulk message if there is no template
@@ -563,16 +544,16 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             messages[0] = prepareEmail(ruleAction, actionedUponNodeRef, null, null);
             return messages;
         }
-        
+
         Collection<Pair<String, Locale>> recipients = getRecipients(ruleAction);
-        
+
         Pair<InternetAddress, Locale> from = getFrom(ruleAction);
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("From: address=" + from.getFirst() + " ,locale=" + from.getSecond());
         }
-        
+
         MimeMessageHelper[] messages = new MimeMessageHelper[recipients.size()];
         int recipientIndex = 0;
         for (Pair<String, Locale> recipient : recipients)
@@ -581,40 +562,39 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             {
                 logger.debug("Recipient: address=" + recipient.getFirst() + " ,locale=" + recipient.getSecond());
             }
-            
+
             messages[recipientIndex] = prepareEmail(ruleAction, actionedUponNodeRef, recipient, from);
             recipientIndex++;
         }
         return messages;
     }
-    
-    public MimeMessageHelper prepareEmail(final Action ruleAction , final NodeRef actionedUponNodeRef, final Pair<String, Locale> recipient, final Pair<InternetAddress, Locale> sender)
+
+    public MimeMessageHelper prepareEmail(final Action ruleAction, final NodeRef actionedUponNodeRef, final Pair<String, Locale> recipient, final Pair<InternetAddress, Locale> sender)
     {
         // Create the mime mail message.
         // Hack: using an array here to get around the fact that inner classes aren't closures.
         // The MimeMessagePreparator.prepare() signature does not allow us to return a value and yet
         // we can't set a result on a bare, non-final object reference due to Java language restrictions.
         final MimeMessageHelper[] messageRef = new MimeMessageHelper[1];
-        MimeMessagePreparator mailPreparer = new MimeMessagePreparator()
-        {
+        MimeMessagePreparator mailPreparer = new MimeMessagePreparator() {
             @SuppressWarnings("unchecked")
             public void prepare(MimeMessage mimeMessage) throws MessagingException
             {
                 if (logger.isDebugEnabled())
                 {
-                   logger.debug(ruleAction.getParameterValues());
+                    logger.debug(ruleAction.getParameterValues());
                 }
-                
+
                 messageRef[0] = new MimeMessageHelper(mimeMessage);
-                
+
                 // set header encoding if one has been supplied
                 if (headerEncoding != null && headerEncoding.length() != 0)
                 {
                     mimeMessage.setHeader("Content-Transfer-Encoding", headerEncoding);
                 }
-                
+
                 // set recipient
-                String to = (String)ruleAction.getParameterValue(PARAM_TO);
+                String to = (String) ruleAction.getParameterValue(PARAM_TO);
                 String toRecipients = null;
                 if (to != null && to.length() != 0)
                 {
@@ -624,13 +604,13 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     // Note: there is no validation on the username to check that it actually is an email address.
                     // TODO Fix this.
 
-                    Serializable ccValue = (Serializable)ruleAction.getParameterValue(PARAM_CC);
-                    if(ccValue != null)
+                    Serializable ccValue = (Serializable) ruleAction.getParameterValue(PARAM_CC);
+                    if (ccValue != null)
                     {
                         if (ccValue instanceof String)
                         {
-                            String cc = (String)ccValue;
-                            if(cc.length() > 0)
+                            String cc = (String) ccValue;
+                            if (cc.length() > 0)
                             {
                                 messageRef[0].setCc(cc);
                             }
@@ -638,22 +618,22 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         }
                         else if (ccValue instanceof List<?>)
                         {
-                            List<String>s = (List<String>)ccValue;
+                            List<String> s = (List<String>) ccValue;
                             messageRef[0].setCc(s.toArray(new String[s.size()]));
                         }
                         else if (ccValue.getClass().isArray())
                         {
-                            messageRef[0].setCc((String[])ccValue);
+                            messageRef[0].setCc((String[]) ccValue);
                         }
-                        
+
                     }
-                    Serializable bccValue = (Serializable)ruleAction.getParameterValue(PARAM_BCC);
-                    if(bccValue != null)
+                    Serializable bccValue = (Serializable) ruleAction.getParameterValue(PARAM_BCC);
+                    if (bccValue != null)
                     {
                         if (bccValue instanceof String)
                         {
-                            String bcc = (String)bccValue;
-                            if(bcc.length() > 0)
+                            String bcc = (String) bccValue;
+                            if (bcc.length() > 0)
                             {
                                 messageRef[0].setBcc(bcc);
                             }
@@ -661,15 +641,15 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         }
                         else if (bccValue instanceof List<?>)
                         {
-                            List<String>s = (List<String>)bccValue;
+                            List<String> s = (List<String>) bccValue;
                             messageRef[0].setBcc(s.toArray(new String[s.size()]));
                         }
                         else if (bccValue.getClass().isArray())
                         {
-                            messageRef[0].setBcc((String[])bccValue);
+                            messageRef[0].setBcc((String[]) bccValue);
                         }
                     }
-                    
+
                 }
                 else
                 {
@@ -681,70 +661,94 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         if (authoritiesValue instanceof String)
                         {
                             authorities = new ArrayList<String>(1);
-                            authorities.add((String)authoritiesValue);
+                            authorities.add((String) authoritiesValue);
                         }
                         else
                         {
-                            authorities = (List<String>)authoritiesValue;
+                            authorities = (List<String>) authoritiesValue;
                         }
                     }
-                    
+
                     if (authorities != null && authorities.size() != 0)
                     {
                         List<String> recipients = new ArrayList<String>(authorities.size());
-                        
-                        if (logger.isTraceEnabled()) { logger.trace(authorities.size() + " recipient(s) for mail"); }
-                        
+
+                        if (logger.isTraceEnabled())
+                        {
+                            logger.trace(authorities.size() + " recipient(s) for mail");
+                        }
+
                         for (String authority : authorities)
                         {
                             final AuthorityType authType = AuthorityType.getAuthorityType(authority);
-                            
-                            if (logger.isTraceEnabled()) { logger.trace(" authority type: " + authType); }
-                            
+
+                            if (logger.isTraceEnabled())
+                            {
+                                logger.trace(" authority type: " + authType);
+                            }
+
                             if (authType.equals(AuthorityType.USER))
                             {
                                 if (personService.personExists(authority) == true)
                                 {
                                     NodeRef person = personService.getPerson(authority);
-                                    
+
                                     if (!personService.isEnabled(authority) && !nodeService.hasAspect(person, ContentModel.ASPECT_ANULLABLE))
                                     {
                                         continue;
                                     }
-                                    
-                                    String address = (String)nodeService.getProperty(person, ContentModel.PROP_EMAIL);
+
+                                    String address = (String) nodeService.getProperty(person, ContentModel.PROP_EMAIL);
                                     if (address != null && address.length() != 0 && validateAddress(address))
                                     {
-                                        if (logger.isTraceEnabled()) { logger.trace("Recipient (person) exists in Alfresco with known email."); }
+                                        if (logger.isTraceEnabled())
+                                        {
+                                            logger.trace("Recipient (person) exists in Alfresco with known email.");
+                                        }
                                         recipients.add(address);
                                     }
                                     else
                                     {
-                                        if (logger.isTraceEnabled()) { logger.trace("Recipient (person) exists in Alfresco without known email."); }
+                                        if (logger.isTraceEnabled())
+                                        {
+                                            logger.trace("Recipient (person) exists in Alfresco without known email.");
+                                        }
                                         // If the username looks like an email address, we'll use that.
-                                        if (validateAddress(authority)) { recipients.add(authority); }
+                                        if (validateAddress(authority))
+                                        {
+                                            recipients.add(authority);
+                                        }
                                     }
                                 }
                                 else
                                 {
-                                    if (logger.isTraceEnabled()) { logger.trace("Recipient does not exist in Alfresco."); }
-                                    if (validateAddress(authority)) { recipients.add(authority); }
+                                    if (logger.isTraceEnabled())
+                                    {
+                                        logger.trace("Recipient does not exist in Alfresco.");
+                                    }
+                                    if (validateAddress(authority))
+                                    {
+                                        recipients.add(authority);
+                                    }
                                 }
                             }
                             else if (authType.equals(AuthorityType.GROUP) || authType.equals(AuthorityType.EVERYONE))
                             {
-                                if (logger.isTraceEnabled()) { logger.trace("Recipient is a group..."); }
+                                if (logger.isTraceEnabled())
+                                {
+                                    logger.trace("Recipient is a group...");
+                                }
                                 // Notify all members of the group
                                 Set<String> users;
                                 if (authType.equals(AuthorityType.GROUP))
-                                {        
+                                {
                                     users = authorityService.getContainedAuthorities(AuthorityType.USER, authority, false);
                                 }
                                 else
                                 {
                                     users = authorityService.getAllAuthorities(AuthorityType.USER);
                                 }
-                                
+
                                 for (String userAuth : users)
                                 {
                                     if (personService.personExists(userAuth) == true)
@@ -754,30 +758,48 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                                             continue;
                                         }
                                         NodeRef person = personService.getPerson(userAuth);
-                                        String address = (String)nodeService.getProperty(person, ContentModel.PROP_EMAIL);
+                                        String address = (String) nodeService.getProperty(person, ContentModel.PROP_EMAIL);
                                         if (address != null && address.length() != 0)
                                         {
                                             recipients.add(address);
-                                            if (logger.isTraceEnabled()) { logger.trace("   Group member email is known."); }
+                                            if (logger.isTraceEnabled())
+                                            {
+                                                logger.trace("   Group member email is known.");
+                                            }
                                         }
                                         else
                                         {
-                                            if (logger.isTraceEnabled()) { logger.trace("   Group member email not known."); }
-                                            if (validateAddress(authority)) { recipients.add(userAuth); }
+                                            if (logger.isTraceEnabled())
+                                            {
+                                                logger.trace("   Group member email not known.");
+                                            }
+                                            if (validateAddress(authority))
+                                            {
+                                                recipients.add(userAuth);
+                                            }
                                         }
                                     }
                                     else
                                     {
-                                        if (logger.isTraceEnabled()) { logger.trace("   Group member person not found"); }
-                                        if (validateAddress(authority)) { recipients.add(userAuth); }
+                                        if (logger.isTraceEnabled())
+                                        {
+                                            logger.trace("   Group member person not found");
+                                        }
+                                        if (validateAddress(authority))
+                                        {
+                                            recipients.add(userAuth);
+                                        }
                                     }
                                 }
                             }
                         }
-                        
-                        if (logger.isTraceEnabled()) { logger.trace(recipients.size() + " valid recipient(s)."); }
-                        
-                        if(recipients.size() > 0)
+
+                        if (logger.isTraceEnabled())
+                        {
+                            logger.trace(recipients.size() + " valid recipient(s).");
+                        }
+
+                        if (recipients.size() > 0)
                         {
                             messageRef[0].setTo(recipients.toArray(new String[recipients.size()]));
                             toRecipients = String.join(",", recipients);
@@ -786,45 +808,43 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         {
                             // All recipients were invalid
                             throw new MailPreparationException(
-                                    "All recipients for the mail action were invalid"
-                            );
+                                    "All recipients for the mail action were invalid");
                         }
                     }
                     else
                     {
                         // No recipients have been specified
                         throw new MailPreparationException(
-                                "No recipient has been specified for the mail action"
-                        );
+                                "No recipient has been specified for the mail action");
                     }
                 }
-                
+
                 // from person - not to be performed for the "admin" or "system" users
                 NodeRef fromPerson = null;
-                
+
                 final String currentUserName = authService.getCurrentUserName();
-                
-                final List<String> usersNotToBeUsedInFromField = Arrays.asList(new String[] {AuthenticationUtil.getSystemUserName(),
-                                                                                             AuthenticationUtil.getGuestUserName()});
-                if ( !usersNotToBeUsedInFromField.contains(currentUserName))
+
+                final List<String> usersNotToBeUsedInFromField = Arrays.asList(new String[]{AuthenticationUtil.getSystemUserName(),
+                        AuthenticationUtil.getGuestUserName()});
+                if (!usersNotToBeUsedInFromField.contains(currentUserName))
                 {
                     fromPerson = personService.getPerson(currentUserName);
                 }
-                
-                if(isFromEnabled())
-                {   
+
+                if (isFromEnabled())
+                {
                     // Use the FROM parameter in preference to calculating values.
-                    String from = (String)ruleAction.getParameterValue(PARAM_FROM);
+                    String from = (String) ruleAction.getParameterValue(PARAM_FROM);
                     if (from != null && from.length() > 0)
                     {
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
                             logger.debug("from specified as a parameter, from:" + from);
                         }
-                        
+
                         // Check whether or not to use a personal name for the email (will be RFC 2047 encoded)
-                        String fromPersonalName = (String)ruleAction.getParameterValue(PARAM_FROM_PERSONAL_NAME);
-                        if(fromPersonalName != null && fromPersonalName.length() > 0) 
+                        String fromPersonalName = (String) ruleAction.getParameterValue(PARAM_FROM_PERSONAL_NAME);
+                        if (fromPersonalName != null && fromPersonalName.length() > 0)
                         {
                             try
                             {
@@ -849,10 +869,10 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         {
                             fromActualUser = (String) nodeService.getProperty(fromPerson, ContentModel.PROP_EMAIL);
                         }
-                    
+
                         if (fromActualUser != null && fromActualUser.length() != 0)
                         {
-                            if(logger.isDebugEnabled())
+                            if (logger.isDebugEnabled())
                             {
                                 logger.debug("looked up email address for :" + fromPerson + " email from " + fromActualUser);
                             }
@@ -868,57 +888,53 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 }
                 else
                 {
-                    if(logger.isDebugEnabled())
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("from not enabled - sending from default address:" + fromDefaultAddress);
                     }
                     // from is not enabled.
                     messageRef[0].setFrom(fromDefaultAddress);
                 }
-                
 
-
-                
                 // set subject line
-                messageRef[0].setSubject((String)ruleAction.getParameterValue(PARAM_SUBJECT));
-                
-                if ((testModeRecipient != null) && (testModeRecipient.length() > 0) && (! testModeRecipient.equals("${dev.email.recipient.address}")))
+                messageRef[0].setSubject((String) ruleAction.getParameterValue(PARAM_SUBJECT));
+
+                if ((testModeRecipient != null) && (testModeRecipient.length() > 0) && (!testModeRecipient.equals("${dev.email.recipient.address}")))
                 {
                     // If we have an override for the email recipient, we'll send the email to that address instead.
                     // We'll prefix the subject with the original recipient, but leave the email message unchanged in every other way.
                     messageRef[0].setTo(testModeRecipient);
-                    
-                    String emailRecipient = (String)ruleAction.getParameterValue(PARAM_TO);
+
+                    String emailRecipient = (String) ruleAction.getParameterValue(PARAM_TO);
                     if (emailRecipient == null)
                     {
-                       Object obj = ruleAction.getParameterValue(PARAM_TO_MANY);
-                       if (obj != null)
-                       {
-                           emailRecipient = obj.toString();
-                       }
+                        Object obj = ruleAction.getParameterValue(PARAM_TO_MANY);
+                        if (obj != null)
+                        {
+                            emailRecipient = obj.toString();
+                        }
                     }
-                    
-                    String recipientPrefixedSubject = "(" + emailRecipient + ") " + (String)ruleAction.getParameterValue(PARAM_SUBJECT);
-                    
+
+                    String recipientPrefixedSubject = "(" + emailRecipient + ") " + (String) ruleAction.getParameterValue(PARAM_SUBJECT);
+
                     messageRef[0].setSubject(recipientPrefixedSubject);
                 }
-                
-                
+
                 // See if an email template has been specified
                 String text = null;
-                
+
                 // templateRef: either a nodeRef or classpath (see ClasspathRepoTemplateLoader)
                 Serializable ref = ruleAction.getParameterValue(PARAM_TEMPLATE);
-                String templateRef = (ref instanceof NodeRef ? ((NodeRef)ref).toString() : (String)ref);
+                String templateRef = (ref instanceof NodeRef ? ((NodeRef) ref).toString() : (String) ref);
                 if (templateRef != null)
                 {
                     Map<String, Object> suppliedModel = null;
-                    if(ruleAction.getParameterValue(PARAM_TEMPLATE_MODEL) != null)
+                    if (ruleAction.getParameterValue(PARAM_TEMPLATE_MODEL) != null)
                     {
                         Object m = ruleAction.getParameterValue(PARAM_TEMPLATE_MODEL);
-                        if(m instanceof Map)
+                        if (m instanceof Map)
                         {
-                            suppliedModel = (Map<String, Object>)m;
+                            suppliedModel = (Map<String, Object>) m;
                         }
                         else
                         {
@@ -926,7 +942,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                                     + m.getClass().getName() + " : " + m.toString());
                         }
                     }
-                    
+
                     // build the email template model
                     Map<String, Object> model = createEmailTemplateModel(actionedUponNodeRef, suppliedModel, fromPerson, toRecipients);
 
@@ -934,25 +950,25 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     Locale locale = recipient.getSecond();
                     if (locale == null)
                     {
-                        locale = (Locale)ruleAction.getParameterValue(PARAM_LOCALE);
+                        locale = (Locale) ruleAction.getParameterValue(PARAM_LOCALE);
                     }
                     if (locale == null)
                     {
                         locale = sender.getSecond();
                     }
-                    
+
                     // set subject line
-                    String subject = (String)ruleAction.getParameterValue(PARAM_SUBJECT);
+                    String subject = (String) ruleAction.getParameterValue(PARAM_SUBJECT);
                     Object subjectParamsObject = ruleAction.getParameterValue(PARAM_SUBJECT_PARAMS);
                     Object[] subjectParams = null;
-                    //Javasctipt pass SubjectParams as ArrayList. see MNT-12534 
+                    // Javasctipt pass SubjectParams as ArrayList. see MNT-12534
                     if (subjectParamsObject instanceof List)
                     {
-                        subjectParams = ((List<Object>)subjectParamsObject).toArray();
+                        subjectParams = ((List<Object>) subjectParamsObject).toArray();
                     }
                     else if (subjectParamsObject instanceof Object[])
                     {
-                        subjectParams = (Object[])subjectParamsObject;
+                        subjectParams = (Object[]) subjectParamsObject;
                     }
                     else
                     {
@@ -972,33 +988,33 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         // process the template against the model
                         text = templateService.processTemplate("freemarker", templateRef, model, locale);
                     }
-                    if ((testModeRecipient != null) && (testModeRecipient.length() > 0) && (! testModeRecipient.equals("${dev.email.recipient.address}")))
+                    if ((testModeRecipient != null) && (testModeRecipient.length() > 0) && (!testModeRecipient.equals("${dev.email.recipient.address}")))
                     {
                         // If we have an override for the email recipient, we'll send the email to that address instead.
                         // We'll prefix the subject with the original recipient, but leave the email message unchanged in every other way.
                         messageRef[0].setTo(testModeRecipient);
-                        
+
                         String emailRecipient = recipient.getFirst();
-                        
+
                         String recipientPrefixedSubject = "(" + emailRecipient + ") " + localizedSubject;
-                        
+
                         messageRef[0].setSubject(recipientPrefixedSubject);
                     }
-                    else 
+                    else
                     {
                         messageRef[0].setTo(recipient.getFirst());
                         messageRef[0].setSubject(localizedSubject);
                     }
                 }
-                
+
                 // set the text body of the message
-                
+
                 boolean isHTML = false;
                 if (text == null)
                 {
-                    text = (String)ruleAction.getParameterValue(PARAM_TEXT);
+                    text = (String) ruleAction.getParameterValue(PARAM_TEXT);
                 }
-                
+
                 if (text != null)
                 {
                     if (isHTML(text))
@@ -1008,26 +1024,27 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 }
                 else
                 {
-                    text = (String)ruleAction.getParameterValue(PARAM_HTML);
+                    text = (String) ruleAction.getParameterValue(PARAM_HTML);
                     if (text != null)
                     {
                         // assume HTML
                         isHTML = true;
                     }
                 }
-                
+
                 if (text != null)
                 {
                     messageRef[0].setText(text, isHTML);
                 }
-                
+
             }
         };
-        MimeMessage mimeMessage = mailService.createMimeMessage(); 
+        MimeMessage mimeMessage = mailService.createMimeMessage();
         try
         {
             mailPreparer.prepare(mimeMessage);
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             // We're forced to catch java.lang.Exception here. Urgh.
             if (logger.isWarnEnabled())
@@ -1036,10 +1053,10 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             }
             return null;
         }
-        
+
         return messageRef[0];
     }
-    
+
     private void sendEmail(final Action ruleAction, MimeMessageHelper preparedMessage)
     {
 
@@ -1047,8 +1064,8 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         {
             // Send the message unless we are in "testMode"
             if (!testMode)
-            {	
-            	mailService.send(preparedMessage.getMimeMessage());
+            {
+                mailService.send(preparedMessage.getMimeMessage());
                 onSend();
             }
             else
@@ -1060,34 +1077,37 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         catch (NullPointerException | MailException e)
         {
             onFail();
-            String to = (String)ruleAction.getParameterValue(PARAM_TO);
+            String to = (String) ruleAction.getParameterValue(PARAM_TO);
             if (to == null)
             {
-               Object obj = ruleAction.getParameterValue(PARAM_TO_MANY);
-               if (obj != null)
-               {
-                  to = obj.toString();
-               }
+                Object obj = ruleAction.getParameterValue(PARAM_TO_MANY);
+                if (obj != null)
+                {
+                    to = obj.toString();
+                }
             }
-            
+
             // always log the failure
             logger.error("Failed to send email to " + to + " : " + e);
-            
+
             // optionally ignore the throwing of the exception
-            Boolean ignoreError = (Boolean)ruleAction.getParameterValue(PARAM_IGNORE_SEND_FAILURE);
+            Boolean ignoreError = (Boolean) ruleAction.getParameterValue(PARAM_IGNORE_SEND_FAILURE);
             if (ignoreError == null || ignoreError.booleanValue() == false)
             {
                 throw new AlfrescoRuntimeException("Failed to send email to:" + to);
-            }   
+            }
         }
     }
-    
+
     /**
      * Attempt to localize the subject, using the subject parameter as the message key.
      * 
-     * @param subject Message key for subject lookup
-     * @param params Parameters for the message
-     * @param locale Locale to use
+     * @param subject
+     *            Message key for subject lookup
+     * @param params
+     *            Parameters for the message
+     * @param locale
+     *            Locale to use
      * @return The localized message, or subject if the message format could not be found
      */
     private String getLocalizedSubject(String subject, Object[] params, Locale locale)
@@ -1097,11 +1117,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         {
             localizedSubject = I18NUtil.getMessage(subject, params);
         }
-        else 
+        else
         {
             localizedSubject = I18NUtil.getMessage(subject, locale, params);
         }
-        
+
         if (localizedSubject == null)
         {
             return subject;
@@ -1110,24 +1130,25 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         {
             return localizedSubject;
         }
-        
+
     }
-    
+
     /**
      * 
-     * @param ruleAction Action
+     * @param ruleAction
+     *            Action
      * @return Pair
      */
     private Pair<InternetAddress, Locale> getFrom(Action ruleAction)
     {
-        try 
+        try
         {
             InternetAddress address;
             Locale locale = null;
             // from person
             String fromPersonName = null;
-            
-            if (! authService.isCurrentUserTheSystemUser())
+
+            if (!authService.isCurrentUserTheSystemUser())
             {
                 String currentUserName = authService.getCurrentUserName();
                 if (currentUserName != null && personExists(currentUserName))
@@ -1136,21 +1157,21 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     locale = getLocaleForUser(fromPersonName);
                 }
             }
-                    
-            if(isFromEnabled())
-            {   
+
+            if (isFromEnabled())
+            {
                 // Use the FROM parameter in preference to calculating values.
-                String from = (String)ruleAction.getParameterValue(PARAM_FROM);
+                String from = (String) ruleAction.getParameterValue(PARAM_FROM);
                 if (from != null && from.length() > 0)
                 {
-                    if(logger.isDebugEnabled())
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("from specified as a parameter, from:" + from);
                     }
-                
+
                     // Check whether or not to use a personal name for the email (will be RFC 2047 encoded)
-                    String fromPersonalName = (String)ruleAction.getParameterValue(PARAM_FROM_PERSONAL_NAME);
-                    if(fromPersonalName != null && fromPersonalName.length() > 0) 
+                    String fromPersonalName = (String) ruleAction.getParameterValue(PARAM_FROM_PERSONAL_NAME);
+                    if (fromPersonalName != null && fromPersonalName.length() > 0)
                     {
                         try
                         {
@@ -1175,16 +1196,16 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 }
                 else
                 {
-                    // FROM enabled but not not specified                
+                    // FROM enabled but not not specified
                     String fromActualUser = fromPersonName;
                     if (fromPersonName != null)
                     {
-                         fromActualUser = getPersonEmail(fromPersonName);
+                        fromActualUser = getPersonEmail(fromPersonName);
                     }
-              
+
                     if (fromActualUser != null && fromActualUser.length() != 0)
                     {
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
                             logger.debug("looked up email address for :" + fromPersonName + " email from " + fromActualUser);
                         }
@@ -1199,14 +1220,14 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             }
             else
             {
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("from not enabled - sending from default address:" + fromDefaultAddress);
                 }
                 // from is not enabled.
                 address = new InternetAddress(fromDefaultAddress);
             }
-            
+
             return new Pair<InternetAddress, Locale>(address, locale);
         }
         catch (MessagingException ex)
@@ -1214,14 +1235,14 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             throw new AlfrescoRuntimeException("Failed to resolve sender mail address");
         }
     }
-    
+
     @SuppressWarnings("unchecked")
-    private Collection<Pair<String, Locale>> getRecipients(Action ruleAction) 
+    private Collection<Pair<String, Locale>> getRecipients(Action ruleAction)
     {
-        Map<String, Pair<String, Locale>> recipients = new HashMap<String, Pair<String,Locale>>();
-        
+        Map<String, Pair<String, Locale>> recipients = new HashMap<String, Pair<String, Locale>>();
+
         // set recipient
-        String to = (String)ruleAction.getParameterValue(PARAM_TO);
+        String to = (String) ruleAction.getParameterValue(PARAM_TO);
         if (to != null && to.length() != 0)
         {
             Locale locale = null;
@@ -1241,14 +1262,14 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 if (authoritiesValue instanceof String)
                 {
                     authorities = new ArrayList<String>(1);
-                    authorities.add((String)authoritiesValue);
+                    authorities.add((String) authoritiesValue);
                 }
                 else
                 {
-                    authorities = (List<String>)authoritiesValue;
+                    authorities = (List<String>) authoritiesValue;
                 }
             }
-            
+
             if (authorities != null && authorities.size() != 0)
             {
                 for (String authority : authorities)
@@ -1291,14 +1312,14 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         // Notify all members of the group
                         Set<String> users;
                         if (authType.equals(AuthorityType.GROUP))
-                        {        
+                        {
                             users = authorityService.getContainedAuthorities(AuthorityType.USER, authority, false);
                         }
                         else
                         {
                             users = authorityService.getAllAuthorities(AuthorityType.USER);
                         }
-                        
+
                         for (String userAuth : users)
                         {
                             if (recipients.containsKey(userAuth))
@@ -1336,33 +1357,30 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         }
                     }
                 }
-                if(recipients.size() <= 0)
+                if (recipients.size() <= 0)
                 {
                     // All recipients were invalid
                     throw new MailPreparationException(
-                            "All recipients for the mail action were invalid"
-                    );
+                            "All recipients for the mail action were invalid");
                 }
             }
             else
             {
                 // No recipients have been specified
                 throw new MailPreparationException(
-                        "No recipient has been specified for the mail action"
-                );
+                        "No recipient has been specified for the mail action");
             }
         }
         return recipients.values();
     }
-    
+
     public boolean personExists(final String user)
     {
         boolean exists = false;
-        String domain = tenantService.getPrimaryDomain(user); // get primary tenant 
-        if (domain != null) 
-        { 
-            exists = TenantUtil.runAsTenant(new TenantRunAsWork<Boolean>()
-            {
+        String domain = tenantService.getPrimaryDomain(user); // get primary tenant
+        if (domain != null)
+        {
+            exists = TenantUtil.runAsTenant(new TenantRunAsWork<Boolean>() {
                 public Boolean doWork() throws Exception
                 {
                     return personService.personExists(user);
@@ -1375,15 +1393,14 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         }
         return exists;
     }
-    
+
     public NodeRef getPerson(final String user)
     {
         NodeRef person = null;
-        String domain = tenantService.getPrimaryDomain(user); // get primary tenant 
-        if (domain != null) 
-        { 
-            person = TenantUtil.runAsTenant(new TenantRunAsWork<NodeRef>()
-            {
+        String domain = tenantService.getPrimaryDomain(user); // get primary tenant
+        if (domain != null)
+        {
+            person = TenantUtil.runAsTenant(new TenantRunAsWork<NodeRef>() {
                 public NodeRef doWork() throws Exception
                 {
                     return personService.getPerson(user);
@@ -1396,16 +1413,15 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         }
         return person;
     }
-    
+
     public String getPersonEmail(final String user)
     {
         final NodeRef person = getPerson(user);
         String email = null;
-        String domain = tenantService.getPrimaryDomain(user); // get primary tenant 
-        if (domain != null) 
-        { 
-            email = TenantUtil.runAsTenant(new TenantRunAsWork<String>()
-            {
+        String domain = tenantService.getPrimaryDomain(user); // get primary tenant
+        if (domain != null)
+        {
+            email = TenantUtil.runAsTenant(new TenantRunAsWork<String>() {
                 public String doWork() throws Exception
                 {
                     return (String) nodeService.getProperty(person, ContentModel.PROP_EMAIL);
@@ -1418,33 +1434,32 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         }
         return email;
     }
-    
+
     /**
      * Gets the specified user's preferred locale, if available.
      * 
-     * @param user the username of the user whose locale is sought.
-     * @return the preferred locale for that user, if available, else <tt>null</tt>. The result would be <tt>null</tt>
-     *         e.g. if the user does not exist in the system.
+     * @param user
+     *            the username of the user whose locale is sought.
+     * @return the preferred locale for that user, if available, else <tt>null</tt>. The result would be <tt>null</tt> e.g. if the user does not exist in the system.
      */
     private Locale getLocaleForUser(final String user)
     {
         Locale locale = null;
         String localeString = null;
-        
+
         // get primary tenant for the specified user.
         //
         // This can have one of (at least) 3 values currently:
         // 1. In single-tenant (community/enterprise) this will be the empty string.
         // 2. In the cloud, for a username such as this: joe.soap@acme.com:
-        //    2A. If the acme.com tenant exists in the system, the primary domain is "acme.com"
-        //    2B. Id the acme.xom tenant does not exist in the system, the primary domain is null.
+        // 2A. If the acme.com tenant exists in the system, the primary domain is "acme.com"
+        // 2B. Id the acme.xom tenant does not exist in the system, the primary domain is null.
         String domain = tenantService.getPrimaryDomain(user);
-        
-        if (domain != null) 
-        { 
+
+        if (domain != null)
+        {
             // If the domain is not null, then the user exists in the system and we may get a preferred locale.
-            localeString = TenantUtil.runAsSystemTenant(new TenantRunAsWork<String>()
-            {
+            localeString = TenantUtil.runAsSystemTenant(new TenantRunAsWork<String>() {
                 public String doWork() throws Exception
                 {
                     return (String) preferenceService.getPreference(user, "locale");
@@ -1456,17 +1471,16 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             // If the domain is null, then the beahviour here varies depending on whether it's a single tenant or multi-tenant cloud.
             if (personExists(user))
             {
-                localeString = AuthenticationUtil.runAsSystem(new RunAsWork<String>()
-                {
-                    public String doWork() throws Exception 
+                localeString = AuthenticationUtil.runAsSystem(new RunAsWork<String>() {
+                    public String doWork() throws Exception
                     {
                         return (String) preferenceService.getPreference(user, "locale");
                     };
-                }); 
+                });
             }
             // else leave it as null - there's no tenant, no user for that username, so we can't get a preferred locale.
         }
-        
+
         if (localeString != null)
         {
             locale = StringUtils.parseLocaleString(localeString);
@@ -1474,101 +1488,104 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
 
         return locale;
     }
-    
+
     /**
      * Return true if address has valid format
-     * @param address String
+     * 
+     * @param address
+     *            String
      * @return boolean
      */
     private boolean validateAddress(String address)
     {
         boolean result = false;
-        
+
         // Validate the email, allowing for local email addresses
         EmailValidator emailValidator = EmailValidator.getInstance(true);
         if (!validateAddresses || emailValidator.isValid(address))
         {
             result = true;
         }
-        else 
+        else
         {
-            logger.error("Failed to send email to '" + address + "' as the address is incorrectly formatted" );
+            logger.error("Failed to send email to '" + address + "' as the address is incorrectly formatted");
         }
-      
+
         return result;
     }
 
-   /**
-    * @param ref    The node representing the current document ref (or null)
-    * 
-    * @return Model map for email templates
-    */
-   private Map<String, Object> createEmailTemplateModel(NodeRef ref, Map<String, Object> suppliedModel, NodeRef fromPerson, String toRecipents)
-   {
-      Map<String, Object> model = new HashMap<String, Object>(8, 1.0f);
-      
-      if (fromPerson != null)
-      {
-          model.put("person", new TemplateNode(fromPerson, serviceRegistry, null));
-      }
+    /**
+     * @param ref
+     *            The node representing the current document ref (or null)
+     * 
+     * @return Model map for email templates
+     */
+    private Map<String, Object> createEmailTemplateModel(NodeRef ref, Map<String, Object> suppliedModel, NodeRef fromPerson, String toRecipents)
+    {
+        Map<String, Object> model = new HashMap<String, Object>(8, 1.0f);
 
-      if (toRecipents != null)
-      {
-          model.put("to", toRecipents);
-      }
+        if (fromPerson != null)
+        {
+            model.put("person", new TemplateNode(fromPerson, serviceRegistry, null));
+        }
 
-      if (ref != null)
-      {
-          model.put("document", new TemplateNode(ref, serviceRegistry, null));
-          NodeRef parent = serviceRegistry.getNodeService().getPrimaryParent(ref).getParentRef();
-          model.put("space", new TemplateNode(parent, serviceRegistry, null));
-      }
-      
-      // current date/time is useful to have and isn't supplied by FreeMarker by default
-      model.put("date", new Date());
-      
-      // add custom method objects
-      model.put("hasAspect", new HasAspectMethod());
-      model.put("message", new I18NMessageMethod());
-      model.put("dateCompare", new DateCompareMethod());
-      
-      // add URLs
-      model.put("url", new URLHelper(sysAdminParams));
-      model.put(TemplateService.KEY_SHARE_URL, UrlUtil.getShareUrl(this.serviceRegistry.getSysAdminParams()));
+        if (toRecipents != null)
+        {
+            model.put("to", toRecipents);
+        }
 
-      if (imageResolver != null)
-      {
-          model.put(TemplateService.KEY_IMAGE_RESOLVER, imageResolver);
-      }
+        if (ref != null)
+        {
+            model.put("document", new TemplateNode(ref, serviceRegistry, null));
+            NodeRef parent = serviceRegistry.getNodeService().getPrimaryParent(ref).getParentRef();
+            model.put("space", new TemplateNode(parent, serviceRegistry, null));
+        }
 
-      // if the caller specified a model, use it without overriding
-      if(suppliedModel != null && suppliedModel.size() > 0)
-      {
-          for(String key : suppliedModel.keySet())
-          {
-              if(model.containsKey(key))
-              {
-                  if(logger.isDebugEnabled())
-                  {
-                      logger.debug("Not allowing overwriting of built in model parameter " + key);
-                  }
-              }
-              else
-              {
-                  model.put(key, suppliedModel.get(key));
-              }
-          }
-      }
-      
-      // all done
-      return model;
-   }
-    
+        // current date/time is useful to have and isn't supplied by FreeMarker by default
+        model.put("date", new Date());
+
+        // add custom method objects
+        model.put("hasAspect", new HasAspectMethod());
+        model.put("message", new I18NMessageMethod());
+        model.put("dateCompare", new DateCompareMethod());
+
+        // add URLs
+        model.put("url", new URLHelper(sysAdminParams));
+        model.put(TemplateService.KEY_SHARE_URL, UrlUtil.getShareUrl(this.serviceRegistry.getSysAdminParams()));
+
+        if (imageResolver != null)
+        {
+            model.put(TemplateService.KEY_IMAGE_RESOLVER, imageResolver);
+        }
+
+        // if the caller specified a model, use it without overriding
+        if (suppliedModel != null && suppliedModel.size() > 0)
+        {
+            for (String key : suppliedModel.keySet())
+            {
+                if (model.containsKey(key))
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Not allowing overwriting of built in model parameter " + key);
+                    }
+                }
+                else
+                {
+                    model.put(key, suppliedModel.get(key));
+                }
+            }
+        }
+
+        // all done
+        return model;
+    }
+
     /**
      * Add the parameter definitions
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_TO, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_TO)));
         paramList.add(new ParameterDefinitionImpl(PARAM_CC, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_CC)));
@@ -1593,27 +1610,25 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     }
 
     /**
-     * Returns the most recent message that wasn't sent
-     *  because TestMode had been enabled.
+     * Returns the most recent message that wasn't sent because TestMode had been enabled.
      */
     public MimeMessage retrieveLastTestMessage()
     {
-        return lastTestMessage; 
+        return lastTestMessage;
     }
-    
+
     public int getTestSentCount()
     {
-        return testSentCount; 
+        return testSentCount;
     }
-    
+
     public int resetTestSentCount()
     {
-        return testSentCount = 0; 
+        return testSentCount = 0;
     }
-    
+
     /**
-     * Used when test mode is enabled.
-     * Clears the record of the last message that was sent. 
+     * Used when test mode is enabled. Clears the record of the last message that was sent.
      */
     public void clearLastTestMessage()
     {
@@ -1635,8 +1650,8 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         // Note: The usage of Apache Tika mimetype detection was considered, but the following cases are detected as text/html:
         // "This is plain text with <html mention inside"
         // "This is plain text\nOnly\nBut it mentions HTML and <html>"
-        //  And the following case is detected as "application/xhtml+xml"
-        //  "This is plain text with <html xmlns= mention inside"
+        // And the following case is detected as "application/xhtml+xml"
+        // "This is plain text with <html xmlns= mention inside"
         // Therefore we decided to not use Tika for html detection.
         boolean result = false;
 
@@ -1662,15 +1677,15 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     public static class URLHelper
     {
         private final SysAdminParams sysAdminParams;
-        
+
         public URLHelper(SysAdminParams sysAdminParams)
         {
             this.sysAdminParams = sysAdminParams;
         }
-        
+
         public String getContext()
         {
-           return "/" + sysAdminParams.getAlfrescoContext();
+            return "/" + sysAdminParams.getAlfrescoContext();
         }
 
         public String getServerPath()
@@ -1679,26 +1694,27 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     + sysAdminParams.getAlfrescoPort();
         }
     }
-    
+
     static AtomicInteger numberSuccessfulSends = new AtomicInteger(0);
     static AtomicInteger numberFailedSends = new AtomicInteger(0);
+
     protected void onSend()
     {
         numberSuccessfulSends.getAndIncrement();
     }
-    
+
     protected void onFail()
     {
         numberFailedSends.getAndIncrement();
     }
-    
+
     public int getNumberSuccessfulSends()
     {
         return numberSuccessfulSends.get();
     }
-        
+
     public int getNumberFailedSends()
-    {   
+    {
         return numberFailedSends.get();
     }
 }

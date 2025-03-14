@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.rest.api.NodeRatings;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.impl.node.ratings.RatingScheme;
@@ -43,8 +46,6 @@ import org.alfresco.service.cmr.rating.RatingService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.TypeConstraint;
 import org.alfresco.util.registry.NamedObjectRegistry;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Centralises access to node ratings services and maps between representations.
@@ -54,107 +55,107 @@ import org.apache.commons.logging.LogFactory;
  */
 public class NodeRatingsImpl implements NodeRatings
 {
-    private static Log logger = LogFactory.getLog(NodeRatingsImpl.class);  
+    private static Log logger = LogFactory.getLog(NodeRatingsImpl.class);
 
-	private Nodes nodes;
-	private RatingService ratingService;
-	private NamedObjectRegistry<RatingScheme> nodeRatingSchemeRegistry;
+    private Nodes nodes;
+    private RatingService ratingService;
+    private NamedObjectRegistry<RatingScheme> nodeRatingSchemeRegistry;
     private TypeConstraint typeConstraint;
 
-	public void setTypeConstraint(TypeConstraint typeConstraint)
-	{
-		this.typeConstraint = typeConstraint;
-	}
-
-	public void setRatingService(RatingService ratingService)
+    public void setTypeConstraint(TypeConstraint typeConstraint)
     {
-		this.ratingService = ratingService;
-	}
+        this.typeConstraint = typeConstraint;
+    }
 
-	public void setNodes(Nodes nodes) 
+    public void setRatingService(RatingService ratingService)
     {
-		this.nodes = nodes;
-	}
+        this.ratingService = ratingService;
+    }
 
-	public void setNodeRatingSchemeRegistry(NamedObjectRegistry<RatingScheme> nodeRatingSchemeRegistry)
+    public void setNodes(Nodes nodes)
     {
-		this.nodeRatingSchemeRegistry = nodeRatingSchemeRegistry;
-	}
+        this.nodes = nodes;
+    }
 
-	public RatingScheme validateRatingScheme(String ratingSchemeId)
-	{
-		RatingScheme ratingScheme = nodeRatingSchemeRegistry.getNamedObject(ratingSchemeId);
-		if(ratingScheme == null)
-		{
-			throw new InvalidArgumentException("Invalid ratingSchemeId " + ratingSchemeId);
-		}
+    public void setNodeRatingSchemeRegistry(NamedObjectRegistry<RatingScheme> nodeRatingSchemeRegistry)
+    {
+        this.nodeRatingSchemeRegistry = nodeRatingSchemeRegistry;
+    }
 
-		return ratingScheme;
-	}
-	
-	// TODO deal with fractional ratings - InvalidArgumentException
-	public NodeRating getNodeRating(String nodeId, String ratingSchemeId)
-	{
-		NodeRef nodeRef = nodes.validateNode(nodeId);
-		RatingScheme ratingScheme = validateRatingScheme(ratingSchemeId);
-		return ratingScheme.getNodeRating(nodeRef);
-	}
+    public RatingScheme validateRatingScheme(String ratingSchemeId)
+    {
+        RatingScheme ratingScheme = nodeRatingSchemeRegistry.getNamedObject(ratingSchemeId);
+        if (ratingScheme == null)
+        {
+            throw new InvalidArgumentException("Invalid ratingSchemeId " + ratingSchemeId);
+        }
 
-	public CollectionWithPagingInfo<NodeRating> getNodeRatings(String nodeId, Paging paging)
-	{
-		NodeRef nodeRef = nodes.validateNode(nodeId);
-		Set<String> schemes = new TreeSet<String>(ratingService.getRatingSchemes().keySet());
-		Iterator<String> it = schemes.iterator();
+        return ratingScheme;
+    }
 
-		int skipCount = paging.getSkipCount();
-		int maxItems = paging.getMaxItems();
-		int totalSize = schemes.size();
-		int count = 0;
-		
-		int end = skipCount + maxItems;
-		if(end < 0)
-		{
-			// overflow
-			end = Integer.MAX_VALUE;
-		}
-		List<NodeRating> ratings = new ArrayList<NodeRating>(totalSize);
+    // TODO deal with fractional ratings - InvalidArgumentException
+    public NodeRating getNodeRating(String nodeId, String ratingSchemeId)
+    {
+        NodeRef nodeRef = nodes.validateNode(nodeId);
+        RatingScheme ratingScheme = validateRatingScheme(ratingSchemeId);
+        return ratingScheme.getNodeRating(nodeRef);
+    }
 
-		for(int i = 0; i < end && it.hasNext(); i++)
-		{
-			String schemeName = it.next();
-			if(i < skipCount)
-			{
-				continue;
-			}
-			count++;
-        	RatingScheme ratingScheme = validateRatingScheme(schemeName);
-    		NodeRating nodeRating = ratingScheme.getNodeRating(nodeRef);
+    public CollectionWithPagingInfo<NodeRating> getNodeRatings(String nodeId, Paging paging)
+    {
+        NodeRef nodeRef = nodes.validateNode(nodeId);
+        Set<String> schemes = new TreeSet<String>(ratingService.getRatingSchemes().keySet());
+        Iterator<String> it = schemes.iterator();
+
+        int skipCount = paging.getSkipCount();
+        int maxItems = paging.getMaxItems();
+        int totalSize = schemes.size();
+        int count = 0;
+
+        int end = skipCount + maxItems;
+        if (end < 0)
+        {
+            // overflow
+            end = Integer.MAX_VALUE;
+        }
+        List<NodeRating> ratings = new ArrayList<NodeRating>(totalSize);
+
+        for (int i = 0; i < end && it.hasNext(); i++)
+        {
+            String schemeName = it.next();
+            if (i < skipCount)
+            {
+                continue;
+            }
+            count++;
+            RatingScheme ratingScheme = validateRatingScheme(schemeName);
+            NodeRating nodeRating = ratingScheme.getNodeRating(nodeRef);
             ratings.add(nodeRating);
-		}
+        }
 
-		boolean hasMoreItems = (skipCount + count < totalSize);
+        boolean hasMoreItems = (skipCount + count < totalSize);
 
         return CollectionWithPagingInfo.asPaged(paging, ratings, hasMoreItems, totalSize);
-	}
+    }
 
-	public void addRating(String nodeId, String ratingSchemeId, Object rating)
-	{
-		NodeRef nodeRef = nodes.validateNode(nodeId);
-		
-		RatingScheme ratingScheme = validateRatingScheme(ratingSchemeId);
+    public void addRating(String nodeId, String ratingSchemeId, Object rating)
+    {
+        NodeRef nodeRef = nodes.validateNode(nodeId);
 
-		if(!typeConstraint.matches(nodeRef))
-		{
-			throw new UnsupportedResourceOperationException("Cannot rate this node");
-		}
+        RatingScheme ratingScheme = validateRatingScheme(ratingSchemeId);
 
-		ratingScheme.applyRating(nodeRef, rating);
-	}
+        if (!typeConstraint.matches(nodeRef))
+        {
+            throw new UnsupportedResourceOperationException("Cannot rate this node");
+        }
 
-	public void removeRating(String nodeId, String ratingSchemeId)
-	{
-		RatingScheme ratingScheme = validateRatingScheme(ratingSchemeId);
-		NodeRef nodeRef = nodes.validateNode(nodeId);
-		ratingScheme.removeRating(nodeRef);
-	}
+        ratingScheme.applyRating(nodeRef, rating);
+    }
+
+    public void removeRating(String nodeId, String ratingSchemeId)
+    {
+        RatingScheme ratingScheme = validateRatingScheme(ratingSchemeId);
+        NodeRef nodeRef = nodes.validateNode(nodeId);
+        ratingScheme.removeRating(nodeRef);
+    }
 }

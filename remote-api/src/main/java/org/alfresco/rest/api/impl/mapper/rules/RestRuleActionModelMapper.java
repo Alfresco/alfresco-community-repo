@@ -33,11 +33,13 @@ import static org.alfresco.rest.api.actions.ActionValidator.ALL_ACTIONS;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import org.apache.commons.collections.CollectionUtils;
 
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
@@ -47,7 +49,6 @@ import org.alfresco.rest.api.model.mapper.RestModelMapper;
 import org.alfresco.rest.api.model.rules.Action;
 import org.alfresco.service.Experimental;
 import org.alfresco.util.GUID;
-import org.apache.commons.collections.CollectionUtils;
 
 @Experimental
 public class RestRuleActionModelMapper implements RestModelMapper<Action, org.alfresco.service.cmr.action.Action>
@@ -56,7 +57,7 @@ public class RestRuleActionModelMapper implements RestModelMapper<Action, org.al
     private final List<ActionValidator> actionValidators;
 
     public RestRuleActionModelMapper(ActionParameterConverter parameterConverter,
-                                     List<ActionValidator> actionValidators)
+            List<ActionValidator> actionValidators)
     {
         this.parameterConverter = parameterConverter;
         this.actionValidators = actionValidators;
@@ -65,7 +66,8 @@ public class RestRuleActionModelMapper implements RestModelMapper<Action, org.al
     /**
      * Converts service POJO action to REST model action.
      *
-     * @param actionModel - {@link org.alfresco.service.cmr.action.Action} service POJO
+     * @param actionModel
+     *            - {@link org.alfresco.service.cmr.action.Action} service POJO
      * @return {@link Action} REST model
      */
     @Override
@@ -92,7 +94,8 @@ public class RestRuleActionModelMapper implements RestModelMapper<Action, org.al
     /**
      * Convert the REST model objects to composite action service POJO.
      *
-     * @param actions List of actions.
+     * @param actions
+     *            List of actions.
      * @return The composite action service POJO.
      */
     @Override
@@ -112,11 +115,12 @@ public class RestRuleActionModelMapper implements RestModelMapper<Action, org.al
     {
         final Map<String, Serializable> params = Optional.ofNullable(action.getParams()).orElse(emptyMap());
         validateAction(action);
-        final Map<String, Serializable> convertedParams =
-                parameterConverter.getConvertedParams(params, action.getActionDefinitionId());
+        final Map<String, Serializable> convertedParams = parameterConverter.getConvertedParams(params, action.getActionDefinitionId());
         return new ActionImpl(null, GUID.generate(), action.getActionDefinitionId(), convertedParams);
     }
-    private void validateAction(Action action) {
+
+    private void validateAction(Action action)
+    {
         actionValidators.stream()
                 .filter(v -> (v.getActionDefinitionIds().contains(action.getActionDefinitionId()) ||
                         v.getActionDefinitionIds().equals(List.of(ALL_ACTIONS))))

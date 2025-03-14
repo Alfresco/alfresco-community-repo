@@ -48,17 +48,15 @@ import org.alfresco.util.Pair;
 public abstract class AbstractCopyBehaviourCallback implements CopyBehaviourCallback
 {
     private static final String KEY_NODEREF_REPOINTING_PREFIX = "recordNodeRefPropertiesForRepointing-";
-    
+
     /**
-     * @return          Returns
-     *                  {@link AssocCopySourceAction#COPY_REMOVE_EXISTING} and
-     *                  {@link AssocCopyTargetAction#USE_COPIED_TARGET}
+     * @return Returns {@link AssocCopySourceAction#COPY_REMOVE_EXISTING} and {@link AssocCopyTargetAction#USE_COPIED_TARGET}
      */
     @Override
     public Pair<AssocCopySourceAction, AssocCopyTargetAction> getAssociationCopyAction(
-                QName classQName,
-                CopyDetails copyDetails,
-                CopyAssociationDetails assocCopyDetails)
+            QName classQName,
+            CopyDetails copyDetails,
+            CopyAssociationDetails assocCopyDetails)
     {
         return new Pair<AssocCopySourceAction, AssocCopyTargetAction>(
                 AssocCopySourceAction.COPY_REMOVE_EXISTING,
@@ -66,7 +64,7 @@ public abstract class AbstractCopyBehaviourCallback implements CopyBehaviourCall
     }
 
     /**
-     * @return      Returns ChildAssocRecurseAction.RESPECT_RECURSE_FLAG
+     * @return Returns ChildAssocRecurseAction.RESPECT_RECURSE_FLAG
      */
     public ChildAssocRecurseAction getChildAssociationRecurseAction(
             QName classQName,
@@ -75,11 +73,12 @@ public abstract class AbstractCopyBehaviourCallback implements CopyBehaviourCall
     {
         return ChildAssocRecurseAction.RESPECT_RECURSE_FLAG;
     }
-    
+
     /**
-     * @throws      IllegalStateException  always
+     * @throws IllegalStateException
+     *             always
      */
-    protected void throwExceptionForUnexpectedBehaviour(CopyDetails copyDetails, String ... otherDetails)
+    protected void throwExceptionForUnexpectedBehaviour(CopyDetails copyDetails, String... otherDetails)
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("Behaviour should have been invoked: \n" +
@@ -91,16 +90,18 @@ public abstract class AbstractCopyBehaviourCallback implements CopyBehaviourCall
         }
         throw new IllegalStateException(sb.toString());
     }
-    
+
     /**
-     * Helper method to transactionally record <code>NodeRef</code> properties so that they
-     * can later be fixed up to point to the relative, after-copy locations.
+     * Helper method to transactionally record <code>NodeRef</code> properties so that they can later be fixed up to point to the relative, after-copy locations.
      * <p>
      * When the copy has been completed, the second stage of the process can be applied.
      * 
-     * @param sourceNodeRef             the node that is being copied
-     * @param properties                the node properties being copied
-     * @param propertyQName             the qualified name of the property to check
+     * @param sourceNodeRef
+     *            the node that is being copied
+     * @param properties
+     *            the node properties being copied
+     * @param propertyQName
+     *            the qualified name of the property to check
      * 
      * @see #repointNodeRefs(NodeRef, NodeRef, QName, Map, NodeService)
      */
@@ -119,16 +120,16 @@ public abstract class AbstractCopyBehaviourCallback implements CopyBehaviourCall
             map.put(sourceNodeRef, parameterValue);
         }
     }
-    
+
     /**
-     * The second stage of the <code>NodeRef</code> repointing.  Call this method to have
-     * any <code>NodeRef</code> properties readjusted to reflect the copied node hierarchy.
-     * Only use this method if it a requirement for the particular type or aspect that you
-     * are coding for.
+     * The second stage of the <code>NodeRef</code> repointing. Call this method to have any <code>NodeRef</code> properties readjusted to reflect the copied node hierarchy. Only use this method if it a requirement for the particular type or aspect that you are coding for.
      * 
-     * @param sourceNodeRef         the source node
-     * @param propertyQName         the target node i.e. the copy of the source node
-     * @param copyMap               the full hierarchy copy map of source to copies
+     * @param sourceNodeRef
+     *            the source node
+     * @param propertyQName
+     *            the target node i.e. the copy of the source node
+     * @param copyMap
+     *            the full hierarchy copy map of source to copies
      * 
      * @see #recordNodeRefsForRepointing(NodeRef, Map, QName)
      */
@@ -145,7 +146,7 @@ public abstract class AbstractCopyBehaviourCallback implements CopyBehaviourCall
         Serializable value = map.get(sourceNodeRef);
         if (value == null)
         {
-            // Don't bother.  The source node did not have a NodeRef property
+            // Don't bother. The source node did not have a NodeRef property
             return;
         }
         Serializable newValue = null;
@@ -189,7 +190,7 @@ public abstract class AbstractCopyBehaviourCallback implements CopyBehaviourCall
             nodeService.setProperty(targetNodeRef, propertyQName, newValue);
         }
     }
-    
+
     private NodeRef repointNodeRef(Map<NodeRef, NodeRef> copyMap, NodeRef pointerNodeRef)
     {
         NodeRef copiedPointerNodeRef = copyMap.get(pointerNodeRef);
@@ -202,7 +203,7 @@ public abstract class AbstractCopyBehaviourCallback implements CopyBehaviourCall
             return copiedPointerNodeRef;
         }
     }
-    
+
     /**
      * By default it is forbidden for top-level nodes to be renamed
      */

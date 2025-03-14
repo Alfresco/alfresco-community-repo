@@ -31,7 +31,6 @@ import java.util.Map;
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.QName;
 
-
 /**
  * Workflow Task Data Object
  * 
@@ -45,11 +44,11 @@ public class WorkflowTask
     /** Unique id of Task */
     @Deprecated
     public String id;
-    
+
     /** Task Name */
     @Deprecated
     public String name;
-    
+
     /** Task Title (Localised) */
     @Deprecated
     public String title;
@@ -57,29 +56,28 @@ public class WorkflowTask
     /** Task Description (Localised) */
     @Deprecated
     public String description;
-    
+
     /** Task State */
     @Deprecated
     public WorkflowTaskState state;
-    
+
     /** Workflow path this Task is associated with */
     @Deprecated
     public WorkflowPath path;
-    
+
     /** Task Definition */
     @Deprecated
     public WorkflowTaskDefinition definition;
-    
+
     /** Task Properties as described by Task Definition */
     @Deprecated
     public Map<QName, Serializable> properties;
-    
-    
+
     public WorkflowTask(String id,
-                WorkflowTaskDefinition definition, 
-                String name, String title, String description,
-                WorkflowTaskState state, WorkflowPath path,
-                Map<QName, Serializable> properties)
+            WorkflowTaskDefinition definition,
+            String name, String title, String description,
+            WorkflowTaskState state, WorkflowPath path,
+            Map<QName, Serializable> properties)
     {
         this.id = id;
         this.definition = definition;
@@ -98,7 +96,7 @@ public class WorkflowTask
     {
         return id;
     }
-    
+
     /**
      * @return the name
      */
@@ -156,13 +154,13 @@ public class WorkflowTask
     }
 
     /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
+     * 
+     * @see java.lang.Object#toString() */
     @Override
     public String toString()
     {
         String propCount = (properties == null) ? "null" : "" + properties.size();
-        String pathString = path==null ? "null" : path.toString();
+        String pathString = path == null ? "null" : path.toString();
         return "WorkflowTask[id=" + id + ",title=" + title + ",state=" + state + ",props=" + propCount + ",def=" + definition + ",path=" + pathString + "]";
     }
 }

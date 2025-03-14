@@ -26,18 +26,18 @@
 package org.alfresco.repo.web.scripts.quickshare;
 
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.web.scripts.WebScriptUtil;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.repo.web.scripts.WebScriptUtil;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * QuickShare/PublicView
@@ -52,7 +52,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class MetaDataGet extends AbstractQuickShareContent
 {
     private static final Log logger = LogFactory.getLog(QuickShareMetaDataGet.class);
-    
+
     @Override
     protected Map<String, Object> executeImpl(final WebScriptRequest req, Status status, Cache cache)
     {
@@ -64,22 +64,22 @@ public class MetaDataGet extends AbstractQuickShareContent
             String msg = "A valid NodeRef must be specified!";
             throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
         }
-        
+
         try
         {
             Map<String, Object> model = quickShareService.getMetaData(nodeRef);
-            
+
             if (logger.isDebugEnabled())
             {
-                logger.debug("Retrieved limited metadata: "+nodeRef+" ["+model+"]");
+                logger.debug("Retrieved limited metadata: " + nodeRef + " [" + model + "]");
             }
-            
+
             return model;
         }
         catch (InvalidNodeRefException inre)
         {
-            logger.error("Unable to find node: "+inre.getNodeRef());
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find nodeRef: "+inre.getNodeRef());
+            logger.error("Unable to find node: " + inre.getNodeRef());
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find nodeRef: " + inre.getNodeRef());
         }
     }
 }

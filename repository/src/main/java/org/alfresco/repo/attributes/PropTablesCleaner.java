@@ -25,6 +25,11 @@
  */
 package org.alfresco.repo.attributes;
 
+import java.util.Properties;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.domain.propval.PropertyValueDAO;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
@@ -32,10 +37,6 @@ import org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizer;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.util.Properties;
 
 /**
  * Cleaner of unused values from the alf_prop_xxx tables.
@@ -81,8 +82,7 @@ public class PropTablesCleaner
     }
 
     /**
-     * Get {@link #LOCK_QNAME a lock} for {@link #LOCK_TTL a long-running job} and {@link PropertyValueDAO#cleanupUnusedValues() call through}
-     * to get the unused data cleaned up.
+     * Get {@link #LOCK_QNAME a lock} for {@link #LOCK_TTL a long-running job} and {@link PropertyValueDAO#cleanupUnusedValues() call through} to get the unused data cleaned up.
      */
     public void execute()
     {

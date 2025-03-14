@@ -52,7 +52,8 @@ public class TransferAction extends RMDispositionActionExecuterAbstractBase
     /**
      * Indicates whether this transfer is an accession or not
      *
-     * @param isAccession Is the transfer an accession or not
+     * @param isAccession
+     *            Is the transfer an accession or not
      */
     public void setIsAccession(boolean isAccession)
     {
@@ -62,7 +63,8 @@ public class TransferAction extends RMDispositionActionExecuterAbstractBase
     /**
      * Sets the transfer service
      *
-     * @param transferService transfer service
+     * @param transferService
+     *            transfer service
      */
     public void setTransferService(TransferService transferService)
     {
@@ -101,8 +103,10 @@ public class TransferAction extends RMDispositionActionExecuterAbstractBase
     /**
      * Create the transfer node and link the disposition lifecycle node beneath it
      *
-     * @param action action
-     * @param dispositionLifeCycleNodeRef disposition lifecycle node
+     * @param action
+     *            action
+     * @param dispositionLifeCycleNodeRef
+     *            disposition lifecycle node
      */
     private void doTransfer(Action action, NodeRef dispositionLifeCycleNodeRef)
     {

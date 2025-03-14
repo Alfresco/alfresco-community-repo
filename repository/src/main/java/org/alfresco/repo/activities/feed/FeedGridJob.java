@@ -33,8 +33,8 @@ import java.io.Serializable;
 public interface FeedGridJob
 {
     public void setArgument(JobSettings arg);
-    
+
     public JobSettings getArgument();
-    
+
     public Serializable execute() throws Exception;
 }

@@ -29,16 +29,16 @@ package org.alfresco.repo.workflow.activiti;
 import java.io.IOException;
 
 import junit.framework.TestCase;
-
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.ProcessEngineConfiguration;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.runtime.ProcessInstance;
-import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.core.io.ClassPathResource;
+
+import org.alfresco.util.testing.category.NeverRunsTests;
 
 /**
  * @author Nick Smith
@@ -62,7 +62,7 @@ public class ActivitiSmokeTest extends TestCase
         {
             ProcessInstance instance = runtimeService.startProcessInstanceByKey("testTask");
             assertNotNull(instance);
-            
+
             String instanceId = instance.getId();
             ProcessInstance instanceInDb = findProcessInstance(runtimeService, instanceId);
             assertNotNull(instanceInDb);
@@ -70,13 +70,13 @@ public class ActivitiSmokeTest extends TestCase
         }
         finally
         {
-            
-//            List<Deployment> deployments = repoService.createDeploymentQuery().list();
-//            for (Deployment deployment2 : deployments)
-//            {
-//                repoService.deleteDeployment(deployment2.getId());
-//            }
-            
+
+            // List<Deployment> deployments = repoService.createDeploymentQuery().list();
+            // for (Deployment deployment2 : deployments)
+            // {
+            // repoService.deleteDeployment(deployment2.getId());
+            // }
+
             repoService.deleteDeployment(deployment.getId());
         }
     }
@@ -85,8 +85,8 @@ public class ActivitiSmokeTest extends TestCase
     {
         ClassPathResource resource = new ClassPathResource("org/alfresco/repo/workflow/activiti/testTransaction.bpmn20.xml");
         Deployment deployment = repoService.createDeployment()
-        .addInputStream(resource.getFilename(), resource.getInputStream())
-        .deploy();
+                .addInputStream(resource.getFilename(), resource.getInputStream())
+                .deploy();
         return deployment;
     }
 
@@ -100,8 +100,8 @@ public class ActivitiSmokeTest extends TestCase
     private ProcessInstance findProcessInstance(RuntimeService runtimeService, String instanceId)
     {
         ProcessInstance instanceInDb = runtimeService.createProcessInstanceQuery()
-        .processInstanceId(instanceId)
-        .singleResult();
+                .processInstanceId(instanceId)
+                .singleResult();
         return instanceInDb;
     }
 }

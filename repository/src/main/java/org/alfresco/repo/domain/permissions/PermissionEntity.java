@@ -29,7 +29,6 @@ import java.io.Serializable;
 
 import org.alfresco.util.EqualsHelper;
 
-
 /**
  * Entity for <b>alf_permission</b> persistence.
  * 
@@ -39,45 +38,44 @@ import org.alfresco.util.EqualsHelper;
 public class PermissionEntity implements Permission, Serializable
 {
     private static final long serialVersionUID = 8219087288749688965L;
-    
+
     private Long id;
     private Long version;
     private Long typeQnameId;
     private String name;
-    
+
     /**
      * Default constructor
      */
     public PermissionEntity()
-    {
-    }
-    
+    {}
+
     public PermissionEntity(Long typeQnameId, String name)
     {
         this.typeQnameId = typeQnameId;
         this.name = name;
     }
-    
+
     public Long getId()
     {
         return id;
     }
-    
+
     public void setId(Long id)
     {
         this.id = id;
     }
-    
+
     public Long getVersion()
     {
         return version;
     }
-    
+
     public void setVersion(Long version)
     {
         this.version = version;
     }
-    
+
     public void incrementVersion()
     {
         if (this.version >= Long.MAX_VALUE)
@@ -89,33 +87,33 @@ public class PermissionEntity implements Permission, Serializable
             this.version++;
         }
     }
-    
+
     public Long getTypeQNameId()
     {
         return typeQnameId;
     }
-    
+
     public void setTypeQNameId(Long typenameId)
     {
         this.typeQnameId = typenameId;
     }
-    
+
     public String getName()
     {
         return name;
     }
-    
+
     public void setName(String name)
     {
         this.name = name;
     }
-    
+
     @Override
     public int hashCode()
     {
         return typeQnameId.hashCode() + (37 * name.hashCode());
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -125,7 +123,7 @@ public class PermissionEntity implements Permission, Serializable
         }
         else if (obj instanceof PermissionEntity)
         {
-            PermissionEntity that = (PermissionEntity)obj;
+            PermissionEntity that = (PermissionEntity) obj;
             return (EqualsHelper.nullSafeEquals(this.typeQnameId, that.typeQnameId) &&
                     EqualsHelper.nullSafeEquals(this.name, that.name));
         }
@@ -134,17 +132,17 @@ public class PermissionEntity implements Permission, Serializable
             return false;
         }
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("PermissionEntity")
-          .append("[ ID=").append(id)
-          .append(", version=").append(version)
-          .append(", typeQnameId=").append(typeQnameId)
-          .append(", name=").append(name)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", version=").append(version)
+                .append(", typeQnameId=").append(typeQnameId)
+                .append(", name=").append(name)
+                .append("]");
         return sb.toString();
     }
 }

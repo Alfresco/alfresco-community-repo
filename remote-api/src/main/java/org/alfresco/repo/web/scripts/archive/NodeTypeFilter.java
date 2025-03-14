@@ -44,30 +44,34 @@ public class NodeTypeFilter implements ArchivedNodesFilter
     private NodeService nodeService;
     private NamespaceService namespaceService;
     private List<QName> excludedTypes;
-    
+
     /**
      * This method sets the NamespaceService object.
-     * @param namespaceService the namespaceService.
+     * 
+     * @param namespaceService
+     *            the namespaceService.
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * This method sets the NodeService object.
-     * @param nodeService the node service.
+     * 
+     * @param nodeService
+     *            the node service.
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
-     * Sets the List of node types to exclude. These node types should be in the
-     * short form e.g. cm:myType.
+     * Sets the List of node types to exclude. These node types should be in the short form e.g. cm:myType.
      * 
-     * @param excludedTypesStg a List of node types which are to be excluded.
+     * @param excludedTypesStg
+     *            a List of node types which are to be excluded.
      */
     public void setExcludedTypes(List<String> excludedTypesStg)
     {
@@ -80,14 +84,12 @@ public class NodeTypeFilter implements ArchivedNodesFilter
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.web.scripts.archive.ArchivedNodesFilter#accept(org.alfresco.service.cmr.repository.NodeRef)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.web.scripts.archive.ArchivedNodesFilter#accept(org.alfresco.service.cmr.repository.NodeRef) */
     public boolean accept(NodeRef nodeRef)
     {
         boolean typeIsExcluded = this.excludedTypes.contains(nodeService.getType(nodeRef));
         return !typeIsExcluded;
     }
 }
-

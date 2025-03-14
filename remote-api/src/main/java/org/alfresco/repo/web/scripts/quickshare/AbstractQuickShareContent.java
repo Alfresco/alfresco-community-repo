@@ -25,9 +25,9 @@
  */
 package org.alfresco.repo.web.scripts.quickshare;
 
-import org.alfresco.service.cmr.quickshare.QuickShareService;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 
+import org.alfresco.service.cmr.quickshare.QuickShareService;
 
 /**
  * QuickShare/PublicView
@@ -38,19 +38,19 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 public abstract class AbstractQuickShareContent extends DeclarativeWebScript
 {
     protected QuickShareService quickShareService;
-    
+
     private boolean enabled = true;
-    
+
     public void setQuickShareService(QuickShareService quickShareService)
     {
         this.quickShareService = quickShareService;
     }
-    
+
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
     }
-    
+
     protected boolean isEnabled()
     {
         return this.enabled;

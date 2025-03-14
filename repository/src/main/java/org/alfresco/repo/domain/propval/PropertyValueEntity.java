@@ -30,17 +30,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.util.EqualsHelper;
-import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.Pair;
 
 /**
  * Entity bean for <b>alf_prop_value</b> table.
  * <p>
- * Values here are either simple values that can be stored in a <code>long</code>
- * or will be references to data in other tables.
+ * Values here are either simple values that can be stored in a <code>long</code> or will be references to data in other tables.
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -57,12 +56,11 @@ public class PropertyValueEntity
     public static final Short ORDINAL_SERIALIZABLE = 4;
     public static final Short ORDINAL_CONSTRUCTABLE = 5;
     public static final Short ORDINAL_ENUM = 6;
-    
+
     /**
      * Enumeration of persisted types for <b>alf_prop_value.persisted_type</b>.
      * <p/>
-     * This enumeration is a helper for the default implementation of the {@link PropertyTypeConverter}
-     * and should not be used in public interfaces.
+     * This enumeration is a helper for the default implementation of the {@link PropertyTypeConverter} and should not be used in public interfaces.
      * 
      * @author Derek Hulley
      * @since 3.2
@@ -76,6 +74,7 @@ public class PropertyValueEntity
             {
                 return ORDINAL_NULL;
             }
+
             @Override
             public Class<?> getAssociatedClass()
             {
@@ -89,6 +88,7 @@ public class PropertyValueEntity
             {
                 return ORDINAL_LONG;
             }
+
             @Override
             public Class<?> getAssociatedClass()
             {
@@ -102,6 +102,7 @@ public class PropertyValueEntity
             {
                 return ORDINAL_DOUBLE;
             }
+
             @Override
             public Class<?> getAssociatedClass()
             {
@@ -115,6 +116,7 @@ public class PropertyValueEntity
             {
                 return ORDINAL_STRING;
             }
+
             @Override
             public Class<?> getAssociatedClass()
             {
@@ -128,6 +130,7 @@ public class PropertyValueEntity
             {
                 return ORDINAL_SERIALIZABLE;
             }
+
             @Override
             public Class<?> getAssociatedClass()
             {
@@ -141,6 +144,7 @@ public class PropertyValueEntity
             {
                 return ORDINAL_CONSTRUCTABLE;
             }
+
             @Override
             public Class<?> getAssociatedClass()
             {
@@ -154,26 +158,25 @@ public class PropertyValueEntity
             {
                 return ORDINAL_ENUM;
             }
+
             @Override
             public Class<?> getAssociatedClass()
             {
                 return Enum.class;
             }
         };
-        
+
         /**
-         * Fetch the numerical value that will represent the the persisted type.  This is done
-         * explicitly to prevent ordering issues if further types are added.
+         * Fetch the numerical value that will represent the the persisted type. This is done explicitly to prevent ordering issues if further types are added.
          * 
-         * @return              Returns the ordinal number
+         * @return Returns the ordinal number
          */
         public abstract Short getOrdinalNumber();
-        
+
         /**
-         * Get the persisted type's class.  This is used for determining the source type when
-         * converting from persisted values.
+         * Get the persisted type's class. This is used for determining the source type when converting from persisted values.
          * 
-         * @return              Returns the class associated with the persisted type
+         * @return Returns the class associated with the persisted type
          */
         public abstract Class<?> getAssociatedClass();
     }
@@ -183,7 +186,7 @@ public class PropertyValueEntity
      * An unmodifiable map of persisted type enums keyed by their ordinal number
      */
     public static final Map<Short, PersistedType> persistedTypesByOrdinal;
-    
+
     static
     {
         // Create a pair for null values
@@ -198,28 +201,28 @@ public class PropertyValueEntity
     }
 
     private static final Log logger = LogFactory.getLog(PropertyValueEntity.class);
-    
+
     private Long id;
     private Long actualTypeId;
     private Short persistedType;
-    private PersistedType persistedTypeEnum;            // Derived
+    private PersistedType persistedTypeEnum; // Derived
     private Long longValue;
     private String stringValue;
     private Double doubleValue;
     private Serializable serializableValue;
-    
+
     public PropertyValueEntity()
     {
         this.persistedType = PersistedType.NULL.getOrdinalNumber();
         this.longValue = LONG_ZERO;
     }
-    
+
     @Override
     public int hashCode()
     {
         return (actualTypeId == null ? 0 : actualTypeId.intValue()) + (longValue == null ? 0 : longValue.intValue());
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -231,33 +234,35 @@ public class PropertyValueEntity
         {
             PropertyValueEntity that = (PropertyValueEntity) obj;
             return EqualsHelper.nullSafeEquals(this.actualTypeId, that.actualTypeId) &&
-                   EqualsHelper.nullSafeEquals(this.longValue, that.longValue);
+                    EqualsHelper.nullSafeEquals(this.longValue, that.longValue);
         }
         else
         {
             return false;
         }
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("PropertyValueEntity")
-          .append("[ ID=").append(id)
-          .append(", actualTypeId=").append(actualTypeId)
-          .append(", persistedType=").append(persistedType)
-          .append(", value=").append(longValue)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", actualTypeId=").append(actualTypeId)
+                .append(", persistedType=").append(persistedType)
+                .append(", value=").append(longValue)
+                .append("]");
         return sb.toString();
     }
-    
+
     /**
-     * Helper method to get the value based on the persisted type. 
+     * Helper method to get the value based on the persisted type.
      * 
-     * @param actualType        the type to convert to
-     * @param converter         the data converter to use
-     * @return                  Returns the converted value
+     * @param actualType
+     *            the type to convert to
+     * @param converter
+     *            the data converter to use
+     * @return Returns the converted value
      */
     public Serializable getValue(Class<Serializable> actualType, PropertyTypeConverter converter)
     {
@@ -290,13 +295,14 @@ public class PropertyValueEntity
             throw new IllegalStateException("Should not be able to get through switch");
         }
     }
-    
+
     /**
-     * Shortcut method to set the value.  It will be converted as required and the necessary fields
-     * will be populated.
+     * Shortcut method to set the value. It will be converted as required and the necessary fields will be populated.
      * 
-     * @param value         the value to persist (may be <tt>null</tt>)
-     * @param converter     the converter that will perform and type conversion
+     * @param value
+     *            the value to persist (may be <tt>null</tt>)
+     * @param converter
+     *            the converter that will perform and type conversion
      */
     public void setValue(Serializable value, PropertyTypeConverter converter)
     {
@@ -315,47 +321,49 @@ public class PropertyValueEntity
             // Get the class to persist as
             switch (persistedTypeEnum)
             {
-                case LONG:
-                    longValue = converter.convert(Long.class, value);
-                    break;
-                case DOUBLE:
-                    doubleValue = converter.convert(Double.class, value);
-                    break;
-                case STRING:
-                    stringValue = converter.convert(String.class, value);
-                    if (stringValue.equals(PropertyStringValueEntity.EMPTY_STRING))
-                    {
-                        // Oracle: We can't insert empty strings into the column.
-                        stringValue = PropertyStringValueEntity.EMPTY_STRING_REPLACEMENT;
-                    }
-                    break;
-                case CONSTRUCTABLE:
-                    // A special case.  There is no conversion, so just Store the name of the class.
-                    stringValue = value.getClass().getName();
-                    break;
-                case ENUM:
-                    // A special case.  Store the string-equivalent representation
-                    stringValue = converter.convert(String.class, value);
-                    break;
-                case SERIALIZABLE:
-                    serializableValue = value;
-                    break;
-                default:
-                    throw new IllegalStateException(
-                            "PropertyTypeConverter.convertToPersistentType returned illegal type: " +
-                            "   Converter:      " + converter + "\n" +
-                            "   Type Returned:  " + persistedTypeEnum + "\n" +
-                            "   From Value:     " + value);
+            case LONG:
+                longValue = converter.convert(Long.class, value);
+                break;
+            case DOUBLE:
+                doubleValue = converter.convert(Double.class, value);
+                break;
+            case STRING:
+                stringValue = converter.convert(String.class, value);
+                if (stringValue.equals(PropertyStringValueEntity.EMPTY_STRING))
+                {
+                    // Oracle: We can't insert empty strings into the column.
+                    stringValue = PropertyStringValueEntity.EMPTY_STRING_REPLACEMENT;
+                }
+                break;
+            case CONSTRUCTABLE:
+                // A special case. There is no conversion, so just Store the name of the class.
+                stringValue = value.getClass().getName();
+                break;
+            case ENUM:
+                // A special case. Store the string-equivalent representation
+                stringValue = converter.convert(String.class, value);
+                break;
+            case SERIALIZABLE:
+                serializableValue = value;
+                break;
+            default:
+                throw new IllegalStateException(
+                        "PropertyTypeConverter.convertToPersistentType returned illegal type: " +
+                                "   Converter:      " + converter + "\n" +
+                                "   Type Returned:  " + persistedTypeEnum + "\n" +
+                                "   From Value:     " + value);
             }
         }
     }
-    
+
     /**
      * Helper method to determine how the given value will be stored.
      * 
-     * @param value         the value to check
-     * @param converter     the type converter
-     * @return              Returns the persisted type
+     * @param value
+     *            the value to check
+     * @param converter
+     *            the type converter
+     * @return Returns the persisted type
      * 
      * @see PropertyTypeConverter#getPersistentType(Serializable)
      */
@@ -372,12 +380,12 @@ public class PropertyValueEntity
         }
         return persistedTypeEnum;
     }
-    
+
     public PersistedType getPersistedTypeEnum()
     {
         return persistedTypeEnum;
     }
-    
+
     public Long getId()
     {
         return id;
@@ -433,9 +441,9 @@ public class PropertyValueEntity
     {
         if (stringValue == null)
         {
-            // Oracle!  It pulls nulls out in place of empty strings.
-            //  Since we don't put nulls into the DB (the column doesn't allow it)
-            //  we can be sure that this is an Oracle empty string
+            // Oracle! It pulls nulls out in place of empty strings.
+            // Since we don't put nulls into the DB (the column doesn't allow it)
+            // we can be sure that this is an Oracle empty string
             stringValue = "";
         }
         this.stringValue = stringValue;

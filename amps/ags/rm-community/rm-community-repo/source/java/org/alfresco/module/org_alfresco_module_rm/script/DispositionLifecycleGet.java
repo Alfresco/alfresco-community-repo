@@ -32,19 +32,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
-import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.PersonService;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
+import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.PersonService;
+
 /**
- * Implementation for Java backed webscript to return full details
- * about a disposition lifecycle (next disposition action).
+ * Implementation for Java backed webscript to return full details about a disposition lifecycle (next disposition action).
  *
  * @author Gavin Cornwell
  */
@@ -55,16 +55,15 @@ public class DispositionLifecycleGet extends DispositionAbstractBase
     /**
      * Sets the PersonService instance
      *
-     * @param personService The PersonService instance
+     * @param personService
+     *            The PersonService instance
      */
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
     }
 
-    /*
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
-     */
+    /* @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache) */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
@@ -75,12 +74,12 @@ public class DispositionLifecycleGet extends DispositionAbstractBase
         DispositionAction nextAction = getDispositionService().getNextDispositionAction(nodeRef);
         if (nextAction == null)
         {
-           Map<String, Object> nextActionModel = new HashMap<>(2);
-           nextActionModel.put("notFound", true);
-           nextActionModel.put("message", "Node " + nodeRef.toString() + " does not have a disposition lifecycle");
-           Map<String, Object> model = new HashMap<>(1);
-           model.put("nextaction", nextActionModel);
-           return model;
+            Map<String, Object> nextActionModel = new HashMap<>(2);
+            nextActionModel.put("notFound", true);
+            nextActionModel.put("message", "Node " + nodeRef.toString() + " does not have a disposition lifecycle");
+            Map<String, Object> model = new HashMap<>(1);
+            model.put("nextaction", nextActionModel);
+            return model;
         }
         else
         {
@@ -138,7 +137,8 @@ public class DispositionLifecycleGet extends DispositionAbstractBase
     /**
      * Helper to create a model to represent the given event execution.
      *
-     * @param event The event to create a model for
+     * @param event
+     *            The event to create a model for
      * @return Map representing the model
      */
     protected Map<String, Object> createEventModel(EventCompletionDetails event)
@@ -168,9 +168,12 @@ public class DispositionLifecycleGet extends DispositionAbstractBase
     /**
      * Adds the given username's first and last name to the given model.
      *
-     * @param model The model to add the first and last name to
-     * @param userName The username of the user to lookup
-     * @param propertyPrefix The prefix of the property name to use when adding to the model
+     * @param model
+     *            The model to add the first and last name to
+     * @param userName
+     *            The username of the user to lookup
+     * @param propertyPrefix
+     *            The prefix of the property name to use when adding to the model
      */
     protected void addUsersRealName(Map<String, Object> model, String userName, String propertyPrefix)
     {

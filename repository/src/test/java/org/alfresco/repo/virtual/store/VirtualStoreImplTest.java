@@ -33,6 +33,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.virtual.VirtualizationException;
@@ -49,10 +54,6 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.Before;
-import org.junit.Test;
 
 public class VirtualStoreImplTest extends VirtualizationIntegrationTest
 {
@@ -66,7 +67,7 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
         super.setUp();
 
         smartStore = ctx.getBean("smartStore",
-                                   VirtualStoreImpl.class);
+                VirtualStoreImpl.class);
 
     }
 
@@ -81,35 +82,35 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
         {
             final String templateName = "template1.json";
             jsonTemplateContent = nodeService.getChildByName(companyHomeNodeRef,
-                                                             ContentModel.ASSOC_CONTAINS,
-                                                             templateName);
+                    ContentModel.ASSOC_CONTAINS,
+                    templateName);
             if (jsonTemplateContent == null)
             {
                 ChildAssociationRef templateChild = createContent(companyHomeNodeRef,
-                                                                  templateName,
-                                                                  ApplyTemplateMethodTest.class
-                                                                              .getResourceAsStream(TEST_TEMPLATE_1_JSON_NAME),
-                                                                  MimetypeMap.MIMETYPE_JSON,
-                                                                  StandardCharsets.UTF_8.name());
+                        templateName,
+                        ApplyTemplateMethodTest.class
+                                .getResourceAsStream(TEST_TEMPLATE_1_JSON_NAME),
+                        MimetypeMap.MIMETYPE_JSON,
+                        StandardCharsets.UTF_8.name());
                 jsonTemplateContent = templateChild.getChildRef();
             }
 
             final String folderName = "testCanVirtualize_nonTransactional";
             ntVirtualizedFolder = nodeService.getChildByName(companyHomeNodeRef,
-                                                             ContentModel.ASSOC_CONTAINS,
-                                                             folderName);
+                    ContentModel.ASSOC_CONTAINS,
+                    folderName);
             if (ntVirtualizedFolder == null)
             {
                 ChildAssociationRef folderChild = createFolder(companyHomeNodeRef,
-                                                               folderName);
+                        folderName);
                 ntVirtualizedFolder = folderChild.getChildRef();
             }
 
             Reference aVanillaRef = ((VanillaProtocol) Protocols.VANILLA.protocol)
-                        .newReference(VANILLA_PROCESSOR_JS_CLASSPATH,
-                                      "/1",
-                                      ntVirtualizedFolder,
-                                      jsonTemplateContent);
+                    .newReference(VANILLA_PROCESSOR_JS_CLASSPATH,
+                            "/1",
+                            ntVirtualizedFolder,
+                            jsonTemplateContent);
 
             // We use transactional-synchronized resources for caching. In
             // non-transactional contexts they might not be available.
@@ -138,8 +139,8 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
     public void testNonVirtualizable() throws Exception
     {
         NodeRef aNodeRef = createVirtualizedFolder(testRootFolder.getNodeRef(),
-                                                   "TestVirtualStoreImpl_createVirtualizedFolder",
-                                                   null);
+                "TestVirtualStoreImpl_createVirtualizedFolder",
+                null);
         assertFalse(smartStore.canVirtualize(aNodeRef));
 
         try
@@ -159,7 +160,7 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
         NodeRef solrFacetsNodeRef = new NodeRef("workspace://SpacesStore/solr_facets_root_space");
         boolean canVirtualize = smartStore.canVirtualize(solrFacetsNodeRef);
         assertEquals(false,
-                     canVirtualize);
+                canVirtualize);
     }
 
     @Test
@@ -170,7 +171,7 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
 
         Reference reference = Reference.fromNodeRef(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, v));
         assertNull(reference);
-        
+
         ChildAssociationRef folderChild = createFolder(companyHomeNodeRef, v);
         assertNotNull(folderChild);
     }
@@ -185,9 +186,9 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
         VirtualUserPermissions virtualUserPermissions = smartStore.getUserPermissions();
 
         assertEquals(AccessStatus.DENIED,
-                     virtualUserPermissions.hasQueryNodePermission(perm));
+                virtualUserPermissions.hasQueryNodePermission(perm));
         assertEquals(AccessStatus.DENIED,
-                     virtualUserPermissions.hasQueryNodePermission(asTypedPermission(perm)));
+                virtualUserPermissions.hasQueryNodePermission(asTypedPermission(perm)));
     }
 
     private void assertHasVirtualNodePermission(AccessStatus accessStatus, String perm, boolean readonly)
@@ -195,56 +196,56 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
         VirtualUserPermissions virtualUserPermissions = smartStore.getUserPermissions();
 
         assertEquals(AccessStatus.DENIED,
-                     virtualUserPermissions.hasVirtualNodePermission(perm,
-                                                                     readonly));
+                virtualUserPermissions.hasVirtualNodePermission(perm,
+                        readonly));
         assertEquals(AccessStatus.DENIED,
-                     virtualUserPermissions.hasVirtualNodePermission(asTypedPermission(perm),
-                                                                     readonly));
+                virtualUserPermissions.hasVirtualNodePermission(asTypedPermission(perm),
+                        readonly));
     }
 
     @Test
     public void testConfiguredUserPermissions() throws Exception
     {
         assertHasQueryNodePermission(AccessStatus.DENIED,
-                                     PermissionService.DELETE);
+                PermissionService.DELETE);
         assertHasQueryNodePermission(AccessStatus.DENIED,
-                                     PermissionService.DELETE_NODE);
+                PermissionService.DELETE_NODE);
         assertHasQueryNodePermission(AccessStatus.DENIED,
-                                     PermissionService.CHANGE_PERMISSIONS);
+                PermissionService.CHANGE_PERMISSIONS);
 
         assertHasVirtualNodePermission(AccessStatus.DENIED,
-                                       PermissionService.CREATE_ASSOCIATIONS,
-                                       true);
+                PermissionService.CREATE_ASSOCIATIONS,
+                true);
         assertHasVirtualNodePermission(AccessStatus.DENIED,
-                                       PermissionService.UNLOCK,
-                                       true);
+                PermissionService.UNLOCK,
+                true);
         assertHasVirtualNodePermission(AccessStatus.DENIED,
-                                       PermissionService.CANCEL_CHECK_OUT,
-                                       true);
+                PermissionService.CANCEL_CHECK_OUT,
+                true);
         assertHasVirtualNodePermission(AccessStatus.DENIED,
-                                       PermissionService.DELETE,
-                                       true);
+                PermissionService.DELETE,
+                true);
         assertHasVirtualNodePermission(AccessStatus.DENIED,
-                                       PermissionService.DELETE_NODE,
-                                       true);
+                PermissionService.DELETE_NODE,
+                true);
         assertHasVirtualNodePermission(AccessStatus.DENIED,
-                                       PermissionService.CHANGE_PERMISSIONS,
-                                       true);
+                PermissionService.CHANGE_PERMISSIONS,
+                true);
         assertHasVirtualNodePermission(AccessStatus.DENIED,
-                                       PermissionService.WRITE_CONTENT,
-                                       true);
+                PermissionService.WRITE_CONTENT,
+                true);
         assertHasVirtualNodePermission(AccessStatus.DENIED,
-                                       PermissionService.WRITE,
-                                       true);
+                PermissionService.WRITE,
+                true);
         assertHasVirtualNodePermission(AccessStatus.DENIED,
-                                       PermissionService.WRITE_PROPERTIES,
-                                       true);
+                PermissionService.WRITE_PROPERTIES,
+                true);
         assertHasVirtualNodePermission(AccessStatus.DENIED,
-                                       PermissionService.WRITE,
-                                       false);
+                PermissionService.WRITE,
+                false);
         assertHasVirtualNodePermission(AccessStatus.DENIED,
-                                       PermissionService.WRITE_PROPERTIES,
-                                       false);
+                PermissionService.WRITE_PROPERTIES,
+                false);
 
     }
 
@@ -257,16 +258,16 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
         createAndCheckNodeId("vfile", "specialFile2.txt");
 
         // v0...
-        createAndCheckNodeId("v"+Encodings.ZERO.encoding.token+"file", "specialFile3.txt");
+        createAndCheckNodeId("v" + Encodings.ZERO.encoding.token + "file", "specialFile3.txt");
 
         // vH...
-        createAndCheckNodeId("v"+Encodings.HASH.encoding.token+"file", "specialFile4.txt");
+        createAndCheckNodeId("v" + Encodings.HASH.encoding.token + "file", "specialFile4.txt");
 
         // vp...
-        createAndCheckNodeId("v"+Encodings.PLAIN.encoding.token+"file", "specialFile5.txt");
+        createAndCheckNodeId("v" + Encodings.PLAIN.encoding.token + "file", "specialFile5.txt");
 
         // MNT-21968
-        createAndCheckNodeId("v"+Encodings.ZERO.encoding.token+"0Draft.pdf", "specialFile6.txt");
+        createAndCheckNodeId("v" + Encodings.ZERO.encoding.token + "0Draft.pdf", "specialFile6.txt");
 
         NodeRef virtualFolder = createVirtualizedFolder(testRootFolder.getNodeRef(), VIRTUAL_FOLDER_3_NAME, TEST_TEMPLATE_4_JSON_SYS_PATH);
 
@@ -286,7 +287,7 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
         QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeName));
         NodeRef nfileNodeRef = nodeService.createNode(companyHomeNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_CONTENT, props).getChildRef();
 
-        Reference reference =  Reference.fromNodeRef(nfileNodeRef);
+        Reference reference = Reference.fromNodeRef(nfileNodeRef);
         assertNull(reference);
         assertTrue(nodeService.exists(nfileNodeRef));
     }

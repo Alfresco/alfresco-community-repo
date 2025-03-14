@@ -26,15 +26,13 @@
 package org.alfresco.repo.search.adaptor;
 
 /**
- * This class defines 
- *  1) all the non-property fields available to query
- *  2) all the extensions to properties
+ * This class defines 1) all the non-property fields available to query 2) all the extensions to properties
  * 
  * @author Andy
  *
  */
 public interface QueryConstants
-{   
+{
     public static final String FIELD_NO_LOCALE_SUFFIX = ".no_locale";
 
     public static final String FIELD_SORT_SUFFIX = ".sort";
@@ -54,7 +52,7 @@ public interface QueryConstants
     public static final String FIELD_ISNULL = "ISNULL";
 
     public static final String FIELD_ISUNSET = "ISUNSET";
-    
+
     public static final String FIELD_EXISTS = "EXISTS";
 
     public static final String FIELD_ALL = "ALL";
@@ -112,7 +110,7 @@ public interface QueryConstants
     public static final String FIELD_READER = "READER";
 
     public static final String FIELD_DENIED = "DENIED";
-    
+
     public static final String FIELD_AUTHORITY = "AUTHORITY";
 
     public static final String FIELD_OWNERSET = "OWNERSET";
@@ -120,7 +118,7 @@ public interface QueryConstants
     public static final String FIELD_READERSET = "READERSET";
 
     public static final String FIELD_DENYSET = "DENYSET";
-    
+
     public static final String FIELD_AUTHORITYSET = "AUTHSET";
 
     public static final String FIELD_TXID = "TXID";
@@ -162,7 +160,7 @@ public interface QueryConstants
     public static final String FIELD_PRIMARYASSOCQNAME = "PRIMARYASSOCQNAME";
 
     public static final String FIELD_LID = "LID";
-    
+
     public static final String FIELD_CASCADE_FLAG = "int@s_@cascade";
 
     public static final String FIELD_TENANT = "TENANT";
@@ -170,15 +168,15 @@ public interface QueryConstants
     public static final String FIELD_EXCEPTION_MESSAGE = "EXCEPTIONMESSAGE";
 
     public static final String FIELD_EXCEPTION_STACK = "EXCEPTIONSTACK";
-    
+
     public static final String FIELD_SOLR4_ID = "id";
-    
+
     public static final String FIELD_DOC_TYPE = "DOC_TYPE";
-    
+
     public static final String FIELD_SOLR_LOCALISED_UNTOKENISED_SUFFIX = ".u";
-    
+
     public static final String FIELD_SOLR_NOLOCALE_UNTOKENISED_SUFFIX = ".__.u";
-    
+
     public static final String FIELD_SOLR_NOLOCALE_TOKENISED_SUFFIX = ".__";
 
     public static final String FIELD_SOLR_UNIT_OF_TIME_SECOND_SUFFIX = "_unit_of_time_second";
@@ -196,32 +194,32 @@ public interface QueryConstants
     public static final String FIELD_SOLR_UNIT_OF_TIME_MONTH_SUFFIX = "_unit_of_time_month";
 
     public static final String FIELD_SOLR_UNIT_OF_TIME_QUARTER_SUFFIX = "_unit_of_time_quarter";
-    
+
     public static final String FIELD_SOLR_UNIT_OF_TIME_YEAR_SUFFIX = "_unit_of_time_year";
 
     public static final String FIELD_SITE = "SITE";
-    
+
     public static final String FIELD_GEO = "GEO";
-    
+
     public static final String FIELD_NPATH = "NPATH";
-    
+
     public static final String FIELD_PNAME = "PNAME";
-    
+
     public static final String FIELD_APATH = "APATH";
-    
+
     public static final String FIELD_ANAME = "ANAME";
-    
+
     public static final String FIELD_PROPERTIES = "PROPERTIES";
-    
+
     public static final String FIELD_NULLPROPERTIES = "NULLPROPERTIES";
-    
+
     public static final String FIELD_FIELDS = "FIELDS";
-    
+
     public static final String FIELD_TAG_SUGGEST = "suggest_TAG";
-   
+
     public static final String FIELD_VERSION = "_version_";
-    
+
     public static final String FIELD_CASCADETX = "CASCADETX";
-    
+
     public static final String FIELD_FINGERPRINT = "FINGERPRINT";
 }

@@ -37,47 +37,43 @@ import org.springframework.jmx.support.RegistrationPolicy;
  */
 public class DynamicMBeanExporter extends MBeanExporter implements DynamicMBeanExportOperations
 {
-    static private ThreadLocal<MBeanServer> threadServer = new ThreadLocal<MBeanServer>(); 
+    static private ThreadLocal<MBeanServer> threadServer = new ThreadLocal<MBeanServer>();
 
     /**
      * Instantiates a new dynamic MBean exporter.
      */
-    public DynamicMBeanExporter() 
-    { 
-        // For consistency, try to continue to use the last MBeanServer used in the same thread 
-        MBeanServer server = threadServer.get(); 
-        if (server != null) 
-        { 
-            setServer(server); 
-        } 
+    public DynamicMBeanExporter()
+    {
+        // For consistency, try to continue to use the last MBeanServer used in the same thread
+        MBeanServer server = threadServer.get();
+        if (server != null)
+        {
+            setServer(server);
+        }
 
         // Make replace existing the default registration behavior
         setRegistrationPolicy(RegistrationPolicy.IGNORE_EXISTING);
         setAutodetectMode(MBeanExporter.AUTODETECT_NONE);
-    } 
+    }
 
     @Override
-    public void setServer(MBeanServer server) 
-    { 
-        threadServer.set(server); 
-        super.setServer(server); 
-    } 
-	
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.enterprise.repo.management.DynamicMBeanExportOperations#unregisterMBean(javax.management.ObjectName)
-     */
+    public void setServer(MBeanServer server)
+    {
+        threadServer.set(server);
+        super.setServer(server);
+    }
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.enterprise.repo.management.DynamicMBeanExportOperations#unregisterMBean(javax.management.ObjectName) */
     public void unregisterMBean(ObjectName objectName)
     {
         doUnregister(objectName);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.enterprise.repo.management.DynamicMBeanExportOperations#registerMBean(java.lang.Object,
-     * javax.management.ObjectName)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.enterprise.repo.management.DynamicMBeanExportOperations#registerMBean(java.lang.Object, javax.management.ObjectName) */
     @SuppressWarnings("unchecked")
     public ObjectName registerMBean(Object managedResource, ObjectName objectName)
     {

@@ -46,8 +46,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.namespace.QName;
 
 /**
- * This {@link Field} implementation is a form field which represents a defined
- * {@link ActionDefinition#getParameterDefinitions() action parameter}.
+ * This {@link Field} implementation is a form field which represents a defined {@link ActionDefinition#getParameterDefinitions() action parameter}.
  * 
  * @author Neil Mc Erlean
  * @since 4.0
@@ -60,13 +59,13 @@ public class ActionParameterField implements Field
 
     public ActionParameterField(ParameterDefinition parameterDef, ActionService actionService)
     {
-        //TODO i18n
-        
+        // TODO i18n
+
         this.name = parameterDef.getName();
-        
+
         QName type = parameterDef.getType();
         final List<FieldConstraint> fieldConstraints = processActionConstraints(parameterDef, actionService);
-        
+
         if (DataTypeDefinition.NODE_REF.equals(type) && fieldConstraints.isEmpty())
         {
             // Parameters of type NodeRef need to be AssociationPickers so that a NodeRef can be selected in the form
@@ -87,27 +86,26 @@ public class ActionParameterField implements Field
                 this.fieldDef = new PropertyFieldDefinition(this.name, DataTypeDefinition.TEXT.getLocalName());
             }
             else
-            {    
+            {
                 this.fieldDef = new PropertyFieldDefinition(this.name, type.getLocalName());
             }
-            PropertyFieldDefinition propFieldDef = (PropertyFieldDefinition)this.fieldDef;
-            
-            
+            PropertyFieldDefinition propFieldDef = (PropertyFieldDefinition) this.fieldDef;
+
             propFieldDef.setMandatory(parameterDef.isMandatory());
             propFieldDef.setRepeating(parameterDef.isMultiValued());
-            
+
             if (!fieldConstraints.isEmpty())
             {
                 propFieldDef.setConstraints(fieldConstraints);
             }
         }
-        
+
         // Properties common to PropertyFieldDefinitions and AssociationFieldDefinitions.
         this.fieldDef.setDescription(parameterDef.getName());
         this.fieldDef.setLabel(parameterDef.getDisplayLabel());
         this.fieldDef.setDataKeyName(this.name);
     }
-    
+
     /**
      * This method creates a list of {@link FieldConstraint field constraints}, if there are any.
      * 
@@ -129,7 +127,7 @@ public class ActionParameterField implements Field
             {
                 // This map is of allowedValue : display label for that value.
                 Map<String, String> allowableValuesMap = paramConstraint.getAllowableValues();
-                
+
                 // We need to concatenate each key-value entry into a String like "value|displaylabel"
                 // Then the FormService can display the labels but deal with the values as the underlying data.
                 List<String> pipeSeparatedAllowedValues = new ArrayList<String>(allowableValuesMap.size());
@@ -137,19 +135,19 @@ public class ActionParameterField implements Field
                 {
                     pipeSeparatedAllowedValues.add(entry.getKey() + "|" + entry.getValue());
                 }
-                
+
                 Map<String, Object> params = new HashMap<String, Object>();
                 params.put("allowedValues", pipeSeparatedAllowedValues);
-                
+
                 // Finally wrap it up in a parameter map.
                 fieldConstraints = new ArrayList<FieldConstraint>(allowableValuesMap.size());
                 fieldConstraints.add(new FieldConstraint("LIST", params));
-                
+
             }
         }
         return fieldConstraints;
     }
-    
+
     @Override
     public FieldDefinition getFieldDefinition()
     {

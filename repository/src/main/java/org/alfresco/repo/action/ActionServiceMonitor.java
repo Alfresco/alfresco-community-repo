@@ -42,30 +42,32 @@ public class ActionServiceMonitor
 {
     private ConcurrentHashMap<UUID, RunningAction> runningActions = new ConcurrentHashMap<UUID, RunningAction>();
     private ConcurrentHashMap<String, ActionStatistics> actionStatistics = new ConcurrentHashMap<String, ActionStatistics>();
-    
+
     /**
      * Called by the {@link ActionServiceImpl} when an action is started.
      * 
      * Adds the action to the list of currently running actions.
      * 
-     * @param action The action being started
+     * @param action
+     *            The action being started
      * @return A {@link RunningAction} object used to track the status of the running action.
      */
     public RunningAction actionStarted(Action action)
     {
         RunningAction runningAction = new RunningAction(action);
-        
+
         this.runningActions.put(runningAction.getId(), runningAction);
-    
+
         return runningAction;
     }
-    
+
     /**
      * Called by the {@link ActionServiceImpl} when sn action completes.
      * 
      * Removes the actions from the list of currently running actions, and updated the accumulated statistics for that action.
      * 
-     * @param action The {@link RunningAction} object returned by actionStatred.
+     * @param action
+     *            The {@link RunningAction} object returned by actionStatred.
      */
     public void actionCompleted(RunningAction action)
     {
@@ -82,8 +84,8 @@ public class ActionServiceMonitor
             actionStatistics.putIfAbsent(actionName, new ActionStatistics(actionName));
             actionStats = actionStatistics.get(actionName);
         }
-        
-        actionStats.addAction(action);        
+
+        actionStats.addAction(action);
     }
 
     /**
@@ -93,7 +95,7 @@ public class ActionServiceMonitor
     {
         return Collections.unmodifiableList(new ArrayList<RunningAction>(runningActions.values()));
     }
-    
+
     /**
      * @return a count of the currently running actions
      */

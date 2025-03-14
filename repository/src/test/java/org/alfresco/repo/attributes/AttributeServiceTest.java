@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import junit.framework.TestCase;
+import org.apache.commons.lang3.mutable.MutableInt;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.repo.domain.propval.DefaultPropertyTypeConverter;
 import org.alfresco.repo.domain.propval.PropValGenerator;
@@ -46,8 +48,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
-import org.apache.commons.lang3.mutable.MutableInt;
-import org.springframework.context.ApplicationContext;
 
 /**
  * {@link AttributeService}
@@ -57,17 +57,17 @@ import org.springframework.context.ApplicationContext;
 public class AttributeServiceTest extends TestCase
 {
     private static final Serializable KEY_A = "a";
-    private static final Serializable[] KEY_AAA = new Serializable[] {"a", "a", "a"};
-    private static final Serializable[] KEY_AAB = new Serializable[] {"a", "a", "b"};
-    private static final Serializable[] KEY_AAC = new Serializable[] {"a", "a", "c"};
+    private static final Serializable[] KEY_AAA = new Serializable[]{"a", "a", "a"};
+    private static final Serializable[] KEY_AAB = new Serializable[]{"a", "a", "b"};
+    private static final Serializable[] KEY_AAC = new Serializable[]{"a", "a", "c"};
     private static final Serializable VALUE_AAA_STRING = "aaa";
     private static final Serializable VALUE_AAB_STRING = "aab";
     private static final Serializable VALUE_AAC_STRING = "aac";
-    
+
     private ApplicationContext ctx;
     private AttributeService attributeService;
     private PropertyValueDAO propertyValueDAO;
-    
+
     @Override
     protected void setUp() throws Exception
     {
@@ -78,19 +78,18 @@ public class AttributeServiceTest extends TestCase
 
     @Override
     protected void tearDown() throws Exception
-    {
-    }
-    
+    {}
+
     public void testBasic() throws Exception
     {
         attributeService.removeAttribute(KEY_AAA);
         attributeService.removeAttribute(KEY_AAB);
         attributeService.removeAttribute(KEY_AAC);
-        
+
         assertFalse(attributeService.exists(KEY_AAA));
         assertFalse(attributeService.exists(KEY_AAB));
         assertFalse(attributeService.exists(KEY_AAC));
-        
+
         attributeService.setAttribute(VALUE_AAA_STRING, KEY_AAA);
         attributeService.setAttribute(VALUE_AAB_STRING, KEY_AAB);
         attributeService.setAttribute(VALUE_AAC_STRING, KEY_AAC);
@@ -98,29 +97,27 @@ public class AttributeServiceTest extends TestCase
         assertTrue(attributeService.exists(KEY_AAA));
         assertTrue(attributeService.exists(KEY_AAB));
         assertTrue(attributeService.exists(KEY_AAC));
-        
+
         assertEquals(VALUE_AAA_STRING, attributeService.getAttribute(KEY_AAA));
         assertEquals(VALUE_AAB_STRING, attributeService.getAttribute(KEY_AAB));
         assertEquals(VALUE_AAC_STRING, attributeService.getAttribute(KEY_AAC));
 
-        //Too many keys
+        // Too many keys
         try
         {
             attributeService.exists(new Serializable[]{"a", "a", "a", "a", "a"});
             fail("You can't have more than 3 keys");
         }
         catch (IllegalArgumentException expected)
-        {
-        }
+        {}
 
-//        attributeService.removeAttribute(KEY_AAA);
-//        attributeService.removeAttribute(KEY_AAB);
-//        attributeService.removeAttribute(KEY_AAC);
+        // attributeService.removeAttribute(KEY_AAA);
+        // attributeService.removeAttribute(KEY_AAB);
+        // attributeService.removeAttribute(KEY_AAC);
     }
-    
+
     /**
-     * Checks that {@link AttributeService#getAttributes(AttributeQueryCallback, Serializable...) AttributeService.getAttributes}
-     * works.  This includes coverage of <a href=https://issues.alfresco.com/jira/browse/MNT-9112>MNT-9112</a>.
+     * Checks that {@link AttributeService#getAttributes(AttributeQueryCallback, Serializable...) AttributeService.getAttributes} works. This includes coverage of <a href=https://issues.alfresco.com/jira/browse/MNT-9112>MNT-9112</a>.
      */
     public void testGetAttributes() throws Exception
     {
@@ -131,8 +128,7 @@ public class AttributeServiceTest extends TestCase
         final List<Serializable> results = new ArrayList<Serializable>();
         final MutableInt counter = new MutableInt();
         final MutableInt max = new MutableInt(3);
-        AttributeQueryCallback callback = new AttributeQueryCallback()
-        {
+        AttributeQueryCallback callback = new AttributeQueryCallback() {
             @Override
             public boolean handleAttribute(Long id, Serializable value, Serializable[] keys)
             {
@@ -148,75 +144,75 @@ public class AttributeServiceTest extends TestCase
                 }
             }
         };
-        
+
         counter.setValue(0);
         max.setValue(3);
         results.clear();
         attributeService.getAttributes(callback, KEY_A);
         assertEquals(3, results.size());
-        assertEquals(3, (int)counter.getValue());
-        
+        assertEquals(3, (int) counter.getValue());
+
         counter.setValue(0);
         max.setValue(2);
         results.clear();
         attributeService.getAttributes(callback, KEY_A);
         assertEquals(2, results.size());
-        assertEquals(2, (int)counter.getValue());
+        assertEquals(2, (int) counter.getValue());
     }
-    
+
     public void testRemoveOrphanedProps()
     {
-        final Serializable[] stringKey = new String[] { "z", "q", "string" };
-        final Serializable[] doubleKey = new String[] { "z", "q", "double" };
-        final Serializable[] dateKey = new String[] { "z", "q", "date" };
-        
+        final Serializable[] stringKey = new String[]{"z", "q", "string"};
+        final Serializable[] doubleKey = new String[]{"z", "q", "double"};
+        final Serializable[] dateKey = new String[]{"z", "q", "date"};
+
         // Make sure there's nothing left from previous failed test runs etc.
         attributeService.removeAttributes(stringKey);
         attributeService.removeAttributes(doubleKey);
         attributeService.removeAttributes(dateKey);
-        
+
         final PropValGenerator valueGen = new PropValGenerator(propertyValueDAO);
 
         // Create some values
         final String stringValue = valueGen.createUniqueString();
         attributeService.createAttribute(stringValue, stringKey);
-        
+
         final Double doubleValue = valueGen.createUniqueDouble();
         attributeService.createAttribute(doubleValue, doubleKey);
-        
+
         final Date dateValue = valueGen.createUniqueDate();
         attributeService.createAttribute(dateValue, dateKey);
-        
+
         // Remove the properties, potentially leaving oprhaned prop values.
         attributeService.removeAttributes(stringKey);
         attributeService.removeAttributes(doubleKey);
         attributeService.removeAttributes(dateKey);
-        
+
         // Check there are some persisted values to delete, otherwise there is no
         // need to run the cleanup script in the first place.
         assertEquals(stringValue, propertyValueDAO.getPropertyValue(stringValue).getSecond());
         assertEquals(doubleValue, propertyValueDAO.getPropertyValue(doubleValue).getSecond());
         assertEquals(dateValue, propertyValueDAO.getPropertyValue(dateValue).getSecond());
-        
+
         // Run the cleanup script - should remove the orphaned values.
         propertyValueDAO.cleanupUnusedValues();
-     
+
         // Check that the cleanup script removed the orphaned values.
         assertPropDeleted(propertyValueDAO.getPropertyValue(stringValue));
         assertPropDeleted(propertyValueDAO.getPropertyValue(doubleValue));
         assertPropDeleted(propertyValueDAO.getPropertyValue(dateValue));
     }
-    
+
     private void assertPropDeleted(Pair<Long, ?> value)
     {
         if (value != null)
         {
             String msg = String.format("Property value [%s=%s] should have been deleted by cleanup script.",
-                        value.getSecond().getClass().getSimpleName(), value.getSecond());
+                    value.getSecond().getClass().getSimpleName(), value.getSecond());
             fail(msg);
         }
     }
-    
+
     public void testKeySegmentsGuaranteeUniqueness()
     {
         final PropertyTypeConverter converter = new DefaultPropertyTypeConverter();
@@ -243,8 +239,7 @@ public class AttributeServiceTest extends TestCase
                 fail("Duplicate attribute creation should not be allowed");
             }
             catch (DuplicateAttributeException expected)
-            {
-            }
+            {}
 
             // check noderef keys
             assertEquals(PropertyValueEntity.getPersistedTypeEnum(KEY_NODEREF, converter), PersistedType.STRING);
@@ -255,8 +250,7 @@ public class AttributeServiceTest extends TestCase
                 fail("Duplicate attribute creation should not be allowed");
             }
             catch (DuplicateAttributeException expected)
-            {
-            }
+            {}
 
             // check enum keys
             assertEquals(PropertyValueEntity.getPersistedTypeEnum(KEY_ENUM, converter), PersistedType.ENUM);
@@ -267,8 +261,7 @@ public class AttributeServiceTest extends TestCase
                 fail("Duplicate attribute creation should not be allowed");
             }
             catch (DuplicateAttributeException expected)
-            {
-            }
+            {}
 
             // check constructable keys
             assertEquals(PropertyValueEntity.getPersistedTypeEnum(KEY_MAP, converter), PersistedType.CONSTRUCTABLE);
@@ -279,8 +272,7 @@ public class AttributeServiceTest extends TestCase
                 fail("Duplicate attribute creation should not be allowed");
             }
             catch (DuplicateAttributeException expected)
-            {
-            }
+            {}
 
             // check string keys
             assertEquals(PropertyValueEntity.getPersistedTypeEnum(KEY_STR_2, converter), PersistedType.STRING);
@@ -291,8 +283,7 @@ public class AttributeServiceTest extends TestCase
                 fail("Duplicate attribute creation should not be allowed");
             }
             catch (DuplicateAttributeException expected)
-            {
-            }
+            {}
 
             // check custom type serializable key
             assertEquals(PropertyValueEntity.getPersistedTypeEnum(KEY_SERIALIZABLE, converter), PersistedType.SERIALIZABLE);
@@ -302,8 +293,7 @@ public class AttributeServiceTest extends TestCase
                 fail("Keys of SERIALIZABLE persisted type are not allowed because it cannot guarantee uniqueness");
             }
             catch (IllegalArgumentException expected)
-            {
-            }
+            {}
         }
         finally
         {
@@ -319,8 +309,8 @@ public class AttributeServiceTest extends TestCase
 
     public void testUpdateOrCreateAttribute()
     {
-        final String KEY_RND_STR_1 = "string1"+ GUID.generate();
-        final String KEY_RND_STR_2 = "string2"+ GUID.generate();
+        final String KEY_RND_STR_1 = "string1" + GUID.generate();
+        final String KEY_RND_STR_2 = "string2" + GUID.generate();
 
         try
         {
@@ -331,10 +321,9 @@ public class AttributeServiceTest extends TestCase
                 fail("Duplicate attribute creation should not be allowed");
             }
             catch (DuplicateAttributeException expected)
-            {
-            }
+            {}
 
-            //First call creates it, the second updates it. No errors.
+            // First call creates it, the second updates it. No errors.
             attributeService.updateOrCreateAttribute(KEY_RND_STR_1, null, null, KEY_RND_STR_2, null, null);
             attributeService.updateOrCreateAttribute(KEY_RND_STR_2, null, null, KEY_RND_STR_2, null, null);
         }

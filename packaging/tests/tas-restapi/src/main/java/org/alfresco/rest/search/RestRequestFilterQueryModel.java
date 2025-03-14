@@ -33,8 +33,7 @@ import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
 
 /**
- * Hacked together by 'gethin' on '2017-03-23 10:59' from 'Alfresco Search REST API' swagger file
- * Base Path {@linkplain /alfresco/api/-default-/public/search/versions/1}
+ * Hacked together by 'gethin' on '2017-03-23 10:59' from 'Alfresco Search REST API' swagger file Base Path {@linkplain /alfresco/api/-default-/public/search/versions/1}
  */
 public class RestRequestFilterQueryModel extends TestModel implements IRestModel<RestRequestFilterQueryModel>
 {
@@ -66,10 +65,10 @@ public class RestRequestFilterQueryModel extends TestModel implements IRestModel
     }
 
     /**
-    The filter query
-    */	        
+     * The filter query
+     */
 
-    private String query;	    
+    private String query;
     private List<String> tags;
 
     public String getQuery()
@@ -80,7 +79,7 @@ public class RestRequestFilterQueryModel extends TestModel implements IRestModel
     public void setQuery(String query)
     {
         this.query = query;
-    }				
+    }
 
     public List<String> getTags()
     {
@@ -90,6 +89,5 @@ public class RestRequestFilterQueryModel extends TestModel implements IRestModel
     public void setTags(List<String> tags)
     {
         this.tags = tags;
-    }				
+    }
 }
- 

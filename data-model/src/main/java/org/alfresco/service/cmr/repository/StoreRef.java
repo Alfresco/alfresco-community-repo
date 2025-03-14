@@ -45,10 +45,10 @@ public final class StoreRef implements EntityRef, Serializable
     public static final String PROTOCOL_AVM = "avm";
     public static final String PROTOCOL_TEST = "test";
     public static final String PROTOCOL_DELETED = "deleted";
-    
+
     public static final StoreRef STORE_REF_WORKSPACE_SPACESSTORE = new StoreRef(PROTOCOL_WORKSPACE, "SpacesStore");
     public static final StoreRef STORE_REF_ARCHIVE_SPACESSTORE = new StoreRef(PROTOCOL_ARCHIVE, "SpacesStore");
-    
+
     public static final String URI_FILLER = "://";
 
     private final String protocol;
@@ -56,8 +56,7 @@ public final class StoreRef implements EntityRef, Serializable
 
     /**
      * @param protocol
-     *            well-known protocol for the store, e.g. <b>workspace</b> or
-     *            <b>versionstore</b>
+     *            well-known protocol for the store, e.g. <b>workspace</b> or <b>versionstore</b>
      * @param identifier
      *            the identifier, which may be specific to the protocol
      */
@@ -79,12 +78,12 @@ public final class StoreRef implements EntityRef, Serializable
     public StoreRef(String string)
     {
         int dividerPatternPosition = string.indexOf(URI_FILLER);
-        if(dividerPatternPosition == -1)
+        if (dividerPatternPosition == -1)
         {
             throw new AlfrescoRuntimeException("Invalid store ref: Does not contain " + URI_FILLER + "   " + string);
         }
         this.protocol = string.substring(0, dividerPatternPosition);
-        this.identifier = string.substring(dividerPatternPosition+3);
+        this.identifier = string.substring(dividerPatternPosition + 3);
     }
 
     public String toString()
@@ -103,12 +102,13 @@ public final class StoreRef implements EntityRef, Serializable
             StoreRef that = (StoreRef) obj;
             return (this.protocol.equals(that.protocol)
                     && this.identifier.equals(that.identifier));
-        } else
+        }
+        else
         {
             return false;
         }
     }
-    
+
     /**
      * Creates a hashcode from both the {@link #getProtocol()} and {@link #getIdentifier()}
      */

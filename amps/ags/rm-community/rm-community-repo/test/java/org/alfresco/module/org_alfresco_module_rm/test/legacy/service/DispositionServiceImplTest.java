@@ -37,6 +37,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
@@ -52,7 +54,6 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
-import org.junit.Assert;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -71,8 +72,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
 
     public void testGetDispositionProperties() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 Collection<DispositionProperty> properties = dispositionService.getDispositionProperties();
@@ -96,8 +96,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
      */
     public void testGetDispositionSchedule() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -120,12 +119,9 @@ public class DispositionServiceImplTest extends BaseRMTestCase
         });
 
         // Failure: Root node
-        doTestInTransaction(new FailureTest
-        (
-        	"Should not be able to get adisposition schedule for the root node",
-        	AlfrescoRuntimeException.class
-        )
-        {
+        doTestInTransaction(new FailureTest(
+                "Should not be able to get adisposition schedule for the root node",
+                AlfrescoRuntimeException.class) {
             @Override
             public void run()
             {
@@ -134,8 +130,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
         });
 
         // Failure: Non-rm node
-        doTestInTransaction(new FailureTest()
-        {
+        doTestInTransaction(new FailureTest() {
             @Override
             public void run()
             {
@@ -149,8 +144,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
      */
     public void testGetDispositionScheduleMultiHier() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -204,7 +198,8 @@ public class DispositionServiceImplTest extends BaseRMTestCase
     /**
      * Checks a disposition schedule
      *
-     * @param ds    disposition scheduleS
+     * @param ds
+     *            disposition scheduleS
      */
     private void checkDispositionSchedule(DispositionSchedule ds, String dispositionInstructions, String dispositionAuthority, boolean isRecordLevel)
     {
@@ -240,8 +235,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
     public void testGetAssociatedDispositionSchedule() throws Exception
     {
         // Get associated disposition schedule for rmContainer
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -259,8 +253,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
         });
 
         // Failure: associated disposition schedule for non-rm node
-        doTestInTransaction(new FailureTest()
-        {
+        doTestInTransaction(new FailureTest() {
             @Override
             public void run()
             {
@@ -274,8 +267,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
      */
     public void testGetAssociatedDispositionScheduleMultiHier() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -314,14 +306,13 @@ public class DispositionServiceImplTest extends BaseRMTestCase
      */
     public void testHasDisposableItems() throws Exception
     {
-    	doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
-            	// Add a new disposition schedule
-            	NodeRef container = filePlanService.createRecordCategory(rmContainer, "hasDisposableTest");
-            	DispositionSchedule ds = utils.createBasicDispositionSchedule(container);
+                // Add a new disposition schedule
+                NodeRef container = filePlanService.createRecordCategory(rmContainer, "hasDisposableTest");
+                DispositionSchedule ds = utils.createBasicDispositionSchedule(container);
 
                 assertTrue(dispositionService.hasDisposableItems(dispositionSchedule));
                 assertFalse(dispositionService.hasDisposableItems(ds));
@@ -336,16 +327,15 @@ public class DispositionServiceImplTest extends BaseRMTestCase
      */
     public void testHasDisposableItemsMultiHier() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
-            	assertTrue(dispositionService.hasDisposableItems(mhDispositionSchedule11));
-            	assertTrue(dispositionService.hasDisposableItems(mhDispositionSchedule12));
-            	assertTrue(dispositionService.hasDisposableItems(mhDispositionSchedule23));
-            	assertFalse(dispositionService.hasDisposableItems(mhDispositionSchedule33));
-            	assertFalse(dispositionService.hasDisposableItems(mhDispositionSchedule35));
+                assertTrue(dispositionService.hasDisposableItems(mhDispositionSchedule11));
+                assertTrue(dispositionService.hasDisposableItems(mhDispositionSchedule12));
+                assertTrue(dispositionService.hasDisposableItems(mhDispositionSchedule23));
+                assertFalse(dispositionService.hasDisposableItems(mhDispositionSchedule33));
+                assertFalse(dispositionService.hasDisposableItems(mhDispositionSchedule35));
 
                 return null;
             }
@@ -357,8 +347,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
      */
     public void testGetDisposableItems() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -377,8 +366,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
      */
     public void testGetDisposableItemsMultiHier() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -415,30 +403,29 @@ public class DispositionServiceImplTest extends BaseRMTestCase
      */
     public void testCreateDispositionSchedule() throws Exception
     {
-    	// Test: simple disposition create
-        doTestInTransaction(new Test<NodeRef>()
-        {
+        // Test: simple disposition create
+        doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
-            	// Create a new container
-            	NodeRef container = filePlanService.createRecordCategory(filePlan, "testCreateDispositionSchedule");
+                // Create a new container
+                NodeRef container = filePlanService.createRecordCategory(filePlan, "testCreateDispositionSchedule");
 
-            	// Create a new disposition schedule
-            	utils.createBasicDispositionSchedule(container, "testCreateDispositionSchedule", "testCreateDispositionSchedule", false, true);
+                // Create a new disposition schedule
+                utils.createBasicDispositionSchedule(container, "testCreateDispositionSchedule", "testCreateDispositionSchedule", false, true);
 
-            	return container;
+                return container;
             }
 
             @Override
             public void test(NodeRef result) throws Exception
             {
-            	// Get the created disposition schedule
-            	DispositionSchedule ds = dispositionService.getAssociatedDispositionSchedule(result);
-            	assertNotNull(ds);
+                // Get the created disposition schedule
+                DispositionSchedule ds = dispositionService.getAssociatedDispositionSchedule(result);
+                assertNotNull(ds);
 
-            	// Check the disposition schedule
-            	checkDispositionSchedule(ds, "testCreateDispositionSchedule", "testCreateDispositionSchedule", false);
+                // Check the disposition schedule
+                checkDispositionSchedule(ds, "testCreateDispositionSchedule", "testCreateDispositionSchedule", false);
 
                 // Failure: create disposition schedule on container with existing disposition schedule
                 Assert.assertThrows(ConstraintViolatedException.class,
@@ -454,39 +441,38 @@ public class DispositionServiceImplTest extends BaseRMTestCase
      */
     public void testCreateDispositionScheduleMultiHier() throws Exception
     {
-    	// Test: simple disposition create
-        doTestInTransaction(new Test<Void>()
-        {
+        // Test: simple disposition create
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
-            	// Create a new structure container
-            	NodeRef testA = filePlanService.createRecordCategory(mhContainer, "testA");
-            	NodeRef testB = filePlanService.createRecordCategory(testA, "testB");
+                // Create a new structure container
+                NodeRef testA = filePlanService.createRecordCategory(mhContainer, "testA");
+                NodeRef testB = filePlanService.createRecordCategory(testA, "testB");
 
-            	// Create new disposition schedules
-            	utils.createBasicDispositionSchedule(testA, "testA", "testA", false, true);
-            	utils.createBasicDispositionSchedule(testB, "testB", "testB", false, true);
+                // Create new disposition schedules
+                utils.createBasicDispositionSchedule(testA, "testA", "testA", false, true);
+                utils.createBasicDispositionSchedule(testB, "testB", "testB", false, true);
 
-            	// Add created containers to model
-            	setNodeRef("testA", testA);
-            	setNodeRef("testB", testB);
+                // Add created containers to model
+                setNodeRef("testA", testA);
+                setNodeRef("testB", testB);
 
-            	return null;
+                return null;
             }
 
             @Override
             public void test(Void result) throws Exception
             {
-            	// Get the created disposition schedule
-            	DispositionSchedule testA = dispositionService.getAssociatedDispositionSchedule(getNodeRef("testA"));
-            	assertNotNull(testA);
-            	DispositionSchedule testB = dispositionService.getAssociatedDispositionSchedule(getNodeRef("testB"));
-            	assertNotNull(testB);
+                // Get the created disposition schedule
+                DispositionSchedule testA = dispositionService.getAssociatedDispositionSchedule(getNodeRef("testA"));
+                assertNotNull(testA);
+                DispositionSchedule testB = dispositionService.getAssociatedDispositionSchedule(getNodeRef("testB"));
+                assertNotNull(testB);
 
-            	// Check the disposition schedule
-            	checkDispositionSchedule(testA, "testA", "testA", false);
-            	checkDispositionSchedule(testB, "testB", "testB", false);
+                // Check the disposition schedule
+                checkDispositionSchedule(testA, "testA", "testA", false);
+                checkDispositionSchedule(testB, "testB", "testB", false);
 
                 // Failure: create disposition schedule on container with existing disposition schedule
                 Assert.assertThrows(ConstraintViolatedException.class,
@@ -497,15 +483,12 @@ public class DispositionServiceImplTest extends BaseRMTestCase
         });
 
         // Failure: create disposition schedule on a container where there are disposable items under management
-        doTestInTransaction(new FailureTest
-        (
-        	"Can not create a disposition schedule on a container where there are already disposable items under management"
-        )
-        {
+        doTestInTransaction(new FailureTest(
+                "Can not create a disposition schedule on a container where there are already disposable items under management") {
             @Override
             public void run()
             {
-            	utils.createBasicDispositionSchedule(mhContainer21);
+                utils.createBasicDispositionSchedule(mhContainer21);
             }
         });
     }
@@ -515,8 +498,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
      */
     public void testGetAssociatedRecordsManagementContainer() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -534,8 +516,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
      */
     public void testGetAssociatedRecordsManagementContainerMultiHier() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -573,8 +554,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
 
     public void testUpdateDispositionActionDefinitionMultiHier() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -585,8 +565,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -614,8 +593,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -636,8 +614,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -658,8 +635,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -680,8 +656,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -705,7 +680,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
 
     private void publishDispositionActionDefinitionChange(DispositionActionDefinition dad)
     {
-        PublishExecutorRegistry reg = (PublishExecutorRegistry)applicationContext.getBean("publishExecutorRegistry");
+        PublishExecutorRegistry reg = (PublishExecutorRegistry) applicationContext.getBean("publishExecutorRegistry");
         PublishExecutor pub = reg.get(RecordsManagementModel.UPDATE_TO_DISPOSITION_ACTION_DEFINITION);
         assertNotNull(pub);
         pub.publish(dad.getNodeRef());
@@ -717,7 +692,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
                 dispositionService.getNextDispositionAction(recordFolder),
                 "cutoff",
                 new String[]{CommonRMTestUtils.DEFAULT_EVENT_NAME},
-                			 CommonRMTestUtils.PERIOD_NONE);
+                CommonRMTestUtils.PERIOD_NONE);
     }
 
     private void checkDisposableItemChanged(NodeRef recordFolder) throws Exception
@@ -733,7 +708,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
     {
         Map<QName, Serializable> updateProps = new HashMap<>(3);
         updateProps.put(PROP_DISPOSITION_PERIOD, "week|1");
-        updateProps.put(PROP_DISPOSITION_EVENT, (Serializable)Arrays.asList(CommonRMTestUtils.DEFAULT_EVENT_NAME, "abolished"));
+        updateProps.put(PROP_DISPOSITION_EVENT, (Serializable) Arrays.asList(CommonRMTestUtils.DEFAULT_EVENT_NAME, "abolished"));
 
         DispositionSchedule ds = dispositionService.getDispositionSchedule(nodeRef);
         DispositionActionDefinition dad = ds.getDispositionActionDefinitionByName("cutoff");
@@ -766,7 +741,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
         List<String> expectedEvents = Arrays.asList(arrEventNames);
         Collection<String> copy = new ArrayList<>(origEvents);
 
-        for (Iterator<String> i = origEvents.iterator(); i.hasNext(); )
+        for (Iterator<String> i = origEvents.iterator(); i.hasNext();)
         {
             String origEvent = i.next();
 
@@ -832,8 +807,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
      */
     public void testRM_263() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -860,23 +834,22 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             private final QName PROP_SEARCH_ASOF = QName.createQName(RM_URI, "recordSearchDispositionActionAsOf");
 
             @Override
             public Void run() throws Exception
             {
-                Date pubDate = (Date)nodeService.getProperty(testRM263Record, DOD5015Model.PROP_PUBLICATION_DATE);
+                Date pubDate = (Date) nodeService.getProperty(testRM263Record, DOD5015Model.PROP_PUBLICATION_DATE);
                 assertNull(pubDate);
-                Date asOfDate = (Date)nodeService.getProperty(testRM263Record, PROP_SEARCH_ASOF);
+                Date asOfDate = (Date) nodeService.getProperty(testRM263Record, PROP_SEARCH_ASOF);
                 assertNull(asOfDate);
 
                 DispositionAction da = dispositionService.getNextDispositionAction(testRM263Record);
                 assertNotNull(da);
                 assertNull(da.getAsOfDate());
 
-                //rma:recordSearchDispositionActionAsOf"
+                // rma:recordSearchDispositionActionAsOf"
                 nodeService.setProperty(testRM263Record, DOD5015Model.PROP_PUBLICATION_DATE, new Date());
 
                 return null;
@@ -885,9 +858,9 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             @Override
             public void test(Void result) throws Exception
             {
-                Date pubDate = (Date)nodeService.getProperty(testRM263Record, DOD5015Model.PROP_PUBLICATION_DATE);
+                Date pubDate = (Date) nodeService.getProperty(testRM263Record, DOD5015Model.PROP_PUBLICATION_DATE);
                 assertNotNull(pubDate);
-                Date asOfDate = (Date)nodeService.getProperty(testRM263Record, PROP_SEARCH_ASOF);
+                Date asOfDate = (Date) nodeService.getProperty(testRM263Record, PROP_SEARCH_ASOF);
                 assertNotNull(asOfDate);
 
                 DispositionAction da = dispositionService.getNextDispositionAction(testRM263Record);
@@ -903,12 +876,12 @@ public class DispositionServiceImplTest extends BaseRMTestCase
 
     /**
      * Test to make sure all the search rollups are correct after schedule is updated
+     * 
      * @throws Exception
      */
     public void testRM386() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -917,8 +890,8 @@ public class DispositionServiceImplTest extends BaseRMTestCase
                         testRM386RecordCategory,
                         "disposition instructions",
                         "disposition authority",
-                        true,   // record level
-                        true);  // set the default actions
+                        true, // record level
+                        true); // set the default actions
 
                 NodeRef recordFolder = recordFolderService.createRecordFolder(testRM386RecordCategory, "testRM386RecordFolder");
                 testRM386Record = utils.createRecord(recordFolder, "testRM386Record", "testRM386Record");
@@ -940,7 +913,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
                 assertEquals("none", properties.get(PROP_RS_DISPOSITION_PERIOD));
                 assertEquals("0", properties.get(PROP_RS_DISPOSITION_PERIOD_EXPRESSION));
 
-                List<String> events = (List<String>)properties.get(PROP_RS_DISPOSITION_EVENTS);
+                List<String> events = (List<String>) properties.get(PROP_RS_DISPOSITION_EVENTS);
                 assertNotNull(events);
                 assertEquals(1, events.size());
                 assertEquals(CommonRMTestUtils.DEFAULT_EVENT_NAME, events.get(0));
@@ -951,20 +924,19 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<DispositionActionDefinition>()
-        {
+        doTestInTransaction(new Test<DispositionActionDefinition>() {
             @Override
             public DispositionActionDefinition run() throws Exception
             {
                 DispositionActionDefinition actionDefinition = testRM386DispositionSchedule.getDispositionActionDefinitionByName("cutoff");
-                assertNotNull( "Expected an action definition", actionDefinition);
+                assertNotNull("Expected an action definition", actionDefinition);
 
                 Map<QName, Serializable> adParams = new HashMap<>(3);
 
                 List<String> events = new ArrayList<>(1);
                 events.add(CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 events.add("obsolete");
-                adParams.put(PROP_DISPOSITION_EVENT, (Serializable)events);
+                adParams.put(PROP_DISPOSITION_EVENT, (Serializable) events);
                 adParams.put(PROP_DISPOSITION_PERIOD, "week|1");
 
                 dispositionService.updateDispositionActionDefinition(
@@ -983,7 +955,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
                 assertTrue(nodeService.hasAspect(actionDefinition.getNodeRef(), ASPECT_UNPUBLISHED_UPDATE));
 
                 // Publish the updates
-                PublishUpdatesJobExecuter updater = (PublishUpdatesJobExecuter)applicationContext.getBean("publishUpdatesJobExecuter");
+                PublishUpdatesJobExecuter updater = (PublishUpdatesJobExecuter) applicationContext.getBean("publishUpdatesJobExecuter");
                 updater.executeImpl();
 
                 assertFalse(nodeService.hasAspect(actionDefinition.getNodeRef(), ASPECT_UNPUBLISHED_UPDATE));
@@ -1005,7 +977,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
                 assertEquals("week", properties.get(PROP_RS_DISPOSITION_PERIOD));
                 assertEquals("1", properties.get(PROP_RS_DISPOSITION_PERIOD_EXPRESSION));
 
-                List<String> events = (List<String>)properties.get(PROP_RS_DISPOSITION_EVENTS);
+                List<String> events = (List<String>) properties.get(PROP_RS_DISPOSITION_EVENTS);
                 assertNotNull(events);
                 assertEquals(2, events.size());
                 assertEquals(Boolean.FALSE, properties.get(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE));

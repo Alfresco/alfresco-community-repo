@@ -34,10 +34,10 @@ import java.util.List;
 public interface FeedControlDAO
 {
     public long insertFeedControl(FeedControlEntity activityFeedControl) throws SQLException;
-    
+
     public int deleteFeedControl(FeedControlEntity activityFeedControl) throws SQLException;
-    
+
     public List<FeedControlEntity> selectFeedControls(String userId) throws SQLException;
-    
+
     public long selectFeedControl(FeedControlEntity activityFeedControl) throws SQLException;
 }

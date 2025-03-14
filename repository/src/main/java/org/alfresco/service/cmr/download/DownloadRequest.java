@@ -57,7 +57,7 @@ public class DownloadRequest
     public NodeRef[] getRequetedNodeRefs()
     {
         List<NodeRef> requestedNodeRefs = new ArrayList<NodeRef>(requestedNodes.size());
-        for (AssociationRef requestedNode : requestedNodes) 
+        for (AssociationRef requestedNode : requestedNodes)
         {
             requestedNodeRefs.add(requestedNode.getTargetRef());
         }

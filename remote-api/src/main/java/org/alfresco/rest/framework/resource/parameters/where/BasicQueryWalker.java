@@ -35,15 +35,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.alfresco.rest.antlr.WhereClauseParser;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import org.alfresco.rest.antlr.WhereClauseParser;
+
 /**
- * Basic implementation of {@link QueryHelper.WalkerCallbackAdapter} providing universal handling of Where query clauses.
- * This implementation supports AND operator and all clause types.
- * Be default, walker verifies strictly if expected or unexpected properties, and it's comparison types are present in query
- * and throws {@link InvalidQueryException} if they are missing.
+ * Basic implementation of {@link QueryHelper.WalkerCallbackAdapter} providing universal handling of Where query clauses. This implementation supports AND operator and all clause types. Be default, walker verifies strictly if expected or unexpected properties, and it's comparison types are present in query and throws {@link InvalidQueryException} if they are missing.
  */
 public class BasicQueryWalker extends QueryHelper.WalkerCallbackAdapter
 {
@@ -231,29 +229,29 @@ public class BasicQueryWalker extends QueryHelper.WalkerCallbackAdapter
     public List<WhereProperty> getProperties(final String... propertyNames)
     {
         return Arrays.stream(propertyNames)
-            .filter(StringUtils::isNotBlank)
-            .distinct()
-            .peek(propertyName -> {
-                if (validateStrictly && !this.containsProperty(propertyName))
-                {
-                    throw new InvalidQueryException(String.format(MISSING_PROPERTY, propertyName));
-                }
-            })
-            .map(this.properties::get)
-            .collect(Collectors.toList());
+                .filter(StringUtils::isNotBlank)
+                .distinct()
+                .peek(propertyName -> {
+                    if (validateStrictly && !this.containsProperty(propertyName))
+                    {
+                        throw new InvalidQueryException(String.format(MISSING_PROPERTY, propertyName));
+                    }
+                })
+                .map(this.properties::get)
+                .collect(Collectors.toList());
     }
 
     public Map<String, WhereProperty> getPropertiesAsMap(final String... propertyNames)
     {
         return Arrays.stream(propertyNames)
-            .filter(StringUtils::isNotBlank)
-            .distinct()
-            .peek(propertyName -> {
-                if (validateStrictly && !this.containsProperty(propertyName))
-                {
-                    throw new InvalidQueryException(String.format(MISSING_PROPERTY, propertyName));
-                }
-            })
-            .collect(Collectors.toMap(propertyName -> propertyName, this.properties::get));
+                .filter(StringUtils::isNotBlank)
+                .distinct()
+                .peek(propertyName -> {
+                    if (validateStrictly && !this.containsProperty(propertyName))
+                    {
+                        throw new InvalidQueryException(String.format(MISSING_PROPERTY, propertyName));
+                    }
+                })
+                .collect(Collectors.toMap(propertyName -> propertyName, this.properties::get));
     }
 }

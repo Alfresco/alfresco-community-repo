@@ -40,6 +40,7 @@ import org.alfresco.repo.search.impl.querymodel.impl.lucene.QueryBuilderContext;
 
 /**
  * Range
+ * 
  * @author andyh
  *
  */
@@ -53,13 +54,9 @@ public class LuceneFTSRange<Q, S, E extends Throwable> extends FTSRange implemen
         super();
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery,
-     *      org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService,
-     *      java.lang.String)
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery, org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService, java.lang.String) */
     public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext)
             throws E
     {
@@ -72,7 +69,7 @@ public class LuceneFTSRange<Q, S, E extends Throwable> extends FTSRange implemen
         String to = (String) argument.getValue(functionContext);
         argument = functionArgs.get(ARG_TO_INC);
         Boolean toInc = (Boolean) argument.getValue(functionContext);
-        
+
         PropertyArgument propArg = (PropertyArgument) functionArgs.get(ARG_PROPERTY);
         Q query;
         if (propArg != null)

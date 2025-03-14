@@ -30,12 +30,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import junit.framework.TestCase;
-
-import org.alfresco.traitextender.AJExtender.CompiledExtensible;
 import org.junit.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AssignableTypeFilter;
+
+import org.alfresco.traitextender.AJExtender.CompiledExtensible;
 
 public class AJExtensionsCompileTest extends TestCase
 {
@@ -64,7 +64,7 @@ public class AJExtensionsCompileTest extends TestCase
             }
         }
         assertFalse(errorString.toString(),
-                    errorsFound);
+                errorsFound);
     }
 
     @Test
@@ -79,7 +79,7 @@ public class AJExtensionsCompileTest extends TestCase
         {
             @SuppressWarnings("unchecked")
             Class<? extends Extensible> extensibleClass = (Class<? extends Extensible>) Class.forName(component
-                        .getBeanClassName());
+                    .getBeanClassName());
             extensibles.add(extensibleClass);
 
         }

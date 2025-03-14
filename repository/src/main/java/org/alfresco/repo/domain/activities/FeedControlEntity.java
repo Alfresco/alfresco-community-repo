@@ -33,22 +33,21 @@ import org.alfresco.service.cmr.activities.FeedControl;
  * Activity Feed Control DAO
  */
 public class FeedControlEntity
-{ 
+{
     private Long id; // internal DB-generated id
     private String feedUserId = ActivitiesDAO.KEY_ACTIVITY_NULL_VALUE;
     private String siteNetwork = ActivitiesDAO.KEY_ACTIVITY_NULL_VALUE;
     private String appTool;
-    
+
     private Date lastModified; // when inserted
-    
+
     // TODO - review - deleted feed controls are not kept and available feed controls are currently retrieved during generation, hence
     // it is possible for a feed control to be applied even if lastModified is greater than postDate - could check the date !
     // it is also possible for a feed control to not be applied if it is deleted just after the post - would need to keep, at least until next generation
-    
+
     public FeedControlEntity()
-    {
-    }
-    
+    {}
+
     public FeedControlEntity(String feedUserId)
     {
         if (feedUserId != null && feedUserId.length() > 0)
@@ -56,7 +55,7 @@ public class FeedControlEntity
             this.feedUserId = feedUserId;
         }
     }
-    
+
     public FeedControlEntity(String feedUserId, FeedControl feedControl)
     {
         if (feedUserId != null && feedUserId.length() > 0)
@@ -70,17 +69,17 @@ public class FeedControlEntity
         this.appTool = feedControl.getAppToolId();
         this.lastModified = new Date();
     }
-    
+
     public FeedControl getFeedControl()
     {
         return new FeedControl(this.siteNetwork, this.appTool);
     }
-    
+
     public Long getId()
     {
         return id;
     }
-    
+
     public void setId(Long id)
     {
         this.id = id;
@@ -131,7 +130,7 @@ public class FeedControlEntity
     {
         this.lastModified = lastModified;
     }
-    
+
     // for debug only
     public String toString()
     {

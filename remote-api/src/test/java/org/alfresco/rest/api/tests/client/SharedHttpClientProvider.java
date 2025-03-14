@@ -32,20 +32,12 @@ import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 
 /**
  *
- * A class responsible for managing one shared {@link HttpClient} instance. This uses a
- * thread-safe connection-manager instead of creating a new istance on every call.
+ * A class responsible for managing one shared {@link HttpClient} instance. This uses a thread-safe connection-manager instead of creating a new istance on every call.
  * 
- * This is done for the folowing reasons:
- * <br> 
+ * This is done for the folowing reasons: <br>
  * <ul>
- *   <li>Creating new HTTPClient instances for each request has memory-overhead and most 
- *   important, opens a new connection for each request. Even though the connection is released
- *   they are kept in 'CLOSE_WAIT' state by the OS. This can, on high usage, empty out available outgoing TCP-ports and
- *   influence the testing on the client, having impact on the results.</li>
- *   <li>Using a single HTTPClient allows creating a pool of connections that can be kept alive to
- *   a certain route (route = combination of host and port) for a max number of time. This eliminates connection 
- *   setup and additional server round-trips, raising the overall throughput of http-calls (Browsers use 
- *   this mechanism all the time to lower loading-times).</li>
+ * <li>Creating new HTTPClient instances for each request has memory-overhead and most important, opens a new connection for each request. Even though the connection is released they are kept in 'CLOSE_WAIT' state by the OS. This can, on high usage, empty out available outgoing TCP-ports and influence the testing on the client, having impact on the results.</li>
+ * <li>Using a single HTTPClient allows creating a pool of connections that can be kept alive to a certain route (route = combination of host and port) for a max number of time. This eliminates connection setup and additional server round-trips, raising the overall throughput of http-calls (Browsers use this mechanism all the time to lower loading-times).</li>
  * </ul>
  * 
  * @author Frederik Heremans
@@ -54,12 +46,12 @@ public final class SharedHttpClientProvider implements HttpClientProvider
 {
     private HttpClient client;
     private String alfrescoUrl;
-    
+
     // Private constructor to prevent instantiation
     public SharedHttpClientProvider(String alfrescoUrl, int maxNumberOfConnections)
     {
         setAlfrescoUrl(alfrescoUrl);
-        
+
         // Initialize manager
         MultiThreadedHttpConnectionManager manager = new MultiThreadedHttpConnectionManager();
         HttpConnectionManagerParams params = new HttpConnectionManagerParams();
@@ -70,23 +62,24 @@ public final class SharedHttpClientProvider implements HttpClientProvider
         client = new HttpClient(manager);
         client.getParams().setAuthenticationPreemptive(true);
     }
-    
+
     /**
-     * @param alfrescoUrl the URL where alfresco repo is running on.
+     * @param alfrescoUrl
+     *            the URL where alfresco repo is running on.
      */
     private void setAlfrescoUrl(String alfrescoUrl)
     {
         this.alfrescoUrl = alfrescoUrl;
         // Ensure path ends with forward slash
-        if(alfrescoUrl != null && !alfrescoUrl.endsWith("/"))
+        if (alfrescoUrl != null && !alfrescoUrl.endsWith("/"))
         {
             this.alfrescoUrl = alfrescoUrl.concat("/");
         }
     }
-    
+
     public String getFullAlfrescoUrlForPath(String path)
     {
-        if(path.startsWith("/"))
+        if (path.startsWith("/"))
         {
             return alfrescoUrl.concat(path.substring(1, path.length()));
         }

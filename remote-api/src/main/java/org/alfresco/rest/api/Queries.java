@@ -33,7 +33,6 @@ import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
-import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
 
 /**
  * Queries API
@@ -44,35 +43,36 @@ import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
 public interface Queries
 {
     // General
-    static String PARAM_TERM    = "term";
+    static String PARAM_TERM = "term";
     static String PARAM_ORDERBY = RecognizedParamsExtractor.PARAM_ORDERBY;
     static String PARAM_FIELDS = RecognizedParamsExtractor.PARAM_FILTER_FIELDS;
     static String PARAM_INCLUDE = RecognizedParamsExtractor.PARAM_INCLUDE;
-    
+
     // Node query
     static String PARAM_ROOT_NODE_ID = "rootNodeId";
-    static String PARAM_NODE_TYPE    = "nodeType";
-    static String PARAM_NAME         = "name";
-    static String PARAM_CREATEDAT    = "createdAt";
-    static String PARAM_MODIFIEDAT   = "modifiedAt";
+    static String PARAM_NODE_TYPE = "nodeType";
+    static String PARAM_NAME = "name";
+    static String PARAM_CREATEDAT = "createdAt";
+    static String PARAM_MODIFIEDAT = "modifiedAt";
     static int MIN_TERM_LENGTH_NODES = 3;
-    
+
     // People query
-    static String PARAM_PERSON_ID  = "id";
+    static String PARAM_PERSON_ID = "id";
     static String PARAM_FIRSTNAME = ContentModel.PROP_FIRSTNAME.getLocalName();
-    static String PARAM_LASTNAME  = ContentModel.PROP_LASTNAME.getLocalName();
+    static String PARAM_LASTNAME = ContentModel.PROP_LASTNAME.getLocalName();
     static int MIN_TERM_LENGTH_PEOPLE = 2;
-    
+
     // Sites query
-    static String PARAM_SITE_ID          = "id";
-    static String PARAM_SITE_TITLE       = "title";
+    static String PARAM_SITE_ID = "id";
+    static String PARAM_SITE_TITLE = "title";
     static String PARAM_SITE_DESCRIPTION = "description";
-    static int MIN_TERM_LENGTH_SITES     = 2;
-    
+    static int MIN_TERM_LENGTH_SITES = 2;
+
     /**
      * Find Nodes
      *
-     * @param parameters the {@link Parameters} object to get the parameters passed into the request
+     * @param parameters
+     *            the {@link Parameters} object to get the parameters passed into the request
      *
      * @return the search query results
      */
@@ -81,7 +81,8 @@ public interface Queries
     /**
      * Find People
      * 
-     * @param parameters the {@link Parameters} object to get the parameters passed into the request
+     * @param parameters
+     *            the {@link Parameters} object to get the parameters passed into the request
      *
      * @return the search query results
      */
@@ -90,7 +91,8 @@ public interface Queries
     /**
      * Find Sites
      *
-     * @param parameters the {@link Parameters} object to get the parameters passed into the request
+     * @param parameters
+     *            the {@link Parameters} object to get the parameters passed into the request
      *
      * @return the search query results
      */

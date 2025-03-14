@@ -30,28 +30,29 @@ package org.alfresco.service.cmr.repository;
  * 
  * @author Roy Wetherall
  */
-public class CopyServiceException extends RuntimeException 
+public class CopyServiceException extends RuntimeException
 {
-	/**
-	 * Serial version UID 
-	 */
-	private static final long serialVersionUID = 3256727273112614964L;
+    /**
+     * Serial version UID
+     */
+    private static final long serialVersionUID = 3256727273112614964L;
 
-	/**
-	 * Constructor
-	 */
-	public CopyServiceException() 
-	{
-		super();
-	}
+    /**
+     * Constructor
+     */
+    public CopyServiceException()
+    {
+        super();
+    }
 
-	/**
-	 * Constructor
-	 * 
-	 * @param message  the error message
-	 */
-	public CopyServiceException(String message) 
-	{
-		super(message);
-	}
+    /**
+     * Constructor
+     * 
+     * @param message
+     *            the error message
+     */
+    public CopyServiceException(String message)
+    {
+        super(message);
+    }
 }

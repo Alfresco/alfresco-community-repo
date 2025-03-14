@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.people;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.Groups;
 import org.alfresco.rest.api.model.Group;
 import org.alfresco.rest.framework.resource.RelationshipResource;
@@ -32,7 +34,6 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Provide access to the groups of which a person is a member.

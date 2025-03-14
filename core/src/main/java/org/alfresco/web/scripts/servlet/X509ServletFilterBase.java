@@ -19,34 +19,30 @@
 
 package org.alfresco.web.scripts.servlet;
 
+import java.io.IOException;
+import java.security.cert.X509Certificate;
+import java.util.Set;
+import java.util.regex.Pattern;
 import javax.management.*;
 import javax.security.auth.x500.X500Principal;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.security.cert.X509Certificate;
-import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
  *
- *  The X509ServletFilterBase enforces X509 Authentication.
+ * The X509ServletFilterBase enforces X509 Authentication.
  *
- *  Optional Init Param:
- *  <b>cert-contains</b> : Ensure that the principal subject of the cert contains a specific string.
+ * Optional Init Param: <b>cert-contains</b> : Ensure that the principal subject of the cert contains a specific string.
  *
- *  The X509ServletFilter will also ensure that the cert is present in the request, which will only happen if there
- *  is a successful SSL handshake which includes client authentication. This handshake is handled by the Application Server.
- *  A SSL handshake that does not include client Authentication will receive a 403 error response.
+ * The X509ServletFilter will also ensure that the cert is present in the request, which will only happen if there is a successful SSL handshake which includes client authentication. This handshake is handled by the Application Server. A SSL handshake that does not include client Authentication will receive a 403 error response.
  *
- *  The checkInforce method must be implemented to determine if the X509 Authentication is turned on. This allows
- *  applications to turn on/off X509 Authentication based on parameters outside of the web.xml.
+ * The checkInforce method must be implemented to determine if the X509 Authentication is turned on. This allows applications to turn on/off X509 Authentication based on parameters outside of the web.xml.
  *
- * */
+ */
 
 public abstract class X509ServletFilterBase implements Filter
 {
@@ -54,7 +50,7 @@ public abstract class X509ServletFilterBase implements Filter
     protected boolean enforce;
     private String httpsPort;
     private String certContains;
-   
+
     /**
      * The regular expression that will match the CR/LF.
      */
@@ -65,35 +61,31 @@ public abstract class X509ServletFilterBase implements Filter
     {
         try
         {
-            /*
-            *  Find out if we are enforcing.
-            */
+            /* Find out if we are enforcing. */
 
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Initializing X509ServletFilter");
             }
 
             this.enforce = checkEnforce(config.getServletContext());
 
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-                logger.debug("Enforcing X509 Authentication:"+this.enforce);
+                logger.debug("Enforcing X509 Authentication:" + this.enforce);
             }
 
             if (this.enforce)
             {
                 this.handleClientAuth();
 
-                /*
-                * We are enforcing so get the cert-contains string.
-                */
+                /* We are enforcing so get the cert-contains string. */
 
                 this.certContains = config.getInitParameter("cert-contains");
 
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
-                    if(certContains == null)
+                    if (certContains == null)
                     {
                         logger.debug("Not enforcing cert-contains");
                     }
@@ -116,49 +108,45 @@ public abstract class X509ServletFilterBase implements Filter
     }
 
     public void doFilter(ServletRequest request,
-                         ServletResponse response,
-                         FilterChain chain) throws IOException,
+            ServletResponse response,
+            FilterChain chain) throws IOException,
             ServletException
     {
 
-        HttpServletRequest httpRequest = (HttpServletRequest)request;
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-        /*
-        * Test if we are enforcing X509.
-        */
-        if(this.enforce)
+        /* Test if we are enforcing X509. */
+        if (this.enforce)
         {
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Enforcing X509 request");
             }
 
-            X509Certificate[] certs = (X509Certificate[])httpRequest.getAttribute("jakarta.servlet.request.X509Certificate");
-            if(validCert(certs))
+            X509Certificate[] certs = (X509Certificate[]) httpRequest.getAttribute("jakarta.servlet.request.X509Certificate");
+            if (validCert(certs))
             {
 
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Cert is valid");
                 }
 
-                /*
-                * The cert is valid so forward the request.
-                */
+                /* The cert is valid so forward the request. */
 
-                chain.doFilter(request,response);
+                chain.doFilter(request, response);
             }
             else
             {
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Cert is invalid");
                 }
 
-                if(!httpRequest.isSecure())
+                if (!httpRequest.isSecure())
                 {
-                    if(this.httpsPort != null)
+                    if (this.httpsPort != null)
                     {
                         String redirectUrl = httpRequest.getRequestURL().toString();
                         int port = httpRequest.getLocalPort();
@@ -166,37 +154,32 @@ public abstract class X509ServletFilterBase implements Filter
                         redirectUrl = redirectUrl.replace(httpPort, httpsPort);
                         redirectUrl = redirectUrl.replace("http", "https");
                         String query = httpRequest.getQueryString();
-                        if(query != null)
+                        if (query != null)
                         {
-                            redirectUrl = redirectUrl+"?"+query;
+                            redirectUrl = redirectUrl + "?" + query;
                         }
 
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
-                            logger.debug("Redirecting to:"+redirectUrl);
+                            logger.debug("Redirecting to:" + redirectUrl);
                         }
-                        
+
                         // MNT-18461: Prevent redirects containing CRLF
                         redirectUrl = sanitize(redirectUrl);
-                        httpResponse.sendRedirect(redirectUrl);                       
+                        httpResponse.sendRedirect(redirectUrl);
                         return;
                     }
                 }
-                /*
-                * Invalid cert so send 403.
-                */
+                /* Invalid cert so send 403. */
                 httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "X509 Authentication failure");
             }
         }
         else
         {
-            /*
-            * We are not enforcing X509 so forward the request
-            */
-            chain.doFilter(request,response);
+            /* We are not enforcing X509 so forward the request */
+            chain.doFilter(request, response);
         }
     }
-
 
     /**
      *
@@ -204,8 +187,7 @@ public abstract class X509ServletFilterBase implements Filter
      * @return true if enforcing X509 false if not enforcing X509
      * @throws IOException
      *
-     *  The checkInforce method is called during the initialization of the Filter. Implement this method to decide if
-     *  X509 security is being enforced.
+     *             The checkInforce method is called during the initialization of the Filter. Implement this method to decide if X509 security is being enforced.
      *
      **/
 
@@ -213,26 +195,20 @@ public abstract class X509ServletFilterBase implements Filter
 
     private boolean validCert(X509Certificate[] certs)
     {
-        /*
-        * If the cert is null then the it's not valid.
-        */
+        /* If the cert is null then the it's not valid. */
 
-        if(certs == null)
+        if (certs == null)
         {
             return false;
         }
 
-        /*
-        * Get the first certificate in the chain. The first certificate is the client certificate.
-        */
+        /* Get the first certificate in the chain. The first certificate is the client certificate. */
 
         X509Certificate cert = certs[0];
         try
         {
-            /*
-            * check the certificate has not expired.
-            */
-            if(logger.isDebugEnabled())
+            /* check the certificate has not expired. */
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Checking cert is valid");
             }
@@ -247,24 +223,20 @@ public abstract class X509ServletFilterBase implements Filter
         X500Principal x500Principal = cert.getSubjectX500Principal();
         String name = x500Principal.getName();
 
-        /*
-        * Cert contains is an optional check
-        */
+        /* Cert contains is an optional check */
 
-        if(this.certContains == null)
+        if (this.certContains == null)
         {
             return true;
         }
 
-        /*
-        * Check that the cert contains the specified value.
-        */
+        /* Check that the cert contains the specified value. */
 
-        if(name.contains(this.certContains))
+        if (name.contains(this.certContains))
         {
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-                logger.debug("Cert: "+ name + "  contains:  "+ this.certContains);
+                logger.debug("Cert: " + name + "  contains:  " + this.certContains);
             }
 
             return true;
@@ -275,8 +247,7 @@ public abstract class X509ServletFilterBase implements Filter
             return false;
         }
     }
-    
-    
+
     private String sanitize(String redirectUrl)
     {
         if (redirectUrl != null)
@@ -288,8 +259,7 @@ public abstract class X509ServletFilterBase implements Filter
     }
 
     public void destroy()
-    {
-    }
+    {}
 
     private void handleClientAuth()
     {
@@ -297,18 +267,18 @@ public abstract class X509ServletFilterBase implements Filter
         {
             MBeanServer mBeanServer = MBeanServerFactory.findMBeanServer(null).get(0);
 
-            //Are we Tomcat
+            // Are we Tomcat
             ObjectName catalina = new ObjectName("Catalina", "type", "Engine");
             Set<ObjectName> objectNames = mBeanServer.queryNames(catalina, null);
-            if(objectNames == null || objectNames.size() == 0)
+            if (objectNames == null || objectNames.size() == 0)
             {
-                //We do not appear to be Tomcat
+                // We do not appear to be Tomcat
                 return;
             }
 
-            //We are Tomcat so look for the clientAuth
+            // We are Tomcat so look for the clientAuth
             QueryExp query = Query.or(Query.eq(Query.attr("clientAuth"), Query.value("want")),
-                                      Query.eq(Query.attr("clientAuth"), Query.value(true)));
+                    Query.eq(Query.attr("clientAuth"), Query.value(true)));
 
             objectNames = mBeanServer.queryNames(null, query);
 
@@ -321,11 +291,11 @@ public abstract class X509ServletFilterBase implements Filter
 
                 Set<ObjectName> objectNames1 = mBeanServer.queryNames(null, query);
 
-                if(objectNames1 != null)
+                if (objectNames1 != null)
                 {
-                    for(ObjectName objectName : objectNames1)
+                    for (ObjectName objectName : objectNames1)
                     {
-                        if(objectName.toString().contains("ProtocolHandler"))
+                        if (objectName.toString().contains("ProtocolHandler"))
                         {
                             logger.warn("Setting clientAuth=want on MBean:" + objectName.toString());
                             mBeanServer.setAttribute(objectName, new Attribute("clientAuth", "want"));
@@ -337,10 +307,10 @@ public abstract class X509ServletFilterBase implements Filter
                 logger.warn("Unable to set clientAuth=want through JMX.");
             }
         }
-        catch(Throwable t)
+        catch (Throwable t)
         {
             logger.warn("An error occurred while checking for clientAuth. Turn on debug logging to see the stacktrace.");
-            logger.debug("Error while handling clientAuth",t);
+            logger.debug("Error while handling clientAuth", t);
         }
     }
 }

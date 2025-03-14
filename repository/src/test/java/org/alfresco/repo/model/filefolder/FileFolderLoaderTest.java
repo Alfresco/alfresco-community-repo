@@ -25,11 +25,16 @@
  */
 package org.alfresco.repo.model.filefolder;
 
+import static org.junit.Assert.assertNotEquals;
+
 import java.util.List;
 import java.util.Locale;
 
 import junit.framework.TestCase;
 import net.sf.acegisecurity.AuthenticationCredentialsNotFoundException;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -52,11 +57,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-
-import static org.junit.Assert.assertNotEquals;
 
 /**
  * @see org.alfresco.repo.model.filefolder.FileFolderLoader
@@ -80,7 +80,7 @@ public class FileFolderLoaderTest extends TestCase
     private String readOnlyFolderPath;
     private NodeRef writeFolderNodeRef;
     private String writeFolderPath;
-    
+
     @Override
     public void setUp() throws Exception
     {
@@ -88,8 +88,7 @@ public class FileFolderLoaderTest extends TestCase
         AuthenticationUtil.clearCurrentSecurityContext();
         AuthenticationUtil.pushAuthentication();
 
-        RunAsWork<Void> setUpWork = new RunAsWork<Void>()
-        {
+        RunAsWork<Void> setUpWork = new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -102,42 +101,40 @@ public class FileFolderLoaderTest extends TestCase
                 NodeRef sharedHomeNodeRef = fileFolderLoader.getRepository().getSharedHome();
                 List<FileInfo> sharedHomeFileInfos = fileFolderService.getNamePath(companyHomeNodeRef, sharedHomeNodeRef);
                 sharedHomePath = "/" + sharedHomeFileInfos.get(0).getName();
-                
+
                 // Create a folder that will be invisible to all normal users
                 FileInfo hiddenFolderInfo = fileFolderService.create(sharedHomeNodeRef, "HideThis", ContentModel.TYPE_FOLDER);
                 hiddenFolderNodeRef = hiddenFolderInfo.getNodeRef();
                 hiddenFolderPath = sharedHomePath + "/HideThis";
                 permissionService.setInheritParentPermissions(hiddenFolderNodeRef, false);
-                
+
                 // Create a folder that will be read-only
                 FileInfo readOnlyFolderInfo = fileFolderService.create(sharedHomeNodeRef, "ReadOnlyThis", ContentModel.TYPE_FOLDER);
                 readOnlyFolderNodeRef = readOnlyFolderInfo.getNodeRef();
                 readOnlyFolderPath = sharedHomePath + "/ReadOnlyThis";
                 permissionService.setInheritParentPermissions(readOnlyFolderNodeRef, false);
                 permissionService.setPermission(readOnlyFolderNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
-                
+
                 // Create a folder to write to
                 FileInfo writeFolderInfo = fileFolderService.create(sharedHomeNodeRef, "WriteThis", ContentModel.TYPE_FOLDER);
                 writeFolderNodeRef = writeFolderInfo.getNodeRef();
                 writeFolderPath = sharedHomePath + "/WriteThis";
-                
+
                 // Done
                 return null;
             }
         };
         AuthenticationUtil.runAsSystem(setUpWork);
     }
-    
+
     @Override
     public void tearDown() throws Exception
     {
-        RunAsWork<Void> tearDownWork = new RunAsWork<Void>()
-        {
+        RunAsWork<Void> tearDownWork = new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
-                transactionService.getRetryingTransactionHelper().doInTransaction((RetryingTransactionCallback<Void>) () ->
-                {
+                transactionService.getRetryingTransactionHelper().doInTransaction((RetryingTransactionCallback<Void>) () -> {
                     fileFolderService.delete(hiddenFolderNodeRef);
                     fileFolderService.delete(readOnlyFolderNodeRef);
                     fileFolderService.delete(writeFolderNodeRef);
@@ -151,14 +148,14 @@ public class FileFolderLoaderTest extends TestCase
 
         AuthenticationUtil.popAuthentication();
     }
-    
+
     @Test
     public void testBasic()
     {
         assertNotNull(fileFolderLoader);
         assertNotNull(sharedHomePath);
     }
-    
+
     @Test
     public void testIllegalArgs_MinMax() throws Exception
     {
@@ -175,7 +172,7 @@ public class FileFolderLoaderTest extends TestCase
             // Expected
         }
     }
-    
+
     @Test
     public void testIllegalArgs_DescriptionCount() throws Exception
     {
@@ -192,7 +189,7 @@ public class FileFolderLoaderTest extends TestCase
             // Expected
         }
     }
-    
+
     @Test
     public void testIllegalArgs_DescriptionSize() throws Exception
     {
@@ -209,7 +206,7 @@ public class FileFolderLoaderTest extends TestCase
             // Expected
         }
     }
-    
+
     @Test
     public void testNoPermissionsAtAll() throws Exception
     {
@@ -226,7 +223,7 @@ public class FileFolderLoaderTest extends TestCase
             // Expected
         }
     }
-    
+
     @Test
     public void testNoPermissionsToFindFolder() throws Exception
     {
@@ -249,7 +246,7 @@ public class FileFolderLoaderTest extends TestCase
             AuthenticationUtil.popAuthentication();
         }
     }
-    
+
     @Test
     public void testFolderMissing() throws Exception
     {
@@ -273,7 +270,7 @@ public class FileFolderLoaderTest extends TestCase
             AuthenticationUtil.popAuthentication();
         }
     }
-    
+
     @Test
     public void testNoPermissionsToWriteToFolder() throws Exception
     {
@@ -296,7 +293,7 @@ public class FileFolderLoaderTest extends TestCase
             AuthenticationUtil.popAuthentication();
         }
     }
-    
+
     /**
      * Zero files
      */
@@ -320,7 +317,7 @@ public class FileFolderLoaderTest extends TestCase
             AuthenticationUtil.popAuthentication();
         }
     }
-    
+
     /**
      * One file
      */
@@ -337,8 +334,7 @@ public class FileFolderLoaderTest extends TestCase
                     10, 256L);
             assertEquals("Incorrect number of files generated.", 1, created);
             // Check the descriptions
-            RetryingTransactionCallback<Void> checkCallback = new RetryingTransactionCallback<Void>()
-            {
+            RetryingTransactionCallback<Void> checkCallback = new RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -362,7 +358,7 @@ public class FileFolderLoaderTest extends TestCase
             AuthenticationUtil.popAuthentication();
         }
     }
-    
+
     /**
      * 100 files; 10 per txn
      */
@@ -386,7 +382,7 @@ public class FileFolderLoaderTest extends TestCase
             AuthenticationUtil.popAuthentication();
         }
     }
-    
+
     /**
      * 15 files; 10 per txn; spoofed; different
      */
@@ -456,7 +452,7 @@ public class FileFolderLoaderTest extends TestCase
             AuthenticationUtil.popAuthentication();
         }
     }
-    
+
     /**
      * 10 files; 10 per txn; force storage; identical
      */

@@ -39,12 +39,12 @@ public class FeedControlDAOImpl extends ActivitiesDAOImpl implements FeedControl
         Long id = activityFeedControl.getId();
         return (id != null ? id : -1);
     }
-    
+
     public int deleteFeedControl(FeedControlEntity activityFeedControl) throws SQLException
     {
         return template.delete("alfresco.activities.delete_activity_feedcontrol", activityFeedControl);
     }
-    
+
     @SuppressWarnings("unchecked")
     public List<FeedControlEntity> selectFeedControls(String feedUserId) throws SQLException
     {
@@ -52,7 +52,7 @@ public class FeedControlDAOImpl extends ActivitiesDAOImpl implements FeedControl
 
         return template.selectList("alfresco.activities.select_activity_feedcontrols_for_user", params);
     }
-    
+
     public long selectFeedControl(FeedControlEntity activityFeedControl) throws SQLException
     {
         Long id = template.selectOne("alfresco.activities.select_activity_feedcontrol", activityFeedControl);

@@ -29,10 +29,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 
 /**
- * A controller of system or in-transaction resources.  Given a few statistics
- * regarding a method's call history, and using whatever other measurements
- * are needed, implementations will decide whether and how to clear up
- * sufficient system resources.
+ * A controller of system or in-transaction resources. Given a few statistics regarding a method's call history, and using whatever other measurements are needed, implementations will decide whether and how to clear up sufficient system resources.
  * 
  * @author Derek Hulley
  */
@@ -45,21 +42,25 @@ public interface MethodResourceManager
     {
         private long callCount;
         private long accumulatedTimeNs;
+
         public void accumulateNs(long durationNs)
         {
             accumulatedTimeNs += durationNs;
             callCount++;
         }
+
         public long getAccumulatedTimeNs()
         {
             return accumulatedTimeNs;
         }
+
         public long getCallCount()
         {
             return callCount;
         }
+
         /**
-         * @return  Returns the average call time in nanoseconds
+         * @return Returns the average call time in nanoseconds
          */
         public double getAverageCallTimeNs()
         {
@@ -70,15 +71,16 @@ public interface MethodResourceManager
             return (double) accumulatedTimeNs / (double) callCount;
         }
     }
-    
+
     /**
-     * Check and free any required resources for an imminent.  Details of the
-     * current transaction and some gathered information about previous calls
-     * to associated methods is also provided.
+     * Check and free any required resources for an imminent. Details of the current transaction and some gathered information about previous calls to associated methods is also provided.
      * 
-     * @param methodStatsByMethod       all known methods and their basic call stats
-     * @param transactionElapsedTimeNs  the elapsed time in the current transaction
-     * @param currentMethod             the method about to be called
+     * @param methodStatsByMethod
+     *            all known methods and their basic call stats
+     * @param transactionElapsedTimeNs
+     *            the elapsed time in the current transaction
+     * @param currentMethod
+     *            the method about to be called
      */
     public void manageResources(
             Map<Method, MethodStatistics> methodStatsByMethod,

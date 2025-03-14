@@ -33,30 +33,30 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Properties;
-
 import jakarta.mail.Flags;
 import jakarta.mail.Session;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.search.AndTerm;
-import jakarta.mail.search.BodyTerm;
 import jakarta.mail.search.ComparisonTerm;
 import jakarta.mail.search.FromTerm;
-import jakarta.mail.search.ReceivedDateTerm;
 import jakarta.mail.search.SearchTerm;
 import jakarta.mail.search.SentDateTerm;
 import jakarta.mail.search.SubjectTerm;
 import jakarta.transaction.UserTransaction;
 
+import com.icegreen.greenmail.store.SimpleStoredMessage;
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.ClassPathResource;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -96,17 +96,12 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.config.RepositoryFolderConfigBean;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-import org.springframework.core.io.ClassPathResource;
-
-import com.icegreen.greenmail.store.SimpleStoredMessage;
 
 /**
  * Unit test for ImapServiceImpl
  */
 @Category(OwnJVMTestsCategory.class)
-public class ImapServiceImplTest extends TestCase 
+public class ImapServiceImplTest extends TestCase
 {
     private static final String IMAP_ROOT = "Alfresco IMAP";
 
@@ -139,10 +134,9 @@ public class ImapServiceImplTest extends TestCase
     private NodeRef testImapFolderNodeRef;
     private Flags flags;
     private ImapServiceImpl imapServiceImpl;
-    
+
     String anotherUserName;
 
-    
     @Override
     public void setUp() throws Exception
     {
@@ -159,7 +153,7 @@ public class ImapServiceImplTest extends TestCase
         namespaceService = serviceRegistry.getNamespaceService();
         fileFolderService = serviceRegistry.getFileFolderService();
         contentService = serviceRegistry.getContentService();
-        
+
         flags = new Flags();
         flags.add(Flags.Flag.SEEN);
         flags.add(Flags.Flag.FLAGGED);
@@ -173,7 +167,7 @@ public class ImapServiceImplTest extends TestCase
 
         // downgrade integrity
         IntegrityChecker.setWarnInTransaction();
-        
+
         anotherUserName = "user" + System.currentTimeMillis();
 
         PropertyMap testUser = new PropertyMap();
@@ -194,45 +188,39 @@ public class ImapServiceImplTest extends TestCase
 
         ChildApplicationContextFactory imap = (ChildApplicationContextFactory) ctx.getBean("imap");
         ApplicationContext imapCtx = imap.getApplicationContext();
-        imapServiceImpl = (ImapServiceImpl)imapCtx.getBean("imapService");
+        imapServiceImpl = (ImapServiceImpl) imapCtx.getBean("imapService");
 
         // Creating IMAP test folder for IMAP root
         LinkedList<String> folders = new LinkedList<String>();
         folders.add(TEST_IMAP_FOLDER_NAME);
         FileFolderUtil.makeFolders(fileFolderService, companyHomeNodeRef, folders, ContentModel.TYPE_FOLDER);
-        
+
         // Setting IMAP root
         RepositoryFolderConfigBean imapHome = new RepositoryFolderConfigBean();
         imapHome.setStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.toString());
         imapHome.setRootPath(APP_COMPANY_HOME);
         imapHome.setFolderPath(NamespaceService.CONTENT_MODEL_PREFIX + ":" + TEST_IMAP_FOLDER_NAME);
         imapServiceImpl.setImapHome(imapHome);
-        
+
         // Starting IMAP
         imapServiceImpl.startupInTxn(true);
 
         NodeRef storeRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
 
-        List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef ,
+        List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef,
                 APP_COMPANY_HOME + "/" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + TEST_IMAP_FOLDER_NAME,
                 null,
                 namespaceService,
                 false);
         testImapFolderNodeRef = nodeRefs.get(0);
 
-        
-        /* 
-         * Importing test folders:
+        /* Importing test folders:
          * 
          * Test folder contains: "___-___folder_a"
          * 
-         * "___-___folder_a" contains: "___-___folder_a_a",
-         *                             "___-___file_a",
-         *                             "Message_485.eml" (this is IMAP Message)
-         *                           
-         * "___-___folder_a_a" contains: "____-____file_a_a"
+         * "___-___folder_a" contains: "___-___folder_a_a", "___-___file_a", "Message_485.eml" (this is IMAP Message)
          * 
-         */
+         * "___-___folder_a_a" contains: "____-____file_a_a" */
         importInternal("imap/imapservice_test_folder_a.acp", testImapFolderNodeRef);
 
         reauthenticate(anotherUserName, anotherUserName);
@@ -287,11 +275,10 @@ public class ImapServiceImplTest extends TestCase
         }
         return present;
     }
-    
+
     private void reauthenticate(final String name, final String password)
     {
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>() {
             public Object execute()
             {
                 authenticationService.invalidateTicket(authenticationService.getCurrentTicket());
@@ -307,44 +294,44 @@ public class ImapServiceImplTest extends TestCase
         imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true);
         assertTrue(checkMailbox(user, MAILBOX_NAME_A));
     }
-    
+
     public void testListMailbox() throws Exception
-    {   
+    {
         imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true);
         imapService.getOrCreateMailbox(user, MAILBOX_NAME_B, false, true);
         List<AlfrescoImapFolder> mf = imapService.listMailboxes(user, MAILBOX_PATTERN, false);
         assertEquals(2, mf.size());
-        
+
         boolean foundA = false;
         boolean foundB = false;
-        
-        for(AlfrescoImapFolder folder : mf)
+
+        for (AlfrescoImapFolder folder : mf)
         {
-            if(MAILBOX_NAME_A.equals(folder.getName()))
+            if (MAILBOX_NAME_A.equals(folder.getName()))
             {
-               foundA = true;
+                foundA = true;
             }
-            if(MAILBOX_NAME_B.equals(folder.getName()))
+            if (MAILBOX_NAME_B.equals(folder.getName()))
             {
-               foundB = true;
+                foundB = true;
             }
         }
-        
+
         assertTrue("folder A found", foundA);
         assertTrue("folder B found", foundB);
-        
+
         mf = imapService.listMailboxes(user, MAILBOX_PATTERN, false);
         assertEquals("can't repeat the listing of folders", 2, mf.size());
-        
+
         mf = imapService.listMailboxes(user, MAILBOX_PATTERN, false);
         assertEquals("can't repeat the listing of folders", 2, mf.size());
-        
+
         /**
          * The new mailboxes should be subscribed?
          */
         List<AlfrescoImapFolder> aif = imapService.listMailboxes(user, MAILBOX_PATTERN, true);
         assertEquals("not subscribed to two mailboxes", 2, aif.size());
-        
+
         /**
          * Unsubscribe to one of the mailboxes.
          */
@@ -355,11 +342,11 @@ public class ImapServiceImplTest extends TestCase
 
     public void testExcludeFoldersByComponentIt()
     {
-        NodeRef imapFolderA =  imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true).getFolderInfo().getNodeRef();
-        NodeRef imapFolderB =  imapService.getOrCreateMailbox(user, MAILBOX_NAME_B, false, true).getFolderInfo().getNodeRef();
-        NodeRef imapFolderC =  imapService.getOrCreateMailbox(user, "mailboxCalendarFolder", false, true).getFolderInfo().getNodeRef();
-        NodeRef imapFolderD =  imapService.getOrCreateMailbox(user, "mailboxDataListsFolder", false, true).getFolderInfo().getNodeRef();
-        NodeRef imapFolderE =  imapService.getOrCreateMailbox(user, "mailboxDocumentLibraryFolder", false, true).getFolderInfo().getNodeRef();
+        NodeRef imapFolderA = imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true).getFolderInfo().getNodeRef();
+        NodeRef imapFolderB = imapService.getOrCreateMailbox(user, MAILBOX_NAME_B, false, true).getFolderInfo().getNodeRef();
+        NodeRef imapFolderC = imapService.getOrCreateMailbox(user, "mailboxCalendarFolder", false, true).getFolderInfo().getNodeRef();
+        NodeRef imapFolderD = imapService.getOrCreateMailbox(user, "mailboxDataListsFolder", false, true).getFolderInfo().getNodeRef();
+        NodeRef imapFolderE = imapService.getOrCreateMailbox(user, "mailboxDocumentLibraryFolder", false, true).getFolderInfo().getNodeRef();
 
         List<AlfrescoImapFolder> mf = imapService.listMailboxes(user, MAILBOX_PATTERN, false);
         assertEquals(5, mf.size());
@@ -371,7 +358,7 @@ public class ImapServiceImplTest extends TestCase
         mf = imapService.listMailboxes(user, MAILBOX_PATTERN, false);
         assertEquals("Imap folders with component IDs 'calendar' or 'dataLists' were not excluded.", 3, mf.size());
     }
-    
+
     public void testListSubscribedMailbox() throws Exception
     {
         imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true);
@@ -380,7 +367,7 @@ public class ImapServiceImplTest extends TestCase
         imapService.subscribe(user, MAILBOX_NAME_B);
         List<AlfrescoImapFolder> aif = imapService.listMailboxes(user, MAILBOX_PATTERN, true);
         assertEquals(aif.size(), 2);
-        
+
         assertTrue("Can't subscribe mailbox A", checkSubscribedMailbox(user, MAILBOX_NAME_A));
         assertTrue("Can't subscribe mailbox B", checkSubscribedMailbox(user, MAILBOX_NAME_B));
     }
@@ -436,52 +423,52 @@ public class ImapServiceImplTest extends TestCase
         assertFalse("Can't delete mailbox", checkMailbox(user, MAILBOX_NAME_B));
     }
 
-//    public void testSearchFoldersInArchive() throws Exception
-//    {
-//        List<FileInfo> fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, true, ImapViewMode.ARCHIVE);
-//        assertNotNull("Can't find folders in Archive Mode", fi);
-//        assertEquals("Can't find folders in Archive Mode", fi.size(), 2);
-//        
-//        fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, false, ImapViewMode.ARCHIVE);
-//        assertNotNull("Can't find folders in Archive Mode", fi);
-//        assertEquals("Can't find folders in Archive Mode", fi.size(), 1);
-//    }
-//
-//    public void testSearchFoldersInVirtual() throws Exception
-//    {
-//        List<FileInfo> fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, true, ImapViewMode.VIRTUAL);
-//        assertNotNull("Can't find folders in Virtual Mode", fi);
-//        assertEquals("Can't find folders in Virtual Mode", fi.size(), 2);
-//
-//        fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, false, ImapViewMode.VIRTUAL);
-//        assertNotNull("Can't find folders in Virtual Mode", fi);
-//        assertEquals("Can't find folders in Virtual Mode", fi.size(), 1);
-//    }
-//    
-//    public void testSearchFoldersInMixed() throws Exception
-//    {
-//        List<FileInfo> fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, true, ImapViewMode.MIXED);
-//        assertNotNull("Can't find folders in Mixed Mode", fi);
-//        assertEquals("Can't find folders in Mixed Mode", fi.size(), 2);
-//
-//        fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, false, ImapViewMode.MIXED);
-//        assertNotNull("Can't find folders in Mixed Mode", fi);
-//        assertEquals("Can't find folders in Mixed Mode", fi.size(), 1);
-//    }
+    // public void testSearchFoldersInArchive() throws Exception
+    // {
+    // List<FileInfo> fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, true, ImapViewMode.ARCHIVE);
+    // assertNotNull("Can't find folders in Archive Mode", fi);
+    // assertEquals("Can't find folders in Archive Mode", fi.size(), 2);
+    //
+    // fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, false, ImapViewMode.ARCHIVE);
+    // assertNotNull("Can't find folders in Archive Mode", fi);
+    // assertEquals("Can't find folders in Archive Mode", fi.size(), 1);
+    // }
+    //
+    // public void testSearchFoldersInVirtual() throws Exception
+    // {
+    // List<FileInfo> fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, true, ImapViewMode.VIRTUAL);
+    // assertNotNull("Can't find folders in Virtual Mode", fi);
+    // assertEquals("Can't find folders in Virtual Mode", fi.size(), 2);
+    //
+    // fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, false, ImapViewMode.VIRTUAL);
+    // assertNotNull("Can't find folders in Virtual Mode", fi);
+    // assertEquals("Can't find folders in Virtual Mode", fi.size(), 1);
+    // }
+    //
+    // public void testSearchFoldersInMixed() throws Exception
+    // {
+    // List<FileInfo> fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, true, ImapViewMode.MIXED);
+    // assertNotNull("Can't find folders in Mixed Mode", fi);
+    // assertEquals("Can't find folders in Mixed Mode", fi.size(), 2);
+    //
+    // fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, false, ImapViewMode.MIXED);
+    // assertNotNull("Can't find folders in Mixed Mode", fi);
+    // assertEquals("Can't find folders in Mixed Mode", fi.size(), 1);
+    // }
 
-//    public void testSearchFiles() throws Exception
-//    {
-//        List<FileInfo> fi = imapService.searchFiles(testImapFolderNodeRef, FILE_PATTERN, true);
-//        assertNotNull(fi);
-//        assertTrue(fi.size() > 0);
-//    }
-//
-//    public void testSearchMails() throws Exception
-//    {
-//        List<FileInfo> fi = imapService.searchMails(testImapFolderNodeRef, ImapViewMode.MIXED);
-//        assertNotNull(fi);
-//        assertTrue(fi.size() > 0);
-//    }
+    // public void testSearchFiles() throws Exception
+    // {
+    // List<FileInfo> fi = imapService.searchFiles(testImapFolderNodeRef, FILE_PATTERN, true);
+    // assertNotNull(fi);
+    // assertTrue(fi.size() > 0);
+    // }
+    //
+    // public void testSearchMails() throws Exception
+    // {
+    // List<FileInfo> fi = imapService.searchMails(testImapFolderNodeRef, ImapViewMode.MIXED);
+    // assertNotNull(fi);
+    // assertTrue(fi.size() > 0);
+    // }
 
     public void testSubscribe() throws Exception
     {
@@ -499,7 +486,7 @@ public class ImapServiceImplTest extends TestCase
         // TODO MER 21/05/2010 : line below looks like a bug to me.
         assertFalse("Can't unsubscribe mailbox", checkSubscribedMailbox(user, MAILBOX_NAME_A));
     }
-    
+
     private void setFlags(FileInfo messageFileInfo) throws Exception
     {
         imapService.setFlags(messageFileInfo, flags, true);
@@ -534,32 +521,32 @@ public class ImapServiceImplTest extends TestCase
                     throw e;
                 }
             }
-            
+
             reauthenticate(USER_NAME, USER_PASSWORD);
-            
+
             permissionService.setPermission(testImapFolderNodeRef, anotherUserName, PermissionService.WRITE, true);
-            
+
             reauthenticate(anotherUserName, anotherUserName);
-            
+
             setFlags(messageFileInfo);
         }
     }
-    
+
     public void testSetFlag() throws Exception
     {
         NavigableMap<Long, FileInfo> fis = imapService.getFolderStatus(authenticationService.getCurrentUserName(), testImapFolderNodeRef, ImapViewMode.ARCHIVE).search;
         if (fis != null && fis.size() > 0)
         {
             FileInfo messageFileInfo = fis.firstEntry().getValue();
-            
+
             reauthenticate(USER_NAME, USER_PASSWORD);
-            
+
             permissionService.setPermission(testImapFolderNodeRef, anotherUserName, PermissionService.WRITE, true);
-            
+
             reauthenticate(anotherUserName, anotherUserName);
-            
+
             imapService.setFlag(messageFileInfo, Flags.Flag.RECENT, true);
-            
+
             Serializable prop = nodeService.getProperty(messageFileInfo.getNodeRef(), ImapModel.PROP_FLAG_RECENT);
             assertNotNull("Can't set RECENT flag", prop);
         }
@@ -571,55 +558,55 @@ public class ImapServiceImplTest extends TestCase
         if (fis != null && fis.size() > 0)
         {
             FileInfo messageFileInfo = fis.firstEntry().getValue();
-            
+
             reauthenticate(USER_NAME, USER_PASSWORD);
-            
+
             permissionService.setPermission(testImapFolderNodeRef, anotherUserName, PermissionService.WRITE, true);
-            
+
             imapService.setFlags(messageFileInfo, flags, true);
-            
+
             reauthenticate(anotherUserName, anotherUserName);
 
             Flags fl = imapService.getFlags(messageFileInfo);
             assertTrue(fl.contains(flags));
         }
     }
-    
+
     public void testRenameAccentedMailbox() throws Exception
     {
         String MAILBOX_ACCENTED_NAME_A = "Hôtel";
         String MAILBOX_ACCENTED_NAME_B = "HôtelXX";
-        
+
         imapService.getOrCreateMailbox(user, MAILBOX_ACCENTED_NAME_A, false, true);
         imapService.deleteMailbox(user, MAILBOX_ACCENTED_NAME_A);
-        
+
         imapService.getOrCreateMailbox(user, MAILBOX_ACCENTED_NAME_A, false, true);
         imapService.renameMailbox(user, MAILBOX_ACCENTED_NAME_A, MAILBOX_ACCENTED_NAME_B);
         assertFalse("Can't rename mailbox", checkMailbox(user, MAILBOX_ACCENTED_NAME_A));
         assertTrue("Can't rename mailbox", checkMailbox(user, MAILBOX_ACCENTED_NAME_B));
         imapService.deleteMailbox(user, MAILBOX_ACCENTED_NAME_B);
     }
-    
+
     public void testContentRecovery() throws Exception
     {
         reauthenticate(USER_NAME, USER_PASSWORD);
-        
+
         // create content
         NodeRef nodeRef = nodeService.createNode(testImapFolderNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "content_recover"), ContentModel.TYPE_CONTENT).getChildRef();
         FileInfo fileInfo = fileFolderService.getFileInfo(nodeRef);
-        
+
         // Outlook sets flags that indicates that a content was seen and deleted
         imapService.setFlag(fileInfo, Flags.Flag.DELETED, true);
         imapService.setFlag(fileInfo, Flags.Flag.SEEN, true);
-        
+
         // delete a content
         fileFolderService.delete(nodeRef);
-        
+
         // get archive node reference
         String storePath = "archive://SpacesStore";
         StoreRef storeRef = new StoreRef(storePath);
         NodeRef archivedNodeRef = new NodeRef(storeRef, nodeRef.getId());
-       
+
         // restore a node and check flags
         Boolean value = false;
         if (nodeService.exists(archivedNodeRef))
@@ -633,12 +620,13 @@ public class ImapServiceImplTest extends TestCase
                 value = !(Boolean) props.get(ImapModel.PROP_FLAG_DELETED) && !(Boolean) props.get(ImapModel.PROP_FLAG_SEEN);
             }
         }
-        
+
         assertTrue("Can't set DELETED flag to false", value);
     }
-    
+
     /**
      * Test attachment extraction with a TNEF message
+     * 
      * @throws Exception
      */
     public void testAttachmentExtraction() throws Exception
@@ -656,16 +644,16 @@ public class ImapServiceImplTest extends TestCase
 
         FileInfo f1 = fileFolderService.create(companyHomeNodeRef, "ImapServiceImplTest", ContentModel.TYPE_FOLDER);
         FileInfo f2 = fileFolderService.create(f1.getNodeRef(), "test-tnef-message.eml", ContentModel.TYPE_CONTENT);
-        
+
         ContentWriter writer = fileFolderService.getWriter(f2.getNodeRef());
         writer.putContent(new FileInputStream(fileResource.getFile()));
-        
+
         imapService.extractAttachments(f2.getNodeRef(), message);
 
         List<AssociationRef> targetAssocs = nodeService.getTargetAssocs(f2.getNodeRef(), ImapModel.ASSOC_IMAP_ATTACHMENTS_FOLDER);
         assertTrue("attachment folder is found", targetAssocs.size() == 1);
         NodeRef attachmentFolderRef = targetAssocs.get(0).getTargetRef();
-        
+
         assertNotNull(attachmentFolderRef);
 
         List<FileInfo> files = fileFolderService.listFiles(attachmentFolderRef);
@@ -881,7 +869,7 @@ public class ImapServiceImplTest extends TestCase
         FileInfo targetNode = null;
         String imapUserHomePath = "";
         StringBuilder fullPath = new StringBuilder();
-        List<String> fullPathList = new LinkedList<String>(Arrays.asList(new String[] { TEST_IMAP_FOLDER_NAME, USER_NAME }));
+        List<String> fullPathList = new LinkedList<String>(Arrays.asList(new String[]{TEST_IMAP_FOLDER_NAME, USER_NAME}));
         String targetNodeName = new StringBuilder(IMAP_ROOT).append(AlfrescoImapConst.HIERARCHY_DELIMITER).append(TEST_IMAP_FOLDER_NAME).append(
                 AlfrescoImapConst.HIERARCHY_DELIMITER).append(USER_NAME).toString();
 
@@ -927,10 +915,9 @@ public class ImapServiceImplTest extends TestCase
     }
 
     /**
-     * Test for MNT-12259
-     * There is a 5s gap to run the test, see {@link ImapServiceImpl#hideAndDelete}
+     * Test for MNT-12259 There is a 5s gap to run the test, see {@link ImapServiceImpl#hideAndDelete}
      * 
-     * @throws Exception 
+     * @throws Exception
      */
     public void testMoveViaDeleteAndAppend() throws Exception
     {
@@ -966,7 +953,7 @@ public class ImapServiceImplTest extends TestCase
 
         // original message should be deleted or about to
         assertTrue(!nodeService.exists(origFile.getNodeRef()) || imapService.getFlags(origFile).contains(Flags.Flag.DELETED));
-        
+
         // new file should be in destination
         assertEquals("There should be only one node in the destination folder", 1, nodeService.getChildAssocs(destinationNode.getNodeRef()).size());
         NodeRef newNodeRef = nodeService.getChildAssocs(destinationNode.getNodeRef()).get(0).getChildRef();
@@ -977,11 +964,11 @@ public class ImapServiceImplTest extends TestCase
         // new file content should be the same as original one
         assertEquals(contentString, nodeContent);
     }
-    
+
     /**
      * Test for MNT-12420
      * 
-     * @throws Exception 
+     * @throws Exception
      */
     public void testMoveViaAppendAndDelete() throws Exception
     {
@@ -1012,7 +999,7 @@ public class ImapServiceImplTest extends TestCase
         // Append the message to destination
         AlfrescoImapFolder destinationMailbox = imapService.getOrCreateMailbox(poweredUser, destinationPath, true, false);
         long uuid = destinationMailbox.appendMessage(origMessage.getMimeMessage(), flags, null);
-        
+
         // Delete the node
         imapService.setFlag(origFile, Flags.Flag.DELETED, true);
         imapService.expungeMessage(origFile);
@@ -1026,16 +1013,17 @@ public class ImapServiceImplTest extends TestCase
         assertEquals("There should be only one node in the destination folder", 1, nodeService.getChildAssocs(destinationNode.getNodeRef()).size());
         assertTrue("New node should have original node aspects", nodeService.hasAspect(copiedNode.getNodeRef(), ContentModel.ASPECT_TAGGABLE));
     }
-    
+
     public void testListMailboxOnStartup()
     {
         authenticationService.clearCurrentSecurityContext();
         // Starting IMAP
         imapServiceImpl.startupInTxn(true);
-    }    
-    
+    }
+
     /**
-     * @param mailbox - {@link AlfrescoImapFolder} instance which should be checked
+     * @param mailbox
+     *            - {@link AlfrescoImapFolder} instance which should be checked
      */
     private void assertMailboxNotNull(AlfrescoImapFolder mailbox)
     {
@@ -1045,10 +1033,14 @@ public class ImapServiceImplTest extends TestCase
     }
 
     /**
-     * @param user - {@link AlfrescoImapUser} instance, which determines a user who has enough permissions to rename a node
-     * @param root - {@link NodeRef} instance, which determines <code>Alfresco IMAP</code> root node
-     * @param targetNodePath - {@link String} value, which determines a path in IMAP notation to a node which should be renamed
-     * @param targetNode - {@link FileInfo} instance, which determines a node, located at the <code>targetNodePath</code> path
+     * @param user
+     *            - {@link AlfrescoImapUser} instance, which determines a user who has enough permissions to rename a node
+     * @param root
+     *            - {@link NodeRef} instance, which determines <code>Alfresco IMAP</code> root node
+     * @param targetNodePath
+     *            - {@link String} value, which determines a path in IMAP notation to a node which should be renamed
+     * @param targetNode
+     *            - {@link FileInfo} instance, which determines a node, located at the <code>targetNodePath</code> path
      * @throws FileNotFoundException
      */
     private void assertMailboxRenaming(AlfrescoImapUser user, NodeRef root, String targetNodePath, List<String> renamedNodeName, String renamedNodePath, FileInfo targetNode)
@@ -1090,8 +1082,10 @@ public class ImapServiceImplTest extends TestCase
     }
 
     /**
-     * @param root - {@link NodeRef} instance, which determines <code>Alfresco IMAP</code> root node
-     * @param actualNode - {@link NodeRef} instance, which determines mailbox in actual state
+     * @param root
+     *            - {@link NodeRef} instance, which determines <code>Alfresco IMAP</code> root node
+     * @param actualNode
+     *            - {@link NodeRef} instance, which determines mailbox in actual state
      * @throws FileNotFoundException
      */
     private void assertMailboxInUserImapHomeDirectory(NodeRef root, NodeRef actualNode) throws FileNotFoundException
@@ -1116,8 +1110,10 @@ public class ImapServiceImplTest extends TestCase
     }
 
     /**
-     * @param pathBeforeRenaming - {@link List}&lt;{@link String}&gt; instance, which represents a path to some node <b>before</b> some action
-     * @param pathAfterRenaming - {@link List}&lt;{@link String}&gt; instance, which represents a path to some node <b>after</b> some action
+     * @param pathBeforeRenaming
+     *            - {@link List}&lt;{@link String}&gt; instance, which represents a path to some node <b>before</b> some action
+     * @param pathAfterRenaming
+     *            - {@link List}&lt;{@link String}&gt; instance, which represents a path to some node <b>after</b> some action
      */
     private void assertPathHierarchy(List<String> pathBeforeRenaming, List<String> pathAfterRenaming)
     {
@@ -1149,11 +1145,12 @@ public class ImapServiceImplTest extends TestCase
 
     /**
      * MNT-12773
+     * 
      * @throws AddressException
      */
     public void testSearchTerms() throws AddressException
     {
-        List<AlfrescoImapFolder> mf = imapService.listMailboxes(user, IMAP_ROOT+"/"+TEST_IMAP_FOLDER_NAME+"/_*", false);
+        List<AlfrescoImapFolder> mf = imapService.listMailboxes(user, IMAP_ROOT + "/" + TEST_IMAP_FOLDER_NAME + "/_*", false);
         ArrayList<Long> res = new ArrayList<Long>();
         SearchTerm st = null;
 

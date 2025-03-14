@@ -39,6 +39,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.Map;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
 import org.alfresco.repo.content.directurl.SystemWideDirectUrlConfig;
@@ -48,14 +57,6 @@ import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * Unit tests for content service implementation.
@@ -147,7 +148,7 @@ public class ContentServiceImplUnitTest
         setupSystemWideDirectAccessConfig(ENABLED);
         when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(DISABLED);
 
-        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, PROP_CONTENT_QNAME,true, 20L);
+        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, PROP_CONTENT_QNAME, true, 20L);
         assertNull(directAccessUrl);
         verify(mockContentStore, never()).requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong());
     }
@@ -305,8 +306,7 @@ public class ContentServiceImplUnitTest
         final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), "High");
         when(mockContentStore.requestRestoreContentFromArchive(SOME_CONTENT_URL, restoreParams)).thenReturn(expectedResult);
 
-        boolean restoreContentFromArchive =
-                contentService.requestRestoreContentFromArchive(NODE_REF, ContentModel.PROP_CONTENT, restoreParams);
+        boolean restoreContentFromArchive = contentService.requestRestoreContentFromArchive(NODE_REF, ContentModel.PROP_CONTENT, restoreParams);
 
         assertEquals(expectedResult, restoreContentFromArchive);
     }

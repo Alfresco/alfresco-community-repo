@@ -54,7 +54,8 @@ public interface SolrFacetService
     /**
      * Gets the facet by filter Id.
      * 
-     * @param filterID the filter Id
+     * @param filterID
+     *            the filter Id
      * @return {@code SolrFacetProperties} object or <i>null</i> if there is no facet with the specified Id
      */
     public SolrFacetProperties getFacet(String filterID);
@@ -62,7 +63,8 @@ public interface SolrFacetService
     /**
      * Gets the facet's {@code NodeRef} by filter Id.
      * 
-     * @param filterID the filter Id
+     * @param filterID
+     *            the filter Id
      * @return facet's {@code NodeRef} or <i>null</i> if there is no facet with the specified Id
      */
     public NodeRef getFacetNodeRef(String filterID);
@@ -72,7 +74,8 @@ public interface SolrFacetService
      * <p>
      * Note: The super/repo admin is considered to be a search-administrator too.
      * 
-     * @param userName The user name
+     * @param userName
+     *            The user name
      * @return true if the specified user is a search-administrator, false otherwise
      */
     public boolean isSearchAdmin(String userName);
@@ -80,7 +83,8 @@ public interface SolrFacetService
     /**
      * Creates a new facet.
      * 
-     * @param facetProperties the facet's properties
+     * @param facetProperties
+     *            the facet's properties
      * @return the created facet's {@code NodeRef}
      */
     public NodeRef createFacetNode(SolrFacetProperties facetProperties);
@@ -88,75 +92,86 @@ public interface SolrFacetService
     /**
      * Updates the existing facet.
      * 
-     * @param facetProperties the facet's properties
+     * @param facetProperties
+     *            the facet's properties
      */
     public void updateFacet(SolrFacetProperties facetProperties);
 
     /**
      * Deletes the specified facet permanently
      * 
-     * @param filterID the filter Id
+     * @param filterID
+     *            the filter Id
      */
     public void deleteFacet(String filterID);
 
     /**
      * Reorders existing facets to the provided order.
      * 
-     * @param filterIds an ordered sequence of filter IDs.
-     * @throws NullPointerException if filterIds is {@code null}.
-     * @throws MissingFacetId if the list is empty.
-     * @throws DuplicateFacetId if there is a duplicate filter ID in the list.
+     * @param filterIds
+     *            an ordered sequence of filter IDs.
+     * @throws NullPointerException
+     *             if filterIds is {@code null}.
+     * @throws MissingFacetId
+     *             if the list is empty.
+     * @throws DuplicateFacetId
+     *             if there is a duplicate filter ID in the list.
      */
     public void reorderFacets(List<String> filterIds);
-    
+
     /**
-     * This method offers a convenient access point for getting all Facetable
-     * content properties defined in the repository.
+     * This method offers a convenient access point for getting all Facetable content properties defined in the repository.
+     * 
      * @return a collection of facetable {@link PropertyDefinition}s.
      * @see Facetable
      */
     public List<PropertyDefinition> getFacetableProperties();
-    
+
     /**
-     * This method offers a convenient access point for getting all Facetable
-     * content properties defined on the specified content class (type or aspect) or any of its inherited properties.
-     * @param contentClass the QName of an aspect or type, whose facetable properties are sought.
+     * This method offers a convenient access point for getting all Facetable content properties defined on the specified content class (type or aspect) or any of its inherited properties.
+     * 
+     * @param contentClass
+     *            the QName of an aspect or type, whose facetable properties are sought.
      * @return a collection of facetable {@link PropertyDefinition}s.
      * @see Facetable
      */
     public List<PropertyDefinition> getFacetableProperties(QName contentClass);
-    
+
     /**
      * This method gets all synthetic, facetable properties across all content models in the repository.
      */
     public List<SyntheticPropertyDefinition> getFacetableSyntheticProperties();
-    
+
     /**
      * This method gets all synthetic, facetable properties defined on the specified content class (type or aspect) or any of its inherited properties.
-     * @param contentClass the QName of an aspect or type, whose synthetic, facetable properties are sought.
+     * 
+     * @param contentClass
+     *            the QName of an aspect or type, whose synthetic, facetable properties are sought.
      */
     public List<SyntheticPropertyDefinition> getFacetableSyntheticProperties(QName contentClass);
-    
+
     /**
-     * This class represents a special case of a property, examples being file size and MIME type, which
-     * are not modelled as Alfresco content model properties, but are instead stored as components
-     * within properties of type {@code cm:content}.
+     * This class represents a special case of a property, examples being file size and MIME type, which are not modelled as Alfresco content model properties, but are instead stored as components within properties of type {@code cm:content}.
      */
     public class SyntheticPropertyDefinition
     {
         public final PropertyDefinition containingPropertyDef;
-        public final String             syntheticPropertyName;
-        public final QName              dataTypeDefinition;
-        
+        public final String syntheticPropertyName;
+        public final QName dataTypeDefinition;
+
         public SyntheticPropertyDefinition(PropertyDefinition containingPropertyDef, String syntheticPropertyName,
-                                           QName syntheticDataTypeDefinition)
+                QName syntheticDataTypeDefinition)
         {
             this.containingPropertyDef = containingPropertyDef;
             this.syntheticPropertyName = syntheticPropertyName;
-            this.dataTypeDefinition    = syntheticDataTypeDefinition;
+            this.dataTypeDefinition = syntheticDataTypeDefinition;
         }
-        
-        @Override public String toString() { return SyntheticPropertyDefinition.class.getSimpleName() +
-                                                    "[" + this.syntheticPropertyName + "]"; }
+
+        @Override
+        public String toString()
+        {
+            return SyntheticPropertyDefinition.class.getSimpleName() +
+                    "[" + this.syntheticPropertyName + "]";
+        }
     }
 }

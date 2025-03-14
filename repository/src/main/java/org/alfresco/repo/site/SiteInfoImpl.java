@@ -42,59 +42,70 @@ import org.alfresco.service.namespace.QName;
  */
 public class SiteInfoImpl implements SiteInfo
 {
-    /** Site node reference */    
+    /** Site node reference */
     private NodeRef nodeRef;
-    
+
     /** Site preset */
     private String sitePreset;
-    
+
     /** Site short name */
     private String shortName;
-    
+
     /** Site title */
     private String title;
-    
+
     /** Site description */
     private String description;
-    
+
     /** Site visibility */
     private SiteVisibility visibility;
-    
+
     /** Site created date */
     private Date createdDate;
-    
+
     /** Site last modified date */
     private Date lastModifiedDate;
-    
+
     /** Set of custom properties that have been defined for site */
     private Map<QName, Serializable> customProperties = new HashMap<QName, Serializable>(1);
-   
+
     /**
      * Constructor
      * 
-     * @param sitePreset    site preset
-     * @param shortName     short name
-     * @param title         title
-     * @param description   description
-     * @param visibility    site visibility
-     * @param nodeRef       site node reference
+     * @param sitePreset
+     *            site preset
+     * @param shortName
+     *            short name
+     * @param title
+     *            title
+     * @param description
+     *            description
+     * @param visibility
+     *            site visibility
+     * @param nodeRef
+     *            site node reference
      */
-    /*package*/ SiteInfoImpl(String sitePreset, String shortName, String title, String description, SiteVisibility visibility, Map<QName, Serializable> customProperties, NodeRef nodeRef)
+    /* package */ SiteInfoImpl(String sitePreset, String shortName, String title, String description, SiteVisibility visibility, Map<QName, Serializable> customProperties, NodeRef nodeRef)
     {
         this(sitePreset, shortName, title, description, visibility, customProperties);
         this.nodeRef = nodeRef;
     }
-    
+
     /**
      * Constructor
      * 
-     * @param sitePreset    site preset
-     * @param shortName     short name
-     * @param title         title
-     * @param description   description
-     * @param visibility    site visibility
+     * @param sitePreset
+     *            site preset
+     * @param shortName
+     *            short name
+     * @param title
+     *            title
+     * @param description
+     *            description
+     * @param visibility
+     *            site visibility
      */
-    /*package*/ SiteInfoImpl(String sitePreset, String shortName, String title, String description, SiteVisibility visibility, Map<QName, Serializable> customProperties)
+    /* package */ SiteInfoImpl(String sitePreset, String shortName, String title, String description, SiteVisibility visibility, Map<QName, Serializable> customProperties)
     {
         this.sitePreset = sitePreset;
         this.shortName = shortName;
@@ -106,7 +117,7 @@ public class SiteInfoImpl implements SiteInfo
             this.customProperties = customProperties;
         }
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.site.SiteInfo#getNodeRef()
      */
@@ -114,7 +125,7 @@ public class SiteInfoImpl implements SiteInfo
     {
         return nodeRef;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.site.SiteInfo#getSitePreset()
      */
@@ -122,7 +133,7 @@ public class SiteInfoImpl implements SiteInfo
     {
         return sitePreset;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.site.SiteInfo#getShortName()
      */
@@ -130,7 +141,7 @@ public class SiteInfoImpl implements SiteInfo
     {
         return shortName;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.site.SiteInfo#getTitle()
      */
@@ -139,7 +150,7 @@ public class SiteInfoImpl implements SiteInfo
         // title can be used for sorting, so ensure it's not null
         return (title != null ? title : "");
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.site.SiteInfo#setTitle(java.lang.String)
      */
@@ -147,7 +158,7 @@ public class SiteInfoImpl implements SiteInfo
     {
         this.title = title;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.site.SiteInfo#getDescription()
      */
@@ -155,7 +166,7 @@ public class SiteInfoImpl implements SiteInfo
     {
         return description;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.site.SiteInfo#setDescription(java.lang.String)
      */
@@ -163,7 +174,7 @@ public class SiteInfoImpl implements SiteInfo
     {
         this.description = description;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.site.SiteInfo#setIsPublic(boolean)
      */
@@ -178,7 +189,7 @@ public class SiteInfoImpl implements SiteInfo
             setVisibility(SiteVisibility.PRIVATE);
         }
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.site.SiteInfo#getIsPublic()
      */
@@ -191,7 +202,7 @@ public class SiteInfoImpl implements SiteInfo
         }
         return result;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.site.SiteInfo#getVisibility()
      */
@@ -207,7 +218,7 @@ public class SiteInfoImpl implements SiteInfo
     {
         this.visibility = visibility;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.site.SiteInfo#getCustomProperties()
      */
@@ -215,7 +226,7 @@ public class SiteInfoImpl implements SiteInfo
     {
         return this.customProperties;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.site.SiteInfo#getCustomProperty(org.alfresco.service.namespace.QName)
      */
@@ -227,8 +238,8 @@ public class SiteInfoImpl implements SiteInfo
             result = this.customProperties.get(name);
         }
         return result;
-    }    
-    
+    }
+
     /**
      * @see org.alfresco.service.cmr.site.SiteInfo#getCreatedDate()
      */
@@ -236,7 +247,7 @@ public class SiteInfoImpl implements SiteInfo
     {
         return this.createdDate;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.site.SiteInfo#setCreatedDate(java.util.Date)
      */
@@ -244,7 +255,7 @@ public class SiteInfoImpl implements SiteInfo
     {
         this.createdDate = createdDate;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.site.SiteInfo#getLastModifiedDate()
      */
@@ -252,7 +263,7 @@ public class SiteInfoImpl implements SiteInfo
     {
         return this.lastModifiedDate;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.site.SiteInfo#setLastModifiedDate(java.util.Date)
      */
@@ -260,7 +271,7 @@ public class SiteInfoImpl implements SiteInfo
     {
         this.lastModifiedDate = lastModifiedDate;
     }
-    
+
     /**
      * Override equals for this ref type
      * 
@@ -282,7 +293,7 @@ public class SiteInfoImpl implements SiteInfo
             return false;
         }
     }
-    
+
     /**
      * @see java.lang.Object#hashCode()
      */
@@ -290,10 +301,10 @@ public class SiteInfoImpl implements SiteInfo
     {
         return this.shortName.hashCode();
     }
-    
+
     public String toString()
     {
         return visibility.name() + " Site " + shortName + " (" + title + ")" +
-               " @ " + nodeRef.toString();
+                " @ " + nodeRef.toString();
     }
 }

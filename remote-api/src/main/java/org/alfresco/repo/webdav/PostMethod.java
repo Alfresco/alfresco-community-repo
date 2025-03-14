@@ -36,6 +36,5 @@ public class PostMethod extends PutMethod
      * Default constructor
      */
     public PostMethod()
-    {
-    }
+    {}
 }

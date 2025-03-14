@@ -26,6 +26,12 @@
 
 package org.alfresco.rest.api.impl;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.rest.api.ClassDefinitionMapper;
 import org.alfresco.rest.api.Types;
@@ -43,12 +49,6 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class TypesImpl extends AbstractClassImpl<Type> implements Types
 {
@@ -125,7 +125,7 @@ public class TypesImpl extends AbstractClassImpl<Type> implements Types
 
         try
         {
-           typeDefinition = dictionaryService.getType(QName.createQName(typeId, this.namespaceService));
+            typeDefinition = dictionaryService.getType(QName.createQName(typeId, this.namespaceService));
         }
         catch (NamespaceException exception)
         {
@@ -152,13 +152,13 @@ public class TypesImpl extends AbstractClassImpl<Type> implements Types
         }
     }
 
-    private Collection<QName> getModelTypes(Pair<QName,Boolean> model)
+    private Collection<QName> getModelTypes(Pair<QName, Boolean> model)
     {
-        ModelDefinition modelDefinition =  null;
+        ModelDefinition modelDefinition = null;
 
         try
         {
-            modelDefinition =  this.dictionaryService.getModel(model.getFirst());
+            modelDefinition = this.dictionaryService.getModel(model.getFirst());
         }
         catch (Exception exception)
         {
@@ -170,7 +170,7 @@ public class TypesImpl extends AbstractClassImpl<Type> implements Types
 
         Collection<QName> aspects = this.dictionaryService.getTypes(modelDefinition.getName());
 
-        if (!model.getSecond()) //look for model types alone
+        if (!model.getSecond()) // look for model types alone
             return aspects;
 
         Stream<QName> aspectStream = aspects.stream();

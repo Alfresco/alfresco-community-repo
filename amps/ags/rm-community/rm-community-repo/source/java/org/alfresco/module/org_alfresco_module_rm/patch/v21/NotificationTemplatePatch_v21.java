@@ -54,7 +54,7 @@ public class NotificationTemplatePatch_v21 extends RMv21PatchComponent
     /** Email template path */
     private static final String PATH_REJECTED = "alfresco/module/org_alfresco_module_rm/bootstrap/content/record-rejected-email.ftl";
 
-    /** Reject template config node id*/
+    /** Reject template config node id */
     private static final String CONFIG_NODEID = "record_rejected_template";
 
     /** Records management notification helper */
@@ -67,7 +67,8 @@ public class NotificationTemplatePatch_v21 extends RMv21PatchComponent
     private ContentService contentService;
 
     /**
-     * @param notificationHelper    notification helper
+     * @param notificationHelper
+     *            notification helper
      */
     public void setNotificationHelper(RecordsManagementNotificationHelper notificationHelper)
     {
@@ -75,7 +76,8 @@ public class NotificationTemplatePatch_v21 extends RMv21PatchComponent
     }
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -83,7 +85,8 @@ public class NotificationTemplatePatch_v21 extends RMv21PatchComponent
     }
 
     /**
-     * @param contentService    content service
+     * @param contentService
+     *            content service
      */
     public void setContentService(ContentService contentService)
     {

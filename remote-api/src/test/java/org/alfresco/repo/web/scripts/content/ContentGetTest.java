@@ -25,6 +25,14 @@
  */
 package org.alfresco.repo.web.scripts.content;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.junit.Assert;
+import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
@@ -36,13 +44,6 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyMap;
-import org.junit.Assert;
-import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Test for ContentGet web script
@@ -66,7 +67,7 @@ public class ContentGetTest extends BaseWebScriptTest
     {
         super.setUp();
 
-        this.authenticationService = (MutableAuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
+        this.authenticationService = (MutableAuthenticationService) getServer().getApplicationContext().getBean("AuthenticationService");
         this.personService = (PersonService) getServer().getApplicationContext().getBean("PersonService");
         this.nodeService = (NodeService) getServer().getApplicationContext().getBean("NodeService");
         this.contentService = (ContentService) getServer().getApplicationContext().getBean("ContentService");
@@ -136,8 +137,6 @@ public class ContentGetTest extends BaseWebScriptTest
         // check if we really have doc2 as target
         Assert.assertEquals("doc2 file content", resp.getContentAsString());
     }
-
-
 
     public void testForcedAttachment() throws Exception
     {

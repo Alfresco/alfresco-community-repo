@@ -29,6 +29,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import org.json.simple.JSONObject;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.content.filestore.SpoofedTextContentReader;
@@ -43,10 +48,6 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.transaction.TransactionService;
-import org.json.simple.JSONObject;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
  * Remote FileFolderLoader testing
@@ -54,7 +55,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * @author Derek Hulley
  * @since 5.1
  */
-public class RemoteFileFolderLoaderTest  extends BaseWebScriptTest
+public class RemoteFileFolderLoaderTest extends BaseWebScriptTest
 {
     public static final String URL = "/api/model/filefolder/load";
 
@@ -65,22 +66,21 @@ public class RemoteFileFolderLoaderTest  extends BaseWebScriptTest
     private String sharedHomePath;
     private NodeRef loadHomeNodeRef;
     private String loadHomePath;
-    
+
     @Override
     protected void setUp() throws Exception
     {
         super.setUp();
-        
-        this.repositoryHelper = (Repository)getServer().getApplicationContext().getBean("repositoryHelper");
-        this.nodeService = (NodeService)getServer().getApplicationContext().getBean("nodeService");
+
+        this.repositoryHelper = (Repository) getServer().getApplicationContext().getBean("repositoryHelper");
+        this.nodeService = (NodeService) getServer().getApplicationContext().getBean("nodeService");
         this.transactionService = (TransactionService) getServer().getApplicationContext().getBean("TransactionService");
         this.fileFolderService = (FileFolderService) getServer().getApplicationContext().getBean("FileFolderService");
 
         // Get the path of the shared folder home
         final NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
         final NodeRef sharedHomeNodeRef = repositoryHelper.getSharedHome();
-        RetryingTransactionCallback<NodeRef> createFolderWork = new RetryingTransactionCallback<NodeRef>()
-        {
+        RetryingTransactionCallback<NodeRef> createFolderWork = new RetryingTransactionCallback<NodeRef>() {
             @Override
             public NodeRef execute() throws Throwable
             {
@@ -95,17 +95,16 @@ public class RemoteFileFolderLoaderTest  extends BaseWebScriptTest
                 return folderInfo.getNodeRef();
             }
         };
-        AuthenticationUtil.pushAuthentication();            // Will be cleared later
+        AuthenticationUtil.pushAuthentication(); // Will be cleared later
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
 
         loadHomeNodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(createFolderWork);
     }
-    
+
     @Override
     protected void tearDown() throws Exception
     {
-        RetryingTransactionCallback<Void> deleteFolderWork = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> deleteFolderWork = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -123,20 +122,20 @@ public class RemoteFileFolderLoaderTest  extends BaseWebScriptTest
             AuthenticationUtil.popAuthentication();
         }
     }
-    
+
     /**
      * Load with no folder path
      */
     public void testLoad_noFolderPath() throws Exception
     {
         JSONObject body = new JSONObject();
-        
+
         sendRequest(
-                new PostRequest(URL,  body.toString(), "application/json"),
+                new PostRequest(URL, body.toString(), "application/json"),
                 Status.STATUS_BAD_REQUEST,
                 "bmarley");
     }
-    
+
     /**
      * Load with defaults
      */
@@ -145,17 +144,17 @@ public class RemoteFileFolderLoaderTest  extends BaseWebScriptTest
     {
         JSONObject body = new JSONObject();
         body.put(FileFolderLoaderPost.KEY_FOLDER_PATH, loadHomePath);
-        
+
         Response response = sendRequest(
-                new PostRequest(URL,  body.toString(), "application/json"),
+                new PostRequest(URL, body.toString(), "application/json"),
                 Status.STATUS_OK,
                 "bmarley");
         assertEquals("{\"count\":100}", response.getContentAsString());
-        
+
         // Check file(s)
         assertEquals(100, nodeService.countChildAssocs(loadHomeNodeRef, true));
     }
-    
+
     /**
      * Load 15 files with default sizes
      */
@@ -166,14 +165,14 @@ public class RemoteFileFolderLoaderTest  extends BaseWebScriptTest
         body.put(FileFolderLoaderPost.KEY_FOLDER_PATH, loadHomePath);
         body.put(FileFolderLoaderPost.KEY_FILE_COUNT, 15);
         body.put(FileFolderLoaderPost.KEY_FILES_PER_TXN, 10);
-        
+
         Response response = null;
         try
         {
             AuthenticationUtil.pushAuthentication();
             AuthenticationUtil.setFullyAuthenticatedUser("hhoudini");
             response = sendRequest(
-                    new PostRequest(URL,  body.toString(), "application/json"),
+                    new PostRequest(URL, body.toString(), "application/json"),
                     Status.STATUS_OK,
                     "hhoudini");
         }
@@ -182,7 +181,7 @@ public class RemoteFileFolderLoaderTest  extends BaseWebScriptTest
             AuthenticationUtil.popAuthentication();
         }
         assertEquals("{\"count\":15}", response.getContentAsString());
-        
+
         // Check file(s)
         assertEquals(15, nodeService.countChildAssocs(loadHomeNodeRef, true));
         // Size should be default
@@ -196,7 +195,7 @@ public class RemoteFileFolderLoaderTest  extends BaseWebScriptTest
             assertTrue(
                     "Default file size not correct: " + reader,
                     FileFolderLoaderPost.DEFAULT_MIN_FILE_SIZE < reader.getSize() &&
-                        reader.getSize() < FileFolderLoaderPost.DEFAULT_MAX_FILE_SIZE);
+                            reader.getSize() < FileFolderLoaderPost.DEFAULT_MAX_FILE_SIZE);
             // Check creator
             assertEquals("hhoudini", nodeService.getProperty(fileNodeRef, ContentModel.PROP_CREATOR));
             // We also expect the default language description to be present
@@ -218,14 +217,14 @@ public class RemoteFileFolderLoaderTest  extends BaseWebScriptTest
         body.put(FileFolderLoaderPost.KEY_MAX_FILE_SIZE, 16L);
         body.put(FileFolderLoaderPost.KEY_MAX_UNIQUE_DOCUMENTS, 1L);
         body.put(FileFolderLoaderPost.KEY_FORCE_BINARY_STORAGE, Boolean.TRUE);
-        
+
         Response response = null;
         try
         {
             AuthenticationUtil.pushAuthentication();
             AuthenticationUtil.setFullyAuthenticatedUser("maggi");
             response = sendRequest(
-                    new PostRequest(URL,  body.toString(), "application/json"),
+                    new PostRequest(URL, body.toString(), "application/json"),
                     Status.STATUS_OK,
                     "maggi");
         }
@@ -234,15 +233,15 @@ public class RemoteFileFolderLoaderTest  extends BaseWebScriptTest
             AuthenticationUtil.popAuthentication();
         }
         assertEquals("{\"count\":100}", response.getContentAsString());
-        
+
         // Check file(s)
         assertEquals(100, nodeService.countChildAssocs(loadHomeNodeRef, true));
-        
+
         // Consistent binary text
         String contentUrlCheck = SpoofedTextContentReader.createContentUrl(Locale.ENGLISH, 0L, 16L);
         ContentReader readerCheck = new SpoofedTextContentReader(contentUrlCheck);
         String textCheck = readerCheck.getContentString();
-        
+
         // Size should be default
         List<FileInfo> fileInfos = fileFolderService.list(loadHomeNodeRef);
         for (FileInfo fileInfo : fileInfos)

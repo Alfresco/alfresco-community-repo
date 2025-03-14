@@ -28,6 +28,7 @@ package org.alfresco.repo.invitation.activiti;
 import java.util.Map;
 
 import org.activiti.engine.delegate.DelegateExecution;
+
 import org.alfresco.repo.client.config.ClientAppConfig;
 import org.alfresco.repo.invitation.WorkflowModelModeratedInvitation;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
@@ -40,15 +41,14 @@ import org.alfresco.util.EmailHelper;
  */
 public class SendModeratedInviteDelegate extends AbstractInvitationDelegate
 {
-    
+
     private String emailTemplatePath;
     private ClientAppConfig clientAppConfig;
     private EmailHelper emailHelper;
     public static final String ENTERPRISE_EMAIL_TEMPLATE_PATH = "app:company_home/app:dictionary/app:email_templates/cm:invite/cm:invite-email-moderated.html.ftl";
-   
-    public static final String EMAIL_SUBJECT_KEY = "invitation.moderated.email.subject";
-    private static final String EMAIL_TEMPLATE_REF ="alfresco/templates/workspace/invite-email-moderated.html.ftl";
 
+    public static final String EMAIL_SUBJECT_KEY = "invitation.moderated.email.subject";
+    private static final String EMAIL_TEMPLATE_REF = "alfresco/templates/workspace/invite-email-moderated.html.ftl";
 
     public void setEmailTemplatePath(String emailTemplatePath)
     {
@@ -72,7 +72,7 @@ public class SendModeratedInviteDelegate extends AbstractInvitationDelegate
         Map<String, Object> variables = execution.getVariables();
         String clientName = (String) variables.get(WorkflowModelModeratedInvitation.wfVarClientName);
 
-        if(clientName != null && clientAppConfig.getClient(clientName) != null)
+        if (clientName != null && clientAppConfig.getClient(clientName) != null)
         {
             ClientAppConfig.ClientApp clientApp = clientAppConfig.getClient(clientName);
             final String path = clientApp.getProperty("inviteModeratedTemplatePath");

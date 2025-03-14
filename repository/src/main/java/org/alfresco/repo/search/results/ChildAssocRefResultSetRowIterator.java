@@ -31,6 +31,7 @@ import org.alfresco.service.cmr.search.ResultSetRow;
 
 /**
  * Iterate over child asooc refs
+ * 
  * @author andyh
  *
  */
@@ -39,7 +40,9 @@ public class ChildAssocRefResultSetRowIterator extends AbstractResultSetRowItera
 
     /**
      * Source result set
-     * @param resultSet ResultSet
+     * 
+     * @param resultSet
+     *            ResultSet
      */
     public ChildAssocRefResultSetRowIterator(ResultSet resultSet)
     {
@@ -49,13 +52,13 @@ public class ChildAssocRefResultSetRowIterator extends AbstractResultSetRowItera
     @Override
     public ResultSetRow next()
     {
-       return new ChildAssocRefResultSetRow((ChildAssocRefResultSet)getResultSet(), moveToNextPosition());
+        return new ChildAssocRefResultSetRow((ChildAssocRefResultSet) getResultSet(), moveToNextPosition());
     }
 
     @Override
     public ResultSetRow previous()
     {
-        return new ChildAssocRefResultSetRow((ChildAssocRefResultSet)getResultSet(), moveToPreviousPosition());
+        return new ChildAssocRefResultSetRow((ChildAssocRefResultSet) getResultSet(), moveToPreviousPosition());
     }
 
 }

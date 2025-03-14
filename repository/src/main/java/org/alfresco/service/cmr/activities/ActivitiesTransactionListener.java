@@ -25,13 +25,12 @@
  */
 package org.alfresco.service.cmr.activities;
 
-import org.alfresco.sync.repo.Client;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionListener;
+import org.alfresco.sync.repo.Client;
 
 /**
- * A Transaction Listener to post activities once the transaction has been committed,
- * or at the end of a read-only transaction.
+ * A Transaction Listener to post activities once the transaction has been committed, or at the end of a read-only transaction.
  *
  * @author Gethin James
  */
@@ -47,14 +46,14 @@ public class ActivitiesTransactionListener implements TransactionListener
 
     public ActivitiesTransactionListener(String activityType, ActivityInfo activityInfo, String tenantDomain, String appTool, Client client, ActivityPoster poster, RetryingTransactionHelper retryingTransactionHelper)
     {
-        //Data
+        // Data
         this.activityType = activityType;
         this.activityInfo = activityInfo;
         this.appTool = appTool;
         this.client = client;
         this.tenantDomain = tenantDomain;
 
-        //Services
+        // Services
         this.poster = poster;
         this.retryingTransactionHelper = retryingTransactionHelper;
 
@@ -63,9 +62,8 @@ public class ActivitiesTransactionListener implements TransactionListener
     @Override
     public void afterCommit()
     {
-        //Activity posting needs a new transaction
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        // Activity posting needs a new transaction
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -83,25 +81,25 @@ public class ActivitiesTransactionListener implements TransactionListener
     @Override
     public void flush()
     {
-        //do nothing
+        // do nothing
     }
 
     @Override
     public void beforeCommit(boolean readOnly)
     {
-        //do nothing
+        // do nothing
     }
 
     @Override
     public void beforeCompletion()
     {
-        //do nothing
+        // do nothing
     }
 
     @Override
     public void afterRollback()
     {
-        //do nothing
+        // do nothing
     }
 
 }

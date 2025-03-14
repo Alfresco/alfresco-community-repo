@@ -28,25 +28,22 @@ package org.alfresco.repo.imap;
 import java.io.BufferedInputStream;
 import java.io.FilterInputStream;
 import java.util.Properties;
-
 import jakarta.mail.Address;
 import jakarta.mail.BodyPart;
 import jakarta.mail.Folder;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.NoSuchProviderException;
-import jakarta.mail.Part;
 import jakarta.mail.Session;
 import jakarta.mail.Store;
 import jakarta.mail.internet.MimeMultipart;
 
 import junit.framework.TestCase;
-import org.alfresco.util.testing.category.PerformanceTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.experimental.categories.Category;
 
-import com.sun.mail.util.BASE64DecoderStream;
+import org.alfresco.util.testing.category.PerformanceTests;
 
 @Category(PerformanceTests.class)
 public class RemoteLoadTester extends TestCase
@@ -57,10 +54,10 @@ public class RemoteLoadTester extends TestCase
     private static final String USER_NAME = "test_imap_user";
     private static final String USER_PASSWORD = "test_imap_user";
     private static final String TEST_FOLDER_NAME = "test_imap1000";
-    
+
     private static final String ADMIN_USER_NAME = "admin";
     private static String REMOTE_HOST = "127.0.0.1";
-    
+
     public static void main(String[] args)
     {
         if (args.length > 0)
@@ -70,12 +67,10 @@ public class RemoteLoadTester extends TestCase
 
     @Override
     public void setUp() throws Exception
-    {
-    }
+    {}
 
     public void tearDown() throws Exception
-    {
-    }
+    {}
 
     public void testListSequence()
     {
@@ -83,7 +78,7 @@ public class RemoteLoadTester extends TestCase
         Properties props = System.getProperties();
         props.setProperty("mail.imap.partialfetch", "false");
         Session session = Session.getDefaultInstance(props, null);
-        
+
         Store store = null;
         long startTime = 0;
         long endTime = 0;
@@ -92,31 +87,31 @@ public class RemoteLoadTester extends TestCase
             store = session.getStore("imap");
             store.connect(REMOTE_HOST, ADMIN_USER_NAME, ADMIN_USER_NAME);
             Folder[] folders = null;
-            
+
             startTime = System.currentTimeMillis();
             folders = store.getDefaultFolder().list("");
             endTime = System.currentTimeMillis();
-            System.out.println(String.format("LIST '', folders.length = %d, execTime = %d sec", folders.length, (endTime - startTime)/1000));
-            
+            System.out.println(String.format("LIST '', folders.length = %d, execTime = %d sec", folders.length, (endTime - startTime) / 1000));
+
             startTime = System.currentTimeMillis();
             folders = store.getDefaultFolder().list("*");
             endTime = System.currentTimeMillis();
-            System.out.println(String.format("LIST *, folders.length = %d, execTime = %d sec", folders.length, (endTime - startTime)/1000));
-            
+            System.out.println(String.format("LIST *, folders.length = %d, execTime = %d sec", folders.length, (endTime - startTime) / 1000));
+
             startTime = System.currentTimeMillis();
             folders = store.getDefaultFolder().listSubscribed("*");
             endTime = System.currentTimeMillis();
-            System.out.println(String.format("LSUB *, folders.length = %d, execTime = %d sec", folders.length, (endTime - startTime)/1000));
-            
+            System.out.println(String.format("LSUB *, folders.length = %d, execTime = %d sec", folders.length, (endTime - startTime) / 1000));
+
             startTime = System.currentTimeMillis();
             for (Folder folder : folders)
             {
                 folder.getMessageCount();
-                //Folder f = store.getFolder(folder.getFullName());
+                // Folder f = store.getFolder(folder.getFullName());
             }
             endTime = System.currentTimeMillis();
-            System.out.println(String.format("Folders Loop, folders.length = %d, execTime = %d sec", folders.length, (endTime - startTime)/1000));
-            
+            System.out.println(String.format("Folders Loop, folders.length = %d, execTime = %d sec", folders.length, (endTime - startTime) / 1000));
+
         }
         catch (NoSuchProviderException e)
         {
@@ -143,7 +138,7 @@ public class RemoteLoadTester extends TestCase
     {
         logger.info("Getting folder...");
         long t = System.currentTimeMillis();
-        
+
         // Create empty properties
         Properties props = new Properties();
         props.setProperty("mail.imap.partialfetch", "false");
@@ -169,7 +164,7 @@ public class RemoteLoadTester extends TestCase
             for (int i = 0, n = message.length; i < n; i++)
             {
                 message[i].getAllHeaders();
-                
+
                 Address[] from = message[i].getFrom();
                 System.out.print(i + ": ");
                 if (from != null)
@@ -181,42 +176,36 @@ public class RemoteLoadTester extends TestCase
                 Object content = message[i].getContent();
                 if (content instanceof MimeMultipart)
                 {
-                    for (int j = 0, m = ((MimeMultipart)content).getCount(); j < m; j++)
+                    for (int j = 0, m = ((MimeMultipart) content).getCount(); j < m; j++)
                     {
-                        BodyPart part = ((MimeMultipart)content).getBodyPart(j);
+                        BodyPart part = ((MimeMultipart) content).getBodyPart(j);
                         Object partContent = part.getContent();
 
                         if (partContent instanceof String)
                         {
-                            String body = (String)partContent;
+                            String body = (String) partContent;
                         }
                         else if (partContent instanceof FilterInputStream)
                         {
-                            FilterInputStream fis = (FilterInputStream)partContent;
+                            FilterInputStream fis = (FilterInputStream) partContent;
                             BufferedInputStream bis = new BufferedInputStream(fis);
 
-                           /* while (bis.available() > 0) 
-                            {
-                               bis.read();
-                            }*/
+                            /* while (bis.available() > 0) { bis.read(); } */
                             byte[] bytes = new byte[524288];
                             while (bis.read(bytes) != -1)
-                            {
-                            }
+                            {}
                             bis.close();
                             fis.close();
                         }
                     }
                 }
-            
+
                 int nn = 0;
-            
+
             }
 
-            
-            
             t = System.currentTimeMillis() - t;
-            logger.info("Time: " + t + " ms (" + t/1000 + " s)");
+            logger.info("Time: " + t + " ms (" + t / 1000 + " s)");
             logger.info("Length: " + message.length);
 
         }
@@ -255,6 +244,5 @@ public class RemoteLoadTester extends TestCase
         }
 
     }
-
 
 }

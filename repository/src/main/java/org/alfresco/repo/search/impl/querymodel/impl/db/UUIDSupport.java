@@ -46,19 +46,20 @@ import org.alfresco.service.namespace.QName;
 public class UUIDSupport implements DBQueryBuilderComponent
 {
     String uuid;
-    
+
     String[] uuids;
-    
+
     DBQueryBuilderPredicatePartCommandType commandType;
 
     private boolean leftOuter;
 
     /**
-     * @param uuid the uud to set
+     * @param uuid
+     *            the uud to set
      */
     public void setUuid(String uuid)
     {
-        if(NodeRef.isNodeRef(uuid))
+        if (NodeRef.isNodeRef(uuid))
         {
             NodeRef ref = new NodeRef(uuid);
             this.uuid = ref.getId();
@@ -68,14 +69,14 @@ public class UUIDSupport implements DBQueryBuilderComponent
             this.uuid = uuid;
         }
     }
-    
+
     public void setUuids(String[] uuids)
     {
         this.uuids = new String[uuids.length];
 
-        for(int i = 0; i < uuids.length; i++)
+        for (int i = 0; i < uuids.length; i++)
         {
-            if(NodeRef.isNodeRef(uuids[i]))
+            if (NodeRef.isNodeRef(uuids[i]))
             {
                 NodeRef ref = new NodeRef(uuids[i]);
                 this.uuids[i] = ref.getId();
@@ -88,18 +89,17 @@ public class UUIDSupport implements DBQueryBuilderComponent
     }
 
     /**
-     * @param commandType the commandType to set
+     * @param commandType
+     *            the commandType to set
      */
     public void setCommandType(DBQueryBuilderPredicatePartCommandType commandType)
     {
         this.commandType = commandType;
     }
 
-
-
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported() */
     @Override
     public boolean isSupported()
     {
@@ -107,27 +107,27 @@ public class UUIDSupport implements DBQueryBuilderComponent
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace.NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO, java.util.Set, java.util.Map, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace.NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO, java.util.Set, java.util.Map, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext) */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
             Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
-        
+
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildJoins(java.util.Map, java.util.List)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildJoins(java.util.Map, java.util.List) */
     @Override
     public void buildJoins(Map<QName, DBQueryBuilderJoinCommand> singleJoins, List<DBQueryBuilderJoinCommand> multiJoins)
     {
-       
+
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildPredicateCommands(java.util.List)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildPredicateCommands(java.util.List) */
     @Override
     public void buildPredicateCommands(List<DBQueryBuilderPredicatePartCommand> predicatePartCommands)
     {
@@ -140,9 +140,10 @@ public class UUIDSupport implements DBQueryBuilderComponent
         command.setValues(uuids);
         predicatePartCommands.add(command);
     }
-    
+
     /**
-     * @param leftOuter boolean
+     * @param leftOuter
+     *            boolean
      */
     public void setLeftOuter(boolean leftOuter)
     {

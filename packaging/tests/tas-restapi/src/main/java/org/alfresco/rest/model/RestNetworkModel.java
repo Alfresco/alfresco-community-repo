@@ -28,44 +28,28 @@ package org.alfresco.rest.model;
 import static org.alfresco.utility.report.log.Step.STEP;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.testng.Assert;
 
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.UserModel;
-import org.testng.Assert;
 
 /**
  * Created by Cristina Axinte on 9/26/2016.
  * 
- * {
-  "entry": {
-    "id": "string",
-    "homeNetwork": true,
-    "isEnabled": true,
-    "createdAt": "2016-09-26T11:33:36.343Z",
-    "paidNetwork": true,
-    "subscriptionLevel": "Free",
-    "quotas": [
-      {
-        "id": "string",
-        "limit": 0,
-        "usage": 0
-      }
-    ]
-  }
-}
+ * { "entry": { "id": "string", "homeNetwork": true, "isEnabled": true, "createdAt": "2016-09-26T11:33:36.343Z", "paidNetwork": true, "subscriptionLevel": "Free", "quotas": [ { "id": "string", "limit": 0, "usage": 0 } ] } }
  * 
  */
 public class RestNetworkModel extends RestPersonNetworkModel implements IRestModel<RestNetworkModel>
 {
     @JsonProperty(value = "entry")
     RestNetworkModel model;
-    
+
     @Override
     public RestNetworkModel onModel()
     {
-       return model;
+        return model;
     }
-    
+
     public RestNetworkModel assertNetworkHasName(UserModel user)
     {
         STEP(String.format("REST API: Assert that network has name '%s'", user.getDomain()));
@@ -73,7 +57,7 @@ public class RestNetworkModel extends RestPersonNetworkModel implements IRestMod
 
         return this;
     }
-    
+
     public RestNetworkModel assertNetworkIsEnabled()
     {
         STEP(String.format("REST API: Assert network is enabled"));
@@ -81,6 +65,7 @@ public class RestNetworkModel extends RestPersonNetworkModel implements IRestMod
 
         return this;
     }
+
     public RestNetworkModel assertNetworkIsNotEnabled()
     {
         STEP(String.format("REST API: Assert that network is disable"));

@@ -38,10 +38,9 @@ public class ProcessDefinition
     String description;
     String startFormResourceKey;
     Boolean isGraphicNotationDefined;
-    
+
     public ProcessDefinition()
-    {
-    }
+    {}
 
     public ProcessDefinition(org.activiti.engine.repository.ProcessDefinition processDefinition)
     {
@@ -111,7 +110,7 @@ public class ProcessDefinition
     {
         this.deploymentId = deploymentId;
     }
-    
+
     public String getTitle()
     {
         return title;

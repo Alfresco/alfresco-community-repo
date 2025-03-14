@@ -25,15 +25,6 @@
  */
 package org.alfresco.repo.content.transform;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.util.LogTee;
-import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
@@ -42,18 +33,27 @@ import java.util.Map;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.util.LogTee;
+import org.alfresco.util.PropertyCheck;
+
 /**
- * Debugs transformers selection and activity.<p>
+ * Debugs transformers selection and activity.
+ * <p>
  *
- * As transformations are frequently composed of lower level transformations, log
- * messages include a prefix to identify the transformation. A numeric dot notation
- * is used (such as {@code 123.1.2} indicating the second third level transformation
- * of the 123rd top level transformation).
+ * As transformations are frequently composed of lower level transformations, log messages include a prefix to identify the transformation. A numeric dot notation is used (such as {@code 123.1.2} indicating the second third level transformation of the 123rd top level transformation).
+ * 
  * @author Alan Davis
  */
 public class TransformerDebug
 {
-    public static final String TIMEOUT =  "timeout";
+    public static final String TIMEOUT = "timeout";
     public static final String SOURCE_ENCODING = "sourceEncoding";
     public static final String SOURCE_NODE_REF = "sourceNodeRef";
     public static final String TARGET_ENCODING = "targetEncoding";
@@ -72,7 +72,7 @@ public class TransformerDebug
     protected Log multiLineLog;
     protected NodeService nodeService;
     protected MimetypeService mimetypeService;
-    private final ThreadLocal<Integer> previousTransformId = ThreadLocal.withInitial(()->-1);
+    private final ThreadLocal<Integer> previousTransformId = ThreadLocal.withInitial(() -> -1);
 
     public interface ExtensionLookup
     {
@@ -81,15 +81,12 @@ public class TransformerDebug
 
     protected enum Call
     {
-        AVAILABLE,
-        TRANSFORM,
-        AVAILABLE_AND_TRANSFORM
+        AVAILABLE, TRANSFORM, AVAILABLE_AND_TRANSFORM
     };
 
     protected static class ThreadInfo
     {
-        private static final ThreadLocal<ThreadInfo> threadInfo = new ThreadLocal<ThreadInfo>()
-        {
+        private static final ThreadLocal<ThreadInfo> threadInfo = new ThreadLocal<ThreadInfo>() {
             @Override
             protected ThreadInfo initialValue()
             {
@@ -157,7 +154,7 @@ public class TransformerDebug
         private String transformerName;
 
         private Frame(Frame parent, String transformerName, String fromUrl, String sourceMimetype, String targetMimetype,
-                      long sourceSize, String renditionName, NodeRef sourceNodeRef, Call pushCall, boolean origDebugOutput)
+                long sourceSize, String renditionName, NodeRef sourceNodeRef, Call pushCall, boolean origDebugOutput)
         {
             this.id = -1;
             this.parent = parent;
@@ -268,8 +265,8 @@ public class TransformerDebug
     }
 
     public void pushTransform(String transformerName, String fromUrl, String sourceMimetype,
-                              String targetMimetype, long sourceSize, Map<String, String> options,
-                              String renditionName, NodeRef sourceNodeRef)
+            String targetMimetype, long sourceSize, Map<String, String> options,
+            String renditionName, NodeRef sourceNodeRef)
     {
         if (isEnabled())
         {
@@ -279,9 +276,7 @@ public class TransformerDebug
     }
 
     /**
-     * Adds a new level to the stack to get a new request number or nesting number.
-     * Called prior to working out what transformers are active
-     * and prior to listing the supported mimetypes for an active transformer.
+     * Adds a new level to the stack to get a new request number or nesting number. Called prior to working out what transformers are active and prior to listing the supported mimetypes for an active transformer.
      */
     public void pushMisc()
     {
@@ -293,8 +288,8 @@ public class TransformerDebug
     }
 
     void push(String transformerName, String fromUrl, String sourceMimetype, String targetMimetype,
-              long sourceSize, Map<String, String> options,
-              String renditionName, NodeRef sourceNodeRef, Call callType)
+            long sourceSize, Map<String, String> options,
+            String renditionName, NodeRef sourceNodeRef, Call callType)
     {
         Deque<Frame> ourStack = ThreadInfo.getStack();
         Frame frame = ourStack.peek();
@@ -320,19 +315,19 @@ public class TransformerDebug
     }
 
     protected void logBasicDetails(Frame frame, long sourceSize, Map<String, String> options, String renditionName,
-                                   String message, boolean firstLevel)
+            String message, boolean firstLevel)
     {
         // Log the source URL, but there is no point if the parent has logged it
         if (frame.fromUrl != null && (firstLevel || frame.id != 1))
         {
             log(frame.fromUrl, false);
         }
-        log(frame.sourceMimetype+' '+frame.targetMimetype, false);
+        log(frame.sourceMimetype + ' ' + frame.targetMimetype, false);
 
         String filename = getFilename(frame.sourceNodeRef, firstLevel);
         log(getSourceAndTargetExt(frame.sourceMimetype, frame.targetMimetype) +
-                ((filename != null) ? filename+' ' : "")+
-                ((sourceSize >= 0) ? fileSize(sourceSize)+' ' : "") +
+                ((filename != null) ? filename + ' ' : "") +
+                ((sourceSize >= 0) ? fileSize(sourceSize) + ' ' : "") +
                 (firstLevel ? getRenditionName(renditionName) : "") + message);
         if (firstLevel)
         {
@@ -357,11 +352,12 @@ public class TransformerDebug
                     String value = option.getValue();
                     value = value != null
                             ? "=\"" + value.replaceAll("\"", "\\\"") + "\""
-                            : "=null"+
-                              (SOURCE_NODE_REF.equals(key) ||
-                               SOURCE_ENCODING.equals(key) ||
-                               TARGET_ENCODING.equals(key)
-                               ? " - set automatically" : "");
+                            : "=null" +
+                                    (SOURCE_NODE_REF.equals(key) ||
+                                            SOURCE_ENCODING.equals(key) ||
+                                            TARGET_ENCODING.equals(key)
+                                                    ? " - set automatically"
+                                                    : "");
                     log("  " + key + value);
                 }
             }
@@ -380,8 +376,7 @@ public class TransformerDebug
     }
 
     /**
-     * Removes a frame from the stack. Called prior to working out what transformers are active
-     * and prior to listing the supported mimetypes for an active transformer.
+     * Removes a frame from the stack. Called prior to working out what transformers are active and prior to listing the supported mimetypes for an active transformer.
      */
     public void popMisc()
     {
@@ -401,7 +396,7 @@ public class TransformerDebug
             id = frame.getId();
 
             if ((frame.callType == callType) ||
-                (frame.callType == Call.AVAILABLE_AND_TRANSFORM && callType == Call.AVAILABLE))
+                    (frame.callType == Call.AVAILABLE_AND_TRANSFORM && callType == Call.AVAILABLE))
             {
                 int size = ourStack.size();
                 String ms = ms(System.currentTimeMillis() - frame.start);
@@ -412,9 +407,9 @@ public class TransformerDebug
                 if (!suppressFinish && (firstLevel || multiLineLog.isTraceEnabled()))
                 {
                     log(FINISHED_IN + ms +
-                        (frame.callType == Call.AVAILABLE && !suppressChecking? " Just checking if a transformer is available" : "") +
-                        (firstLevel ? "\n" : ""),
-                        firstLevel);
+                            (frame.callType == Call.AVAILABLE && !suppressChecking ? " Just checking if a transformer is available" : "") +
+                            (firstLevel ? "\n" : ""),
+                            firstLevel);
                 }
 
                 setDebugOutput(frame.origDebugOutput);
@@ -463,16 +458,15 @@ public class TransformerDebug
     private void infoLog(String reference, String sourceAndTargetExt, String level, String filename,
             long sourceSize, String transformerName, String renditionName, String failureReason, String ms, boolean debug)
     {
-        String message =
-                reference +
+        String message = reference +
                 sourceAndTargetExt +
-                (level == null ? "" : level+' ') +
+                (level == null ? "" : level + ' ') +
                 (filename == null ? "" : filename) +
-                (sourceSize >= 0 ? ' '+fileSize(sourceSize) : "") +
-                (ms == null || ms.isEmpty() ? "" : ' '+ms)+
-                (transformerName == null ? "" : ' '+transformerName) +
-                (renditionName == null ? "" : ' '+getRenditionName(renditionName)) +
-                (failureReason == null ? "" : ' '+failureReason.trim());
+                (sourceSize >= 0 ? ' ' + fileSize(sourceSize) : "") +
+                (ms == null || ms.isEmpty() ? "" : ' ' + ms) +
+                (transformerName == null ? "" : ' ' + transformerName) +
+                (renditionName == null ? "" : ' ' + getRenditionName(renditionName)) +
+                (failureReason == null ? "" : ' ' + failureReason.trim());
         if (debug)
         {
             singleLineLog.debug(message);
@@ -493,10 +487,10 @@ public class TransformerDebug
     }
 
     /**
-     * Enable or disable debug log output. Normally used to hide calls to
-     * getTransformer as trace rather than debug level log messages. There
-     * are lots of these and it makes it hard to see what is going on.
-     * @param debugOutput if {@code true} both debug and trace is generated. Otherwise all output is trace.
+     * Enable or disable debug log output. Normally used to hide calls to getTransformer as trace rather than debug level log messages. There are lots of these and it makes it hard to see what is going on.
+     * 
+     * @param debugOutput
+     *            if {@code true} both debug and trace is generated. Otherwise all output is trace.
      * @return the original value.
      */
     public static boolean setDebugOutput(boolean debugOutput)
@@ -506,6 +500,7 @@ public class TransformerDebug
 
     /**
      * Log a message prefixed with the current transformation reference.
+     * 
      * @param message
      */
     public void debug(String message)
@@ -518,27 +513,27 @@ public class TransformerDebug
 
     /**
      * Log a message prefixed with the previous transformation reference, used by this Thread.
+     * 
      * @param message
      */
     public void debugUsingPreviousReference(String message)
     {
         if (isEnabled() && message != null)
         {
-            log(message, null,true, true);
+            log(message, null, true, true);
         }
     }
 
     /**
-     * Log a message prefixed with the current transformation reference
-     * and include a exception, suppressing the stack trace if repeated
-     * as we return up the stack of transformers.
+     * Log a message prefixed with the current transformation reference and include a exception, suppressing the stack trace if repeated as we return up the stack of transformers.
+     * 
      * @param message
      */
     public void debug(String message, Throwable t)
     {
         if (isEnabled())
         {
-            // Trim messages of the form: "Failed... : \n   reader:...\n    writer:..."
+            // Trim messages of the form: "Failed... : \n reader:...\n writer:..."
             String msg = t.getMessage();
             if (msg != null)
             {
@@ -558,7 +553,7 @@ public class TransformerDebug
             if (!ourStack.isEmpty())
             {
                 Frame frame = ourStack.peek();
-                frame.setFailureReason(message +' '+ getRootCauseMessage(t));
+                frame.setFailureReason(message + ' ' + getRootCauseMessage(t));
             }
         }
     }
@@ -599,11 +594,11 @@ public class TransformerDebug
     {
         if (debug && ThreadInfo.getDebugOutput() && multiLineLog.isDebugEnabled())
         {
-            multiLineLog.debug(getReference(false, false, usePreviousRef)+message, t);
+            multiLineLog.debug(getReference(false, false, usePreviousRef) + message, t);
         }
         else if (multiLineLog.isTraceEnabled())
         {
-            multiLineLog.trace(getReference(false, false, usePreviousRef)+message, t);
+            multiLineLog.trace(getReference(false, false, usePreviousRef) + message, t);
         }
 
         if (debug)
@@ -623,9 +618,7 @@ public class TransformerDebug
     }
 
     /**
-     * Sets the cause of a transformation failure, so that only the
-     * message of the Throwable is reported later rather than the full
-     * stack trace over and over.
+     * Sets the cause of a transformation failure, so that only the message of the Throwable is reported later rather than the full stack trace over and over.
      */
     public <T extends Throwable> T setCause(T t)
     {
@@ -633,8 +626,7 @@ public class TransformerDebug
     }
 
     /**
-     * Returns the current StringBuilder (if any) being used to capture debug
-     * information for the current Thread.
+     * Returns the current StringBuilder (if any) being used to capture debug information for the current Thread.
      */
     public StringBuilder getStringBuilder()
     {
@@ -642,8 +634,7 @@ public class TransformerDebug
     }
 
     /**
-     * Sets the StringBuilder to be used to capture debug information for the
-     * current Thread.
+     * Sets the StringBuilder to be used to capture debug information for the current Thread.
      */
     public void setStringBuilder(StringBuilder sb)
     {
@@ -652,9 +643,13 @@ public class TransformerDebug
 
     /**
      * Returns a N.N.N style reference to the transformation.
-     * @param firstLevelOnly indicates if only the top level should be included and no extra padding.
-     * @param overrideFirstLevel if the first level id should just be set to 1 (used in test methods)
-     * @param usePreviousRef if the reference of the last transform performed by this Thread should be used.
+     * 
+     * @param firstLevelOnly
+     *            indicates if only the top level should be included and no extra padding.
+     * @param overrideFirstLevel
+     *            if the first level id should just be set to 1 (used in test methods)
+     * @param usePreviousRef
+     *            if the reference of the last transform performed by this Thread should be used.
      * @return a padded (fixed length) reference.
      */
     private String getReference(boolean firstLevelOnly, boolean overrideFirstLevel, boolean usePreviousRef)
@@ -665,7 +660,7 @@ public class TransformerDebug
             String ref = "";
             if (id >= 0)
             {
-                ref = Integer.toString(id)+spaces(REFERENCE_SIZE);
+                ref = Integer.toString(id) + spaces(REFERENCE_SIZE);
             }
             return ref;
         }
@@ -711,7 +706,7 @@ public class TransformerDebug
             }
             else
             {
-                sb.append(spaces(REFERENCE_SIZE-sb.length()+lengthOfFirstId)); // Try to pad to level 7
+                sb.append(spaces(REFERENCE_SIZE - sb.length() + lengthOfFirstId)); // Try to pad to level 7
             }
         }
         return sb.toString();
@@ -724,7 +719,7 @@ public class TransformerDebug
         {
             try
             {
-                result = (String)nodeService.getProperty(sourceNodeRef, ContentModel.PROP_NAME);
+                result = (String) nodeService.getProperty(sourceNodeRef, ContentModel.PROP_NAME);
             }
             catch (RuntimeException e)
             {
@@ -748,7 +743,7 @@ public class TransformerDebug
         String sourceExt = getMimetypeExt(sourceMimetype);
         String targetExt = getMimetypeExt(targetMimetype);
         targetExt = replaceWithMetadataExtensionIfEmbedOrExtract(targetMimetype, sourceExt, targetExt);
-        return sourceExt + targetExt + spaces(1+4-targetExt.length());
+        return sourceExt + targetExt + spaces(1 + 4 - targetExt.length());
     }
 
     public static String replaceWithMetadataExtensionIfEmbedOrExtract(String targetMimetype, String sourceExtension, String targetExtension)
@@ -756,8 +751,8 @@ public class TransformerDebug
         return isMetadataExtractMimetype(targetMimetype)
                 ? "json"
                 : isMetadataEmbedMimetype(targetMimetype)
-                ? sourceExtension
-                : targetExtension;
+                        ? sourceExtension
+                        : targetExtension;
     }
 
     protected String getMimetypeExt(String mimetype)
@@ -777,7 +772,7 @@ public class TransformerDebug
             else
             {
                 sb.append(mimetypeExt);
-                sb.append(spaces(4 - mimetypeExt.length()));   // Pad to normal max ext (4)
+                sb.append(spaces(4 - mimetypeExt.length())); // Pad to normal max ext (4)
             }
         }
         sb.append(' ');
@@ -809,9 +804,9 @@ public class TransformerDebug
         {
             return "1 byte";
         }
-        final String[] units = new String[] { "bytes", "KB", "MB", "GB", "TB" };
+        final String[] units = new String[]{"bytes", "KB", "MB", "GB", "TB"};
         long divider = 1;
-        for(int i = 0; i < units.length-1; i++)
+        for (int i = 0; i < units.length - 1; i++)
         {
             long nextDivider = divider * 1024;
             if (size < nextDivider)
@@ -820,7 +815,7 @@ public class TransformerDebug
             }
             divider = nextDivider;
         }
-        return fileSizeFormat(size, divider, units[units.length-1]);
+        return fileSizeFormat(size, divider, units[units.length - 1]);
     }
 
     private String fileSizeFormat(long size, long divider, String unit)
@@ -829,7 +824,7 @@ public class TransformerDebug
         int decimalPoint = (int) size % 10;
 
         StringBuilder sb = new StringBuilder();
-        sb.append(size/10);
+        sb.append(size / 10);
         if (decimalPoint != 0)
         {
             sb.append(".");
@@ -845,8 +840,8 @@ public class TransformerDebug
      * Debugs a request to the Transform Service
      */
     public int debugTransformServiceRequest(String sourceMimetype, long sourceSize, NodeRef sourceNodeRef,
-                                            int contentHashcode, String filename, String targetMimetype,
-                                            Map<String, String> options, String renditionName)
+            int contentHashcode, String filename, String targetMimetype,
+            Map<String, String> options, String renditionName)
     {
         if (isEnabled())
         {
@@ -855,7 +850,7 @@ public class TransformerDebug
             debug(sourceAndTargetExt +
                     ((filename != null) ? filename + ' ' : "") +
                     ((sourceSize >= 0) ? fileSize(sourceSize) + ' ' : "") +
-                    getRenditionName(renditionName) + " "+ TRANSFORM_SERVICE_NAME);
+                    getRenditionName(renditionName) + " " + TRANSFORM_SERVICE_NAME);
             log(sourceNodeRef.toString() + ' ' + contentHashcode);
             String reference = getReference(true, false, false);
             infoLog(reference, sourceAndTargetExt, null, filename, sourceSize, TRANSFORM_SERVICE_NAME,
@@ -867,18 +862,18 @@ public class TransformerDebug
     public String getRenditionName(String renditionName)
     {
         return renditionName != null
-                ? "-- "+ replaceWithMetadataRenditionNameIfEmbedOrExtract(renditionName)+" -- "
+                ? "-- " + replaceWithMetadataRenditionNameIfEmbedOrExtract(renditionName) + " -- "
                 : "";
     }
 
     static String replaceWithMetadataRenditionNameIfEmbedOrExtract(String renditionName)
     {
         String transformName = getTransformName(renditionName);
-        return    transformName != null && transformName.startsWith(MIMETYPE_METADATA_EXTRACT)
+        return transformName != null && transformName.startsWith(MIMETYPE_METADATA_EXTRACT)
                 ? "metadataExtract"
                 : transformName != null && transformName.startsWith(MIMETYPE_METADATA_EMBED)
-                ? "metadataEmbed"
-                : renditionName;
+                        ? "metadataEmbed"
+                        : renditionName;
     }
 
     static String getTransformName(String renditionName)
@@ -941,13 +936,15 @@ public class TransformerDebug
 
     /**
      * Obtains a String for log messages.
-     * @param options to be turned into a string.
+     * 
+     * @param options
+     *            to be turned into a string.
      * @return a string of options that may be included in debug messages.
      */
     public static String toString(Map<String, String> options)
     {
         StringJoiner sj = new StringJoiner(", ");
-        options.entrySet().forEach(option->sj.add(option.getKey()+"=\""+option.getValue().replaceAll("\"", "\\\"")+"\""));
+        options.entrySet().forEach(option -> sj.add(option.getKey() + "=\"" + option.getValue().replaceAll("\"", "\\\"") + "\""));
         return sj.toString();
     }
 }

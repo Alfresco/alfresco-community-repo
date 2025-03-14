@@ -44,7 +44,7 @@ public class ScriptSpellCheckResult implements Serializable
     private final boolean spellCheckExist;
 
     public ScriptSpellCheckResult(String originalSearchTerm, String resultName, boolean searchedFor,
-                List<String> results, boolean spellCheckExist)
+            List<String> results, boolean spellCheckExist)
     {
         this.originalSearchTerm = originalSearchTerm;
         this.resultName = resultName;

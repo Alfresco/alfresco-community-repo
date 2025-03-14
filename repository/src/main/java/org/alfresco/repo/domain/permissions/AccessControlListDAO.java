@@ -71,7 +71,8 @@ public interface AccessControlListDAO
      *            The reference to the node.
      * @param aclId
      *            The ID of the ACL entity.
-     * @throws InvalidNodeRefException          if the noderef is invalid
+     * @throws InvalidNodeRefException
+     *             if the noderef is invalid
      */
     public void setAccessControlList(NodeRef nodeRef, Long aclId);
 
@@ -84,10 +85,9 @@ public interface AccessControlListDAO
      * Update inheritance
      */
     public List<AclChange> setInheritanceForChildren(NodeRef parent, Long inheritFrom, Long sharedAclToReplace);
-    
+
     /**
-     * Set the inheritance on a given node and it's children. If the operation takes 
-     * too long and asyncCall parameter set accordingly, fixed ACLs method will be synchronously called.
+     * Set the inheritance on a given node and it's children. If the operation takes too long and asyncCall parameter set accordingly, fixed ACLs method will be synchronously called.
      */
     public List<AclChange> setInheritanceForChildren(NodeRef parent, Long inheritFrom, Long sharedAclToReplace, boolean asyncCall);
 
@@ -101,15 +101,15 @@ public interface AccessControlListDAO
     public Long getInheritedAcl(NodeRef nodeRef);
 
     public void forceCopy(NodeRef nodeRef);
-    
+
     public Map<ACLType, Integer> patchAcls();
 
     public Acl getAccessControlList(StoreRef storeRef);
-    
+
     public void setAccessControlList(StoreRef storeRef, Acl acl);
-    
+
     public void updateInheritance(Long childNodeId, Long oldParentAclId, Long newParentAclId);
-    
+
     public void setFixedAcls(Long nodeId, Long inheritFrom, Long mergeFrom, Long sharedAclToReplace, List<AclChange> changes, boolean set);
 
     public void removePendingAclAspect(Long nodeId);

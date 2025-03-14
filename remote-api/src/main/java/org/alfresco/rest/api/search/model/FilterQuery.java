@@ -25,11 +25,10 @@
  */
 package org.alfresco.rest.api.search.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * POJO class representing a FilterQuery
@@ -43,7 +42,7 @@ public class FilterQuery
     private final List<String> tags;
 
     @JsonCreator
-    public FilterQuery(@JsonProperty("query")  String query, @JsonProperty("tags") List<String> tags, @JsonProperty("queries") List<String> queries)
+    public FilterQuery(@JsonProperty("query") String query, @JsonProperty("tags") List<String> tags, @JsonProperty("queries") List<String> queries)
     {
         this.query = query;
         this.tags = tags;

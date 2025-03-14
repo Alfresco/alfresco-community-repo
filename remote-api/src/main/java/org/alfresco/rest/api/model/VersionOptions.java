@@ -38,8 +38,7 @@ public class VersionOptions
     private String comment;
 
     public VersionOptions()
-    {
-    }
+    {}
 
     public String getComment()
     {

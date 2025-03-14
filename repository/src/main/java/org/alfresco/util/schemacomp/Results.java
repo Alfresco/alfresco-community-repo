@@ -41,15 +41,16 @@ public class Results implements Iterable<Result>
     private final List<Result> items = new ArrayList<Result>();
     /** Temporary step during refactor - Where.IN_BOTH_NO_DIFFERENCE will be going altogether */
     private boolean reportNonDifferences = false;
-    
 
     /**
-     * Record a difference between two objects, or specify that an object only appears in either the
-     * 'left' or 'right' schemas.
+     * Record a difference between two objects, or specify that an object only appears in either the 'left' or 'right' schemas.
      * 
-     * @param where The type of difference, see {@link Where}
-     * @param left Left value, or null if the item appears in the right, but not left schema.
-     * @param right Right value, or null if the item appears in the left, but not right schema.
+     * @param where
+     *            The type of difference, see {@link Where}
+     * @param left
+     *            Left value, or null if the item appears in the right, but not left schema.
+     * @param right
+     *            Right value, or null if the item appears in the left, but not right schema.
      */
     public void add(Where where, DbProperty left, DbProperty right)
     {
@@ -59,15 +60,14 @@ public class Results implements Iterable<Result>
             items.add(result);
         }
     }
-    
+
     public void add(Result result)
     {
         items.add(result);
     }
-    
+
     /**
-     * Obtain an iterator for the top-level items held in this schema - since this is a hierarchical model,
-     * deeper items are obtained by navigating through the top-level items.
+     * Obtain an iterator for the top-level items held in this schema - since this is a hierarchical model, deeper items are obtained by navigating through the top-level items.
      */
     @Override
     public Iterator<Result> iterator()
@@ -78,14 +78,15 @@ public class Results implements Iterable<Result>
     /**
      * Get the ith result.
      * 
-     * @param i int
+     * @param i
+     *            int
      * @return Result
      */
     public Result get(int i)
     {
         return items.get(i);
     }
-    
+
     /**
      * @return How many top-level items are in the schema.
      */

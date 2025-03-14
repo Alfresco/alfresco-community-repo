@@ -30,8 +30,6 @@ import java.util.Date;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.rest.api.people.PeopleEntityResource;
-import org.alfresco.rest.framework.resource.EmbeddedEntityResource;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.namespace.QName;
 
@@ -48,7 +46,7 @@ public class Comment
     public static final QName PROP_COMMENT_CREATED_BY = QName.createQName("RestApi", "createdBy");
     public static final QName PROP_COMMENT_MODIFIED_BY = QName.createQName("RestApi", "modifiedBy");
 
-	private String id;
+    private String id;
     private String title;
     private String content;
     private Date createdAt;
@@ -60,7 +58,7 @@ public class Comment
     // permissions
     private boolean canEdit;
     private boolean canDelete;
-    
+
     public Comment()
     {
         super();
@@ -68,12 +66,12 @@ public class Comment
 
     public Comment(String id, Map<QName, Serializable> nodeProps, boolean canEdit, boolean canDelete)
     {
-    	if(id == null)
-    	{
-    		throw new IllegalArgumentException();
-    	}
+        if (id == null)
+        {
+            throw new IllegalArgumentException();
+        }
 
-    	this.id = id;
+        this.id = id;
         mapProperties(nodeProps);
         this.canEdit = canEdit;
         this.canDelete = canDelete;
@@ -82,29 +80,29 @@ public class Comment
     @UniqueId
     public String getId()
     {
-		return id;
-	}
+        return id;
+    }
 
     public void setId(String id)
     {
-    	this.id = id;
+        this.id = id;
     }
-    
+
     public boolean getCanEdit()
     {
-		return canEdit;
-	}
+        return canEdit;
+    }
 
-	public boolean getCanDelete()
-	{
-		return canDelete;
-	}
+    public boolean getCanDelete()
+    {
+        return canDelete;
+    }
 
-	public String getTitle()
+    public String getTitle()
     {
         return this.title;
     }
-    
+
     public String getContent()
     {
         return this.content;
@@ -117,62 +115,62 @@ public class Comment
 
     public Date getCreatedAt()
     {
-		return createdAt;
-	}
-	
-	public Person getCreatedBy()
-	{
-		return createdBy;
-	}
-	
+        return createdAt;
+    }
+
+    public Person getCreatedBy()
+    {
+        return createdBy;
+    }
+
     public Person getModifiedBy()
     {
-		return modifiedBy;
-	}
-    
-	public Date getModifiedAt()
-	{
-		return modifiedAt;
-	}
+        return modifiedBy;
+    }
 
-	public Boolean getEdited()
+    public Date getModifiedAt()
     {
-		return edited;
-	}
+        return modifiedAt;
+    }
+
+    public Boolean getEdited()
+    {
+        return edited;
+    }
 
     protected void mapProperties(Map<QName, Serializable> nodeProps)
     {
-		String propTitle = (String) nodeProps.get(ContentModel.PROP_TITLE);
-		if (propTitle != null)
-		{
-			title = propTitle;
-		}
+        String propTitle = (String) nodeProps.get(ContentModel.PROP_TITLE);
+        if (propTitle != null)
+        {
+            title = propTitle;
+        }
 
-		this.modifiedAt = (Date)nodeProps.get(ContentModel.PROP_MODIFIED);
-		this.createdAt = (Date)nodeProps.get(ContentModel.PROP_CREATED);
-		if(modifiedAt != null && createdAt != null)
-		{
-			long diff = modifiedAt.getTime() - createdAt.getTime();
-			this.edited = Boolean.valueOf(diff >= 100); // logic is consistent with existing (Javascript) comments implementation
-		}
-		
-		this.content = (String)nodeProps.get(PROP_COMMENT_CONTENT);
-		nodeProps.remove(PROP_COMMENT_CONTENT);
-		
-		this.createdBy = (Person) nodeProps.get(PROP_COMMENT_CREATED_BY);
-		nodeProps.remove(PROP_COMMENT_CREATED_BY);
+        this.modifiedAt = (Date) nodeProps.get(ContentModel.PROP_MODIFIED);
+        this.createdAt = (Date) nodeProps.get(ContentModel.PROP_CREATED);
+        if (modifiedAt != null && createdAt != null)
+        {
+            long diff = modifiedAt.getTime() - createdAt.getTime();
+            this.edited = Boolean.valueOf(diff >= 100); // logic is consistent with existing (Javascript) comments implementation
+        }
 
-		this.modifiedBy = (Person) nodeProps.get(PROP_COMMENT_MODIFIED_BY);
-		nodeProps.remove(PROP_COMMENT_MODIFIED_BY);
-	}
+        this.content = (String) nodeProps.get(PROP_COMMENT_CONTENT);
+        nodeProps.remove(PROP_COMMENT_CONTENT);
 
-	@Override
-	public String toString()
-	{
-		return "Comment [id=" + id + ", title=" + title
-				+ ", content=" + content + ", createdAt=" + createdAt
-				+ ", createdBy=" + createdBy + ", modifiedAt=" + modifiedAt
-				+ ", modifiedBy=" + modifiedBy + ", edited=" + edited + "]";
-	}
+        this.createdBy = (Person) nodeProps.get(PROP_COMMENT_CREATED_BY);
+        nodeProps.remove(PROP_COMMENT_CREATED_BY);
+
+        this.modifiedBy = (Person) nodeProps.get(PROP_COMMENT_MODIFIED_BY);
+        nodeProps.remove(PROP_COMMENT_MODIFIED_BY);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Comment [id=" + id + ", title=" + title
+                + ", content=" + content + ", createdAt=" + createdAt
+                + ", createdBy=" + createdBy + ", modifiedAt=" + modifiedAt
+                + ", modifiedBy=" + modifiedBy + ", edited=" + edited + "]";
+    }
 
 }

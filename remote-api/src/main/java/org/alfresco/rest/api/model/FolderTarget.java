@@ -33,32 +33,32 @@ package org.alfresco.rest.api.model;
  */
 public class FolderTarget extends Target
 {
-	private Folder folder;
+    private Folder folder;
 
-	public FolderTarget()
-	{
-		super();
-	}
+    public FolderTarget()
+    {
+        super();
+    }
 
-	public FolderTarget(Folder folder)
-	{
-		super();
-		this.folder = folder;
-	}
+    public FolderTarget(Folder folder)
+    {
+        super();
+        this.folder = folder;
+    }
 
-	public void setFolder(Folder folder)
-	{
-		this.folder = folder;
-	}
+    public void setFolder(Folder folder)
+    {
+        this.folder = folder;
+    }
 
-	public Folder getFolder()
-	{
-		return folder;
-	}
+    public Folder getFolder()
+    {
+        return folder;
+    }
 
-	@Override
-	public String toString()
-	{
-		return "FolderTarget [folder=" + folder + "]";
-	}
+    @Override
+    public String toString()
+    {
+        return "FolderTarget [folder=" + folder + "]";
+    }
 }

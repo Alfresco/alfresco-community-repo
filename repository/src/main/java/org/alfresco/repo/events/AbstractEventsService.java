@@ -36,16 +36,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.alfresco.sync.events.EventRegistry;
-import org.alfresco.sync.events.types.Event;
-import org.alfresco.sync.events.types.TransactionCommittedEvent;
-import org.alfresco.sync.events.types.TransactionRolledBackEvent;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Sets;
+import org.apache.chemistry.opencmis.commons.server.CallContext;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.AlfrescoCmisServiceCall;
-import org.alfresco.sync.repo.Client;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -69,14 +69,13 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.sync.events.EventRegistry;
+import org.alfresco.sync.events.types.Event;
+import org.alfresco.sync.events.types.TransactionCommittedEvent;
+import org.alfresco.sync.events.types.TransactionRolledBackEvent;
+import org.alfresco.sync.repo.Client;
 import org.alfresco.util.FileFilterMode;
 import org.alfresco.util.transaction.TransactionSupportUtil;
-import org.apache.chemistry.opencmis.commons.server.CallContext;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.google.common.base.Splitter;
-import com.google.common.collect.Sets;
 
 /**
  * 
@@ -174,8 +173,7 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
     }
 
     public void init()
-    {
-    }
+    {}
 
     protected long nextSequenceNumber()
     {
@@ -187,11 +185,11 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
     @Override
     public void beforeCommit(boolean readOnly)
     {
-        if(sendEventsBeforeCommit)
+        if (sendEventsBeforeCommit)
         {
             // send all events
-            final TxnEvents transactionEvents = (TxnEvents)AlfrescoTransactionSupport.getResource(EVENTS_KEY);
-            if(transactionEvents != null)
+            final TxnEvents transactionEvents = (TxnEvents) AlfrescoTransactionSupport.getResource(EVENTS_KEY);
+            if (transactionEvents != null)
             {
                 List<Event> filteredEvents = filterEventsBeforeSend(transactionEvents.getEvents());
                 updateTransactionEvents(transactionEvents, filteredEvents);
@@ -216,12 +214,12 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
         }
 
         CallContext context = AlfrescoCmisServiceCall.get();
-        if(context != null)
+        if (context != null)
         {
-            HttpServletRequest request = (HttpServletRequest)context.get(CallContext.HTTP_SERVLET_REQUEST);
-            if(request != null)
+            HttpServletRequest request = (HttpServletRequest) context.get(CallContext.HTTP_SERVLET_REQUEST);
+            if (request != null)
             {
-                String alfrescoClientId = (String)request.getHeader("alfrescoClientId");
+                String alfrescoClientId = (String) request.getHeader("alfrescoClientId");
                 return new Client(Client.ClientType.cmis, alfrescoClientId);
             }
         }
@@ -232,7 +230,7 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
     @Override
     public void afterCommit()
     {
-        if(sendEventsBeforeCommit)
+        if (sendEventsBeforeCommit)
         {
             if (!shouldSendCommitEvent())
             {
@@ -250,13 +248,12 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
 
             if (logger.isDebugEnabled())
             {
-                logger.debug("sendEvent "+event);
+                logger.debug("sendEvent " + event);
             }
 
             // Need to execute this in another read txn because Camel/JMS expects it (the config now seems to
             // require a txn)
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-            {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -269,8 +266,8 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
         else
         {
             // send all events
-            final TxnEvents transactionEvents = (TxnEvents)AlfrescoTransactionSupport.getResource(EVENTS_KEY);
-            if(transactionEvents != null)
+            final TxnEvents transactionEvents = (TxnEvents) AlfrescoTransactionSupport.getResource(EVENTS_KEY);
+            if (transactionEvents != null)
             {
                 List<Event> filteredEvents = filterEventsBeforeSend(transactionEvents.getEvents());
                 updateTransactionEvents(transactionEvents, filteredEvents);
@@ -278,45 +275,47 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
             }
         }
     }
-    
+
     /**
-     * Determines whether it still makes sense to create and send a TransactionCommittedEvent after the transaction is committed.
-     * (e.g. if there are no events for the specific transaction makes no sense to signal the end of transaction with TransactionCommittedEvent)
+     * Determines whether it still makes sense to create and send a TransactionCommittedEvent after the transaction is committed. (e.g. if there are no events for the specific transaction makes no sense to signal the end of transaction with TransactionCommittedEvent)
      * 
      * @return whether the TransactionCommitted event should be sent
      */
     protected boolean shouldSendCommitEvent()
     {
-        //subclasses may decide otherwise
+        // subclasses may decide otherwise
         return true;
     }
 
     /**
      * Filter out event before sending them to {@link MessageProducer}
      * 
-     * @param events the events to be filtered
+     * @param events
+     *            the events to be filtered
      * 
      * @return a filtered list of events
      */
     protected List<Event> filterEventsBeforeSend(List<Event> events)
     {
-        //no filtering here, maybe in subclasses
+        // no filtering here, maybe in subclasses
         return events;
     }
 
     /**
      * Update {@link TxnEvents} with a new set of events.
      * 
-     * @param transactionEvents the {@link TxnEvents}  object to update
+     * @param transactionEvents
+     *            the {@link TxnEvents} object to update
      * 
-     * @param filteredEvents the new list of events to update the {@link TxnEvents} object with
+     * @param filteredEvents
+     *            the new list of events to update the {@link TxnEvents} object with
      */
     private void updateTransactionEvents(final TxnEvents transactionEvents, List<Event> filteredEvents)
     {
         if (filteredEvents.size() < transactionEvents.getEvents().size())
         {
             transactionEvents.clear();
-            transactionEvents.addEvents(filteredEvents); 
+            transactionEvents.addEvents(filteredEvents);
         }
     }
 
@@ -334,7 +333,7 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
 
         if (logger.isDebugEnabled())
         {
-            logger.debug("sendEvent "+event);
+            logger.debug("sendEvent " + event);
         }
 
         try
@@ -343,14 +342,14 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
         }
         catch (MessagingException e)
         {
-//			throw new AlfrescoRuntimeException("Failed to send event", e);
+            // throw new AlfrescoRuntimeException("Failed to send event", e);
             // TODO just log for now. How to deal with no running ActiveMQ?
             logger.error("Failed to send event " + event, e);
         }
         finally
         {
-            TxnEvents events = (TxnEvents)AlfrescoTransactionSupport.getResource(EVENTS_KEY);
-            if(events != null)
+            TxnEvents events = (TxnEvents) AlfrescoTransactionSupport.getResource(EVENTS_KEY);
+            if (events != null)
             {
                 events.clear();
             }
@@ -408,13 +407,13 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
         {
             Map<String, Serializable> properties = new HashMap<>();
 
-            String workingCopyOwner = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_WORKING_COPY_OWNER);
-            if(workingCopyOwner != null)
+            String workingCopyOwner = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_WORKING_COPY_OWNER);
+            if (workingCopyOwner != null)
             {
-                 properties.put(ContentModel.PROP_WORKING_COPY_OWNER.toPrefixString(namespaceService),
-                         workingCopyOwner);
+                properties.put(ContentModel.PROP_WORKING_COPY_OWNER.toPrefixString(namespaceService),
+                        workingCopyOwner);
             }
-            
+
             retrieveAdditionalProps(properties, nodeRef);
 
             return properties;
@@ -424,22 +423,22 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
         {
             boolean ret = true;
 
-            if(!nodeExists)
+            if (!nodeExists)
             {
                 logger.warn("Unable to send event of type " + eventType + ", node not found: " + this.toString());
                 ret = false;
             }
-            else if(!include)
+            else if (!include)
             {
                 logger.warn("Unable to send event of type " + eventType + ", node not included: " + this.toString());
                 ret = false;
             }
-            else if(!typeMatches)
+            else if (!typeMatches)
             {
                 logger.warn("Unable to send event of type " + eventType + ", node type filtered: " + this.toString());
                 ret = false;
             }
-            else if(!isVisible)
+            else if (!isVisible)
             {
                 logger.warn("Unable to send event of type " + eventType + ", node is not visible: " + this.toString());
                 ret = false;
@@ -456,7 +455,7 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
         public Set<String> getAspectsAsStrings()
         {
             Set<String> strAspects = new HashSet<>();
-            for(QName aspect : aspects)
+            for (QName aspect : aspects)
             {
                 strAspects.add(aspect.toPrefixString(namespaceService));
             }
@@ -513,7 +512,7 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
         {
             List<String> ret = null;
 
-            if(name != null)
+            if (name != null)
             {
                 ret = Arrays.asList(name);
             }
@@ -527,7 +526,7 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
 
         public List<String> getPaths()
         {
-            if(stringPaths == null && nodePaths != null)
+            if (stringPaths == null && nodePaths != null)
             {
                 stringPaths = AbstractEventsService.this.getPaths(nodePaths, getToAppend());
             }
@@ -537,7 +536,7 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
 
         public List<List<String>> getParentNodeIds()
         {
-            if(parentNodeIds == null && nodePaths != null)
+            if (parentNodeIds == null && nodePaths != null)
             {
                 parentNodeIds = AbstractEventsService.this.getNodeIdsFromParent(nodePaths);
             }
@@ -575,7 +574,7 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
         public String toString()
         {
             return "NodeInfo [txnId=" + txnId + ", name=" + name + ", nodeRef="
-                    + nodeRef+ ", nodePaths=" + nodePaths
+                    + nodeRef + ", nodePaths=" + nodePaths
                     + ", modificationTimestamp=" + modificationTimestamp
                     + ", type=" + type + ", siteId=" + siteId + ", status="
                     + status + ", client=" + client + ", nodeExists="
@@ -592,13 +591,13 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
         boolean matches = false;
 
         QName t = type;
-        while(t != null)
+        while (t != null)
         {
             TypeDefinition typeDef = dictionaryService.getType(t);
             t = typeDef.getParentName();
-            if(t != null)
+            if (t != null)
             {
-                if(matchingTypes.contains(t))
+                if (matchingTypes.contains(t))
                 {
                     matches = true;
                     matchingTypes.add(type);
@@ -613,27 +612,29 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
     /**
      * Extract additional information for the provided node
      * 
-     * @param properties the properties map to add the new info to
-     * @param nodeRef the node to extract the property from
+     * @param properties
+     *            the properties map to add the new info to
+     * @param nodeRef
+     *            the node to extract the property from
      */
     protected void retrieveAdditionalProps(Map<String, Serializable> properties, NodeRef nodeRef)
     {
-        //no additional properties needed at this point, may be different for subclasses.
+        // no additional properties needed at this point, may be different for subclasses.
     }
 
     private boolean typeMatches(QName type)
     {
         boolean matches = false;
 
-        if(type != null)
+        if (type != null)
         {
-            if(matchingTypes == null || matchingTypes.size() == 0)
+            if (matchingTypes == null || matchingTypes.size() == 0)
             {
                 matches = true;
             }
             else
             {
-                if(matchingTypes.contains(type))
+                if (matchingTypes.contains(type))
                 {
                     matches = true;
                 }
@@ -651,24 +652,23 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
     {
         // TODO use fileFolderService.getNamePath instead?
         List<String> stringPaths = new ArrayList<String>(nodePaths.size());
-        for(final Path path : nodePaths)
+        for (final Path path : nodePaths)
         {
             // run as system because the events system is a system service
-            String displayPath = AuthenticationUtil.runAsSystem(new RunAsWork<String>()
-            {
+            String displayPath = AuthenticationUtil.runAsSystem(new RunAsWork<String>() {
                 @Override
                 public String doWork() throws Exception
                 {
                     String displayPath = path.toDisplayPath(nodeService, permissionService);
                     return displayPath;
                 }
-                
+
             });
 
             StringBuilder pathStr = new StringBuilder(displayPath);
-            if(toAppend != null && toAppend.size() > 0)
+            if (toAppend != null && toAppend.size() > 0)
             {
-                for(String elem : toAppend)
+                for (String elem : toAppend)
                 {
                     pathStr.append("/");
                     pathStr.append(elem);
@@ -691,18 +691,18 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
     {
         // TODO use fileFolderService.getNamePath instead?
         List<List<String>> pathNodeIds = new ArrayList<List<String>>(nodePaths.size());
-        for(Path path : nodePaths)
+        for (Path path : nodePaths)
         {
             List<String> nodeIds = new ArrayList<String>(path.size());
 
             // don't include the leaf node id
             // add in reverse order (so the first element is the immediate parent)
-            for(int i = path.size() - 2; i >= 0; i--)
+            for (int i = path.size() - 2; i >= 0; i--)
             {
                 Path.Element element = path.get(i);
-                if(element instanceof ChildAssocElement)
+                if (element instanceof ChildAssocElement)
                 {
-                    ChildAssocElement childAssocElem = (ChildAssocElement)element;
+                    ChildAssocElement childAssocElem = (ChildAssocElement) element;
                     NodeRef childNodeRef = childAssocElem.getRef().getChildRef();
                     nodeIds.add(childNodeRef.getId());
                 }
@@ -724,18 +724,18 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
     {
         // TODO use fileFolderService.getNamePath instead?
         List<List<String>> pathNodeIds = new ArrayList<List<String>>(nodePaths.size());
-        for(Path path : nodePaths)
+        for (Path path : nodePaths)
         {
             List<String> nodeIds = new ArrayList<String>(path.size());
 
             // don't include the leaf node id
             // add in reverse order (so the first element is the immediate parent)
-            for(int i = path.size() - 1; i >= 0; i--)
+            for (int i = path.size() - 1; i >= 0; i--)
             {
                 Path.Element element = path.get(i);
-                if(element instanceof ChildAssocElement)
+                if (element instanceof ChildAssocElement)
                 {
-                    ChildAssocElement childAssocElem = (ChildAssocElement)element;
+                    ChildAssocElement childAssocElem = (ChildAssocElement) element;
                     NodeRef childNodeRef = childAssocElem.getRef().getChildRef();
                     nodeIds.add(childNodeRef.getId());
                 }
@@ -762,7 +762,7 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
         {
             events.add(event);
         }
-        
+
         void addEvents(List<Event> events)
         {
             this.events.addAll(events);
@@ -786,11 +786,11 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
 
         void sendEvents()
         {
-            if(events != null && events.size() > 0)
+            if (events != null && events.size() > 0)
             {
                 try
                 {
-                    for(Event event : events)
+                    for (Event event : events)
                     {
                         messageProducer.send(event);
                     }
@@ -806,8 +806,8 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
 
     protected TxnEvents getTxnEvents()
     {
-        TxnEvents events = (TxnEvents)AlfrescoTransactionSupport.getResource(EVENTS_KEY);
-        if(events == null)
+        TxnEvents events = (TxnEvents) AlfrescoTransactionSupport.getResource(EVENTS_KEY);
+        if (events == null)
         {
             events = new TxnEvents();
             AlfrescoTransactionSupport.bindResource(EVENTS_KEY, events);
@@ -823,19 +823,20 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
     /**
      * Register the event to be sent to a message producer once the transaction is over
      * 
-     * @param event event to be sent
+     * @param event
+     *            event to be sent
      */
     public void sendEvent(Event event)
     {
         String eventType = event.getType();
-        if(!eventRegistry.isEventTypeRegistered(eventType))
+        if (!eventRegistry.isEventTypeRegistered(eventType))
         {
             eventRegistry.addEventType(eventType);
         }
 
         if (logger.isDebugEnabled())
         {
-            logger.debug("sendEvent "+event);
+            logger.debug("sendEvent " + event);
         }
 
         TxnEvents events = getTxnEvents();
@@ -844,20 +845,19 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
 
     protected NodeInfo getNodeInfo(final NodeRef nodeRef, final String eventType)
     {
-        NodeInfo nodeInfo = AuthenticationUtil.runAsSystem(new RunAsWork<NodeInfo>()
-        {
+        NodeInfo nodeInfo = AuthenticationUtil.runAsSystem(new RunAsWork<NodeInfo>() {
             public NodeInfo doWork() throws Exception
             {
                 NodeInfo nodeInfo = null;
 
                 String txnId = AlfrescoTransactionSupport.getTransactionId();
 
-                if(!includeEventType(eventType))
+                if (!includeEventType(eventType))
                 {
                     nodeInfo = new NodeInfo(eventType, null, null, nodeRef, null, null, null, null, null, null, null, null,
                             false, null, null);
                 }
-                else if(nodeRef == null || !nodeService.exists(nodeRef))
+                else if (nodeRef == null || !nodeService.exists(nodeRef))
                 {
                     nodeInfo = new NodeInfo(eventType, txnId, null, nodeRef, null, null, null, null, null, null, null, false,
                             true, false, null);
@@ -868,12 +868,12 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
                     Visibility visibility = hiddenAspect.getVisibility(filterclient, nodeRef);
                     QName type = nodeService.getType(nodeRef);
 
-                    if(!typeMatches(type))
+                    if (!typeMatches(type))
                     {
                         nodeInfo = new NodeInfo(eventType, txnId, null, nodeRef, null, null, null, null, null, null,
                                 null, true, true, false, false);
                     }
-                    else if(!visibility.equals(Visibility.Visible))
+                    else if (!visibility.equals(Visibility.Visible))
                     {
                         nodeInfo = new NodeInfo(eventType, txnId, null, nodeRef, null, null, null, null, null, null,
                                 null, true, true, true, true);
@@ -885,11 +885,11 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
 
                         Set<QName> aspects = nodeService.getAspects(nodeRef);
 
-                        final String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                        final String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                         List<Path> nodePaths = Collections.singletonList(nodeService.getPath(nodeRef));
 
-                        Date modifiedTime = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
-                        Long modificationTimestamp = ( modifiedTime != null ? modifiedTime.getTime() : null);
+                        Date modifiedTime = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+                        Long modificationTimestamp = (modifiedTime != null ? modifiedTime.getTime() : null);
 
                         Status status = nodeService.getNodeStatus(nodeRef);
                         Client client = ClientUtil.from(filterclient);

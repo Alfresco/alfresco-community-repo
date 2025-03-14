@@ -60,7 +60,7 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<List<ChildAssoc
     private QNamePattern typeQNamePattern;
 
     public GetChildAssocsMethod(VirtualStore smartStore, ActualEnvironment environment, boolean preload,
-                int maxResults, QNamePattern qnamePattern, QNamePattern typeQNamePattern)
+            int maxResults, QNamePattern qnamePattern, QNamePattern typeQNamePattern)
     {
         super();
         this.smartStore = smartStore;
@@ -73,7 +73,7 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<List<ChildAssoc
 
     @Override
     public List<ChildAssociationRef> execute(VirtualProtocol virtualProtocol, Reference reference)
-                throws ProtocolMethodException
+            throws ProtocolMethodException
     {
         if (typeQNamePattern.isMatch(ContentModel.ASSOC_CONTAINS))
         {
@@ -90,19 +90,19 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<List<ChildAssoc
 
                 NodeRef childNodeRef = child.toNodeRef();
                 Serializable childName = environment.getProperty(childNodeRef,
-                                                                 ContentModel.PROP_NAME);
+                        ContentModel.PROP_NAME);
                 QName childAssocQName = QName
-                            .createQNameWithValidLocalName(VirtualContentModel.VIRTUAL_CONTENT_MODEL_1_0_URI,
-                                                           childName.toString());
+                        .createQNameWithValidLocalName(VirtualContentModel.VIRTUAL_CONTENT_MODEL_1_0_URI,
+                                childName.toString());
                 if (qnamePattern.isMatch(childAssocQName))
                 {
 
                     ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS,
-                                                                             nodeRefReference,
-                                                                             childAssocQName,
-                                                                             childNodeRef,
-                                                                             true,
-                                                                             -1);
+                            nodeRefReference,
+                            childAssocQName,
+                            childNodeRef,
+                            true,
+                            -1);
                     childAssocs.add(childAssoc);
                     count++;
                 }
@@ -125,19 +125,19 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<List<ChildAssoc
         if (!environment.isSubClass(environment.getType(nodeRefReference), ContentModel.TYPE_FOLDER))
         {
             List<ChildAssociationRef> actualAssociations = environment.getChildAssocs(actualNodeRef,
-                                                                                      typeQNamePattern,
-                                                                                      qnamePattern,
-                                                                                      maxResults,
-                                                                                      preload);
+                    typeQNamePattern,
+                    qnamePattern,
+                    maxResults,
+                    preload);
 
             for (ChildAssociationRef actualAssoc : actualAssociations)
             {
                 ChildAssociationRef referenceChildAssocRef = new ChildAssociationRef(actualAssoc.getTypeQName(),
-                                                                                     nodeRefReference,
-                                                                                     actualAssoc.getQName(),
-                                                                                     actualAssoc.getChildRef(),
-                                                                                     actualAssoc.isPrimary(),
-                                                                                     actualAssoc.getNthSibling());
+                        nodeRefReference,
+                        actualAssoc.getQName(),
+                        actualAssoc.getChildRef(),
+                        actualAssoc.isPrimary(),
+                        actualAssoc.getNthSibling());
 
                 referenceAssociations.add(referenceChildAssocRef);
             }

@@ -30,15 +30,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.alfresco.repo.transaction.TransactionServiceImpl;
-import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import org.alfresco.repo.transaction.TransactionServiceImpl;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Configurable system parameters.
@@ -46,14 +47,14 @@ import org.springframework.context.ApplicationContextAware;
 public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAware, InitializingBean
 {
     private static Log logger = LogFactory.getLog(SysAdminParams.class);
-    
+
     /** Token name to substitute current servers DNS name or TCP/IP address into a host name **/
     private static final String TOKEN_LOCAL_NAME = "${localname}";
     private static final QName VETO = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "SysAdminParams");
-    
+
     /** The local server name to which the above token will expand. */
     private final String localName;
-    
+
     /** The application context, to get license component, if installed. */
     private ApplicationContext ctx;
 
@@ -72,12 +73,12 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
     /** Alfresco host. */
     private String alfrescoHost = "localhost";
 
-    /** Alfresco  port. */
+    /** Alfresco port. */
     private int alfrescoPort = 8080;
 
     /** Alfresco protocol. */
     private String alfrescoProtocol = "http";
-    
+
     /** Share context. */
     private String shareContext = "alfresco";
 
@@ -92,7 +93,7 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
 
     /** Api Explorer Url. */
     private String apiExplorerUrl = "";
-    
+
     // The default is GROUP_EVERYONE, although this will likely be overridden by an injected value from spring.
     private String sitePublicGroup = PermissionService.ALL_AUTHORITIES;
 
@@ -132,8 +133,7 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
      * Sets the list of users who are allowed to log in.
      * 
      * @param allowedUsers
-     *            a comma-separated list of users who are allowed to log in or <code>null</code> if all users are
-     *            allowed to log in
+     *            a comma-separated list of users who are allowed to log in or <code>null</code> if all users are allowed to log in
      */
     public void setAllowedUsers(String allowedUsers)
     {
@@ -283,7 +283,7 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
     {
         this.shareProtocol = shareProtocol;
     }
-    
+
     /**
      * Expands the special ${localname} token within a host name using the resolved DNS name for the local host.
      * 
@@ -307,8 +307,14 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
         this.sitePublicGroup = sitePublicGroup;
     }
 
-    public String getApiExplorerUrl() { return this.apiExplorerUrl; }
+    public String getApiExplorerUrl()
+    {
+        return this.apiExplorerUrl;
+    }
 
-    public void setApiExplorerUrl(String apiExplorerUrl) { this.apiExplorerUrl = apiExplorerUrl; }
+    public void setApiExplorerUrl(String apiExplorerUrl)
+    {
+        this.apiExplorerUrl = apiExplorerUrl;
+    }
 
 }

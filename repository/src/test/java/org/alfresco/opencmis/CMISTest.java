@@ -55,6 +55,55 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.chemistry.opencmis.commons.PropertyIds;
+import org.apache.chemistry.opencmis.commons.data.Ace;
+import org.apache.chemistry.opencmis.commons.data.AllowableActions;
+import org.apache.chemistry.opencmis.commons.data.CmisExtensionElement;
+import org.apache.chemistry.opencmis.commons.data.ContentStream;
+import org.apache.chemistry.opencmis.commons.data.FailedToDeleteData;
+import org.apache.chemistry.opencmis.commons.data.ObjectData;
+import org.apache.chemistry.opencmis.commons.data.ObjectInFolderData;
+import org.apache.chemistry.opencmis.commons.data.ObjectInFolderList;
+import org.apache.chemistry.opencmis.commons.data.ObjectList;
+import org.apache.chemistry.opencmis.commons.data.ObjectParentData;
+import org.apache.chemistry.opencmis.commons.data.Properties;
+import org.apache.chemistry.opencmis.commons.data.PropertyData;
+import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
+import org.apache.chemistry.opencmis.commons.definitions.PropertyDefinition;
+import org.apache.chemistry.opencmis.commons.definitions.TypeDefinition;
+import org.apache.chemistry.opencmis.commons.definitions.TypeDefinitionContainer;
+import org.apache.chemistry.opencmis.commons.enums.AclPropagation;
+import org.apache.chemistry.opencmis.commons.enums.Action;
+import org.apache.chemistry.opencmis.commons.enums.ChangeType;
+import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
+import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
+import org.apache.chemistry.opencmis.commons.enums.UnfileObject;
+import org.apache.chemistry.opencmis.commons.enums.VersioningState;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisConstraintException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisUpdateConflictException;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.AccessControlListImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.CmisExtensionElementImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.ExtensionDataImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertiesImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyDecimalDefinitionImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIdImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIntegerDefinitionImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIntegerImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyStringImpl;
+import org.apache.chemistry.opencmis.commons.server.CallContext;
+import org.apache.chemistry.opencmis.commons.server.CmisService;
+import org.apache.chemistry.opencmis.commons.server.ObjectInfo;
+import org.apache.chemistry.opencmis.commons.spi.Holder;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.webscripts.GUID;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.dictionary.PropertyDefinitionWrapper;
@@ -129,54 +178,6 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.testing.category.FrequentlyFailingTests;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
-import org.apache.chemistry.opencmis.commons.PropertyIds;
-import org.apache.chemistry.opencmis.commons.data.Ace;
-import org.apache.chemistry.opencmis.commons.data.AllowableActions;
-import org.apache.chemistry.opencmis.commons.data.CmisExtensionElement;
-import org.apache.chemistry.opencmis.commons.data.ContentStream;
-import org.apache.chemistry.opencmis.commons.data.FailedToDeleteData;
-import org.apache.chemistry.opencmis.commons.data.ObjectData;
-import org.apache.chemistry.opencmis.commons.data.ObjectInFolderData;
-import org.apache.chemistry.opencmis.commons.data.ObjectInFolderList;
-import org.apache.chemistry.opencmis.commons.data.ObjectList;
-import org.apache.chemistry.opencmis.commons.data.ObjectParentData;
-import org.apache.chemistry.opencmis.commons.data.Properties;
-import org.apache.chemistry.opencmis.commons.data.PropertyData;
-import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
-import org.apache.chemistry.opencmis.commons.definitions.PropertyDefinition;
-import org.apache.chemistry.opencmis.commons.definitions.TypeDefinition;
-import org.apache.chemistry.opencmis.commons.definitions.TypeDefinitionContainer;
-import org.apache.chemistry.opencmis.commons.enums.AclPropagation;
-import org.apache.chemistry.opencmis.commons.enums.Action;
-import org.apache.chemistry.opencmis.commons.enums.ChangeType;
-import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
-import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
-import org.apache.chemistry.opencmis.commons.enums.UnfileObject;
-import org.apache.chemistry.opencmis.commons.enums.VersioningState;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisConstraintException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisUpdateConflictException;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.AccessControlListImpl;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.CmisExtensionElementImpl;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.ExtensionDataImpl;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertiesImpl;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyDecimalDefinitionImpl;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIdImpl;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIntegerDefinitionImpl;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIntegerImpl;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyStringImpl;
-import org.apache.chemistry.opencmis.commons.server.CallContext;
-import org.apache.chemistry.opencmis.commons.server.CmisService;
-import org.apache.chemistry.opencmis.commons.server.ObjectInfo;
-import org.apache.chemistry.opencmis.commons.spi.Holder;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.webscripts.GUID;
 
 /**
  * OpenCMIS tests.
@@ -189,8 +190,8 @@ public class CMISTest
 {
     private static final QName TEST_START_TASK = QName.createQName("http://www.alfresco.org/model/workflow/test/1.0", "startTaskVarScriptAssign");
     private static final QName TEST_WORKFLOW_TASK = QName.createQName("http://www.alfresco.org/model/workflow/test/1.0", "assignVarTask");
-    
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(new String[]{ApplicationContextHelper.CONFIG_LOCATIONS[0],"classpath:test-cmisinteger_modell-context.xml"});
+
+    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(new String[]{ApplicationContextHelper.CONFIG_LOCATIONS[0], "classpath:test-cmisinteger_modell-context.xml"});
 
     private FileFolderService fileFolderService;
     private TransactionService transactionService;
@@ -224,77 +225,77 @@ public class CMISTest
     private MutableAuthenticationService authenticationService;
 
     private AlfrescoCmisServiceFactory factory;
-	
+
     private CMISConnector cmisConnector;
-    
+
     private NodeDAO nodeDAO;
 
     public static class SimpleCallContext implements CallContext
     {
-    	private final Map<String, Object> contextMap = new HashMap<String, Object>();
-    	private CmisVersion cmisVersion;
+        private final Map<String, Object> contextMap = new HashMap<String, Object>();
+        private CmisVersion cmisVersion;
 
-    	public SimpleCallContext(String user, String password, CmisVersion cmisVersion)
-    	{
-    		contextMap.put(USERNAME, user);
-    		contextMap.put(PASSWORD, password);
-    		this.cmisVersion = cmisVersion;
-    	}
+        public SimpleCallContext(String user, String password, CmisVersion cmisVersion)
+        {
+            contextMap.put(USERNAME, user);
+            contextMap.put(PASSWORD, password);
+            this.cmisVersion = cmisVersion;
+        }
 
-    	public String getBinding()
-    	{
-    		return BINDING_LOCAL;
-    	}
+        public String getBinding()
+        {
+            return BINDING_LOCAL;
+        }
 
-    	public Object get(String key)
-    	{
-    		return contextMap.get(key);
-    	}
+        public Object get(String key)
+        {
+            return contextMap.get(key);
+        }
 
-    	public String getRepositoryId()
-    	{
-    		return (String) get(REPOSITORY_ID);
-    	}
+        public String getRepositoryId()
+        {
+            return (String) get(REPOSITORY_ID);
+        }
 
-    	public String getUsername()
-    	{
-    		return (String) get(USERNAME);
-    	}
+        public String getUsername()
+        {
+            return (String) get(USERNAME);
+        }
 
-    	public String getPassword()
-    	{
-    		return (String) get(PASSWORD);
-    	}
+        public String getPassword()
+        {
+            return (String) get(PASSWORD);
+        }
 
-    	public String getLocale()
-    	{
-    		return null;
-    	}
+        public String getLocale()
+        {
+            return null;
+        }
 
-    	public BigInteger getOffset()
-    	{
-    		return (BigInteger) get(OFFSET);
-    	}
+        public BigInteger getOffset()
+        {
+            return (BigInteger) get(OFFSET);
+        }
 
-    	public BigInteger getLength()
-    	{
-    		return (BigInteger) get(LENGTH);
-    	}
+        public BigInteger getLength()
+        {
+            return (BigInteger) get(LENGTH);
+        }
 
-    	public boolean isObjectInfoRequired()
-    	{
-    		return false;
-    	}
+        public boolean isObjectInfoRequired()
+        {
+            return false;
+        }
 
-    	public File getTempDirectory()
-    	{
-    		return null;
-    	}
+        public File getTempDirectory()
+        {
+            return null;
+        }
 
-    	public int getMemoryThreshold()
-    	{
-    		return 0;
-    	}
+        public int getMemoryThreshold()
+        {
+            return 0;
+        }
 
         public long getMaxContentSize()
         {
@@ -317,26 +318,26 @@ public class CMISTest
     @Before
     public void before()
     {
-        this.actionService = (ActionService)ctx.getBean("actionService");
-        this.ruleService = (RuleService)ctx.getBean("ruleService");
-    	this.fileFolderService = (FileFolderService)ctx.getBean("FileFolderService");
-    	this.transactionService = (TransactionService)ctx.getBean("transactionService");
-    	this.nodeService = (NodeService)ctx.getBean("NodeService");
-    	this.contentService = (ContentService)ctx.getBean("ContentService");
+        this.actionService = (ActionService) ctx.getBean("actionService");
+        this.ruleService = (RuleService) ctx.getBean("ruleService");
+        this.fileFolderService = (FileFolderService) ctx.getBean("FileFolderService");
+        this.transactionService = (TransactionService) ctx.getBean("transactionService");
+        this.nodeService = (NodeService) ctx.getBean("NodeService");
+        this.contentService = (ContentService) ctx.getBean("ContentService");
         this.versionService = (VersionService) ctx.getBean("versionService");
         this.lockService = (LockService) ctx.getBean("lockService");
         this.taggingService = (TaggingService) ctx.getBean("TaggingService");
         this.namespaceService = (NamespaceService) ctx.getBean("namespaceService");
-        this.repositoryHelper = (Repository)ctx.getBean("repositoryHelper");
-    	this.factory = (AlfrescoCmisServiceFactory)ctx.getBean("CMISServiceFactory");
+        this.repositoryHelper = (Repository) ctx.getBean("repositoryHelper");
+        this.factory = (AlfrescoCmisServiceFactory) ctx.getBean("CMISServiceFactory");
         this.versionService = (VersionService) ctx.getBean("versionService");
-    	this.cmisConnector = (CMISConnector) ctx.getBean("CMISConnector");
+        this.cmisConnector = (CMISConnector) ctx.getBean("CMISConnector");
         this.nodeDAO = (NodeDAO) ctx.getBean("nodeDAO");
-        this.authorityService = (AuthorityService)ctx.getBean("AuthorityService");
+        this.authorityService = (AuthorityService) ctx.getBean("AuthorityService");
         this.auditSubsystem = (AuditModelRegistryImpl) ctx.getBean("Audit");
         this.permissionService = (PermissionService) ctx.getBean("permissionService");
-    	this.dictionaryDAO = (DictionaryDAO)ctx.getBean("dictionaryDAO");
-    	this.cmisDictionaryService = (CMISDictionaryService)ctx.getBean("OpenCMISDictionaryService1.1");
+        this.dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
+        this.cmisDictionaryService = (CMISDictionaryService) ctx.getBean("OpenCMISDictionaryService1.1");
         this.auditDAO = (AuditDAO) ctx.getBean("auditDAO");
         this.nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
         this.dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
@@ -354,13 +355,13 @@ public class CMISTest
         this.globalProperties = (java.util.Properties) ctx.getBean("global-properties");
         this.globalProperties.setProperty(VersionableAspectTest.AUTO_VERSION_PROPS_KEY, "true");
     }
-    
+
     @After
     public void after()
     {
         this.globalProperties.setProperty(VersionableAspectTest.AUTO_VERSION_PROPS_KEY, "false");
     }
-    
+
     /**
      * MNT-10868 CMIS: Incorrect value of Latest Major version on Versions and Properties tabs.
      */
@@ -368,69 +369,67 @@ public class CMISTest
     public void testIsLatestMajorVersionMNT10868()
     {
         CallContext context = new SimpleCallContext("admin", "admin", CmisVersion.CMIS_1_0);
-        
+
         String repositoryId = null;
-        
+
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-         CmisService cmisService = factory.getService(context);
-         try
-         {
-             // get repository id
-             List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
-             assertTrue(repositories.size() > 0);
-             RepositoryInfo repo = repositories.get(0);
-             repositoryId = repo.getId();
-             final String folderName = "testfolder" + GUID.generate();
-             final String docName = "testdoc.txt" + GUID.generate();
-             final FileInfo fileInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()
-             {
-                 @Override
-                 public FileInfo execute() throws Throwable
-                 {
-                     NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
+        CmisService cmisService = factory.getService(context);
+        try
+        {
+            // get repository id
+            List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+            assertTrue(repositories.size() > 0);
+            RepositoryInfo repo = repositories.get(0);
+            repositoryId = repo.getId();
+            final String folderName = "testfolder" + GUID.generate();
+            final String docName = "testdoc.txt" + GUID.generate();
+            final FileInfo fileInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>() {
+                @Override
+                public FileInfo execute() throws Throwable
+                {
+                    NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
 
-                     FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
-                     nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
-                    
-                     FileInfo fileInfo = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
-                     nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_NAME, docName);
-                     nodeService.addAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_VERSIONABLE, null);
+                    FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
+                    nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
 
-                     return fileInfo;
-                 }
-             });
-             
-             ObjectData objectData = cmisService.getObjectByPath(repositoryId, "/" + folderName + "/" + docName, null, true, IncludeRelationships.NONE, null, false, true, null);
-             
-             PropertyData<?> pd = getPropIsLatestMajorVersion(objectData);
-             
-             if (pd != null)
-             {
-                 assertTrue("The CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION should be true as major version was created", (Boolean) pd.getValues().get(0));
-             }
-                
-             nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_TITLE, docName);
-             
-             // Create minor version   
-             transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
-             {
-                   public Object execute() throws Throwable
-                   {
-                       // get an updating writer
-                       ContentWriter writer = contentService.getWriter(fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
-                      
-                       writer.setMimetype("text/plain");
-                      
-                       writer.putContent("New Version");
-                       return null;
-                   }
+                    FileInfo fileInfo = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
+                    nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_NAME, docName);
+                    nodeService.addAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_VERSIONABLE, null);
+
+                    return fileInfo;
+                }
             });
-                
+
+            ObjectData objectData = cmisService.getObjectByPath(repositoryId, "/" + folderName + "/" + docName, null, true, IncludeRelationships.NONE, null, false, true, null);
+
+            PropertyData<?> pd = getPropIsLatestMajorVersion(objectData);
+
+            if (pd != null)
+            {
+                assertTrue("The CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION should be true as major version was created", (Boolean) pd.getValues().get(0));
+            }
+
+            nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_TITLE, docName);
+
+            // Create minor version
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>() {
+                public Object execute() throws Throwable
+                {
+                    // get an updating writer
+                    ContentWriter writer = contentService.getWriter(fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
+
+                    writer.setMimetype("text/plain");
+
+                    writer.putContent("New Version");
+                    return null;
+                }
+            });
+
             objectData = cmisService.getObjectByPath(repositoryId, "/" + folderName + "/" + docName, null, true, IncludeRelationships.NONE, null, false, true, null);
-            
+
             pd = getPropIsLatestMajorVersion(objectData);
-            
+
             if (pd != null)
             {
                 assertFalse("The CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION should be false as minor version was created", (Boolean) pd.getValues().get(0));
@@ -441,7 +440,7 @@ public class CMISTest
             cmisService.close();
         }
     }
-    
+
     private PropertyData<?> getPropIsLatestMajorVersion(ObjectData objectData)
     {
         List<PropertyData<?>> properties = objectData.getProperties().getPropertyList();
@@ -456,13 +455,13 @@ public class CMISTest
                 break;
             }
         }
-        //properties..contains(PropertyIds.IS_LATEST_MAJOR_VERSION);
+        // properties..contains(PropertyIds.IS_LATEST_MAJOR_VERSION);
         assertTrue("The PropertyIds.IS_LATEST_MAJOR_VERSION property was not found", found);
         if (found)
         {
             return propIsLatestMajorVersion;
         }
-        
+
         return null;
     }
 
@@ -487,8 +486,7 @@ public class CMISTest
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         try
         {
-            final FileInfo fileInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()
-            {
+            final FileInfo fileInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>() {
                 @Override
                 public FileInfo execute() throws Throwable
                 {
@@ -595,13 +593,11 @@ public class CMISTest
         // deploy test workflow
         RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
         txnHelper.setForceWritable(true);
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        txnHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
             @Override
             public Object execute() throws Throwable
             {
-                return AuthenticationUtil.runAs(new RunAsWork<Object>()
-                {
+                return AuthenticationUtil.runAs(new RunAsWork<Object>() {
                     public Object doWork()
                     {
                         testWorkflowDeployer.init();
@@ -646,8 +642,7 @@ public class CMISTest
 
     private FileInfo createContent(final FileInfo parentFolder, final String folderName, final String docName, final boolean isRule)
     {
-        final FileInfo folderInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()
-        {
+        final FileInfo folderInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>() {
             @Override
             public FileInfo execute() throws Throwable
             {
@@ -661,7 +656,7 @@ public class CMISTest
                 {
                     nodeRef = repositoryHelper.getCompanyHome();
                 }
-                
+
                 FileInfo folderInfo = fileFolderService.create(nodeRef, folderName, ContentModel.TYPE_FOLDER);
                 nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
                 assertNotNull(folderInfo);
@@ -748,16 +743,16 @@ public class CMISTest
         }
         finally
         {
-            if(cmisService != null)
+            if (cmisService != null)
             {
                 cmisService.close();
             }
         }
     }
-    
+
     private static interface CmisServiceCallback<T>
     {
-    	T execute(CmisService cmisService);
+        T execute(CmisService cmisService);
     }
 
     /**
@@ -774,15 +769,14 @@ public class CMISTest
         final String utfEncoding = "UTF-8";
 
         // get repository id
-    	List<RepositoryInfo> repositories = withCmisService(new CmisServiceCallback<List<RepositoryInfo>>()
-    	{
-			@Override
-			public List<RepositoryInfo> execute(CmisService cmisService)
-			{
-	            List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
-				return repositories;
-			}
-    	});
+        List<RepositoryInfo> repositories = withCmisService(new CmisServiceCallback<List<RepositoryInfo>>() {
+            @Override
+            public List<RepositoryInfo> execute(CmisService cmisService)
+            {
+                List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                return repositories;
+            }
+        });
 
         assertTrue(repositories.size() > 0);
         RepositoryInfo repo = repositories.get(0);
@@ -795,15 +789,14 @@ public class CMISTest
         String fileName = "textFile" + GUID.generate();
         properties.addProperty(new PropertyStringImpl(PropertyIds.NAME, fileName));
         final ContentStreamImpl contentStream = new ContentStreamImpl(fileName, MimetypeMap.MIMETYPE_TEXT_PLAIN, "Simple text plain document");
-        
-        String objectId = withCmisService(new CmisServiceCallback<String>()
-        {
-			@Override
-			public String execute(CmisService cmisService)
-			{
-				String objectId = cmisService.create(repositoryId, properties, repositoryHelper.getCompanyHome().getId(), contentStream, VersioningState.MAJOR, null, null);
-				return objectId;
-			}
+
+        String objectId = withCmisService(new CmisServiceCallback<String>() {
+            @Override
+            public String execute(CmisService cmisService)
+            {
+                String objectId = cmisService.create(repositoryId, properties, repositoryHelper.getCompanyHome().getId(), contentStream, VersioningState.MAJOR, null, null);
+                return objectId;
+            }
         });
 
         final Holder<String> objectIdHolder = new Holder<String>(objectId);
@@ -812,35 +805,32 @@ public class CMISTest
         // create content stream with undefined mimetype and file name
         {
             final ContentStreamImpl contentStreamHTML = new ContentStreamImpl(null, null, "<html><head><title> Hello </title></head><body><p> Test html</p></body></html></body></html>");
-            withCmisService(new CmisServiceCallback<Void>()
-            {
-				@Override
-				public Void execute(CmisService cmisService)
-				{
-					cmisService.setContentStream(repositoryId, objectIdHolder, true, null, contentStreamHTML, null);
-					return null;
-				}
+            withCmisService(new CmisServiceCallback<Void>() {
+                @Override
+                public Void execute(CmisService cmisService)
+                {
+                    cmisService.setContentStream(repositoryId, objectIdHolder, true, null, contentStreamHTML, null);
+                    return null;
+                }
             });
 
             // check mimetype
-            ObjectData objectData = withCmisService(new CmisServiceCallback<ObjectData>()
-            {
-				@Override
-				public ObjectData execute(CmisService cmisService)
-				{
-					return cmisService.getObjectByPath(repositoryId, path, null, false, IncludeRelationships.NONE, null, false, false, null);
-				}
+            ObjectData objectData = withCmisService(new CmisServiceCallback<ObjectData>() {
+                @Override
+                public ObjectData execute(CmisService cmisService)
+                {
+                    return cmisService.getObjectByPath(repositoryId, path, null, false, IncludeRelationships.NONE, null, false, false, null);
+                }
             });
 
             final String objectId1 = objectData.getId();
-            String contentType = withCmisService(new CmisServiceCallback<String>()
-            {
-				@Override
-				public String execute(CmisService cmisService)
-				{
-					String contentType = cmisService.getObjectInfo(repositoryId, objectId1).getContentType();
-					return contentType;
-				}
+            String contentType = withCmisService(new CmisServiceCallback<String>() {
+                @Override
+                public String execute(CmisService cmisService)
+                {
+                    String contentType = cmisService.getObjectInfo(repositoryId, objectId1).getContentType();
+                    return contentType;
+                }
             });
             assertEquals("Mimetype is not defined correctly.", MimetypeMap.MIMETYPE_HTML, contentType);
 
@@ -850,39 +840,36 @@ public class CMISTest
 
         // create content stream with mimetype and encoding as UTF-8
         {
-            String mimeType = MimetypeMap.MIMETYPE_TEXT_PLAIN + "; charset="+isoEncoding;
-            // NOTE that we intentionally specify the wrong charset here. 
+            String mimeType = MimetypeMap.MIMETYPE_TEXT_PLAIN + "; charset=" + isoEncoding;
+            // NOTE that we intentionally specify the wrong charset here.
             // Alfresco will detect the encoding (as UTF-8 - given by the ContentStreamImpl constructor)
             final ContentStreamImpl contentStreamHTML = new ContentStreamImpl(null, mimeType, "<html><head><title> Hello </title></head><body><p> Test html</p></body></html></body></html>");
-            withCmisService(new CmisServiceCallback<Void>()
-            {
-				@Override
-				public Void execute(CmisService cmisService)
-				{
+            withCmisService(new CmisServiceCallback<Void>() {
+                @Override
+                public Void execute(CmisService cmisService)
+                {
                     Holder<String> latestObjectIdHolder = getHolderOfObjectOfLatestVersion(cmisService, repositoryId, objectIdHolder);
                     cmisService.setContentStream(repositoryId, latestObjectIdHolder, true, null, contentStreamHTML, null);
-					return null;
-				}
+                    return null;
+                }
             });
 
             // check mimetype
-            final ObjectData objectData = withCmisService(new CmisServiceCallback<ObjectData>()
-            {
-				@Override
-				public ObjectData execute(CmisService cmisService)
-				{
-					ObjectData objectData = cmisService.getObjectByPath(repositoryId, path, null, false, IncludeRelationships.NONE, null, false, false, null);
-					return objectData;
-				}
+            final ObjectData objectData = withCmisService(new CmisServiceCallback<ObjectData>() {
+                @Override
+                public ObjectData execute(CmisService cmisService)
+                {
+                    ObjectData objectData = cmisService.getObjectByPath(repositoryId, path, null, false, IncludeRelationships.NONE, null, false, false, null);
+                    return objectData;
+                }
             });
-            String contentType = withCmisService(new CmisServiceCallback<String>()
-            {
-				@Override
-				public String execute(CmisService cmisService)
-				{
-					String contentType = cmisService.getObjectInfo(repositoryId, objectData.getId()).getContentType();
-					return contentType;
-				}
+            String contentType = withCmisService(new CmisServiceCallback<String>() {
+                @Override
+                public String execute(CmisService cmisService)
+                {
+                    String contentType = cmisService.getObjectInfo(repositoryId, objectData.getId()).getContentType();
+                    return contentType;
+                }
             });
             assertEquals("Mimetype is not defined correctly.", MimetypeMap.MIMETYPE_TEXT_PLAIN, contentType);
 
@@ -909,8 +896,7 @@ public class CMISTest
             ByteArrayInputStream input = new ByteArrayInputStream(buf);
 
             final ContentStream contentStreamHTML = new ContentStreamImpl(null, BigInteger.valueOf(buf.length), mimeType, input);
-            withCmisService(new CmisServiceCallback<Void>()
-            {
+            withCmisService(new CmisServiceCallback<Void>() {
                 @Override
                 public Void execute(CmisService cmisService)
                 {
@@ -922,8 +908,7 @@ public class CMISTest
             });
 
             // check mimetype
-            final ObjectData objectData = withCmisService(new CmisServiceCallback<ObjectData>()
-            {
+            final ObjectData objectData = withCmisService(new CmisServiceCallback<ObjectData>() {
                 @Override
                 public ObjectData execute(CmisService cmisService)
                 {
@@ -932,8 +917,7 @@ public class CMISTest
                     return objectData;
                 }
             });
-            String contentType = withCmisService(new CmisServiceCallback<String>()
-            {
+            String contentType = withCmisService(new CmisServiceCallback<String>() {
                 @Override
                 public String execute(CmisService cmisService)
                 {
@@ -949,8 +933,7 @@ public class CMISTest
 
         // checkout/checkin object with mimetype and encoding
         {
-            ObjectData objectDa = withCmisService(new CmisServiceCallback<ObjectData>()
-            {
+            ObjectData objectDa = withCmisService(new CmisServiceCallback<ObjectData>() {
                 @Override
                 public ObjectData execute(CmisService cmisService)
                 {
@@ -958,47 +941,42 @@ public class CMISTest
                 }
             });
 
-
             objectIdHolder.setValue(objectDa.getId());
-            withCmisService(new CmisServiceCallback<Void>()
-            {
-    			@Override
-    			public Void execute(CmisService cmisService)
-    			{
-    				cmisService.checkOut(repositoryId, objectIdHolder, null, new Holder<Boolean>());
-    				return null;
-    			}
+            withCmisService(new CmisServiceCallback<Void>() {
+                @Override
+                public Void execute(CmisService cmisService)
+                {
+                    cmisService.checkOut(repositoryId, objectIdHolder, null, new Holder<Boolean>());
+                    return null;
+                }
             });
             String mimeType = MimetypeMap.MIMETYPE_HTML + "; charset=UTF-8";
             final ContentStreamImpl contentStreamHTML = new ContentStreamImpl(null, mimeType, "<html><head><title> Hello </title></head><body><p> Test html</p></body></html></body></html>");
-            withCmisService(new CmisServiceCallback<Void>()
-            {
-    			@Override
-    			public Void execute(CmisService cmisService)
-    			{
-    				cmisService.checkIn(repositoryId, objectIdHolder, false, null, contentStreamHTML, "checkin", null, null, null, null);
-    				return null;
-    			}
+            withCmisService(new CmisServiceCallback<Void>() {
+                @Override
+                public Void execute(CmisService cmisService)
+                {
+                    cmisService.checkIn(repositoryId, objectIdHolder, false, null, contentStreamHTML, "checkin", null, null, null, null);
+                    return null;
+                }
             });
 
             // check mimetype
-            final ObjectData objectData = withCmisService(new CmisServiceCallback<ObjectData>()
-            {
-    			@Override
-    			public ObjectData execute(CmisService cmisService)
-    			{
-    				ObjectData objectData = cmisService.getObjectByPath(repositoryId, path, null, false, IncludeRelationships.NONE, null, false, false, null);
-    				return objectData;
-    			}
+            final ObjectData objectData = withCmisService(new CmisServiceCallback<ObjectData>() {
+                @Override
+                public ObjectData execute(CmisService cmisService)
+                {
+                    ObjectData objectData = cmisService.getObjectByPath(repositoryId, path, null, false, IncludeRelationships.NONE, null, false, false, null);
+                    return objectData;
+                }
             });
-            String contentType = withCmisService(new CmisServiceCallback<String>()
-            {
-    			@Override
-    			public String execute(CmisService cmisService)
-    			{
-    				String contentType = cmisService.getObjectInfo(repositoryId, objectData.getId()).getContentType();
-    				return contentType;
-    			}
+            String contentType = withCmisService(new CmisServiceCallback<String>() {
+                @Override
+                public String execute(CmisService cmisService)
+                {
+                    String contentType = cmisService.getObjectInfo(repositoryId, objectData.getId()).getContentType();
+                    return contentType;
+                }
             });
             assertEquals("Mimetype is not defined correctly.", MimetypeMap.MIMETYPE_HTML, contentType);
 
@@ -1022,7 +1000,7 @@ public class CMISTest
             ContentDataWithId contentData = (ContentDataWithId) properties2
                     .get(QName.createQName("{http://www.alfresco.org/model/content/1.0}content"));
             String encoding = contentData.getEncoding();
-            
+
             assertEquals(expectedEncoding, encoding);
         }
         finally
@@ -1030,21 +1008,24 @@ public class CMISTest
             authenticationComponent.clearCurrentSecurityContext();
         }
     }
+
     /**
      * Turns a CMIS id into a node ref
+     * 
      * @param nodeId
      * @return
      */
     private NodeRef cmisIdToNodeRef(String nodeId)
     {
         int idx = nodeId.indexOf(";");
-        if(idx != -1)
+        if (idx != -1)
         {
             nodeId = nodeId.substring(0, idx);
         }
         NodeRef nodeRef = new NodeRef(nodeId);
         return nodeRef;
     }
+
     private Holder<String> getHolderOfObjectOfLatestVersion(CmisService cmisService, String repositoryId, Holder<String> currentHolder)
     {
         ObjectData oData = cmisService.getObjectOfLatestVersion(repositoryId, currentHolder.getValue(), null, Boolean.FALSE, null, null, null, null, null, null, null);
@@ -1061,8 +1042,7 @@ public class CMISTest
         List<RepositoryInfo> infoDataList = null;
         try
         {
-            infoDataList = withCmisService(new CmisServiceCallback<List<RepositoryInfo>>()
-            {
+            infoDataList = withCmisService(new CmisServiceCallback<List<RepositoryInfo>>() {
                 @Override
                 public List<RepositoryInfo> execute(CmisService cmisService)
                 {
@@ -1088,32 +1068,32 @@ public class CMISTest
         @SuppressWarnings("unused")
         private ObjectData objectData = null;
         private Holder<String> objectId = null;
-        
+
         public TestContext()
         {
             super();
         }
-        
+
         public String getRepositoryId()
         {
             return repositoryId;
         }
-        
+
         public void setRepositoryId(String repositoryId)
         {
             this.repositoryId = repositoryId;
         }
-        
+
         public void setObjectData(ObjectData objectData)
         {
             this.objectData = objectData;
         }
-        
+
         public Holder<String> getObjectId()
         {
             return objectId;
         }
-        
+
         public void setObjectId(Holder<String> objectId)
         {
             this.objectId = objectId;
@@ -1123,91 +1103,86 @@ public class CMISTest
     /**
      * Test for ALF-16310.
      * 
-     * Check that, for AtomPub binding, cancel checkout on the originating checked out document i.e. not the working
-     * copy throws an exception and does not delete the document.
+     * Check that, for AtomPub binding, cancel checkout on the originating checked out document i.e. not the working copy throws an exception and does not delete the document.
      */
     @SuppressWarnings("unchecked")
-	@Test
+    @Test
     public void testCancelCheckout()
     {
         final TestContext testContext = new TestContext();
 
-    	final String folderName = "testfolder." + GUID.generate();
-    	final String docName = "testdoc.txt." + GUID.generate();
+        final String folderName = "testfolder." + GUID.generate();
+        final String docName = "testdoc.txt." + GUID.generate();
 
-    	AuthenticationUtil.pushAuthentication();
-    	AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-    	try
-    	{
-    		final FileInfo folderInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()
-	    	{
-				@Override
-				public FileInfo execute() throws Throwable
-				{
-					NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        try
+        {
+            final FileInfo folderInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>() {
+                @Override
+                public FileInfo execute() throws Throwable
+                {
+                    NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
 
-			    	FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
-			    	nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
-			    	
-			    	FileInfo fileInfo = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
-			    	nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_NAME, docName);
-	
-					return folderInfo;
-				}
-			});
+                    FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
+                    nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
 
-    		final ObjectData objectData = withCmisService(new CmisServiceCallback<ObjectData>()
-		    {
-		        @Override
-		        public ObjectData execute(CmisService cmisService)
-		        {
-		            List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
-		            assertTrue(repositories.size() > 0);
-		            RepositoryInfo repo = repositories.get(0);
-		            String repositoryId = repo.getId();
-		            testContext.setRepositoryId(repositoryId);
-		            ObjectData objectData = cmisService.getObjectByPath(repositoryId, "/" + folderName + "/" + docName, null, true,
-		                    IncludeRelationships.NONE, null, false, true, null);
-		            testContext.setObjectData(objectData);
+                    FileInfo fileInfo = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
+                    nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_NAME, docName);
 
-		            // checkout
-		            Holder<String> objectId = new Holder<String>(objectData.getId());
-		            testContext.setObjectId(objectId);
-		            cmisService.checkOut(repositoryId, objectId, null, new Holder<Boolean>(true));
+                    return folderInfo;
+                }
+            });
 
-		            return objectData;
-		        }
-		    });
+            final ObjectData objectData = withCmisService(new CmisServiceCallback<ObjectData>() {
+                @Override
+                public ObjectData execute(CmisService cmisService)
+                {
+                    List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                    assertTrue(repositories.size() > 0);
+                    RepositoryInfo repo = repositories.get(0);
+                    String repositoryId = repo.getId();
+                    testContext.setRepositoryId(repositoryId);
+                    ObjectData objectData = cmisService.getObjectByPath(repositoryId, "/" + folderName + "/" + docName, null, true,
+                            IncludeRelationships.NONE, null, false, true, null);
+                    testContext.setObjectData(objectData);
 
-	    	// AtomPub cancel checkout
-            withCmisService(new CmisServiceCallback<Void>()
-            {
+                    // checkout
+                    Holder<String> objectId = new Holder<String>(objectData.getId());
+                    testContext.setObjectId(objectId);
+                    cmisService.checkOut(repositoryId, objectId, null, new Holder<Boolean>(true));
+
+                    return objectData;
+                }
+            });
+
+            // AtomPub cancel checkout
+            withCmisService(new CmisServiceCallback<Void>() {
                 @Override
                 public Void execute(CmisService cmisService)
                 {
                     try
                     {
-        	    		// check allowable actions
-        	        	ObjectData originalDoc = cmisService.getObject(testContext.getRepositoryId(), objectData.getId(), null, true, IncludeRelationships.NONE, null, false, true, null);
-        	        	AllowableActions allowableActions = originalDoc.getAllowableActions();
-        	        	assertNotNull(allowableActions);
-        	        	assertFalse(allowableActions.getAllowableActions().contains(Action.CAN_DELETE_OBJECT));
-        
-        	        	// try to cancel the checkout
-        	        	cmisService.deleteObjectOrCancelCheckOut(testContext.getRepositoryId(), objectData.getId(), Boolean.TRUE, null);
-        	        	fail();
-        	        }
-        	        catch(CmisConstraintException e)
-        	        {
-        	        	// expected
-        	        }
+                        // check allowable actions
+                        ObjectData originalDoc = cmisService.getObject(testContext.getRepositoryId(), objectData.getId(), null, true, IncludeRelationships.NONE, null, false, true, null);
+                        AllowableActions allowableActions = originalDoc.getAllowableActions();
+                        assertNotNull(allowableActions);
+                        assertFalse(allowableActions.getAllowableActions().contains(Action.CAN_DELETE_OBJECT));
 
-        	        return null;
+                        // try to cancel the checkout
+                        cmisService.deleteObjectOrCancelCheckOut(testContext.getRepositoryId(), objectData.getId(), Boolean.TRUE, null);
+                        fail();
+                    }
+                    catch (CmisConstraintException e)
+                    {
+                        // expected
+                    }
+
+                    return null;
                 }
             });
 
-            withCmisService(new CmisServiceCallback<Void>()
-            {
+            withCmisService(new CmisServiceCallback<Void>() {
                 @Override
                 public Void execute(CmisService cmisService)
                 {
@@ -1215,54 +1190,51 @@ public class CMISTest
                     cmisService.deleteObjectOrCancelCheckOut(testContext.getRepositoryId(), testContext.getObjectId().getValue(), Boolean.TRUE, null);
                     return null;
                 }
-	        });
+            });
 
-            withCmisService(new CmisServiceCallback<Void>()
-            {
+            withCmisService(new CmisServiceCallback<Void>() {
                 @Override
                 public Void execute(CmisService cmisService)
                 {
-    	        	// get original document
-    	        	ObjectData originalDoc = cmisService.getObject(testContext.getRepositoryId(), objectData.getId(), null, true, IncludeRelationships.NONE, null, false, true, null);
-    	        	Map<String, PropertyData<?>> properties = originalDoc.getProperties().getProperties();
-    	        	PropertyData<Boolean> isVersionSeriesCheckedOutProp = (PropertyData<Boolean>)properties.get(PropertyIds.IS_VERSION_SERIES_CHECKED_OUT);
-    	        	assertNotNull(isVersionSeriesCheckedOutProp);
-    	        	Boolean isVersionSeriesCheckedOut = isVersionSeriesCheckedOutProp.getFirstValue();
-    	        	assertNotNull(isVersionSeriesCheckedOut);
-    	        	assertEquals(Boolean.FALSE, isVersionSeriesCheckedOut);
-    	        	
-    	        	return null;
+                    // get original document
+                    ObjectData originalDoc = cmisService.getObject(testContext.getRepositoryId(), objectData.getId(), null, true, IncludeRelationships.NONE, null, false, true, null);
+                    Map<String, PropertyData<?>> properties = originalDoc.getProperties().getProperties();
+                    PropertyData<Boolean> isVersionSeriesCheckedOutProp = (PropertyData<Boolean>) properties.get(PropertyIds.IS_VERSION_SERIES_CHECKED_OUT);
+                    assertNotNull(isVersionSeriesCheckedOutProp);
+                    Boolean isVersionSeriesCheckedOut = isVersionSeriesCheckedOutProp.getFirstValue();
+                    assertNotNull(isVersionSeriesCheckedOut);
+                    assertEquals(Boolean.FALSE, isVersionSeriesCheckedOut);
+
+                    return null;
                 }
             });
-    		
-            withCmisService(new CmisServiceCallback<Void>()
-            {
+
+            withCmisService(new CmisServiceCallback<Void>() {
                 @Override
                 public Void execute(CmisService cmisService)
                 {
-    	        	// delete original document
+                    // delete original document
                     cmisService.deleteObject(testContext.getRepositoryId(), objectData.getId(), true, null);
-    	        	return null;
+                    return null;
                 }
             });
-        	
-        	List<FileInfo> children = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<FileInfo>>()
-	    	{
-				@Override
-				public List<FileInfo> execute() throws Throwable
-				{
-			    	List<FileInfo> children = fileFolderService.list(folderInfo.getNodeRef());
-					return children;
-				}
-			});
-        	assertEquals(0, children.size());
-    	}
-    	finally
-    	{
-    		AuthenticationUtil.popAuthentication();
-    	}
+
+            List<FileInfo> children = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<FileInfo>>() {
+                @Override
+                public List<FileInfo> execute() throws Throwable
+                {
+                    List<FileInfo> children = fileFolderService.list(folderInfo.getNodeRef());
+                    return children;
+                }
+            });
+            assertEquals(0, children.size());
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
     }
-   
+
     /**
      * Test for MNT-13366.
      */
@@ -1298,8 +1270,7 @@ public class CMISTest
             List<FileInfo> childFolder2FileList = fileFolderService.list(childFolder2NodeRef);
             final NodeRef childFolder2FileNodeRef = childFolder2FileList.get(0).getNodeRef();
 
-            List<RepositoryInfo> repositories = withCmisService(new CmisServiceCallback<List<RepositoryInfo>>()
-            {
+            List<RepositoryInfo> repositories = withCmisService(new CmisServiceCallback<List<RepositoryInfo>>() {
                 @Override
                 public List<RepositoryInfo> execute(CmisService cmisService)
                 {
@@ -1312,15 +1283,14 @@ public class CMISTest
             RepositoryInfo repo = repositories.get(0);
             final String repositoryId = repo.getId();
 
-            withCmisService(new CmisServiceCallback<Void>()
-            {
+            withCmisService(new CmisServiceCallback<Void>() {
                 @Override
                 public Void execute(CmisService cmisService)
                 {
 
                     // CMIS delete tree:
                     FailedToDeleteData failedItems = cmisService.deleteTree(repositoryId, parentFolderID, Boolean.TRUE,
-                        UnfileObject.DELETE, Boolean.TRUE, null);
+                            UnfileObject.DELETE, Boolean.TRUE, null);
 
                     assertEquals(failedItems.getIds().size(), 0);
 
@@ -1334,21 +1304,21 @@ public class CMISTest
                     NodeRef archivedParentFolderNodeRef = nodeArchiveService.getArchivedNode(parentFolderNodeRef);
                     assertTrue(nodeService.getPrimaryParent(archivedParentFolderNodeRef).getParentRef().equals(archiveRootNode));
 
-                    // Check childFolder1:               
+                    // Check childFolder1:
                     NodeRef archivedChildFolder1NodeRef = nodeArchiveService.getArchivedNode(childFolder1NodeRef);
                     assertTrue(nodeService.getPrimaryParent(archivedChildFolder1NodeRef).getParentRef().equals(archivedParentFolderNodeRef));
                     assertFalse(nodeService.getPrimaryParent(archivedChildFolder1NodeRef).getParentRef().equals(archiveRootNode));
 
-                    // Check childFolder2:                    
+                    // Check childFolder2:
                     NodeRef archivedChildFolder2NodeRef = nodeArchiveService.getArchivedNode(childFolder2NodeRef);
                     assertTrue(nodeService.getPrimaryParent(archivedChildFolder2NodeRef).getParentRef().equals(archivedChildFolder1NodeRef));
                     assertFalse(nodeService.getPrimaryParent(archivedChildFolder2NodeRef).getParentRef().equals(archiveRootNode));
 
-                    // Check childFolder2's file ("testdoc.txt"):                     
+                    // Check childFolder2's file ("testdoc.txt"):
                     NodeRef archivedChildFolder2FileNodeRef = nodeArchiveService.getArchivedNode(childFolder2FileNodeRef);
                     assertTrue(nodeService.getPrimaryParent(archivedChildFolder2FileNodeRef).getParentRef().equals(archivedChildFolder2NodeRef));
                     assertFalse(nodeService.getPrimaryParent(archivedChildFolder2FileNodeRef).getParentRef().equals(archiveRootNode));
-                    
+
                     return null;
                 };
             });
@@ -1399,21 +1369,20 @@ public class CMISTest
             FileInfo folderEmptyWithRule = createContent(folderNameEmptyRule, null, true);
             testFolderMap.put(folderEmptyWithRule, Boolean.TRUE);
 
-            withCmisService(new CmisServiceCallback<Void>()
-            {
+            withCmisService(new CmisServiceCallback<Void>() {
                 @Override
                 public Void execute(CmisService cmisService)
                 {
                     List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
                     RepositoryInfo repo = repositories.get(0);
                     String repositoryId = repo.getId();
-    
+
                     for (Map.Entry<FileInfo, Boolean> entry : testFolderMap.entrySet())
                     {
                         ObjectData objectData = cmisService.getObjectByPath(repositoryId, "/" + entry.getKey().getName(), null, true, IncludeRelationships.NONE, null, false, true, null);
-    
+
                         Holder<String> objectId = new Holder<String>(objectData.getId());
-    
+
                         try
                         {
                             // delete folder
@@ -1424,7 +1393,7 @@ public class CMISTest
                             assertTrue(!entry.getValue());
                             continue;
                         }
-    
+
                         assertTrue(entry.getValue());
                     }
 
@@ -1449,8 +1418,8 @@ public class CMISTest
     /**
      * Test
      * <ul>
-     *   <li>MNT-8825: READ_ONLYLOCK prevent getAllVersions via new CMIS enpoint.</li>
-     *   <li>ACE-762: BM-0012: NodeLockedException not handled by CMIS</li>
+     * <li>MNT-8825: READ_ONLYLOCK prevent getAllVersions via new CMIS enpoint.</li>
+     * <li>ACE-762: BM-0012: NodeLockedException not handled by CMIS</li>
      * </ul>
      */
     @Test
@@ -1464,8 +1433,7 @@ public class CMISTest
 
         try
         {
-            final FileInfo fileInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()
-            {
+            final FileInfo fileInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>() {
                 @Override
                 public FileInfo execute() throws Throwable
                 {
@@ -1484,8 +1452,7 @@ public class CMISTest
                 }
             });
 
-            withCmisService(new CmisServiceCallback<Void>()
-            {
+            withCmisService(new CmisServiceCallback<Void>() {
                 @Override
                 public Void execute(CmisService cmisService)
                 {
@@ -1503,8 +1470,7 @@ public class CMISTest
                 }
             });
 
-            withCmisService(new CmisServiceCallback<Void>()
-            {
+            withCmisService(new CmisServiceCallback<Void>() {
                 @Override
                 public Void execute(CmisService cmisService)
                 {
@@ -1553,60 +1519,58 @@ public class CMISTest
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         try
         {
-	        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-	        {
-	            @Override
-	            public Void execute() throws Throwable
-	            {
-	                NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
-	
-	                String folderName = GUID.generate();
-	                FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
-	                nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
-	                assertNotNull(folderInfo);
-	                nodes.add(folderInfo);
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
 
-	                for(int i = 0; i < 5; i++)
-	                {
-	                    String docName = GUID.generate();
-	                    FileInfo fileInfo = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
-	                    assertNotNull(fileInfo);
-	                    nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_NAME, docName);
+                    String folderName = GUID.generate();
+                    FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
+                    nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
+                    assertNotNull(folderInfo);
+                    nodes.add(folderInfo);
 
-	                    expectedChildrenByCreationDate.add(0, fileInfo);
-		                nodes.add(fileInfo);
+                    for (int i = 0; i < 5; i++)
+                    {
+                        String docName = GUID.generate();
+                        FileInfo fileInfo = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
+                        assertNotNull(fileInfo);
+                        nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_NAME, docName);
 
-	                    // make sure there is some difference in creation times
-	                    Thread.sleep(400);
-	                }
+                        expectedChildrenByCreationDate.add(0, fileInfo);
+                        nodes.add(fileInfo);
 
-	                // make modifications
-	                for(int i = 5; i > 0; i--)
-	                {
-	                	FileInfo fileInfo = nodes.get(i);
-	                    assertNotNull(fileInfo);
-	                    nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_DESCRIPTION, GUID.generate());
+                        // make sure there is some difference in creation times
+                        Thread.sleep(400);
+                    }
 
-	                    // "refresh" fileInfo
-	                    fileInfo = fileFolderService.getFileInfo(fileInfo.getNodeRef());
-	                    assertNotNull(fileInfo);
-	                    expectedChildrenByModificationDate.add(0, fileInfo);
+                    // make modifications
+                    for (int i = 5; i > 0; i--)
+                    {
+                        FileInfo fileInfo = nodes.get(i);
+                        assertNotNull(fileInfo);
+                        nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_DESCRIPTION, GUID.generate());
 
-	                    // make sure there is some difference in modification times
-	                    Thread.sleep(400);
-	                }
-	                
-	                return null;
-	            }
-	        });
+                        // "refresh" fileInfo
+                        fileInfo = fileFolderService.getFileInfo(fileInfo.getNodeRef());
+                        assertNotNull(fileInfo);
+                        expectedChildrenByModificationDate.add(0, fileInfo);
+
+                        // make sure there is some difference in modification times
+                        Thread.sleep(400);
+                    }
+
+                    return null;
+                }
+            });
         }
         finally
         {
-        	AuthenticationUtil.popAuthentication();
+            AuthenticationUtil.popAuthentication();
         }
 
-        withCmisService(new CmisServiceCallback<Void>()
-        {
+        withCmisService(new CmisServiceCallback<Void>() {
             @Override
             public Void execute(CmisService cmisService)
             {
@@ -1615,42 +1579,42 @@ public class CMISTest
                 assertTrue(repositories.size() > 0);
                 RepositoryInfo repo = repositories.get(0);
                 String repositoryId = repo.getId();
-    
+
                 String folderId = nodes.get(0).getNodeRef().getId();
                 String orderBy = PropertyIds.CREATION_DATE + " DESC";
                 ObjectInFolderList children = cmisService.getChildren(repositoryId, folderId, null, orderBy, false, IncludeRelationships.NONE,
-                		null, false, BigInteger.valueOf(Integer.MAX_VALUE), BigInteger.valueOf(0), null);
+                        null, false, BigInteger.valueOf(Integer.MAX_VALUE), BigInteger.valueOf(0), null);
                 int i = 0;
-                for(ObjectInFolderData child : children.getObjects())
+                for (ObjectInFolderData child : children.getObjects())
                 {
-                	Map<String, PropertyData<?>> properties = child.getObject().getProperties().getProperties();
-    
-                	PropertyData<?> pObjectId = properties.get(PropertyIds.VERSION_SERIES_ID);
-                	String actualObjectId = (String)pObjectId.getFirstValue();
-                	PropertyData<?> pCreationDate = properties.get(PropertyIds.CREATION_DATE);
-                	GregorianCalendar actualCreationDate = (GregorianCalendar)pCreationDate.getFirstValue();
-    
-                	FileInfo expectedChild = expectedChildrenByCreationDate.get(i++);
-                	assertEquals(expectedChild.getNodeRef().toString(), actualObjectId);
-                	assertEquals(expectedChild.getCreatedDate().getTime(), actualCreationDate.getTimeInMillis());
+                    Map<String, PropertyData<?>> properties = child.getObject().getProperties().getProperties();
+
+                    PropertyData<?> pObjectId = properties.get(PropertyIds.VERSION_SERIES_ID);
+                    String actualObjectId = (String) pObjectId.getFirstValue();
+                    PropertyData<?> pCreationDate = properties.get(PropertyIds.CREATION_DATE);
+                    GregorianCalendar actualCreationDate = (GregorianCalendar) pCreationDate.getFirstValue();
+
+                    FileInfo expectedChild = expectedChildrenByCreationDate.get(i++);
+                    assertEquals(expectedChild.getNodeRef().toString(), actualObjectId);
+                    assertEquals(expectedChild.getCreatedDate().getTime(), actualCreationDate.getTimeInMillis());
                 }
-    
+
                 orderBy = PropertyIds.LAST_MODIFICATION_DATE + " DESC";
                 children = cmisService.getChildren(repositoryId, folderId, null, orderBy, false, IncludeRelationships.NONE,
-                		null, false, BigInteger.valueOf(Integer.MAX_VALUE), BigInteger.valueOf(0), null);
+                        null, false, BigInteger.valueOf(Integer.MAX_VALUE), BigInteger.valueOf(0), null);
                 i = 0;
-                for(ObjectInFolderData child : children.getObjects())
+                for (ObjectInFolderData child : children.getObjects())
                 {
-                	Map<String, PropertyData<?>> properties = child.getObject().getProperties().getProperties();
-    
-                	PropertyData<?> pObjectId = properties.get(PropertyIds.VERSION_SERIES_ID);
-                	String actualObjectId = (String)pObjectId.getFirstValue();
-                	PropertyData<?> pModificationDate = properties.get(PropertyIds.LAST_MODIFICATION_DATE);
-                	GregorianCalendar actualModificationDate = (GregorianCalendar)pModificationDate.getFirstValue();
-    
-                	FileInfo expectedChild = expectedChildrenByModificationDate.get(i++);
-                	assertEquals(expectedChild.getNodeRef().toString(), actualObjectId);
-                	assertEquals(expectedChild.getModifiedDate().getTime(), actualModificationDate.getTimeInMillis());
+                    Map<String, PropertyData<?>> properties = child.getObject().getProperties().getProperties();
+
+                    PropertyData<?> pObjectId = properties.get(PropertyIds.VERSION_SERIES_ID);
+                    String actualObjectId = (String) pObjectId.getFirstValue();
+                    PropertyData<?> pModificationDate = properties.get(PropertyIds.LAST_MODIFICATION_DATE);
+                    GregorianCalendar actualModificationDate = (GregorianCalendar) pModificationDate.getFirstValue();
+
+                    FileInfo expectedChild = expectedChildrenByModificationDate.get(i++);
+                    assertEquals(expectedChild.getNodeRef().toString(), actualObjectId);
+                    assertEquals(expectedChild.getModifiedDate().getTime(), actualModificationDate.getTimeInMillis());
                 }
 
                 return null;
@@ -1658,15 +1622,14 @@ public class CMISTest
         });
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Test
     public void testSecondaryTypes()
     {
         final String aspectName = "P:cm:indexControl";
 
         // get repository id
-        final String repositoryId = withCmisService(new CmisServiceCallback<String>()
-        {
+        final String repositoryId = withCmisService(new CmisServiceCallback<String>() {
             @Override
             public String execute(CmisService cmisService)
             {
@@ -1678,8 +1641,7 @@ public class CMISTest
             }
         }, CmisVersion.CMIS_1_1);
 
-        final String objectId = withCmisService(new CmisServiceCallback<String>()
-        {
+        final String objectId = withCmisService(new CmisServiceCallback<String>() {
             @Override
             public String execute(CmisService cmisService)
             {
@@ -1697,8 +1659,7 @@ public class CMISTest
 
         final Holder<String> objectIdHolder = new Holder<String>(objectId);
 
-        withCmisService(new CmisServiceCallback<Void>()
-        {
+        withCmisService(new CmisServiceCallback<Void>() {
             @Override
             public Void execute(CmisService cmisService)
             {
@@ -1710,8 +1671,7 @@ public class CMISTest
             }
         }, CmisVersion.CMIS_1_1);
 
-        final Properties currentProperties = withCmisService(new CmisServiceCallback<Properties>()
-        {
+        final Properties currentProperties = withCmisService(new CmisServiceCallback<Properties>() {
             @Override
             public Properties execute(CmisService cmisService)
             {
@@ -1739,11 +1699,10 @@ public class CMISTest
         final PropertiesImpl newProperties = new PropertiesImpl();
         newProperties.addProperty(new PropertyStringImpl(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, secondaryTypeIds));
 
-        final String updatedName = "My_new_name_"+UUID.randomUUID().toString();
+        final String updatedName = "My_new_name_" + UUID.randomUUID().toString();
         newProperties.replaceProperty(new PropertyStringImpl(PropertyIds.NAME, updatedName));
 
-        withCmisService(new CmisServiceCallback<Void>()
-        {
+        withCmisService(new CmisServiceCallback<Void>() {
             @Override
             public Void execute(CmisService cmisService)
             {
@@ -1755,8 +1714,7 @@ public class CMISTest
             }
         }, CmisVersion.CMIS_1_1);
 
-        Properties currentProperties1 = withCmisService(new CmisServiceCallback<Properties>()
-        {
+        Properties currentProperties1 = withCmisService(new CmisServiceCallback<Properties>() {
             @Override
             public Properties execute(CmisService cmisService)
             {
@@ -1783,35 +1741,33 @@ public class CMISTest
     {
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
+
         try
         {
-	    	final FileInfo fileInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()
-	        {
-	            @Override
-	            public FileInfo execute() throws Throwable
-	            {
-	                NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
-	                
-	                QName testIntTypeQName = QName.createQName("http://testCMISIntegersModel/1.0/", "testintegerstype");
-	
-	                String folderName = GUID.generate();
-	                FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
-	                nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
-	                assertNotNull(folderInfo);
-	
-	                String docName = GUID.generate();
-	                FileInfo fileInfo = fileFolderService.create(folderInfo.getNodeRef(), docName, testIntTypeQName);
-	                assertNotNull(fileInfo);
-	                nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_NAME, docName);
+            final FileInfo fileInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>() {
+                @Override
+                public FileInfo execute() throws Throwable
+                {
+                    NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
 
-	                return fileInfo;
-	            }
-	        });
+                    QName testIntTypeQName = QName.createQName("http://testCMISIntegersModel/1.0/", "testintegerstype");
+
+                    String folderName = GUID.generate();
+                    FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
+                    nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
+                    assertNotNull(folderInfo);
+
+                    String docName = GUID.generate();
+                    FileInfo fileInfo = fileFolderService.create(folderInfo.getNodeRef(), docName, testIntTypeQName);
+                    assertNotNull(fileInfo);
+                    nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_NAME, docName);
+
+                    return fileInfo;
+                }
+            });
 
             // get repository id
-	    	withCmisService(new CmisServiceCallback<Void>()
-            {
+            withCmisService(new CmisServiceCallback<Void>() {
                 @Override
                 public Void execute(CmisService cmisService)
                 {
@@ -1821,79 +1777,75 @@ public class CMISTest
                     String repositoryId = repo.getId();
 
                     String objectIdStr = fileInfo.getNodeRef().toString();
-                    
+
                     TypeDefinition typeDef = cmisService.getTypeDefinition(repositoryId, "D:tcim:testintegerstype", null);
-                    
-                    PropertyIntegerDefinitionImpl intNoBoundsTypeDef = 
-                            (PropertyIntegerDefinitionImpl)typeDef.getPropertyDefinitions().get("tcim:int");
-                    PropertyIntegerDefinitionImpl longNoBoundsTypeDef = 
-                            (PropertyIntegerDefinitionImpl)typeDef.getPropertyDefinitions().get("tcim:long");
-                    
-                    PropertyIntegerDefinitionImpl intWithBoundsTypeDef = 
-                            (PropertyIntegerDefinitionImpl)typeDef.getPropertyDefinitions().get("tcim:intwithbounds");
-                    PropertyIntegerDefinitionImpl longWithBoundsTypeDef = 
-                            (PropertyIntegerDefinitionImpl)typeDef.getPropertyDefinitions().get("tcim:longwithbounds");
-                    
+
+                    PropertyIntegerDefinitionImpl intNoBoundsTypeDef = (PropertyIntegerDefinitionImpl) typeDef.getPropertyDefinitions().get("tcim:int");
+                    PropertyIntegerDefinitionImpl longNoBoundsTypeDef = (PropertyIntegerDefinitionImpl) typeDef.getPropertyDefinitions().get("tcim:long");
+
+                    PropertyIntegerDefinitionImpl intWithBoundsTypeDef = (PropertyIntegerDefinitionImpl) typeDef.getPropertyDefinitions().get("tcim:intwithbounds");
+                    PropertyIntegerDefinitionImpl longWithBoundsTypeDef = (PropertyIntegerDefinitionImpl) typeDef.getPropertyDefinitions().get("tcim:longwithbounds");
+
                     BigInteger minInteger = BigInteger.valueOf(Integer.MIN_VALUE);
                     BigInteger maxInteger = BigInteger.valueOf(Integer.MAX_VALUE);
-                    
+
                     BigInteger minLong = BigInteger.valueOf(Long.MIN_VALUE);
                     BigInteger maxLong = BigInteger.valueOf(Long.MAX_VALUE);
-                    
+
                     // test for default boundaries
                     assertTrue(intNoBoundsTypeDef.getMinValue().equals(minInteger));
                     assertTrue(intNoBoundsTypeDef.getMaxValue().equals(maxInteger));
-                    
+
                     assertTrue(longNoBoundsTypeDef.getMinValue().equals(minLong));
                     assertTrue(longNoBoundsTypeDef.getMaxValue().equals(maxLong));
-                    
+
                     // test for pre-defined boundaries
                     assertTrue(intWithBoundsTypeDef.getMinValue().equals(BigInteger.valueOf(-10L)));
                     assertTrue(intWithBoundsTypeDef.getMaxValue().equals(BigInteger.valueOf(10L)));
-                    
+
                     assertTrue(longWithBoundsTypeDef.getMinValue().equals(BigInteger.valueOf(-10L)));
                     assertTrue(longWithBoundsTypeDef.getMaxValue().equals(BigInteger.valueOf(10L)));
-                    
+
                     try // try to overfloat long without boundaries
                     {
                         BigInteger aValue = BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.valueOf(1L));
                         setProperiesToObject(cmisService, repositoryId, objectIdStr, "tcim:long", aValue);
                         fail();
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         assertTrue(e instanceof CmisConstraintException);
                     }
-                    
+
                     try // try to overfloat int without boundaries
                     {
                         BigInteger aValue = BigInteger.valueOf(Integer.MAX_VALUE).add(BigInteger.valueOf(1L));
                         setProperiesToObject(cmisService, repositoryId, objectIdStr, "tcim:int", aValue);
                         fail();
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         assertTrue(e instanceof CmisConstraintException);
                     }
-                    
+
                     try // try to overfloat int with boundaries
                     {
-                        BigInteger aValue = BigInteger.valueOf( 11l );
+                        BigInteger aValue = BigInteger.valueOf(11l);
                         setProperiesToObject(cmisService, repositoryId, objectIdStr, "tcim:intwithbounds", aValue);
                         fail();
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         assertTrue(e instanceof CmisConstraintException);
                     }
-                    
+
                     try // try to overfloat long with boundaries
                     {
-                        BigInteger aValue = BigInteger.valueOf( 11l );
+                        BigInteger aValue = BigInteger.valueOf(11l);
                         setProperiesToObject(cmisService, repositoryId, objectIdStr, "tcim:longwithbounds", aValue);
                         fail();
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         assertTrue(e instanceof CmisConstraintException);
                     }
@@ -1902,7 +1854,7 @@ public class CMISTest
                 }
             }, CmisVersion.CMIS_1_0);
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             fail(e.getMessage());
         }
@@ -1911,101 +1863,100 @@ public class CMISTest
             AuthenticationUtil.popAuthentication();
         }
     }
-    
-    private void setProperiesToObject(CmisService cmisService, String repositoryId, String objectIdStr, String propertyStr, BigInteger bigIntValue) throws CmisConstraintException{
+
+    private void setProperiesToObject(CmisService cmisService, String repositoryId, String objectIdStr, String propertyStr, BigInteger bigIntValue) throws CmisConstraintException
+    {
         Properties properties = cmisService.getProperties(repositoryId, objectIdStr, null, null);
-        PropertyIntegerImpl pd = (PropertyIntegerImpl)properties.getProperties().get(propertyStr);
+        PropertyIntegerImpl pd = (PropertyIntegerImpl) properties.getProperties().get(propertyStr);
         pd.setValue(bigIntValue);
-        
+
         Collection<PropertyData<?>> propsList = new ArrayList<PropertyData<?>>();
         propsList.add(pd);
-        
+
         Properties newProps = new PropertiesImpl(propsList);
-        
+
         cmisService.updateProperties(repositoryId, new Holder<String>(objectIdStr), null, newProps, null);
     }
-    
+
     @Test
     public void testMNT9090() throws Exception
     {
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
+
         try
         {
-	    	final FileInfo fileInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()
-	        {
-	            @Override
-	            public FileInfo execute() throws Throwable
-	            {
-	                NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
-	
-	                String folderName = GUID.generate();
-	                FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
-	                nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
-	                assertNotNull(folderInfo);
-	
-	                String docName = GUID.generate();
-	                FileInfo fileInfo = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
-	                assertNotNull(fileInfo);
-	                nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_NAME, docName);
-	                
-	                QName ASPECT_AUDIO = QName.createQName(NamespaceService.AUDIO_MODEL_1_0_URI, "audio");
-	                Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>();
-	                nodeService.addAspect(fileInfo.getNodeRef(), ASPECT_AUDIO, aspectProperties);
+            final FileInfo fileInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>() {
+                @Override
+                public FileInfo execute() throws Throwable
+                {
+                    NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
 
-	                return fileInfo;
-	            }
-	        });
+                    String folderName = GUID.generate();
+                    FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
+                    nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
+                    assertNotNull(folderInfo);
 
-	    	withCmisService(new CmisServiceCallback<Void>()
-	    	{
-	    	    @Override
-	    	    public Void execute(CmisService cmisService)
-	    	    {
-	    	        // get repository id
-	    	        List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
-	    	        assertTrue(repositories.size() > 0);
-	    	        RepositoryInfo repo = repositories.get(0);
-	    	        String repositoryId = repo.getId();
+                    String docName = GUID.generate();
+                    FileInfo fileInfo = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
+                    assertNotNull(fileInfo);
+                    nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_NAME, docName);
 
-	    	        String objectIdStr = fileInfo.getNodeRef().toString();
-	    	        Holder<String> objectId = new Holder<String>(objectIdStr);
+                    QName ASPECT_AUDIO = QName.createQName(NamespaceService.AUDIO_MODEL_1_0_URI, "audio");
+                    Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>();
+                    nodeService.addAspect(fileInfo.getNodeRef(), ASPECT_AUDIO, aspectProperties);
 
-	    	        // try to overflow the value
-	    	        Object value = BigInteger.valueOf(Integer.MAX_VALUE + 1l);
+                    return fileInfo;
+                }
+            });
 
-	    	        Properties properties = new PropertiesImpl();
-	    	        List<CmisExtensionElement> extensions = new ArrayList<CmisExtensionElement>();
+            withCmisService(new CmisServiceCallback<Void>() {
+                @Override
+                public Void execute(CmisService cmisService)
+                {
+                    // get repository id
+                    List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                    assertTrue(repositories.size() > 0);
+                    RepositoryInfo repo = repositories.get(0);
+                    String repositoryId = repo.getId();
 
-	    	        CmisExtensionElement valueElem = new CmisExtensionElementImpl(CMISConnector.ALFRESCO_EXTENSION_NAMESPACE, "value", null, value.toString());
-	    	        List<CmisExtensionElement> valueElems = new ArrayList<CmisExtensionElement>();
-	    	        valueElems.add(valueElem);
+                    String objectIdStr = fileInfo.getNodeRef().toString();
+                    Holder<String> objectId = new Holder<String>(objectIdStr);
 
-	    	        List<CmisExtensionElement> children = new ArrayList<CmisExtensionElement>();
-	    	        Map<String, String> attributes = new HashMap<String, String>();
-	    	        attributes.put("propertyDefinitionId", "audio:trackNumber");
-	    	        children.add(new CmisExtensionElementImpl(CMISConnector.ALFRESCO_EXTENSION_NAMESPACE, "propertyInteger", attributes, valueElems));
+                    // try to overflow the value
+                    Object value = BigInteger.valueOf(Integer.MAX_VALUE + 1l);
 
-	    	        List<CmisExtensionElement> propertyValuesExtension = new ArrayList<CmisExtensionElement>();
-	    	        propertyValuesExtension.add(new CmisExtensionElementImpl(CMISConnector.ALFRESCO_EXTENSION_NAMESPACE, CMISConnector.PROPERTIES, null, children));
+                    Properties properties = new PropertiesImpl();
+                    List<CmisExtensionElement> extensions = new ArrayList<CmisExtensionElement>();
 
-	    	        CmisExtensionElement setAspectsExtension = new CmisExtensionElementImpl(CMISConnector.ALFRESCO_EXTENSION_NAMESPACE, CMISConnector.SET_ASPECTS, null, propertyValuesExtension);
-	    	        extensions.add(setAspectsExtension);
-	    	        properties.setExtensions(extensions);
+                    CmisExtensionElement valueElem = new CmisExtensionElementImpl(CMISConnector.ALFRESCO_EXTENSION_NAMESPACE, "value", null, value.toString());
+                    List<CmisExtensionElement> valueElems = new ArrayList<CmisExtensionElement>();
+                    valueElems.add(valueElem);
 
-	    	        // should throw a CMISConstraintException
-	    	        cmisService.updateProperties(repositoryId, objectId, null, properties, null);
-	    	        fail();
+                    List<CmisExtensionElement> children = new ArrayList<CmisExtensionElement>();
+                    Map<String, String> attributes = new HashMap<String, String>();
+                    attributes.put("propertyDefinitionId", "audio:trackNumber");
+                    children.add(new CmisExtensionElementImpl(CMISConnector.ALFRESCO_EXTENSION_NAMESPACE, "propertyInteger", attributes, valueElems));
 
-	    	        return null;
-	    	    }
-	    	}, CmisVersion.CMIS_1_0);
+                    List<CmisExtensionElement> propertyValuesExtension = new ArrayList<CmisExtensionElement>();
+                    propertyValuesExtension.add(new CmisExtensionElementImpl(CMISConnector.ALFRESCO_EXTENSION_NAMESPACE, CMISConnector.PROPERTIES, null, children));
+
+                    CmisExtensionElement setAspectsExtension = new CmisExtensionElementImpl(CMISConnector.ALFRESCO_EXTENSION_NAMESPACE, CMISConnector.SET_ASPECTS, null, propertyValuesExtension);
+                    extensions.add(setAspectsExtension);
+                    properties.setExtensions(extensions);
+
+                    // should throw a CMISConstraintException
+                    cmisService.updateProperties(repositoryId, objectId, null, properties, null);
+                    fail();
+
+                    return null;
+                }
+            }, CmisVersion.CMIS_1_0);
         }
-        catch(CmisConstraintException e)
+        catch (CmisConstraintException e)
         {
-        	assertTrue(e.getMessage().startsWith("Value is out of range for property"));
-        	// ok
+            assertTrue(e.getMessage().startsWith("Value is out of range for property"));
+            // ok
         }
         finally
         {
@@ -2014,8 +1965,7 @@ public class CMISTest
     }
 
     /**
-     * MNT-20139
-     * CmisConnector returns wrong values for changeLogToken and hasMoreItems
+     * MNT-20139 CmisConnector returns wrong values for changeLogToken and hasMoreItems
      */
     @Test
     public void testGetContentChanges()
@@ -2034,31 +1984,21 @@ public class CMISTest
 
             Holder<String> changeLogToken = new Holder<String>();
 
-            /*
-             * GetContentChanges with maxitems = 2 and null changeLogToken
-             * Check that changeLogToken should be the latest from the retrieved entries
-             */
+            /* GetContentChanges with maxitems = 2 and null changeLogToken Check that changeLogToken should be the latest from the retrieved entries */
             ObjectList ol = this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("2"));
             assertEquals(2, ol.getObjects().size());
             assertEquals("ChangeLogToken should be latest from retrieved entries.", "2", changeLogToken.getValue());
             assertTrue(ol.hasMoreItems());
 
-            /*
-             * GetContentChanges with maxitems = 2 and changeLogToken = 0
-             * Check that changeLogToken should be the latest from the retrieved entries
-             */
+            /* GetContentChanges with maxitems = 2 and changeLogToken = 0 Check that changeLogToken should be the latest from the retrieved entries */
             changeLogToken.setValue(Integer.toString(0));
             ol = this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("2"));
             assertEquals(2, ol.getObjects().size());
             assertEquals("ChangeLogToken should be latest from retrieved entries.", "2", changeLogToken.getValue());
             assertTrue(ol.hasMoreItems());
 
-            /*
-             * GetContentChanges with changeLogToken = maxChangeLogToken - 2
-             * Check that changeLogToken is not null when the latest entries (fromToken) are retrieved
-             */
-            Long latestToken = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Long>()
-            {
+            /* GetContentChanges with changeLogToken = maxChangeLogToken - 2 Check that changeLogToken is not null when the latest entries (fromToken) are retrieved */
+            Long latestToken = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Long>() {
                 public Long execute() throws Exception
                 {
                     return Long.parseLong(cmisConnector.getRepositoryInfo(CmisVersion.CMIS_1_1).getLatestChangeLogToken());
@@ -2078,12 +2018,12 @@ public class CMISTest
         {
             auditSubsystem.destroy();
             AuthenticationUtil.popAuthentication();
-        };
+        }
+        ;
     }
 
     /**
-     * MNT-10223
-     * Check the IsLatestMajorVersion for a doc with minor version.
+     * MNT-10223 Check the IsLatestMajorVersion for a doc with minor version.
      */
     @SuppressWarnings("unused")
     @Test
@@ -2101,7 +2041,8 @@ public class CMISTest
 
         withCmisService(new CmisServiceCallback<String>() {
             @Override
-            public String execute(CmisService cmisService) {
+            public String execute(CmisService cmisService)
+            {
                 List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
                 assertTrue(repositories.size() > 0);
                 RepositoryInfo repo = repositories.get(0);
@@ -2122,7 +2063,7 @@ public class CMISTest
                         break;
                     }
                 }
-                //properties..contains(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION);
+                // properties..contains(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION);
                 assertTrue("The CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION property was not found", found);
                 if (found)
                 {
@@ -2132,7 +2073,7 @@ public class CMISTest
             }
         });
     }
-    
+
     /**
      * ACE-33
      * 
@@ -2144,76 +2085,76 @@ public class CMISTest
 
         withCmisService(new CmisServiceCallback<String>() {
             @Override
-            public String execute(CmisService cmisService) {
+            public String execute(CmisService cmisService)
+            {
                 List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
                 assertTrue(repositories.size() > 0);
                 RepositoryInfo repo = repositories.get(0);
                 String repositoryId = repo.getId();
-                
-            	TypeDefinition def = cmisService.getTypeDefinition(repositoryId, "cmis:item", null);
-            	assertNotNull("the cmis:item type is not defined", def); 
-                
-            	@SuppressWarnings("unused")
+
+                TypeDefinition def = cmisService.getTypeDefinition(repositoryId, "cmis:item", null);
+                assertNotNull("the cmis:item type is not defined", def);
+
+                @SuppressWarnings("unused")
                 TypeDefinition p = cmisService.getTypeDefinition(repositoryId, "I:cm:person", null);
-            	assertNotNull("the I:cm:person type is not defined", def); 
-            	
-            	ObjectList result = cmisService.query(repositoryId, "select * from cm:person", Boolean.FALSE, Boolean.TRUE, IncludeRelationships.NONE, "", BigInteger.TEN, BigInteger.ZERO, null);
-            	assertTrue("", result.getNumItems().intValue() > 0);
-            	return "";
-        
+                assertNotNull("the I:cm:person type is not defined", def);
+
+                ObjectList result = cmisService.query(repositoryId, "select * from cm:person", Boolean.FALSE, Boolean.TRUE, IncludeRelationships.NONE, "", BigInteger.TEN, BigInteger.ZERO, null);
+                assertTrue("", result.getNumItems().intValue() > 0);
+                return "";
+
             };
         }, CmisVersion.CMIS_1_1);
-    	
+
     }
-    
+
     /**
-     * MNT-11339 related test :
-     * Unable to create relationship between cmis:document and cmis:item
+     * MNT-11339 related test : Unable to create relationship between cmis:document and cmis:item
      */
     @Test
-    public void testItemRelations() 
+    public void testItemRelations()
     {
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
+
         final String TEST_NAME = "testItemRelations-";
         final String FOLDER_NAME = TEST_NAME + "FOLDER" + GUID.generate();
         final String DOCUMENT_NAME = TEST_NAME + "DOCUMENT" + GUID.generate();
         final String CLIENT_NAME = "Some Test Client " + GUID.generate();
-        
+
         try
         {
             transactionService.getRetryingTransactionHelper().doInTransaction(
-                    new RetryingTransactionCallback<Void>()
-                    {
+                    new RetryingTransactionCallback<Void>() {
                         @Override
                         public Void execute() throws Throwable
                         {
                             NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
-                            
+
                             /* Create folder within companyHome */
                             FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, FOLDER_NAME, ContentModel.TYPE_FOLDER);
                             nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, FOLDER_NAME);
                             assertNotNull(folderInfo);
-                            
+
                             // and document
                             FileInfo document = fileFolderService.create(folderInfo.getNodeRef(), DOCUMENT_NAME, ContentModel.TYPE_CONTENT);
                             assertNotNull(document);
                             nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, DOCUMENT_NAME);
-                            
+
                             return null;
                         }
                     });
-            
+
             withCmisService(new CmisServiceCallback<String>() {
                 @SuppressWarnings("unchecked")
                 @Override
-                public String execute(CmisService cmisService) {
+                public String execute(CmisService cmisService)
+                {
                     List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
                     assertTrue(repositories.size() > 0);
                     RepositoryInfo repo = repositories.get(0);
                     String repositoryId = repo.getId();
-                    
+
                     // ensure there are custom type, aspect and association defined
                     TypeDefinition tpdfn = cmisService.getTypeDefinition(repositoryId, "I:sctst:client", null);
                     assertNotNull("the I:sctst:client type is not defined", tpdfn);
@@ -2221,46 +2162,46 @@ public class CMISTest
                     assertNotNull("the P:sctst:clientRelated aspect is not defined", aspectDfn);
                     TypeDefinition relDfn = cmisService.getTypeDefinition(repositoryId, "R:sctst:relatedClients", null);
                     assertNotNull("the R:sctst:relatedClients association is not defined", relDfn);
-                    
+
                     // create cmis:item within test folder
                     PropertiesImpl properties = new PropertiesImpl();
                     properties.addProperty(new PropertyIdImpl(PropertyIds.OBJECT_TYPE_ID, tpdfn.getId()));
                     properties.addProperty(new PropertyStringImpl(PropertyIds.NAME, CLIENT_NAME));
                     properties.addProperty(new PropertyStringImpl("sctst:clientId", "id" + GUID.generate()));
                     properties.addProperty(new PropertyStringImpl("sctst:clientName", CLIENT_NAME));
-                    
+
                     ObjectData folderData = cmisService.getObjectByPath(repositoryId, "/" + FOLDER_NAME, null, null, null, null, null, null, null);
-                    
+
                     cmisService.createItem(repositoryId, properties, folderData.getId(), null, null, null, null);
-                    
+
                     ObjectData contentData = cmisService.getObjectByPath(repositoryId, "/" + FOLDER_NAME + "/" + DOCUMENT_NAME, null, null, null, null, null, null, null);
-                    
+
                     // add test aspect sctst:clientRelated to document
                     Properties props = cmisService.getProperties(repositoryId, contentData.getId(), null, null);
-                    
+
                     PropertyData<?> propAspects = props.getProperties().get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS);
-                    
+
                     @SuppressWarnings("rawtypes")
                     List aspects = propAspects.getValues();
                     aspects.add("P:sctst:clientRelated");
-                    
+
                     properties = new PropertiesImpl();
                     properties.addProperty(new PropertyStringImpl(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, aspects));
                     cmisService.updateProperties(repositoryId, new Holder<String>(contentData.getId()), null, properties, null);
                     // ensure document has sctst:clientRelated aspect applied
                     aspects = cmisService.getProperties(repositoryId, contentData.getId(), null, null).getProperties().get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS).getValues();
                     assertTrue("P:sctst:clientRelated excpected", aspects.contains("P:sctst:clientRelated"));
-                    
+
                     ObjectData itemData = cmisService.getObjectByPath(repositoryId, "/" + FOLDER_NAME + "/" + CLIENT_NAME, null, null, null, null, null, null, null);
-                    // create relationship between cmis:document and cmis:item 
+                    // create relationship between cmis:document and cmis:item
                     properties = new PropertiesImpl();
                     properties.addProperty(new PropertyIdImpl(PropertyIds.OBJECT_TYPE_ID, "R:sctst:relatedClients"));
                     properties.addProperty(new PropertyIdImpl(PropertyIds.SOURCE_ID, contentData.getId()));
                     properties.addProperty(new PropertyIdImpl(PropertyIds.TARGET_ID, itemData.getId()));
                     cmisService.createRelationship(repositoryId, properties, null, null, null, null);
-                    
+
                     return "";
-            
+
                 };
             }, CmisVersion.CMIS_1_1);
         }
@@ -2279,8 +2220,7 @@ public class CMISTest
         try
         {
             final Pair<FileInfo, FileInfo> folderAndDocument = transactionService.getRetryingTransactionHelper().doInTransaction(
-                    new RetryingTransactionCallback<Pair<FileInfo, FileInfo>>()
-                    {
+                    new RetryingTransactionCallback<Pair<FileInfo, FileInfo>>() {
                         @Override
                         public Pair<FileInfo, FileInfo> execute() throws Throwable
                         {
@@ -2300,8 +2240,7 @@ public class CMISTest
                         }
                     });
 
-            withCmisService(new CmisServiceCallback<Void>()
-            {
+            withCmisService(new CmisServiceCallback<Void>() {
                 @Override
                 public Void execute(CmisService cmisService)
                 {
@@ -2359,29 +2298,28 @@ public class CMISTest
     {
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
+
         final Pair<FileInfo, FileInfo> folderAndDocument = transactionService.getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionCallback<Pair<FileInfo, FileInfo>>()
-                {
+                new RetryingTransactionCallback<Pair<FileInfo, FileInfo>>() {
                     private final static String TEST_NAME = "mnt10548test-";
-                    
+
                     @Override
                     public Pair<FileInfo, FileInfo> execute() throws Throwable
                     {
                         NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
-                        
+
                         /* Create folder within companyHome */
                         String folderName = TEST_NAME + GUID.generate();
                         FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
                         nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
                         assertNotNull(folderInfo);
-                        
+
                         /* Create content */
                         String docName = TEST_NAME + GUID.generate();
                         FileInfo document = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
                         assertNotNull(document);
                         nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, docName);
-                        
+
                         /* Add some tags */
                         NodeRef nodeRef = document.getNodeRef();
                         taggingService.addTag(nodeRef, "tag1");
@@ -2391,60 +2329,57 @@ public class CMISTest
                         return new Pair<FileInfo, FileInfo>(folderInfo, document);
                     }
                 });
-        
+
         ObjectData objData = withCmisService(
-                new CmisServiceCallback<ObjectData>() 
-                {
+                new CmisServiceCallback<ObjectData>() {
                     private static final String FILE_FOLDER_SEPARATOR = "/";
-                    
+
                     @Override
-                    public ObjectData execute(CmisService cmisService) 
+                    public ObjectData execute(CmisService cmisService)
                     {
                         List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
                         assertTrue(repositories.size() > 0);
                         RepositoryInfo repo = repositories.get(0);
                         String repositoryId = repo.getId();
-                        
+
                         String path = FILE_FOLDER_SEPARATOR + folderAndDocument.getFirst().getName() + FILE_FOLDER_SEPARATOR + folderAndDocument.getSecond().getName();
                         /* get CMIS object of document */
                         ObjectData objData = cmisService.getObjectByPath(repositoryId, path, null, false, null, null, false, false, null);
                         return objData;
                     }
                 }, CmisVersion.CMIS_1_1);
-        
+
         Map<String, PropertyData<?>> cmisProps = objData.getProperties().getProperties();
-        
+
         String taggable = ContentModel.ASPECT_TAGGABLE.getPrefixedQName(namespaceService).toPrefixString();
         PropertyData<?> propData = cmisProps.get(taggable);
         assertNotNull(propData);
-        
+
         List<?> props = propData.getValues();
         assertTrue(props.size() == 3);
-        
+
         /* MNT-10548 fix : CMIS should return List of String, not List of NodeRef */
-        for(Object o : props)
+        for (Object o : props)
         {
             assertTrue(o.getClass() + " found but String expected", o instanceof String);
         }
     }
 
     /**
-     * CMIS 1.0 aspect properties should provide the following CMIS attributes:
-     * propertyDefinitionId, displayName, localName, queryName
+     * CMIS 1.0 aspect properties should provide the following CMIS attributes: propertyDefinitionId, displayName, localName, queryName
      */
     @Test
     public void testMNT10021() throws Exception
     {
         final String folderName = "testfolder." + GUID.generate();
         final String docName = "testdoc.txt." + GUID.generate();
-        
+
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
         try
         {
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-            {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -2465,8 +2400,7 @@ public class CMISTest
                 }
             });
 
-            final ObjectData objectData = withCmisService(new CmisServiceCallback<ObjectData>()
-            {
+            final ObjectData objectData = withCmisService(new CmisServiceCallback<ObjectData>() {
                 @Override
                 public ObjectData execute(CmisService cmisService)
                 {
@@ -2519,18 +2453,16 @@ public class CMISTest
             AuthenticationUtil.popAuthentication();
         }
     }
-    
-	@Test
-	public void dictionaryTest()
-	{
-        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-        {
+
+    @Test
+    public void dictionaryTest()
+    {
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
                 M2Model customModel = M2Model.createModel(
-                        Thread.currentThread().getContextClassLoader().
-                        getResourceAsStream("dictionary/dictionarydaotest_model1.xml"));
+                        Thread.currentThread().getContextClassLoader().getResourceAsStream("dictionary/dictionarydaotest_model1.xml"));
                 dictionaryDAO.putModel(customModel);
 
                 assertNotNull(cmisDictionaryService.findType("P:cm:dublincore"));
@@ -2540,8 +2472,7 @@ public class CMISTest
             }
         }, "user1", "tenant1");
 
-        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-        {
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -2569,8 +2500,7 @@ public class CMISTest
         {
             // Delete the entries, it simulates just installed Alfresco for reproduce the issue
             final Long appId = auditSubsystem.getAuditApplicationByName("CMISChangeLog").getApplicationId();
-            RetryingTransactionCallback<Void> deletedCallback = new RetryingTransactionCallback<Void>()
-            {
+            RetryingTransactionCallback<Void> deletedCallback = new RetryingTransactionCallback<Void>() {
                 public Void execute() throws Throwable
                 {
                     auditDAO.deleteAuditEntries(appId, null, null);
@@ -2580,8 +2510,7 @@ public class CMISTest
             transactionService.getRetryingTransactionHelper().doInTransaction(deletedCallback);
 
             // Retrieve initial latestChangeLogToken
-            final String initialChangeLogToken = withCmisService(new CmisServiceCallback<String>()
-            {
+            final String initialChangeLogToken = withCmisService(new CmisServiceCallback<String>() {
                 @Override
                 public String execute(CmisService cmisService)
                 {
@@ -2603,7 +2532,7 @@ public class CMISTest
             AuthenticationUtil.popAuthentication();
         }
     }
-    
+
     /**
      * MNT-11726: Test that {@link CMISChangeEvent} contains objectId of node in short form (without StoreRef).
      */
@@ -2612,14 +2541,13 @@ public class CMISTest
     {
         // setUp audit subsystem
         setupAudit();
-        
+
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
+
         try
         {
-            final String changeToken = withCmisService(new CmisServiceCallback<String>()
-            {
+            final String changeToken = withCmisService(new CmisServiceCallback<String>() {
                 @Override
                 public String execute(CmisService cmisService)
                 {
@@ -2632,8 +2560,7 @@ public class CMISTest
                 }
             }, CmisVersion.CMIS_1_1);
 
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-            {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -2658,9 +2585,8 @@ public class CMISTest
                     return null;
                 }
             });
-            
-            withCmisService(new CmisServiceCallback<Void>()
-            {
+
+            withCmisService(new CmisServiceCallback<Void>() {
                 @Override
                 public Void execute(CmisService cmisService)
                 {
@@ -2675,8 +2601,8 @@ public class CMISTest
                     {
                         ChangeType changeType = od.getChangeEventInfo().getChangeType();
                         Object objectId = od.getProperties().getProperties().get("cmis:objectId").getValues().get(0);
-                        
-                        assertFalse("CMISChangeEvent " + changeType + " should store short form of objectId " + objectId, 
+
+                        assertFalse("CMISChangeEvent " + changeType + " should store short form of objectId " + objectId,
                                 objectId.toString().contains(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.toString()));
                     }
                     int expectAtLeast = changes.getObjects().size();
@@ -2691,7 +2617,7 @@ public class CMISTest
                     changes = cmisService.getContentChanges(repositoryId, new Holder<String>(changeToken), Boolean.TRUE, null, Boolean.FALSE, Boolean.FALSE, BigInteger.valueOf(1), null);
                     assertEquals("Expected to still get changes", changes.getObjects().size(), 1);
                     // Integery.MAX_VALUE must be handled
-                    //      This will limit the number to a sane value
+                    // This will limit the number to a sane value
                     changes = cmisService.getContentChanges(repositoryId, new Holder<String>(changeToken), Boolean.TRUE, null, Boolean.FALSE, Boolean.FALSE, BigInteger.valueOf(Integer.MAX_VALUE), null);
                     assertTrue("Expected to still get changes", changes.getObjects().size() >= expectAtLeast);
                     // but not negative
@@ -2715,7 +2641,7 @@ public class CMISTest
             AuthenticationUtil.popAuthentication();
         }
     }
-    
+
     private void setupAudit()
     {
         UserAuditFilter userAuditFilter = new UserAuditFilter();
@@ -2725,9 +2651,8 @@ public class CMISTest
         auditComponent.setUserAuditFilter(userAuditFilter);
         AuditServiceImpl auditServiceImpl = (AuditServiceImpl) ctx.getBean("auditService");
         auditServiceImpl.setAuditComponent(auditComponent);
-        
-        RetryingTransactionCallback<Void> initAudit = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> initAudit = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Exception
             {
                 auditSubsystem.stop();
@@ -2737,7 +2662,7 @@ public class CMISTest
                 return null;
             }
         };
-        transactionService.getRetryingTransactionHelper().doInTransaction(initAudit, false, true); 
+        transactionService.getRetryingTransactionHelper().doInTransaction(initAudit, false, true);
     }
 
     /**
@@ -2762,8 +2687,7 @@ public class CMISTest
             String folder = GUID.generate();
             FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folder, ContentModel.TYPE_FOLDER);
 
-            final String actualToken = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<String>()
-            {
+            final String actualToken = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<String>() {
                 public String execute() throws Exception
                 {
                     return cmisConnector.getRepositoryInfo(CmisVersion.CMIS_1_1).getLatestChangeLogToken();
@@ -2794,8 +2718,7 @@ public class CMISTest
             assertEquals(events.get(2).getChangeEventInfo().getChangeType(), ChangeType.UPDATED);
 
             // test rename
-            final String actualToken2 = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<String>()
-            {
+            final String actualToken2 = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<String>() {
                 public String execute() throws Exception
                 {
                     return cmisConnector.getRepositoryInfo(CmisVersion.CMIS_1_1).getLatestChangeLogToken();
@@ -2815,8 +2738,7 @@ public class CMISTest
             String targetFolder = GUID.generate();
             FileInfo targetFolderInfo = fileFolderService.create(companyHomeNodeRef, targetFolder, ContentModel.TYPE_FOLDER);
 
-            final String actualToken3 = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<String>()
-            {
+            final String actualToken3 = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<String>() {
                 public String execute() throws Exception
                 {
                     return cmisConnector.getRepositoryInfo(CmisVersion.CMIS_1_1).getLatestChangeLogToken();
@@ -2838,9 +2760,10 @@ public class CMISTest
             AuthenticationUtil.popAuthentication();
         }
     }
-    
+
     /**
      * MNT-11304: Test that Alfresco has no default boundaries for decimals
+     * 
      * @throws Exception
      */
     @Test
@@ -2848,11 +2771,10 @@ public class CMISTest
     {
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
+
         try
         {
-            withCmisService(new CmisServiceCallback<Void>()
-            {
+            withCmisService(new CmisServiceCallback<Void>() {
                 @Override
                 public Void execute(CmisService cmisService)
                 {
@@ -2860,46 +2782,43 @@ public class CMISTest
                     assertTrue(repositories.size() > 0);
                     RepositoryInfo repo = repositories.get(0);
                     String repositoryId = repo.getId();
-                    
+
                     TypeDefinition decimalTypeDef = cmisService.getTypeDefinition(repositoryId, "D:tcdm:testdecimalstype", null);
-                    
-                    PropertyDecimalDefinitionImpl floatNoBoundsTypeDef = 
-                            (PropertyDecimalDefinitionImpl)decimalTypeDef.getPropertyDefinitions().get("tcdm:float");
-                    PropertyDecimalDefinitionImpl doubleNoBoundsTypeDef = 
-                            (PropertyDecimalDefinitionImpl)decimalTypeDef.getPropertyDefinitions().get("tcdm:double");
-                    
-                    PropertyDecimalDefinitionImpl floatWithBoundsTypeDef = 
-                            (PropertyDecimalDefinitionImpl)decimalTypeDef.getPropertyDefinitions().get("tcdm:floatwithbounds");
-                    PropertyDecimalDefinitionImpl doubleWithBoundsTypeDef = 
-                            (PropertyDecimalDefinitionImpl)decimalTypeDef.getPropertyDefinitions().get("tcdm:doublewithbounds");
-                    
+
+                    PropertyDecimalDefinitionImpl floatNoBoundsTypeDef = (PropertyDecimalDefinitionImpl) decimalTypeDef.getPropertyDefinitions().get("tcdm:float");
+                    PropertyDecimalDefinitionImpl doubleNoBoundsTypeDef = (PropertyDecimalDefinitionImpl) decimalTypeDef.getPropertyDefinitions().get("tcdm:double");
+
+                    PropertyDecimalDefinitionImpl floatWithBoundsTypeDef = (PropertyDecimalDefinitionImpl) decimalTypeDef.getPropertyDefinitions().get("tcdm:floatwithbounds");
+                    PropertyDecimalDefinitionImpl doubleWithBoundsTypeDef = (PropertyDecimalDefinitionImpl) decimalTypeDef.getPropertyDefinitions().get("tcdm:doublewithbounds");
+
                     // test that there is not default boundaries for decimals
                     assertNull(floatNoBoundsTypeDef.getMinValue());
                     assertNull(floatNoBoundsTypeDef.getMaxValue());
-                    
+
                     assertNull(doubleNoBoundsTypeDef.getMinValue());
                     assertNull(doubleNoBoundsTypeDef.getMaxValue());
-                    
+
                     // test for pre-defined boundaries
                     assertTrue(floatWithBoundsTypeDef.getMinValue().equals(BigDecimal.valueOf(-10f)));
                     assertTrue(floatWithBoundsTypeDef.getMaxValue().equals(BigDecimal.valueOf(10f)));
-                    
+
                     assertTrue(doubleWithBoundsTypeDef.getMinValue().equals(BigDecimal.valueOf(-10d)));
                     assertTrue(doubleWithBoundsTypeDef.getMaxValue().equals(BigDecimal.valueOf(10d)));
 
                     return null;
                 }
             }, CmisVersion.CMIS_1_1);
-            
+
         }
         finally
         {
             AuthenticationUtil.popAuthentication();
         }
     }
-    
+
     /**
      * MNT-11876 : Test that Alfresco CMIS 1.1 Implementation is returning aspect and aspect properties as extension data
+     * 
      * @throws Exception
      */
     @Test
@@ -2907,14 +2826,13 @@ public class CMISTest
     {
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
+
         final String FOLDER = "testExtensionDataIsReturnedViaCmis1_1-" + GUID.generate();
-        final String CONTENT   = FOLDER + "-file";
-        
+        final String CONTENT = FOLDER + "-file";
+
         try
         {
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-            {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -2937,9 +2855,8 @@ public class CMISTest
                     return null;
                 }
             });
-            
-            final ObjectData objectData = withCmisService(new CmisServiceCallback<ObjectData>()
-            {
+
+            final ObjectData objectData = withCmisService(new CmisServiceCallback<ObjectData>() {
                 @Override
                 public ObjectData execute(CmisService cmisService)
                 {
@@ -2947,7 +2864,7 @@ public class CMISTest
                     assertTrue(repositories.size() > 0);
                     RepositoryInfo repo = repositories.get(0);
                     String repositoryId = repo.getId();
-                    // get object data 
+                    // get object data
                     ObjectData objectData = cmisService.getObjectByPath(repositoryId, "/" + FOLDER + "/" + CONTENT, null, true,
                             IncludeRelationships.NONE, null, false, true, null);
                     return objectData;
@@ -2956,10 +2873,10 @@ public class CMISTest
 
             // get extension data from object properties
             List<CmisExtensionElement> extensions = objectData.getProperties().getExtensions().iterator().next().getChildren();
-            
-            Set<String> appliedAspects   = new HashSet<String>();
+
+            Set<String> appliedAspects = new HashSet<String>();
             Set<String> aspectProperties = new HashSet<String>();
-            
+
             for (CmisExtensionElement extension : extensions)
             {
                 if (CMISConnector.PROPERTIES.equals(extension.getName()))
@@ -2980,7 +2897,7 @@ public class CMISTest
                     appliedAspects.add(extension.getValue());
                 }
             }
-            
+
             // extension data should contain applied aspects and aspect properties
             assertTrue("Extensions should contain " + ContentModel.ASPECT_GEOGRAPHIC, appliedAspects.contains("P:cm:geographic"));
             assertTrue("Extensions should contain " + ContentModel.PROP_LATITUDE, aspectProperties.contains("cm:latitude"));
@@ -2991,11 +2908,9 @@ public class CMISTest
             AuthenticationUtil.popAuthentication();
         }
     }
-    
+
     /**
-     * MNT-10165: Check that all concomitant basic CMIS permissions are deleted
-     * when permission is deleted vai CMIS 1.1 API. For Atom binding it applies
-     * new set of permissions instead of deleting the old ones.
+     * MNT-10165: Check that all concomitant basic CMIS permissions are deleted when permission is deleted vai CMIS 1.1 API. For Atom binding it applies new set of permissions instead of deleting the old ones.
      */
     @Test
     public void testRemoveACL() throws Exception
@@ -3011,10 +2926,9 @@ public class CMISTest
             {
                 authorityService.createAuthority(AuthorityType.GROUP, groupName);
             }
-            
+
             final FileInfo document = transactionService.getRetryingTransactionHelper().doInTransaction(
-                    new RetryingTransactionCallback<FileInfo>()
-                    {
+                    new RetryingTransactionCallback<FileInfo>() {
                         @Override
                         public FileInfo execute() throws Throwable
                         {
@@ -3044,7 +2958,7 @@ public class CMISTest
             permissionService.setPermission(document.getNodeRef(), testGroup, PermissionService.COORDINATOR, true);
             permissions = permissionService.getAllSetPermissions(document.getNodeRef());
 
-            Map<String , String> docPermissions = new HashMap<String, String>();
+            Map<String, String> docPermissions = new HashMap<String, String>();
             for (AccessPermission permission : permissions)
             {
                 docPermissions.put(permission.getAuthority(), permission.getPermission());
@@ -3052,9 +2966,8 @@ public class CMISTest
             assertTrue(docPermissions.keySet().contains(testGroup));
             assertEquals(docPermissions.get(testGroup), PermissionService.COORDINATOR);
 
-            // update permissions for group1 via CMIS 1.1 API 
-            withCmisService(new CmisServiceCallback<Void>()
-            {
+            // update permissions for group1 via CMIS 1.1 API
+            withCmisService(new CmisServiceCallback<Void>() {
                 @Override
                 public Void execute(CmisService cmisService)
                 {
@@ -3102,19 +3015,18 @@ public class CMISTest
             AuthenticationUtil.popAuthentication();
         }
     }
-    
+
     /**
      * ACE-2904
      */
     @Test
     public void testACE2904()
-    {                                   // Basic CMIS Types                                                               // Additional types from Content Model
-        final String[] types =        { "cmis:document", "cmis:relationship", "cmis:folder", "cmis:policy", "cmis:item", "R:cm:replaces", "P:cm:author", "I:cm:cmobject" };
-        final String[] displayNames = { "Document",      "Relationship",      "Folder",      "Policy",      "Item Type", "Replaces",      "Author",      "Object" };
-        final String[] descriptions = { "Document Type", "Relationship Type", "Folder Type", "Policy Type", "CMIS Item", "Replaces",      "Author",      "I:cm:cmobject" };
+    { // Basic CMIS Types // Additional types from Content Model
+        final String[] types = {"cmis:document", "cmis:relationship", "cmis:folder", "cmis:policy", "cmis:item", "R:cm:replaces", "P:cm:author", "I:cm:cmobject"};
+        final String[] displayNames = {"Document", "Relationship", "Folder", "Policy", "Item Type", "Replaces", "Author", "Object"};
+        final String[] descriptions = {"Document Type", "Relationship Type", "Folder Type", "Policy Type", "CMIS Item", "Replaces", "Author", "I:cm:cmobject"};
 
-        CmisServiceCallback<String> callback = new CmisServiceCallback<String>()
-        {
+        CmisServiceCallback<String> callback = new CmisServiceCallback<String>() {
             @Override
             public String execute(CmisService cmisService)
             {
@@ -3130,7 +3042,7 @@ public class CMISTest
                     assertNotNull("The display name is incorrect. Please, refer to ACE-2904.", def.getDisplayName());
                     assertEquals("The display name is incorrect. Please, refer to ACE-2904.", def.getDisplayName(), displayNames[i]);
                     assertEquals("The description is incorrect. Please, refer to ACE-2904.", def.getDescription(), descriptions[i]);
-                    
+
                     for (PropertyDefinition<?> property : def.getPropertyDefinitions().values())
                     {
                         assertNotNull("Property definition dispaly name is incorrect. Please, refer to ACE-2904.", property.getDisplayName());
@@ -3146,27 +3058,26 @@ public class CMISTest
         withCmisService(callback, CmisVersion.CMIS_1_1);
         withCmisService(callback, CmisVersion.CMIS_1_0);
     }
-    
+
     /**
      * ACE-3322
      */
     @Test
     public void testACE3322()
     {
-        final String[] types = { "cmis:document", "cmis:relationship", "cmis:folder", "cmis:item" };
-        
-        CmisServiceCallback<String> callback = new CmisServiceCallback<String>()
-        {
+        final String[] types = {"cmis:document", "cmis:relationship", "cmis:folder", "cmis:item"};
+
+        CmisServiceCallback<String> callback = new CmisServiceCallback<String>() {
             @Override
             public String execute(CmisService cmisService)
             {
                 for (int i = 0; i < types.length; i++)
                 {
-                    
+
                     List<TypeDefinitionWrapper> baseTypes = cmisDictionaryService.getBaseTypes();
                     assertNotNull(baseTypes);
                     checkDefs(baseTypes);
-                    
+
                     List<TypeDefinitionWrapper> children = cmisDictionaryService.getChildren(types[i]);
                     assertNotNull(children);
 
@@ -3175,7 +3086,7 @@ public class CMISTest
                 }
                 return "";
             };
-            
+
             private void checkDefs(List<TypeDefinitionWrapper> defs)
             {
                 for (TypeDefinitionWrapper def : defs)
@@ -3209,8 +3120,7 @@ public class CMISTest
 
         try
         {
-            final FileInfo doc = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()
-            {
+            final FileInfo doc = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>() {
                 @Override
                 public FileInfo execute() throws Throwable
                 {
@@ -3236,9 +3146,9 @@ public class CMISTest
                     return document;
                 }
             });
-            withCmisService(new CmisServiceCallback<Void>()
-            {
-                @Override public Void execute(CmisService cmisService)
+            withCmisService(new CmisServiceCallback<Void>() {
+                @Override
+                public Void execute(CmisService cmisService)
                 {
                     final String documentNodeRefId = doc.getNodeRef().toString();
                     final String repositoryId = cmisService.getRepositoryInfos(null).get(0).getId();
@@ -3280,11 +3190,8 @@ public class CMISTest
     }
 
     /**
-     * Test to ensure auto version behavior for update properties, set and delete content using both Alfresco and CMIS perspectives.
-     * Testing different combinations of <b>cm:initialVersion</b>, <b>cm:autoVersion</b> and <b>cm:autoVersionOnUpdateProps</b> properties 
-     * <br>
-     * OnUpdateProperties MINOR version should be created if <b>cm:initialVersion</b> and <b>cm:autoVersionOnUpdateProps</b> are both TRUE
-     * <br>
+     * Test to ensure auto version behavior for update properties, set and delete content using both Alfresco and CMIS perspectives. Testing different combinations of <b>cm:initialVersion</b>, <b>cm:autoVersion</b> and <b>cm:autoVersionOnUpdateProps</b> properties <br>
+     * OnUpdateProperties MINOR version should be created if <b>cm:initialVersion</b> and <b>cm:autoVersionOnUpdateProps</b> are both TRUE <br>
      * OnContentUpdate MINOR version should be created if <b>cm:initialVersion</b> and <b>cm:autoVersion</b> are both TRUE
      * 
      * @throws Exception
@@ -3294,17 +3201,16 @@ public class CMISTest
     {
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
+
         final String FOLDER = "testUpdatePropertiesSetDeleteContentVersioning-" + GUID.generate();
         final String DOC1 = "documentProperties1-" + GUID.generate();
         final String DOC2 = "documentProperties2-" + GUID.generate();
         final String DOC3 = "documentProperties3-" + GUID.generate();
         final String DOC4 = "documentProperties4-" + GUID.generate();
-        
+
         try
         {
-            final List<FileInfo> docs = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<FileInfo>>()
-            {
+            final List<FileInfo> docs = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<FileInfo>>() {
                 @Override
                 public List<FileInfo> execute() throws Throwable
                 {
@@ -3328,33 +3234,33 @@ public class CMISTest
                     document = fileFolderService.create(folderInfo.getNodeRef(), DOC4, ContentModel.TYPE_CONTENT);
                     nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, DOC4);
                     docs.add(document);
-                    
+
                     Map<QName, Serializable> props = new HashMap<QName, Serializable>();
                     props.put(ContentModel.PROP_TITLE, "Initial Title");
                     props.put(ContentModel.PROP_DESCRIPTION, "Initial Description");
-                    
+
                     for (FileInfo fileInfo : docs)
                     {
                         nodeService.addAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_TITLED, props);
                     }
-                    
+
                     // apply versionable aspect with properties
                     props = new HashMap<QName, Serializable>();
                     // ContentModel.PROP_INITIAL_VERSION always true
                     props.put(ContentModel.PROP_INITIAL_VERSION, true);
-                    
+
                     props.put(ContentModel.PROP_AUTO_VERSION, false);
                     props.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
                     versionService.ensureVersioningEnabled(docs.get(0).getNodeRef(), props);
-                    
+
                     props.put(ContentModel.PROP_AUTO_VERSION, false);
                     props.put(ContentModel.PROP_AUTO_VERSION_PROPS, true);
                     versionService.ensureVersioningEnabled(docs.get(1).getNodeRef(), props);
-                    
+
                     props.put(ContentModel.PROP_AUTO_VERSION, true);
                     props.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
                     versionService.ensureVersioningEnabled(docs.get(2).getNodeRef(), props);
-                    
+
                     props.put(ContentModel.PROP_AUTO_VERSION, true);
                     props.put(ContentModel.PROP_AUTO_VERSION_PROPS, true);
                     versionService.ensureVersioningEnabled(docs.get(3).getNodeRef(), props);
@@ -3362,58 +3268,56 @@ public class CMISTest
                     return docs;
                 }
             });
-            
+
             assertVersions(docs.get(0).getNodeRef(), "1.0", VersionType.MAJOR);
             assertVersions(docs.get(1).getNodeRef(), "1.0", VersionType.MAJOR);
             assertVersions(docs.get(2).getNodeRef(), "1.0", VersionType.MAJOR);
             assertVersions(docs.get(3).getNodeRef(), "1.0", VersionType.MAJOR);
-            
+
             // update node properties using Alfresco
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Void>>()
-            {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Void>>() {
                 @Override
                 public List<Void> execute() throws Throwable
                 {
                     for (FileInfo fileInfo : docs)
                     {
                         Map<QName, Serializable> props = nodeService.getProperties(fileInfo.getNodeRef());
-                        
+
                         props.put(ContentModel.PROP_DESCRIPTION, "description-" + GUID.generate());
                         props.put(ContentModel.PROP_TITLE, "title-" + GUID.generate());
-                        
+
                         nodeService.setProperties(fileInfo.getNodeRef(), props);
                     }
                     return null;
                 }
             });
-            
+
             assertVersions(docs.get(0).getNodeRef(), "1.0", VersionType.MAJOR);
             assertVersions(docs.get(1).getNodeRef(), "1.1", VersionType.MINOR);
             assertVersions(docs.get(2).getNodeRef(), "1.0", VersionType.MAJOR);
             assertVersions(docs.get(3).getNodeRef(), "1.1", VersionType.MINOR);
-            
-            // update properties using CMIS perspective 
-            final String repositoryId = withCmisService(new CmisServiceCallback<String>()
-            {
+
+            // update properties using CMIS perspective
+            final String repositoryId = withCmisService(new CmisServiceCallback<String>() {
                 @Override
                 public String execute(CmisService cmisService)
                 {
                     String repositoryId = cmisService.getRepositoryInfos(null).get(0).getId();
-                    
+
                     for (FileInfo fileInfo : docs)
                     {
                         PropertiesImpl properties = new PropertiesImpl();
                         properties.addProperty(new PropertyStringImpl(PropertyIds.DESCRIPTION, "description-" + GUID.generate()));
-                        
+
                         cmisService.updateProperties(repositoryId, new Holder<String>(fileInfo.getNodeRef().toString()), null, properties, null);
                     }
-                    //This extra check was added due to MNT-16641.
+                    // This extra check was added due to MNT-16641.
                     {
                         PropertiesImpl properties = new PropertiesImpl();
                         properties.addProperty(new PropertyStringImpl(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, "P:cm:lockable"));
 
                         Set<QName> existingAspects = nodeService.getAspects(docs.get(0).getNodeRef());
-                        cmisService.updateProperties(repositoryId,new Holder<String>(docs.get(0).getNodeRef().toString()), null, properties, null);
+                        cmisService.updateProperties(repositoryId, new Holder<String>(docs.get(0).getNodeRef().toString()), null, properties, null);
                         Set<QName> updatedAspects = nodeService.getAspects(docs.get(0).getNodeRef());
                         updatedAspects.removeAll(existingAspects);
 
@@ -3423,36 +3327,34 @@ public class CMISTest
                     return repositoryId;
                 }
             }, CmisVersion.CMIS_1_1);
-            
+
             assertVersions(docs.get(0).getNodeRef(), "1.0", VersionType.MAJOR);
             assertVersions(docs.get(1).getNodeRef(), "1.2", VersionType.MINOR);
             assertVersions(docs.get(2).getNodeRef(), "1.0", VersionType.MAJOR);
             assertVersions(docs.get(3).getNodeRef(), "1.2", VersionType.MINOR);
-            
+
             // CMIS setContentStream
-            withCmisService(new CmisServiceCallback<Void>()
-            {
+            withCmisService(new CmisServiceCallback<Void>() {
                 @Override
                 public Void execute(CmisService cmisService)
                 {
                     for (FileInfo fileInfo : docs)
                     {
                         ContentStreamImpl contentStream = new ContentStreamImpl(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, "Content " + GUID.generate());
-                        
+
                         cmisService.setContentStream(repositoryId, new Holder<String>(fileInfo.getNodeRef().toString()), true, null, contentStream, null);
                     }
                     return null;
                 }
             }, CmisVersion.CMIS_1_1);
-            
+
             assertVersions(docs.get(0).getNodeRef(), "1.0", VersionType.MAJOR);
             assertVersions(docs.get(1).getNodeRef(), "1.2", VersionType.MINOR);
             assertVersions(docs.get(2).getNodeRef(), "1.1", VersionType.MINOR);
             assertVersions(docs.get(3).getNodeRef(), "1.3", VersionType.MINOR);
-            
+
             // update content using Alfresco
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Void>>()
-            {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Void>>() {
                 @Override
                 public List<Void> execute() throws Throwable
                 {
@@ -3464,15 +3366,14 @@ public class CMISTest
                     return null;
                 }
             });
-            
+
             assertVersions(docs.get(0).getNodeRef(), "1.0", VersionType.MAJOR);
             assertVersions(docs.get(1).getNodeRef(), "1.2", VersionType.MINOR);
             assertVersions(docs.get(2).getNodeRef(), "1.2", VersionType.MINOR);
             assertVersions(docs.get(3).getNodeRef(), "1.4", VersionType.MINOR);
-            
+
             // CMIS deleteContentStream
-            withCmisService(new CmisServiceCallback<Void>()
-            {
+            withCmisService(new CmisServiceCallback<Void>() {
                 @Override
                 public Void execute(CmisService cmisService)
                 {
@@ -3483,7 +3384,7 @@ public class CMISTest
                     return null;
                 }
             }, CmisVersion.CMIS_1_1);
-            
+
             assertVersions(docs.get(0).getNodeRef(), "1.0", VersionType.MAJOR);
             assertVersions(docs.get(1).getNodeRef(), "1.2", VersionType.MINOR);
             assertVersions(docs.get(2).getNodeRef(), "1.3", VersionType.MINOR);
@@ -3494,51 +3395,47 @@ public class CMISTest
             AuthenticationUtil.popAuthentication();
         }
     }
-    
+
     private void assertVersions(final NodeRef nodeRef, final String expectedVersionLabel, final VersionType expectedVersionType)
     {
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Void>>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Void>>() {
             @Override
             public List<Void> execute() throws Throwable
             {
                 assertTrue("Node should be versionable", nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE));
-                
+
                 Version version = versionService.getCurrentVersion(nodeRef);
-                
+
                 assertNotNull(version);
                 assertEquals(expectedVersionLabel, version.getVersionLabel());
                 assertEquals(expectedVersionType, version.getVersionType());
-                
+
                 return null;
             }
         });
-        
-        withCmisService(new CmisServiceCallback<Void>()
-        {
+
+        withCmisService(new CmisServiceCallback<Void>() {
             @Override
             public Void execute(CmisService cmisService)
             {
                 String repositoryId = cmisService.getRepositoryInfos(null).get(0).getId();
-                
-                ObjectData data = 
-                    cmisService.getObjectOfLatestVersion(repositoryId, nodeRef.toString(), null, Boolean.FALSE, null, null, null, null, null, null, null);
-                
+
+                ObjectData data = cmisService.getObjectOfLatestVersion(repositoryId, nodeRef.toString(), null, Boolean.FALSE, null, null, null, null, null, null, null);
+
                 assertNotNull(data);
-                
+
                 PropertyData<?> prop = data.getProperties().getProperties().get(PropertyIds.VERSION_LABEL);
                 Object versionLabelCmisValue = prop.getValues().get(0);
-                
+
                 assertEquals(expectedVersionLabel, versionLabelCmisValue);
-                
+
                 return null;
             }
         }, CmisVersion.CMIS_1_1);
     }
-    
+
     /**
-     * Test to ensure that set of aspect returned by cmisService#getAllVersions for latest version is the same 
-     * as for the object returned by cmisService#getObjectByPath.
+     * Test to ensure that set of aspect returned by cmisService#getAllVersions for latest version is the same as for the object returned by cmisService#getObjectByPath.
      * 
      * See <a href="https://issues.alfresco.com/jira/browse/MNT-9557">MNT-9557</a>
      */
@@ -3546,17 +3443,16 @@ public class CMISTest
     public void testLastVersionOfVersionSeries()
     {
         CallContext context = new SimpleCallContext("admin", "admin", CmisVersion.CMIS_1_0);
-        
+
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
+
         final String FOLDER = "testUpdatePropertiesSetDeleteContentVersioning-" + GUID.generate(),
-                     DOC = "documentProperties-" + GUID.generate();
-        
+                DOC = "documentProperties-" + GUID.generate();
+
         try
         {
-            final NodeRef nodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
-            {
+            final NodeRef nodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>() {
                 @Override
                 public NodeRef execute() throws Throwable
                 {
@@ -3574,8 +3470,7 @@ public class CMISTest
                 }
             });
 
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-            {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -3595,8 +3490,7 @@ public class CMISTest
                 }
             });
 
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-            {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -3608,8 +3502,7 @@ public class CMISTest
                 }
             });
 
-            final String NEW_DOC_NAME = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<String>()
-            {
+            final String NEW_DOC_NAME = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<String>() {
                 @Override
                 public String execute() throws Throwable
                 {
@@ -3624,25 +3517,24 @@ public class CMISTest
 
             CmisService cmisService = factory.getService(context);
             String repositoryId = cmisService.getRepositoryInfos(null).get(0).getId();
-            
-            List<ObjectData> versions = 
-                cmisService.getAllVersions(repositoryId, nodeRef.toString(), null, null, null, null);
+
+            List<ObjectData> versions = cmisService.getAllVersions(repositoryId, nodeRef.toString(), null, null, null, null);
             assertNotNull(versions);
             // get the latest version
             ObjectData latestVersion = versions.get(0);
             // get the object
-            ObjectData object = 
-                // cmisService.getObjectOfLatestVersion(repositoryId, nodeRef.toString(), null, false, null, null, null, null, false, false, null);
-                cmisService.getObjectByPath(repositoryId, "/" + FOLDER + "/" + NEW_DOC_NAME, null, null, null, null, false, false, null);
-            
+            ObjectData object =
+                    // cmisService.getObjectOfLatestVersion(repositoryId, nodeRef.toString(), null, false, null, null, null, null, false, false, null);
+                    cmisService.getObjectByPath(repositoryId, "/" + FOLDER + "/" + NEW_DOC_NAME, null, null, null, null, false, false, null);
+
             assertNotNull(latestVersion);
             assertNotNull(object);
-            
+
             Object objectDescriptionString = object.getProperties().getProperties().get("cmis:name").getValues().get(0);
             Object latestVersionDescriptionString = latestVersion.getProperties().getProperties().get("cmis:name").getValues().get(0);
             // ensure that node and latest version both have same description
             assertEquals(objectDescriptionString, latestVersionDescriptionString);
-            
+
             Set<String> documentAspects = new HashSet<String>();
             for (CmisExtensionElement cmisEE : object.getProperties().getExtensions().get(0).getChildren())
             {
@@ -3653,7 +3545,7 @@ public class CMISTest
             {
                 latestVersionAspects.add(cmisEE.getValue());
             }
-            // ensure that node and latest version both have the same set of aspects 
+            // ensure that node and latest version both have the same set of aspects
             assertEquals(latestVersionAspects, documentAspects);
         }
         finally
@@ -3663,8 +3555,7 @@ public class CMISTest
     }
 
     /**
-     * Test to ensure that versioning properties have default values defined in Alfresco content model.
-     * Testing  <b>cm:initialVersion</b>, <b>cm:autoVersion</b> and <b>cm:autoVersionOnUpdateProps</b> properties 
+     * Test to ensure that versioning properties have default values defined in Alfresco content model. Testing <b>cm:initialVersion</b>, <b>cm:autoVersion</b> and <b>cm:autoVersionOnUpdateProps</b> properties
      * 
      * @throws Exception
      */
@@ -3677,8 +3568,7 @@ public class CMISTest
         try
         {
             // Create document via CMIS
-            final NodeRef documentNodeRef = withCmisService(new CmisServiceCallback<NodeRef>()
-            {
+            final NodeRef documentNodeRef = withCmisService(new CmisServiceCallback<NodeRef>() {
                 @Override
                 public NodeRef execute(CmisService cmisService)
                 {
@@ -3703,8 +3593,7 @@ public class CMISTest
             }, CmisVersion.CMIS_1_1);
 
             // check versioning properties
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Void>>()
-            {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Void>>() {
                 @Override
                 public List<Void> execute() throws Throwable
                 {
@@ -3714,7 +3603,7 @@ public class CMISTest
                     AspectDefinition ad = dictionaryService.getAspect(ContentModel.ASPECT_VERSIONABLE);
                     Map<QName, org.alfresco.service.cmr.dictionary.PropertyDefinition> properties = ad.getProperties();
 
-                    for (QName qName : new QName[] {ContentModel.PROP_INITIAL_VERSION, ContentModel.PROP_AUTO_VERSION, ContentModel.PROP_AUTO_VERSION_PROPS})
+                    for (QName qName : new QName[]{ContentModel.PROP_INITIAL_VERSION, ContentModel.PROP_AUTO_VERSION, ContentModel.PROP_AUTO_VERSION_PROPS})
                     {
                         Serializable property = nodeService.getProperty(documentNodeRef, qName);
 
@@ -3735,7 +3624,7 @@ public class CMISTest
             AuthenticationUtil.popAuthentication();
         }
     }
-    
+
     @Test
     public void testCreateDocWithVersioningStateNone() throws Exception
     {
@@ -3745,8 +3634,7 @@ public class CMISTest
         try
         {
             // get repository id
-            final String repositoryId = withCmisService(new CmisServiceCallback<String>()
-            {
+            final String repositoryId = withCmisService(new CmisServiceCallback<String>() {
                 @Override
                 public String execute(CmisService cmisService)
                 {
@@ -3758,8 +3646,7 @@ public class CMISTest
                 }
             }, CmisVersion.CMIS_1_1);
 
-            final NodeRef documentNodeRef = withCmisService(new CmisServiceCallback<NodeRef>()
-            {
+            final NodeRef documentNodeRef = withCmisService(new CmisServiceCallback<NodeRef>() {
                 @Override
                 public NodeRef execute(CmisService cmisService)
                 {
@@ -3776,8 +3663,7 @@ public class CMISTest
             }, CmisVersion.CMIS_1_1);
 
             // check versioning properties
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Void>>()
-            {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Void>>() {
                 @Override
                 public List<Void> execute() throws Throwable
                 {
@@ -3793,7 +3679,7 @@ public class CMISTest
             AuthenticationUtil.popAuthentication();
         }
     }
-    
+
     /**
      * MNT-14951: Test that the list of parents can be retrieved for a folder.
      */
@@ -3802,14 +3688,13 @@ public class CMISTest
     {
         // setUp audit subsystem
         setupAudit();
-        
+
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
+
         try
         {
-            final NodeRef folderWithTwoParents = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
-            {
+            final NodeRef folderWithTwoParents = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>() {
                 @Override
                 public NodeRef execute() throws Throwable
                 {
@@ -3818,25 +3703,24 @@ public class CMISTest
                     String folder1 = GUID.generate();
                     FileInfo folderInfo1 = fileFolderService.create(companyHomeNodeRef, folder1, ContentModel.TYPE_FOLDER);
                     assertNotNull(folderInfo1);
-                    
+
                     String folder2 = GUID.generate();
                     FileInfo folderInfo2 = fileFolderService.create(companyHomeNodeRef, folder2, ContentModel.TYPE_FOLDER);
                     assertNotNull(folderInfo2);
-                    
+
                     // Create folder11 as a subfolder of folder1
                     String folder11 = GUID.generate();
                     FileInfo folderInfo11 = fileFolderService.create(folderInfo1.getNodeRef(), folder11, ContentModel.TYPE_FOLDER);
                     assertNotNull(folderInfo11);
-                    
+
                     // Add folder2 as second parent for folder11
                     nodeService.addChild(folderInfo2.getNodeRef(), folderInfo11.getNodeRef(), ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS);
-                    
+
                     return folderInfo11.getNodeRef();
                 }
             });
-            
-            withCmisService(new CmisServiceCallback<Void>()
-            {
+
+            withCmisService(new CmisServiceCallback<Void>() {
                 @Override
                 public Void execute(CmisService cmisService)
                 {
@@ -3846,7 +3730,7 @@ public class CMISTest
                     String repositoryId = repositories.iterator().next().getId();
 
                     List<ObjectParentData> parents = cmisService.getObjectParents(repositoryId, folderWithTwoParents.getId(), null, Boolean.FALSE, IncludeRelationships.NONE,
-                                                                                  "cmis:none", Boolean.FALSE, null);
+                            "cmis:none", Boolean.FALSE, null);
                     // Check if the second parent was also returned.
                     assertEquals(2, parents.size());
 
@@ -3860,11 +3744,10 @@ public class CMISTest
             AuthenticationUtil.popAuthentication();
         }
     }
-    /*
-     * REPO-3627 / MNT-19630: CMIS: Unable to call getAllVersions() if node is checked out and if binding type is WSDL
+
+    /* REPO-3627 / MNT-19630: CMIS: Unable to call getAllVersions() if node is checked out and if binding type is WSDL
      * 
-     * For WS binding the getAllVersions call is made with null objectId
-     */
+     * For WS binding the getAllVersions call is made with null objectId */
     @Test
     public void getAllVersionsWithNullObjectId()
     {
@@ -3879,8 +3762,7 @@ public class CMISTest
         final NodeRef fileRef = folderFileList.get(0).getNodeRef();
 
         // Create new version for file
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3892,8 +3774,7 @@ public class CMISTest
         });
 
         // Checkout document and get all versions
-        List<ObjectData> versions = withCmisService(new CmisServiceCallback<List<ObjectData>>()
-        {
+        List<ObjectData> versions = withCmisService(new CmisServiceCallback<List<ObjectData>>() {
             @Override
             public List<ObjectData> execute(CmisService cmisService)
             {
@@ -3919,16 +3800,14 @@ public class CMISTest
     }
 
     /**
-     *  Related to REPO-4613.
-     *  This test makes sure that once a copy is checked out, the private copy contains the aspect P:cm:workingcopy
+     * Related to REPO-4613. This test makes sure that once a copy is checked out, the private copy contains the aspect P:cm:workingcopy
      */
     @Test
     public void aPrivateCopyMustContainTheWorkingCopyAspect_CMIS_1_1_Version()
     {
 
         // get repository id
-        final String repositoryId = withCmisService(new CmisServiceCallback<String>()
-        {
+        final String repositoryId = withCmisService(new CmisServiceCallback<String>() {
             @Override
             public String execute(CmisService cmisService)
             {
@@ -3939,8 +3818,7 @@ public class CMISTest
             }
         }, CmisVersion.CMIS_1_1);
 
-        final Properties currentProperties = withCmisService(new CmisServiceCallback<Properties>()
-        {
+        final Properties currentProperties = withCmisService(new CmisServiceCallback<Properties>() {
             @Override
             public Properties execute(CmisService cmisService)
             {
@@ -3968,9 +3846,7 @@ public class CMISTest
     }
 
     /**
-     *  Related to REPO-4613.
-     *  This test makes sure that once a copy is checked out, updateProperties method can be called
-     *  and properly adds the new properties.
+     * Related to REPO-4613. This test makes sure that once a copy is checked out, updateProperties method can be called and properly adds the new properties.
      */
     @Category(FrequentlyFailingTests.class) // ACS-961
     @Test
@@ -3981,8 +3857,7 @@ public class CMISTest
         final String propertyValue = "My summary";
 
         // get repository id
-        final String repositoryId = withCmisService(new CmisServiceCallback<String>()
-        {
+        final String repositoryId = withCmisService(new CmisServiceCallback<String>() {
             @Override
             public String execute(CmisService cmisService)
             {
@@ -3993,8 +3868,7 @@ public class CMISTest
             }
         }, CmisVersion.CMIS_1_1);
 
-        final Properties currentProperties = withCmisService(new CmisServiceCallback<Properties>()
-        {
+        final Properties currentProperties = withCmisService(new CmisServiceCallback<Properties>() {
             @Override
             public Properties execute(CmisService cmisService)
             {
@@ -4026,7 +3900,7 @@ public class CMISTest
 
         List<String> secondaryTypeIds = (List<String>) currentProperties.getProperties().get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS).getValues();
         assertTrue(secondaryTypeIds.contains(aspectName));
-        assertEquals(currentProperties.getProperties().get(propertyName).getValues().get(0),  propertyValue);
+        assertEquals(currentProperties.getProperties().get(propertyName).getValues().get(0), propertyValue);
     }
 
     @Test
@@ -4038,8 +3912,7 @@ public class CMISTest
         {
             final NodeRef companyHome = repositoryHelper.getCompanyHome();
             // create parentFolder
-            RetryingTransactionCallback<Object> testCallbackFolder = new RetryingTransactionCallback<Object>()
-            {
+            RetryingTransactionCallback<Object> testCallbackFolder = new RetryingTransactionCallback<Object>() {
                 public Object execute() throws Throwable
                 {
                     NodeRef parentFolder = createFolder(companyHome, "testCreateParent" + GUID.generate(), ContentModel.TYPE_FOLDER);
@@ -4050,8 +3923,7 @@ public class CMISTest
 
             // create children Folders
             final List<NodeRef> folders = new ArrayList<NodeRef>();
-            RetryingTransactionCallback<Object> testCallbackChilds = new RetryingTransactionCallback<Object>()
-            {
+            RetryingTransactionCallback<Object> testCallbackChilds = new RetryingTransactionCallback<Object>() {
                 public Object execute() throws Throwable
                 {
                     for (int i = 0; i < 10; i++)
@@ -4064,18 +3936,15 @@ public class CMISTest
             transactionService.getRetryingTransactionHelper().doInTransaction(testCallbackChilds, false, true);
 
             // remove children nodes
-            executorService.submit(new Runnable()
-            {
+            executorService.submit(new Runnable() {
                 public void run()
                 {
                     for (final NodeRef node : folders)
                     {
-                        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-                        {
+                        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
                             public Void doWork() throws Exception
                             {
-                                transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-                                {
+                                transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
                                     public Void execute() throws Throwable
                                     {
                                         nodeService.deleteNode(node);
@@ -4090,8 +3959,7 @@ public class CMISTest
             });
 
             // select children nodes removed
-            withCmisService(new CmisServiceCallback<String>()
-            {
+            withCmisService(new CmisServiceCallback<String>() {
                 @Override
                 public String execute(CmisService cmisService)
                 {
@@ -4119,8 +3987,7 @@ public class CMISTest
     }
 
     /**
-     * This test ensures that a non member user of a private site, can edit metadata on a document (where the non member user
-     * has "SiteCollaborator" role) placed on the site.
+     * This test ensures that a non member user of a private site, can edit metadata on a document (where the non member user has "SiteCollaborator" role) placed on the site.
      *
      * @throws Exception
      */
@@ -4139,8 +4006,7 @@ public class CMISTest
 
         try
         {
-            fileNode = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
-            {
+            fileNode = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>() {
                 public NodeRef execute() throws Throwable
                 {
                     // Create user
@@ -4185,8 +4051,7 @@ public class CMISTest
         // Edit metadata
         final String newDescription = "new node description";
 
-        Boolean updated = withCmisService(nonMemberUsername, nonMemberPassword, new CmisServiceCallback<Boolean>()
-        {
+        Boolean updated = withCmisService(nonMemberUsername, nonMemberPassword, new CmisServiceCallback<Boolean>() {
             @Override
             public Boolean execute(CmisService cmisService)
             {

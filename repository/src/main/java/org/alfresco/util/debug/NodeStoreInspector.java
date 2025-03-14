@@ -29,9 +29,9 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
-import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -48,152 +48,131 @@ public class NodeStoreInspector
     /**
      * Dumps the contents of a store to a string.
      * 
-     * @param nodeService   the node service
-     * @param storeRef      the store reference
-     * @return              string containing textual representation of the contents of the store
+     * @param nodeService
+     *            the node service
+     * @param storeRef
+     *            the store reference
+     * @return string containing textual representation of the contents of the store
      */
     public static String dumpNodeStore(NodeService nodeService, StoreRef storeRef)
     {
         StringBuilder builder = new StringBuilder();
-        
+
         if (nodeService.exists(storeRef) == true)
         {
-            NodeRef rootNode = nodeService.getRootNode(storeRef);            
-            builder.append(outputNode(0, nodeService, rootNode));            
+            NodeRef rootNode = nodeService.getRootNode(storeRef);
+            builder.append(outputNode(0, nodeService, rootNode));
         }
         else
         {
-            builder.
-                append("The store ").
-                append(storeRef.toString()).
-                append(" does not exist.");
+            builder.append("The store ").append(storeRef.toString()).append(" does not exist.");
         }
-        
+
         return builder.toString();
     }
 
     /**
-     * Dumps the contents of a node 
+     * Dumps the contents of a node
      * 
-     * @param nodeService NodeService
-     * @param nodeRef NodeRef
+     * @param nodeService
+     *            NodeService
+     * @param nodeRef
+     *            NodeRef
      * @return String
      */
     public static String dumpNode(NodeService nodeService, NodeRef nodeRef)
     {
         StringBuilder builder = new StringBuilder();
-        
+
         if (nodeService.exists(nodeRef) == true)
         {
-            builder.append(outputNode(0, nodeService, nodeRef));            
+            builder.append(outputNode(0, nodeService, nodeRef));
         }
         else
         {
-            builder.
-                append("The node ").
-                append(nodeRef.toString()).
-                append(" does not exist.");
+            builder.append("The node ").append(nodeRef.toString()).append(" does not exist.");
         }
-        
+
         return builder.toString();
     }
-    
+
     /**
-     * Output the node 
+     * Output the node
      * 
-     * @param iIndent int
-     * @param nodeService NodeService
-     * @param nodeRef NodeRef
+     * @param iIndent
+     *            int
+     * @param nodeService
+     *            NodeService
+     * @param nodeRef
+     *            NodeRef
      * @return String
      */
     private static String outputNode(int iIndent, NodeService nodeService, NodeRef nodeRef)
     {
         StringBuilder builder = new StringBuilder();
-        
-		try
-		{
-	        QName nodeType = nodeService.getType(nodeRef);
-	        builder.
-	            append(getIndent(iIndent)).
-	            append("node: ").
-	            append(nodeRef.getId()).
-	            append(" (").
-	            append(nodeType.getLocalName());
-			
-			Collection<QName> aspects = nodeService.getAspects(nodeRef);
-			for (QName aspect : aspects) 
-			{
-				builder.
-					append(", ").
-					append(aspect.getLocalName());
-			}
-			
-	        builder.append(")\n");        
-		
-	        Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
-	        for (QName name : props.keySet())
-	        {
-				String valueAsString = "null";
-				Serializable value = props.get(name);
-				if (value != null)
-				{
-					valueAsString = value.toString();
-				}
-				
-	            builder.
-	                append(getIndent(iIndent+1)).
-	                append("@").
-	                append(name.getLocalName()).
-	                append(" = ").
-	                append(valueAsString).
-	                append("\n");
-	            
-	        }
+
+        try
+        {
+            QName nodeType = nodeService.getType(nodeRef);
+            builder.append(getIndent(iIndent)).append("node: ").append(nodeRef.getId()).append(" (").append(nodeType.getLocalName());
+
+            Collection<QName> aspects = nodeService.getAspects(nodeRef);
+            for (QName aspect : aspects)
+            {
+                builder.append(", ").append(aspect.getLocalName());
+            }
+
+            builder.append(")\n");
+
+            Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
+            for (QName name : props.keySet())
+            {
+                String valueAsString = "null";
+                Serializable value = props.get(name);
+                if (value != null)
+                {
+                    valueAsString = value.toString();
+                }
+
+                builder.append(getIndent(iIndent + 1)).append("@").append(name.getLocalName()).append(" = ").append(valueAsString).append("\n");
+
+            }
 
             Collection<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(nodeRef);
             for (ChildAssociationRef childAssocRef : childAssocRefs)
             {
-                builder.
-                    append(getIndent(iIndent+1)).
-                    append("-> ").
-                    append(childAssocRef.getQName().toString()).
-                    append(" (").
-                    append(childAssocRef.getQName().toString()).
-                    append(")\n");
-                
-                builder.append(outputNode(iIndent+2, nodeService, childAssocRef.getChildRef()));
+                builder.append(getIndent(iIndent + 1)).append("-> ").append(childAssocRef.getQName().toString()).append(" (").append(childAssocRef.getQName().toString()).append(")\n");
+
+                builder.append(outputNode(iIndent + 2, nodeService, childAssocRef.getChildRef()));
             }
 
             Collection<AssociationRef> assocRefs = nodeService.getTargetAssocs(nodeRef, RegexQNamePattern.MATCH_ALL);
             for (AssociationRef assocRef : assocRefs)
             {
-                builder.
-                    append(getIndent(iIndent+1)).
-                    append("-> associated to ").
-                    append(assocRef.getTargetRef().getId()).
-                    append("\n");
+                builder.append(getIndent(iIndent + 1)).append("-> associated to ").append(assocRef.getTargetRef().getId()).append("\n");
             }
-		}
-		catch (InvalidNodeRefException invalidNode)
-		{
-			invalidNode.printStackTrace();
-		}
-        
+        }
+        catch (InvalidNodeRefException invalidNode)
+        {
+            invalidNode.printStackTrace();
+        }
+
         return builder.toString();
     }
-    
+
     /**
      * Get the indent
      * 
-     * @param iIndent  the indent value
-     * @return         the indent string
+     * @param iIndent
+     *            the indent value
+     * @return the indent string
      */
     private static String getIndent(int iIndent)
     {
-        StringBuilder builder = new StringBuilder(iIndent*3);
+        StringBuilder builder = new StringBuilder(iIndent * 3);
         for (int i = 0; i < iIndent; i++)
         {
-            builder.append("   ");            
+            builder.append("   ");
         }
         return builder.toString();
     }

@@ -33,11 +33,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
 import jakarta.mail.Flags;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.model.ImapModel;
 import org.alfresco.repo.imap.ImapService.EmailBodyFormat;
@@ -48,22 +50,20 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Arseny Kovalchuk
  */
 public abstract class AbstractMimeMessage extends MimeMessage
-{    
+{
     protected static final String DEFAULT_SUFFIX = "@alfresco.org";
 
     protected static int MAX_RETRIES = 1;
 
     private Log logger = LogFactory.getLog(AbstractMimeMessage.class);
-    
+
     protected boolean generateBody = true;
-    
+
     protected ServiceRegistry serviceRegistry;
     protected ImapService imapService;
     protected FileInfo messageFileInfo;
@@ -100,20 +100,23 @@ public abstract class AbstractMimeMessage extends MimeMessage
                 return null;
             }
         }, false);
-        
+
     }
-    
+
     /**
      * Method must be implemented in subclasses. It usually should be used to generate message body.
      * 
      * @throws MessagingException
      */
     public abstract void buildMessageInternal() throws MessagingException;
-    
+
     /**
      * Method that checks mandatory parameter.
-     * @param parameter The parameter instance to check.
-     * @param name The name of the parameter.
+     * 
+     * @param parameter
+     *            The parameter instance to check.
+     * @param name
+     *            The name of the parameter.
      */
     protected void checkParameter(Object parameter, String name)
     {
@@ -122,41 +125,40 @@ public abstract class AbstractMimeMessage extends MimeMessage
             throw new IllegalArgumentException(name + " parameter is null.");
         }
     }
-    
+
     protected void setMessageHeaders() throws MessagingException
     {
         setHeader(MIME_VERSION, "1.0");
         // Optional headers for further implementation of multiple Alfresco server support.
         setHeader(X_ALF_NODEREF_ID, messageFileInfo.getNodeRef().getId());
         // setHeader(X_ALF_SERVER_UID, imapService.getAlfrescoServerUID());
-        
+
         setPersistedHeaders();
     }
-    
+
     private void setPersistedHeaders() throws MessagingException
     {
         NodeService nodeService = serviceRegistry.getNodeService();
         if (nodeService.hasAspect(messageFileInfo.getNodeRef(), ImapModel.ASPECT_IMAP_MESSAGE_HEADERS))
         {
             @SuppressWarnings("unchecked")
-            List<String> messageHeaders = (List<String>)nodeService.getProperty(messageFileInfo.getNodeRef(), ImapModel.PROP_MESSAGE_HEADERS);
-            
+            List<String> messageHeaders = (List<String>) nodeService.getProperty(messageFileInfo.getNodeRef(), ImapModel.PROP_MESSAGE_HEADERS);
+
             if (messageHeaders == null)
             {
                 return;
             }
-            
+
             for (String header : messageHeaders)
             {
                 String headerValue = header.substring(header.indexOf(ImapModel.MESSAGE_HEADER_TO_PERSIST_SPLITTER) + 1);
-                String headerName  = header.substring(0, header.indexOf(ImapModel.MESSAGE_HEADER_TO_PERSIST_SPLITTER));
-                
+                String headerName = header.substring(0, header.indexOf(ImapModel.MESSAGE_HEADER_TO_PERSIST_SPLITTER));
+
                 setHeader(headerName, headerValue);
             }
         }
     }
 
-  
     /**
      * Returns {@link FileInfo} object representing message in Alfresco.
      * 
@@ -178,12 +180,13 @@ public abstract class AbstractMimeMessage extends MimeMessage
         return imapService.getFlags(messageFileInfo);
     }
 
-    
     /**
      * Sets message flags.
      * 
-     * @param flags - {@link Flags} object.
-     * @param value - flags value.
+     * @param flags
+     *            - {@link Flags} object.
+     * @param value
+     *            - flags value.
      */
     @Override
     public void setFlags(Flags flags, boolean value) throws MessagingException
@@ -194,7 +197,8 @@ public abstract class AbstractMimeMessage extends MimeMessage
     /**
      * Returns the text representing email body for ContentModel node.
      * 
-     * @param type The type of the returned body. May be the one of {@link EmailBodyFormat}.
+     * @param type
+     *            The type of the returned body. May be the one of {@link EmailBodyFormat}.
      * @return Text representing email body for ContentModel node.
      */
     public String getEmailBodyText(EmailBodyFormat type)
@@ -204,12 +208,11 @@ public abstract class AbstractMimeMessage extends MimeMessage
                 createEmailTemplateModel(messageFileInfo.getNodeRef()));
     }
 
-
-
     /**
      * Builds default email template model for TemplateProcessor
      * 
-     * @param ref NodeRef of the target content.
+     * @param ref
+     *            NodeRef of the target content.
      * @return Map that includes template model objects.
      */
     private Map<String, Object> createEmailTemplateModel(NodeRef ref)
@@ -231,5 +234,5 @@ public abstract class AbstractMimeMessage extends MimeMessage
     protected void updateMessageID() throws MessagingException
     {
         setHeader("Message-ID", "<" + this.messageFileInfo.getNodeRef().getId() + DEFAULT_SUFFIX + ">");
-    }   
+    }
 }

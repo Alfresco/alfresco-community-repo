@@ -56,15 +56,14 @@ public class ValueProtectingMapTest extends TestCase
         moreImmutableClasses = new HashSet<Class<?>>(13);
         moreImmutableClasses.add(TestImmutable.class);
     }
-    
+
     /**
      * A class that is immutable
      */
     @SuppressWarnings("serial")
     private static class TestImmutable implements Serializable
-    {
-    }
-    
+    {}
+
     /**
      * A class that is mutable
      */
@@ -72,28 +71,34 @@ public class ValueProtectingMapTest extends TestCase
     private static class TestMutable extends TestImmutable
     {
         public int i = 0;
+
         public void increment()
         {
             i++;
         }
+
         @Override
         public boolean equals(Object obj)
         {
-            if (this == obj) return true;
-            if (obj == null) return false;
-            if (getClass() != obj.getClass()) return false;
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
             TestMutable other = (TestMutable) obj;
-            if (i != other.i) return false;
+            if (i != other.i)
+                return false;
             return true;
         }
     }
-    
+
     private List<String> valueList;
     private Map<String, String> valueMap;
     private Date valueDate;
     private TestImmutable valueImmutable;
     private TestMutable valueMutable;
-    
+
     private ValueProtectingMap<String, Serializable> map;
     private Map<String, Serializable> holyMap;
 
@@ -106,32 +111,32 @@ public class ValueProtectingMapTest extends TestCase
         valueList.add("THREE");
         valueList.add("FOUR");
         valueList = Collections.unmodifiableList(valueList);
-        
+
         valueMap = new HashMap<String, String>(5);
         valueMap.put("ONE", "ONE");
         valueMap.put("TWO", "TWO");
         valueMap.put("THREE", "THREE");
         valueMap.put("FOUR", "FOUR");
         valueMap = Collections.unmodifiableMap(valueMap);
-        
+
         valueDate = new Date();
-        
+
         valueImmutable = new TestImmutable();
         valueMutable = new TestMutable();
-        
+
         holyMap = new HashMap<String, Serializable>();
         holyMap.put("DATE", valueDate);
         holyMap.put("LIST", (Serializable) valueList);
         holyMap.put("MAP", (Serializable) valueMap);
         holyMap.put("IMMUTABLE", valueImmutable);
         holyMap.put("MUTABLE", valueMutable);
-        
+
         // Now wrap our 'holy' map so that it cannot be modified
         holyMap = Collections.unmodifiableMap(holyMap);
-        
+
         map = new ValueProtectingMap<String, Serializable>(holyMap, moreImmutableClasses);
     }
-    
+
     /**
      * Make sure that NOTHING has changed in our 'holy' map
      */
@@ -158,15 +163,14 @@ public class ValueProtectingMapTest extends TestCase
             assertTrue("Expect holy map to still be in use: ", map.getProtectedMap() == holyMap);
         }
     }
-    
+
     public void testSetup()
     {
         checkMaps(false);
     }
-    
+
     /**
-     * No matter how many times we wrap instances in instances, the backing map must remain
-     * the same.
+     * No matter how many times we wrap instances in instances, the backing map must remain the same.
      */
     public void testMapWrapping()
     {
@@ -175,47 +179,45 @@ public class ValueProtectingMapTest extends TestCase
         ValueProtectingMap<String, Serializable> mapThree = new ValueProtectingMap<String, Serializable>(map);
         assertTrue("Backing map must be shared: ", mapThree.getProtectedMap() == map.getProtectedMap());
     }
-    
+
     public void testMapClear()
     {
         map.clear();
         assertEquals("Map should be empty: ", 0, map.size());
         checkMaps(true);
     }
-    
+
     public void testMapContainsKey()
     {
         assertTrue(map.containsKey("LIST"));
         assertFalse(map.containsKey("LISTXXX"));
         checkMaps(false);
     }
-    
+
     public void testMapContainsValue()
     {
         assertTrue(map.containsValue(valueMutable));
         assertFalse(map.containsValue("Dassie"));
         checkMaps(false);
     }
-    
+
     public void testMapEntrySet()
     {
         map.entrySet();
         checkMaps(true);
     }
-    
+
     /**
-     * Ensures that single, immutable values are given out as-is and
-     * without affecting the backing storage
+     * Ensures that single, immutable values are given out as-is and without affecting the backing storage
      */
     public void testMapGetImmutable()
     {
         assertTrue("Immutable value instance incorrect", map.get("IMMUTABLE") == valueImmutable);
         checkMaps(false);
     }
-    
+
     /**
-     * Ensures that single, immutable values are cloned before being given out
-     * without affecting the backing storage
+     * Ensures that single, immutable values are cloned before being given out without affecting the backing storage
      */
     public void testMapGetMutable()
     {
@@ -226,31 +228,31 @@ public class ValueProtectingMapTest extends TestCase
         mutable.increment();
         assertEquals("Backing mutable should not have changed: ", 0, valueMutable.i);
     }
-    
+
     public void testMapIsEmpty()
     {
         assertFalse(map.isEmpty());
         checkMaps(false);
     }
-    
+
     public void testMapKeySet()
     {
         map.keySet();
         checkMaps(true);
     }
-    
+
     public void testMapPut()
     {
         map.put("ANOTHER", "VALUE");
         checkMaps(true);
     }
-    
+
     public void testMapPutAll()
     {
         map.putAll(holyMap);
         checkMaps(true);
     }
-    
+
     @SuppressWarnings("unchecked")
     public void testSerializability() throws Exception
     {

@@ -34,13 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import org.alfresco.service.cmr.dictionary.DictionaryException;
-import org.alfresco.service.cmr.repository.MLText;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.test_category.OwnJVMTestsCategory;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,6 +42,14 @@ import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
+
+import org.alfresco.service.cmr.dictionary.DictionaryException;
+import org.alfresco.service.cmr.repository.MLText;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 
 /**
  * Tests the fully-intercepted version of the NodeService
@@ -79,8 +81,8 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.node.BaseNodeServiceTest#onTearDownInTransaction()
-     */
+     * 
+     * @see org.alfresco.repo.node.BaseNodeServiceTest#onTearDownInTransaction() */
     @After
     public void after()
     {
@@ -94,7 +96,7 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
     {
         // Set the server default locale
         Locale.setDefault(Locale.ENGLISH);
-        
+
         MLText mlTextProperty = new MLText();
         mlTextProperty.addValue(Locale.ENGLISH, "Very good!");
         mlTextProperty.addValue(Locale.FRENCH, "Très bon!");
@@ -104,7 +106,7 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
                 rootNodeRef,
                 BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE,
                 mlTextProperty);
-        
+
         // Check filtered property retrieval
         Serializable textValueFiltered = nodeService.getProperty(
                 rootNodeRef,
@@ -113,7 +115,7 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
                 "Default locale value not taken for ML text",
                 mlTextProperty.getValue(Locale.ENGLISH),
                 textValueFiltered);
-        
+
         // Check filtered mass property retrieval
         Map<QName, Serializable> propertiesFiltered = nodeService.getProperties(rootNodeRef);
         assertEquals(
@@ -121,14 +123,11 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
                 mlTextProperty.getValue(Locale.ENGLISH),
                 propertiesFiltered.get(BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
     }
-    
+
     /**
-     * ALF-3756 - original fix didn't cope with existing MLText properties having one or more variants
-     * of a particular language. Upgrading to the fix would therefore not solve the problem properly.
+     * ALF-3756 - original fix didn't cope with existing MLText properties having one or more variants of a particular language. Upgrading to the fix would therefore not solve the problem properly.
      * <p>
-     * For example, if a property has en_GB text in it, then 'updating' that property
-     * with a locale of en_US will result in the addition of the en_US text rather than a true update (they're both
-     * English, and using two slightly differently configured browsers in this way leads to confusion).
+     * For example, if a property has en_GB text in it, then 'updating' that property with a locale of en_US will result in the addition of the en_US text rather than a true update (they're both English, and using two slightly differently configured browsers in this way leads to confusion).
      */
     @Test
     public void testMLTextUpdatedForCorrectLanguage() throws Exception
@@ -138,53 +137,53 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
         MLText mlTextProperty = new MLText();
         mlTextProperty.addValue(Locale.UK, "en_GB String");
         mlTextProperty.addValue(Locale.FRANCE, "fr_FR String");
-        
+
         // Store the MLText property
         nodeService.setProperty(
-                    rootNodeRef,
-                    BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE,
-                    mlTextProperty);
-        
+                rootNodeRef,
+                BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE,
+                mlTextProperty);
+
         // Pre-test check that an MLText property has been created with the correct locale/text pairs.
         Serializable textValue = nodeService.getProperty(
-                    rootNodeRef,
-                    BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
+                rootNodeRef,
+                BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
         assertEquals(2, ((MLText) textValue).size());
         assertEquals("en_GB String", ((MLText) textValue).getValue(Locale.UK));
         assertEquals("fr_FR String", ((MLText) textValue).getValue(Locale.FRANCE));
-        
+
         // Enable MLText filtering - as this is how the repo will be used.
         MLPropertyInterceptor.setMLAware(false);
-        
+
         // Retrieve the MLText - but it is filtered into an appropriate String
         textValue = nodeService.getProperty(
-                    rootNodeRef,
-                    BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
+                rootNodeRef,
+                BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
         assertEquals("en_GB String", (String) textValue);
-        
+
         // Update the property, only this time using a different English variant
         Locale.setDefault(Locale.US); // en_US
         nodeService.setProperty(
-                    rootNodeRef,
-                    BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE,
-                    "Not using MLText for this part.");
-        
+                rootNodeRef,
+                BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE,
+                "Not using MLText for this part.");
+
         // Check that the text was updated rather than added to
         MLPropertyInterceptor.setMLAware(true); // no filtering - see real MLText
         // Check that there are not too many English strings, we don't want one for en_GB and one for en_US
         textValue = nodeService.getProperty(
-                    rootNodeRef,
-                    BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
+                rootNodeRef,
+                BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
         assertEquals(2, ((MLText) textValue).size());
         assertEquals("Text wasn't updated correctly",
-                    "Not using MLText for this part.",
-                    ((MLText) textValue).getValue(Locale.ENGLISH));
+                "Not using MLText for this part.",
+                ((MLText) textValue).getValue(Locale.ENGLISH));
         assertEquals("Failed to get text using locale it was added with",
-                    "Not using MLText for this part.",
-                    ((MLText) textValue).getClosestValue(Locale.US));
+                "Not using MLText for this part.",
+                ((MLText) textValue).getClosestValue(Locale.US));
         assertEquals("Failed to get text using original locale",
-                    "Not using MLText for this part.",
-                    ((MLText) textValue).getClosestValue(Locale.UK));
+                "Not using MLText for this part.",
+                ((MLText) textValue).getClosestValue(Locale.UK));
         assertEquals("fr_FR String", ((MLText) textValue).getValue(Locale.FRANCE));
     }
 
@@ -195,17 +194,17 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
         Locale.setDefault(Locale.UK);
         I18NUtil.setContentLocale(Locale.UK);
         I18NUtil.setLocale(Locale.UK);
-        
+
         MLPropertyInterceptor.setMLAware(true);
-        
+
         ArrayList<Serializable> values = new ArrayList<Serializable>();
         values.add(new MLText(Locale.UK, "en_GB text"));
         values.add(new MLText(Locale.US, "en_US text"));
         values.add(new MLText(Locale.FRANCE, "fr_FR text"));
-        
+
         // Set the property with no MLText filtering
         nodeService.setProperty(rootNodeRef, PROP_QNAME_MULTI_ML_VALUE, values);
-        
+
         // Pre-test check
         List<Serializable> checkValues = (List<Serializable>) nodeService.getProperty(
                 rootNodeRef, PROP_QNAME_MULTI_ML_VALUE);
@@ -213,48 +212,48 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
         assertEquals("en_GB text", ((MLText) checkValues.get(0)).getValue(Locale.UK));
         assertEquals("en_US text", ((MLText) checkValues.get(1)).getValue(Locale.US));
         assertEquals("fr_FR text", ((MLText) checkValues.get(2)).getValue(Locale.FRANCE));
-        
+
         // Enable MLText filtering - as this is how the repo will be used.
         MLPropertyInterceptor.setMLAware(false);
-       
+
         // Filtering will result in a list containing en_GB only
         checkValues = (List<Serializable>) nodeService.getProperty(
-                    rootNodeRef,
-                    PROP_QNAME_MULTI_ML_VALUE);
+                rootNodeRef,
+                PROP_QNAME_MULTI_ML_VALUE);
         assertEquals("Expected 1 MLText values back", 1, checkValues.size());
         assertEquals("en_GB text", (String) checkValues.get(0));
-        
+
         // Update the property, only this time using a different English variant
         Locale.setDefault(Locale.US); // en_US
-        
+
         values.clear();
         values.add("text 1 added using en_US");
         values.add("text 2 added using en_US");
         values.add("text 3 added using en_US");
         values.add("text 4 added using en_US");
         nodeService.setProperty(rootNodeRef, PROP_QNAME_MULTI_ML_VALUE, values);
-        
+
         // Check that the text was updated correctly
         MLPropertyInterceptor.setMLAware(true); // no filtering - see real MLText
         checkValues = (List<Serializable>) nodeService.getProperty(
-                    rootNodeRef,
-                    PROP_QNAME_MULTI_ML_VALUE);
-        
+                rootNodeRef,
+                PROP_QNAME_MULTI_ML_VALUE);
+
         assertEquals("Expected 3 MLText values back", 4, checkValues.size());
-        
+
         MLText mlText = ((MLText) checkValues.get(0));
         assertEquals("en_GB should be replaced with new, not added to", 1, mlText.size());
         assertEquals("text 1 added using en_US", mlText.getValue(Locale.ENGLISH));
-        
+
         mlText = ((MLText) checkValues.get(1));
         assertEquals("en_US should be replaced with new, not added to", 1, mlText.size());
         assertEquals("text 2 added using en_US", mlText.getValue(Locale.ENGLISH));
-        
+
         mlText = ((MLText) checkValues.get(2));
         assertEquals("en_US should be added to fr_FR", 2, mlText.size());
         assertEquals("fr_FR text", mlText.getValue(Locale.FRANCE));
         assertEquals("text 3 added using en_US", mlText.getValue(Locale.ENGLISH));
-        
+
         mlText = ((MLText) checkValues.get(3));
         assertEquals("entirely new text value should be added", 1, mlText.size());
         assertEquals("text 4 added using en_US", mlText.getValue(Locale.ENGLISH));
@@ -277,7 +276,7 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
                 rootNodeRef,
                 BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE,
                 longString);
-        
+
         MLText mlTextProperty = new MLText();
         mlTextProperty.addValue(Locale.ENGLISH, longString);
         mlTextProperty.addValue(Locale.FRENCH, longString);
@@ -299,13 +298,13 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
         Serializable mlTextSer = nodeService.getProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
         MLText mlText = DefaultTypeConverter.INSTANCE.convert(MLText.class, mlTextSer);
         assertNull("Value returned is not null", mlText);
-        
+
         // Now create an MLText object with a null entry
         mlText = new MLText(null);
         nodeService.setProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, mlText);
         MLText mlTextCheck = (MLText) nodeService.getProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
         assertNull("MLText value should have been converted to a null String", mlTextCheck);
-        
+
         // Set an ML value to null
         nodeService.setProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, null);
 
@@ -317,13 +316,13 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
             nodeService.setProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, mlText);
             mlTextCheck = (MLText) nodeService.getProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
             assertEquals("MLText value was not pulled out the same as it went in", mlText, mlTextCheck);
-            
+
             // Set an ML value to null
             nodeService.setProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, null);
         }
         finally
         {
-            MLPropertyInterceptor.setMLAware(false);            // Don't mess up the thread
+            MLPropertyInterceptor.setMLAware(false); // Don't mess up the thread
         }
     }
 
@@ -347,14 +346,14 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
         I18NUtil.setContentLocale(Locale.ENGLISH);
         // Set the english property
         nodeService.setProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, "Hello");
-        
+
         // Switch back to French and get the value
         I18NUtil.setContentLocale(Locale.FRENCH);
         assertEquals(
                 "Expected French value property",
                 "Bonjour",
                 nodeService.getProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
-        
+
         // Switch back to English and get the value
         I18NUtil.setContentLocale(Locale.ENGLISH);
         assertEquals(
@@ -382,14 +381,14 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
         I18NUtil.setContentLocale(Locale.ENGLISH);
         // Set the english property
         nodeService.setProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, "Hello");
-        
+
         // Switch back to French and get the value
         I18NUtil.setContentLocale(Locale.FRENCH);
         assertEquals(
                 "Expected French value property",
                 "Bonjour",
                 nodeService.getProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
-        
+
         // Switch back to English and get the value
         I18NUtil.setContentLocale(Locale.ENGLISH);
         assertEquals(
@@ -414,14 +413,14 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
         I18NUtil.setContentLocale(Locale.ENGLISH);
         // Set the english property
         nodeService.setProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, "Hello");
-        
+
         // Switch back to French and get the value
         I18NUtil.setContentLocale(Locale.FRENCH);
         assertEquals(
                 "Expected French value property",
                 "Bonjour",
                 nodeService.getProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
-        
+
         // Switch back to English and get the value
         I18NUtil.setContentLocale(Locale.ENGLISH);
         assertEquals(
@@ -472,7 +471,7 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
         TestTransaction.flagForCommit();
         TestTransaction.end();
         TestTransaction.start();
-        
+
         try
         {
             // this should fail as we are passing multiple values into a non-any that is multiple=false
@@ -501,7 +500,7 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
             assertEquals("Expected 2 MLText values back", 2, checkValues.size());
             assertTrue("Incorrect type in collection", checkValues.get(0) instanceof String);
             assertTrue("Incorrect type in collection", checkValues.get(1) instanceof String);
-            
+
             // Check that multi-valued d:any properties can be collections of collections (empty)
             // We put ArrayLists and HashSets into the Collection of d:any, so that is exactly what should come out
             values.clear();
@@ -513,9 +512,9 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
             checkValues = (List<Serializable>) nodeService.getProperty(
                     nodeRef, PROP_QNAME_ANY_PROP_MULTIPLE);
             assertEquals("Expected 2 Collection values back", 2, checkValues.size());
-            assertTrue("Incorrect type in collection", checkValues.get(0) instanceof ArrayList);  // ArrayList in - ArrayList out
-            assertTrue("Incorrect type in collection", checkValues.get(1) instanceof HashSet);  // HashSet in - HashSet out
-            
+            assertTrue("Incorrect type in collection", checkValues.get(0) instanceof ArrayList); // ArrayList in - ArrayList out
+            assertTrue("Incorrect type in collection", checkValues.get(1) instanceof HashSet); // HashSet in - HashSet out
+
             // Check that multi-valued d:any properties can be collections of collections (with values)
             // We put ArrayLists and HashSets into the Collection of d:any, so that is exactly what should come out
             arrayListVal.add("ONE");
@@ -529,10 +528,10 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
             checkValues = (List<Serializable>) nodeService.getProperty(
                     nodeRef, PROP_QNAME_ANY_PROP_MULTIPLE);
             assertEquals("Expected 2 Collection values back", 2, checkValues.size());
-            assertTrue("Incorrect type in collection", checkValues.get(0) instanceof ArrayList);  // ArrayList in - ArrayList out
-            assertTrue("Incorrect type in collection", checkValues.get(1) instanceof HashSet);  // HashSet in - HashSet out
-            assertEquals("First collection incorrect", 2, ((Collection)checkValues.get(0)).size());
-            assertEquals("Second collection incorrect", 2, ((Collection)checkValues.get(1)).size());
+            assertTrue("Incorrect type in collection", checkValues.get(0) instanceof ArrayList); // ArrayList in - ArrayList out
+            assertTrue("Incorrect type in collection", checkValues.get(1) instanceof HashSet); // HashSet in - HashSet out
+            assertEquals("First collection incorrect", 2, ((Collection) checkValues.get(0)).size());
+            assertEquals("Second collection incorrect", 2, ((Collection) checkValues.get(1)).size());
         }
         finally
         {
@@ -550,7 +549,7 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName("pathA"),
                 TYPE_QNAME_TEST_MANY_ML_PROPERTIES).getChildRef();
-        
+
         // Create MLText properties and add to a collection
         List<MLText> mlTextCollection = new ArrayList<MLText>(2);
         MLText mlText0 = new MLText();
@@ -561,46 +560,46 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
         mlText1.addValue(Locale.ENGLISH, "Bye bye");
         mlText1.addValue(Locale.FRENCH, "Au revoir");
         mlTextCollection.add(mlText1);
-        
+
         nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE, (Serializable) mlTextCollection);
-        
+
         I18NUtil.setContentLocale(Locale.ENGLISH);
         Collection<String> mlTextCollectionCheck = (Collection<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE);
         assertEquals("MLText collection didn't come back correctly.", Arrays.asList(new String[]{"Hello", "Bye bye"}), mlTextCollectionCheck);
-        
+
         I18NUtil.setContentLocale(Locale.FRENCH);
         mlTextCollectionCheck = (Collection<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE);
         assertEquals("MLText collection didn't come back correctly.", Arrays.asList(new String[]{"Bonjour", "Au revoir"}), mlTextCollectionCheck);
-        
+
         I18NUtil.setContentLocale(Locale.GERMAN);
-        nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE, (Serializable)Arrays.asList(new String[]{"eins", "zwei", "drie", "vier"}));
-        
+        nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE, (Serializable) Arrays.asList(new String[]{"eins", "zwei", "drie", "vier"}));
+
         I18NUtil.setContentLocale(Locale.ENGLISH);
         mlTextCollectionCheck = (Collection<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE);
         assertEquals("MLText collection didn't come back correctly.", Arrays.asList(new String[]{"Hello", "Bye bye"}), mlTextCollectionCheck);
-        
+
         I18NUtil.setContentLocale(Locale.FRENCH);
         mlTextCollectionCheck = (Collection<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE);
         assertEquals("MLText collection didn't come back correctly.", Arrays.asList(new String[]{"Bonjour", "Au revoir"}), mlTextCollectionCheck);
-        
+
         I18NUtil.setContentLocale(Locale.GERMAN);
         mlTextCollectionCheck = (Collection<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE);
         assertEquals("MLText collection didn't come back correctly.", Arrays.asList(new String[]{"eins", "zwei", "drie", "vier"}), mlTextCollectionCheck);
-        
+
         I18NUtil.setContentLocale(Locale.GERMAN);
-        nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE, (Serializable)Arrays.asList(new String[]{"eins"}));
-        
+        nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE, (Serializable) Arrays.asList(new String[]{"eins"}));
+
         I18NUtil.setContentLocale(Locale.ENGLISH);
         mlTextCollectionCheck = (Collection<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE);
         assertEquals("MLText collection didn't come back correctly.", Arrays.asList(new String[]{"Hello", "Bye bye"}), mlTextCollectionCheck);
-        
+
         I18NUtil.setContentLocale(Locale.FRENCH);
         mlTextCollectionCheck = (Collection<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE);
         assertEquals("MLText collection didn't come back correctly.", Arrays.asList(new String[]{"Bonjour", "Au revoir"}), mlTextCollectionCheck);
-        
+
         I18NUtil.setContentLocale(Locale.GERMAN);
         mlTextCollectionCheck = (Collection<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE);
         assertEquals("MLText collection didn't come back correctly.", Arrays.asList(new String[]{"eins"}), mlTextCollectionCheck);
-        
+
     }
 }

@@ -26,6 +26,8 @@
 package org.alfresco.repo.search;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -33,8 +35,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 @Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class QueryRegisterComponentTest extends TestCase
@@ -48,18 +48,18 @@ public class QueryRegisterComponentTest extends TestCase
     {
         super();
     }
-    
+
     public QueryRegisterComponentTest(String arg0)
     {
         super(arg0);
     }
-    
+
     public void setUp()
     {
         ctx = ApplicationContextHelper.getApplicationContext();
         dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
         namespaceService = (NamespaceService) ctx.getBean("namespaceService");
-       
+
     }
 
     public void testLoad()
@@ -68,7 +68,7 @@ public class QueryRegisterComponentTest extends TestCase
         qr.setNamespaceService(namespaceService);
         qr.setDictionaryService(dictionaryService);
         qr.loadQueryCollection("testQueryRegister.xml");
-        
+
         assertNotNull(qr.getQueryDefinition(QName.createQName("alf", "query1", namespaceService)));
         assertEquals("lucene", qr.getQueryDefinition(QName.createQName("alf", "query1", namespaceService)).getLanguage());
         assertEquals("http://www.trees.tulip/barking/woof", qr.getQueryDefinition(QName.createQName("alf", "query1", namespaceService)).getNamespacePrefixResolver().getNamespaceURI("tulip"));

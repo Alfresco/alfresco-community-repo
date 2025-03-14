@@ -25,6 +25,14 @@
  */
 package org.alfresco.repo.content.transform;
 
+import static org.alfresco.transform.common.RequestParamMap.DIRECT_ACCESS_URL;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -33,20 +41,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.transform.config.TransformOption;
 import org.alfresco.util.TempFileProvider;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static org.alfresco.transform.common.RequestParamMap.DIRECT_ACCESS_URL;
-
 /**
  * Transformer that passes a document through a pipeline of transformations to arrive at an target mimetype.
  *
- * Instances are automatically created for transformers identified by alfresco/transform json files and returned from
- * T-Engines which are themselves identified by global properties the match the pattern localTransform.&lt;name>.url.
- * The transforms take place in a separate process (typically a Docker container).
+ * Instances are automatically created for transformers identified by alfresco/transform json files and returned from T-Engines which are themselves identified by global properties the match the pattern localTransform.&lt;name>.url. The transforms take place in a separate process (typically a Docker container).
  */
 public class LocalPipelineTransform extends AbstractLocalTransform
 {
@@ -59,11 +57,11 @@ public class LocalPipelineTransform extends AbstractLocalTransform
     }
 
     public LocalPipelineTransform(String name, TransformerDebug transformerDebug,
-                                  MimetypeService mimetypeService, boolean strictMimeTypeCheck,
-                                  Map<String, Set<String>> strictMimetypeExceptions,
-                                  boolean retryTransformOnDifferentMimeType,
-                                  Set<TransformOption> transformsTransformOptions,
-                                  LocalTransformServiceRegistry localTransformServiceRegistry)
+            MimetypeService mimetypeService, boolean strictMimeTypeCheck,
+            Map<String, Set<String>> strictMimetypeExceptions,
+            boolean retryTransformOnDifferentMimeType,
+            Set<TransformOption> transformsTransformOptions,
+            LocalTransformServiceRegistry localTransformServiceRegistry)
     {
         super(name, transformerDebug, mimetypeService, strictMimeTypeCheck, strictMimetypeExceptions,
                 retryTransformOnDifferentMimeType, transformsTransformOptions, localTransformServiceRegistry);
@@ -90,10 +88,10 @@ public class LocalPipelineTransform extends AbstractLocalTransform
 
     @Override
     protected void transformImpl(ContentReader reader,
-                                 ContentWriter writer, Map<String, String> transformOptions,
-                                 String sourceMimetype, String targetMimetype,
-                                 String sourceExtension, String targetExtension,
-                                 String renditionName, NodeRef sourceNodeRef)
+            ContentWriter writer, Map<String, String> transformOptions,
+            String sourceMimetype, String targetMimetype,
+            String sourceExtension, String targetExtension,
+            String renditionName, NodeRef sourceNodeRef)
     {
         ContentReader currentReader = reader;
         int lastI = transformers.size() - 1;

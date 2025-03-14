@@ -25,6 +25,10 @@
  */
 package org.alfresco.repo.action.executer;
 
+import org.junit.Before;
+import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -37,9 +41,6 @@ import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.testing.category.NeverRunsTests;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Tests checkout using action executer

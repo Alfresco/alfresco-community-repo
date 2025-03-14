@@ -41,7 +41,7 @@ import org.alfresco.util.PropertyCheck;
 public class NodeTypeDataExtractor extends AbstractDataExtractor
 {
     private NodeService nodeService;
-    
+
     /**
      * Set the service to get the property from
      */
@@ -58,7 +58,7 @@ public class NodeTypeDataExtractor extends AbstractDataExtractor
     }
 
     /**
-     * @return          Returns <tt>true</tt> if the data is a {@link NodeRef}
+     * @return Returns <tt>true</tt> if the data is a {@link NodeRef}
      */
     public boolean isSupported(Serializable data)
     {

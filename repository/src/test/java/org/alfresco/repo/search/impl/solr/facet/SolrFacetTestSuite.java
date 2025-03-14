@@ -39,7 +39,7 @@ public class SolrFacetTestSuite extends TestSuite
     /**
      * Creates the test suite
      *
-     * @return  the test suite
+     * @return the test suite
      */
     public static Test suite()
     {

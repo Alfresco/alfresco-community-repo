@@ -29,6 +29,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.service.cmr.rendition.RenditionService;
@@ -39,12 +46,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 public class PatchThumbnailsAsRenditionsGet extends DeclarativeWebScript
 {
@@ -54,44 +55,47 @@ public class PatchThumbnailsAsRenditionsGet extends DeclarativeWebScript
     private static final StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
 
     private static final String QUERY = "TYPE:\"" + ContentModel.TYPE_THUMBNAIL +
-                                        "\" AND NOT ASPECT:\"" + RenditionModel.ASPECT_VISIBLE_RENDITION +
-                                        "\" AND NOT ASPECT:\"" + RenditionModel.ASPECT_HIDDEN_RENDITION + "\"";
-    
+            "\" AND NOT ASPECT:\"" + RenditionModel.ASPECT_VISIBLE_RENDITION +
+            "\" AND NOT ASPECT:\"" + RenditionModel.ASPECT_HIDDEN_RENDITION + "\"";
+
     /** Spring-injected services */
     private NodeService nodeService;
     private RenditionService renditionService;
     private SearchService searchService;
-    
+
     /**
      * Sets the nodeService.
      * 
-     * @param nodeService NodeService
+     * @param nodeService
+     *            NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Sets the renditionService.
      * 
-     * @param renditionService RenditionService
+     * @param renditionService
+     *            RenditionService
      */
     public void setRenditionService(RenditionService renditionService)
     {
         this.renditionService = renditionService;
     }
-    
+
     /**
      * Sets the searchService.
      * 
-     * @param searchService SearchService
+     * @param searchService
+     *            SearchService
      */
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
     }
-    
+
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
@@ -99,7 +103,7 @@ public class PatchThumbnailsAsRenditionsGet extends DeclarativeWebScript
         {
             logger.debug("Patching legacy thumbnails by applying appropriate rendition aspect");
         }
-        List<NodeRef> resultNodeRefs = null; 
+        List<NodeRef> resultNodeRefs = null;
         ResultSet types = null;
 
         try
@@ -109,11 +113,14 @@ public class PatchThumbnailsAsRenditionsGet extends DeclarativeWebScript
         }
         finally
         {
-            if (types != null) {types.close();}
+            if (types != null)
+            {
+                types.close();
+            }
         }
-        
+
         long patchedNodeRefs = 0;
-        
+
         for (NodeRef nodeRef : resultNodeRefs)
         {
             if (nodeService.exists(nodeRef) == false ||
@@ -121,7 +128,7 @@ public class PatchThumbnailsAsRenditionsGet extends DeclarativeWebScript
             {
                 continue;
             }
-            
+
             // Now add one of the two aspects depending on parent location.
             ChildAssociationRef sourceNode = renditionService.getSourceNode(nodeRef);
             ChildAssociationRef primaryParent = nodeService.getPrimaryParent(nodeRef);
@@ -139,9 +146,9 @@ public class PatchThumbnailsAsRenditionsGet extends DeclarativeWebScript
             {
                 StringBuilder msg = new StringBuilder();
                 msg.append("Applying aspect ")
-                    .append(aspectToApply)
-                    .append(" to node ")
-                    .append(nodeRef);
+                        .append(aspectToApply)
+                        .append(" to node ")
+                        .append(nodeRef);
                 logger.debug(msg.toString());
             }
             nodeService.addAspect(nodeRef, aspectToApply, null);
@@ -149,8 +156,8 @@ public class PatchThumbnailsAsRenditionsGet extends DeclarativeWebScript
         }
 
         Map<String, Object> model = new HashMap<String, Object>();
-    	model.put("patchedNodeCount", Long.valueOf(patchedNodeRefs));
-    	
+        model.put("patchedNodeCount", Long.valueOf(patchedNodeRefs));
+
         return model;
     }
 }

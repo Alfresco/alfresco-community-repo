@@ -46,37 +46,39 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
-public class TransitionSimpleWorkflowActionExecuter extends ActionExecuterAbstractBase 
+public class TransitionSimpleWorkflowActionExecuter extends ActionExecuterAbstractBase
 {
     /** Node Service */
     private NodeService nodeService;
 
     /** Copy Service */
     private CopyService copyService;
-    
+
     /** Indicates whether we are transitioning an accept step, false if a reject step */
     private boolean isAcceptTransition = true;
-    
+
     /**
      * Set the node service
      * 
-     * @param nodeService  node service
+     * @param nodeService
+     *            node service
      */
-    public void setNodeService(NodeService nodeService) 
+    public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Set the copy service
      * 
-     * @param copyService  copy service
+     * @param copyService
+     *            copy service
      */
     public void setCopyService(CopyService copyService)
     {
         this.copyService = copyService;
     }
-    
+
     /**
      * Sets whether this is an accept transition or not
      */
@@ -89,9 +91,8 @@ public class TransitionSimpleWorkflowActionExecuter extends ActionExecuterAbstra
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-    {    
-    }
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
+    {}
 
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(Action, org.alfresco.service.cmr.repository.NodeRef)
@@ -99,66 +100,66 @@ public class TransitionSimpleWorkflowActionExecuter extends ActionExecuterAbstra
     @Override
     protected void executeImpl(
             final Action ruleAction,
-            final NodeRef actionedUponNodeRef) 
+            final NodeRef actionedUponNodeRef)
     {
         if (nodeService.exists(actionedUponNodeRef) == true &&
-            nodeService.hasAspect(actionedUponNodeRef, ApplicationModel.ASPECT_SIMPLE_WORKFLOW) == true)
+                nodeService.hasAspect(actionedUponNodeRef, ApplicationModel.ASPECT_SIMPLE_WORKFLOW) == true)
         {
             NodeRef destinationFolder = null;
             Boolean isMove = null;
-            
+
             // Get the destination folder and determine whether we do a move or copy
             Map<QName, Serializable> props = nodeService.getProperties(actionedUponNodeRef);
             if (isAcceptTransition == true)
             {
-                destinationFolder = (NodeRef)props.get(ApplicationModel.PROP_APPROVE_FOLDER);
-                isMove = (Boolean)props.get(ApplicationModel.PROP_APPROVE_MOVE);
+                destinationFolder = (NodeRef) props.get(ApplicationModel.PROP_APPROVE_FOLDER);
+                isMove = (Boolean) props.get(ApplicationModel.PROP_APPROVE_MOVE);
             }
             else
             {
-                destinationFolder = (NodeRef)props.get(ApplicationModel.PROP_REJECT_FOLDER);
-                isMove = (Boolean)props.get(ApplicationModel.PROP_REJECT_MOVE);
+                destinationFolder = (NodeRef) props.get(ApplicationModel.PROP_REJECT_FOLDER);
+                isMove = (Boolean) props.get(ApplicationModel.PROP_REJECT_MOVE);
             }
-            
+
             if (destinationFolder == null)
             {
                 // We need a destination folder in order to transition the workflow
                 throw new AlfrescoRuntimeException("No folder was specified for the simple workflow step.");
             }
-            
+
             if (isMove == null)
             {
                 // Assume default of false
                 isMove = Boolean.FALSE;
             }
-            
+
             // Set the name of the node
-            String name = (String)props.get(ContentModel.PROP_NAME);
-            
+            String name = (String) props.get(ContentModel.PROP_NAME);
+
             // first we need to take off the simpleworkflow aspect
             nodeService.removeAspect(actionedUponNodeRef, ApplicationModel.ASPECT_SIMPLE_WORKFLOW);
-            
+
             if (Boolean.TRUE.equals(isMove) == true)
             {
                 // move the node to the specified folder
                 String qname = QName.createValidLocalName(name);
                 nodeService.moveNode(
-                        actionedUponNodeRef, 
-                        destinationFolder, 
+                        actionedUponNodeRef,
+                        destinationFolder,
                         ContentModel.ASSOC_CONTAINS,
                         QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, qname));
             }
             else
-            {     
+            {
                 // copy the node to the specified folder
                 ChildAssociationRef originalAssoc = nodeService.getPrimaryParent(actionedUponNodeRef);
                 copyService.copyAndRename(
-                        actionedUponNodeRef, 
-                        destinationFolder, 
+                        actionedUponNodeRef,
+                        destinationFolder,
                         originalAssoc.getTypeQName(),
                         originalAssoc.getQName(),
                         true);
-            }                    
+            }
         }
     }
 }

@@ -29,44 +29,48 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.search.QueryParameterDefinition;
+
 /**
- * A special Map that executes an XPath against the parent Node as part of the get()
- * Map interface implementation.
+ * A special Map that executes an XPath against the parent Node as part of the get() Map interface implementation.
  * 
  * @author Kevin Roast
  */
 public abstract class BasePathResultsMap extends BaseTemplateMap
 {
     protected static Log logger = LogFactory.getLog(BasePathResultsMap.class);
-    
+
     /**
      * Constructor
      * 
-     * @param parent         The parent TemplateNode to execute searches from 
-     * @param services       The ServiceRegistry to use
+     * @param parent
+     *            The parent TemplateNode to execute searches from
+     * @param services
+     *            The ServiceRegistry to use
      */
     public BasePathResultsMap(TemplateNode parent, ServiceRegistry services)
     {
         super(parent, services);
     }
-    
+
     /**
      * Return a list or a single Node from executing an xpath against the parent Node.
      * 
-     * @param xpath        XPath to execute
-     * @param firstOnly    True to return the first result only
+     * @param xpath
+     *            XPath to execute
+     * @param firstOnly
+     *            True to return the first result only
      * 
      */
     protected List<TemplateNode> getChildrenByXPath(String xpath, QueryParameterDefinition[] params, boolean firstOnly)
     {
         List<TemplateNode> result = null;
-        
+
         if (xpath.length() != 0)
         {
             if (logger.isDebugEnabled())
@@ -74,22 +78,22 @@ public abstract class BasePathResultsMap extends BaseTemplateMap
                 String out = "Executing xpath: " + xpath;
                 if (params != null)
                 {
-                   out += " with params:";
-                   for (QueryParameterDefinition p : params)
-                   {
-                      out += " " + p.getDefault();
-                   }
+                    out += " with params:";
+                    for (QueryParameterDefinition p : params)
+                    {
+                        out += " " + p.getDefault();
+                    }
                 }
                 logger.debug(out);
             }
-            
+
             List<NodeRef> nodes = this.services.getSearchService().selectNodes(
                     this.parent.getNodeRef(),
                     xpath,
                     params,
                     this.services.getNamespaceService(),
                     false);
-            
+
             // see if we only want the first result
             if (firstOnly == true)
             {
@@ -102,14 +106,14 @@ public abstract class BasePathResultsMap extends BaseTemplateMap
             // or all the results
             else
             {
-                result = new ArrayList<TemplateNode>(nodes.size()); 
+                result = new ArrayList<TemplateNode>(nodes.size());
                 for (NodeRef ref : nodes)
                 {
                     result.add(new TemplateNode(ref, this.services, this.parent.getImageResolver()));
                 }
             }
         }
-        
-        return result != null ? result : (List)Collections.emptyList();
+
+        return result != null ? result : (List) Collections.emptyList();
     }
 }

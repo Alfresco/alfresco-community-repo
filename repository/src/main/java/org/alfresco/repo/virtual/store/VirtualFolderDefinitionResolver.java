@@ -39,8 +39,7 @@ public interface VirtualFolderDefinitionResolver
 {
     /**
      * @param reference
-     * @return the {@link VirtualFolderDefinition} of the given
-     *         {@link Reference} considering inner paths
+     * @return the {@link VirtualFolderDefinition} of the given {@link Reference} considering inner paths
      * @throws VirtualizationException
      */
     VirtualFolderDefinition resolveVirtualFolderDefinition(Reference reference) throws VirtualizationException;

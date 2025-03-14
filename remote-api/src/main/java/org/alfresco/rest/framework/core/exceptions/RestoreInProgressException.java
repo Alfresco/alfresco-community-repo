@@ -25,36 +25,36 @@
  */
 package org.alfresco.rest.framework.core.exceptions;
 
-public class RestoreInProgressException extends  ApiException
+public class RestoreInProgressException extends ApiException
 {
     public static String DEFAULT_MESSAGE_ID = "framework.exception.RestoreInProgress";
 
-    public RestoreInProgressException() 
+    public RestoreInProgressException()
     {
         super(DEFAULT_MESSAGE_ID);
     }
 
-    public RestoreInProgressException(String message) 
+    public RestoreInProgressException(String message)
     {
         this(DEFAULT_MESSAGE_ID, message);
     }
 
-    private RestoreInProgressException(String msgId, String message) 
+    private RestoreInProgressException(String msgId, String message)
     {
         super(msgId, message);
     }
 
-    public RestoreInProgressException(Throwable cause) 
+    public RestoreInProgressException(Throwable cause)
     {
         this(DEFAULT_MESSAGE_ID, cause.getLocalizedMessage(), cause);
     }
-    
-    public RestoreInProgressException(String message, Throwable cause) 
+
+    public RestoreInProgressException(String message, Throwable cause)
     {
         this(DEFAULT_MESSAGE_ID, message, cause);
     }
-    
-    private RestoreInProgressException(String msgId, String message, Throwable cause) 
+
+    private RestoreInProgressException(String msgId, String message, Throwable cause)
     {
         super(msgId, message, cause);
     }

@@ -41,6 +41,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.EmptyPagingResults;
@@ -76,9 +80,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.AlfrescoCollator;
 import org.alfresco.util.Pair;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Centralises access to groups services and maps between representations.
@@ -141,7 +142,7 @@ public class GroupsImpl implements Groups
         // Create authority with default zones.
         final Set<String> authorityZones = authorityService.getDefaultZones();
         String authorityDisplayName = null;
-        if(group.getDisplayName() != null && !group.getDisplayName().isEmpty())
+        if (group.getDisplayName() != null && !group.getDisplayName().isEmpty())
         {
             authorityDisplayName = group.getDisplayName();
         }
@@ -226,11 +227,10 @@ public class GroupsImpl implements Groups
 
         return CollectionWithPagingInfo.asPaged(paging, groups, pagingResult.hasMoreItems(), totalItems);
     }
-    
+
     private List<Group> createGroupsResponse(final List<AuthorityInfo> page, final List<String> includeParam, final Set<String> rootAuthorities)
     {
-        List<Group> groups = new AbstractList<>()
-        {
+        List<Group> groups = new AbstractList<>() {
             @Override
             public Group get(int index)
             {
@@ -266,7 +266,7 @@ public class GroupsImpl implements Groups
         }
         return groupsFilterBuilder.build();
     }
-    
+
     private String getStringFilterFromList(List<String> listParam, String paramName, int maxItems)
     {
         String filter = null;
@@ -288,7 +288,7 @@ public class GroupsImpl implements Groups
         {
             throw new IllegalArgumentException(StringUtils.capitalize(paramName) + "s filter list cannot be empty.");
         }
-        
+
         listParam
                 .stream()
                 .filter(String::isEmpty)
@@ -348,13 +348,7 @@ public class GroupsImpl implements Groups
         // a suitable list of AuthorityInfo objects.
         final String finalZoneFilter = zoneFilter;
         final Boolean finalIsRootParam = isRootParam;
-        List<AuthorityInfo> groupAuthorities = userAuthorities.stream().
-                filter(a -> a.startsWith(AuthorityType.GROUP.getPrefixString())).
-                filter(a -> isRootPredicate(finalIsRootParam, rootAuthorities, a)).
-                filter(a -> zonePredicate(a, finalZoneFilter)).
-                map(a -> getAuthorityInfo(a, includeParam.contains(PARAM_INCLUDE_DESCRIPTION))).
-                sorted(new AuthorityInfoComparator(sortProp.getFirst(), sortProp.getSecond())).
-                collect(Collectors.toList());
+        List<AuthorityInfo> groupAuthorities = userAuthorities.stream().filter(a -> a.startsWith(AuthorityType.GROUP.getPrefixString())).filter(a -> isRootPredicate(finalIsRootParam, rootAuthorities, a)).filter(a -> zonePredicate(a, finalZoneFilter)).map(a -> getAuthorityInfo(a, includeParam.contains(PARAM_INCLUDE_DESCRIPTION))).sorted(new AuthorityInfoComparator(sortProp.getFirst(), sortProp.getSecond())).collect(Collectors.toList());
 
         PagingResults<AuthorityInfo> pagingResult = Util.wrapPagingResults(paging, groupAuthorities);
 
@@ -363,15 +357,13 @@ public class GroupsImpl implements Groups
         int totalItems = pagingResult.getTotalResultCount().getFirst();
 
         // Transform the page of results into Group objects
-        List<Group> groups = page.stream().
-                map(authority -> getGroup(authority, includeParam, rootAuthorities)).
-                collect(Collectors.toList());
+        List<Group> groups = page.stream().map(authority -> getGroup(authority, includeParam, rootAuthorities)).collect(Collectors.toList());
 
         return CollectionWithPagingInfo.asPaged(paging, groups, pagingResult.hasMoreItems(), totalItems);
     }
 
-    private PagingResults<AuthorityInfo> getAuthoritiesInfo(AuthorityType authorityType, GroupsFilter groupsFilter, Set<String> rootAuthorities, 
-                                                            Pair<String, Boolean> sortProp, Paging paging, boolean includeDescription)
+    private PagingResults<AuthorityInfo> getAuthoritiesInfo(AuthorityType authorityType, GroupsFilter groupsFilter, Set<String> rootAuthorities,
+            Pair<String, Boolean> sortProp, Paging paging, boolean includeDescription)
     {
         Boolean isRootParam = groupsFilter.getIsRoot();
         String zoneFilter = groupsFilter.getZoneFilter();
@@ -388,11 +380,7 @@ public class GroupsImpl implements Groups
             {
                 // Limit the post processing work by using the already loaded
                 // list of root authorities.
-                List<AuthorityInfo> authorities = rootAuthorities.stream().
-                        map(auth -> getAuthorityInfo(auth, includeDescription)).
-                        filter(auth -> zonePredicate(auth.getAuthorityName(), zoneFilter)).
-                        filter(auth -> displayNamePredicate(auth.getAuthorityDisplayName(), displayNameFilter)).
-                        collect(Collectors.toList());
+                List<AuthorityInfo> authorities = rootAuthorities.stream().map(auth -> getAuthorityInfo(auth, includeDescription)).filter(auth -> zonePredicate(auth.getAuthorityName(), zoneFilter)).filter(auth -> displayNamePredicate(auth.getAuthorityDisplayName(), displayNameFilter)).collect(Collectors.toList());
                 groupList = new ArrayList<>(rootAuthorities.size());
                 groupList.addAll(authorities);
 
@@ -440,8 +428,7 @@ public class GroupsImpl implements Groups
     }
 
     /**
-     * Checks to see if the named group authority should be included in results
-     * when filtered by zone.
+     * Checks to see if the named group authority should be included in results when filtered by zone.
      *
      * @see #zonePredicate(Set, String)
      * @param groupName
@@ -462,9 +449,7 @@ public class GroupsImpl implements Groups
     /**
      * Test to see if a result should be included, using the isRoot parameter.
      * <p>
-     * If isRootParam is null, then no results will be filtered. Otherwise
-     * results will be filtered to return only those that are root or non-root,
-     * depending on the value of isRootParam.
+     * If isRootParam is null, then no results will be filtered. Otherwise results will be filtered to return only those that are root or non-root, depending on the value of isRootParam.
      *
      * @param isRootParam
      * @param rootAuthorities
@@ -481,13 +466,11 @@ public class GroupsImpl implements Groups
     }
 
     /**
-     * Checks a list of zones to see if it matches the supplied zone filter
-     * ({@code requiredZone} parameter).
+     * Checks a list of zones to see if it matches the supplied zone filter ({@code requiredZone} parameter).
      * <p>
      * If the requiredZone parameter is null, then the filter will not be applied (returns true.)
      * <p>
-     * If the requiredZone parameter is not null (i.e. a filter must be applied) and the
-     * {@code zones}) list is {@code null} then the predicate will return false.
+     * If the requiredZone parameter is not null (i.e. a filter must be applied) and the {@code zones}) list is {@code null} then the predicate will return false.
      *
      * @param zones
      * @param requiredZone
@@ -503,16 +486,16 @@ public class GroupsImpl implements Groups
     }
 
     /**
-     * Checks to see if the named group authority should be included in results
-     * when filtered by displayName.
+     * Checks to see if the named group authority should be included in results when filtered by displayName.
      * <p>
      * If the requiredDisplayName parameter is null, then the filter will not be applied (returns true.)
      * <p>
+     * 
      * @param groupDisplayName
      * @param requiredDisplayName
      * @return true if result should be included.
      */
-    private boolean displayNamePredicate(String groupDisplayName, String  requiredDisplayName)
+    private boolean displayNamePredicate(String groupDisplayName, String requiredDisplayName)
     {
         if (requiredDisplayName != null)
         {
@@ -537,8 +520,7 @@ public class GroupsImpl implements Groups
     }
 
     /**
-     * Retrieve authority info by name. <b>Node id field isn't used at this time
-     * and it is set to null.</b>
+     * Retrieve authority info by name. <b>Node id field isn't used at this time and it is set to null.</b>
      * 
      * @param id
      *            The authority name.
@@ -550,8 +532,7 @@ public class GroupsImpl implements Groups
     }
 
     /**
-     * Retrieve authority info by name. <b>Node id field isn't used at this time
-     * and it is set to null.</b>
+     * Retrieve authority info by name. <b>Node id field isn't used at this time and it is set to null.</b>
      *
      * @param id
      *            The authority name.
@@ -659,7 +640,8 @@ public class GroupsImpl implements Groups
                 try
                 {
                     containedAuthorities = authorityService.getContainedAuthorities(AuthorityType.GROUP, authorityInfo.getAuthorityName(), true);
-                } catch (UnknownAuthorityException e)
+                }
+                catch (UnknownAuthorityException e)
                 {
                     containedAuthorities = Collections.emptySet();
                 }
@@ -709,8 +691,7 @@ public class GroupsImpl implements Groups
      * Returns the default sort order.
      * </p>
      *
-     * @return The default <code>Pair&lt;QName, Boolean&gt;</code> sort
-     *         property.
+     * @return The default <code>Pair&lt;QName, Boolean&gt;</code> sort property.
      */
     private Pair<String, Boolean> getGroupsSortPropDefault()
     {
@@ -845,8 +826,7 @@ public class GroupsImpl implements Groups
         // Create response.
         final List<AuthorityInfo> page = pagingResult.getPage();
         int totalItems = pagingResult.getTotalResultCount().getFirst();
-        List<GroupMember> groupMembers = new AbstractList<GroupMember>()
-        {
+        List<GroupMember> groupMembers = new AbstractList<GroupMember>() {
             @Override
             public GroupMember get(int index)
             {
@@ -1191,11 +1171,10 @@ class GroupsFilter
     private Boolean isRoot;
     private String zoneFilter;
     private String displayNameFilter;
-    
+
     private GroupsFilter()
-    {
-    }
-    
+    {}
+
     public static GroupsFilterBuilder builder()
     {
         return new GroupsFilterBuilder();
@@ -1205,7 +1184,7 @@ class GroupsFilter
     {
         return isRoot;
     }
-    
+
     public String getZoneFilter()
     {
         return zoneFilter;

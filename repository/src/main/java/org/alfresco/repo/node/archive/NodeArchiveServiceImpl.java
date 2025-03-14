@@ -32,6 +32,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQuery;
@@ -74,8 +77,6 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.VmShutdownListener;
 import org.alfresco.util.registry.NamedObjectRegistry;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Implementation of the node archive abstraction.
@@ -86,12 +87,12 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
 {
     private static final QName LOCK_QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "NodeArchive");
     private static final long LOCK_TTL = 60000;
-    
+
     private static final String MSG_BUSY = "node.archive.msg.busy";
     private static final String CANNED_QUERY_ARCHIVED_NODES_LIST = "archivedNodesCannedQueryFactory";
-        
+
     private static Log logger = LogFactory.getLog(NodeArchiveServiceImpl.class);
-    
+
     protected NodeService nodeService;
     private PermissionService permissionService;
     private TransactionService transactionService;
@@ -149,17 +150,17 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
     {
         this.authorityService = authorityService;
     }
-    
+
     public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory<ArchivedNodeEntity>> cannedQueryRegistry)
     {
         this.cannedQueryRegistry = cannedQueryRegistry;
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-    
+
     public void setUserNamesAreCaseSensitive(boolean userNamesAreCaseSensitive)
     {
         this.userNamesAreCaseSensitive = userNamesAreCaseSensitive;
@@ -175,18 +176,18 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
                 originalNodeRef.getId());
         return archivedNodeRef;
     }
-    
+
     /**
      * Get all the nodes that were archived <b>from</b> the given store.
      * 
-     * @param originalStoreRef      the original store to process
+     * @param originalStoreRef
+     *            the original store to process
      */
     private List<NodeRef> getArchivedNodes(StoreRef originalStoreRef)
     {
         // Get the archive location
         final NodeRef archiveParentNodeRef = nodeService.getStoreArchiveNode(originalStoreRef);
-        RunAsWork<List<ChildAssociationRef>> runAsWork = new RunAsWork<List<ChildAssociationRef>>()
-        {
+        RunAsWork<List<ChildAssociationRef>> runAsWork = new RunAsWork<List<ChildAssociationRef>>() {
             @Override
             public List<ChildAssociationRef> doWork() throws Exception
             {
@@ -216,19 +217,19 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         }
         return nodeRefs;
     }
-    
+
     /**
-     * @return                      Returns a work provider for batch processing
+     * @return Returns a work provider for batch processing
      * 
      * @since 3.3.4
      */
     private BatchProcessWorkProvider<NodeRef> getArchivedNodesWorkProvider(final StoreRef originalStoreRef, final String lockToken)
     {
-        return new BatchProcessWorkProvider<NodeRef>()
-        {
+        return new BatchProcessWorkProvider<NodeRef>() {
             private VmShutdownListener vmShutdownLister = new VmShutdownListener("getArchivedNodesWorkProvider");
             private List<NodeRef> nodeRefs;
             private boolean done;
+
             private synchronized List<NodeRef> getNodeRefs()
             {
                 if (nodeRefs == null)
@@ -237,8 +238,9 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
                 }
                 return nodeRefs;
             }
+
             /**
-             * @return              Returns 0, always
+             * @return Returns 0, always
              */
             public synchronized int getTotalEstimatedWorkSize()
             {
@@ -246,7 +248,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
             }
 
             /**
-             * @return              Returns 0, always
+             * @return Returns 0, always
              */
             public synchronized long getTotalEstimatedWorkSizeLong()
             {
@@ -267,10 +269,10 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
                 }
                 catch (LockAcquisitionException e)
                 {
-                    // This is OK.  We don't have the lock so just quit
+                    // This is OK. We don't have the lock so just quit
                     return Collections.emptyList();
                 }
-                
+
                 if (done)
                 {
                     return Collections.emptyList();
@@ -285,9 +287,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
     }
 
     /**
-     * This is the primary restore method that all <code>restore</code> methods fall back on.
-     * It executes the restore for the node in a separate transaction and attempts to catch
-     * the known conditions that can be reported back to the client.
+     * This is the primary restore method that all <code>restore</code> methods fall back on. It executes the restore for the node in a separate transaction and attempts to catch the known conditions that can be reported back to the client.
      */
     public RestoreNodeReport restoreArchivedNode(
             final NodeRef archivedNodeRef,
@@ -301,8 +301,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         {
             // Transactional wrapper to attempt the restore
             RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-            RetryingTransactionCallback<NodeRef> restoreCallback = new RetryingTransactionCallback<NodeRef>()
-            {
+            RetryingTransactionCallback<NodeRef> restoreCallback = new RetryingTransactionCallback<NodeRef>() {
                 public NodeRef execute() throws Exception
                 {
                     NodeRef restoredNodeRef = null;
@@ -379,7 +378,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         // done
         if (logger.isDebugEnabled())
         {
-            logger.debug("Attempted node restore: "+ report);
+            logger.debug("Attempted node restore: " + report);
         }
         return report;
     }
@@ -447,14 +446,12 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
     }
 
     /**
-     * This is the primary purge methd that all purge methods fall back on.  It isolates the delete
-     * work in a new transaction.
+     * This is the primary purge methd that all purge methods fall back on. It isolates the delete work in a new transaction.
      */
     public void purgeArchivedNode(final NodeRef archivedNodeRef)
     {
         RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-        RetryingTransactionCallback<Void> deleteCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> deleteCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Exception
             {
                 if (!nodeService.exists(archivedNodeRef))
@@ -492,17 +489,17 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         {
             throw new IllegalStateException("Cannot purge as there is no authenticated user.");
         }
-        
+
         /**
          * Worker that purges each node
          */
-        BatchProcessWorker<NodeRef> worker = new BatchProcessor.BatchProcessWorkerAdaptor<NodeRef>()
-        {
+        BatchProcessWorker<NodeRef> worker = new BatchProcessor.BatchProcessWorkerAdaptor<NodeRef>() {
             @Override
             public void beforeProcess() throws Throwable
             {
                 AuthenticationUtil.pushAuthentication();
             }
+
             public void process(NodeRef nodeRef) throws Throwable
             {
                 AuthenticationUtil.setFullyAuthenticatedUser(user);
@@ -512,6 +509,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
                     nodeService.deleteNode(nodeRef);
                 }
             }
+
             @Override
             public void afterProcess() throws Throwable
             {
@@ -520,7 +518,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         };
         doBulkOperation(user, originalStoreRef, worker);
     }
-    
+
     /**
      * Do batch-controlled work
      */
@@ -532,7 +530,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
             // Get a lock to keep refreshing
             lockToken = jobLockService.getLock(LOCK_QNAME, LOCK_TTL);
             // TODO: Should merely trigger a background job i.e. perhaps it should not be
-            //       triggered by a user-based thread
+            // triggered by a user-based thread
             BatchProcessor<NodeRef> batchProcessor = new BatchProcessor<NodeRef>(
                     "ArchiveBulkPurgeOrRestore",
                     transactionService.getRetryingTransactionHelper(),
@@ -549,7 +547,10 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         {
             try
             {
-                if (lockToken != null ) {jobLockService.releaseLock(lockToken, LOCK_QNAME); }
+                if (lockToken != null)
+                {
+                    jobLockService.releaseLock(lockToken, LOCK_QNAME);
+                }
             }
             catch (LockAcquisitionException e)
             {
@@ -569,15 +570,15 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
 
         // get canned query
         GetArchivedNodesCannedQueryFactory getArchivedNodesCannedQueryFactory = (GetArchivedNodesCannedQueryFactory) cannedQueryRegistry
-                    .getNamedObject(CANNED_QUERY_ARCHIVED_NODES_LIST);
+                .getNamedObject(CANNED_QUERY_ARCHIVED_NODES_LIST);
 
         Pair<NodeRef, QName> archiveNodeRefAssocTypePair = getArchiveNodeRefAssocTypePair(cannedQueryBuilder.getArchiveRootNodeRef());
         GetArchivedNodesCannedQuery cq = (GetArchivedNodesCannedQuery) getArchivedNodesCannedQueryFactory
-                    .getCannedQuery(archiveNodeRefAssocTypePair.getFirst(), archiveNodeRefAssocTypePair.getSecond(),
-                                cannedQueryBuilder.getFilter(),
-                                cannedQueryBuilder.isFilterIgnoreCase(),
-                                cannedQueryBuilder.getPagingRequest(),
-                                cannedQueryBuilder.getSortOrderAscending());
+                .getCannedQuery(archiveNodeRefAssocTypePair.getFirst(), archiveNodeRefAssocTypePair.getSecond(),
+                        cannedQueryBuilder.getFilter(),
+                        cannedQueryBuilder.isFilterIgnoreCase(),
+                        cannedQueryBuilder.getPagingRequest(),
+                        cannedQueryBuilder.getSortOrderAscending());
 
         // execute canned query
         final CannedQueryResults<ArchivedNodeEntity> results = ((CannedQuery<ArchivedNodeEntity>) cq).execute();
@@ -591,7 +592,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         {
             page = Collections.emptyList();
         }
-        
+
         // set total count
         final Pair<Integer, Integer> totalCount;
         PagingRequest pagingRequest = cannedQueryBuilder.getPagingRequest();
@@ -609,24 +610,23 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
             int skipCount = pagingRequest.getSkipCount();
             int maxItems = pagingRequest.getMaxItems();
             int pageNum = (skipCount / maxItems) + 1;
-            
+
             if (logger.isDebugEnabled())
             {
                 StringBuilder sb = new StringBuilder(300);
                 sb.append("listArchivedNodes: ").append(page.size()).append(" items in ")
-                            .append((System.currentTimeMillis() - start)).append("ms ")
-                            .append("[pageNum=").append(pageNum).append(", skip=").append(skipCount)
-                            .append(", max=").append(maxItems).append(", hasMorePages=")
-                            .append(results.hasMoreItems()).append(", totalCount=")
-                            .append(totalCount).append(", filter=")
-                            .append(cannedQueryBuilder.getFilter()).append(", sortOrderAscending=")
-                            .append(cannedQueryBuilder.getSortOrderAscending()).append("]");
+                        .append((System.currentTimeMillis() - start)).append("ms ")
+                        .append("[pageNum=").append(pageNum).append(", skip=").append(skipCount)
+                        .append(", max=").append(maxItems).append(", hasMorePages=")
+                        .append(results.hasMoreItems()).append(", totalCount=")
+                        .append(totalCount).append(", filter=")
+                        .append(cannedQueryBuilder.getFilter()).append(", sortOrderAscending=")
+                        .append(cannedQueryBuilder.getSortOrderAscending()).append("]");
 
                 logger.debug(sb.toString());
             }
         }
-        return new PagingResults<NodeRef>()
-        {
+        return new PagingResults<NodeRef>() {
             @Override
             public String getQueryExecutionId()
             {
@@ -657,7 +657,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
             }
         };
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -665,7 +665,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        String currentUser = getCurrentUser();        
+        String currentUser = getCurrentUser();
         if (hasAdminAccess(currentUser))
         {
             return true;
@@ -673,19 +673,19 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         else
         {
             String archivedBy = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_ARCHIVED_BY);
-            if(!userNamesAreCaseSensitive && archivedBy != null)
+            if (!userNamesAreCaseSensitive && archivedBy != null)
             {
                 archivedBy = archivedBy.toLowerCase();
             }
             return currentUser.equals(archivedBy);
         }
     }
-    
+
     protected boolean hasAdminAccess(String userID)
     {
         return authorityService.isAdminAuthority(userID);
     }
-    
+
     private Pair<NodeRef, QName> getArchiveNodeRefAssocTypePair(final NodeRef archiveStoreRootNodeRef)
     {
         final String currentUser = getCurrentUser();
@@ -693,7 +693,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         if (archiveStoreRootNodeRef == null || !nodeService.exists(archiveStoreRootNodeRef))
         {
             throw new InvalidNodeRefException("Invalid archive store root node Ref.",
-                        archiveStoreRootNodeRef);
+                    archiveStoreRootNodeRef);
         }
 
         if (hasAdminAccess(currentUser))
@@ -702,8 +702,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         }
         else
         {
-            List<ChildAssociationRef> list = AuthenticationUtil.runAs(new RunAsWork<List<ChildAssociationRef>>()
-            {
+            List<ChildAssociationRef> list = AuthenticationUtil.runAs(new RunAsWork<List<ChildAssociationRef>>() {
                 @Override
                 public List<ChildAssociationRef> doWork() throws Exception
                 {
@@ -722,7 +721,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
             return new Pair<NodeRef, QName>(userArchive, ContentModel.ASSOC_ARCHIVED_LINK);
         }
     }
-    
+
     private String getCurrentUser()
     {
         String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
@@ -732,8 +731,8 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         }
 
         if (!userNamesAreCaseSensitive
-                    && !AuthenticationUtil.getSystemUserName().equals(
-                                tenantService.getBaseNameUser(currentUser)))
+                && !AuthenticationUtil.getSystemUserName().equals(
+                        tenantService.getBaseNameUser(currentUser)))
         {
             // user names are not case-sensitive
             currentUser = currentUser.toLowerCase();
@@ -747,7 +746,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         {
             return;
         }
-        
+
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(nodeRef);
         // execute policy for node type and aspects
@@ -760,8 +759,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
      * 
      * @param nodeRef
      *            the node we are interested in
-     * @return Returns a set of qualified names containing the node type and all
-     *         the node aspects, or null if the node no longer exists
+     * @return Returns a set of qualified names containing the node type and all the node aspects, or null if the node no longer exists
      */
     protected Set<QName> getTypeAndAspectQNames(NodeRef nodeRef)
     {
@@ -769,9 +767,9 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         try
         {
             Set<QName> aspectQNames = nodeService.getAspects(nodeRef);
-            
+
             QName typeQName = nodeService.getType(nodeRef);
-            
+
             qnames = new HashSet<QName>(aspectQNames.size() + 1);
             qnames.addAll(aspectQNames);
             qnames.add(typeQName);

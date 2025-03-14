@@ -32,6 +32,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+
 import org.alfresco.rest.framework.resource.SerializablePagedCollection;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
 
@@ -48,22 +49,22 @@ public class SerializerOfCollectionWithPaging extends StdSerializer<Serializable
     {
         super(SerializablePagedCollection.class);
     }
-    
+
     @Override
     public void serialize(SerializablePagedCollection pagedCol, JsonGenerator jgen, SerializerProvider provider)
-                throws IOException, JsonGenerationException
+            throws IOException, JsonGenerationException
     {
         if (pagedCol != null)
         {
             jgen.writeStartObject();
             jgen.writeFieldName("list");
-                jgen.writeStartObject();
-                serializePagination(pagedCol, jgen);
-                serializeContext(pagedCol, jgen);
-                jgen.writeObjectField("entries", pagedCol.getCollection());
-                serializeIncludedSource(pagedCol, jgen);
-                jgen.writeEndObject(); 
-            jgen.writeEndObject();  
+            jgen.writeStartObject();
+            serializePagination(pagedCol, jgen);
+            serializeContext(pagedCol, jgen);
+            jgen.writeObjectField("entries", pagedCol.getCollection());
+            serializeIncludedSource(pagedCol, jgen);
+            jgen.writeEndObject();
+            jgen.writeEndObject();
         }
     }
 
@@ -72,30 +73,30 @@ public class SerializerOfCollectionWithPaging extends StdSerializer<Serializable
     {
         if (pagedCol.getSourceEntity() != null)
         {
-            jgen.writeObjectField("source",pagedCol.getSourceEntity());
+            jgen.writeObjectField("source", pagedCol.getSourceEntity());
         }
     }
 
     private void serializeContext(SerializablePagedCollection pagedCol, JsonGenerator jgen) throws IOException,
-                JsonProcessingException
+            JsonProcessingException
     {
         if (pagedCol.getContext() != null)
         {
-            jgen.writeObjectField("context",pagedCol.getContext());
+            jgen.writeObjectField("context", pagedCol.getContext());
         }
     }
 
     private void serializePagination(SerializablePagedCollection pagedCol, JsonGenerator jgen) throws IOException,
-    JsonProcessingException
+            JsonProcessingException
     {
         jgen.writeFieldName("pagination");
         jgen.writeStartObject();
         jgen.writeNumberField("count", pagedCol.getCollection().size());
         jgen.writeBooleanField("hasMoreItems", pagedCol.hasMoreItems());
         Integer totalItems = pagedCol.getTotalItems();
-        if(totalItems != null)
+        if (totalItems != null)
         {
-        	jgen.writeNumberField("totalItems", totalItems);
+            jgen.writeNumberField("totalItems", totalItems);
         }
         if (pagedCol.getPaging() != null)
         {

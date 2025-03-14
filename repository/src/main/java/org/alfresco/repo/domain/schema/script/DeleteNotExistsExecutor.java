@@ -25,12 +25,6 @@
  */
 package org.alfresco.repo.domain.schema.script;
 
-import org.alfresco.util.LogUtil;
-import org.alfresco.util.Pair;
-import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -42,11 +36,15 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.util.LogUtil;
+import org.alfresco.util.Pair;
+import org.alfresco.util.PropertyCheck;
+
 /**
- * The
- * <code>--DELETE_NOT_EXISTS primaryTable.columnName,secondaryTable1.columnName1,...,secondaryTableN.columnNameN batch.size.property</code>
- * statement is used to delete all the items that don't have any corresponding
- * key in any of the secondary tables (e.g. secondaryTable1.columnName1,...,secondaryTableN.columnNameN).
+ * The <code>--DELETE_NOT_EXISTS primaryTable.columnName,secondaryTable1.columnName1,...,secondaryTableN.columnNameN batch.size.property</code> statement is used to delete all the items that don't have any corresponding key in any of the secondary tables (e.g. secondaryTable1.columnName1,...,secondaryTableN.columnNameN).
  * <p/>
  * The processing of the tables and the actual deletes are done in batches to support a high volume of data. It can be influenced using: <br>
  * <code>system.delete_not_exists.batchsize</code> and/or <code>system.delete_not_exists.delete_batchsize</code>
@@ -94,7 +92,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
 
     public void checkProperties()
     {
-         PropertyCheck.mandatory(this, "globalProperties", globalProperties);
+        PropertyCheck.mandatory(this, "globalProperties", globalProperties);
     }
 
     public void execute() throws Exception

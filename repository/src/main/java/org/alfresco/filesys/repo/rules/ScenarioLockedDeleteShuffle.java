@@ -25,14 +25,14 @@
  */
 package org.alfresco.filesys.repo.rules;
 
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.alfresco.filesys.repo.rules.ScenarioInstance.Ranking;
-import org.alfresco.filesys.repo.rules.operations.CreateFileOperation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.filesys.repo.rules.ScenarioInstance.Ranking;
+import org.alfresco.filesys.repo.rules.operations.CreateFileOperation;
 
 /**
  * A locked delete shuffle
@@ -42,46 +42,43 @@ public class ScenarioLockedDeleteShuffle implements Scenario
     private static Log logger = LogFactory.getLog(ScenarioLockedDeleteShuffle.class);
 
     /**
-     * The regex pattern of a create that will trigger a new instance of
-     * the scenario.
+     * The regex pattern of a create that will trigger a new instance of the scenario.
      */
     private Pattern pattern;
     private String strPattern;
-    
-    
+
     private long timeout = 30000;
-    
+
     private Ranking ranking = Ranking.HIGH;
-    
+
     @Override
     public ScenarioInstance createInstance(final EvaluatorContext ctx, Operation operation)
     {
         /**
-         * This scenario is triggered by a create of a file matching
-         * the pattern
+         * This scenario is triggered by a create of a file matching the pattern
          */
-        if(operation instanceof CreateFileOperation)
+        if (operation instanceof CreateFileOperation)
         {
-            CreateFileOperation c = (CreateFileOperation)operation;
-            
+            CreateFileOperation c = (CreateFileOperation) operation;
+
             Matcher m = pattern.matcher(c.getName());
-            if(m.matches())
+            if (m.matches())
             {
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("New Scenario Locked Delete Shuffle Instance pattern:" + strPattern);
                 }
-                
-                ScenarioLockedDeleteShuffleInstance instance = new ScenarioLockedDeleteShuffleInstance() ;
+
+                ScenarioLockedDeleteShuffleInstance instance = new ScenarioLockedDeleteShuffleInstance();
                 instance.setTimeout(timeout);
                 instance.setRanking(ranking);
                 return instance;
             }
         }
-        
+
         // No not interested.
         return null;
-   
+
     }
 
     public void setPattern(String pattern)
@@ -89,12 +86,12 @@ public class ScenarioLockedDeleteShuffle implements Scenario
         this.pattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
         this.strPattern = pattern;
     }
-    
+
     public String getPattern()
     {
         return this.strPattern;
     }
-    
+
     public void setTimeout(long timeout)
     {
         this.timeout = timeout;

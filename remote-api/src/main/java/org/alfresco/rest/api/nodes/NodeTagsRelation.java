@@ -27,6 +27,8 @@ package org.alfresco.rest.api.nodes;
 
 import java.util.List;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.Tags;
 import org.alfresco.rest.api.model.Tag;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -35,47 +37,46 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 @RelationshipResource(name = "tags", entityResource = NodesEntityResource.class, title = "Document or folder tags")
 public class NodeTagsRelation implements RelationshipResourceAction.Create<Tag>, RelationshipResourceAction.Delete, RelationshipResourceAction.Read<Tag>, InitializingBean
 {
-	private Tags tags;
+    private Tags tags;
 
-	public void setTags(Tags tags)
-	{
-		this.tags = tags;
-	}
+    public void setTags(Tags tags)
+    {
+        this.tags = tags;
+    }
 
-	@Override
+    @Override
     public void afterPropertiesSet()
     {
         ParameterCheck.mandatory("tags", this.tags);
     }
 
-	/**
-	 * Add the tag to the node with id 'nodeId'.
-	 * 
-	 */
-	@Override
-	@WebApiDescription(title="Adds one or more tags to the node with id 'nodeId'.")
+    /**
+     * Add the tag to the node with id 'nodeId'.
+     * 
+     */
+    @Override
+    @WebApiDescription(title = "Adds one or more tags to the node with id 'nodeId'.")
     public List<Tag> create(String nodeId, List<Tag> tagsToCreate, Parameters parameters)
-	{
-	    return tags.addTags(nodeId, tagsToCreate, parameters);
-	}
+    {
+        return tags.addTags(nodeId, tagsToCreate, parameters);
+    }
 
-	@Override
-	@WebApiDescription(title="Remove the tag from the node with id 'nodeId'.")
-	public void delete(String nodeId, String tagId, Parameters parameters)
-	{
-		tags.deleteTag(nodeId, tagId);
-	}
+    @Override
+    @WebApiDescription(title = "Remove the tag from the node with id 'nodeId'.")
+    public void delete(String nodeId, String tagId, Parameters parameters)
+    {
+        tags.deleteTag(nodeId, tagId);
+    }
 
-	@Override
-	@WebApiDescription(title="A paged list of tags on the node 'nodeId'.")
-	public CollectionWithPagingInfo<Tag> readAll(String nodeId, Parameters params)
-	{
-		return tags.getTags(nodeId, params);
-	}
-	
+    @Override
+    @WebApiDescription(title = "A paged list of tags on the node 'nodeId'.")
+    public CollectionWithPagingInfo<Tag> readAll(String nodeId, Parameters params)
+    {
+        return tags.getTags(nodeId, params);
+    }
+
 }

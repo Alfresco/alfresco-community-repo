@@ -26,12 +26,13 @@
 
 package org.alfresco.repo.search.impl.solr;
 
-import org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory;
-import org.alfresco.repo.solr.SOLRTrackingComponentImpl;
-import org.alfresco.util.BaseSpringTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
+
+import org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory;
+import org.alfresco.repo.solr.SOLRTrackingComponentImpl;
+import org.alfresco.util.BaseSpringTest;
 
 public class SolrSubsystemTest extends BaseSpringTest
 {
@@ -42,7 +43,7 @@ public class SolrSubsystemTest extends BaseSpringTest
     public void buildElasticsearchClient() throws Exception
     {
         SwitchableApplicationContextFactory subsystemManager = ((SwitchableApplicationContextFactory) applicationContext
-                    .getBean("Search"));
+                .getBean("Search"));
         ApplicationContext solrContext = subsystemManager.getApplicationContext();
         solr6TrackingBean = (SOLRTrackingComponentImpl) solrContext.getBean("search.trackingComponent");
         assertNotNull(solr6TrackingBean);

@@ -31,6 +31,12 @@ import java.util.Date;
 import java.util.Map;
 
 import junit.framework.TestCase;
+import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+import org.springframework.util.ResourceUtils;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
@@ -52,12 +58,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-import org.springframework.util.ResourceUtils;
 
 /**
  * Tests AuditMethodInterceptor
@@ -134,24 +134,22 @@ public class AuditMethodInterceptorTest extends TestCase
         {
             // Access the node in read-only transaction
             Map<QName, Serializable> props = transactionService.getRetryingTransactionHelper()
-                    .doInTransaction(new RetryingTransactionCallback<Map<QName, Serializable>>()
-            {
+                    .doInTransaction(new RetryingTransactionCallback<Map<QName, Serializable>>() {
 
-                @Override
-                public Map<QName, Serializable> execute() throws Throwable
-                {
-                    return nodeService.getProperties(nodeRef);
-                }
+                        @Override
+                        public Map<QName, Serializable> execute() throws Throwable
+                        {
+                            return nodeService.getProperties(nodeRef);
+                        }
 
-            }, true, false);
+                    }, true, false);
 
             assertNotNull("The props should exsist.", props);
 
             // Search for audit
             final StringBuilder sb = new StringBuilder();
             final MutableInt rowCount = new MutableInt();
-            AuditQueryCallback callback = new AuditQueryCallback()
-            {
+            AuditQueryCallback callback = new AuditQueryCallback() {
                 @Override
                 public boolean valuesRequired()
                 {
@@ -214,8 +212,7 @@ public class AuditMethodInterceptorTest extends TestCase
 
         // Perform a search
         @SuppressWarnings("unused")
-        ResultSet rs = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<ResultSet>()
-        {
+        ResultSet rs = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<ResultSet>() {
             @Override
             public ResultSet execute() throws Throwable
             {
@@ -245,8 +242,7 @@ public class AuditMethodInterceptorTest extends TestCase
 
         // Perform a search
         @SuppressWarnings("unused")
-        ResultSet rs = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<ResultSet>()
-        {
+        ResultSet rs = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<ResultSet>() {
             @Override
             public ResultSet execute() throws Throwable
             {
@@ -263,8 +259,7 @@ public class AuditMethodInterceptorTest extends TestCase
     {
         final StringBuilder sb = new StringBuilder();
         final MutableInt rowCount = new MutableInt();
-        AuditQueryCallback callback = new AuditQueryCallback()
-        {
+        AuditQueryCallback callback = new AuditQueryCallback() {
             @Override
             public boolean valuesRequired()
             {

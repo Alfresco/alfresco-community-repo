@@ -38,8 +38,7 @@ public class UserInfo implements Serializable
     private String displayName;
 
     public UserInfo()
-    {
-    }
+    {}
 
     public UserInfo(String id, String firstName, String lastName)
     {

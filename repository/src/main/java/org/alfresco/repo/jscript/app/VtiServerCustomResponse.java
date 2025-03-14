@@ -25,15 +25,16 @@
  */
 package org.alfresco.repo.jscript.app;
 
-import org.alfresco.repo.admin.SysAdminParams;
-import org.alfresco.repo.jscript.ScriptUtils;
+import java.io.Serializable;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 
-import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.repo.jscript.ScriptUtils;
 
 /**
  * Return current state of VTI (SharePoint) Server module
@@ -53,11 +54,9 @@ public class VtiServerCustomResponse implements CustomResponse
     private SysAdminParams sysAdminParams;
     private ScriptUtils scriptUtils;
 
-    /*
-     * Set ScriptUtils
+    /* Set ScriptUtils
      *
-     * @param scriptUtils
-     */
+     * @param scriptUtils */
     public void setScriptUtils(ScriptUtils scriptUtils) throws BeansException
     {
         this.scriptUtils = scriptUtils;
@@ -66,7 +65,8 @@ public class VtiServerCustomResponse implements CustomResponse
     /**
      * Setter for sysAdminParams
      *
-     * @param sysAdminParams SysAdminParams
+     * @param sysAdminParams
+     *            SysAdminParams
      */
     public void setSysAdminParams(SysAdminParams sysAdminParams)
     {
@@ -76,7 +76,8 @@ public class VtiServerCustomResponse implements CustomResponse
     /**
      * Setter for vtiServer Port
      *
-     * @param vtiServerPort int
+     * @param vtiServerPort
+     *            int
      */
     public void setPort(int vtiServerPort)
     {
@@ -86,7 +87,8 @@ public class VtiServerCustomResponse implements CustomResponse
     /**
      * Setter for vtiServer Host
      *
-     * @param vtiServerHost String
+     * @param vtiServerHost
+     *            String
      */
     public void setHost(String vtiServerHost)
     {
@@ -96,17 +98,19 @@ public class VtiServerCustomResponse implements CustomResponse
     /**
      * Setter for vtiServer Protocol
      *
-     * @param vtiServerProtocol String
+     * @param vtiServerProtocol
+     *            String
      */
     public void setProtocol(String vtiServerProtocol)
     {
         this.vtiServerProtocol = vtiServerProtocol;
     }
-    
+
     /**
      * Setter for the vtiServer (external) context path.
      * 
-     * @param contextPath String
+     * @param contextPath
+     *            String
      */
     public void setContextPath(String contextPath)
     {
@@ -142,10 +146,10 @@ public class VtiServerCustomResponse implements CustomResponse
                 jsonObj.put("protocol", this.vtiServerProtocol);
             }
             if (contextPath != null)
-            {                
+            {
                 jsonObj.put("contextPath", contextPath);
             }
-            return (Serializable)jsonObj;
+            return (Serializable) jsonObj;
         }
         catch (Exception e)
         {

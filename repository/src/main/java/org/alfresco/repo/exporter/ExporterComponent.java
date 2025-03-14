@@ -31,6 +31,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,7 +40,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.Arrays;
+
+import org.apache.commons.lang3.math.NumberUtils;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.MLPropertyInterceptor;
@@ -78,11 +83,6 @@ import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.apache.commons.lang3.math.NumberUtils;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
-import org.springframework.extensions.surf.util.ParameterCheck;
-
 
 /**
  * Default implementation of the Exporter Service.
@@ -90,7 +90,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * @author David Caruana
  */
 public class ExporterComponent
-    implements ExporterService
+        implements ExporterService
 {
     // Supporting services
     private NamespaceService namespaceService;
@@ -103,15 +103,14 @@ public class ExporterComponent
     private PermissionService permissionService;
 
     private String exportChunkSize;
-    
 
     /** Indent Size */
     private int indentSize = 2;
     private boolean exportSecondaryNodes = false;
-    
-    
+
     /**
-     * @param nodeService  the node service
+     * @param nodeService
+     *            the node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -119,7 +118,8 @@ public class ExporterComponent
     }
 
     /**
-     * @param searchService  the service to perform path searches
+     * @param searchService
+     *            the service to perform path searches
      */
     public void setSearchService(SearchService searchService)
     {
@@ -127,23 +127,26 @@ public class ExporterComponent
     }
 
     /**
-     * @param contentService  the content service
+     * @param contentService
+     *            the content service
      */
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
     }
-    
+
     /**
-     * @param dictionaryService  the dictionary service
+     * @param dictionaryService
+     *            the dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
-     * @param namespaceService  the namespace service
+     * @param namespaceService
+     *            the namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -151,7 +154,8 @@ public class ExporterComponent
     }
 
     /**
-     * @param descriptorService  the descriptor service
+     * @param descriptorService
+     *            the descriptor service
      */
     public void setDescriptorService(DescriptorService descriptorService)
     {
@@ -159,55 +163,58 @@ public class ExporterComponent
     }
 
     /**
-     * @param authenticationService  the authentication service
+     * @param authenticationService
+     *            the authentication service
      */
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
-        this.authenticationService = authenticationService; 
+        this.authenticationService = authenticationService;
     }
-    
+
     /**
-     * @param permissionService  the permission service
+     * @param permissionService
+     *            the permission service
      */
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
     }
-    
+
     /**
-     * @param exportSecondaryNodes whether children that do dot have a primary association with their parent are exported as nodes
-     * If false, these nodes will be exported as secondary links.
+     * @param exportSecondaryNodes
+     *            whether children that do dot have a primary association with their parent are exported as nodes If false, these nodes will be exported as secondary links.
      */
-    public void setExportSecondaryNodes(boolean exportSecondaryNodes) 
+    public void setExportSecondaryNodes(boolean exportSecondaryNodes)
     {
         this.exportSecondaryNodes = exportSecondaryNodes;
     }
 
     /**
-     * @param exportChunkSize  the exportChunkSize
+     * @param exportChunkSize
+     *            the exportChunkSize
      */
     public void setExportChunkSize(String exportChunkSize)
     {
         this.exportChunkSize = exportChunkSize;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ExporterService#exportView(java.io.OutputStream, org.alfresco.service.cmr.view.ExporterCrawlerParameters, org.alfresco.service.cmr.view.Exporter)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.ExporterService#exportView(java.io.OutputStream, org.alfresco.service.cmr.view.ExporterCrawlerParameters, org.alfresco.service.cmr.view.Exporter) */
     public void exportView(OutputStream viewWriter, ExporterCrawlerParameters parameters, Exporter progress)
     {
         ParameterCheck.mandatory("View Writer", viewWriter);
-        
+
         // Construct a basic XML Exporter
         Exporter xmlExporter = createXMLExporter(viewWriter, parameters.getReferenceType());
 
         // Export
         exportView(xmlExporter, parameters, progress);
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ExporterService#exportView(org.alfresco.service.cmr.view.ExportPackageHandler, org.alfresco.service.cmr.view.ExporterCrawlerParameters, org.alfresco.service.cmr.view.Exporter)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.ExporterService#exportView(org.alfresco.service.cmr.view.ExportPackageHandler, org.alfresco.service.cmr.view.ExporterCrawlerParameters, org.alfresco.service.cmr.view.Exporter) */
     public void exportView(ExportPackageHandler exportHandler, ExporterCrawlerParameters parameters, Exporter progress)
     {
         ParameterCheck.mandatory("Stream Handler", exportHandler);
@@ -218,32 +225,33 @@ public class ExporterComponent
         Exporter xmlExporter = createXMLExporter(dataFile, parameters.getReferenceType());
         URLExporter urlExporter = new URLExporter(xmlExporter, exportHandler);
 
-        // export        
+        // export
         exportView(urlExporter, parameters, progress);
-        
+
         // end export
         exportHandler.endExport();
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ExporterService#exportView(org.alfresco.service.cmr.view.Exporter, org.alfresco.service.cmr.view.ExporterCrawler, org.alfresco.service.cmr.view.Exporter)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.ExporterService#exportView(org.alfresco.service.cmr.view.Exporter, org.alfresco.service.cmr.view.ExporterCrawler, org.alfresco.service.cmr.view.Exporter) */
     public void exportView(Exporter exporter, ExporterCrawlerParameters parameters, Exporter progress)
     {
         ParameterCheck.mandatory("Exporter", exporter);
-        
-        ChainedExporter chainedExporter = new ChainedExporter(new Exporter[] {exporter, progress});
+
+        ChainedExporter chainedExporter = new ChainedExporter(new Exporter[]{exporter, progress});
         DefaultCrawler crawler = new DefaultCrawler();
         crawler.export(parameters, chainedExporter);
     }
-    
+
     /**
-     * Create an XML Exporter that exports repository information to the specified
-     * output stream in xml format.
+     * Create an XML Exporter that exports repository information to the specified output stream in xml format.
      * 
-     * @param viewWriter  the output stream to write to
-     * @param referenceType  the format of references to export
-     * @return  the xml exporter
+     * @param viewWriter
+     *            the output stream to write to
+     * @param referenceType
+     *            the format of references to export
+     * @return the xml exporter
      */
     private Exporter createXMLExporter(OutputStream viewWriter, ReferenceType referenceType)
     {
@@ -261,30 +269,28 @@ public class ExporterComponent
             exporter.setReferenceType(referenceType);
             return exporter;
         }
-        catch (UnsupportedEncodingException e)        
+        catch (UnsupportedEncodingException e)
         {
-            throw new ExporterException("Failed to create XML Writer for export", e);            
+            throw new ExporterException("Failed to create XML Writer for export", e);
         }
-        catch (Exception e)        
+        catch (Exception e)
         {
-            throw new ExporterException("Failed to create XML Writer for export", e);            
+            throw new ExporterException("Failed to create XML Writer for export", e);
         }
     }
-    
-    
+
     /**
-     * Responsible for navigating the Repository from specified location and invoking
-     * the provided exporter call-back for the actual export implementation.
+     * Responsible for navigating the Repository from specified location and invoking the provided exporter call-back for the actual export implementation.
      * 
      * @author David Caruana
      */
     private class DefaultCrawler implements ExporterCrawler
     {
         private ExporterContextImpl context;
-        
+
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ExporterCrawler#export(org.alfresco.service.cmr.view.Exporter)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.ExporterCrawler#export(org.alfresco.service.cmr.view.Exporter) */
         public void export(ExporterCrawlerParameters parameters, Exporter exporter)
         {
             // Initialise Crawler
@@ -294,7 +300,7 @@ public class ExporterComponent
             //
             // Export Nodes
             //
-            
+
             while (context.canRetrieve())
             {
                 // determine if root repository node
@@ -355,13 +361,13 @@ public class ExporterComponent
                         walkEndNamespaces(parameters, exporter);
                     }
                 }
-                
+
                 context.setNextValue();
             }
 
             exporter.end();
         }
-        
+
         /**
          * Call-backs for start of Namespace scope
          */
@@ -377,7 +383,7 @@ public class ExporterComponent
                 }
             }
         }
-        
+
         /**
          * Call-backs for end of Namespace scope
          */
@@ -392,11 +398,12 @@ public class ExporterComponent
                 }
             }
         }
-        
+
         /**
          * Navigate a Node.
          * 
-         * @param nodeRef  the node to navigate
+         * @param nodeRef
+         *            the node to navigate
          */
         private void walkNode(NodeRef nodeRef, ExporterCrawlerParameters parameters, Exporter exporter, boolean exportAsRef)
         {
@@ -406,12 +413,12 @@ public class ExporterComponent
             {
                 return;
             }
-            
+
             // explicitly included ?
             if (parameters.getIncludedPaths() != null)
             {
                 String nodePathPrefixString = nodeService.getPath(nodeRef).toPrefixString(namespaceService);
-                if (! (isIncludedPath(parameters.getIncludedPaths(), nodePathPrefixString)))
+                if (!(isIncludedPath(parameters.getIncludedPaths(), nodePathPrefixString)))
                 {
                     return;
                 }
@@ -447,7 +454,7 @@ public class ExporterComponent
                 }
             }
             exporter.endAspects(nodeRef);
-            
+
             // Export node permissions
             AccessStatus readPermission = permissionService.hasPermission(nodeRef, PermissionService.READ_PERMISSIONS);
             if (authenticationService.isCurrentUserTheSystemUser() || readPermission.equals(AccessStatus.ALLOWED))
@@ -459,7 +466,7 @@ public class ExporterComponent
                     exporter.startACL(nodeRef);
                     for (AccessPermission permission : permissions)
                     {
-                        if(permission.isSetDirectly())
+                        if (permission.isSetDirectly())
                         {
                             exporter.permission(nodeRef, permission);
                         }
@@ -467,7 +474,7 @@ public class ExporterComponent
                     exporter.endACL(nodeRef);
                 }
             }
-            
+
             // Export node properties
             exporter.startProperties(nodeRef);
             boolean aware = MLPropertyInterceptor.setMLAware(true);
@@ -484,14 +491,14 @@ public class ExporterComponent
                 {
                     continue;
                 }
-                
+
                 // filter out properties whose value is null, if not required
                 Object value = properties.get(property);
                 if (!parameters.isCrawlNullProperties() && value == null)
                 {
                     continue;
                 }
-                
+
                 // start export of property
                 exporter.startProperty(nodeRef, property);
 
@@ -499,7 +506,7 @@ public class ExporterComponent
                 {
                     exporter.startValueCollection(nodeRef, property);
                     int index = 0;
-                    for (Object valueInCollection : (Collection)value)
+                    for (Object valueInCollection : (Collection) value)
                     {
                         walkProperty(nodeRef, property, valueInCollection, index, parameters, exporter);
                         index++;
@@ -530,7 +537,7 @@ public class ExporterComponent
                 exporter.endProperty(nodeRef, property);
             }
             exporter.endProperties(nodeRef);
-            
+
             // Export node children
             if (parameters.isCrawlChildNodes())
             {
@@ -561,7 +568,7 @@ public class ExporterComponent
                     {
                         continue;
                     }
-                    
+
                     List<ChildAssociationRef> assocRefs = assocTypes.get(childAssocType);
                     if (assocRefs == null)
                     {
@@ -570,7 +577,7 @@ public class ExporterComponent
                     }
                     assocRefs.add(childAssoc);
                 }
-                
+
                 // output each association type bucket
                 if (assocTypes.size() > 0)
                 {
@@ -591,7 +598,7 @@ public class ExporterComponent
                     exporter.endAssocs(nodeRef);
                 }
             }
-            
+
             // Export node associations
             if (parameters.isCrawlAssociations())
             {
@@ -601,7 +608,7 @@ public class ExporterComponent
                     context.recordAssociation(nodeRef);
                 }
             }
-            
+
             // Signal end of node
             // export node as reference to node, or as the actual node
             if (exportAsRef)
@@ -613,16 +620,22 @@ public class ExporterComponent
                 exporter.endNode(nodeRef);
             }
         }
-        
+
         /**
          * Export Property
          * 
-         * @param nodeRef NodeRef
-         * @param property QName
-         * @param value Object
-         * @param index int
-         * @param parameters ExporterCrawlerParameters
-         * @param exporter Exporter
+         * @param nodeRef
+         *            NodeRef
+         * @param property
+         *            QName
+         * @param value
+         *            Object
+         * @param index
+         *            int
+         * @param parameters
+         *            ExporterCrawlerParameters
+         * @param exporter
+         *            Exporter
          */
         private void walkProperty(NodeRef nodeRef, QName property, Object value, int index, ExporterCrawlerParameters parameters, Exporter exporter)
         {
@@ -650,7 +663,7 @@ public class ExporterComponent
                 {
                     exporter.value(nodeRef, property, value, index);
                 }
-                catch(TypeConversionException e)
+                catch (TypeConversionException e)
                 {
                     exporter.warning("Value of property " + property + " could not be converted to xml string");
                     exporter.value(nodeRef, property, (value == null ? null : value.toString()), index);
@@ -663,7 +676,7 @@ public class ExporterComponent
                 if (!parameters.isCrawlContent() || reader == null || reader.exists() == false)
                 {
                     // export an empty url for the content
-                    ContentData contentData = (ContentData)value;
+                    ContentData contentData = (ContentData) value;
                     ContentData noContentURL = null;
                     if (contentData == null)
                     {
@@ -689,7 +702,7 @@ public class ExporterComponent
                         {
                             inputStream.close();
                         }
-                        catch(IOException e)
+                        catch (IOException e)
                         {
                             throw new ExporterException("Failed to export node content for node " + nodeRef, e);
                         }
@@ -697,13 +710,16 @@ public class ExporterComponent
                 }
             }
         }
-        
+
         /**
          * Export Secondary Links
          * 
-         * @param nodeRef NodeRef
-         * @param parameters ExporterCrawlerParameters
-         * @param exporter Exporter
+         * @param nodeRef
+         *            NodeRef
+         * @param parameters
+         *            ExporterCrawlerParameters
+         * @param exporter
+         *            Exporter
          */
         private void walkNodeSecondaryLinks(NodeRef nodeRef, ExporterCrawlerParameters parameters, Exporter exporter)
         {
@@ -734,7 +750,7 @@ public class ExporterComponent
                 {
                     continue;
                 }
-                
+
                 List<ChildAssociationRef> assocRefs = assocTypes.get(childAssocType);
                 if (assocRefs == null)
                 {
@@ -743,7 +759,7 @@ public class ExporterComponent
                 }
                 assocRefs.add(childAssoc);
             }
-            
+
             // output each association type bucket
             if (assocTypes.size() > 0)
             {
@@ -767,13 +783,16 @@ public class ExporterComponent
                 exporter.endReference(nodeRef);
             }
         }
-        
+
         /**
          * Export Node Associations
          * 
-         * @param nodeRef NodeRef
-         * @param parameters ExporterCrawlerParameters
-         * @param exporter Exporter
+         * @param nodeRef
+         *            NodeRef
+         * @param parameters
+         *            ExporterCrawlerParameters
+         * @param exporter
+         *            Exporter
          */
         private void walkNodeAssociations(NodeRef nodeRef, ExporterCrawlerParameters parameters, Exporter exporter)
         {
@@ -791,7 +810,7 @@ public class ExporterComponent
                 {
                     continue;
                 }
-                
+
                 List<AssociationRef> assocRefs = assocTypes.get(assocType);
                 if (assocRefs == null)
                 {
@@ -800,7 +819,7 @@ public class ExporterComponent
                 }
                 assocRefs.add(assoc);
             }
-            
+
             // output each association type bucket
             if (assocTypes.size() > 0)
             {
@@ -828,8 +847,9 @@ public class ExporterComponent
         /**
          * Is the specified URI an excluded URI?
          * 
-         * @param uri  the URI to test
-         * @return  true => it's excluded from the export
+         * @param uri
+         *            the URI to test
+         * @return true => it's excluded from the export
          */
         private boolean isExcludedURI(String[] excludeNamespaceURIs, String uri)
         {
@@ -842,12 +862,12 @@ public class ExporterComponent
             }
             return false;
         }
-        
+
         private boolean isIncludedPath(String[] includedPaths, String path)
         {
             for (String includePath : includedPaths)
             {
-                // note: allow parents or children - e.g. if included path is /a/b/c then /, /a, /a/b, /a/b/c, /a/b/c/d, /a/b/c/d/e are all included         	 
+                // note: allow parents or children - e.g. if included path is /a/b/c then /, /a, /a/b, /a/b/c, /a/b/c/d, /a/b/c/d/e are all included
                 if (includePath.startsWith(path) || path.startsWith(includePath))
                 {
                     return true;
@@ -856,13 +876,13 @@ public class ExporterComponent
 
             return false;
         }
-        
-        
+
         /**
          * Is the aspect unexportable?
          * 
-         * @param aspectQName           the aspect name
-         * @return                      <tt>true</tt> if the aspect can't be exported
+         * @param aspectQName
+         *            the aspect name
+         * @return <tt>true</tt> if the aspect can't be exported
          */
         private boolean isExcludedAspect(QName[] excludeAspects, QName aspectQName)
         {
@@ -887,8 +907,9 @@ public class ExporterComponent
         /**
          * Is the child association unexportable?
          * 
-         * @param childAssocQName           the child assoc name
-         * @return                      <tt>true</tt> if the aspect can't be exported
+         * @param childAssocQName
+         *            the child assoc name
+         * @return <tt>true</tt> if the aspect can't be exported
          */
         private boolean isExcludedChildAssoc(QName[] excludeChildAssocs, QName childAssocQName)
         {
@@ -901,7 +922,7 @@ public class ExporterComponent
             }
             return false;
         }
-        
+
         /**
          * Is the property unexportable?
          */
@@ -912,13 +933,13 @@ public class ExporterComponent
             {
                 return false;
             }
-            
+
             ClassDefinition classDef = propDef.getContainerClass();
             if (classDef == null || !classDef.isAspect())
             {
                 return false;
             }
-            
+
             return isExcludedAspect(excludeAspects, classDef.getName());
         }
 
@@ -932,21 +953,22 @@ public class ExporterComponent
             {
                 return false;
             }
-            
+
             ClassDefinition classDef = assocDef.getSourceClass();
             if (classDef == null || !classDef.isAspect())
             {
                 return false;
             }
-            
+
             return isExcludedAspect(excludeAspects, classDef.getName());
         }
-        
+
         /**
          * Determine if specified Node Reference is within the set of nodes to be exported
          * 
-         * @param nodeRef  node reference to check
-         * @return  true => node reference is within export set
+         * @param nodeRef
+         *            node reference to check
+         * @return true => node reference is within export set
          */
         private boolean isWithinExport(NodeRef nodeRef, ExporterCrawlerParameters parameters)
         {
@@ -986,7 +1008,8 @@ public class ExporterComponent
         }
     }
 
-    private boolean checkIsWithin(NodeRef nodeRef, NodeRef exportRoot, ExporterCrawlerParameters parameters){
+    private boolean checkIsWithin(NodeRef nodeRef, NodeRef exportRoot, ExporterCrawlerParameters parameters)
+    {
         if (nodeRef.equals(exportRoot) && parameters.isCrawlSelf() == true)
         {
             // node to export is the root export node (and root is to be exported)
@@ -1008,40 +1031,39 @@ public class ExporterComponent
         return false;
     }
 
-
     /**
      * Exporter Context
      */
     private class ExporterContextImpl implements ExporterContext
     {
         private NodeRef[] exportList;
-        private Map<Integer,NodeRef[]> exportListMap;
+        private Map<Integer, NodeRef[]> exportListMap;
         private NodeRef[] parentList;
-        private Map<Integer,NodeRef[]> parentListMap;
+        private Map<Integer, NodeRef[]> parentListMap;
         private String exportedBy;
         private Date exportedDate;
         private String exporterVersion;
-        
+
         private Map<Integer, Set<NodeRef>> nodesWithSecondaryLinks = new HashMap<Integer, Set<NodeRef>>();
         private Map<Integer, Set<NodeRef>> nodesWithAssociations = new HashMap<Integer, Set<NodeRef>>();
-        
+
         private int index;
         private int indexSubList;
         private int chunkSize;
 
-
         /**
          * Construct
          * 
-         * @param parameters  exporter crawler parameters
+         * @param parameters
+         *            exporter crawler parameters
          */
         public ExporterContextImpl(ExporterCrawlerParameters parameters)
         {
             index = 0;
             indexSubList = 0;
 
-
-            if(!NumberUtils.isParsable(exportChunkSize)){
+            if (!NumberUtils.isParsable(exportChunkSize))
+            {
                 chunkSize = 10;
             }
             else
@@ -1065,14 +1087,14 @@ public class ExporterComponent
                 NodeRef exportOf = getNodeRef(parameters.getExportFrom());
                 exportList[0] = exportOf;
             }
-            if(exportList.length > chunkSize)
+            if (exportList.length > chunkSize)
             {
                 exportListMap = splitArray(exportList);
 
                 parentListMap = new HashMap<>();
-                for(Map.Entry<Integer, NodeRef[]> exportEntrySet : exportListMap.entrySet())
+                for (Map.Entry<Integer, NodeRef[]> exportEntrySet : exportListMap.entrySet())
                 {
-                    parentList= new NodeRef[exportEntrySet.getValue().length];
+                    parentList = new NodeRef[exportEntrySet.getValue().length];
                     for (int i = 0; i < exportEntrySet.getValue().length; i++)
                     {
                         parentList[i] = getParent(exportEntrySet.getValue()[i], parameters.isCrawlSelf());
@@ -1080,7 +1102,8 @@ public class ExporterComponent
                     parentListMap.put(exportEntrySet.getKey(), parentList);
                 }
             }
-            else{
+            else
+            {
                 parentList = new NodeRef[exportList.length];
                 for (int i = 0; i < exportList.length; i++)
                 {
@@ -1092,25 +1115,29 @@ public class ExporterComponent
             exporterVersion = descriptorService.getServerDescriptor().getVersion();
         }
 
-        public Map<Integer, NodeRef[]> splitArray(NodeRef[] arrayToSplit){
-            if(chunkSize <= 0){
+        public Map<Integer, NodeRef[]> splitArray(NodeRef[] arrayToSplit)
+        {
+            if (chunkSize <= 0)
+            {
                 return null;
             }
             int rest = arrayToSplit.length % chunkSize;
             int chunks = arrayToSplit.length / chunkSize + (rest > 0 ? 1 : 0);
-            Map<Integer, NodeRef[]> arrays = new HashMap<>() ;
-            for(Integer i = 0; i < (rest > 0 ? chunks - 1 : chunks); i++){
+            Map<Integer, NodeRef[]> arrays = new HashMap<>();
+            for (Integer i = 0; i < (rest > 0 ? chunks - 1 : chunks); i++)
+            {
                 arrays.put(i, Arrays.copyOfRange(arrayToSplit, i * chunkSize, i * chunkSize + chunkSize));
             }
-            if(rest > 0){
+            if (rest > 0)
+            {
                 arrays.put(chunks - 1, Arrays.copyOfRange(arrayToSplit, (chunks - 1) * chunkSize, (chunks - 1) * chunkSize + rest));
             }
             return arrays;
         }
-        
+
         public boolean canRetrieve()
         {
-            if(exportListMap != null)
+            if (exportListMap != null)
             {
                 if (exportListMap.containsKey(indexSubList))
                 {
@@ -1121,96 +1148,99 @@ public class ExporterComponent
                     return false;
                 }
             }
-            else {
+            else
+            {
                 return index < exportList.length;
             }
         }
-        
+
         public int setNextValue()
         {
-            if(exportListMap != null && (index == exportListMap.get(indexSubList).length-1)){
+            if (exportListMap != null && (index == exportListMap.get(indexSubList).length - 1))
+            {
                 resetContext();
-                if(indexSubList <= exportListMap.size())
+                if (indexSubList <= exportListMap.size())
                 {
                     ++indexSubList;
                 }
             }
-            else{
+            else
+            {
                 ++index;
             }
             return index;
         }
-        
+
         public void resetContext()
         {
             index = 0;
         }
-        
+
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ExporterContext#getExportedBy()
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.ExporterContext#getExportedBy() */
         public String getExportedBy()
         {
             return exportedBy;
         }
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ExporterContext#getExportedDate()
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.ExporterContext#getExportedDate() */
         public Date getExportedDate()
         {
             return exportedDate;
         }
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ExporterContext#getExporterVersion()
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.ExporterContext#getExporterVersion() */
         public String getExporterVersion()
         {
             return exporterVersion;
         }
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ExporterContext#getExportOf()
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.ExporterContext#getExportOf() */
         public NodeRef getExportOf()
         {
             if (canRetrieve())
             {
-                if(exportListMap!=null)
+                if (exportListMap != null)
                 {
                     return exportListMap.get(indexSubList)[index];
                 }
-                else {
+                else
+                {
                     return exportList[index];
                 }
             }
             return null;
         }
-        
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ExporterContext#getExportParent()
-         */
+
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.service.cmr.view.ExporterContext#getExportParent() */
         public NodeRef getExportParent()
         {
             if (canRetrieve())
             {
-                if(parentListMap!=null)
+                if (parentListMap != null)
                 {
                     return parentListMap.get(indexSubList)[index];
                 }
-                else {
+                else
+                {
                     return parentList[index];
                 }
             }
             return null;
         }
-        
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ExporterContext#getExportList()
-         */
+
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.service.cmr.view.ExporterContext#getExportList() */
         public NodeRef[] getExportList()
         {
             return exportList;
@@ -1221,10 +1251,9 @@ public class ExporterComponent
             return exportListMap;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ExporterContext#getExportParentList()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.service.cmr.view.ExporterContext#getExportParentList() */
         public NodeRef[] getExportParentList()
         {
             return parentList;
@@ -1233,7 +1262,8 @@ public class ExporterComponent
         /**
          * Record that associations exist for node
          * 
-         * @param nodeRef NodeRef
+         * @param nodeRef
+         *            NodeRef
          */
         public void recordAssociation(NodeRef nodeRef)
         {
@@ -1264,7 +1294,8 @@ public class ExporterComponent
         /**
          * Record that secondary links exist for node
          * 
-         * @param nodeRef NodeRef
+         * @param nodeRef
+         *            NodeRef
          */
         public void recordSecondaryLink(NodeRef nodeRef)
         {
@@ -1291,17 +1322,18 @@ public class ExporterComponent
             }
             return null;
         }
-        
+
         /**
          * Get the Node Ref from the specified Location
          * 
-         * @param location  the location
-         * @return  the node reference
+         * @param location
+         *            the location
+         * @return the node reference
          */
         private NodeRef getNodeRef(Location location)
         {
             ParameterCheck.mandatory("Location", location);
-        
+
             // Establish node to export from
             NodeRef nodeRef = (location == null) ? null : location.getNodeRef();
             if (nodeRef == null)
@@ -1309,10 +1341,10 @@ public class ExporterComponent
                 // If a specific node has not been provided, default to the root
                 nodeRef = nodeService.getRootNode(location.getStoreRef());
             }
-        
+
             // Resolve to path within node, if one specified
             String path = (location == null) ? null : location.getPath();
-            if (path != null && path.length() >0)
+            if (path != null && path.length() > 0)
             {
                 // Create a valid path and search
                 List<NodeRef> nodeRefs = searchService.selectNodes(nodeRef, path, null, namespaceService, false);
@@ -1326,23 +1358,25 @@ public class ExporterComponent
                 }
                 nodeRef = nodeRefs.get(0);
             }
-        
+
             // TODO: Check Node actually exists
-        
+
             return nodeRef;
         }
-     
+
         /**
          * Gets the parent node of the items to be exported
          * 
-         * @param exportOf NodeRef
-         * @param exportSelf boolean
+         * @param exportOf
+         *            NodeRef
+         * @param exportSelf
+         *            boolean
          * @return NodeRef
          */
         private NodeRef getParent(NodeRef exportOf, boolean exportSelf)
         {
             NodeRef parent = null;
-            
+
             if (exportSelf)
             {
                 NodeRef rootNode = nodeService.getRootNode(exportOf.getStoreRef());
@@ -1360,10 +1394,10 @@ public class ExporterComponent
             {
                 parent = exportOf;
             }
-            
+
             return parent;
         }
 
     }
-    
+
 }

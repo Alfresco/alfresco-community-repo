@@ -25,16 +25,16 @@
  */
 package org.alfresco.rest.api.tests.client;
 
-
 public class UserAuthenticationDetailsProviderImpl implements AuthenticationDetailsProvider
 {
     private String adminUserName;
     private String adminPassword;
-    
+
     private UserDataService userDataService;
-    
+
     /**
-     * @param userDataService service to use for {@link UserData} related operations
+     * @param userDataService
+     *            service to use for {@link UserData} related operations
      */
     public UserAuthenticationDetailsProviderImpl(UserDataService userDataService, String adminUserName, String adminPassword)
     {
@@ -43,7 +43,6 @@ public class UserAuthenticationDetailsProviderImpl implements AuthenticationDeta
         this.adminPassword = adminPassword;
     }
 
-    
     public String getPasswordForUser(String userName)
     {
         if (userName != null)
@@ -80,19 +79,18 @@ public class UserAuthenticationDetailsProviderImpl implements AuthenticationDeta
         return this.adminPassword;
     }
 
-
-	@Override
-	public void updateTicketForUser(String userName, String ticket) throws IllegalArgumentException
-	{
+    @Override
+    public void updateTicketForUser(String userName, String ticket) throws IllegalArgumentException
+    {
         UserData user = userDataService.findUserByUserName(userName);
-        if(user != null)
+        if (user != null)
         {
             user.setTicket(ticket);
         }
         else
         {
-        	// TODO
+            // TODO
         }
-	}
+    }
 
 }

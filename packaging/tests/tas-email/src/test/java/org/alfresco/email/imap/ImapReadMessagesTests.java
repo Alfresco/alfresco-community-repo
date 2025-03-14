@@ -1,5 +1,12 @@
 package org.alfresco.email.imap;
 
+import java.io.IOException;
+import jakarta.mail.Flags;
+import jakarta.mail.MessagingException;
+
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.email.EmailTest;
 import org.alfresco.utility.constants.UserRole;
@@ -7,16 +14,10 @@ import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.*;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import jakarta.mail.Flags;
-import jakarta.mail.MessagingException;
-import java.io.IOException;
 
 public class ImapReadMessagesTests extends EmailTest
 {
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         testUser = dataUser.createRandomTestUser();
@@ -25,9 +26,9 @@ public class ImapReadMessagesTests extends EmailTest
         adminSite = dataSite.usingAdmin().createIMAPSite();
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.SANITY,
             description = "Verify folders created in repository in other folder via IMAP client by admin user")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.SANITY })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.SANITY})
     public void adminShouldGetFoldersCreatedInRepositoryViaImap() throws Exception
     {
         testFolder = dataContent.usingAdmin().usingSite(testSite).createFolder();
@@ -40,9 +41,9 @@ public class ImapReadMessagesTests extends EmailTest
                 .and().assertThat().existsInImap();
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.SANITY,
             description = "Verify file and its content are displayed via IMAP client when the file is created by site manager")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.SANITY })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.SANITY})
     public void siteManagerShouldGetFileAndItsContentsViaImap() throws Exception
     {
         FileModel fileModel = dataContent.usingUser(testUser).usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -51,10 +52,10 @@ public class ImapReadMessagesTests extends EmailTest
                 .then().assertThat().fileContentIsDisplayed();
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.SANITY,
             description = "Verify that file content in IMAP client contains creator, title, description, created date, " +
                     "modifier, modified date, size, three links to content folder, to content url, to download url")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.SANITY })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.SANITY})
     public void siteManagerShouldVerifyFileContent() throws Exception
     {
         FileModel fileModel = dataContent.usingUser(testUser).usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -63,9 +64,9 @@ public class ImapReadMessagesTests extends EmailTest
                 .then().assertThat().messageContentMatchesFileModelData(fileModel);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify that the admin user can mark a message as read")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE})
     public void adminCanMarkMessageAsRead() throws Exception
     {
         testFile = dataContent.usingUser(adminUser).usingSite(adminSite).createContent(FileModel.getRandomFileModel(FileType.TEXT_PLAIN));
@@ -73,9 +74,9 @@ public class ImapReadMessagesTests extends EmailTest
                 .then().assertThat().messageContainsFlags(Flags.Flag.SEEN);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify that collaborator can see files created by self")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE})
     public void collaboratorCanViewFileCreatedBySelf() throws Exception
     {
         UserModel collaboratorUser = dataUser.createRandomTestUser();
@@ -84,9 +85,9 @@ public class ImapReadMessagesTests extends EmailTest
         imapProtocol.authenticateUser(collaboratorUser).usingSite(testSite).assertThat().containsMessages(testFile);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify that contributor can see files created by self")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE})
     public void contributorCanViewFileCreatedBySelf() throws Exception
     {
         UserModel contributorUser = dataUser.createRandomTestUser();
@@ -95,18 +96,18 @@ public class ImapReadMessagesTests extends EmailTest
         imapProtocol.authenticateUser(contributorUser).usingSite(testSite).assertThat().containsMessages(testFile);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify file created with spaces in the name is displayed in IMAP client")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE})
     public void fileWithSpacesInNameIsDisplayedInImap() throws Exception
     {
         testFile = dataContent.usingUser(testUser).usingSite(testSite).createContent(new FileModel("name with spaces.txt", FileType.TEXT_PLAIN));
         imapProtocol.authenticateUser(testUser).usingSite(testSite).assertThat().containsMessages(testFile);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify that a file created with name which contains special characters is visible in IMAP")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL})
     public void userCanViewFileWithSpecialCharactersInNameViaIMAP() throws Exception
     {
         testFile = dataContent.usingUser(testUser).usingSite(testSite).createContent(new FileModel("(a)[b]!#%^.txt", FileType.TEXT_PLAIN));
@@ -115,9 +116,9 @@ public class ImapReadMessagesTests extends EmailTest
                 .usingResource(testFile).assertThat().existsInRepo();
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify that a file created with name which contains symbols is visible in IMAP")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL})
     public void userCanViewFileWithSymbolsInNameViaIMAP() throws Exception
     {
         testFile = dataContent.usingUser(testUser).usingSite(testSite).createContent(new FileModel("a£¥€$♊♎♏♐♑♒♓Ω.txt", FileType.TEXT_PLAIN));
@@ -126,27 +127,27 @@ public class ImapReadMessagesTests extends EmailTest
                 .usingResource(testFile).assertThat().existsInRepo();
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify that site manager can see links via IMAP")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL})
     public void siteManagerCanViewLinks() throws Exception
     {
         dataLink.usingUser(testUser).usingSite(testSite).createRandomLink();
         imapProtocol.authenticateUser(testUser).usingSiteLinksContainer(testSite).assertThat().countMessagesIs(1);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify that site manager can see calendar events via IMAP")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL})
     public void siteManagerCanViewCalendarEvents() throws Exception
     {
         dataCalendarEvent.usingUser(testUser).usingSite(testSite).createRandomCalendarEvent();
         imapProtocol.authenticateUser(testUser).usingSiteCalendarContainer(testSite).assertThat().countMessagesIs(1);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify that site manager cannot read file via IMAP if it is already deleted from repository")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL }, expectedExceptions = MessagingException.class,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL}, expectedExceptions = MessagingException.class,
             expectedExceptionsMessageRegExp = "No message with subject .* has been found")
     public void siteManagerCannotReadFileInImapIfItWasDeletedFromRepository() throws Exception
     {
@@ -156,9 +157,9 @@ public class ImapReadMessagesTests extends EmailTest
         imapProtocol.authenticateUser(testUser).usingSite(testSite).usingResource(testFile).assertThat().fileContentIsDisplayed();
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify that site manager cannot read file via IMAP client if it is locked by an user in repository")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL }, expectedExceptions = IOException.class,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL}, expectedExceptions = IOException.class,
             expectedExceptionsMessageRegExp = "No content")
     public void siteManagerCannotReadFileInImapIfItsLocked() throws Exception
     {

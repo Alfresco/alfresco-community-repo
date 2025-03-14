@@ -68,9 +68,7 @@ public interface CannedQueryDef
     public String getQuery();
 
     /**
-     * Return the mechanism that this query definition uses to map namespace
-     * prefixes to URIs. A query may use a predefined set of prefixes for known
-     * URIs. I would be unwise to rely on the defaults.
+     * Return the mechanism that this query definition uses to map namespace prefixes to URIs. A query may use a predefined set of prefixes for known URIs. I would be unwise to rely on the defaults.
      * 
      * @return NamespacePrefixResolver
      */

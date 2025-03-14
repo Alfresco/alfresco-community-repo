@@ -30,9 +30,11 @@ import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryLanguage;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 
-public class UnsupportedQueryLanguage extends AbstractLuceneQueryLanguage {
+public class UnsupportedQueryLanguage extends AbstractLuceneQueryLanguage
+{
     @Override
-    public ResultSet executeQuery(SearchParameters searchParameters) {
+    public ResultSet executeQuery(SearchParameters searchParameters)
+    {
         throw new AlfrescoRuntimeException("No support for language " + searchParameters.getLanguage());
     }
 }

@@ -23,17 +23,19 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
- 
+
 package org.alfresco.rest.framework.tests.api.mocks;
+
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
 
 import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
-import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.RelationshipResource;
-import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
@@ -42,11 +44,7 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
-
-@RelationshipResource(name = "calf", entityResource=CowEntityResource.class, title = "Muma")
+@RelationshipResource(name = "calf", entityResource = CowEntityResource.class, title = "Muma")
 public class CalfRelationshipResource implements RelationshipResourceAction.ReadByIdWithResponse<Goat>,
         RelationshipResourceAction.ReadWithResponse<Goat>,
         RelationshipResourceAction.CreateWithResponse<Goat>,
@@ -54,7 +52,8 @@ public class CalfRelationshipResource implements RelationshipResourceAction.Read
         RelationshipResourceAction.DeleteWithResponse,
         RelationshipResourceBinaryAction.ReadWithResponse,
         RelationshipResourceBinaryAction.DeleteWithResponse,
-        RelationshipResourceBinaryAction.UpdateWithResponse {
+        RelationshipResourceBinaryAction.UpdateWithResponse
+{
 
     @Override
     public List<Goat> create(String entityResourceId, List<Goat> entities, Parameters parameters, WithResponse withResponse)
@@ -87,10 +86,10 @@ public class CalfRelationshipResource implements RelationshipResourceAction.Read
     }
 
     @Operation("chew")
-    public String chewTheGrass(String entityId, String id, Void notused, Parameters parameters, WithResponse withResponse) {
+    public String chewTheGrass(String entityId, String id, Void notused, Parameters parameters, WithResponse withResponse)
+    {
         return "Yum";
     }
-
 
     @Override
     @WebApiDescription(title = "Reads a photo")

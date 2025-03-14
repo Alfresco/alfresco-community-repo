@@ -31,8 +31,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.action.ActionConditionImpl;
@@ -58,13 +65,6 @@ import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * @author unknown
@@ -79,7 +79,7 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     private static final String ACTION_CHECK_OUT = "check-out";
 
     public static final String CANNOT_CREATE_RULE = "cannot.create.rule.checkout.outbound";
-    
+
     protected NodeService nodeService;
     protected RuleService ruleService;
     protected DictionaryService dictionaryService;
@@ -92,7 +92,8 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     /**
      * Sets the node service instance
      * 
-     * @param nodeService the node service to set
+     * @param nodeService
+     *            the node service to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -100,9 +101,10 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     }
 
     /**
-     * Set rule service instance 
+     * Set rule service instance
      * 
-     * @param ruleService the rule service to set
+     * @param ruleService
+     *            the rule service to set
      */
     public void setRuleService(RuleService ruleService)
     {
@@ -112,7 +114,8 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     /**
      * Set dictionary service instance
      * 
-     * @param dictionaryService the dictionary service to set 
+     * @param dictionaryService
+     *            the dictionary service to set
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -122,7 +125,8 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     /**
      * Set action service instance
      * 
-     * @param actionService the action service to set
+     * @param actionService
+     *            the action service to set
      */
     public void setActionService(ActionService actionService)
     {
@@ -132,7 +136,8 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     /**
      * Set file folder service instance
      * 
-     * @param fileFolderService the fileFolderService to set
+     * @param fileFolderService
+     *            the fileFolderService to set
      */
     public void setFileFolderService(FileFolderService fileFolderService)
     {
@@ -142,21 +147,24 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     /**
      * Set namespace service instance
      * 
-     * @param namespaceService the namespace service to set
+     * @param namespaceService
+     *            the namespace service to set
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
 
-    public void setRuntimeActionService(RuntimeActionService runtimeActionService) {
+    public void setRuntimeActionService(RuntimeActionService runtimeActionService)
+    {
         this.runtimeActionService = runtimeActionService;
     }
 
     /**
      * Parses the request and providing it's valid returns the NodeRef.
      * 
-     * @param req The webscript request
+     * @param req
+     *            The webscript request
      * @return The NodeRef passed in the request
      * 
      */
@@ -363,7 +371,7 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
         {
             String propertyName = names.getString(i);
             Object propertyValue = jsonParameterValues.get(propertyName);
-            
+
             // Get the parameter definition we care about
             ParameterDefinition paramDef = definition.getParameterDefintion(propertyName);
             if (paramDef == null && !definition.getAdhocPropertiesAllowed())
@@ -383,27 +391,27 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
                 // If there is no parameter definition we can only rely on the .toString() representation of the ad-hoc property
                 parameterValues.put(propertyName, propertyValue.toString());
             }
-            
+
         }
 
         return parameterValues;
     }
-    
+
     private Serializable convertValue(QName typeQName, Object propertyValue) throws JSONException
-    {        
+    {
         Serializable value = null;
-        
+
         DataTypeDefinition typeDef = dictionaryService.getDataType(typeQName);
         if (typeDef == null)
         {
             throw new AlfrescoRuntimeException("Action property type definition " + typeQName.toPrefixString() + " is unknown.");
         }
-        
+
         if (propertyValue instanceof JSONArray)
         {
             // Convert property type to java class
             Class<?> javaClass = null;
-            
+
             String javaClassName = typeDef.getJavaClassName();
             try
             {
@@ -413,28 +421,28 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
             {
                 throw new DictionaryException("Java class " + javaClassName + " of property type " + typeDef.getName() + " is invalid", e);
             }
-            
-            int length = ((JSONArray)propertyValue).length();
+
+            int length = ((JSONArray) propertyValue).length();
             List<Serializable> list = new ArrayList<Serializable>(length);
             for (int i = 0; i < length; i++)
             {
-                list.add(convertValue(typeQName, ((JSONArray)propertyValue).get(i)));
+                list.add(convertValue(typeQName, ((JSONArray) propertyValue).get(i)));
             }
-            value = (Serializable)list;
+            value = (Serializable) list;
         }
         else
         {
-            if (typeQName.equals(DataTypeDefinition.QNAME) == true && 
-                typeQName.toString().contains(":") == true)
+            if (typeQName.equals(DataTypeDefinition.QNAME) == true &&
+                    typeQName.toString().contains(":") == true)
             {
-                 value = QName.createQName(propertyValue.toString(), namespaceService);
+                value = QName.createQName(propertyValue.toString(), namespaceService);
             }
             else
             {
-                value = (Serializable)DefaultTypeConverter.INSTANCE.convert(dictionaryService.getDataType(typeQName), propertyValue);
+                value = (Serializable) DefaultTypeConverter.INSTANCE.convert(dictionaryService.getDataType(typeQName), propertyValue);
             }
         }
-        
+
         return value;
     }
 
@@ -446,14 +454,17 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
         checkRuleOutboundHasNoCheckOutAction(rule, actions);
     }
 
-    private void checkRestrictedAccessActions(List<Action> actions) {
-        for (Action action : actions) {
+    private void checkRestrictedAccessActions(List<Action> actions)
+    {
+        for (Action action : actions)
+        {
             ActionAccessRestriction.setActionContext(action, ActionAccessRestriction.RULE_ACTION_CONTEXT);
             runtimeActionService.verifyActionAccessRestrictions(action);
         }
     }
 
-    private void checkRuleOutboundHasNoCheckOutAction(Rule rule, List<Action> actions) {
+    private void checkRuleOutboundHasNoCheckOutAction(Rule rule, List<Action> actions)
+    {
         if (rule.getRuleTypes().contains(RULE_OUTBOUND))
         {
             for (Action action : actions)

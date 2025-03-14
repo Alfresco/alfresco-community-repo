@@ -25,6 +25,11 @@
  */
 package org.alfresco.rest.api.sites;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.Sites;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.model.SiteUpdate;
@@ -36,12 +41,7 @@ import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * An implementation of an Entity Resource for a Site
@@ -50,19 +50,19 @@ import java.util.List;
  * @author steveglover
  * @author janv
  */
-@EntityResource(name="sites", title = "Sites")
+@EntityResource(name = "sites", title = "Sites")
 public class SiteEntityResource implements EntityResourceAction.Read<Site>,
         EntityResourceAction.ReadById<Site>, EntityResourceAction.Delete,
         EntityResourceAction.Create<Site>, EntityResourceAction.Update<Site>, InitializingBean
 {
     private Sites sites;
 
-	public void setSites(Sites sites)
-	{
-		this.sites = sites;
-	}
+    public void setSites(Sites sites)
+    {
+        this.sites = sites;
+    }
 
-	@Override
+    @Override
     public void afterPropertiesSet()
     {
         ParameterCheck.mandatory("sites", this.sites);
@@ -73,18 +73,18 @@ public class SiteEntityResource implements EntityResourceAction.Read<Site>,
      * 
      */
     @Override
-    @WebApiDescription(title="A paged list of visible sites in the network.", description="A site is visible if it is public or if the person is a member")
+    @WebApiDescription(title = "A paged list of visible sites in the network.", description = "A site is visible if it is public or if the person is a member")
     public CollectionWithPagingInfo<Site> readAll(Parameters parameters)
-    { 
+    {
         return sites.getSites(parameters);
     }
-    
+
     /**
      * Returns information regarding the site 'siteId'.
      * 
      */
     @Override
-    @WebApiDescription(title="Returns site information for site siteId.")
+    @WebApiDescription(title = "Returns site information for site siteId.")
     public Site readById(String siteId, Parameters parameters)
     {
         return sites.getSite(siteId);
@@ -93,10 +93,11 @@ public class SiteEntityResource implements EntityResourceAction.Read<Site>,
     /**
      * Delete the given site.
      *
-     * @param siteId String id of site.
+     * @param siteId
+     *            String id of site.
      */
     @Override
-    @WebApiDescription(title = "Delete Site", description="Delete the site. This will cascade delete")
+    @WebApiDescription(title = "Delete Site", description = "Delete the site. This will cascade delete")
     public void delete(String siteId, Parameters parameters)
     {
         sites.deleteSite(siteId, parameters);
@@ -110,9 +111,9 @@ public class SiteEntityResource implements EntityResourceAction.Read<Site>,
      * @return
      */
     @Override
-    @WebApiDescription(title="Create site", description="Create the default/functional Share site")
-    @WebApiParam(name="entity", title="A single site", description="A single site, multiple sites are not supported.",
-            kind= ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple=false, required = true)
+    @WebApiDescription(title = "Create site", description = "Create the default/functional Share site")
+    @WebApiParam(name = "entity", title = "A single site", description = "A single site, multiple sites are not supported.",
+            kind = ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple = false, required = true)
     public List<Site> create(List<Site> entity, Parameters parameters)
     {
         List<Site> result = new ArrayList<>(1);
@@ -121,16 +122,17 @@ public class SiteEntityResource implements EntityResourceAction.Read<Site>,
     }
 
     /**
-     * Update the given site. Not all fields are used,
-     * only those as defined in the Open API spec.
+     * Update the given site. Not all fields are used, only those as defined in the Open API spec.
      *
-     * @param siteId       The site ID (aka short name)
-     * @param site         Details to use for the update
+     * @param siteId
+     *            The site ID (aka short name)
+     * @param site
+     *            Details to use for the update
      * @param parameters
      * @return Updated Site
      */
     @Override
-    @WebApiDescription(title="Update site", description="Update the Share site")
+    @WebApiDescription(title = "Update site", description = "Update the Share site")
     public Site update(String siteId, Site site, Parameters parameters)
     {
         return sites.updateSite(siteId, convert(site), parameters);

@@ -50,11 +50,9 @@ public class RepoTransferProgressMonitorImpl extends AbstractTransferProgressMon
     private NodeService nodeService;
     private ContentService contentService;
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.transfer.TransferProgressMonitor#getProgress(java.lang.String)
-     */
+     * @see org.alfresco.repo.transfer.TransferProgressMonitor#getProgress(java.lang.String) */
     public TransferProgress getProgressInternal(final String transferId)
     {
         NodeRef nodeRef = getTransferRecord(transferId);
@@ -77,12 +75,10 @@ public class RepoTransferProgressMonitorImpl extends AbstractTransferProgressMon
         // Write the exception onto the transfer record
         nodeService.setProperty(nodeRef, TransferModel.PROP_TRANSFER_ERROR, ex);
     }
-    
-    /*
-     * (non-Javadoc)
+
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.transfer.TransferProgressMonitor#updateProgress(java.lang.String, int)
-     */
+     * @see org.alfresco.repo.transfer.TransferProgressMonitor#updateProgress(java.lang.String, int) */
     public void updateProgressInternal(final String transferId, final int currPos)
     {
         NodeRef nodeRef = getTransferRecord(transferId);
@@ -90,11 +86,9 @@ public class RepoTransferProgressMonitorImpl extends AbstractTransferProgressMon
         nodeService.setProperty(nodeRef, TransferModel.PROP_PROGRESS_POSITION, Integer.valueOf(currPos));
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.transfer.TransferProgressMonitor#updateProgress(java.lang.String, int, int)
-     */
+     * @see org.alfresco.repo.transfer.TransferProgressMonitor#updateProgress(java.lang.String, int, int) */
     public void updateProgressInternal(final String transferId, final int currPos, final int endPos)
     {
         NodeRef nodeRef = getTransferRecord(transferId);
@@ -103,12 +97,9 @@ public class RepoTransferProgressMonitorImpl extends AbstractTransferProgressMon
         nodeService.setProperty(nodeRef, TransferModel.PROP_PROGRESS_ENDPOINT, Integer.valueOf(endPos));
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.transfer.TransferProgressMonitor#updateStatus(java.lang.String,
-     * org.alfresco.service.cmr.transfer.TransferProgress.Status)
-     */
+     * @see org.alfresco.repo.transfer.TransferProgressMonitor#updateStatus(java.lang.String, org.alfresco.service.cmr.transfer.TransferProgress.Status) */
     public void updateStatusInternal(final String transferId, final Status status)
     {
         NodeRef nodeRef = getTransferRecord(transferId);
@@ -117,19 +108,19 @@ public class RepoTransferProgressMonitorImpl extends AbstractTransferProgressMon
 
     private void testCancelled(NodeRef transferRecord) throws TransferFatalException
     {
-        Status currentStatus = Status.valueOf((String)nodeService.getProperty(transferRecord, TransferModel.PROP_TRANSFER_STATUS));
+        Status currentStatus = Status.valueOf((String) nodeService.getProperty(transferRecord, TransferModel.PROP_TRANSFER_STATUS));
         if (Status.CANCELLED.equals(currentStatus))
         {
-            throw new TransferFatalException(MSG_TRANSFER_CANCELLED, new Object[] { transferRecord.toString() });
+            throw new TransferFatalException(MSG_TRANSFER_CANCELLED, new Object[]{transferRecord.toString()});
         }
     }
-    
+
     private NodeRef getTransferRecord(String transferId) throws TransferException
     {
         NodeRef nodeRef = new NodeRef(transferId);
         if (!nodeService.exists(nodeRef) || !nodeService.getType(nodeRef).equals(TransferModel.TYPE_TRANSFER_RECORD))
         {
-            throw new TransferException(MSG_TRANSFER_NOT_FOUND, new Object[] { transferId });
+            throw new TransferException(MSG_TRANSFER_NOT_FOUND, new Object[]{transferId});
         }
         return nodeRef;
     }
@@ -138,10 +129,10 @@ public class RepoTransferProgressMonitorImpl extends AbstractTransferProgressMon
             throws TransferException
     {
         NodeRef transferRecord = getTransferRecord(transferId);
-        
-        ContentReader reader = contentService.getReader(transferRecord, ContentModel.PROP_CONTENT); 
-        
-        if(reader != null)
+
+        ContentReader reader = contentService.getReader(transferRecord, ContentModel.PROP_CONTENT);
+
+        if (reader != null)
         {
             return reader.getContentInputStream();
         }

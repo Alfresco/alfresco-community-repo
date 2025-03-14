@@ -32,6 +32,16 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.util.Date;
+import java.util.List;
+
+import org.joda.time.DateTime;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.discovery.DiscoveryApiWebscript;
 import org.alfresco.rest.api.model.DiscoveryDetails;
@@ -47,19 +57,11 @@ import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.license.LicenseDescriptor;
-import org.joda.time.DateTime;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-
-import java.util.Date;
-import java.util.List;
 
 /**
  * V1 REST API tests for retrieving detailed repository information.
  * <ul>
- * <li> {@literal <host>:<port>/alfresco/api/discovery} </li>
+ * <li>{@literal <host>:<port>/alfresco/api/discovery}</li>
  * </ul>
  *
  * @author Jamal Kaabi-Mofrad
@@ -118,7 +120,7 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
 
         // Override the descriptor service
         discoveryApiWebscript = applicationContext
-                    .getBean("webscript.org.alfresco.api.DiscoveryApiWebscript.get", DiscoveryApiWebscript.class);
+                .getBean("webscript.org.alfresco.api.DiscoveryApiWebscript.get", DiscoveryApiWebscript.class);
         discoveryApiWebscript.setDescriptorService(descriptorServiceMock);
         discoveryApiWebscript.setEnabled(true);
     }
@@ -131,7 +133,9 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests get discovery.
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/discovery}
      */
     @Test
@@ -195,16 +199,15 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests get discovery.
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/discovery}
      */
     @Test
     public void testGetDiscovery_hotfixValue() throws Exception
     {
-        /*
-        * The agreement was that if the hotfix value (versionLabel) does not follow the standard
-        * of "dot then digits" or just "digits", the API should return zero.
-         */
+        /* The agreement was that if the hotfix value (versionLabel) does not follow the standard of "dot then digits" or just "digits", the API should return zero. */
 
         when(serverDescriptor.getVersionLabel()).thenReturn("4");
         setRequestContext(null, user1, null);
@@ -266,7 +269,9 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests get discovery.
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/discovery}
      */
     @Test
@@ -341,4 +346,3 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
         }
     }
 }
-

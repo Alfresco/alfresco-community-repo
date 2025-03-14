@@ -43,7 +43,7 @@ public abstract class HighlightParameters
     final String postfix;
 
     public HighlightParameters(Integer snippetCount, Integer fragmentSize,
-                               Boolean mergeContiguous, String prefix, String postfix)
+            Boolean mergeContiguous, String prefix, String postfix)
     {
         this.snippetCount = snippetCount;
         this.fragmentSize = fragmentSize;
@@ -91,12 +91,12 @@ public abstract class HighlightParameters
     public String toString()
     {
         return "HighlightParameters{" +
-                    "snippetCount=" + snippetCount +
-                    ", fragmentSize=" + fragmentSize +
-                    ", mergeContiguous=" + mergeContiguous +
-                    ", prefix='" + prefix + '\'' +
-                    ", postfix='" + postfix + '\'' +
-                    '}';
+                "snippetCount=" + snippetCount +
+                ", fragmentSize=" + fragmentSize +
+                ", mergeContiguous=" + mergeContiguous +
+                ", prefix='" + prefix + '\'' +
+                ", postfix='" + postfix + '\'' +
+                '}';
     }
 
     public Integer getSnippetCount()

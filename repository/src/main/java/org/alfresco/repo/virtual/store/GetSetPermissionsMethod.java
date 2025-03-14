@@ -58,7 +58,7 @@ public class GetSetPermissionsMethod extends AbstractProtocolMethod<NodePermissi
     private VirtualFolderDefinitionResolver resolver;
 
     public GetSetPermissionsMethod(VirtualFolderDefinitionResolver resolver, VirtualUserPermissions userPermissions,
-                String authority)
+            String authority)
     {
         super();
         this.userPermissions = userPermissions;
@@ -68,14 +68,14 @@ public class GetSetPermissionsMethod extends AbstractProtocolMethod<NodePermissi
 
     @Override
     public NodePermissionEntry execute(VirtualProtocol virtualProtocol, Reference reference)
-                throws ProtocolMethodException
+            throws ProtocolMethodException
     {
         Set<String> toAllow = userPermissions.getAllowSmartNodes();
         Set<String> toDeny = userPermissions.getDenySmartNodes();
         VirtualFolderDefinition definition = resolver.resolveVirtualFolderDefinition(reference);
         FilingRule filingRule = definition.getFilingRule();
         boolean readonly = filingRule.isNullFilingRule()
-                    || filingRule.filingNodeRefFor(new FilingParameters(reference)) == null;
+                || filingRule.filingNodeRefFor(new FilingParameters(reference)) == null;
         if (readonly)
         {
             Set<String> deniedPermissions = userPermissions.getDenyReadonlySmartNodes();
@@ -85,8 +85,8 @@ public class GetSetPermissionsMethod extends AbstractProtocolMethod<NodePermissi
         }
 
         return execute(reference,
-                       toAllow,
-                       toDeny);
+                toAllow,
+                toDeny);
     }
 
     private NodePermissionEntry execute(Reference reference, Set<String> toAllow, Set<String> toDeny)
@@ -97,28 +97,28 @@ public class GetSetPermissionsMethod extends AbstractProtocolMethod<NodePermissi
         for (String permission : toAllow)
         {
             PermissionReference permissionReference = PermissionReferenceImpl
-                        .getPermissionReference(userPermissions.getPermissionTypeQName(),
-                                                permission);
+                    .getPermissionReference(userPermissions.getPermissionTypeQName(),
+                            permission);
             permissions.add(new SimplePermissionEntry(rNodeRef,
-                                                      permissionReference,
-                                                      authority,
-                                                      AccessStatus.ALLOWED));
+                    permissionReference,
+                    authority,
+                    AccessStatus.ALLOWED));
         }
 
         for (String permission : toDeny)
         {
             PermissionReference permissionReference = PermissionReferenceImpl
-                        .getPermissionReference(userPermissions.getPermissionTypeQName(),
-                                                permission);
+                    .getPermissionReference(userPermissions.getPermissionTypeQName(),
+                            permission);
             permissions.add(new SimplePermissionEntry(rNodeRef,
-                                                      permissionReference,
-                                                      authority,
-                                                      AccessStatus.DENIED));
+                    permissionReference,
+                    authority,
+                    AccessStatus.DENIED));
         }
 
         return new SimpleNodePermissionEntry(rNodeRef,
-                                             false,
-                                             permissions);
+                false,
+                permissions);
     }
 
     @Override
@@ -128,7 +128,7 @@ public class GetSetPermissionsMethod extends AbstractProtocolMethod<NodePermissi
         Set<String> toDeny = userPermissions.getDenyQueryNodes();
 
         return execute(reference,
-                       toAllow,
-                       toDeny);
+                toAllow,
+                toDeny);
     }
 }

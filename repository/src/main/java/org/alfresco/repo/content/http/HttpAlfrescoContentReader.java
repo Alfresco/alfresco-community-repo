@@ -33,11 +33,15 @@ import java.nio.channels.ReadableByteChannel;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Locale;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.error.AlfrescoRuntimeException;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -48,14 +52,9 @@ import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * The reader that does the actual communication with the Alfresco HTTP
- * application.
+ * The reader that does the actual communication with the Alfresco HTTP application.
  * 
  * @see HttpAlfrescoStore
  * @since 2.1
@@ -68,9 +67,9 @@ public class HttpAlfrescoContentReader extends AbstractContentReader
     private static final String ERR_CHECK_CLUSTER = "content.http_reader.err.check_cluster";
     private static final String ERR_UNRECOGNIZED = "content.http_reader.err.unrecognized";
 
-    private static final String DEFAULT_URL  = "{0}/dr?contentUrl={1}&ticket={2}";
+    private static final String DEFAULT_URL = "{0}/dr?contentUrl={1}&ticket={2}";
     private static final String INFO_ONLY = "&infoOnly=true";
-    
+
     private static Log logger = LogFactory.getLog(HttpAlfrescoContentReader.class);
 
     private TransactionService transactionService;
@@ -84,7 +83,7 @@ public class HttpAlfrescoContentReader extends AbstractContentReader
     private boolean cachedExists;
     private long cachedLastModified;
     private long cachedSize;
-    
+
     public HttpAlfrescoContentReader(
             TransactionService transactionService,
             AuthenticationService authenticationService,
@@ -103,20 +102,19 @@ public class HttpAlfrescoContentReader extends AbstractContentReader
         cachedSize = 0L;
         cachedLastModified = 0L;
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(100);
         sb.append("HttpAlfrescoContentReader")
-          .append("[ contentUrl=").append(getContentUrl())
-          .append("]");
+                .append("[ contentUrl=").append(getContentUrl())
+                .append("]");
         return sb.toString();
     }
-    
+
     /**
-     * Helper class to wrap the ticket creation in order to force propagation of the
-     * authentication ticket around the cluster.
+     * Helper class to wrap the ticket creation in order to force propagation of the authentication ticket around the cluster.
      * 
      * @since 2.1
      * @author Derek Hulley
@@ -128,11 +126,10 @@ public class HttpAlfrescoContentReader extends AbstractContentReader
             return authenticationService.getCurrentTicket();
         }
     }
-    
+
     private void getInfo()
     {
-        RunAsWork<Object> getInfoRunAs = new RunAsWork<Object>()
-        {
+        RunAsWork<Object> getInfoRunAs = new RunAsWork<Object>() {
             public Object doWork() throws Exception
             {
                 getInfoImpl();
@@ -141,7 +138,7 @@ public class HttpAlfrescoContentReader extends AbstractContentReader
         };
         AuthenticationUtil.runAs(getInfoRunAs, AuthenticationUtil.SYSTEM_USER_NAME);
     }
-    
+
     private void getInfoImpl()
     {
         String contentUrl = getContentUrl();
@@ -186,7 +183,7 @@ public class HttpAlfrescoContentReader extends AbstractContentReader
                 // Check the return codes
                 if (statusCode == HttpServletResponse.SC_NO_CONTENT)
                 {
-                    // It doesn't exist, which is not an error.  The defaults are fine.
+                    // It doesn't exist, which is not an error. The defaults are fine.
                 }
                 else if (statusCode == HttpServletResponse.SC_FORBIDDEN)
                 {
@@ -223,11 +220,16 @@ public class HttpAlfrescoContentReader extends AbstractContentReader
         {
             if (method != null)
             {
-                try { method.releaseConnection(); } catch (Throwable e) {}
+                try
+                {
+                    method.releaseConnection();
+                }
+                catch (Throwable e)
+                {}
             }
         }
     }
-    
+
     public synchronized boolean exists()
     {
         if (!isInfoCached)
@@ -236,6 +238,7 @@ public class HttpAlfrescoContentReader extends AbstractContentReader
         }
         return cachedExists;
     }
+
     public synchronized long getLastModified()
     {
         if (!isInfoCached)
@@ -253,7 +256,7 @@ public class HttpAlfrescoContentReader extends AbstractContentReader
         }
         return cachedSize;
     }
-    
+
     @Override
     protected ContentReader createReader() throws ContentIOException
     {
@@ -263,20 +266,19 @@ public class HttpAlfrescoContentReader extends AbstractContentReader
     @Override
     protected ReadableByteChannel getDirectReadableChannel() throws ContentIOException
     {
-        RunAsWork<ReadableByteChannel> getChannelRunAs = new RunAsWork<ReadableByteChannel>()
-        {
+        RunAsWork<ReadableByteChannel> getChannelRunAs = new RunAsWork<ReadableByteChannel>() {
             public ReadableByteChannel doWork() throws Exception
             {
                 return getDirectReadableChannelImpl();
-            }            
+            }
         };
         return AuthenticationUtil.runAs(getChannelRunAs, AuthenticationUtil.SYSTEM_USER_NAME);
     }
-    
+
     private ReadableByteChannel getDirectReadableChannelImpl() throws ContentIOException
     {
         String contentUrl = getContentUrl();
-        
+
         try
         {
             if (!exists())
@@ -314,15 +316,14 @@ public class HttpAlfrescoContentReader extends AbstractContentReader
         {
             throw new ContentIOException(
                     "Failed to open stream: \n" +
-                    "   Reader:        " + this + "\n" +
-                    "   Remote server: " + baseHttpUrl,
+                            "   Reader:        " + this + "\n" +
+                            "   Remote server: " + baseHttpUrl,
                     e);
         }
     }
-    
+
     /**
-     * A listener to ensure that the HTTP method gets closed when the content stream it
-     * is serving to the reader is closed.
+     * A listener to ensure that the HTTP method gets closed when the content stream it is serving to the reader is closed.
      * 
      * @since 2.1
      * @author Derek Hulley
@@ -330,35 +331,46 @@ public class HttpAlfrescoContentReader extends AbstractContentReader
     private static class StreamCloseListener implements ContentStreamListener
     {
         private GetMethod getMethod;
+
         private StreamCloseListener(GetMethod getMethod)
         {
             this.getMethod = getMethod;
         }
+
         public void contentStreamClosed() throws ContentIOException
         {
-            try { getMethod.releaseConnection(); } catch (Throwable e) {}
+            try
+            {
+                getMethod.releaseConnection();
+            }
+            catch (Throwable e)
+            {}
         }
     }
 
     /**
      * Helper to generate a URL based on the ContentStore URL and ticket.
      * 
-     * @param baseHttpUrl   the first part of the URL pointing to the Alfresoc Web Application
-     * @param contentUrl    the content URL - never null
-     * @param ticket        the authentication ticket
-     * @param infoOnly      <tt>true</tt> to add the info-only flag
+     * @param baseHttpUrl
+     *            the first part of the URL pointing to the Alfresoc Web Application
+     * @param contentUrl
+     *            the content URL - never null
+     * @param ticket
+     *            the authentication ticket
+     * @param infoOnly
+     *            <tt>true</tt> to add the info-only flag
      * 
-     * @return              Returns the URL with which to access the servlet
+     * @return Returns the URL with which to access the servlet
      */
     public final static String generateURL(String baseHttpUrl, String contentUrl, String ticket, boolean infoOnly)
     {
-       String url = MessageFormat.format(
-             DEFAULT_URL,
-             baseHttpUrl, contentUrl, ticket);
-       if (infoOnly)
-       {
-           url += INFO_ONLY;
-       }
-       return url;
+        String url = MessageFormat.format(
+                DEFAULT_URL,
+                baseHttpUrl, contentUrl, ticket);
+        if (infoOnly)
+        {
+            url += INFO_ONLY;
+        }
+        return url;
     }
 }

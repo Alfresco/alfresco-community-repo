@@ -41,8 +41,8 @@ public class Limits
 
     @JsonCreator
     public Limits(@JsonProperty("permissionEvaluationTime") Integer permissionEvaluationTime,
-                  @JsonProperty("permissionEvaluationCount") Integer permissionEvaluationCount,
-                  @JsonProperty("trackTotalHitsLimit") Integer trackTotalHitsLimit)
+            @JsonProperty("permissionEvaluationCount") Integer permissionEvaluationCount,
+            @JsonProperty("trackTotalHitsLimit") Integer trackTotalHitsLimit)
     {
         this.permissionEvaluationTime = permissionEvaluationTime;
         this.permissionEvaluationCount = permissionEvaluationCount;

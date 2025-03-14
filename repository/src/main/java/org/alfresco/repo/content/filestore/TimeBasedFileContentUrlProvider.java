@@ -32,23 +32,19 @@ import org.alfresco.repo.content.ContentStore;
 import org.alfresco.util.GUID;
 
 /**
- * Default Content URL provider for file stores.
- * Content URL format is <b>store://year/month/day/hour/minute/GUID.bin</b>,
- * but can be configured to include provision for splitting data into 
- * buckets within <b>minute</b> range through bucketsPerMinute property :
- * <b>store://year/month/day/hour/minute/bucket/GUID.bin</b> <br>
+ * Default Content URL provider for file stores. Content URL format is <b>store://year/month/day/hour/minute/GUID.bin</b>, but can be configured to include provision for splitting data into buckets within <b>minute</b> range through bucketsPerMinute property : <b>store://year/month/day/hour/minute/bucket/GUID.bin</b> <br>
  * <ul>
- *   <li> <b>store://</b>: prefix identifying an Alfresco content stores
- *                         regardless of the persistence mechanism. </li>
- *   <li> <b>year</b>: year </li>
- *   <li> <b>month</b>: 1-based month of the year </li>
- *   <li> <b>day</b>: 1-based day of the month </li>
- *   <li> <b>hour</b>: 0-based hour of the day </li>
- *   <li> <b>minute</b>: 0-based minute of the hour </li>
- *   <li> <b>bucket</b>: 0-based bucket depending second of minute </li>
- *   <li> <b>GUID</b>: A unique identifier </li>
+ * <li><b>store://</b>: prefix identifying an Alfresco content stores regardless of the persistence mechanism.</li>
+ * <li><b>year</b>: year</li>
+ * <li><b>month</b>: 1-based month of the year</li>
+ * <li><b>day</b>: 1-based day of the month</li>
+ * <li><b>hour</b>: 0-based hour of the day</li>
+ * <li><b>minute</b>: 0-based minute of the hour</li>
+ * <li><b>bucket</b>: 0-based bucket depending second of minute</li>
+ * <li><b>GUID</b>: A unique identifier</li>
  * </ul>
  * <p>
+ * 
  * @author Andreea Dragoi
  */
 
@@ -60,38 +56,39 @@ class TimeBasedFileContentUrlProvider implements FileContentUrlProvider
     {
         this.bucketsPerMinute = bucketsPerMinute;
     }
-    
+
     @Override
     public String createNewFileStoreUrl()
     {
         return createNewFileStoreUrl(bucketsPerMinute);
     }
-    
-    public static String createTimeBasedPath(int bucketsPerMinute){
+
+    public static String createTimeBasedPath(int bucketsPerMinute)
+    {
         Calendar calendar = new GregorianCalendar();
         int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH) + 1;  // 0-based
+        int month = calendar.get(Calendar.MONTH) + 1; // 0-based
         int day = calendar.get(Calendar.DAY_OF_MONTH);
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int minute = calendar.get(Calendar.MINUTE);
         // create the URL
         StringBuilder sb = new StringBuilder(20);
         sb.append(year).append('/')
-          .append(month).append('/')
-          .append(day).append('/')
-          .append(hour).append('/')
-          .append(minute).append('/');
-        
+                .append(month).append('/')
+                .append(day).append('/')
+                .append(hour).append('/')
+                .append(minute).append('/');
+
         if (bucketsPerMinute != 0)
         {
             long seconds = System.currentTimeMillis() % (60 * 1000);
             int actualBucket = (int) seconds / ((60 * 1000) / bucketsPerMinute);
             sb.append(actualBucket).append('/');
         }
-        //done
+        // done
         return sb.toString();
     }
-    
+
     public static String createNewFileStoreUrl(int minuteBucketCount)
     {
         StringBuilder sb = new StringBuilder(20);

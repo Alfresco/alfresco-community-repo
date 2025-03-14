@@ -25,6 +25,10 @@
  */
 package org.alfresco.rest.api.people;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.Sites;
 import org.alfresco.rest.api.model.MemberOfSite;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -33,24 +37,21 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 @RelationshipResource(name = "sites", entityResource = PeopleEntityResource.class, title = "Person Sites")
-public class PersonSitesRelation implements RelationshipResourceAction.Read<MemberOfSite>, RelationshipResourceAction.ReadById<MemberOfSite>, 
-	RelationshipResourceAction.Delete, InitializingBean
+public class PersonSitesRelation implements RelationshipResourceAction.Read<MemberOfSite>, RelationshipResourceAction.ReadById<MemberOfSite>,
+        RelationshipResourceAction.Delete, InitializingBean
 {
     private static final Log logger = LogFactory.getLog(PersonSitesRelation.class);
 
     private Sites sites;
 
-	public void setSites(Sites sites)
-	{
-		this.sites = sites;
-	}
+    public void setSites(Sites sites)
+    {
+        this.sites = sites;
+    }
 
-	@Override
+    @Override
     public void afterPropertiesSet()
     {
         ParameterCheck.mandatory("sites", this.sites);
@@ -61,12 +62,13 @@ public class PersonSitesRelation implements RelationshipResourceAction.Read<Memb
      * List all the sites that the specified user has a explicit membership of.
      * 
      * THOR-1151: “F312: For a user, get the list of sites they are a member of”
-	 * 
-	 * If personId does not exist, NotFoundException (status 404).
-	 * 
-	 * @param personId the id (email) of the person
-	 * 
-	 * (non-Javadoc)
+     * 
+     * If personId does not exist, NotFoundException (status 404).
+     * 
+     * @param personId
+     *            the id (email) of the person
+     * 
+     *            (non-Javadoc)
      * @see org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.Read#readAll(String, org.alfresco.rest.framework.resource.parameters.Parameters)
      */
     @Override
@@ -76,21 +78,21 @@ public class PersonSitesRelation implements RelationshipResourceAction.Read<Memb
         return sites.getSites(personId, parameters);
     }
 
-	/**
-	 * Returns site membership information for personId in siteId.
-	 * 
+    /**
+     * Returns site membership information for personId in siteId.
+     * 
      * @see org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.ReadById#readById(String, String, org.alfresco.rest.framework.resource.parameters.Parameters)
-	 */
-	@Override
-    @WebApiDescription(title="Site membership information for 'personId' in 'siteId'.")
-	public MemberOfSite readById(String personId, String siteId, Parameters parameters)
-	{
-		return sites.getMemberOfSite(personId, siteId);
-	}
+     */
+    @Override
+    @WebApiDescription(title = "Site membership information for 'personId' in 'siteId'.")
+    public MemberOfSite readById(String personId, String siteId, Parameters parameters)
+    {
+        return sites.getMemberOfSite(personId, siteId);
+    }
 
-	@Override
-	public void delete(String personId, String siteId, Parameters parameters)
-	{
-		sites.removeSiteMember(personId, siteId);
-	}
+    @Override
+    public void delete(String personId, String siteId, Parameters parameters)
+    {
+        sites.removeSiteMember(personId, siteId);
+    }
 }

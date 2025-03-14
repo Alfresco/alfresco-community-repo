@@ -25,13 +25,14 @@
  */
 package org.alfresco.repo.audit.generator;
 
-import org.alfresco.api.AlfrescoPublicApi;
-import org.alfresco.util.PropertyCheck;
-import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
+
+import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.registry.NamedObjectRegistry;
 
 /**
  * Abstract implementation to provide support.
@@ -44,13 +45,15 @@ public abstract class AbstractDataGenerator implements DataGenerator, Initializi
 {
     /** Logger that can be used by subclasses */
     protected final Log logger = LogFactory.getLog(getClass());
-    
+
     private String name;
     private NamedObjectRegistry<DataGenerator> registry;
 
     /**
      * Set the name with which to {@link #setRegistry(NamedObjectRegistry) register}
-     * @param name          the name of the bean
+     * 
+     * @param name
+     *            the name of the bean
      */
     public void setBeanName(String name)
     {
@@ -77,8 +80,7 @@ public abstract class AbstractDataGenerator implements DataGenerator, Initializi
     }
 
     /**
-     * This implementation assumes all generators are stateless i.e. if the class matches
-     * then the instances are equal.
+     * This implementation assumes all generators are stateless i.e. if the class matches then the instances are equal.
      */
     @Override
     public boolean equals(Object obj)

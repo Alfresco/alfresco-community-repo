@@ -46,7 +46,7 @@ public class RetainAction extends RMDispositionActionExecuterAbstractBase
     @Override
     protected void executeRecordFolderLevelDisposition(Action action, NodeRef recordFolder)
     {
-        // Do nothing      
+        // Do nothing
     }
 
     @Override

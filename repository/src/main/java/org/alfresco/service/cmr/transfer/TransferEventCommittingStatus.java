@@ -33,10 +33,10 @@ import org.alfresco.repo.transfer.TransferEventImpl;
  * The range can be used to produce a "progress bar"
  * 
  */
-public class TransferEventCommittingStatus extends TransferEventImpl implements RangedTransferEvent 
+public class TransferEventCommittingStatus extends TransferEventImpl implements RangedTransferEvent
 {
     public String toString()
-    {   
+    {
         return "TransferEventCommittingStatus: " + super.getPosition() + " of " + super.getRange();
     }
 }

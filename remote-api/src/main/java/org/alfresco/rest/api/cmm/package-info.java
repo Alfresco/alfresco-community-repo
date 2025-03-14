@@ -23,7 +23,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-@WebApi(name="alfresco", scope=Api.SCOPE.PRIVATE, version=1)
+@WebApi(name = "alfresco", scope = Api.SCOPE.PRIVATE, version = 1)
 package org.alfresco.rest.api.cmm;
+
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.WebApi;

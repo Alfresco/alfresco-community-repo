@@ -53,9 +53,11 @@ public class EventFilterRegistry implements BeanFactoryAware
     /**
      * Return the filter bean instance that uniquely matches the given object type.
      *
-     * @param filterClass the event filter type that the bean must match
+     * @param filterClass
+     *            the event filter type that the bean must match
      * @return an instance of the filter bean matching the required type
-     * @throws NoSuchBeanDefinitionException - if no bean of the given type was found
+     * @throws NoSuchBeanDefinitionException
+     *             - if no bean of the given type was found
      */
     public <F extends EventFilter<?>> F getFilter(String beanName, Class<F> filterClass)
     {

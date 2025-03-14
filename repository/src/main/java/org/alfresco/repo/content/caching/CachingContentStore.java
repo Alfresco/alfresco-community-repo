@@ -31,6 +31,12 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
+
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.caching.quota.QuotaManagerStrategy;
@@ -42,23 +48,15 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.BeanNameAware;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
 
 /**
- * Implementation of ContentStore that wraps any other ContentStore (the backing store)
- * transparently providing caching of content in that backing store.
+ * Implementation of ContentStore that wraps any other ContentStore (the backing store) transparently providing caching of content in that backing store.
  * <p>
- * CachingContentStore should only be used to wrap content stores that are significantly
- * slower that FileContentStore - otherwise performance may actually degrade from its use.
+ * CachingContentStore should only be used to wrap content stores that are significantly slower that FileContentStore - otherwise performance may actually degrade from its use.
  * <p>
  * It is important that cacheOnInbound is set to true for exceptionally slow backing stores.
  * <p>
- * This store handles the {@link FileContentStore#SPOOF_PROTOCOL} and can be used to wrap stores
- * that do not handle the protocol out of the box e.g. the S3 connector's store.
+ * This store handles the {@link FileContentStore#SPOOF_PROTOCOL} and can be used to wrap stores that do not handle the protocol out of the box e.g. the S3 connector's store.
  * 
  * @author Matt Ward
  */
@@ -75,7 +73,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     private int maxCacheTries = 2;
     private ApplicationEventPublisher eventPublisher;
     private String beanName;
-    
+
     static
     {
         locks = new ReentrantReadWriteLock[numLocks];
@@ -86,9 +84,8 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     }
 
     public CachingContentStore()
-    {
-    }
-    
+    {}
+
     public CachingContentStore(ContentStore backingStore, ContentCache cache, boolean cacheOnInbound)
     {
         this.backingStore = backingStore;
@@ -155,8 +152,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     /**
      * {@inheritDoc}
      * <p>
-     * This store handles the {@link FileContentStore#SPOOF_PROTOCOL} so that underlying stores do not need
-     * to implement anything <a href="https://issues.alfresco.com/jira/browse/ACE-4516">related to spoofing</a>.
+     * This store handles the {@link FileContentStore#SPOOF_PROTOCOL} so that underlying stores do not need to implement anything <a href="https://issues.alfresco.com/jira/browse/ACE-4516">related to spoofing</a>.
      */
     @Override
     public ContentReader getReader(String contentUrl)
@@ -179,7 +175,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
                 return cache.getReader(contentUrl);
             }
         }
-        catch(CacheMissException e)
+        catch (CacheMissException e)
         {
             // Fall through to cacheAndRead(url);
         }
@@ -187,11 +183,10 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
         {
             readLock.unlock();
         }
-        
+
         return cacheAndRead(contentUrl);
-    }    
-    
-    
+    }
+
     private ContentReader cacheAndRead(String url)
     {
         WriteLock writeLock = readWriteLock(url).writeLock();
@@ -202,14 +197,14 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
             {
                 ContentReader backingStoreReader = backingStore.getReader(url);
                 long contentSize = backingStoreReader.getSize();
-                
+
                 if (!quota.beforeWritingCacheFile(contentSize))
                 {
                     return backingStoreReader;
                 }
-                
+
                 ContentReader reader = attemptCacheAndRead(url, backingStoreReader);
-                
+
                 if (reader != null)
                 {
                     boolean keepCacheFile = quota.afterWritingCacheFile(contentSize);
@@ -231,10 +226,10 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
             if (log.isWarnEnabled())
             {
                 log.warn("Attempted " + maxCacheTries + " times to cache content item and failed - "
-                            + "returning reader from backing store instead [" + 
-                            "backingStore=" + backingStore + 
-                            ", url=" + url +
-                            "]");
+                        + "returning reader from backing store instead [" +
+                        "backingStore=" + backingStore +
+                        ", url=" + url +
+                        "]");
             }
             return backingStore.getReader(url);
         }
@@ -243,17 +238,14 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
             writeLock.unlock();
         }
     }
-    
-    
+
     /**
-     * Attempt to read content into a cached file and return a reader onto it. If the content is
-     * already in the cache (possibly due to a race condition between the read/write locks) then
-     * a reader onto that content is returned.
+     * Attempt to read content into a cached file and return a reader onto it. If the content is already in the cache (possibly due to a race condition between the read/write locks) then a reader onto that content is returned.
      * <p>
-     * If it is not possible to cache the content and/or get a reader onto the cached content then
-     * <code>null</code> is returned and the method ensure that the URL is not stored in the cache.
+     * If it is not possible to cache the content and/or get a reader onto the cached content then <code>null</code> is returned and the method ensure that the URL is not stored in the cache.
      * 
-     * @param url URL to cache.
+     * @param url
+     *            URL to cache.
      * @return A reader onto the cached content file or null if unable to provide one.
      */
     private ContentReader attemptCacheAndRead(String url, ContentReader backingStoreReader)
@@ -273,14 +265,14 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
                 reader = cache.getReader(url);
             }
         }
-        catch(CacheMissException e)
+        catch (CacheMissException e)
         {
             cache.remove(url);
         }
-        
+
         return reader;
     }
-    
+
     @Override
     public ContentWriter getWriter(final ContentContext context)
     {
@@ -292,14 +284,13 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
             {
                 return bsWriter;
             }
-            
+
             // Writing will be performed straight to the cache.
             final String url = bsWriter.getContentUrl();
             final BackingStoreAwareCacheWriter cacheWriter = new BackingStoreAwareCacheWriter(cache.getWriter(url), bsWriter);
-            
+
             // When finished writing perform these actions.
-            cacheWriter.addListener(new ContentStreamListener()
-            {
+            cacheWriter.addListener(new ContentStreamListener() {
                 @Override
                 public void contentStreamClosed() throws ContentIOException
                 {
@@ -310,7 +301,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
                     bsWriter.setMimetype(cacheWriter.getMimetype());
                     bsWriter.putContent(cacheWriter.getReader());
                     boolean contentUrlChanged = !url.equals(bsWriter.getContentUrl());
-                    
+
                     // MNT-11758 fix, re-cache files for which content url has changed after write to backing store (e.g. XAM, Centera)
                     if (!quota.afterWritingCacheFile(cacheWriter.getSize()) || contentUrlChanged)
                     {
@@ -325,7 +316,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
                     }
                 }
             });
-            
+
             return cacheWriter;
         }
         else
@@ -360,7 +351,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
         {
             readLock.unlock();
         }
-        
+
         WriteLock writeLock = readWriteLock.writeLock();
         writeLock.lock();
         try
@@ -370,7 +361,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
             {
                 // The item is in the cache, so remove.
                 cache.remove(contentUrl);
-                
+
             }
             // Whether the item was in the cache or not, it must still be deleted from the backing store.
             return backingStore.delete(contentUrl);
@@ -409,17 +400,17 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     }
 
     /**
-     * Get a ReentrantReadWriteLock for a given URL. The lock is from a pool rather than
-     * per URL, so some contention is expected.
-     *  
-     * @param url String
+     * Get a ReentrantReadWriteLock for a given URL. The lock is from a pool rather than per URL, so some contention is expected.
+     * 
+     * @param url
+     *            String
      * @return ReentrantReadWriteLock
      */
     public ReentrantReadWriteLock readWriteLock(String url)
     {
         return locks[lockIndex(url)];
     }
-    
+
     private int lockIndex(String url)
     {
         return url.hashCode() & (numLocks - 1);
@@ -434,7 +425,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     {
         return backingStore.getClass().getName();
     }
-    
+
     public String getBackingStoreDescription()
     {
         return backingStore.toString();
@@ -444,7 +435,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     {
         this.cache = cache;
     }
-    
+
     public ContentCache getCache()
     {
         return this.cache;
@@ -473,7 +464,8 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     /**
      * Sets the QuotaManagerStrategy that will be used.
      * 
-     * @param quota QuotaManagerStrategy
+     * @param quota
+     *            QuotaManagerStrategy
      */
     public void setQuota(QuotaManagerStrategy quota)
     {

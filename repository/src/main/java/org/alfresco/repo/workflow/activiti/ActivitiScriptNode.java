@@ -28,12 +28,13 @@ package org.alfresco.repo.workflow.activiti;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
+
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Scriptable;
 
 /**
  * Scriptable Node suitable for Activti Beanshell access
@@ -48,8 +49,10 @@ public class ActivitiScriptNode extends ScriptNode
     /**
      * Construct
      * 
-     * @param nodeRef  node reference
-     * @param services  services
+     * @param nodeRef
+     *            node reference
+     * @param services
+     *            services
      */
     public ActivitiScriptNode(NodeRef nodeRef, ServiceRegistry services)
     {
@@ -57,7 +60,7 @@ public class ActivitiScriptNode extends ScriptNode
     }
 
     /**
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
     @Override
     protected NodeValueConverter createValueConverter()
@@ -66,8 +69,7 @@ public class ActivitiScriptNode extends ScriptNode
     }
 
     /**
-     * Value converter for beanshell. Dates should be handled differently since
-     * default conversion uses top-level scope which is sometimes missing.
+     * Value converter for beanshell. Dates should be handled differently since default conversion uses top-level scope which is sometimes missing.
      */
     private class ActivitiNodeConverter extends NodeValueConverter
     {
@@ -98,7 +100,7 @@ public class ActivitiScriptNode extends ScriptNode
 
             if (value instanceof NodeRef)
             {
-                return new ActivitiScriptNode(((NodeRef)value), serviceRegistry);
+                return new ActivitiScriptNode(((NodeRef) value), serviceRegistry);
             }
             else if (value instanceof Date)
             {

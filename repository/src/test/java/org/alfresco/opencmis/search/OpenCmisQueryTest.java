@@ -42,6 +42,20 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CharStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.tree.CommonTree;
+import org.apache.chemistry.opencmis.commons.PropertyIds;
+import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
+import org.apache.chemistry.opencmis.commons.enums.Cardinality;
+import org.apache.chemistry.opencmis.commons.enums.PropertyType;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
+import org.junit.experimental.categories.Category;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.webscripts.GUID;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.BaseCMISTest;
 import org.alfresco.opencmis.dictionary.CMISAbstractDictionaryService;
@@ -82,7 +96,6 @@ import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions.Connective;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -97,19 +110,6 @@ import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CharStream;
-import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.tree.CommonTree;
-import org.apache.chemistry.opencmis.commons.PropertyIds;
-import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
-import org.apache.chemistry.opencmis.commons.enums.Cardinality;
-import org.apache.chemistry.opencmis.commons.enums.PropertyType;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
-import org.junit.experimental.categories.Category;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.extensions.webscripts.GUID;
 
 /**
  * @author andyh
@@ -119,14 +119,12 @@ public class OpenCmisQueryTest extends BaseCMISTest
 {
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/cmis-query-test";
 
-    
-    
     QName typeThatRequiresEncoding = QName.createQName(TEST_NAMESPACE, "type-that-requires-encoding");
-    
+
     QName aspectThatRequiresEncoding = QName.createQName(TEST_NAMESPACE, "aspect-that-requires-encoding");
-    
+
     QName propertyThatRequiresEncoding = QName.createQName(TEST_NAMESPACE, "property-that-requires-encoding");
-    
+
     QName extendedContent = QName.createQName(TEST_NAMESPACE, "extendedContent");
 
     QName singleTextBoth = QName.createQName(TEST_NAMESPACE, "singleTextBoth");
@@ -182,13 +180,13 @@ public class OpenCmisQueryTest extends BaseCMISTest
     QName multipleDatetime = QName.createQName(TEST_NAMESPACE, "multipleDatetime");
 
     private int content_only_count;
-    
+
     private int doc_count = 0;
 
     private int folder_count = 0;
 
     private NodeRef base;
-    
+
     private NodeRef f0;
 
     private NodeRef f1;
@@ -232,7 +230,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
     private NodeRef c8;
 
     private NodeRef c9;
-    
+
     private NodeRef c10;
 
     private Date date1;
@@ -257,7 +255,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         base = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", "Base Folder", namespaceService), ContentModel.TYPE_FOLDER).getChildRef();
         nodeService.setProperty(base, ContentModel.PROP_NAME, "Base Folder");
         folder_count++;
-        
+
         f0 = nodeService.createNode(base, ContentModel.ASSOC_CONTAINS, QName.createQName("cm", "Folder 0", namespaceService), ContentModel.TYPE_FOLDER).getChildRef();
         nodeService.setProperty(f0, ContentModel.PROP_NAME, "Folder 0");
         folder_count++;
@@ -484,7 +482,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         content_only_count++;
         doc_count++;
         nodeService.setProperty(c9, ContentModel.PROP_VERSION_LABEL, "label");
-        
+
         Map<QName, Serializable> properties10 = new HashMap<QName, Serializable>();
         MLText desc10 = new MLText();
         desc10.addValue(Locale.ENGLISH, "Ten");
@@ -502,7 +500,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         doc_count++;
         nodeService.setProperty(c10, ContentModel.PROP_VERSION_LABEL, "label");
     }
-    
+
     @Override
     protected void tearDown() throws Exception
     {
@@ -517,8 +515,6 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
         AuthenticationUtil.clearCurrentSecurityContext();
     }
-
-
 
     private <T> T testQuery(String query, int size, boolean dump, String returnPropertyName, T returnType, boolean shouldThrow) throws Exception
     {
@@ -634,20 +630,19 @@ public class OpenCmisQueryTest extends BaseCMISTest
     public void testEncodingOfTypeAndPropertyNames() throws Exception
     {
         addTypeTestDataModel();
-        
-        assertNotNull("Type not found by query name "+ISO9075.encodeSQL(typeThatRequiresEncoding.toPrefixString(namespaceService)), cmisDictionaryService.findTypeByQueryName(ISO9075.encodeSQL(typeThatRequiresEncoding.toPrefixString(namespaceService))));
-        assertNotNull("Aspect not found by query name "+ISO9075.encodeSQL(aspectThatRequiresEncoding.toPrefixString(namespaceService)), cmisDictionaryService.findTypeByQueryName(ISO9075.encodeSQL(aspectThatRequiresEncoding.toPrefixString(namespaceService))));
-        assertNotNull("Prop not found by query name "+ISO9075.encodeSQL(propertyThatRequiresEncoding.toPrefixString(namespaceService)), cmisDictionaryService.findPropertyByQueryName(ISO9075.encodeSQL(propertyThatRequiresEncoding.toPrefixString(namespaceService))));
-       
-        
-        testQuery("SELECT * FROM "+  ISO9075.encodeSQL(typeThatRequiresEncoding.toPrefixString(namespaceService)), 0, false, "cmis:allowedChildObjectTypeIds",
+
+        assertNotNull("Type not found by query name " + ISO9075.encodeSQL(typeThatRequiresEncoding.toPrefixString(namespaceService)), cmisDictionaryService.findTypeByQueryName(ISO9075.encodeSQL(typeThatRequiresEncoding.toPrefixString(namespaceService))));
+        assertNotNull("Aspect not found by query name " + ISO9075.encodeSQL(aspectThatRequiresEncoding.toPrefixString(namespaceService)), cmisDictionaryService.findTypeByQueryName(ISO9075.encodeSQL(aspectThatRequiresEncoding.toPrefixString(namespaceService))));
+        assertNotNull("Prop not found by query name " + ISO9075.encodeSQL(propertyThatRequiresEncoding.toPrefixString(namespaceService)), cmisDictionaryService.findPropertyByQueryName(ISO9075.encodeSQL(propertyThatRequiresEncoding.toPrefixString(namespaceService))));
+
+        testQuery("SELECT * FROM " + ISO9075.encodeSQL(typeThatRequiresEncoding.toPrefixString(namespaceService)), 0, false, "cmis:allowedChildObjectTypeIds",
                 new String(), false);
         testQuery("SELECT * FROM test:type_x002d_that_x002d_requires_x002d_encoding", 0, false, "cmis:allowedChildObjectTypeIds",
                 new String(), false);
         testQuery("SELECT * FROM test:type_x002D_that_x002D_requires_x002D_encoding", 0, false, "cmis:allowedChildObjectTypeIds",
                 new String(), false);
     }
-    
+
     public void test_ALLOWED_CHILD_OBJECT_TYPES() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:folder", rootNodeRef.getStoreRef());
@@ -725,7 +720,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         assertEquals(folder_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
-            if(!row.getNodeRef().equals(base))
+            if (!row.getNodeRef().equals(base))
             {
 
                 Serializable sValue = row.getValue("cmis:parentId");
@@ -749,7 +744,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
             Serializable sValue = row.getValue("cmis:parentId");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
             assertNotNull(value);
-            // objectIds returned back are always the node guid 
+            // objectIds returned back are always the node guid
             assertEquals(f8.toString(), value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:parentId");
             assertEquals(PropertyType.ID, column.getCMISDataType());
@@ -759,30 +754,30 @@ public class OpenCmisQueryTest extends BaseCMISTest
         rs.close();
 
         testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId =  '" + base.toString() + "'", 4, false, "cmis:parentId", new String(), false);
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId <> '" + base.toString() + "'", folder_count-4, false, "cmis:parentId", new String(), false);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId <> '" + base.toString() + "'", folder_count - 4, false, "cmis:parentId", new String(), false);
         testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId <  '" + base.toString() + "'", 0, false, "cmis:parentId", new String(), true);
         testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId <= '" + base.toString() + "'", 0, false, "cmis:parentId", new String(), true);
         testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId >  '" + base.toString() + "'", 0, false, "cmis:parentId", new String(), true);
         testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId >= '" + base.toString() + "'", 0, false, "cmis:parentId", new String(), true);
 
         testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId IN     ('" + base.toString() + "')", 4, false, "cmis:parentId", new String(), false);
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId NOT IN ('" + base.toString() + "')", folder_count-4, false, "cmis:parentId", new String(), false);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId NOT IN ('" + base.toString() + "')", folder_count - 4, false, "cmis:parentId", new String(), false);
 
         testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId     LIKE '" + base.toString() + "'", 4, false, "cmis:parentId", new String(), true);
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId NOT LIKE '" + base.toString() + "'", folder_count-4, false, "cmis:parentId", new String(), true);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId NOT LIKE '" + base.toString() + "'", folder_count - 4, false, "cmis:parentId", new String(), true);
 
         testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId IS NOT NULL", folder_count, false, "cmis:parentId", new String(), false);
         testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId IS     NULL", 0, false, "cmis:parentId", new String(), false);
 
         testQuery("SELECT cmis:parentId FROM cmis:folder WHERE '" + base.toString() + "' =  ANY cmis:parentId", 4, false, "cmis:parentId", new String(), true);
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE '" + base.toString() + "' <> ANY cmis:parentId", folder_count-4, false, "cmis:parentId", new String(), true);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE '" + base.toString() + "' <> ANY cmis:parentId", folder_count - 4, false, "cmis:parentId", new String(), true);
         testQuery("SELECT cmis:parentId FROM cmis:folder WHERE '" + base.toString() + "' <  ANY cmis:parentId", 0, false, "cmis:parentId", new String(), true);
         testQuery("SELECT cmis:parentId FROM cmis:folder WHERE '" + base.toString() + "' <= ANY cmis:parentId", 0, false, "cmis:parentId", new String(), true);
         testQuery("SELECT cmis:parentId FROM cmis:folder WHERE '" + base.toString() + "' >  ANY cmis:parentId", 0, false, "cmis:parentId", new String(), true);
         testQuery("SELECT cmis:parentId FROM cmis:folder WHERE '" + base.toString() + "' >= ANY cmis:parentId", 0, false, "cmis:parentId", new String(), true);
 
         testQuery("SELECT cmis:parentId FROM cmis:folder WHERE ANY cmis:parentId IN     ('" + base.toString() + "')", 4, false, "cmis:parentId", new String(), true);
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE ANY cmis:parentId NOT IN ('" + base.toString() + "')", folder_count-4, false, "cmis:parentId", new String(), true);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE ANY cmis:parentId NOT IN ('" + base.toString() + "')", folder_count - 4, false, "cmis:parentId", new String(), true);
     }
 
     public void test_PATH() throws Exception
@@ -1129,7 +1124,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         rs.close();
 
         testQuery("SELECT cmis:checkinComment FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
-        
+
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment =  'admin'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment <> 'admin'", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment <  'admin'", 0, false, "cmis:objectId", new String(), true);
@@ -1176,7 +1171,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
             assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof VersionSeriesCheckedOutIdProperty);
         }
         rs.close();
-        
+
         testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE cmis:versionSeriesCheckedOutId =  'admin'", 0, false, "cmis:objectId", new String(), true);
@@ -1227,7 +1222,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
             assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof VersionSeriesCheckedOutByProperty);
         }
         rs.close();
-        
+
         testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE cmis:versionSeriesCheckedOutBy =  'admin'", 0, false, "cmis:objectId", new String(), true);
@@ -1281,7 +1276,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         rs.close();
 
         testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
-        
+
         testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut =  'TRUE'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut <> 'TRUE'", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut <  'TRUE'", 0, false, "cmis:objectId", new String(), true);
@@ -1321,7 +1316,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
             Serializable sValue = row.getValue("cmis:versionSeriesId");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
             assertNotNull(value);
-            // objectIds returned back are always the node guid 
+            // objectIds returned back are always the node guid
             assertEquals(row.getNodeRef().toString(), value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:versionSeriesId");
             assertNotNull(column);
@@ -1332,8 +1327,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         rs.close();
 
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
-        
-        
+
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId =  'company'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId <> 'company'", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId <  'company'", 0, false, "cmis:objectId", new String(), true);
@@ -1380,7 +1374,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
             assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof VersionLabelProperty);
         }
         rs.close();
-        
+
         testQuery("SELECT cmis:versionLabel FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel =  'company'", 0, false, "cmis:objectId", new String(), true);
@@ -1397,7 +1391,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel NOT LIKE 'company'", doc_count, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel IS NOT NULL", 1, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel IS     NULL", doc_count-1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel IS     NULL", doc_count - 1, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE 'company' =  ANY cmis:versionLabel", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE 'company' <> ANY cmis:versionLabel", doc_count, false, "cmis:objectId", new String(), true);
@@ -1431,7 +1425,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
             assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof IsLatestMajorVersionProperty);
         }
         rs.close();
-        
+
         testQuery("SELECT cmis:isLatestMajorVersion FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:isLatestMajorVersion FROM cmis:document WHERE cmis:isLatestMajorVersion =  'TRUE'", 0, false, "cmis:objectId", new String(), true);
@@ -1483,7 +1477,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         rs.close();
 
         testQuery("SELECT cmis:isMajorVersion FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
-        
+
         testQuery("SELECT cmis:isMajorVersion FROM cmis:document WHERE cmis:isMajorVersion =  TRUE", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isMajorVersion FROM cmis:document WHERE cmis:isMajorVersion =  true", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isMajorVersion FROM cmis:document WHERE cmis:isMajorVersion =  FALSE", 0, false, "cmis:objectId", new String(), true);
@@ -1534,7 +1528,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
             assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof IsLatestVersionProperty);
         }
         rs.close();
-        
+
         testQuery("SELECT cmis:isLatestVersion FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:isLatestVersion FROM cmis:document WHERE cmis:isLatestVersion =  'TRUE'", 0, false, "cmis:objectId", new String(), true);
@@ -1586,7 +1580,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         rs.close();
 
         testQuery("SELECT cmis:isImmutable FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
-        
+
         testQuery("SELECT cmis:isImmutable FROM cmis:document WHERE cmis:isImmutable =  'TRUE'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isImmutable FROM cmis:document WHERE cmis:isImmutable <> 'TRUE'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isImmutable FROM cmis:document WHERE cmis:isImmutable <  'TRUE'", 0, false, "cmis:objectId", new String(), true);
@@ -1654,23 +1648,23 @@ public class OpenCmisQueryTest extends BaseCMISTest
         rs.close();
 
         testQuery("SELECT cmis:name FROM cmis:folder WHERE cmis:name =  'Folder 1'", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:name FROM cmis:folder WHERE cmis:name <> 'Folder 1'", folder_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:name FROM cmis:folder WHERE cmis:name <> 'Folder 1'", folder_count - 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:name FROM cmis:folder WHERE cmis:name <  'Folder 1'", 2, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:name FROM cmis:folder WHERE cmis:name <= 'Folder 1'", 3, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:name FROM cmis:folder WHERE cmis:name >  'Folder 1'", folder_count-3, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:name FROM cmis:folder WHERE cmis:name >= 'Folder 1'", folder_count-2, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:name FROM cmis:folder WHERE cmis:name >  'Folder 1'", folder_count - 3, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:name FROM cmis:folder WHERE cmis:name >= 'Folder 1'", folder_count - 2, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:name FROM cmis:folder WHERE cmis:name IN     ('Folder 1')", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:name FROM cmis:folder WHERE cmis:name NOT IN ('Folder 1')", folder_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:name FROM cmis:folder WHERE cmis:name NOT IN ('Folder 1')", folder_count - 1, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:name FROM cmis:folder WHERE cmis:name     LIKE 'Folder 1'", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:name FROM cmis:folder WHERE cmis:name NOT LIKE 'Folder 1'", folder_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:name FROM cmis:folder WHERE cmis:name NOT LIKE 'Folder 1'", folder_count - 1, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:name FROM cmis:folder WHERE cmis:name IS NOT NULL", folder_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:name FROM cmis:folder WHERE cmis:name IS     NULL", 0, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:name FROM cmis:folder WHERE 'Folder 1' =  ANY cmis:name", 1, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:name FROM cmis:folder WHERE 'Folder 1' <> ANY cmis:name", folder_count-1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:name FROM cmis:folder WHERE 'Folder 1' <> ANY cmis:name", folder_count - 1, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:name FROM cmis:folder WHERE 'Folder 1' <  ANY cmis:name", 1, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:name FROM cmis:folder WHERE 'Folder 1' <= ANY cmis:name", 2, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:name FROM cmis:folder WHERE 'Folder 1' >  ANY cmis:name", 8, false, "cmis:objectId", new String(), true);
@@ -1721,30 +1715,30 @@ public class OpenCmisQueryTest extends BaseCMISTest
         rs.close();
 
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name =  'Alfresco Tutorial'", 1, false, "cmis:name", new String(), false);
-        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name <> 'Alfresco Tutorial'", doc_count-1, false, "cmis:name", new String(), false);
+        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name <> 'Alfresco Tutorial'", doc_count - 1, false, "cmis:name", new String(), false);
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name <  'Alfresco Tutorial'", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name <= 'Alfresco Tutorial'", 2, false, "cmis:name", new String(), false);
-        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name >  'Alfresco Tutorial'", doc_count-2, true, "cmis:name", new String(), false);
-        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name >= 'Alfresco Tutorial'", doc_count-1, false, "cmis:name", new String(), false);
+        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name >  'Alfresco Tutorial'", doc_count - 2, true, "cmis:name", new String(), false);
+        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name >= 'Alfresco Tutorial'", doc_count - 1, false, "cmis:name", new String(), false);
 
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name IN     ('Alfresco Tutorial')", 1, false, "cmis:name", new String(), false);
-        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name NOT IN ('Alfresco Tutorial')", doc_count-1, false, "cmis:name", new String(), false);
+        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name NOT IN ('Alfresco Tutorial')", doc_count - 1, false, "cmis:name", new String(), false);
 
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name     LIKE 'Alfresco Tutorial'", 1, false, "cmis:name", new String(), false);
-        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name NOT LIKE 'Alfresco Tutorial'", doc_count-1, false, "cmis:name", new String(), false);
+        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name NOT LIKE 'Alfresco Tutorial'", doc_count - 1, false, "cmis:name", new String(), false);
 
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name IS NOT NULL", doc_count, false, "cmis:name", new String(), false);
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name IS     NULL", 0, false, "cmis:name", new String(), false);
 
         testQuery("SELECT cmis:name FROM cmis:document WHERE 'Alfresco Tutorial' =  ANY cmis:name", 1, false, "cmis:name", new String(), true);
-        testQuery("SELECT cmis:name FROM cmis:document WHERE 'Alfresco Tutorial' <> ANY cmis:name", doc_count-1, false, "cmis:name", new String(), true);
+        testQuery("SELECT cmis:name FROM cmis:document WHERE 'Alfresco Tutorial' <> ANY cmis:name", doc_count - 1, false, "cmis:name", new String(), true);
         testQuery("SELECT cmis:name FROM cmis:document WHERE 'Alfresco Tutorial' <  ANY cmis:name", 1, false, "cmis:name", new String(), true);
         testQuery("SELECT cmis:name FROM cmis:document WHERE 'Alfresco Tutorial' <= ANY cmis:name", 2, false, "cmis:name", new String(), true);
-        testQuery("SELECT cmis:name FROM cmis:document WHERE 'Alfresco Tutorial' >  ANY cmis:name", doc_count-2, false, "cmis:name", new String(), true);
-        testQuery("SELECT cmis:name FROM cmis:document WHERE 'Alfresco Tutorial' >= ANY cmis:name", doc_count-1, false, "cmis:name", new String(), true);
+        testQuery("SELECT cmis:name FROM cmis:document WHERE 'Alfresco Tutorial' >  ANY cmis:name", doc_count - 2, false, "cmis:name", new String(), true);
+        testQuery("SELECT cmis:name FROM cmis:document WHERE 'Alfresco Tutorial' >= ANY cmis:name", doc_count - 1, false, "cmis:name", new String(), true);
 
         testQuery("SELECT cmis:name FROM cmis:document WHERE ANY cmis:name IN     ('Alfresco Tutorial')", 1, false, "cmis:name", new String(), true);
-        testQuery("SELECT cmis:name FROM cmis:document WHERE ANY cmis:name NOT IN ('Alfresco Tutorial')", doc_count-1, false, "cmis:name", new String(), true);
+        testQuery("SELECT cmis:name FROM cmis:document WHERE ANY cmis:name NOT IN ('Alfresco Tutorial')", doc_count - 1, false, "cmis:name", new String(), true);
     }
 
     public void test_CHANGE_TOKEN() throws Exception
@@ -1768,7 +1762,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         rs.close();
 
         testQuery("SELECT cmis:changeToken FROM cmis:folder", folder_count, false, "cmis:objectId", new String(), false);
-        
+
         testQuery("SELECT cmis:changeToken FROM cmis:folder WHERE cmis:changeToken =  'test'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:changeToken FROM cmis:folder WHERE cmis:changeToken <> 'test'", 10, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:changeToken FROM cmis:folder WHERE cmis:changeToken <  'test'", 0, false, "cmis:objectId", new String(), true);
@@ -2309,30 +2303,30 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
         // DOC
 
-        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId =  'cmis:document'", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId =  'cmis:document'", doc_count - 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId <> 'cmis:document'", 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId <  'cmis:document'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId <= 'cmis:document'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId >  'cmis:document'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId >= 'cmis:document'", 0, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId IN     ('cmis:document')", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId IN     ('cmis:document')", doc_count - 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId NOT IN ('cmis:document')", 1, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId     LIKE 'cmis:document'", doc_count-1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId     LIKE 'cmis:document'", doc_count - 1, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId NOT LIKE 'cmis:document'", 1, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId IS     NULL", 0, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE 'cmis:document' =  ANY cmis:objectTypeId", doc_count-1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE 'cmis:document' =  ANY cmis:objectTypeId", doc_count - 1, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE 'cmis:document' <> ANY cmis:objectTypeId", 1, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE 'cmis:document' <  ANY cmis:objectTypeId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE 'cmis:document' <= ANY cmis:objectTypeId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE 'cmis:document' >  ANY cmis:objectTypeId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE 'cmis:document' >= ANY cmis:objectTypeId", 0, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE ANY cmis:objectTypeId IN     ('cmis:document')", doc_count-1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE ANY cmis:objectTypeId IN     ('cmis:document')", doc_count - 1, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE ANY cmis:objectTypeId NOT IN ('cmis:document')", 1, false, "cmis:objectId", new String(), true);
 
         // FOLDER
@@ -2413,7 +2407,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         // DOC
 
         testQuery("SELECT cmis:baseTypeId FROM cmis:document", doc_count, false, "cmis:baseTypeId", new String(), false);
-        
+
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId =  'cmis:document'", doc_count, false, "cmis:baseTypeId", new String(), false);
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId <> 'cmis:document'", 0, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId <  'cmis:document'", 0, false, "cmis:objectId", new String(), true);
@@ -2439,12 +2433,9 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE ANY cmis:baseTypeId IN     ('cmis:document')", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE ANY cmis:baseTypeId NOT IN ('cmis:document')", 0, false, "cmis:objectId", new String(), true);
-        
-        
-        
-        
+
         testQuery("SELECT cmis:baseTypeId FROM cmis:folder", folder_count, false, "cmis:baseTypeId", new String(), false);
-        
+
         testQuery("SELECT cmis:baseTypeId FROM cmis:folder WHERE cmis:baseTypeId =  'cmis:folder'", folder_count, false, "cmis:baseTypeId", new String(), false);
         testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId <> 'cmis:folder'", 0, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId <  'cmis:folder'", 0, false, "cmis:objectId", new String(), true);
@@ -2474,12 +2465,12 @@ public class OpenCmisQueryTest extends BaseCMISTest
         // RELATIONSHIP
 
         testQuery("SELECT cmis:baseTypeId FROM cmis:relationship WHERE cmis:baseTypeId =  'cmis:relationship'", 1, false, "cmis:objectId", new String(), true);
-        
+
         testQuery("SELECT cmis:baseTypeId FROM cmis:policy WHERE cmis:baseTypeId =  'cmis:relationship'", 1, false, "cmis:objectId", new String(), true);
-        
+
         testQuery("SELECT cmis:baseTypeId FROM cmis:folder WHERE cmis:baseTypeId =  'cmis:policy'", 0, false, "cmis:baseTypeId", new String(), false);
         testQuery("SELECT cmis:baseTypeId FROM cmis:folder WHERE cmis:baseTypeId =  'cmis:relationship'", 0, false, "cmis:baseTypeId", new String(), true);
-        
+
         testQuery("SELECT cmis:baseTypeId FROM cmis:folder WHERE cmis:baseTypeId =  'cmis:document'", 0, false, "cmis:baseTypeId", new String(), false);
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId =  'cmis:folder'", 0, false, "cmis:baseTypeId", new String(), false);
 
@@ -2551,17 +2542,17 @@ public class OpenCmisQueryTest extends BaseCMISTest
         assertEquals(companyHomeId, id);
 
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId =  '" + companyHomeId + "'", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId <> '" + companyHomeId + "'", folder_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId <> '" + companyHomeId + "'", folder_count - 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId <  '" + companyHomeId + "'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId <= '" + companyHomeId + "'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId >  '" + companyHomeId + "'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId >= '" + companyHomeId + "'", 0, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId IN     ('" + companyHomeId + "')", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId NOT IN ('" + companyHomeId + "')", folder_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId NOT IN ('" + companyHomeId + "')", folder_count - 1, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId     LIKE '" + companyHomeId + "'", 1, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId NOT LIKE '" + companyHomeId + "'", folder_count-1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId NOT LIKE '" + companyHomeId + "'", folder_count - 1, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE IN_FOLDER('" + companyHomeId + "')", 2, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE IN_TREE  ('" + companyHomeId + "')", 6, false, "cmis:objectId", new String(), false);
@@ -2570,69 +2561,67 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId IS     NULL", 0, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE '" + companyHomeId + "' =  ANY cmis:objectId", 1, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:objectId FROM cmis:folder WHERE '" + companyHomeId + "' <> ANY cmis:objectId", folder_count-1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectId FROM cmis:folder WHERE '" + companyHomeId + "' <> ANY cmis:objectId", folder_count - 1, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE '" + companyHomeId + "' <  ANY cmis:objectId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE '" + companyHomeId + "' <= ANY cmis:objectId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE '" + companyHomeId + "' >  ANY cmis:objectId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE '" + companyHomeId + "' >= ANY cmis:objectId", 0, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE ANY cmis:objectId IN     ('" + companyHomeId + "')", 1, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:objectId FROM cmis:folder WHERE ANY cmis:objectId NOT IN ('" + companyHomeId + "')", folder_count-1, false, "cmis:objectId", new String(), true);
-        
+        testQuery("SELECT cmis:objectId FROM cmis:folder WHERE ANY cmis:objectId NOT IN ('" + companyHomeId + "')", folder_count - 1, false, "cmis:objectId", new String(), true);
+
         // Folder versions which are ignored ....
-        
+
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId =  '" + companyHomeId + ";1.0'", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId <> '" + companyHomeId + ";1.0'", folder_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId <> '" + companyHomeId + ";1.0'", folder_count - 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId IN     ('" + companyHomeId + ";1.0')", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId NOT IN ('" + companyHomeId + ";1.0')", folder_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId NOT IN ('" + companyHomeId + ";1.0')", folder_count - 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId IS NOT NULL", folder_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId IS     NULL", 0, false, "cmis:objectId", new String(), false);
-        
+
         // Docs
-        
-        
-        //String docId = testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:name = 'Alfresco Tutorial'", 1, false, "cmis:objectId", new String(), false);
-        
+
+        // String docId = testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:name = 'Alfresco Tutorial'", 1, false, "cmis:objectId", new String(), false);
+
         String docId = c0.toString();
-        
+
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId =  '" + docId + "'", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '" + docId + "'", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '" + docId + "'", doc_count - 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IN     ('" + docId + "')", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId NOT IN ('" + docId + "')", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId NOT IN ('" + docId + "')", doc_count - 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IS     NULL", 0, false, "cmis:objectId", new String(), false);
-        
+
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId =  '" + docId + ";1.0'", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '" + docId + ";1.0'", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '" + docId + ";1.0'", doc_count - 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IN     ('" + docId + ";1.0')", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId NOT IN ('" + docId + ";1.0')", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId NOT IN ('" + docId + ";1.0')", doc_count - 1, false, "cmis:objectId", new String(), false);
 
         nodeService.setProperty(c0, ContentModel.PROP_VERSION_LABEL, "1.0");
-        
-        //docId = testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:name = 'Alfresco Tutorial'", 1, false, "cmis:objectId", new String(), false);
-        docId = c0.toString()+";1.0";
-        
+
+        // docId = testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:name = 'Alfresco Tutorial'", 1, false, "cmis:objectId", new String(), false);
+        docId = c0.toString() + ";1.0";
+
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId =  '" + docId + "'", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '" + docId + "'", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '" + docId + "'", doc_count - 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IN     ('" + docId + "')", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId NOT IN ('" + docId + "')", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId NOT IN ('" + docId + "')", doc_count - 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IS     NULL", 0, false, "cmis:objectId", new String(), false);
- 
+
         nodeService.setProperty(c0, ContentModel.PROP_VERSION_LABEL, "2.1");
-        
-        //docId = testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:name = 'Alfresco Tutorial'", 1, false, "cmis:objectId", new String(), false);
+
+        // docId = testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:name = 'Alfresco Tutorial'", 1, false, "cmis:objectId", new String(), false);
         // comes back as 1.0 ??
-        
-        docId = c0.toString()+";2.1";
-        
+
+        docId = c0.toString() + ";2.1";
+
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId =  '" + docId + "'", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '" + docId + "'", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '" + docId + "'", doc_count - 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IN     ('" + docId + "')", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId NOT IN ('" + docId + "')", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId NOT IN ('" + docId + "')", doc_count - 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IS     NULL", 0, false, "cmis:objectId", new String(), false);
-      
 
     }
 
@@ -2641,7 +2630,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
     {
         testOrderBy("SELECT  cmis:objectId FROM cmis:folder ORDER BY cmis:objectId", folder_count, false, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:objectId");
         testOrderBy("SELECT  cmis:objectId FROM cmis:folder ORDER BY cmis:objectTypeId", folder_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:objectTypeId");
-        // testOrderBy("SELECT  cmis:objectId FROM cmis:folder ORDER BY cmis:objectTypeId", folder_count, false,
+        // testOrderBy("SELECT cmis:objectId FROM cmis:folder ORDER BY cmis:objectTypeId", folder_count, false,
         // Order.ASCENDING, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS,
         // "cmis:objectTypeId");
         testOrderBy("SELECT  cmis:objectId FROM cmis:folder ORDER BY cmis:objectId ASC", folder_count, false, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:objectId");
@@ -2717,7 +2706,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testOrderBy("SELECT cmis:name FROM cmis:folder ORDER BY cmis:name ASC", folder_count, false, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:name");
         testOrderBy("SELECT cmis:name FROM cmis:folder ORDER BY cmis:name DESC", folder_count, false, Order.DESCENDING, CMISQueryMode.CMS_STRICT, "cmis:name");
         testOrderBy("SELECT cmis:name FROM cmis:folder ORDER BY cmis:name DESC", folder_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:name");
-        
+
         testOrderBy("SELECT cmis:name FROM cmis:document ORDER BY cmis:name ASC", doc_count, false, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:name");
         testOrderBy("SELECT cmis:name FROM cmis:document ORDER BY cmis:name DESC", doc_count, false, Order.DESCENDING, CMISQueryMode.CMS_STRICT, "cmis:name");
         testOrderBy("SELECT cmis:name FROM cmis:document ORDER BY cmis:name DESC", doc_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:name");
@@ -2737,9 +2726,9 @@ public class OpenCmisQueryTest extends BaseCMISTest
                 "cmis:contentStreamFileName");
 
         // TODO: Ordered by PARENT in teh index which differs from CMIS parent - which is null if not the correct assoc or parent type ....
-        //testOrderBy("SELECT cmis:parentId FROM cmis:folder ORDER BY cmis:parentId ASC", folder_count, false, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:parentId");
-        //testOrderBy("SELECT cmis:parentId FROM cmis:folder ORDER BY cmis:parentId DESC", folder_count, false, Order.DESCENDING, CMISQueryMode.CMS_STRICT, "cmis:parentId");
-        //testOrderBy("SELECT cmis:parentId FROM cmis:folder ORDER BY cmis:parentId DESC", folder_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:parentId");
+        // testOrderBy("SELECT cmis:parentId FROM cmis:folder ORDER BY cmis:parentId ASC", folder_count, false, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:parentId");
+        // testOrderBy("SELECT cmis:parentId FROM cmis:folder ORDER BY cmis:parentId DESC", folder_count, false, Order.DESCENDING, CMISQueryMode.CMS_STRICT, "cmis:parentId");
+        // testOrderBy("SELECT cmis:parentId FROM cmis:folder ORDER BY cmis:parentId DESC", folder_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:parentId");
 
         testQuery("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:folder WHERE CONTAINS('cmis:name:*') AND cmis:name = 'compan home' ORDER BY SCORE() DESC", 1, false,
                 "cmis:objectId", new String(), true);
@@ -2798,7 +2787,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
                 // {
                 // Serializable sValue = row.getValue(returnPropertyName);
                 // returnValue = (T) DefaultTypeConverter.INSTANCE.convert(returnType.getClass(), sValue);
-                //    
+                //
                 // }
                 else
                 {
@@ -2831,12 +2820,12 @@ public class OpenCmisQueryTest extends BaseCMISTest
                             }
 
                             int comparison = 0;
-                            if(last instanceof String )
+                            if (last instanceof String)
                             {
                                 Collator myCollator = Collator.getInstance();
-                                if(last == null)
+                                if (last == null)
                                 {
-                                    if(current == null)
+                                    if (current == null)
                                     {
                                         comparison = 0;
                                     }
@@ -2847,7 +2836,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
                                 }
                                 else
                                 {
-                                    if(current == null)
+                                    if (current == null)
                                     {
                                         comparison = 1;
                                     }
@@ -2856,7 +2845,6 @@ public class OpenCmisQueryTest extends BaseCMISTest
                                         comparison = myCollator.compare(last, current);
                                     }
                                 }
-                                
 
                             }
                             else
@@ -2878,7 +2866,6 @@ public class OpenCmisQueryTest extends BaseCMISTest
                                 comparison = (Integer) ct.invoke(last, current);
                             }
 
-                           
                             switch (order)
                             {
                             case ASCENDING:
@@ -3077,12 +3064,12 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testExtendedQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) = 'Folder 1'", 0, false, "cmis:objectId", new String(), false);
         testExtendedQuery("SELECT * FROM cmis:folder WHERE Lower(cmis:name) = 'Folder 1'", 0, false, "cmis:objectId", new String(), false);
 
-        testExtendedQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) <> 'FOLDER 1'", folder_count-1, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) <> 'FOLDER 1'", folder_count - 1, false, "cmis:objectId", new String(), false);
 
         testExtendedQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) <= 'FOLDER 1'", 3, false, "cmis:objectId", new String(), false);
         testExtendedQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) < 'FOLDER 1'", 2, false, "cmis:objectId", new String(), false);
-        testExtendedQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) >= 'FOLDER 1'", folder_count-2, false, "cmis:objectId", new String(), false);
-        testExtendedQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) > 'FOLDER 1'", folder_count-3, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) >= 'FOLDER 1'", folder_count - 2, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) > 'FOLDER 1'", folder_count - 3, false, "cmis:objectId", new String(), false);
     }
 
     public void testAllSimpleTextPredicates() throws Exception
@@ -3090,26 +3077,26 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name = 'Folder 1'", 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name = 'Folder 9'", 0, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name = 'Folder 9\\''", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND NOT cmis:name = 'Folder 1'", folder_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND NOT cmis:name = 'Folder 1'", folder_count - 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND 'Folder 1' = ANY cmis:name", 1, false, "cmis:objectId", new String(), true);
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND NOT cmis:name <> 'Folder 1'", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name <> 'Folder 1'", folder_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name <> 'Folder 1'", folder_count - 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name < 'Folder 1'", 2, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name <= 'Folder 1'", 3, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name > 'Folder 1'", folder_count-3, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name >= 'Folder 1'", folder_count-2, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name > 'Folder 1'", folder_count - 3, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name >= 'Folder 1'", folder_count - 2, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name IN ('Folder 1', '1')", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name NOT IN ('Folder 1', 'Folder 9\\'')", folder_count-2, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name NOT IN ('Folder 1', 'Folder 9\\'')", folder_count - 2, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND ANY cmis:name IN ('Folder 1', 'Folder 9\\'')", 2, false, "cmis:objectId", new String(), true);
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND ANY cmis:name NOT IN ('2', '3')", folder_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name LIKE 'Folder 1'", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name LIKE 'Fol%'", folder_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name LIKE 'Fol%'", folder_count - 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name LIKE 'F_l_e_ 1'", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name NOT LIKE 'F_l_e_ 1'", folder_count-1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name LIKE 'F_l_e_ %'", folder_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name NOT LIKE 'F_l_e_ 1'", folder_count - 1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name LIKE 'F_l_e_ %'", folder_count - 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name NOT LIKE 'F_l_e_ %'", 1, false, "cmis:objectId", new String(), false);
         // TODO: Fix below which fail??
-        testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name LIKE 'F_l_e_ _'", folder_count-2, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name LIKE 'F_l_e_ _'", folder_count - 2, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name NOT LIKE 'F_l_e_ _'", 2, false, "cmis:objectId", new String(), false);
     }
 
@@ -3128,7 +3115,8 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
     /**
      * In strict mode you should not be able to refer to aspect properties direct from the type
-     * @throws Exception 
+     * 
+     * @throws Exception
      */
     public void testPropertyToSelectorBinding() throws Exception
     {
@@ -3158,7 +3146,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
     {
         testQuery("SELECT * FROM cmis:document WHERE cmis:description LIKE '%Alfresco%'", 1, true, "cmis:name", new String(), false);
     }
-    
+
     public void testObjectEquals()
     {
 
@@ -3172,7 +3160,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
     @Category(RedundantTests.class)
     public void testFolderEquals() throws Exception
     {
-       
+
         String Name = cmisConnector.createNodeInfo(f0).getName();
 
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name = '" + Name + "'", 1, false, "cmis:objectId", new String(), false);
@@ -3227,17 +3215,17 @@ public class OpenCmisQueryTest extends BaseCMISTest
     @Category(RedundantTests.class)
     public void testFTS() throws Exception
     {
-        testQuery("SELECT SCORE(), D.* FROM cmis:document D WHERE D.cmis:contentStreamFileName = 'zebra'", doc_count-1, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'zebra\\'') AND CONTAINS('\\'quick\\'')", doc_count-1, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT SCORE()as ONE, SCORE()as TWO, D.* FROM cmis:document D WHERE CONTAINS('\\'zebra\\'')", doc_count-1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'zebra\\'')", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT SCORE(), D.* FROM cmis:document D WHERE D.cmis:contentStreamFileName = 'zebra'", doc_count - 1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'zebra\\'') AND CONTAINS('\\'quick\\'')", doc_count - 1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT SCORE()as ONE, SCORE()as TWO, D.* FROM cmis:document D WHERE CONTAINS('\\'zebra\\'')", doc_count - 1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'zebra\\'')", doc_count - 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'quick\\'')", 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'quick\\'')", 1, false, "cmis:objectId", new String(), false);
         testExtendedQuery("SELECT * FROM cmis:document D WHERE CONTAINS(D, 'cmis:name:\\'Tutorial\\'')", 1, false, "cmis:objectId", new String(), false);
         testExtendedQuery("SELECT cmis:name as BOO FROM cmis:document D WHERE CONTAINS('BOO:\\'Tutorial\\'')", 1, false, "cmis:objectId", new String(), false);
-        testExtendedQuery("SELECT * FROM cmis:document D WHERE CONTAINS('TEXT:\\'zebra\\'')", doc_count-1, false, "cmis:objectId", new String(), false);
-        testExtendedQuery("SELECT * FROM cmis:document D WHERE CONTAINS('ALL:\\'zebra\\'')", doc_count-1, false, "cmis:objectId", new String(), false);
-        testExtendedQuery("SELECT * FROM cmis:document D WHERE CONTAINS('d:content:\\'zebra\\'')", doc_count-1, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:document D WHERE CONTAINS('TEXT:\\'zebra\\'')", doc_count - 1, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:document D WHERE CONTAINS('ALL:\\'zebra\\'')", doc_count - 1, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:document D WHERE CONTAINS('d:content:\\'zebra\\'')", doc_count - 1, false, "cmis:objectId", new String(), false);
     }
 
     @Category(RedundantTests.class)
@@ -3268,7 +3256,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
         options = new CMISQueryOptions("SELECT SCORE() AS ONE FROM cmis:document WHERE CONTAINS('\\'Zebra\\'')", rootNodeRef.getStoreRef());
         rs = cmisQueryService.query(options);
-        assertEquals(doc_count-1, rs.getLength());
+        assertEquals(doc_count - 1, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
             System.out.println(row.getValue("cmis:objectId") + " Score " + row.getScore() + " " + row.getScores());
@@ -3287,7 +3275,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
     public void testBasicSelectAsCmis() throws Exception
     {
         runAs("cmis");
-        testQuery("SELECT * FROM cmis:document", doc_count-3, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT * FROM cmis:document", doc_count - 3, false, "cmis:objectId", new String(), false);
 
     }
 
@@ -3305,8 +3293,8 @@ public class OpenCmisQueryTest extends BaseCMISTest
         TypeDefinitionWrapper typeDef = cmisDictionaryService.findType(BaseTypeId.CMIS_DOCUMENT.value());
         int count = 0;
         for (PropertyDefinitionWrapper pdef : typeDef.getProperties())
-        {            
-            count++;   
+        {
+            count++;
         }
         assertEquals(count, md.getColumnNames().length);
         assertNotNull(md.getColumn(PropertyIds.OBJECT_ID));
@@ -3558,7 +3546,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery(
                 "select o.*, t.* from ( cm:ownable o join cm:titled t on o.cmis:objectId = t.cmis:objectId JOIN cmis:document AS D ON D.cmis:objectId = o.cmis:objectId ) where o.cm:owner = 'andy' and t.cm:title = 'Alfresco tutorial' and CONTAINS(D, 'jumped') and D.cmis:contentStreamLength <> 2",
                 1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
-        
+
         // LOJ
         testQuery("SELECT * FROM cmis:document", 11, false, "cmis:objectId", new String(), false,
                 CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
@@ -3602,12 +3590,12 @@ public class OpenCmisQueryTest extends BaseCMISTest
     @Category(RedundantTests.class)
     public void testFTSConnectives() throws Exception
     {
-        testQuery("SELECT * FROM cmis:document where contains('\\'one\\' OR \\'zebra\\'')", doc_count-1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_STRICT);
-        testQuery("SELECT * FROM cmis:document where contains('\\'one\\' or \\'zebra\\'')", doc_count-1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_STRICT);
+        testQuery("SELECT * FROM cmis:document where contains('\\'one\\' OR \\'zebra\\'')", doc_count - 1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_STRICT);
+        testQuery("SELECT * FROM cmis:document where contains('\\'one\\' or \\'zebra\\'')", doc_count - 1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_STRICT);
         testQuery("SELECT * FROM cmis:document where contains('\\'one\\' \\'zebra\\'')", 1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_STRICT);
         testQuery("SELECT * FROM cmis:document where contains('\\'one\\' and \\'zebra\\'')", 1, false, "cmis:objectId", new String(), false,
                 CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
-        testQuery("SELECT * FROM cmis:document where contains('\\'one\\' or \\'zebra\\'')", doc_count-1, false, "cmis:objectId", new String(), false,
+        testQuery("SELECT * FROM cmis:document where contains('\\'one\\' or \\'zebra\\'')", doc_count - 1, false, "cmis:objectId", new String(), false,
                 CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
         testQuery("SELECT * FROM cmis:document where contains('\\'one\\'  \\'zebra\\'')", 1, false, "cmis:objectId", new String(), false,
                 CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
@@ -3626,7 +3614,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         options.setDefaultFTSFieldConnective(Connective.OR);
         options.setQueryMode(CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
         rs = cmisQueryService.query(options);
-        assertEquals(doc_count-1, rs.length());
+        assertEquals(doc_count - 1, rs.length());
         rs.close();
     }
 
@@ -3806,7 +3794,6 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextBoth >= 'Un tokenised'", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextBoth >= 'V'", 0, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextBoth >= 'U'", 1, false, "cmis:name", new String(), false);
-        
 
         testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextUntokenised = 'Un tokenised'", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextUntokenised <> 'tokenised'", 1, false, "cmis:name", new String(), false);
@@ -4123,7 +4110,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
         // Note language agnostic tokenisation included in the default settings includes matches you may not expect
         // Corss language search support
-        
+
         // d:mltext single
 
         testQuery("SELECT * FROM test:extendedContent WHERE test:singleMLTextBoth = 'AAAA BBBB'", 1, false, "cmis:name", new String(), false);
@@ -5397,22 +5384,22 @@ public class OpenCmisQueryTest extends BaseCMISTest
     {
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick')", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('one')", 1, false, "cmis:name", new String(), false);
-        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('-quick')", doc_count-1, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('-quick')", doc_count - 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick brown fox')", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick one')", 0, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick -one')", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('-quick one')", 1, false, "cmis:name", new String(), false);
-        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('-quick -one')", doc_count-2, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('-quick -one')", doc_count - 2, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('fox brown quick')", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick OR one')", 2, false, "cmis:name", new String(), false);
-        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick OR -one')", doc_count-1, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick OR -one')", doc_count - 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('-quick OR -one')", doc_count, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'quick brown fox\\'')", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'fox brown quick\\'')", 0, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'quick brown fox\\' one')", 0, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'quick brown fox\\' -one')", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('-\\'quick brown fox\\' one')", 1, false, "cmis:name", new String(), false);
-        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('-\\'quick brown fox\\' -one')", doc_count-2, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('-\\'quick brown fox\\' -one')", doc_count - 2, false, "cmis:name", new String(), false);
 
         // escaping
         testExtendedQuery("SELECT * FROM cmis:folder WHERE CONTAINS('cmis:name:\\'Folder 9\\\\\\'\\'')", 1, false, "cmis:name", new String(), false);
@@ -5510,15 +5497,16 @@ public class OpenCmisQueryTest extends BaseCMISTest
     /**
      * MNT-11163 test:
      * <p/>
-     * Assume there is a folder 'A' with admin access only and subfolder 'B' with permissions EVERYONE Contributor.
-     * The folder's structure:
-     *<pre>
-     *  repository
-     *           |
-     *            -A
-     *             |
-     *              -B
-     *</pre>
+     * Assume there is a folder 'A' with admin access only and subfolder 'B' with permissions EVERYONE Contributor. The folder's structure:
+     * 
+     * <pre>
+     * repository
+     *         |
+     *         -A
+     *         |
+     *         -B
+     * </pre>
+     * 
      * The CMIS query <code>SELECT * FROM cmis:folder</code> should not raise CmisPermissionDeniedException. Returned path for 'A' or 'B' nodes should be null.
      */
     public void testParentWithPermissions() throws Exception
@@ -5527,25 +5515,24 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
         final String forAdminFolderName = "For admin folder";
         forAdminFolder = nodeService.createNode(base, ContentModel.ASSOC_CONTAINS,
-                                                QName.createQName("cm", forAdminFolderName, namespaceService),
-                                                ContentModel.TYPE_FOLDER).getChildRef();
+                QName.createQName("cm", forAdminFolderName, namespaceService),
+                ContentModel.TYPE_FOLDER).getChildRef();
         nodeService.setProperty(forAdminFolder, ContentModel.PROP_NAME, forAdminFolderName);
         // deny access for test user to 'forAdminFolder'
         permissionService.setPermission(forAdminFolder, userName, PermissionService.ALL_PERMISSIONS, false);
 
         String forEveryoneFolderName = "For everyone folder";
         forEveryoneFolder = nodeService.createNode(forAdminFolder,
-                                                   ContentModel.ASSOC_CONTAINS,
-                                                   QName.createQName("cm", forEveryoneFolderName, namespaceService),
-                                                   ContentModel.TYPE_FOLDER).getChildRef();
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName("cm", forEveryoneFolderName, namespaceService),
+                ContentModel.TYPE_FOLDER).getChildRef();
         nodeService.setProperty(forEveryoneFolder, ContentModel.PROP_NAME, forEveryoneFolderName);
         // set access for test to 'forEveryOneFOlder'
         permissionService.setPermission(forEveryoneFolder, userName, PermissionService.ALL_PERMISSIONS, true);
 
         final CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:folder", rootNodeRef.getStoreRef());
 
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Serializable>()
-        {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Serializable>() {
             @Override
             public Serializable doWork() throws Exception
             {
@@ -5562,7 +5549,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
                         }
                         else if (ref.equals(forAdminFolder))
                         {
-                            assertTrue("Should not get the path for '" + forAdminFolderName + "'",false);
+                            assertTrue("Should not get the path for '" + forAdminFolderName + "'", false);
                         }
                     }
                 }
@@ -5578,34 +5565,33 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT * FROM cm:ownable ", 0, false, "cmis:name", new String(), true);
         testExtendedQuery("SELECT * FROM cm:ownable ", 1, false, "cmis:name", new String(), false);
     }
-    
+
     public void testTitled() throws Exception
     {
-    	 testExtendedQuery("SELECT * FROM cm:titled where cm:title is null ", 0, false, "cmis:name", new String(), false);
-    	 testExtendedQuery("SELECT * FROM cm:titled where cm:title is not null ", 11, false, "cmis:name", new String(), false);
-    	 nodeService.setProperty(c10, ContentModel.PROP_TITLE, null);
-    	 testExtendedQuery("SELECT * FROM cm:titled where cm:title is null ", 1, false, "cmis:name", new String(), false);
-    	 testExtendedQuery("SELECT * FROM cm:titled where cm:title is not null ", 10, false, "cmis:name", new String(), false);
-    	 nodeService.setProperty(c10, ContentModel.PROP_TITLE, "meep");
-    	 testExtendedQuery("SELECT * FROM cm:titled where cm:title is null ", 0, false, "cmis:name", new String(), false);
-    	 testExtendedQuery("SELECT * FROM cm:titled where cm:title is not null ", 11, false, "cmis:name", new String(), false);
-    	 nodeService.removeProperty(c10, ContentModel.PROP_TITLE);
-    	 testExtendedQuery("SELECT * FROM cm:titled where cm:title is null ", 1, false, "cmis:name", new String(), false);
-    	 testExtendedQuery("SELECT * FROM cm:titled where cm:title is not null ", 10, false, "cmis:name", new String(), false);
+        testExtendedQuery("SELECT * FROM cm:titled where cm:title is null ", 0, false, "cmis:name", new String(), false);
+        testExtendedQuery("SELECT * FROM cm:titled where cm:title is not null ", 11, false, "cmis:name", new String(), false);
+        nodeService.setProperty(c10, ContentModel.PROP_TITLE, null);
+        testExtendedQuery("SELECT * FROM cm:titled where cm:title is null ", 1, false, "cmis:name", new String(), false);
+        testExtendedQuery("SELECT * FROM cm:titled where cm:title is not null ", 10, false, "cmis:name", new String(), false);
+        nodeService.setProperty(c10, ContentModel.PROP_TITLE, "meep");
+        testExtendedQuery("SELECT * FROM cm:titled where cm:title is null ", 0, false, "cmis:name", new String(), false);
+        testExtendedQuery("SELECT * FROM cm:titled where cm:title is not null ", 11, false, "cmis:name", new String(), false);
+        nodeService.removeProperty(c10, ContentModel.PROP_TITLE);
+        testExtendedQuery("SELECT * FROM cm:titled where cm:title is null ", 1, false, "cmis:name", new String(), false);
+        testExtendedQuery("SELECT * FROM cm:titled where cm:title is not null ", 10, false, "cmis:name", new String(), false);
     }
-    
+
     public void testNotKeyword() throws Exception
     {
-    	final String folderName = "testfolder" + GUID.generate();
+        final String folderName = "testfolder" + GUID.generate();
         final String docName = "testdoc." + GUID.generate();
-        final FileInfo fileInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()
-        {
+        final FileInfo fileInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>() {
             @Override
             public FileInfo execute() throws Throwable
             {
                 FileInfo folderInfo = fileFolderService.create(base, folderName, ContentModel.TYPE_FOLDER);
                 nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
-               
+
                 FileInfo fileInfo = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
                 nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_NAME, docName);
                 nodeService.addAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_VERSIONABLE, null);
@@ -5613,34 +5599,34 @@ public class OpenCmisQueryTest extends BaseCMISTest
                 return fileInfo;
             }
         });
-        
+
         String query = "SELECT * FROM cmis:document WHERE NOT cmis:name = '" + docName + "'";
         CMISQueryOptions options = new CMISQueryOptions(query, rootNodeRef.getStoreRef());
-        
+
         CMISResultSet rs = cmisQueryService.query(options);
-        
+
         assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:name");
             assertFalse(sValue.equals(docName));
         }
-        
+
         query = "SELECT cmis:name FROM cmis:document WHERE cmis:name = '" + docName + "'";
         options = new CMISQueryOptions(query, rootNodeRef.getStoreRef());
-        
+
         rs = cmisQueryService.query(options);
-        
+
         assertEquals(1, rs.length());
         CMISResultSetRow row = rs.iterator().next();
-        
+
         Serializable sValue = row.getValue("cmis:name");
         assertTrue(sValue.equals(docName));
-        
+
         fileFolderService.delete(fileInfo.getNodeRef());
-        
+
     }
-    
+
     private void testOrderableProperty(String propertyQueryName)
     {
         testOrderBy("SELECT " + propertyQueryName + " FROM test:extendedContent ORDER BY " + propertyQueryName + " ASC", 13, false, Order.ASCENDING, CMISQueryMode.CMS_STRICT,
@@ -5698,14 +5684,14 @@ public class OpenCmisQueryTest extends BaseCMISTest
         ml.addValue(Locale.ENGLISH, "Test null");
         properties.put(ContentModel.PROP_DESCRIPTION, ml);
         properties.put(ContentModel.PROP_TITLE, ml);
-        properties.put(ContentModel.PROP_NAME, "Test null "+id);
+        properties.put(ContentModel.PROP_NAME, "Test null " + id);
         properties.put(ContentModel.PROP_CREATED, new Date());
         NodeRef c0 = nodeService.createNode(f0, ContentModel.ASSOC_CONTAINS, QName.createQName("cm", "Test One", namespaceService), extendedContent, properties).getChildRef();
         return c0;
     }
 
-    private static String[] orderable = new String[] { "zero loons", "one banana", "two apples", "three fruit", "four lemurs", "five rats", "six badgers", "seven cards",
-            "eight cabbages", "nine zebras", "ten lemons" };
+    private static String[] orderable = new String[]{"zero loons", "one banana", "two apples", "three fruit", "four lemurs", "five rats", "six badgers", "seven cards",
+            "eight cabbages", "nine zebras", "ten lemons"};
 
     private NodeRef addSortableNode(int position)
     {
@@ -5805,9 +5791,9 @@ public class OpenCmisQueryTest extends BaseCMISTest
         return c0;
     }
 
-    private static String[] mlOrderable_en = new String[] { "AAAA BBBB", "EEEE FFFF", "II", "KK", "MM", "OO", "QQ", "SS", "UU", "AA", "CC" };
+    private static String[] mlOrderable_en = new String[]{"AAAA BBBB", "EEEE FFFF", "II", "KK", "MM", "OO", "QQ", "SS", "UU", "AA", "CC"};
 
-    private static String[] mlOrderable_fr = new String[] { "CCCC DDDD", "GGGG HHHH", "JJ", "LL", "NN", "PP", "RR", "TT", "VV", "BB", "DD" };
+    private static String[] mlOrderable_fr = new String[]{"CCCC DDDD", "GGGG HHHH", "JJ", "LL", "NN", "PP", "RR", "TT", "VV", "BB", "DD"};
 
     private MLText makeMLText()
     {

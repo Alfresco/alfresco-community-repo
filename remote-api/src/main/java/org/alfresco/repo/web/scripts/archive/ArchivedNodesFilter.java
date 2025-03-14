@@ -36,9 +36,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface ArchivedNodesFilter
 {
     /**
-     * This method checks whether or not the specified {@link NodeRef} should be included,
-     * as defined by the concrete filter implementation.
-     * @param nodeRef the NodeRef to be checked for filtering.
+     * This method checks whether or not the specified {@link NodeRef} should be included, as defined by the concrete filter implementation.
+     * 
+     * @param nodeRef
+     *            the NodeRef to be checked for filtering.
      * @return <code>true</code> if the {@link NodeRef} is acceptable, else <code>false</code>.
      */
     boolean accept(NodeRef nodeRef);

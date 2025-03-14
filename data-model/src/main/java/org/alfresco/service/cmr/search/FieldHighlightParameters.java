@@ -25,10 +25,10 @@
  */
 package org.alfresco.service.cmr.search;
 
-import org.alfresco.api.AlfrescoPublicApi;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Parameters used for search hightlighting that are Field Specific
@@ -41,12 +41,12 @@ public class FieldHighlightParameters extends HighlightParameters
 
     @JsonCreator
     public FieldHighlightParameters(
-                @JsonProperty("field") String field,
-                @JsonProperty("snippetCount") Integer snippetCount,
-                @JsonProperty("fragmentSize") Integer fragmentSize,
-                @JsonProperty("mergeContiguous") Boolean mergeContiguous,
-                @JsonProperty("prefix") String prefix,
-                @JsonProperty("postfix") String postfix)
+            @JsonProperty("field") String field,
+            @JsonProperty("snippetCount") Integer snippetCount,
+            @JsonProperty("fragmentSize") Integer fragmentSize,
+            @JsonProperty("mergeContiguous") Boolean mergeContiguous,
+            @JsonProperty("prefix") String prefix,
+            @JsonProperty("postfix") String postfix)
     {
         super(snippetCount, fragmentSize, mergeContiguous, prefix, postfix);
         this.field = field;
@@ -56,13 +56,13 @@ public class FieldHighlightParameters extends HighlightParameters
     public String toString()
     {
         return "FieldHighlightParameters{" +
-                    "snippetCount=" + snippetCount +
-                    ", fragmentSize=" + fragmentSize +
-                    ", mergeContiguous=" + mergeContiguous +
-                    ", prefix='" + prefix + '\'' +
-                    ", postfix='" + postfix + '\'' +
-                    ", field='" + field + '\'' +
-                    '}';
+                "snippetCount=" + snippetCount +
+                ", fragmentSize=" + fragmentSize +
+                ", mergeContiguous=" + mergeContiguous +
+                ", prefix='" + prefix + '\'' +
+                ", postfix='" + postfix + '\'' +
+                ", field='" + field + '\'' +
+                '}';
     }
 
     public String getField()

@@ -25,18 +25,18 @@
  */
 package org.alfresco.repo.rawevents;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.camel.CamelContext;
+import org.apache.camel.component.mock.MockEndpoint;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import org.alfresco.repo.rawevents.types.EventType;
 import org.alfresco.repo.rawevents.types.OnContentUpdatePolicyEvent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
-import org.apache.camel.CamelContext;
-import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * Provides a base set of tests for {@link TransactionAwareEventProducer}
@@ -52,8 +52,7 @@ public class TransactionAwareEventProducerTest extends BaseSpringTest
     @Autowired
     private TransactionAwareEventProducer eventProducer;
     @Autowired
-    @Qualifier("alfrescoEventObjectMapper")
-    private ObjectMapper messagingObjectMapper;
+    @Qualifier("alfrescoEventObjectMapper") private ObjectMapper messagingObjectMapper;
 
     @Test
     public void send() throws Exception

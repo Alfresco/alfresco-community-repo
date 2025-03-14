@@ -32,7 +32,8 @@ public interface ExportSource
     /**
      * Generate XML suitable for use with the importer.
      * 
-     * @param writer XMLWriter
+     * @param writer
+     *            XMLWriter
      */
     public void generateExport(XMLWriter writer);
 }

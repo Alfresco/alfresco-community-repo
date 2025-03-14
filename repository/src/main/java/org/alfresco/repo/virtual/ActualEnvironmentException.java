@@ -40,18 +40,18 @@ public class ActualEnvironmentException extends VirtualizationException
     }
 
     public ActualEnvironmentException(String message, Throwable cause, boolean enableSuppression,
-                boolean writableStackTrace)
+            boolean writableStackTrace)
     {
         super(message,
-              cause,
-              enableSuppression,
-              writableStackTrace);
+                cause,
+                enableSuppression,
+                writableStackTrace);
     }
 
     public ActualEnvironmentException(String message, Throwable cause)
     {
         super(message,
-              cause);
+                cause);
     }
 
     public ActualEnvironmentException(String message)

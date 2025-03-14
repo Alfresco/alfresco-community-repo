@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -52,8 +54,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.NeverRunsTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
  * @author Dmitry Velichkevich
@@ -61,13 +61,12 @@ import org.springframework.context.ApplicationContext;
 @Category({OwnJVMTestsCategory.class, NeverRunsTests.class})
 public class VersionableAspectTest extends TestCase
 {
-    public static final String AUTO_VERSION_KEY = "version.store.enableAutoVersioning"; 
-    public static final String AUTO_VERSION_PROPS_KEY = "version.store.enableAutoVersionOnUpdateProps"; 
+    public static final String AUTO_VERSION_KEY = "version.store.enableAutoVersioning";
+    public static final String AUTO_VERSION_PROPS_KEY = "version.store.enableAutoVersionOnUpdateProps";
 
     private static final String NAME_AND_EXT_DELIMETER = ".";
 
     private static final String NAME_AND_EXT_DELIMETER_REGEXP = "\\" + NAME_AND_EXT_DELIMETER;
-
 
     private static final String ADMIN_CREDENTIAL = "admin";
 
@@ -79,7 +78,6 @@ public class VersionableAspectTest extends TestCase
 
     private static final String TEST_CONTENT_01 = "Test Content version 0.1\n";
     private static final String TEST_CONTENT_10 = "Test Content version 1.0\n";
-
 
     private ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
 
@@ -99,8 +97,7 @@ public class VersionableAspectTest extends TestCase
     protected void setUp() throws Exception
     {
         globalProperties.setProperty(AUTO_VERSION_PROPS_KEY, "true");
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -151,8 +148,7 @@ public class VersionableAspectTest extends TestCase
     protected void tearDown() throws Exception
     {
         globalProperties.setProperty(AUTO_VERSION_PROPS_KEY, "false");
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -173,8 +169,7 @@ public class VersionableAspectTest extends TestCase
         final String name02 = generateDocumentName(DOCUMENT_NAME, "0.2");
         final String name11 = generateDocumentName(DOCUMENT_NAME, "1.1");
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -190,8 +185,7 @@ public class VersionableAspectTest extends TestCase
             }
         });
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -211,8 +205,7 @@ public class VersionableAspectTest extends TestCase
 
         assertDocumentVersionAndName("1.0", name02, VersionType.MAJOR);
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -229,8 +222,7 @@ public class VersionableAspectTest extends TestCase
     {
         final String name = generateDocumentName(DOCUMENT_NAME, "0.2");
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -256,7 +248,7 @@ public class VersionableAspectTest extends TestCase
 
         assertDocumentVersionAndName("0.2", name);
     }
-    
+
     private void assertDocumentVersionAndName(final String versionLabel, final String name)
     {
         assertDocumentVersionAndName(versionLabel, name, null);
@@ -264,8 +256,7 @@ public class VersionableAspectTest extends TestCase
 
     private void assertDocumentVersionAndName(final String versionLabel, final String name, final VersionType versionType)
     {
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {

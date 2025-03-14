@@ -1,5 +1,9 @@
 package org.alfresco.rest.people;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestPersonModel;
@@ -10,9 +14,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class GetPeopleSanityTests extends RestTest
 {
@@ -32,8 +33,8 @@ public class GetPeopleSanityTests extends RestTest
         searchedUser = dataUser.createRandomTestUser();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user gets a person with Rest API and response is successful")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.SANITY, description = "Verify manager user gets a person with Rest API and response is successful")
     public void managerUserChecksIfPersonIsPresent() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -47,8 +48,8 @@ public class GetPeopleSanityTests extends RestTest
                 .and().field("emailNotificationsEnabled").is("true");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets a person with Rest API and response is successful")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets a person with Rest API and response is successful")
     public void collaboratorUserChecksIfPersonIsPresent() throws Exception
     {
         UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
@@ -62,8 +63,8 @@ public class GetPeopleSanityTests extends RestTest
                 .and().field("emailNotificationsEnabled").is("true");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.COMMENTS, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify contributor user gets a person with Rest API and response is successful")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.COMMENTS, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.SANITY, description = "Verify contributor user gets a person with Rest API and response is successful")
     public void contributorUserChecksIfPersonIsPresent() throws Exception
     {
         UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
@@ -77,8 +78,8 @@ public class GetPeopleSanityTests extends RestTest
                 .and().field("emailNotificationsEnabled").is("true");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify consumer user gets a person with Rest API and response is successful")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.SANITY, description = "Verify consumer user gets a person with Rest API and response is successful")
     public void consumerUserChecksIfPersonIsPresent() throws Exception
     {
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -93,8 +94,8 @@ public class GetPeopleSanityTests extends RestTest
         ;
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify admin user gets a person with Rest API and response is successful")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.SANITY, description = "Verify admin user gets a person with Rest API and response is successful")
     public void adminUserChecksIfPersonIsPresent() throws Exception
     {
         personModel = restClient.authenticateUser(adminUser).withCoreAPI().usingUser(searchedUser).getPerson();
@@ -106,8 +107,8 @@ public class GetPeopleSanityTests extends RestTest
         ;
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user gets a non existing person with Rest API and person is not found")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.SANITY, description = "Verify manager user gets a non existing person with Rest API and person is not found")
     public void managerUserChecksIfNonExistingPersonIsPresent() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();

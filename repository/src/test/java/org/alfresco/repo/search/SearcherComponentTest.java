@@ -29,9 +29,12 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.dialect.Dialect;
@@ -51,9 +54,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.ISO9075;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * @see org.alfresco.repo.search.SearcherComponent
@@ -62,15 +62,14 @@ import org.junit.Test;
  */
 public class SearcherComponentTest extends BaseSpringTest
 {
-    //private static String COMPLEX_LOCAL_NAME = " `¬¦!\"£$%^&*()-_=+\t\n\\\u0000[]{};'#:@~,./<>?\\|\u0123\u4567\u8900\uabcd\uefff_xT65A_";
+    // private static String COMPLEX_LOCAL_NAME = " `¬¦!\"£$%^&*()-_=+\t\n\\\u0000[]{};'#:@~,./<>?\\|\u0123\u4567\u8900\uabcd\uefff_xT65A_";
     // \u0123 and \u8900 removed
 
-    //private static String COMPLEX_LOCAL_NAME = "\u0020\u0060\u00ac\u00a6\u0021\"\u00a3\u0024\u0025\u005e\u0026\u002a\u0028\u0029\u002d\u005f\u003d\u002b\t\n\\\u0000\u005b\u005d\u007b\u007d\u003b\u0027\u0023\u003a\u0040\u007e\u002c\u002e\u002f\u003c\u003e\u003f\\u007c\u4567\uabcd\uefff\u005f\u0078\u0054\u0036\u0035\u0041\u005f";
+    // private static String COMPLEX_LOCAL_NAME = "\u0020\u0060\u00ac\u00a6\u0021\"\u00a3\u0024\u0025\u005e\u0026\u002a\u0028\u0029\u002d\u005f\u003d\u002b\t\n\\\u0000\u005b\u005d\u007b\u007d\u003b\u0027\u0023\u003a\u0040\u007e\u002c\u002e\u002f\u003c\u003e\u003f\\u007c\u4567\uabcd\uefff\u005f\u0078\u0054\u0036\u0035\u0041\u005f";
 
     private static String COMPLEX_LOCAL_NAME = "\u0020\u0060\u00ac\u00a6\u0021\"\u00a3\u0024\u0025\u005e\u0026\u002a\u0028\u0029\u002d\u005f\u003d\u002b\t\n\\\u0000\u005b\u005d\u007b\u007d\u003b\u0027\u0023\u003a\u0040\u007e\u002c\u002e\u002f\u003c\u003e\u003f\\u007c\u005f\u0078\u0054\u0036\u0035\u0041\u005f";
 
     private static String COMPLEX_LOCAL_NAME_NO_U0000 = "\u0020\u0060\u00ac\u00a6\u0021\"\u00a3\u0024\u0025\u005e\u0026\u002a\u0028\u0029\u002d\u005f\u003d\u002b\t\n\\\u005b\u005d\u007b\u007d\u003b\u0027\u0023\u003a\u0040\u007e\u002c\u002e\u002f\u003c\u003e\u003f\\u007c\u005f\u0078\u0054\u0036\u0035\u0041\u005f";
-
 
     private ServiceRegistry serviceRegistry;
 
@@ -213,7 +212,7 @@ public class SearcherComponentTest extends BaseSpringTest
         paramDef = new QueryParameterDefImpl(QName.createQName("test:test", namespacePrefixResolver), dictionaryService
                 .getDataType(DataTypeDefinition.TEXT), true, "monkey");
         xpathStr = "//.[@test:animal=$test:test]";
-        xpath = new NodeServiceXPath(xpathStr, documentNavigator, new QueryParameterDefinition[] { paramDef });
+        xpath = new NodeServiceXPath(xpathStr, documentNavigator, new QueryParameterDefinition[]{paramDef});
         xpath.addNamespace(BaseNodeServiceTest.TEST_PREFIX, BaseNodeServiceTest.NAMESPACE);
         list = xpath.selectNodes(new ChildAssociationRef(null, null, null, rootNodeRef));
         assertEquals(1, list.size());
@@ -277,10 +276,11 @@ public class SearcherComponentTest extends BaseSpringTest
 
         // test 'subtypeOf' function
         paramDef = new QueryParameterDefImpl(QName.createQName("test:type", namespacePrefixResolver), dictionaryService
-                .getDataType(DataTypeDefinition.QNAME), true, BaseNodeServiceTest.TYPE_QNAME_TEST_CONTENT
-                .toPrefixString(namespacePrefixResolver));
+                .getDataType(DataTypeDefinition.QNAME), true,
+                BaseNodeServiceTest.TYPE_QNAME_TEST_CONTENT
+                        .toPrefixString(namespacePrefixResolver));
         xpathStr = "//.[subtypeOf($test:type)]";
-        xpath = new NodeServiceXPath(xpathStr, documentNavigator, new QueryParameterDefinition[] { paramDef });
+        xpath = new NodeServiceXPath(xpathStr, documentNavigator, new QueryParameterDefinition[]{paramDef});
         xpath.addNamespace(BaseNodeServiceTest.TEST_PREFIX, BaseNodeServiceTest.NAMESPACE);
         list = xpath.selectNodes(assocRefs.get(qname));
         assertEquals(3, list.size()); // 2 distinct paths to node n8, which is of type content
@@ -350,9 +350,9 @@ public class SearcherComponentTest extends BaseSpringTest
         assertTrue(answer.contains(n3));
 
         // "like" query is not translated to DB query
-//        answer = searcher.selectNodes(rootNodeRef, "//*[like(@test:animal, 'monk*')]", null, namespacePrefixResolver, false);
-//        assertEquals(1, answer.size());
-//        assertTrue(answer.contains(n3));
+        // answer = searcher.selectNodes(rootNodeRef, "//*[like(@test:animal, 'monk*')]", null, namespacePrefixResolver, false);
+        // assertEquals(1, answer.size());
+        // assertTrue(answer.contains(n3));
 
         answer = searcher.selectNodes(rootNodeRef, "//@*", null, namespacePrefixResolver, false);
         assertEquals(9, answer.size());
@@ -402,14 +402,14 @@ public class SearcherComponentTest extends BaseSpringTest
                 namespacePrefixResolver, false);
         assertEquals(1, answer.size());
 
-        System.out.println("Encoded = "+ISO9075.encode(COMPLEX_LOCAL_NAME));
+        System.out.println("Encoded = " + ISO9075.encode(COMPLEX_LOCAL_NAME));
         String roundTrip = ISO9075.decode(ISO9075.encode(COMPLEX_LOCAL_NAME));
-        for(int i = 0; i < COMPLEX_LOCAL_NAME.length() && 1 < roundTrip.length(); i++)
+        for (int i = 0; i < COMPLEX_LOCAL_NAME.length() && 1 < roundTrip.length(); i++)
         {
-            System.out.println("Char at "+i+" = "+Integer.toHexString(COMPLEX_LOCAL_NAME.charAt(i))+ "   ...    "+Integer.toHexString(roundTrip.charAt(i)));
+            System.out.println("Char at " + i + " = " + Integer.toHexString(COMPLEX_LOCAL_NAME.charAt(i)) + "   ...    " + Integer.toHexString(roundTrip.charAt(i)));
         }
 
-        assertEquals( COMPLEX_LOCAL_NAME, roundTrip);
+        assertEquals(COMPLEX_LOCAL_NAME, roundTrip);
 
         answer = searcher.selectNodes(rootNodeRef, "//*[like(@test:"
                 + ISO9075.encode(COMPLEX_LOCAL_NAME) + ", 'm__k%', false)]", null, namespacePrefixResolver, false);

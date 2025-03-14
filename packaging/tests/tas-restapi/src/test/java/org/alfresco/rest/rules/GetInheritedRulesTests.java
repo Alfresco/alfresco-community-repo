@@ -25,13 +25,18 @@
  */
 package org.alfresco.rest.rules;
 
+import static org.testng.Assert.assertEquals;
+
 import static org.alfresco.rest.requests.RuleSettings.IS_INHERITANCE_ENABLED;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.testng.Assert.assertEquals;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
@@ -43,9 +48,6 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Tests for GET /nodes/{nodeId}/rule-sets/{ruleSetId}/rules with rule inheritance.
@@ -67,7 +69,7 @@ public class GetInheritedRulesTests extends RulesRestTest
     /**
      * Check we can get all the rules for the folder by providing the different rule set ids.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void getInheritedRules()
     {
         STEP("Create a parent and child folder, each with inheriting rules");
@@ -90,25 +92,25 @@ public class GetInheritedRulesTests extends RulesRestTest
         RestRuleModelsCollection rules = restClient.authenticateUser(user).withPrivateAPI().usingNode(child).usingDefaultRuleSet().getListOfRules();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         rules.assertThat().entriesListContains("id", childRule.getId())
-             .and().entriesListCountIs(1);
+                .and().entriesListCountIs(1);
 
         STEP("Get the rules in the inherited rule set for the child folder");
         RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withPrivateAPI().usingNode(child).include("inclusionType").getListOfRuleSets();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         String inheritedRuleSetId = ruleSets.getEntries().stream()
-                                            .filter(ruleSet -> ruleSet.onModel().getInclusionType().equals("inherited"))
-                                            .findFirst().get().onModel().getId();
+                .filter(ruleSet -> ruleSet.onModel().getInclusionType().equals("inherited"))
+                .findFirst().get().onModel().getId();
 
         RestRuleModelsCollection inheritedRules = restClient.authenticateUser(user).withPrivateAPI().usingNode(child).usingRuleSet(inheritedRuleSetId).getListOfRules();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         inheritedRules.assertThat().entriesListContains("id", parentRule.getId())
-                      .and().entriesListCountIs(1);
+                .and().entriesListCountIs(1);
     }
 
     /**
      * Check we get no (inherited) rules when inheritance is disabled in the child folder.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void getInheritedRules_childFolderInheritanceDisabled()
     {
         STEP("Create a parent and child folder, with inheritable parent rule");
@@ -133,7 +135,7 @@ public class GetInheritedRulesTests extends RulesRestTest
     /**
      * Check that non-inheritable rules owned by the parent folder are not found inside the child folder.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void inheritance_test()
     {
         STEP("Create a parent and child folder, with an inheritable and a non-inheritable parent rule");
@@ -159,14 +161,15 @@ public class GetInheritedRulesTests extends RulesRestTest
         RestRuleModelsCollection inheritedRules = restClient.authenticateUser(user).withPrivateAPI().usingNode(child).usingRuleSet(inheritedRuleSetId).getListOfRules();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         inheritedRules.assertThat().entriesListContains("id", inheritableRule.getId())
-                             .and().entriesListDoesNotContain("id",nonInheritableRule.getId())
-                             .and().entriesListCountIs(1);
+                .and().entriesListDoesNotContain("id", nonInheritableRule.getId())
+                .and().entriesListCountIs(1);
     }
 
     /**
      * Check that we only get each rule once with linking and inheritance, and the order is correct.
      * <p>
      * The folder structure for this test is as follows:
+     * 
      * <pre>
      *      A --[links]-> DRuleSet
      *      +-B --[owns]-> BRuleSet
@@ -174,7 +177,7 @@ public class GetInheritedRulesTests extends RulesRestTest
      *          +-D --[owns]--> DRuleSet
      * </pre>
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void rulesReturnedAreUnique()
     {
         STEP("Create four folders with rules");
@@ -203,14 +206,14 @@ public class GetInheritedRulesTests extends RulesRestTest
         IntStream.range(0, 2).forEach(index -> {
             String ruleSetId = ruleSets.get(index).onModel().getId();
             List<RestRuleModel> rules = restClient.authenticateUser(user)
-                                                  .withPrivateAPI()
-                                                  .usingNode(folderD)
-                                                  .usingRuleSet(ruleSetId)
-                                                  .getListOfRules()
-                                                  .getEntries()
-                                                  .stream()
-                                                  .map(RestRuleModel::onModel)
-                                                  .collect(Collectors.toList());
+                    .withPrivateAPI()
+                    .usingNode(folderD)
+                    .usingRuleSet(ruleSetId)
+                    .getListOfRules()
+                    .getEntries()
+                    .stream()
+                    .map(RestRuleModel::onModel)
+                    .collect(Collectors.toList());
             assertEquals(rules, List.of(expectedRuleIds.get(index)), "Unexpected rules found for rule set " + ruleSetId);
         });
         assertEquals(ruleSets.size(), 3, "Expected three unique rule sets to be returned but got " + ruleSets);

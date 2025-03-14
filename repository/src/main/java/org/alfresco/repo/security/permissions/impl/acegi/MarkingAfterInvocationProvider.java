@@ -37,8 +37,7 @@ import org.alfresco.repo.security.permissions.PermissionCheckedValue;
 import org.alfresco.repo.security.permissions.PermissionCheckedValue.PermissionCheckedValueMixin;
 
 /**
- * Invocation provider that can be used to mark entries that have been permission checked.
- * Use an instance of this class at the end of the 'after' invocations.
+ * Invocation provider that can be used to mark entries that have been permission checked. Use an instance of this class at the end of the 'after' invocations.
  * 
  * @author Derek Hulley
  * @since 4.0

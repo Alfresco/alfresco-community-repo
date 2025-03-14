@@ -26,8 +26,7 @@
 package org.alfresco.repo.web.auth;
 
 /**
- * AuthenticationListener implementations can receive notifications of successful and unsuccessful 
- * authentication requests, made during web script, WebDav or Sharepoint requests.
+ * AuthenticationListener implementations can receive notifications of successful and unsuccessful authentication requests, made during web script, WebDav or Sharepoint requests.
  * 
  * @author Alex Miller
  */
@@ -44,7 +43,7 @@ public interface AuthenticationListener
     public void authenticationFailed(WebCredentials credentials, Exception ex);
 
     /**
-     * An authentication attempt, using credentials, failed. 
+     * An authentication attempt, using credentials, failed.
      */
     public void authenticationFailed(WebCredentials credentials);
 

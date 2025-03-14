@@ -31,6 +31,11 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.extensions.webscripts.Format;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -44,25 +49,21 @@ import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.tools.ResponseWriter;
 import org.alfresco.rest.framework.webscripts.ApiWebScript;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
-import org.springframework.extensions.webscripts.Format;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
 
 public class NetworkWebScriptGet extends ApiWebScript implements ResponseWriter
 {
-	private Networks networks;
+    private Networks networks;
     private ResourceWebScriptHelper helper;
-    
-	public void setHelper(ResourceWebScriptHelper helper)
-	{
-		this.helper = helper;
-	}
 
-	public void setNetworks(Networks networks)
-	{
-		this.networks = networks;
-	}
+    public void setHelper(ResourceWebScriptHelper helper)
+    {
+        this.helper = helper;
+    }
+
+    public void setNetworks(Networks networks)
+    {
+        this.networks = networks;
+    }
 
     @Override
     public void execute(final Api api, final WebScriptRequest req, final WebScriptResponse res) throws IOException
@@ -70,42 +71,40 @@ public class NetworkWebScriptGet extends ApiWebScript implements ResponseWriter
         try
         {
             transactionService.getRetryingTransactionHelper().doInTransaction(
-            new RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
-                {
-                    // apply content type
-                    res.setContentType(Format.JSON.mimetype() + ";charset=UTF-8");
-
-                    assistant.getJsonHelper().withWriter(res.getOutputStream(), new Writer()
-                    {
+                    new RetryingTransactionCallback<Void>() {
                         @Override
-                        public void writeContents(JsonGenerator generator, ObjectMapper objectMapper)
-                                    throws JsonGenerationException, JsonMappingException, IOException
+                        public Void execute() throws Throwable
                         {
-                            String personId = AuthenticationUtil.getFullyAuthenticatedUser();
-                            String networkId = TenantUtil.getCurrentDomain();
-            
-                            PersonNetwork networkMembership = networks.getNetwork(personId, networkId);
-                            if(networkMembership != null)
-                            {
-                                // TODO this is not ideal, but the only way to populate the embedded network entities (this would normally be
-                                // done automatically by the api framework).
-                                Object wrapped = helper.processAdditionsToTheResponse(res, Api.ALFRESCO_PUBLIC, NetworksEntityResource.NAME, Params.valueOf(personId, null, req), networkMembership);
-                
-                                objectMapper.writeValue(generator, wrapped);
-                            }
-                            else
-                            {
-                                throw new EntityNotFoundException(networkId);
-                            }
-                        }
-                    });
+                            // apply content type
+                            res.setContentType(Format.JSON.mimetype() + ";charset=UTF-8");
 
-                    return null;
-                }
-            }, true, true);
+                            assistant.getJsonHelper().withWriter(res.getOutputStream(), new Writer() {
+                                @Override
+                                public void writeContents(JsonGenerator generator, ObjectMapper objectMapper)
+                                        throws JsonGenerationException, JsonMappingException, IOException
+                                {
+                                    String personId = AuthenticationUtil.getFullyAuthenticatedUser();
+                                    String networkId = TenantUtil.getCurrentDomain();
+
+                                    PersonNetwork networkMembership = networks.getNetwork(personId, networkId);
+                                    if (networkMembership != null)
+                                    {
+                                        // TODO this is not ideal, but the only way to populate the embedded network entities (this would normally be
+                                        // done automatically by the api framework).
+                                        Object wrapped = helper.processAdditionsToTheResponse(res, Api.ALFRESCO_PUBLIC, NetworksEntityResource.NAME, Params.valueOf(personId, null, req), networkMembership);
+
+                                        objectMapper.writeValue(generator, wrapped);
+                                    }
+                                    else
+                                    {
+                                        throw new EntityNotFoundException(networkId);
+                                    }
+                                }
+                            });
+
+                            return null;
+                        }
+                    }, true, true);
         }
         catch (ApiException | WebScriptException apiException)
         {

@@ -29,6 +29,12 @@ package org.alfresco.module.org_alfresco_module_rm.job;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.quartz.Job;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
@@ -37,11 +43,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 
 /**
  * Base records management job implementation.
@@ -112,20 +113,29 @@ public class RecordsManagementJob implements Job
 
         // get the job lock service
         jobLockService = (JobLockService) context.getJobDetail().getJobDataMap().get("jobLockService");
-        if (jobLockService == null) { throw new AlfrescoRuntimeException("Job lock service has not been specified."); }
+        if (jobLockService == null)
+        {
+            throw new AlfrescoRuntimeException("Job lock service has not been specified.");
+        }
 
         // get the job executer
         jobExecuter = (RecordsManagementJobExecuter) context.getJobDetail().getJobDataMap().get("jobExecuter");
-        if (jobExecuter == null) { throw new AlfrescoRuntimeException("Job executer has not been specified."); }
+        if (jobExecuter == null)
+        {
+            throw new AlfrescoRuntimeException("Job executer has not been specified.");
+        }
 
         // get the job name
         jobName = (String) context.getJobDetail().getJobDataMap().get("jobName");
 
-        if (jobName == null) { throw new AlfrescoRuntimeException("Job name has not been specified."); }
+        if (jobName == null)
+        {
+            throw new AlfrescoRuntimeException("Job name has not been specified.");
+        }
 
         if (jobName.compareTo("dispositionLifecycle") == 0)
         {
-            //RM-3293 - set user for audit
+            // RM-3293 - set user for audit
             if (jobExecuter instanceof DispositionLifecycleJobExecuter)
             {
                 String auditUser = (String) context.getJobDetail().getJobDataMap().get("runAuditAs");
@@ -150,8 +160,7 @@ public class RecordsManagementJob implements Job
 
         final LockCallback lockCallback = new LockCallback();
 
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             public Void doWork()
             {
                 // try and get the lock
@@ -177,7 +186,7 @@ public class RecordsManagementJob implements Job
                             if (logger.isDebugEnabled())
                             {
                                 logger.debug("Lock release failed: " + getLockQName() + ": " + lockToken + "("
-                                            + e.getMessage() + ")");
+                                        + e.getMessage() + ")");
                             }
                         }
                     }

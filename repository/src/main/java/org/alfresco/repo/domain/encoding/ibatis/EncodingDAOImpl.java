@@ -25,10 +25,11 @@
  */
 package org.alfresco.repo.domain.encoding.ibatis;
 
+import org.mybatis.spring.SqlSessionTemplate;
+
 import org.alfresco.repo.domain.encoding.AbstractEncodingDAOImpl;
 import org.alfresco.repo.domain.encoding.EncodingEntity;
 import org.alfresco.repo.domain.mimetype.MimetypeEntity;
-import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * iBatis-specific implementation of the Mimetype DAO.
@@ -41,16 +42,14 @@ public class EncodingDAOImpl extends AbstractEncodingDAOImpl
     private static final String SELECT_ENCODING_BY_ID = "alfresco.content.select_EncodingById";
     private static final String SELECT_ENCODING_BY_KEY = "alfresco.content.select_EncodingByKey";
     private static final String INSERT_ENCODING = "alfresco.content.insert.insert_Encoding";
-    
-    
+
     private SqlSessionTemplate template;
-    
-    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
+
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate)
     {
         this.template = sqlSessionTemplate;
     }
-    
-    
+
     @Override
     protected EncodingEntity getEncodingEntity(Long id)
     {

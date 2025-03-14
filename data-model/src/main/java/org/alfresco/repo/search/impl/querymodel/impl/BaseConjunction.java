@@ -43,18 +43,18 @@ public class BaseConjunction extends BaseConstraint implements Conjunction
     {
         this.constraints = constraints;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.Conjunction#getConstraints()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.Conjunction#getConstraints() */
     public List<Constraint> getConstraints()
     {
         return constraints;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.Constraint#evaluate()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.Constraint#evaluate() */
     public boolean evaluate()
     {
         throw new UnsupportedOperationException();

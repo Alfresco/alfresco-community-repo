@@ -36,8 +36,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 public class CallbackCommand implements Command
 {
     public CallbackCommand()
-    {
-    }
+    {}
 
     @Override
     public TxnReadState getTransactionRequired()

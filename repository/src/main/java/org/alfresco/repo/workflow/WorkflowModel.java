@@ -25,10 +25,9 @@
  */
 package org.alfresco.repo.workflow;
 
-import org.alfresco.api.AlfrescoPublicApi;     
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-
 
 /**
  * Workflow Model Constants
@@ -36,15 +35,15 @@ import org.alfresco.service.namespace.QName;
 @AlfrescoPublicApi
 public interface WorkflowModel
 {
-    
+
     //
     // Base Business Process Management Definitions
     //
 
     // package folder constants
     static final QName TYPE_PACKAGE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package");
-    static final QName ASSOC_PACKAGE_CONTAINS= QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "packageContains");
-    
+    static final QName ASSOC_PACKAGE_CONTAINS = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "packageContains");
+
     // task constants
     static final QName TYPE_TASK = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "task");
     static final QName PROP_TASK_ID = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "taskId");
@@ -81,13 +80,13 @@ public interface WorkflowModel
 
     // Activiti Task Constants
     static final QName TYPE_ACTIVTI_TASK = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "activitiOutcomeTask");
-    static final QName PROP_OUTCOME_PROPERTY_NAME= QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "outcomePropertyName");
-    
+    static final QName PROP_OUTCOME_PROPERTY_NAME = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "outcomePropertyName");
+
     // Activiti Start Task Constants
     static final QName TYPE_ACTIVTI_START_TASK = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "activitiStartTask");
-    
+
     // Activiti Start Task Constants
-    static final QName ASPECT_END_AUTOMATICALLY= QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "endAutomatically");
+    static final QName ASPECT_END_AUTOMATICALLY = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "endAutomatically");
 
     // workflow package
     static final QName ASPECT_WORKFLOW_PACKAGE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowPackage");
@@ -95,13 +94,13 @@ public interface WorkflowModel
     static final QName PROP_WORKFLOW_DEFINITION_ID = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowDefinitionId");
     static final QName PROP_WORKFLOW_DEFINITION_NAME = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowDefinitionName");
     static final QName PROP_WORKFLOW_INSTANCE_ID = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowInstanceId");
-     
+
     // workflow definition
     static final QName TYPE_WORKFLOW_DEF = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowDefinition");
     static final QName PROP_WORKFLOW_DEF_ENGINE_ID = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "engineId");
     static final QName PROP_WORKFLOW_DEF_NAME = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "definitionName");
     static final QName PROP_WORKFLOW_DEF_DEPLOYED = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "definitionDeployed");
-    
+
     static final QName PROP_SEND_EMAIL_NOTIFICATIONS = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "sendEMailNotifications");
 
 }

@@ -1,5 +1,9 @@
 package org.alfresco.rest.favorites;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestSiteModel;
@@ -12,9 +16,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class GetFavoriteSitesTests extends RestTest
 {
@@ -44,8 +45,8 @@ public class GetFavoriteSitesTests extends RestTest
         dataSite.usingUser(testUser1).usingSite(testSite1).addSiteToFavorites();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify manager user fails to get an user favorite sites with Rest API (403)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify manager user fails to get an user favorite sites with Rest API (403)")
     public void managerUserFailsToGetAnUserFavoriteSites() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -57,8 +58,8 @@ public class GetFavoriteSitesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify collaborator user fails to get an user favorite sites with Rest API (403)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify collaborator user fails to get an user favorite sites with Rest API (403)")
     public void collaboratorUserFailsToGetAnUserFavoriteSites() throws Exception
     {
         UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
@@ -71,8 +72,8 @@ public class GetFavoriteSitesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify contributor user fails to get an user favorite sites with Rest API (403)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify contributor user fails to get an user favorite sites with Rest API (403)")
     public void contributorUserFailsToGetAnUserFavoriteSites() throws Exception
     {
         UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
@@ -85,8 +86,8 @@ public class GetFavoriteSitesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify consumer user fails to get an user favorite sites with Rest API (403)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify consumer user fails to get an user favorite sites with Rest API (403)")
     public void consumerUserFailsToGetAnUserFavoriteSites() throws Exception
     {
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -99,8 +100,8 @@ public class GetFavoriteSitesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify any user gets its own user favorite sites with Rest API and response is successful (200)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.SANITY, description = "Verify any user gets its own user favorite sites with Rest API and response is successful (200)")
     public void anyUserGetsHisFavoriteSites() throws Exception
     {
         UserModel anyUser = dataUser.usingAdmin().createRandomTestUser();
@@ -111,9 +112,9 @@ public class GetFavoriteSitesTests extends RestTest
         restSiteModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("id", siteModel.getId()).and().paginationExist();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify any user is NOT Authorized to get its favorite sites with Rest API when authentication fails (401)")
-//    @Bug(id = "MNT-16904", description = "It fails only on environment with tenants")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.SANITY, description = "Verify any user is NOT Authorized to get its favorite sites with Rest API when authentication fails (401)")
+    // @Bug(id = "MNT-16904", description = "It fails only on environment with tenants")
     public void unauthenticatedUserIsNotAuthorizedToGetFavoriteSites() throws Exception
     {
         UserModel anyUser = dataUser.usingAdmin().createRandomTestUser();
@@ -124,9 +125,9 @@ public class GetFavoriteSitesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify that getFavoriteSites request status code is 404 for a personId that does not exist")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     public void getFavoriteSitesReturns404ForAPersonIdThatDoesNotExist() throws Exception
     {
         UserModel invalidUser = new UserModel(RandomData.getRandomName("User"), DataUser.PASSWORD);
@@ -139,9 +140,9 @@ public class GetFavoriteSitesTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify that getFavoriteSites request status code is 403 if the user doesn't have access to the person favorite sites")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     public void userCannotGetFavoriteSitesForAnotherUser() throws Exception
     {
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(testUser1).getFavoriteSites();
@@ -152,9 +153,9 @@ public class GetFavoriteSitesTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify that admin has access to regular user site favorites")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     public void adminCanGetFavoriteSitesForARegularUser() throws Exception
     {
         restSiteModelsCollection = restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingUser(userModel).getFavoriteSites();
@@ -163,9 +164,9 @@ public class GetFavoriteSitesTests extends RestTest
                 .assertThat().entriesListContains("id", siteModel.getId());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify that regular user can not see admin user site favorites")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     public void regularUserCannotGetFavoriteSitesForAdminUser() throws Exception
     {
         restClient.authenticateUser(testUser1).withCoreAPI().usingUser(dataUser.getAdminUser()).getFavoriteSites();
@@ -176,9 +177,9 @@ public class GetFavoriteSitesTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify that favorite site can be removed")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     public void verifyThatFavoriteSiteCanBeRemoved() throws Exception
     {
         UserModel randomTestUser = dataUser.createRandomTestUser();
@@ -195,9 +196,9 @@ public class GetFavoriteSitesTests extends RestTest
         restSiteModelsCollection.assertThat().entriesListIsEmpty();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify that if maxItems param is invalid status code returned is BAD_REQUEST (400)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     public void getFavoriteSitesMaxItemsInvalidValueTest() throws Exception
     {
         restClient.authenticateUser(userModel).withParams("maxItems=-1").withCoreAPI().usingAuthUser().getFavoriteSites();
@@ -209,9 +210,9 @@ public class GetFavoriteSitesTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.INVALID_MAXITEMS, "abc"));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify that if skipCount param is invalid status code returned is BAD_REQUEST (400)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     public void getFavoriteSitesSkipCountInvalidValueTest() throws Exception
     {
         restClient.authenticateUser(userModel).withParams("skipCount=-1").withCoreAPI().usingAuthUser().getFavoriteSites();
@@ -223,9 +224,9 @@ public class GetFavoriteSitesTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.INVALID_SKIPCOUNT, "abc"));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify that getFavoriteSites request response status using -me- string in place of personId is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     public void userGetsFavoriteSiteWithSuccessUsingMEForRequest() throws Exception
     {
         restSiteModelsCollection = restClient.authenticateUser(testUser1).withCoreAPI().usingMe().getFavoriteSites();
@@ -235,9 +236,9 @@ public class GetFavoriteSitesTests extends RestTest
                 .and().paginationExist();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify that getFavoriteSites request response status for a user that has no favorite sites is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     public void getFavoriteSiteRequestForUserWithNoFavoriteSitesIsSuccessful() throws Exception
     {
         UserModel randomTestUser = dataUser.createRandomTestUser();
@@ -247,9 +248,9 @@ public class GetFavoriteSitesTests extends RestTest
         restSiteModelsCollection.assertThat().entriesListIsEmpty();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify that getFavoriteSites request response status for a user with several favorite sites is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     public void getFavoriteSiteRequestForUserWithSeveralFavoriteSitesIsSuccessful() throws Exception
     {
         restSiteModelsCollection = restClient.authenticateUser(testUser1).withCoreAPI().usingAuthUser().getFavoriteSites();
@@ -261,9 +262,9 @@ public class GetFavoriteSitesTests extends RestTest
                 .and().paginationExist();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify that getFavoriteSites request can only be called with a positive maxItems param")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     public void userCanNotGetFavoriteSitesWith0MaxItems() throws Exception
     {
         restClient.authenticateUser(testUser1).withParams("maxItems=0").withCoreAPI().usingAuthUser().getFavoriteSites();
@@ -275,9 +276,9 @@ public class GetFavoriteSitesTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify that getFavoriteSites request response status code for a high skipCount param is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     public void userCanGetFavoriteSitesWithHighSkipCount() throws Exception
     {
         restSiteModelsCollection = restClient.authenticateUser(testUser1).withParams("skipCount=999999999").withCoreAPI().usingAuthUser().getFavoriteSites();
@@ -286,13 +287,12 @@ public class GetFavoriteSitesTests extends RestTest
                 .assertThat().paginationField("skipCount").is("999999999");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify that user can retrieve the last 2 favorite sites")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     public void userCanRetrieveLast2FavoriteSites() throws Exception
     {
-        restSiteModelsCollection = restClient.authenticateUser(testUser1).withParams("skipCount=1&maxCount=2").
-                withCoreAPI().usingAuthUser().getFavoriteSites();
+        restSiteModelsCollection = restClient.authenticateUser(testUser1).withParams("skipCount=1&maxCount=2").withCoreAPI().usingAuthUser().getFavoriteSites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restSiteModelsCollection.assertThat().entriesListIsNotEmpty()
                 .assertThat().entriesListCountIs(2)
@@ -300,9 +300,9 @@ public class GetFavoriteSitesTests extends RestTest
                 .assertThat().entriesListContains("id", testSite3.getId());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify that getFavoriteSites request applies valid properties param")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     public void getFavoriteSitesRequestWithValidPropertiesParam() throws Exception
     {
         RestSiteModel restSiteModel = restClient.authenticateUser(testUser1).withParams("properties=title")
@@ -312,9 +312,9 @@ public class GetFavoriteSitesTests extends RestTest
                 .assertThat().field("title").isNotEmpty();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify that getFavoriteSites request applies invalid properties param")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     public void getFavoriteSitesRequestWithInvalidPropertiesParam() throws Exception
     {
         restClient.authenticateUser(testUser1).withParams("properties=tas").withCoreAPI().usingAuthUser()

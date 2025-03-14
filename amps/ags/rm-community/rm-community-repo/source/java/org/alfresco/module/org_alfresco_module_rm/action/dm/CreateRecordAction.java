@@ -47,12 +47,12 @@ import org.alfresco.service.cmr.repository.NodeService;
 /**
  * Creates a new record from an existing content object.
  *
- * Note:  This is a 'normal' dm action, rather than a records management action.
+ * Note: This is a 'normal' dm action, rather than a records management action.
  *
  * @author Roy Wetherall
  */
 public class CreateRecordAction extends AuditableActionExecuterAbstractBase
-                                implements RecordsManagementModel
+        implements RecordsManagementModel
 {
     /** Action name */
     public static final String NAME = "create-record";
@@ -81,7 +81,8 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
     private RecordService recordService;
 
     /**
-     * @param nodeService node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -89,7 +90,8 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
     }
 
     /**
-     * @param filePlanService file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -97,16 +99,17 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
     }
 
     /**
-     * @param authenticationUtil authentication util
+     * @param authenticationUtil
+     *            authentication util
      */
     public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
     {
         this.authenticationUtil = authenticationUtil;
     }
 
-
     /**
-     * @param recordService record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -157,8 +160,8 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> params)
     {
-        // NOTE:  commented out for now so that it doesn't appear in the UI ... enable later when multi-file plan support is added
-        //params.add(new ParameterDefinitionImpl(PARAM_FILE_PLAN, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_FILE_PLAN)));
+        // NOTE: commented out for now so that it doesn't appear in the UI ... enable later when multi-file plan support is added
+        // params.add(new ParameterDefinitionImpl(PARAM_FILE_PLAN, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_FILE_PLAN)));
         params.add(new ParameterDefinitionImpl(PARAM_PATH, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_PATH)));
         params.add(new ParameterDefinitionImpl(PARAM_HIDE_RECORD, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_HIDE_RECORD)));
     }

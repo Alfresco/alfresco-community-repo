@@ -101,41 +101,45 @@ public interface LicenseDescriptor
      * @return <code>true</code> if this license allow the heartbeat to be disabled
      */
     public boolean isHeartBeatDisabled();
-    
+
     /**
      * Gets an alternative URL that the heart beat should post data to, or <code>null</code> if the default URL is to be used.
      * 
      * @return a URL or <code>null</code>
      */
     public String getHeartBeatUrl();
-    
+
     /**
      * Gets the maximum number of documents.
+     * 
      * @return the maximum number of documents or <code>null</code> if there is no limit
      */
     public Long getMaxDocs();
-    
+
     /**
      * Gets the maximum number of users.
+     * 
      * @return the maximum number of users or <code>null</code> if there is no limit
      */
     public Long getMaxUsers();
-    
+
     /**
      * Get the license mode e.g TEAM or ENTERPRISE or any future license mode.
+     * 
      * @return the license mode.
      */
     public LicenseMode getLicenseMode();
-    
+
     /**
      * Does this license allow clustering?
      * 
      * @return <code>true</code> if the license allows clustering
      */
     public boolean isClusterEnabled();
-    
+
     /**
      * Does this license allow cryptodoc
+     * 
      * @return <code>true</code> if the license allows cryptodoc
      */
     boolean isCryptodocEnabled();
@@ -152,14 +156,16 @@ public interface LicenseDescriptor
 
     /**
      * ATS Transformation Server Expiry Date
+     * 
      * @return the ATS Transformation Server Expiry Date or <code>null</code>
      */
     public String getTransformationServerExpiryDate();
 
     /**
      * Get the extra public parameters in the license.
+     * 
      * @return the parameters
      */
     public Map<String, Object> getExtras();
-    
+
 }

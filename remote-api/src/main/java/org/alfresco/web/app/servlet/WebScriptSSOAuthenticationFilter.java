@@ -26,7 +26,6 @@
 package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
@@ -34,9 +33,6 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.alfresco.repo.management.subsystems.ActivateableBean;
-import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
-import org.alfresco.repo.webdav.auth.BaseAuthenticationFilter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.URLDecoder;
@@ -44,11 +40,12 @@ import org.springframework.extensions.webscripts.Description.RequiredAuthenticat
 import org.springframework.extensions.webscripts.Match;
 import org.springframework.extensions.webscripts.RuntimeContainer;
 
+import org.alfresco.repo.management.subsystems.ActivateableBean;
+import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
+import org.alfresco.repo.webdav.auth.BaseAuthenticationFilter;
+
 /**
- * WebScript aware Authentication Filter Class. Takes into account the authentication setting in the descriptor for the
- * webscript before chaining to the downstream authentication filters. If authentication is not required then chains
- * with the NO_AUTH_REQUIRED request attribute set, which should cause any downstream authentication filter to bypass
- * authentication checks.
+ * WebScript aware Authentication Filter Class. Takes into account the authentication setting in the descriptor for the webscript before chaining to the downstream authentication filters. If authentication is not required then chains with the NO_AUTH_REQUIRED request attribute set, which should cause any downstream authentication filter to bypass authentication checks.
  * 
  * @author Kevin Roast
  * @author dward
@@ -57,17 +54,18 @@ public class WebScriptSSOAuthenticationFilter extends BaseAuthenticationFilter i
         ActivateableBean
 {
     private static final Log logger = LogFactory.getLog(WebScriptSSOAuthenticationFilter.class);
-    private RuntimeContainer container;        
+    private RuntimeContainer container;
     private boolean isActive = true;
 
     /**
-     * @param container the container to set
+     * @param container
+     *            the container to set
      */
     public void setContainer(RuntimeContainer container)
     {
         this.container = container;
     }
-   
+
     /**
      * Activates or deactivates the bean
      * 
@@ -79,24 +77,23 @@ public class WebScriptSSOAuthenticationFilter extends BaseAuthenticationFilter i
         this.isActive = active;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive() */
     public final boolean isActive()
     {
         return isActive;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#doFilter(jakarta.servlet.ServletContext, jakarta.servlet.ServletRequest, jakarta.servlet.ServletResponse, jakarta.servlet.FilterChain)
-     */
+     * 
+     * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#doFilter(jakarta.servlet.ServletContext, jakarta.servlet.ServletRequest, jakarta.servlet.ServletResponse, jakarta.servlet.FilterChain) */
     public void doFilter(ServletContext context, ServletRequest sreq, ServletResponse sresp, FilterChain chain)
             throws IOException, ServletException
     {
         // Get the HTTP request/response
-        HttpServletRequest req = (HttpServletRequest)sreq;
-        
+        HttpServletRequest req = (HttpServletRequest) sreq;
+
         // find a webscript match for the requested URI
         String requestURI = req.getRequestURI();
         String pathInfo = requestURI.substring((req.getContextPath() + req.getServletPath()).length());
@@ -105,7 +102,7 @@ public class WebScriptSSOAuthenticationFilter extends BaseAuthenticationFilter i
         {
             getLogger().trace("Processing request: " + requestURI + " SID:" + (req.getSession(false) != null ? req.getSession().getId() : null));
         }
-        
+
         Match match = container.getRegistry().findWebScript(req.getMethod(), URLDecoder.decode(pathInfo));
         if (match != null && match.getWebScript() != null)
         {
@@ -125,8 +122,8 @@ public class WebScriptSSOAuthenticationFilter extends BaseAuthenticationFilter i
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseAuthenticationFilter#getLogger()
-     */
+     * 
+     * @see org.alfresco.repo.webdav.auth.BaseAuthenticationFilter#getLogger() */
     @Override
     protected Log getLogger()
     {

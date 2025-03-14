@@ -38,12 +38,14 @@ public interface CorrespondingNodeResolver
 {
     ResolvedParentChildPair resolveCorrespondingNode(NodeRef sourceNodeRef, ChildAssociationRef primaryAssoc,
             Path parentPath);
-    
-    static class ResolvedParentChildPair {
+
+    static class ResolvedParentChildPair
+    {
         public NodeRef resolvedParent;
         public NodeRef resolvedChild;
-        
-        public ResolvedParentChildPair(NodeRef parent, NodeRef child) {
+
+        public ResolvedParentChildPair(NodeRef parent, NodeRef child)
+        {
             this.resolvedParent = parent;
             this.resolvedChild = child;
         }

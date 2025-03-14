@@ -29,6 +29,17 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.*;
+import static org.mockito.MockitoAnnotations.openMocks;
+
 import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
 import static org.alfresco.model.ContentModel.ASSOC_MEMBER;
 import static org.alfresco.model.ContentModel.TYPE_CONTENT;
@@ -41,16 +52,6 @@ import static org.alfresco.repo.rule.RuleModel.TYPE_RULE;
 import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
 import static org.alfresco.service.cmr.security.AccessStatus.DENIED;
 import static org.alfresco.service.namespace.RegexQNamePattern.MATCH_ALL;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.nullable;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -60,6 +61,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import org.apache.commons.collections.MapUtils;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 
 import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.cache.SimpleCache;
@@ -74,11 +81,6 @@ import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleServiceException;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.collections.MapUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 
 /** Unit tests for {@link RuleServiceImpl}. */
 public class RuleServiceImplUnitTest
@@ -304,6 +306,7 @@ public class RuleServiceImplUnitTest
 
     /**
      * Check that a rule set is associated with the folder in the following case:
+     * 
      * <pre>
      *     parent --[link]-> rule set <-[owned]-- owningFolder
      *     +- child
@@ -505,6 +508,7 @@ public class RuleServiceImplUnitTest
 
     /**
      * Check that hierarchy of nodes is traversed correctly. Parent-child associations are created in alphabetical order.
+     * 
      * <pre>
      *     A
      *    /|\
@@ -530,6 +534,7 @@ public class RuleServiceImplUnitTest
 
     /**
      * Check that hierarchy of nodes is traversed correctly. Parent-child associations are created in reverse alphabetical order.
+     * 
      * <pre>
      *     A
      *    /|\
@@ -556,7 +561,8 @@ public class RuleServiceImplUnitTest
     /**
      * Create a mock hierarchy of nodes using the supplied parent child associations.
      *
-     * @param parentChildAssociations A list of strings of the form "Parent,Child". Associations will be created in this order.
+     * @param parentChildAssociations
+     *            A list of strings of the form "Parent,Child". Associations will be created in this order.
      * @return A map from the node name to the new NodeRef object.
      */
     private Map<String, NodeRef> createParentChildHierarchy(String... parentChildAssociations)
@@ -574,12 +580,12 @@ public class RuleServiceImplUnitTest
         nodeNames.forEach(nodeName -> {
             NodeRef nodeRef = nodeRefMap.get(nodeName);
             List<ChildAssociationRef> parentAssocs = List.of(parentChildAssociations)
-                                                         .stream()
-                                                         .filter(assoc -> assoc.endsWith(nodeName))
-                                                         .map(assoc -> assoc.split(",")[0])
-                                                         .map(nodeRefMap::get)
-                                                         .map(parentRef -> new ChildAssociationRef(ASSOC_CONTAINS, parentRef, TYPE_FOLDER, nodeRef))
-                                                         .collect(toList());
+                    .stream()
+                    .filter(assoc -> assoc.endsWith(nodeName))
+                    .map(assoc -> assoc.split(",")[0])
+                    .map(nodeRefMap::get)
+                    .map(parentRef -> new ChildAssociationRef(ASSOC_CONTAINS, parentRef, TYPE_FOLDER, nodeRef))
+                    .collect(toList());
             given(runtimeNodeService.getParentAssocs(nodeRef)).willReturn(parentAssocs);
         });
         return nodeRefMap;
@@ -679,6 +685,7 @@ public class RuleServiceImplUnitTest
      * Check that getFoldersInheritingRuleSet does not include folders that the user doesn't have access to.
      * <p>
      * This test uses a chain of three folders:
+     * 
      * <pre>
      *     grandparent - owns the rule set
      *     parent - user does not have read access

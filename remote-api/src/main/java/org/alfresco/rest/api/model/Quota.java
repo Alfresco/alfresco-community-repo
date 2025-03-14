@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.framework.resource.UniqueId;
 
 /**
@@ -36,58 +37,57 @@ import org.alfresco.rest.framework.resource.UniqueId;
  */
 public class Quota
 {
-	private String name;
-	private Long limit;
-	private Long usage;
-	
-	public Quota()
-	{
-	}
+    private String name;
+    private Long limit;
+    private Long usage;
 
-	public Quota(String name, Long limit, Long usage)
-	{
-		this.name = name;
-		this.limit = limit;
-		this.usage = usage;
-	}
+    public Quota()
+    {}
 
-	@JsonProperty("id")
-	@UniqueId
-	public String getName()
-	{
-		return name;
-	}
-	
-	public void setName(String name)
-	{
-		this.name = name;
-	}
+    public Quota(String name, Long limit, Long usage)
+    {
+        this.name = name;
+        this.limit = limit;
+        this.usage = usage;
+    }
 
-	public Long getLimit()
-	{
-		return limit;
-	}
+    @JsonProperty("id")
+    @UniqueId
+    public String getName()
+    {
+        return name;
+    }
 
-	public void setLimit(Long limit)
-	{
-		this.limit = limit;
-	}
+    public void setName(String name)
+    {
+        this.name = name;
+    }
 
-	public Long getUsage()
-	{
-		return usage;
-	}
+    public Long getLimit()
+    {
+        return limit;
+    }
 
-	public void setUsage(Long usage)
-	{
-		this.usage = usage;
-	}
+    public void setLimit(Long limit)
+    {
+        this.limit = limit;
+    }
 
-	@Override
-	public String toString()
-	{
-		return "Quota [name=" + name + ", limit=" + limit + ", usage=" + usage
-				+ "]";
-	}
+    public Long getUsage()
+    {
+        return usage;
+    }
+
+    public void setUsage(Long usage)
+    {
+        this.usage = usage;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Quota [name=" + name + ", limit=" + limit + ", usage=" + usage
+                + "]";
+    }
 
 }

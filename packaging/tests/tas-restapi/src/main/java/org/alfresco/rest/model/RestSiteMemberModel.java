@@ -28,11 +28,11 @@ package org.alfresco.rest.model;
 import static org.alfresco.utility.report.log.Step.STEP;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.testng.Assert;
 
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.TestModel;
-import org.testng.Assert;
 
 public class RestSiteMemberModel extends TestModel implements IRestModel<RestSiteMemberModel>
 {
@@ -91,10 +91,11 @@ public class RestSiteMemberModel extends TestModel implements IRestModel<RestSit
         this.person = person;
     }
 
-    public RestSiteMemberModel assertSiteMemberHasRole(UserRole role) {
+    public RestSiteMemberModel assertSiteMemberHasRole(UserRole role)
+    {
         STEP(String.format("REST API: Assert that site member role is '%s'", role));
         Assert.assertEquals(getRole(), role, "Site member role is not as expected.");
-        
+
         return this;
     }
 }

@@ -29,26 +29,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.nullable;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.SocketException;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.repository.ContentIOException;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,9 +49,16 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ContentIOException;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.NodeRef;
+
 /**
  * Unit tests for the {@link GetMethod} class.
- *  
+ * 
  * @author Matt Ward
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -75,7 +74,7 @@ public class GetMethodTest
     private @Mock Log logger;
     private @Mock ServiceRegistry serviceRegistry;
     private @Mock ContentService contentService;
-    
+
     @Before
     public void setUp() throws Exception
     {
@@ -84,34 +83,33 @@ public class GetMethodTest
         rootNode = new NodeRef("workspace://SpacesStore/node-id");
         getMethod.setDetails(req, resp, davHelper, rootNode);
         getMethod.logger = logger;
-        
+
         when(reader.getMimetype()).thenReturn("text/plain");
         when(logger.isErrorEnabled()).thenReturn(true);
         when(logger.isDebugEnabled()).thenReturn(true);
     }
 
-    
     @Test
     public void readByteRangeContentDoesNotLogSocketExceptions() throws IOException, WebDAVServerException
     {
         // getContentService() during range request
         when(davHelper.getServiceRegistry()).thenReturn(serviceRegistry);
         when(serviceRegistry.getContentService()).thenReturn(contentService);
-        
+
         req.addHeader("Range", "bytes=500-1500");
         getMethod.parseRequestHeaders();
         SocketException sockEx = new SocketException("Client aborted connection");
         IOException ioEx = new IOException("Wrapping the socket exception.", sockEx);
-        
+
         // Somewhere along the line a client disconnect will happen (IOException)
         when(resp.getOutputStream()).thenThrow(ioEx);
-        
+
         try
         {
             getMethod.readContent(fileInfo, reader);
             fail("Exception should have been thrown.");
         }
-        catch(WebDAVServerException e)
+        catch (WebDAVServerException e)
         {
             verify(logger, never()).error(anyString(), same(ioEx));
             verify(logger).debug(anyString(), same(ioEx));
@@ -119,28 +117,28 @@ public class GetMethodTest
             assertNull(e.getCause()); // Avoids logging stacking trace
         }
     }
-    
+
     @Test
     public void readByteRangeContentLogsLegitimateExceptions() throws IOException, WebDAVServerException
     {
         // getContentService() during range request
         when(davHelper.getServiceRegistry()).thenReturn(serviceRegistry);
         when(serviceRegistry.getContentService()).thenReturn(contentService);
-        
+
         req.addHeader("Range", "bytes=500-1500");
         getMethod.parseRequestHeaders();
         RuntimeException rEx = new RuntimeException("Some sort of proper error");
         IOException ioEx = new IOException("Wrapping the exception.", rEx);
-        
+
         // Somewhere along the line a client disconnect will happen (IOException)
         when(resp.getOutputStream()).thenThrow(ioEx);
-        
+
         try
         {
             getMethod.readContent(fileInfo, reader);
             fail("Exception should have been thrown.");
         }
-        catch(WebDAVServerException e)
+        catch (WebDAVServerException e)
         {
             verify(logger).error(anyString(), same(ioEx));
             verify(logger, never()).debug(anyString(), same(ioEx));
@@ -148,22 +146,22 @@ public class GetMethodTest
             assertNull(e.getCause()); // Avoids logging stacking trace elsewhere
         }
     }
-    
+
     @Test
     public void readContentDoesNotLogSocketExceptions() throws IOException, WebDAVServerException
     {
         SocketException sockEx = new SocketException("Client aborted connection");
         ContentIOException contentEx = new ContentIOException("Wrapping the socket exception.", sockEx);
-        
+
         // Reader.getContent() will throw a ContentIOException when a client aborts.
         doThrow(contentEx).when(reader).getContent(nullable(OutputStream.class));
-        
+
         try
         {
             getMethod.readContent(fileInfo, reader);
             fail("Exception should have been thrown.");
         }
-        catch(WebDAVServerException e)
+        catch (WebDAVServerException e)
         {
             verify(logger, never()).error(anyString(), same(contentEx));
             // Error will only be seen when debugging.
@@ -172,21 +170,21 @@ public class GetMethodTest
             assertNull(e.getCause()); // Avoids logging stacking trace
         }
     }
-    
+
     @Test
     public void readContentLogsLegitimateExceptions() throws IOException, WebDAVServerException
     {
         RuntimeException rEx = new RuntimeException("Some sort of proper error");
         ContentIOException contentEx = new ContentIOException("Wrapping the exception.", rEx);
-        
+
         doThrow(contentEx).when(reader).getContent(nullable(OutputStream.class));
-        
+
         try
         {
             getMethod.readContent(fileInfo, reader);
             fail("Exception should have been thrown.");
         }
-        catch(WebDAVServerException e)
+        catch (WebDAVServerException e)
         {
             verify(logger).error(anyString(), same(contentEx));
             verify(logger, never()).debug(anyString(), same(contentEx));
@@ -215,7 +213,7 @@ public class GetMethodTest
             getMethod.readContent(fileInfo, reader);
             fail("Exception should have been thrown.");
         }
-        catch(WebDAVServerException e)
+        catch (WebDAVServerException e)
         {
             verify(logger, never()).error(anyString(), same(ioEx));
             verify(logger).debug(anyString(), same(ioEx));
@@ -238,7 +236,7 @@ public class GetMethodTest
             getMethod.readContent(fileInfo, reader);
             fail("Exception should have been thrown.");
         }
-        catch(WebDAVServerException e)
+        catch (WebDAVServerException e)
         {
             verify(logger, never()).error(anyString(), same(contentEx));
             // Error will only be seen when debugging.

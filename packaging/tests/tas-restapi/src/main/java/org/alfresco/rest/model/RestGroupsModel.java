@@ -79,19 +79,23 @@ public class RestGroupsModel extends TestModel implements IRestModel<RestGroupsM
         this.displayName = displayName;
     }
 
-    public String getDescription() {
+    public String getDescription()
+    {
         return description;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(String description)
+    {
         this.description = description;
     }
 
-    public Boolean getHasSubgroups() {
+    public Boolean getHasSubgroups()
+    {
         return hasSubgroups;
     }
 
-    public void setHasSubgroups(Boolean hasSubgroups) {
+    public void setHasSubgroups(Boolean hasSubgroups)
+    {
         this.hasSubgroups = hasSubgroups;
     }
 

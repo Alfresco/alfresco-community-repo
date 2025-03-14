@@ -37,79 +37,78 @@ public class SearchLanguageConversionTest extends TestCase
     /**
      * A string with a whole lod of badness to stress test with
      */
-    private static final String BAD_STRING =
-            "\\ | ! \" £ " +
+    private static final String BAD_STRING = "\\ | ! \" £ " +
             "$ % ^ & * ( " +
             ") _ { } [ ] " +
             "@ # ~ ' : ; " +
             ", . < > + ? " +
             "/ \\\\ \\* \\? \\_";
-    
+
     public void testEscapeXPathLike()
     {
         String good = SearchLanguageConversion.escapeForXPathLike(BAD_STRING);
         assertEquals("Escaping for xpath failed",
                 "\\\\ | ! \" £ " +
-                "$ \\% ^ & * ( " +
-                ") \\_ { } \\[ \\] " +
-                "@ # ~ ' : ; " +
-                ", . < > + ? " +
-                "/ \\\\\\\\ \\\\* \\\\? \\\\\\_",
+                        "$ \\% ^ & * ( " +
+                        ") \\_ { } \\[ \\] " +
+                        "@ # ~ ' : ; " +
+                        ", . < > + ? " +
+                        "/ \\\\\\\\ \\\\* \\\\? \\\\\\_",
                 good);
     }
-    
+
     public void testEscapeRegex()
     {
         String good = SearchLanguageConversion.escapeForRegex(BAD_STRING);
         assertEquals("Escaping for regex failed",
                 "\\\\ \\| ! \" £ " +
-                "\\$ % \\^ & \\* \\( " +
-                "\\) _ \\{ \\} \\[ \\] " +
-                "@ # ~ ' : ; " +
-                ", \\. < > \\+ \\? " +
-                "/ \\\\\\\\ \\\\\\* \\\\\\? \\\\_",
+                        "\\$ % \\^ & \\* \\( " +
+                        "\\) _ \\{ \\} \\[ \\] " +
+                        "@ # ~ ' : ; " +
+                        ", \\. < > \\+ \\? " +
+                        "/ \\\\\\\\ \\\\\\* \\\\\\? \\\\_",
                 good);
     }
-    
+
     public void testEscapeLucene()
     {
         String good = SearchLanguageConversion.escapeForLucene(BAD_STRING);
         assertEquals("Escaping for Lucene failed",
                 "\\\\ \\| \\! \\\" £ " +
-                "$ % \\^ \\& \\* \\( " +
-                "\\) _ \\{ \\} \\[ \\] " +
-                "@ # \\~ ' \\: ; " +
-                ", . < > \\+ \\? " +
-                "\\/ \\\\\\\\ \\\\\\* \\\\\\? \\\\_",
+                        "$ % \\^ \\& \\* \\( " +
+                        "\\) _ \\{ \\} \\[ \\] " +
+                        "@ # \\~ ' \\: ; " +
+                        ", . < > \\+ \\? " +
+                        "\\/ \\\\\\\\ \\\\\\* \\\\\\? \\\\_",
                 good);
     }
-    
+
     public void testConvertXPathLikeToRegex()
     {
         String good = SearchLanguageConversion.convertXPathLikeToRegex(BAD_STRING);
         assertEquals("XPath like to regex failed",
                 "(?s) \\| ! \" £ " +
-                "\\$ .* \\^ & \\* \\( " +
-                "\\) . \\{ \\} \\[ \\] " +
-                "@ # ~ ' : ; " +
-                ", \\. < > \\+ \\? " +
-                "/ \\\\ \\* \\? _",
+                        "\\$ .* \\^ & \\* \\( " +
+                        "\\) . \\{ \\} \\[ \\] " +
+                        "@ # ~ ' : ; " +
+                        ", \\. < > \\+ \\? " +
+                        "/ \\\\ \\* \\? _",
                 good);
     }
-    
+
     public void testConvertXPathLikeToLucene()
     {
         String good = SearchLanguageConversion.convertXPathLikeToLucene(BAD_STRING);
         assertEquals("XPath like to Lucene failed",
                 " \\| \\! \\\" £ " +
-                "$ * \\^ \\& \\* \\( " +
-                "\\) ? \\{ \\} \\[ \\] " +
-                "@ # \\~ ' \\: ; " +
-                ", . < > \\+ \\? " +
-                "\\/ \\\\ \\* \\? _",
+                        "$ * \\^ \\& \\* \\( " +
+                        "\\) ? \\{ \\} \\[ \\] " +
+                        "@ # \\~ ' \\: ; " +
+                        ", . < > \\+ \\? " +
+                        "\\/ \\\\ \\* \\? _",
                 good);
     }
-    
+
     public void testSqlToLucene()
     {
         String sqlLike = "AB%_*?\\%\\_";
@@ -117,7 +116,7 @@ public class SearchLanguageConversionTest extends TestCase
         String converted = SearchLanguageConversion.convert(SearchLanguageConversion.DEF_SQL_LIKE, SearchLanguageConversion.DEF_LUCENE, sqlLike);
         assertEquals(lucene, converted);
     }
-    
+
     public void testLuceneToRegexp()
     {
         String lucene = "AB*?\\*\\?.*.";
@@ -125,7 +124,7 @@ public class SearchLanguageConversionTest extends TestCase
         String converted = SearchLanguageConversion.convert(SearchLanguageConversion.DEF_LUCENE, SearchLanguageConversion.DEF_REGEX, lucene);
         assertEquals(regexp, converted);
     }
-    
+
     public void testLuceneToSql()
     {
         String lucene = "%_";
@@ -133,7 +132,7 @@ public class SearchLanguageConversionTest extends TestCase
         String converted = SearchLanguageConversion.convert(SearchLanguageConversion.DEF_LUCENE, SearchLanguageConversion.DEF_SQL_LIKE, lucene);
         assertEquals(sql, converted);
     }
-    
+
     public void testTokenizeString()
     {
         String[] res = SearchLanguageConversion.tokenizeString("");

@@ -30,5 +30,5 @@ package org.alfresco.service.cmr.repository;
  */
 public enum FileTypeImageSize
 {
-   Small, Medium, Large;
+    Small, Medium, Large;
 }

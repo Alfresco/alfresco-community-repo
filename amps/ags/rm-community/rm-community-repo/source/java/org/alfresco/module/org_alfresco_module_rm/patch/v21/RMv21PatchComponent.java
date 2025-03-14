@@ -29,10 +29,11 @@ package org.alfresco.module.org_alfresco_module_rm.patch.v21;
 
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.patch.compatibility.ModulePatchComponent;
-import org.alfresco.repo.module.ModuleComponent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import org.alfresco.module.org_alfresco_module_rm.patch.compatibility.ModulePatchComponent;
+import org.alfresco.repo.module.ModuleComponent;
 
 /**
  * Convenience class to ensure all V2.0 patches are executed before v2.1
@@ -42,7 +43,7 @@ import org.springframework.context.ApplicationContextAware;
  */
 @SuppressWarnings("deprecation")
 public abstract class RMv21PatchComponent extends ModulePatchComponent
-                                          implements ApplicationContextAware
+        implements ApplicationContextAware
 {
     /** application context */
     private ApplicationContext applicationContext;
@@ -73,12 +74,14 @@ public abstract class RMv21PatchComponent extends ModulePatchComponent
     }
 
     /**
-     * @param depends   list of module dependencies
-     * @param beanName  bean name
+     * @param depends
+     *            list of module dependencies
+     * @param beanName
+     *            bean name
      */
     private void addDependency(List<ModuleComponent> depends, String beanName)
     {
-        ModuleComponent moduleComponent = (ModuleComponent)applicationContext.getBean(beanName);
+        ModuleComponent moduleComponent = (ModuleComponent) applicationContext.getBean(beanName);
         depends.add(moduleComponent);
     }
 }

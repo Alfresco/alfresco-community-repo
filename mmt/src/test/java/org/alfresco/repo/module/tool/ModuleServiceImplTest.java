@@ -32,11 +32,10 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.alfresco.repo.admin.registry.RegistryKey;
-import org.alfresco.repo.admin.registry.RegistryService;
-import org.alfresco.repo.module.ModuleServiceImpl;
-import org.alfresco.repo.module.ModuleVersionNumber;
-import org.alfresco.service.cmr.module.ModuleDetails;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -45,12 +44,15 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
+import org.alfresco.repo.admin.registry.RegistryKey;
+import org.alfresco.repo.admin.registry.RegistryService;
+import org.alfresco.repo.module.ModuleServiceImpl;
+import org.alfresco.repo.module.ModuleVersionNumber;
+import org.alfresco.service.cmr.module.ModuleDetails;
 
 /**
  * Tests some of ModuleServiceImpl that is not covered by other tests
+ * 
  * @author Gethin James
  */
 public class ModuleServiceImplTest
@@ -66,8 +68,7 @@ public class ModuleServiceImplTest
         RegistryService reg = mock(RegistryService.class);
         ApplicationContext applicationContext = mock(ApplicationContext.class);
 
-        when(reg.getProperty((RegistryKey) any())).thenAnswer(new Answer<Serializable>()
-        {
+        when(reg.getProperty((RegistryKey) any())).thenAnswer(new Answer<Serializable>() {
             public Serializable answer(InvocationOnMock invocation) throws Throwable
             {
                 RegistryKey key = (RegistryKey) invocation.getArguments()[0];
@@ -75,7 +76,7 @@ public class ModuleServiceImplTest
             }
         });
         doReturn(Arrays.asList("fee", "alfresco-simple-module", "fo")).when(reg).getChildElements((RegistryKey) any());
-        doReturn(new Resource[] {simpleMod}).when(applicationContext).getResources(anyString());
+        doReturn(new Resource[]{simpleMod}).when(applicationContext).getResources(anyString());
         moduleService.setRegistryService(reg);
         moduleService.setApplicationContext(applicationContext);
     }
@@ -83,7 +84,7 @@ public class ModuleServiceImplTest
     @Test(expected = UnsupportedOperationException.class)
     public void testSetApplyToTenants() throws Exception
     {
-       moduleService.setApplyToTenants(false);
+        moduleService.setApplyToTenants(false);
     }
 
     @Test
@@ -91,7 +92,7 @@ public class ModuleServiceImplTest
     {
         List<ModuleDetails> miss = moduleService.getMissingModules();
         assertNotNull(miss);
-        //There are 3 modules. 2 of which are missing. "alfresco-simple-module" should be found.
+        // There are 3 modules. 2 of which are missing. "alfresco-simple-module" should be found.
         assertEquals(2, miss.size());
     }
 }

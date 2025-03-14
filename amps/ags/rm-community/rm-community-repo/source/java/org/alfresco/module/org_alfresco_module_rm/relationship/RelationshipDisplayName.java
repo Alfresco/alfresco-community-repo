@@ -47,12 +47,12 @@ public class RelationshipDisplayName
     private String targetText;
 
     /**
-     * Constructor for creating the relationship display name.
-     * In case of a bidirectional relationship the source
-     * text and target text will be the same.
+     * Constructor for creating the relationship display name. In case of a bidirectional relationship the source text and target text will be the same.
      *
-     * @param sourceText The source text of the relationship
-     * @param targetText The target text of the relationship
+     * @param sourceText
+     *            The source text of the relationship
+     * @param targetText
+     *            The target text of the relationship
      */
     public RelationshipDisplayName(String sourceText, String targetText)
     {
@@ -76,7 +76,8 @@ public class RelationshipDisplayName
     /**
      * Sets the source text of the relationship
      *
-     * @param sourceText The source text of the relationship
+     * @param sourceText
+     *            The source text of the relationship
      */
     private void setSourceText(String sourceText)
     {
@@ -96,7 +97,8 @@ public class RelationshipDisplayName
     /**
      * Sets the target text of the relationship
      *
-     * @param targetText The target text of the relationship
+     * @param targetText
+     *            The target text of the relationship
      */
     private void setTargetText(String targetText)
     {
@@ -111,9 +113,9 @@ public class RelationshipDisplayName
     {
         StringBuilder sb = new StringBuilder();
         sb.append("(")
-          .append("source=").append(sourceText)
-          .append(", target=").append(targetText)
-          .append(")");
+                .append("source=").append(sourceText)
+                .append(", target=").append(targetText)
+                .append(")");
         return sb.toString();
     }
 }

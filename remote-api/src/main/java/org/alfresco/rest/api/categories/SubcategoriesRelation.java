@@ -26,8 +26,8 @@
 
 package org.alfresco.rest.api.categories;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.rest.api.Categories;
 import org.alfresco.rest.api.model.Category;
@@ -38,9 +38,9 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
-@RelationshipResource(name = "subcategories",  entityResource = CategoriesEntityResource.class, title = "Subcategories")
+@RelationshipResource(name = "subcategories", entityResource = CategoriesEntityResource.class, title = "Subcategories")
 public class SubcategoriesRelation implements RelationshipResourceAction.Create<Category>,
-                                              RelationshipResourceAction.Read<Category>
+        RelationshipResourceAction.Read<Category>
 {
 
     private final Categories categories;

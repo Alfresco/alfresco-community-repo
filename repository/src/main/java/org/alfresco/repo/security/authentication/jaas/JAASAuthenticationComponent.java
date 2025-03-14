@@ -26,7 +26,6 @@
 package org.alfresco.repo.security.authentication.jaas;
 
 import java.io.IOException;
-
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.LanguageCallback;
@@ -38,24 +37,22 @@ import javax.security.auth.login.LoginException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 
 /**
  * JAAS based authentication
  * 
  * The user name and password are picked up from login.
  * 
- * The other configurable parameters are:
- * realm - the authentication realm if required,
- * and the entry name to use from the login context.
+ * The other configurable parameters are: realm - the authentication realm if required, and the entry name to use from the login context.
  *
  * You will need to be familiar with the JAAS authentication process to set this up.
  * 
- * In summary you will need to configure java.security (in the lib/security directory of the jre you are using)
- * to find a jaas configuration.
+ * In summary you will need to configure java.security (in the lib/security directory of the jre you are using) to find a jaas configuration.
  * 
  * This entry could be used if you want to put the login configuration in the same place (in the lib/security directory of the jre you are using)
  * 
@@ -92,7 +89,7 @@ public class JAASAuthenticationComponent extends AbstractAuthenticationComponent
      * A key into the login config that defines the authentication mechamisms required.
      */
     private String jaasConfigEntryName = "Alfresco";
-    
+
     /**
      * A default realm
      */
@@ -104,13 +101,12 @@ public class JAASAuthenticationComponent extends AbstractAuthenticationComponent
     }
 
     // Springification
-    
+
     public void setJaasConfigEntryName(String jaasConfigEntryName)
     {
         this.jaasConfigEntryName = jaasConfigEntryName;
     }
-    
-   
+
     public void setRealm(String realm)
     {
         this.realm = realm;

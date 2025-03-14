@@ -49,10 +49,10 @@ public class RuleSettingsImpl implements RuleSettings
         NodeRef folderNode = validator.validateFolderNode(folderId, false);
         switch (ruleSettingKey)
         {
-            case IS_INHERITANCE_ENABLED_KEY:
-                return getIsInheritanceEnabled(folderNode);
-            default:
-                throw new NotFoundException("Unrecognised rule setting key " + ruleSettingKey);
+        case IS_INHERITANCE_ENABLED_KEY:
+            return getIsInheritanceEnabled(folderNode);
+        default:
+            throw new NotFoundException("Unrecognised rule setting key " + ruleSettingKey);
         }
     }
 
@@ -69,10 +69,10 @@ public class RuleSettingsImpl implements RuleSettings
 
         switch (ruleSetting.getKey())
         {
-            case IS_INHERITANCE_ENABLED_KEY:
-                return updateIsInheritanceEnabled(folderNode, ruleSetting.getValue());
-            default:
-                throw new NotFoundException("Unrecognised rule setting key " + ruleSetting.getKey());
+        case IS_INHERITANCE_ENABLED_KEY:
+            return updateIsInheritanceEnabled(folderNode, ruleSetting.getValue());
+        default:
+            throw new NotFoundException("Unrecognised rule setting key " + ruleSetting.getKey());
         }
     }
 

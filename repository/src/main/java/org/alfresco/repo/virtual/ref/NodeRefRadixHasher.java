@@ -28,15 +28,14 @@ package org.alfresco.repo.virtual.ref;
 
 import java.math.BigInteger;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.Pair;
-import org.apache.commons.lang3.StringUtils;
 
 /**
- * Creates string-pair hashes of {@link NodeRef}s where the first string is a
- * stored hash combination for {@link NodeRef} store elements (protocol and id)
- * and the second is a radix 36 encoded {@link NodeRef} id.
+ * Creates string-pair hashes of {@link NodeRef}s where the first string is a stored hash combination for {@link NodeRef} store elements (protocol and id) and the second is a radix 36 encoded {@link NodeRef} id.
  */
 public class NodeRefRadixHasher implements NodeRefHasher
 {
@@ -72,14 +71,14 @@ public class NodeRefRadixHasher implements NodeRefHasher
         }
 
         String bigInt16String = uuid.replaceAll("-",
-                                                "");
+                "");
         if (bigInt16String.length() != 32)
         {
             throw new RuntimeException("Invalid noderf id format " + uuid);
         }
 
         BigInteger bigIntId = new BigInteger(bigInt16String,
-                                             16);
+                16);
         StoreRef storeRef = nodeRef.getStoreRef();
         String storeProtocolHash = storeProtocolStore.hash(storeRef.getProtocol());
         String storeIdHash = storeIdStore.hash(storeRef.getIdentifier());
@@ -89,7 +88,7 @@ public class NodeRefRadixHasher implements NodeRefHasher
         }
         String storeHash = storeProtocolHash + storeIdHash;
         return new Pair<String, String>(storeHash,
-                                        bigIntId.toString(radix));
+                bigIntId.toString(radix));
 
     }
 
@@ -98,9 +97,9 @@ public class NodeRefRadixHasher implements NodeRefHasher
     {
         String storeHash = hash.getFirst();
         String storeProtocolHash = storeHash.substring(0,
-                                                       1);
+                1);
         String storeIdHash = storeHash.substring(1,
-                                                 2);
+                2);
 
         String storeProtocol = storeProtocolStore.lookup(storeProtocolHash);
         String storeId = storeIdStore.lookup(storeIdHash);
@@ -109,26 +108,25 @@ public class NodeRefRadixHasher implements NodeRefHasher
             throw new RuntimeException("Lookup found no protocol or id for " + storeHash);
         }
         BigInteger nodeId = new BigInteger(hash.getSecond(),
-                                           radix);
+                radix);
         String nodeIdHexa = nodeId.toString(16);
         nodeIdHexa = StringUtils.leftPad(nodeIdHexa,
-                                         32,
-                                         "0");
+                32,
+                "0");
         int leadZeros = 32 - nodeIdHexa.length();
         if (leadZeros > 0)
-        {
-        }
+        {}
         String groups[] = new String[5];
         groups[0] = nodeIdHexa.substring(0,
-                                         8);
+                8);
         groups[1] = nodeIdHexa.substring(8,
-                                         12);
+                12);
         groups[2] = nodeIdHexa.substring(12,
-                                         16);
+                16);
         groups[3] = nodeIdHexa.substring(16,
-                                         20);
+                20);
         groups[4] = nodeIdHexa.substring(20,
-                                         32);
+                32);
         StringBuilder idBuilder = new StringBuilder(groups[0]);
         for (int i = 1; i < groups.length; i++)
         {
@@ -136,7 +134,7 @@ public class NodeRefRadixHasher implements NodeRefHasher
             idBuilder.append(groups[i]);
         }
         return new NodeRef(storeProtocol,
-                           storeId,
-                           idBuilder.toString());
+                storeId,
+                idBuilder.toString());
     }
 }

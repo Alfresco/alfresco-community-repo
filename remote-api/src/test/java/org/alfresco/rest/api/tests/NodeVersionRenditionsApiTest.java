@@ -25,12 +25,18 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.junit.Assert.*;
+
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
+
+import java.io.File;
+import java.util.*;
+
+import org.junit.Test;
+
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.web.scripts.RepositoryContainer;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
-import org.alfresco.rest.api.DirectAccessUrlHelper;
-import org.alfresco.rest.api.impl.directurl.RestApiDirectUrlConfig;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
@@ -43,17 +49,7 @@ import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
-
-import static org.junit.Assert.*;
-
 import org.alfresco.service.cmr.site.SiteVisibility;
-import org.junit.After;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import java.io.File;
-import java.util.*;
 
 /**
  * V1 REST API tests for Node Version Renditions
@@ -66,19 +62,21 @@ public class NodeVersionRenditionsApiTest extends AbstractSingleNetworkSiteTest
 {
     private final static long DELAY_IN_MS = 500;
 
-    private static final List<String> DEFAULT_RENDITIONS_FOR_TXT =
-            new ArrayList<>(List.of("avatar", "avatar32", "doclib", "imgpreview", "medium", "pdf"));
+    private static final List<String> DEFAULT_RENDITIONS_FOR_TXT = new ArrayList<>(List.of("avatar", "avatar32", "doclib", "imgpreview", "medium", "pdf"));
 
     /**
      * Upload some versions and then create and retrieve version renditions
      *
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
+     * 
      * @literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>/renditions}
      *
-     * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>/renditions}
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>/renditions/<renditionId>}
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>/renditions/<renditionId>/content}
+     *          <p>
+     *          GET:
+     *          </p>
+     *          {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>/renditions} {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>/renditions/<renditionId>} {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>/renditions/<renditionId>/content}
      *
      * @throws Exception
      */
@@ -86,7 +84,7 @@ public class NodeVersionRenditionsApiTest extends AbstractSingleNetworkSiteTest
     public void testUpFileVersionRenditions() throws Exception
     {
         setRequestContext(user1);
-        
+
         String myFolderNodeId = getMyNodeId();
 
         // create folder
@@ -116,7 +114,7 @@ public class NodeVersionRenditionsApiTest extends AbstractSingleNetworkSiteTest
 
             cnt = 2;
             versionLabel = updateFileVersions(user1, docId, cnt, textContentSuffix, verCnt, majorVersion, versionLabel);
-            verCnt = verCnt+cnt;
+            verCnt = verCnt + cnt;
 
             assertEquals("3.0", versionLabel);
             assertEquals(3, verCnt);
@@ -182,7 +180,7 @@ public class NodeVersionRenditionsApiTest extends AbstractSingleNetworkSiteTest
 
             cnt = 1;
             versionLabel = updateFileVersions(user1, docId, cnt, textContentSuffix, verCnt, majorVersion, versionLabel);
-            verCnt = verCnt+cnt;
+            verCnt = verCnt + cnt;
 
             assertEquals("0.2", versionLabel);
             assertEquals(2, verCnt);
@@ -247,7 +245,6 @@ public class NodeVersionRenditionsApiTest extends AbstractSingleNetworkSiteTest
             getAll(getNodeVersionRenditionsUrl(docId, "1.0"), null, 200);
             checkCreateAndGetVersionRendition(docId, "1.0", "doclib");
 
-
             // -ve: rendition already exits (409)
             renditionRequest.setId("doclib");
             post(getNodeVersionRenditionsUrl(docId, "1.0"), toJsonAsString(renditionRequest), 409);
@@ -259,7 +256,6 @@ public class NodeVersionRenditionsApiTest extends AbstractSingleNetworkSiteTest
             renditionRequest.setId("dummy");
             post(getNodeVersionRenditionsUrl("dummy", "1.0"), toJsonAsString(renditionRequest), 404);
 
-
             // -ve: no such version (404)
             getAll(getNodeVersionRenditionsUrl(docId, "4.0"), null, 404);
             getSingle(getNodeVersionRenditionsUrl(docId, "4.0"), ("doclib"), null, 404);
@@ -267,7 +263,6 @@ public class NodeVersionRenditionsApiTest extends AbstractSingleNetworkSiteTest
 
             renditionRequest.setId("doclib");
             post(getNodeVersionRenditionsUrl(docId, "4.0"), toJsonAsString(renditionRequest), 404);
-
 
             // -ve: no such file (404)
             getAll(getNodeVersionRenditionsUrl("dummy", "1.0"), null, 404);
@@ -319,8 +314,8 @@ public class NodeVersionRenditionsApiTest extends AbstractSingleNetworkSiteTest
         String fileName = "quick.pdf";
         File file = getResourceFile(fileName);
         MultiPartRequest reqBody = MultiPartBuilder.create()
-                                                   .setFileData(new FileData(fileName, file))
-                                                   .build();
+                .setFileData(new FileData(fileName, file))
+                .build();
         Map<String, String> params = Collections.singletonMap("include", "properties");
 
         // Upload quick.pdf file into 'folder' - do not include request to create 'doclib' thumbnail
@@ -363,9 +358,9 @@ public class NodeVersionRenditionsApiTest extends AbstractSingleNetworkSiteTest
         fileName = "quick-2.pdf";
         file = getResourceFile(fileName);
         reqBody = MultiPartBuilder.create()
-                                  .setFileData(new FileData("quick.pdf", file))
-                                  .setOverwrite(true)
-                                  .build();
+                .setFileData(new FileData("quick.pdf", file))
+                .setOverwrite(true)
+                .build();
 
         response = post(getNodeChildrenUrl(folder_Id), reqBody.getBody(), null, null, "alfresco", reqBody.getContentType(), 201);
         Document document2 = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
@@ -391,7 +386,7 @@ public class NodeVersionRenditionsApiTest extends AbstractSingleNetworkSiteTest
     }
 
     @Test
-    public void testRequestVersionRenditionContentDirectUrlErrorResponses () throws Exception
+    public void testRequestVersionRenditionContentDirectUrlErrorResponses() throws Exception
     {
         setRequestContext(user1);
 
@@ -420,7 +415,7 @@ public class NodeVersionRenditionsApiTest extends AbstractSingleNetworkSiteTest
     private void checkCreateAndGetVersionRendition(String docId, String versionId, String renditionId) throws Exception
     {
         String getRenditionsUrl;
-        if ((versionId != null) && (! versionId.isEmpty()))
+        if ((versionId != null) && (!versionId.isEmpty()))
         {
             getRenditionsUrl = getNodeVersionRenditionsUrl(docId, versionId);
         }
@@ -450,12 +445,12 @@ public class NodeVersionRenditionsApiTest extends AbstractSingleNetworkSiteTest
         // -ve test: try to download non-existent rendition (and no placeholder)
         Map<String, String> params = new HashMap<>();
         params.put("placeholder", "false");
-        getSingle(getRenditionsUrl, (renditionId+"/content"), params, 404);
+        getSingle(getRenditionsUrl, (renditionId + "/content"), params, 404);
 
         // +ve test: download placeholder instead
         params = new HashMap<>();
         params.put("placeholder", "true");
-        response = getSingle(getRenditionsUrl, (renditionId+"/content"), params, 200);
+        response = getSingle(getRenditionsUrl, (renditionId + "/content"), params, 200);
         assertNotNull(response.getResponseAsBytes());
 
         // Create and get version rendition
@@ -473,7 +468,7 @@ public class NodeVersionRenditionsApiTest extends AbstractSingleNetworkSiteTest
     private void checkAndGetVersionRendition(String docId, String versionId, String renditionId) throws Exception
     {
         String getRenditionsUrl;
-        if ((versionId != null) && (! versionId.isEmpty()))
+        if ((versionId != null) && (!versionId.isEmpty()))
         {
             getRenditionsUrl = getNodeVersionRenditionsUrl(docId, versionId);
         }

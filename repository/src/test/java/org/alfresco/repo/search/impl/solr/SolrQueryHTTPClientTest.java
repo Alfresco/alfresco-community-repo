@@ -26,7 +26,6 @@
 package org.alfresco.repo.search.impl.solr;
 
 import static junit.framework.TestCase.assertEquals;
-import static org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_PREFIX;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -35,6 +34,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import static org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_PREFIX;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -46,6 +47,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+
+import org.apache.commons.codec.net.URLCodec;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.RepositoryState;
@@ -70,13 +79,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.apache.commons.codec.net.URLCodec;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * Basic test of SolrQueryHTTPClient
@@ -127,7 +129,7 @@ public class SolrQueryHTTPClientTest
         client.setDictionaryService(dictionaryService);
         client.setNamespaceDAO(namespaceDAO);
 
-        //required for init() but not used.
+        // required for init() but not used.
         client.setNodeService(mock(NodeService.class));
         client.setTenantService(mock(TenantService.class));
         client.setPermissionService(mock(PermissionService.class));
@@ -179,7 +181,6 @@ public class SolrQueryHTTPClientTest
         return params;
     }
 
-
     @Test
     public void testBuildTimezone() throws UnsupportedEncodingException
     {
@@ -195,8 +196,9 @@ public class SolrQueryHTTPClientTest
         client.buildUrlParameters(params, false, encoder, urlBuilder);
         url = urlBuilder.toString();
 
-        //Timezone formats are not validated here so its just passing a string.
-        assertTrue(url.contains("&TZ=bob"));;
+        // Timezone formats are not validated here so its just passing a string.
+        assertTrue(url.contains("&TZ=bob"));
+        ;
     }
 
     @Test
@@ -250,7 +252,7 @@ public class SolrQueryHTTPClientTest
         }
 
         fields = Arrays.asList(new FieldHighlightParameters("desc", 50, 100, false, "@", "#"),
-                    new FieldHighlightParameters("title", 55, 105, true, "*", "¿"));
+                new FieldHighlightParameters("title", 55, 105, true, "*", "¿"));
         urlBuilder = new StringBuilder();
         highlightParameters = new GeneralHighlightParameters(5, 10, false, "{", "}", 20, true, fields);
         params.setHighlight(highlightParameters);
@@ -299,7 +301,7 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains(encoder.encode("{!afts key=numbers}(1,10]", "UTF-8")));
 
         List<Interval> intervalList = Arrays.asList(new Interval("cm:price", "Price", null),
-                    new Interval("cm:created", "Created", new HashSet(Arrays.asList(new IntervalSet("2015", "2016-12", "special", false, true)))));
+                new Interval("cm:created", "Created", new HashSet(Arrays.asList(new IntervalSet("2015", "2016-12", "special", false, true)))));
         params.setInterval(new IntervalParameters(new HashSet(Arrays.asList(intervalSet)), intervalList));
         urlBuilder = new StringBuilder();
         client.buildFacetIntervalParameters(params, encoder, urlBuilder);
@@ -388,11 +390,11 @@ public class SolrQueryHTTPClientTest
         SearchParameters params = new SearchParameters();
         params.setSearchTerm("bob");
         params.setStats(Arrays.asList(
-                    new StatsRequestParameters("created", null, null, null, null,null, null, null, null,
-                                null, null, null, null,null, null,  null),
-                    new StatsRequestParameters("cm:name", "statLabel",
-                    Arrays.asList(2.4f, 99.9f),null, null, false, null,false, null, false, null, true, true,
-                    true, 0.5f, Arrays.asList("excludeme"))));
+                new StatsRequestParameters("created", null, null, null, null, null, null, null, null,
+                        null, null, null, null, null, null, null),
+                new StatsRequestParameters("cm:name", "statLabel",
+                        Arrays.asList(2.4f, 99.9f), null, null, false, null, false, null, false, null, true, true,
+                        true, 0.5f, Arrays.asList("excludeme"))));
 
         StringBuilder urlBuilder = new StringBuilder();
         client.buildStatsParameters(params, encoder, urlBuilder);
@@ -400,9 +402,9 @@ public class SolrQueryHTTPClientTest
         assertNotNull(url);
         assertTrue(url.contains("&stats=true"));
         assertTrue(url.contains("stats.field=" + encoder.encode(
-                   "{! countDistinct=false distinctValues=false min=true max=true sum=true count=true missing=true sumOfSquares=true mean=true stddev=true}created", "UTF-8")));
+                "{! countDistinct=false distinctValues=false min=true max=true sum=true count=true missing=true sumOfSquares=true mean=true stddev=true}created", "UTF-8")));
         assertTrue(url.contains("stats.field=" + encoder.encode(
-                   "{! ex=excludeme tag=statLabel key=statLabel percentiles='2.4,99.9' cardinality=0.5 countDistinct=true distinctValues=true min=true max=true sum=false count=true missing=false sumOfSquares=true mean=false stddev=true}cm:name", "UTF-8")));
+                "{! ex=excludeme tag=statLabel key=statLabel percentiles='2.4,99.9' cardinality=0.5 countDistinct=true distinctValues=true min=true max=true sum=false count=true missing=false sumOfSquares=true mean=false stddev=true}cm:name", "UTF-8")));
 
     }
 
@@ -413,11 +415,10 @@ public class SolrQueryHTTPClientTest
         params.setSearchTerm("bob");
         params.addPivots(Arrays.asList("creator"));
         params.setStats(Arrays.asList(
-                    new StatsRequestParameters("created", "piv1", null, null, null,null, null, null, null,
-                                null, null, null, null,null, null,  null)
-                    ));
+                new StatsRequestParameters("created", "piv1", null, null, null, null, null, null, null,
+                        null, null, null, null, null, null, null)));
         List<RangeParameters> ranges = new ArrayList<RangeParameters>();
-        ranges.add(new RangeParameters("content.size","0","1000000", "10000", true, Collections.emptyList(), Collections.emptyList(), "csize",null));
+        ranges.add(new RangeParameters("content.size", "0", "1000000", "10000", true, Collections.emptyList(), Collections.emptyList(), "csize", null));
         params.setRanges(ranges);
 
         StringBuilder urlBuilder = new StringBuilder();
@@ -435,8 +436,8 @@ public class SolrQueryHTTPClientTest
         url = urlBuilder.toString();
         assertNotNull(url);
         assertTrue(url.contains("&facet=true"));
-        assertTrue(url.contains("facet.pivot="+ encoder.encode("creator", "UTF-8")));
-        assertTrue(url.contains("facet.pivot="+ encoder.encode("{! stats=piv1 range=csize}cm:name", "UTF-8")));
+        assertTrue(url.contains("facet.pivot=" + encoder.encode("creator", "UTF-8")));
+        assertTrue(url.contains("facet.pivot=" + encoder.encode("{! stats=piv1 range=csize}cm:name", "UTF-8")));
     }
 
     @Test
@@ -445,7 +446,7 @@ public class SolrQueryHTTPClientTest
         SearchParameters params = new SearchParameters();
         params.setSearchTerm("A*");
         List<RangeParameters> ranges = new ArrayList<RangeParameters>();
-        List<String>includes = new ArrayList<String>();
+        List<String> includes = new ArrayList<String>();
         includes.add("upper");
         includes.add("outer");
         List<String> other = new ArrayList<String>();
@@ -478,7 +479,7 @@ public class SolrQueryHTTPClientTest
         client.buildRangeParameters(params, encoder, urlBuilder);
         String url2 = urlBuilder.toString();
         assertTrue(url2.contains("&facet=true"));
-        assertTrue(url2.contains("&facet.range="+encoder.encode("{!tag=doc }", "UTF-8")+"content.size"));
+        assertTrue(url2.contains("&facet.range=" + encoder.encode("{!tag=doc }", "UTF-8") + "content.size"));
         assertTrue(url2.contains("&f.content.size.facet.range.start=0"));
         assertTrue(url2.contains("&f.content.size.facet.range.end=1000000"));
         assertTrue(url2.contains("&f.content.size.facet.range.gap=10000"));
@@ -488,16 +489,17 @@ public class SolrQueryHTTPClientTest
         assertTrue(url2.contains("&f.content.size.facet.range.hardend=true"));
         assertTrue(url2.contains("&facet.range={!ex=ex1}content.size"));
     }
+
     @Test
     public void testBuildMulitRange() throws UnsupportedEncodingException
     {
         SearchParameters params = new SearchParameters();
         params.setSearchTerm("A*");
         List<RangeParameters> ranges = new ArrayList<RangeParameters>();
-        List<String>includes = new ArrayList<String>();
+        List<String> includes = new ArrayList<String>();
         includes.add("upper");
         includes.add("outer");
-        List<String>includes2 = new ArrayList<String>();
+        List<String> includes2 = new ArrayList<String>();
         includes2.add("lower");
         List<String> other = new ArrayList<String>();
         other.add("before");
@@ -524,6 +526,7 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains("&f.created.facet.range.include=lower"));
         assertTrue(url.contains("&f.created.facet.range.hardend=true"));
     }
+
     @Test
     public void testBuildRangeDate() throws UnsupportedEncodingException
     {

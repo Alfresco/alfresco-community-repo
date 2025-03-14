@@ -29,5 +29,5 @@ import java.io.IOException;
 
 public interface ExceptionEventsService
 {
-	void exceptionGenerated(String txnId, Throwable t) throws IOException;
+    void exceptionGenerated(String txnId, Throwable t) throws IOException;
 }

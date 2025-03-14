@@ -35,6 +35,9 @@ import static org.mockito.Mockito.when;
 
 import java.util.Set;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.permissions.Authority;
@@ -42,13 +45,11 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.junit.Before;
-import org.junit.Test;
 
 public class NodePermissionAssessorPermissionsTest
 {
     private PermissionService permissionService;
-    
+
     @Before
     public void setup()
     {
@@ -61,19 +62,19 @@ public class NodePermissionAssessorPermissionsTest
     {
         // setup
         AuthenticationUtil.setRunAsUserSystem();
-        
+
         Node theNode = mock(Node.class);
         NodePermissionAssessor assessor = createAssessor();
         when(assessor.isOwnerReading(any(Node.class), any(Authority.class))).thenReturn(false);
         when(permissionService.getReaders(anyLong())).thenReturn(Set.of());
-        
+
         // call the assessor
         boolean included = assessor.isIncluded(theNode);
-        
+
         // the node is included
         assertTrue(included);
     }
-    
+
     @Test
     public void shouldDenyPermissionWhenNullUserIsReading()
     {
@@ -82,10 +83,10 @@ public class NodePermissionAssessorPermissionsTest
         NodePermissionAssessor assessor = createAssessor();
         when(assessor.isOwnerReading(any(Node.class), any(Authority.class))).thenReturn(false);
         when(permissionService.getReaders(anyLong())).thenReturn(Set.of());
-        
+
         // call the assessor
         boolean included = assessor.isIncluded(theNode);
-        
+
         // the node is included
         assertFalse(included);
     }

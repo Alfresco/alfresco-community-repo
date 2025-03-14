@@ -83,19 +83,18 @@ public class RM4163Test extends BaseRMTestCase
 
     public void testDeclareRecordsConcurently() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
                 // create the folder
                 ruleFolder = fileFolderService.create(documentLibrary, "mytestfolder", ContentModel.TYPE_FOLDER)
-                            .getNodeRef();
+                        .getNodeRef();
 
                 // create record category
                 nodeRefCategory1 = filePlanService.createRecordCategory(filePlan, "category1");
 
-                //define declare as record rule and apply it to the created folder from documentLibrary
+                // define declare as record rule and apply it to the created folder from documentLibrary
                 Action action = actionService.createAction(CreateRecordAction.NAME);
                 action.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
 
@@ -106,10 +105,10 @@ public class RM4163Test extends BaseRMTestCase
                 rule.setExecuteAsynchronously(true);
                 ruleService.saveRule(ruleFolder, rule);
 
-                //define filing rule and apply it to unfiled record container
+                // define filing rule and apply it to unfiled record container
                 Action fileAction = actionService.createAction(FileToAction.NAME);
                 fileAction.setParameterValue(FileToAction.PARAM_PATH,
-                            "/category1/{node.cm:description}");
+                        "/category1/{node.cm:description}");
                 fileAction.setParameterValue(FileToAction.PARAM_CREATE_RECORD_PATH, true);
 
                 Rule fileRule = new Rule();
@@ -129,10 +128,9 @@ public class RM4163Test extends BaseRMTestCase
             }
         });
 
-        //create 4 documents in documentLibrary
+        // create 4 documents in documentLibrary
         List<NodeRef> documents = new ArrayList<>(4);
-        documents.addAll(doTestInTransaction(new Test<List<NodeRef>>()
-        {
+        documents.addAll(doTestInTransaction(new Test<List<NodeRef>>() {
             @Override
             public List<NodeRef> run() throws Exception
             {
@@ -149,10 +147,9 @@ public class RM4163Test extends BaseRMTestCase
             }
         }));
 
-        //move created documents in the folder that has Declare as Record rule
+        // move created documents in the folder that has Declare as Record rule
         final Iterator<NodeRef> temp = documents.iterator();
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -165,19 +162,18 @@ public class RM4163Test extends BaseRMTestCase
             }
         });
 
-        //give enough time for filing all records
+        // give enough time for filing all records
         Thread.sleep(5000);
 
-        //check that target category has in created record folders 4 records
-        Integer numberOfRecords = AuthenticationUtil.runAsSystem(new RunAsWork<Integer>()
-        {
+        // check that target category has in created record folders 4 records
+        Integer numberOfRecords = AuthenticationUtil.runAsSystem(new RunAsWork<Integer>() {
 
             @Override
             public Integer doWork() throws Exception
             {
                 List<NodeRef> containedRecordFolders = filePlanService.getContainedRecordFolders(nodeRefCategory1);
                 int numberOfRecords = 0;
-                for(NodeRef recordFolder : containedRecordFolders)
+                for (NodeRef recordFolder : containedRecordFolders)
                 {
                     numberOfRecords = numberOfRecords + fileFolderService.list(recordFolder).size();
                 }
@@ -193,14 +189,14 @@ public class RM4163Test extends BaseRMTestCase
         properties.put(ContentModel.PROP_NAME, (Serializable) name);
         properties.put(ContentModel.PROP_DESCRIPTION, (Serializable) descrption);
         QName assocQName = QName.createQName(
-                    NamespaceService.CONTENT_MODEL_1_0_URI,
-                    QName.createValidLocalName(name));
+                NamespaceService.CONTENT_MODEL_1_0_URI,
+                QName.createValidLocalName(name));
         ChildAssociationRef assocRef = nodeService.createNode(
-                    parentNodeRef,
-                    ContentModel.ASSOC_CONTAINS,
-                    assocQName,
-                    typeQName,
-                    properties);
+                parentNodeRef,
+                ContentModel.ASSOC_CONTAINS,
+                assocQName,
+                typeQName,
+                properties);
         NodeRef nodeRef = assocRef.getChildRef();
         return nodeRef;
     }

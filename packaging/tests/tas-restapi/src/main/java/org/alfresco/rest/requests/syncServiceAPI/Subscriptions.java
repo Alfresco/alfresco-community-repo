@@ -26,8 +26,9 @@
 package org.alfresco.rest.requests.syncServiceAPI;
 
 import java.util.HashMap;
-
 import jakarta.json.JsonArrayBuilder;
+
+import org.springframework.http.HttpMethod;
 
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
@@ -38,7 +39,6 @@ import org.alfresco.rest.model.RestSyncNodeSubscriptionModelCollection;
 import org.alfresco.rest.requests.ModelRequest;
 import org.alfresco.rest.requests.privateAPI.RestPrivateAPI;
 import org.alfresco.utility.Utility;
-import org.springframework.http.HttpMethod;
 
 /**
  * Declares all Rest API under the /subscribers/<subscriberId>/subscriptions/ path
@@ -67,9 +67,11 @@ public class Subscriptions extends ModelRequest<RestPrivateAPI>
     /**
      * Create Node Subscriptions for multiple targets using POST call on /subscribers/{deviceSubscriptionId}/subscriptions
      * 
-     * @param targetNodeIds: one or more
+     * @param targetNodeIds:
+     *            one or more
      * @return RestSyncNodeSubscriptionModel
-     * @throws EmptyJsonResponseException, JsonToModelConversionException
+     * @throws EmptyJsonResponseException,
+     *             JsonToModelConversionException
      */
     public RestSyncNodeSubscriptionModelCollection subscribeToNodes(String... targetNodeIds)
     {
@@ -122,7 +124,8 @@ public class Subscriptions extends ModelRequest<RestPrivateAPI>
      * Get NODE Subscription using GET call on /subscribers/{deviceSubscriptionId}/subscriptions/{nodeSubscriptionId}
      * 
      * @return RestSyncNodeSubscriptionModelCollection
-     * @throws EmptyJsonResponseException, JsonToModelConversionException
+     * @throws EmptyJsonResponseException,
+     *             JsonToModelConversionException
      */
     public RestSyncNodeSubscriptionModel getSubscription(String nodeSubscriptionId)
     {

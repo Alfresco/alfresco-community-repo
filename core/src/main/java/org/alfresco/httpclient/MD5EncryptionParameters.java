@@ -31,7 +31,7 @@ public class MD5EncryptionParameters
 
     public MD5EncryptionParameters()
     {
-        
+
     }
 
     public MD5EncryptionParameters(String cipherAlgorithm,
@@ -41,7 +41,7 @@ public class MD5EncryptionParameters
         this.messageTimeout = messageTimeout;
         this.macAlgorithm = macAlgorithm;
     }
-    
+
     public String getCipherAlgorithm()
     {
         return cipherAlgorithm;
@@ -51,7 +51,7 @@ public class MD5EncryptionParameters
     {
         this.cipherAlgorithm = cipherAlgorithm;
     }
-    
+
     public long getMessageTimeout()
     {
         return messageTimeout;
@@ -61,7 +61,7 @@ public class MD5EncryptionParameters
     {
         return macAlgorithm;
     }
-    
+
     public void setMessageTimeout(long messageTimeout)
     {
         this.messageTimeout = messageTimeout;

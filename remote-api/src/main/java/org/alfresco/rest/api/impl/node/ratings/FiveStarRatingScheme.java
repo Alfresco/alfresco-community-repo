@@ -39,66 +39,66 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class FiveStarRatingScheme extends AbstractRatingScheme
 {
-	public FiveStarRatingScheme()
-	{
-		super("fiveStar", "fiveStarRatingScheme");
-	}
+    public FiveStarRatingScheme()
+    {
+        super("fiveStar", "fiveStarRatingScheme");
+    }
 
-	public Float getRatingServiceRating(Object rating)
-	{
-		Float ratingToApply = null;
+    public Float getRatingServiceRating(Object rating)
+    {
+        Float ratingToApply = null;
 
-		if(rating instanceof Integer)
-		{
-			ratingToApply = ((Integer)rating).floatValue();
-		}
-		else
-		{
-			throw new InvalidArgumentException("Rating should be non-null and an integer for 'fiveStar' rating scheme.");
-		}
+        if (rating instanceof Integer)
+        {
+            ratingToApply = ((Integer) rating).floatValue();
+        }
+        else
+        {
+            throw new InvalidArgumentException("Rating should be non-null and an integer for 'fiveStar' rating scheme.");
+        }
 
-		validateRating(ratingToApply);
-		
-		return ratingToApply;
-	}
-	
-	public Object getApiRating(Float rating)
-	{
-		Object apiRating = Integer.valueOf(rating.intValue());
-		return apiRating;
-	}
+        validateRating(ratingToApply);
 
-	public DocumentRatingSummary getDocumentRatingSummary(NodeRef nodeRef)
-	{
-		return new FiveStarRatingSummary(ratingService.getRatingsCount(nodeRef, ratingSchemeName),
-    			ratingService.getTotalRating(nodeRef, ratingSchemeName),
-    			ratingService.getAverageRating(nodeRef, ratingSchemeName));
-	}
+        return ratingToApply;
+    }
 
-	@Override
-	public void applyRating(NodeRef nodeRef, Object rating)
-	{
-		try
-		{
-			Float ratingServiceRating = getRatingServiceRating(rating);
-			ratingService.applyRating(nodeRef, ratingServiceRating, getRatingServiceName());
-		}
-		catch(RatingServiceException e)
-		{
-			throw new InvalidArgumentException(e.getMessage());
-		}
-	}
+    public Object getApiRating(Float rating)
+    {
+        Object apiRating = Integer.valueOf(rating.intValue());
+        return apiRating;
+    }
 
-	@Override
-	public void removeRating(NodeRef nodeRef)
-	{
-		try
-		{
-			ratingService.removeRatingByCurrentUser(nodeRef, getRatingServiceName());
-		}
-		catch(RatingServiceException e)
-		{
-			throw new InvalidArgumentException(e.getMessage());
-		}
-	}
+    public DocumentRatingSummary getDocumentRatingSummary(NodeRef nodeRef)
+    {
+        return new FiveStarRatingSummary(ratingService.getRatingsCount(nodeRef, ratingSchemeName),
+                ratingService.getTotalRating(nodeRef, ratingSchemeName),
+                ratingService.getAverageRating(nodeRef, ratingSchemeName));
+    }
+
+    @Override
+    public void applyRating(NodeRef nodeRef, Object rating)
+    {
+        try
+        {
+            Float ratingServiceRating = getRatingServiceRating(rating);
+            ratingService.applyRating(nodeRef, ratingServiceRating, getRatingServiceName());
+        }
+        catch (RatingServiceException e)
+        {
+            throw new InvalidArgumentException(e.getMessage());
+        }
+    }
+
+    @Override
+    public void removeRating(NodeRef nodeRef)
+    {
+        try
+        {
+            ratingService.removeRatingByCurrentUser(nodeRef, getRatingServiceName());
+        }
+        catch (RatingServiceException e)
+        {
+            throw new InvalidArgumentException(e.getMessage());
+        }
+    }
 }

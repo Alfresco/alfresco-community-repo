@@ -45,17 +45,17 @@ public class TransformerLogTest
 {
     @Mock
     private TransformerDebug transformerDebug;
-    
+
     @Mock
     private Properties properties;
-    
+
     private TransformerLog log;
 
     @Before
     public void setUp() throws Exception
     {
         MockitoAnnotations.initMocks(this);
-        
+
         log = new TransformerLog();
         log.setTransformerDebug(transformerDebug);
         log.setProperties(properties);
@@ -63,8 +63,8 @@ public class TransformerLogTest
 
     static String[] stripDateStamp(String[] actual)
     {
-        int beginIndex = (TransformerLogger.DATE_FORMAT.format(new Date())+' ').length();
-        for (int i = actual.length-1; i >= 0; i--)
+        int beginIndex = (TransformerLogger.DATE_FORMAT.format(new Date()) + ' ').length();
+        for (int i = actual.length - 1; i >= 0; i--)
         {
             actual[i] = actual[i].substring(beginIndex);
         }
@@ -79,16 +79,16 @@ public class TransformerLogTest
     @Test
     public void noEntriesDisabledTest()
     {
-        assertArrayEquals(new String[] {"No entries are available. transformer.log.entries must be set to a number between 1 and 1000"}, log.getEntries(10));
+        assertArrayEquals(new String[]{"No entries are available. transformer.log.entries must be set to a number between 1 and 1000"}, log.getEntries(10));
     }
-    
+
     @Test
     public void oneEntryTest()
     {
         when(properties.getProperty("transformer.log.entries")).thenReturn("3");
         log.debug("one");
-        
-        assertLogEntriesEquals(new String[] {"one"}, log.getEntries(10));
+
+        assertLogEntriesEquals(new String[]{"one"}, log.getEntries(10));
     }
 
     @Test
@@ -101,7 +101,7 @@ public class TransformerLogTest
         log.debug("three");
         log.debug("four");
         log.debug("five");
-        
-        assertLogEntriesEquals(new String[] {"five", "four", "three"}, log.getEntries(10));
+
+        assertLogEntriesEquals(new String[]{"five", "four", "three"}, log.getEntries(10));
     }
 }

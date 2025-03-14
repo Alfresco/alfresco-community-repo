@@ -25,16 +25,19 @@
  */
 package org.alfresco.repo.action.access;
 
-import org.alfresco.repo.action.ActionImpl;
-import org.alfresco.service.cmr.action.Action;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 
-public class ActionAccessRestrictionTest {
+import org.junit.Test;
+
+import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.service.cmr.action.Action;
+
+public class ActionAccessRestrictionTest
+{
 
     @Test
-    public void testSettingContext() {
+    public void testSettingContext()
+    {
         Action mailAction = new ActionImpl(null, "12345", "mail");
 
         ActionAccessRestriction.setActionContext(mailAction, ActionAccessRestriction.RULE_ACTION_CONTEXT);

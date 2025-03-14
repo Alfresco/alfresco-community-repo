@@ -23,11 +23,18 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
- 
+
 package org.alfresco.rest.framework.tests.api.mocks;
 
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
+
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Description;
+import org.springframework.extensions.webscripts.Status;
+
 import org.alfresco.rest.framework.BinaryProperties;
-import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
@@ -37,26 +44,18 @@ import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.Description;
-import org.springframework.extensions.webscripts.Status;
 
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
-
-@EntityResource(name="cow", title="Cow")
+@EntityResource(name = "cow", title = "Cow")
 public class CowEntityResource implements EntityResourceAction.ReadByIdWithResponse<Goat>,
-                                            EntityResourceAction.ReadWithResponse<Goat>,
-                                            EntityResourceAction.CreateWithResponse<Goat>,
-                                            EntityResourceAction.UpdateWithResponse<Goat>,
-                                            EntityResourceAction.DeleteWithResponse,
+        EntityResourceAction.ReadWithResponse<Goat>,
+        EntityResourceAction.CreateWithResponse<Goat>,
+        EntityResourceAction.UpdateWithResponse<Goat>,
+        EntityResourceAction.DeleteWithResponse,
         BinaryResourceAction.ReadWithResponse,
         BinaryResourceAction.DeleteWithResponse,
         BinaryResourceAction.UpdateWithResponse<Goat>
 {
-    public final static Cache CACHE_COW = new Cache(new Description.RequiredCache()
-    {
+    public final static Cache CACHE_COW = new Cache(new Description.RequiredCache() {
         @Override
         public boolean getNeverCache()
         {
@@ -80,7 +79,7 @@ public class CowEntityResource implements EntityResourceAction.ReadByIdWithRespo
     public Goat readById(String id, Parameters parameters, WithResponse withResponse)
     {
         withResponse.setCache(CACHE_COW);
-        return new Goat("Goat"+id);
+        return new Goat("Goat" + id);
     }
 
     @Override
@@ -108,7 +107,6 @@ public class CowEntityResource implements EntityResourceAction.ReadByIdWithRespo
         return entity;
     }
 
-    
     @Override
     @BinaryProperties("photo")
     public void deleteProperty(String entityId, Parameters parameters, WithResponse withResponse)

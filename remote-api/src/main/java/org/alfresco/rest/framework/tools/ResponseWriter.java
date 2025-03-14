@@ -30,13 +30,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.rest.framework.core.exceptions.DefaultExceptionResolver;
-import org.alfresco.rest.framework.core.exceptions.ErrorResponse;
-import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
-import org.alfresco.rest.framework.resource.content.ContentInfo;
-import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
-import org.alfresco.rest.framework.webscripts.WithResponse;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
@@ -50,10 +47,13 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.WrappingWebScriptResponse;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletResponse;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.rest.framework.core.exceptions.DefaultExceptionResolver;
+import org.alfresco.rest.framework.core.exceptions.ErrorResponse;
+import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
+import org.alfresco.rest.framework.resource.content.ContentInfo;
+import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
+import org.alfresco.rest.framework.webscripts.WithResponse;
 
 /*
  * Writes to the response
@@ -65,8 +65,7 @@ public interface ResponseWriter
 
     String UTF8 = "UTF-8";
     ContentInfo DEFAULT_JSON_CONTENT = new ContentInfoImpl(Format.JSON.mimetype(), UTF8, 0, null);
-    Cache CACHE_NEVER = new Cache(new Description.RequiredCache()
-    {
+    Cache CACHE_NEVER = new Cache(new Description.RequiredCache() {
         @Override
         public boolean getNeverCache()
         {
@@ -96,14 +95,16 @@ public interface ResponseWriter
     /**
      * Sets the response headers with any information we know about the content
      *
-     * @param res         WebScriptResponse
-     * @param contentInfo Content Information
+     * @param res
+     *            WebScriptResponse
+     * @param contentInfo
+     *            Content Information
      */
     default void setContentInfoOnResponse(WebScriptResponse res, ContentInfo contentInfo)
     {
         if (contentInfo != null)
         {
-            //Set content info on the response
+            // Set content info on the response
             res.setContentType(contentInfo.getMimeType());
             res.setContentEncoding(contentInfo.getEncoding());
 
@@ -132,10 +133,7 @@ public interface ResponseWriter
     }
 
     /**
-     * The response status must be set before the response is written by Jackson (which will by default close and commit the response).
-     * In a r/w txn, web script buffered responses ensure that it doesn't really matter but for r/o txns this is important.
-     * If you set content information via the contentInfo object and ALSO the headers then "headers" will win because they are
-     * set last.
+     * The response status must be set before the response is written by Jackson (which will by default close and commit the response). In a r/w txn, web script buffered responses ensure that it doesn't really matter but for r/o txns this is important. If you set content information via the contentInfo object and ALSO the headers then "headers" will win because they are set last.
      *
      * @param res
      * @param status
@@ -146,8 +144,9 @@ public interface ResponseWriter
     default void setResponse(final WebScriptResponse res, int status, Cache cache, ContentInfo contentInfo, Map<String, List<String>> headers)
     {
         res.setStatus(status);
-        if (cache != null) res.setCache(cache);
-        setContentInfoOnResponse(res,contentInfo);
+        if (cache != null)
+            res.setCache(cache);
+        setContentInfoOnResponse(res, contentInfo);
         if (headers != null && !headers.isEmpty())
         {
             for (Map.Entry<String, List<String>> header : headers.entrySet())
@@ -156,12 +155,12 @@ public interface ResponseWriter
                 {
                     if (i == 0)
                     {
-                        //If its the first one then set the header overwriting.
+                        // If its the first one then set the header overwriting.
                         res.setHeader(header.getKey(), header.getValue().get(i));
                     }
                     else
                     {
-                        //If its not the first one than update the header
+                        // If its not the first one than update the header
                         res.addHeader(header.getKey(), header.getValue().get(i));
                     }
                 }
@@ -183,12 +182,14 @@ public interface ResponseWriter
     /**
      * Renders a JSON error response
      *
-     * @param errorResponse The error
-     * @param res           web script response
+     * @param errorResponse
+     *            The error
+     * @param res
+     *            web script response
      * @throws IOException
      */
     default void renderErrorResponse(final ErrorResponse errorResponse, final WebScriptResponse res, final JacksonHelper jsonHelper)
-                throws IOException
+            throws IOException
     {
         renderErrorResponse(errorResponse, res, null, jsonHelper);
     }
@@ -196,9 +197,12 @@ public interface ResponseWriter
     /**
      * Renders a JSON error response
      *
-     * @param errorResponse The error
-     * @param res           web script response
-     * @param req           web script request
+     * @param errorResponse
+     *            The error
+     * @param res
+     *            web script response
+     * @param req
+     *            web script request
      * @throws IOException
      */
     default void renderErrorResponse(final ErrorResponse errorResponse, final WebScriptResponse res, final WebScriptRequest req,
@@ -238,8 +242,7 @@ public interface ResponseWriter
         // important.
         res.setStatus(errorToWrite.getStatusCode());
 
-        jsonHelper.withWriter(res.getOutputStream(), new JacksonHelper.Writer()
-        {
+        jsonHelper.withWriter(res.getOutputStream(), new JacksonHelper.Writer() {
             @SuppressWarnings("unchecked")
             @Override
             public void writeContents(JsonGenerator generator, ObjectMapper objectMapper)
@@ -281,17 +284,18 @@ public interface ResponseWriter
     /**
      * Renders the result of an execution.
      *
-     * @param res         WebScriptResponse
-     * @param toSerialize result of an execution
+     * @param res
+     *            WebScriptResponse
+     * @param toSerialize
+     *            result of an execution
      * @throws IOException
      */
     default void renderJsonResponse(final WebScriptResponse res, final Object toSerialize, final JacksonHelper jsonHelper) throws IOException
     {
-        jsonHelper.withWriter(res.getOutputStream(), new JacksonHelper.Writer()
-        {
+        jsonHelper.withWriter(res.getOutputStream(), new JacksonHelper.Writer() {
             @Override
             public void writeContents(JsonGenerator generator, ObjectMapper objectMapper)
-                        throws JsonGenerationException, JsonMappingException, IOException
+                    throws JsonGenerationException, JsonMappingException, IOException
             {
                 objectMapper.writeValue(generator, toSerialize);
             }

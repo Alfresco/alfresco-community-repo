@@ -2,6 +2,10 @@ package org.alfresco.rest.nodes;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestNodeAssocTargetModel;
 import org.alfresco.rest.model.RestNodeAssociationModelCollection;
@@ -11,9 +15,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class NodesTargetSourcesTests extends RestTest
 {
@@ -27,15 +28,12 @@ public class NodesTargetSourcesTests extends RestTest
     }
 
     /**
-     * Sanity check for the following api endpoints 
-     * POST /nodes/{nodeId}/targets
-     * GET /nodes/{nodeId}/targets 
-     * DELETE /nodes/{nodeId}/targets/{targetId}
+     * Sanity check for the following api endpoints POST /nodes/{nodeId}/targets GET /nodes/{nodeId}/targets DELETE /nodes/{nodeId}/targets/{targetId}
      */
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Check /targets (create, list, delete) api calls")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
+    @TestRail(section = {TestGroup.REST_API,
+            TestGroup.NODES}, executionType = ExecutionType.SANITY, description = "Check /targets (create, list, delete) api calls")
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
     public void checkTargetsNodeApi() throws Exception
     {
         STEP("1.Create folder1 which contains 3 files: f1, f2, and f3");
@@ -75,12 +73,11 @@ public class NodesTargetSourcesTests extends RestTest
     }
 
     /**
-     * Sanity check for the following api endpoint 
-     * GET /nodes/{nodeId}/sources
+     * Sanity check for the following api endpoint GET /nodes/{nodeId}/sources
      */
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Check that source objects are retrieved using GET /nodes/{nodeId}/sources")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
+    @TestRail(section = {TestGroup.REST_API,
+            TestGroup.NODES}, executionType = ExecutionType.SANITY, description = "Check that source objects are retrieved using GET /nodes/{nodeId}/sources")
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
     public void checkGetNodeSources() throws Exception
     {
         STEP("1.Create a folder hierarchy folder1 containing 4 files: f1, f2, and f3");
@@ -109,12 +106,12 @@ public class NodesTargetSourcesTests extends RestTest
         sources.assertThat().entriesListCountIs(1);
 
         sources.getEntryByIndex(0).assertThat()
-                                  .field("isFile").is(true).and()
-                                  .field("name").is(nodesBuilder.getNode("f1").getName()).and()
-                                  .field("id").is(nodesBuilder.getNode("f1").getId()).and()
-                                  .field("id").is(nodesBuilder.getNode("f1").getId()).and()
-                                  .field("nodeType").is("cm:content")
-                                  .getAssociation().assertThat()
-                                                   .field("assocType").is("cm:references");
+                .field("isFile").is(true).and()
+                .field("name").is(nodesBuilder.getNode("f1").getName()).and()
+                .field("id").is(nodesBuilder.getNode("f1").getId()).and()
+                .field("id").is(nodesBuilder.getNode("f1").getId()).and()
+                .field("nodeType").is("cm:content")
+                .getAssociation().assertThat()
+                .field("assocType").is("cm:references");
     }
 }

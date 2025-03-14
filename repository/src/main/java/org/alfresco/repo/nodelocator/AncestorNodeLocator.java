@@ -42,9 +42,12 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * This {@link NodeLocator} identifies an ancestor of the source node.
- * <p>The node returned can be of a specific <code>type</code> and/or have a specific <code>aspect</code> applied.  
+ * <p>
+ * The node returned can be of a specific <code>type</code> and/or have a specific <code>aspect</code> applied.
  * 
- * <p>If no parameters are passed the immediate primary parent is returned.</p>
+ * <p>
+ * If no parameters are passed the immediate primary parent is returned.
+ * </p>
  * 
  * @author Nick Smith
  * @since 4.0
@@ -54,13 +57,13 @@ public class AncestorNodeLocator extends AbstractNodeLocator
     public static final String NAME = "ancestor";
     public static final String TYPE_KEY = "type";
     public static final String ASPECT_KEY = "aspect";
-    
+
     private NamespaceService namespaceService;
     private NodeService nodeService;
-    
+
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public NodeRef getNode(NodeRef source, Map<String, Serializable> params)
     {
@@ -89,8 +92,8 @@ public class AncestorNodeLocator extends AbstractNodeLocator
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public List<ParameterDefinition> getParameterDefinitions()
     {
@@ -99,12 +102,12 @@ public class AncestorNodeLocator extends AbstractNodeLocator
         paramDefs.add(new ParameterDefinitionImpl(ASPECT_KEY, DataTypeDefinition.QNAME, false, "Aspect"));
         return paramDefs;
     }
-    
+
     private boolean typeMatches(QName type, NodeRef parent)
     {
         return type == null || type.equals(nodeService.getType(parent));
     }
-    
+
     private boolean aspectMatches(QName aspect, NodeRef parent)
     {
         return aspect == null || nodeService.getAspects(parent).contains(aspect);
@@ -121,24 +124,26 @@ public class AncestorNodeLocator extends AbstractNodeLocator
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public String getName()
     {
         return NAME;
     }
-    
+
     /**
-     * @param nodeService the nodeService to set
+     * @param nodeService
+     *            the nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
-     * @param namespaceService the namespaceService to set
+     * @param namespaceService
+     *            the namespaceService to set
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {

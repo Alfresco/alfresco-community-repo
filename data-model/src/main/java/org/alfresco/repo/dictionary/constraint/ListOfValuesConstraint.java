@@ -33,17 +33,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.util.StringUtils;
+
 import org.alfresco.service.cmr.dictionary.ConstraintException;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.util.StringUtils;
 
 /**
- * Constraint implementation that ensures the value is one of a constrained
- * <i>list of values</i>.  By default, this constraint is case-sensitive.
+ * Constraint implementation that ensures the value is one of a constrained <i>list of values</i>. By default, this constraint is case-sensitive.
  * 
  * @see #setAllowedValues(List)
  * @see #setCaseSensitive(boolean)
@@ -54,11 +54,11 @@ public class ListOfValuesConstraint extends AbstractConstraint
 {
     private static final String LOV_CONSTRAINT_VALUE = "listconstraint";
     public static final String CONSTRAINT_TYPE = "LIST";
-    
+
     public static final String CASE_SENSITIVE_PARAM = "caseSensitive";
     public static final String ALLOWED_VALUES_PARAM = "allowedValues";
     public static final String SORTED_PARAM = "sorted";
-    
+
     private static final String ERR_NO_VALUES = "d_dictionary.constraint.list_of_values.no_values";
     private static final String ERR_NON_STRING = "d_dictionary.constraint.string_length.non_string";
     private static final String ERR_INVALID_VALUE = "d_dictionary.constraint.list_of_values.invalid_value";
@@ -69,7 +69,7 @@ public class ListOfValuesConstraint extends AbstractConstraint
     private Set<String> allowedValuesUpperSet;
     protected boolean caseSensitive;
     protected boolean sorted;
-    
+
     public ListOfValuesConstraint()
     {
         caseSensitive = true;
@@ -79,7 +79,7 @@ public class ListOfValuesConstraint extends AbstractConstraint
         allowedValuesSet = Collections.emptySet();
         allowedValuesUpperSet = Collections.emptySet();
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -88,22 +88,21 @@ public class ListOfValuesConstraint extends AbstractConstraint
     {
         return CONSTRAINT_TYPE;
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(80);
         sb.append("ListOfValuesConstraint")
-          .append("[ allowedValues=").append(allowedValues)
-          .append(", caseSensitive=").append(caseSensitive)
-          .append(", sorted=").append(sorted)
-          .append("]");
+                .append("[ allowedValues=").append(allowedValues)
+                .append(", caseSensitive=").append(caseSensitive)
+                .append(", sorted=").append(sorted)
+                .append("]");
         return sb.toString();
     }
 
     /**
-     * Get the allowed values.  Note that these are <tt>String</tt> instances, but may 
-     * represent non-<tt>String</tt> values.  It is up to the caller to distinguish.
+     * Get the allowed values. Note that these are <tt>String</tt> instances, but may represent non-<tt>String</tt> values. It is up to the caller to distinguish.
      * 
      * Sorts list if appropriate.
      * 
@@ -111,7 +110,7 @@ public class ListOfValuesConstraint extends AbstractConstraint
      */
     public List<String> getAllowedValues()
     {
-        List<String> rawValues = getRawAllowedValues(); 
+        List<String> rawValues = getRawAllowedValues();
         if (sorted == true)
         {
             List<String> values = new ArrayList<String>(rawValues);
@@ -123,10 +122,9 @@ public class ListOfValuesConstraint extends AbstractConstraint
             return rawValues;
         }
     }
-    
+
     /**
-     * Get the allowed values.  Note that these are <tt>String</tt> instances, but may 
-     * represent non-<tt>String</tt> values.  It is up to the caller to distinguish.
+     * Get the allowed values. Note that these are <tt>String</tt> instances, but may represent non-<tt>String</tt> values. It is up to the caller to distinguish.
      * 
      * @return Returns the values allowed
      */
@@ -134,25 +132,26 @@ public class ListOfValuesConstraint extends AbstractConstraint
     {
         return allowedValues;
     }
-    
+
     /**
-     * Get the display label for the specified allowable value in this constraint.
-     * A key is constructed as follows:
+     * Get the display label for the specified allowable value in this constraint. A key is constructed as follows:
+     * 
      * <pre>
      *   "listconstraint." + constraintName + "." + constraintAllowableValue.
      *   e.g. listconstraint.test_listConstraintOne.VALUE_ONE.
      * </pre>
-     * This key is then used to look up a properties bundle for the localised display label.
-     * Spaces are allowed in the keys, but they should be escaped in the properties file as follows:
+     * 
+     * This key is then used to look up a properties bundle for the localised display label. Spaces are allowed in the keys, but they should be escaped in the properties file as follows:
+     * 
      * <pre>
      * listconstraint.test_listConstraintOne.VALUE\ WITH\ SPACES=Display label
      * </pre>
      * 
-     * @param constraintAllowableValue String
-     * @param messageLookup MessageLookup
-     * @return the localised display label for the specified constraint value in the current locale.
-     *         If no localisation is defined, it will return the allowed value itself.
-     *         If the specified allowable value is not in the model, returns <code>null</code>.
+     * @param constraintAllowableValue
+     *            String
+     * @param messageLookup
+     *            MessageLookup
+     * @return the localised display label for the specified constraint value in the current locale. If no localisation is defined, it will return the allowed value itself. If the specified allowable value is not in the model, returns <code>null</code>.
      * @since 4.0
      * @see I18NUtil#getLocale()
      */
@@ -162,21 +161,21 @@ public class ListOfValuesConstraint extends AbstractConstraint
         {
             return null;
         }
-        
+
         String key = LOV_CONSTRAINT_VALUE;
         key += "." + this.getShortName();
         key += "." + constraintAllowableValue;
         key = StringUtils.replace(key, ":", "_");
-        
+
         String message = messageLookup.getMessage(key, I18NUtil.getLocale());
         return message == null ? constraintAllowableValue : message;
     }
 
-    
     /**
      * Set the values that are allowed by the constraint.
-     *  
-     * @param allowedValues a list of allowed values
+     * 
+     * @param allowedValues
+     *            a list of allowed values
      */
     public void setAllowedValues(List<String> allowedValues)
     {
@@ -213,30 +212,31 @@ public class ListOfValuesConstraint extends AbstractConstraint
     /**
      * Set the handling of case checking.
      * 
-     * @param caseSensitive <tt>true</tt> if the constraint is case-sensitive (default),
-     *      or <tt>false</tt> for case-insensitive.
+     * @param caseSensitive
+     *            <tt>true</tt> if the constraint is case-sensitive (default), or <tt>false</tt> for case-insensitive.
      */
     public void setCaseSensitive(boolean caseSensitive)
     {
         this.caseSensitive = caseSensitive;
     }
-    
+
     /**
      * Indicates whether the list of values are sorted or not.
      * 
-     * @return    <tt>true</tt> if sorted, <tt>false</tt> otherwise
+     * @return <tt>true</tt> if sorted, <tt>false</tt> otherwise
      */
-    public boolean isSorted() 
+    public boolean isSorted()
     {
         return sorted;
     }
-    
+
     /**
      * Set whether the values are ordered or not.
      * 
-     * @param sorted    <tt>true</tt> if sorted, <tt>false</tt> otherwise
+     * @param sorted
+     *            <tt>true</tt> if sorted, <tt>false</tt> otherwise
      */
-    public void setSorted(boolean sorted) 
+    public void setSorted(boolean sorted)
     {
         this.sorted = sorted;
     }
@@ -250,7 +250,7 @@ public class ListOfValuesConstraint extends AbstractConstraint
         super.initialize();
         checkPropertyNotNull(ALLOWED_VALUES_PARAM, allowedValues);
     }
-    
+
     /**
      * @see org.alfresco.repo.dictionary.constraint.AbstractConstraint#getParameters()
      */
@@ -258,11 +258,11 @@ public class ListOfValuesConstraint extends AbstractConstraint
     public Map<String, Object> getParameters()
     {
         Map<String, Object> params = new HashMap<String, Object>(2);
-        
+
         params.put(CASE_SENSITIVE_PARAM, this.caseSensitive);
         params.put(ALLOWED_VALUES_PARAM, this.allowedValues);
         params.put(SORTED_PARAM, this.sorted);
-        
+
         return params;
     }
 

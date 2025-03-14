@@ -28,10 +28,11 @@ package org.alfresco.repo.dictionary.types.period;
 import java.text.ParseException;
 import java.util.Date;
 
+import org.quartz.CronExpression;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.namespace.QName;
-import org.quartz.CronExpression;
 
 /**
  * Cron based periods

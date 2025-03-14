@@ -26,6 +26,8 @@
 
 package org.alfresco.repo.search.impl.solr;
 
+import static org.junit.Assert.*;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
@@ -43,8 +45,6 @@ import org.json.JSONTokener;
 import org.junit.*;
 import org.springframework.util.ResourceUtils;
 
-import static org.junit.Assert.*;
-
 /**
  * This class contains tests for the class <code>{@link SpellCheckDecisionManager}</code>.
  *
@@ -57,10 +57,7 @@ public class SpellCheckDecisionManagerTest
     private static final String SEARCH_REQUEST_URL = "/solr4/alfresco/afts?wt=json&fl=DBID%2Cscore&rows=251&df=keywords&start=0&locale=en&alternativeDic=DEFAULT_DICTIONARY&fq=%7B%21afts%7DAUTHORITY_FILTER_FROM_JSON&fq=%7B%21afts%7DTENANT_FILTER_FROM_JSON";
 
     /**
-     * Test Collation Solr4. The {@code isCollate} method returns true, when the original query contains one or
-     * more misspelled terms leading to 0 hit and if spell-suggestion is available
-     * and collation's hits are greater than 0, the class should modify the
-     * original search query to replace the misspelled term with the suggested term.
+     * Test Collation Solr4. The {@code isCollate} method returns true, when the original query contains one or more misspelled terms leading to 0 hit and if spell-suggestion is available and collation's hits are greater than 0, the class should modify the original search query to replace the misspelled term with the suggested term.
      *
      * @throws Exception
      */
@@ -75,7 +72,7 @@ public class SpellCheckDecisionManagerTest
         String spellCheckParam = getSpellCheckParam(searchTerm);
 
         SpellCheckDecisionManager manager = new SpellCheckDecisionManager(resultJson, SEARCH_REQUEST_URL
-                    + spellCheckParam, requestBody, spellCheckParam);
+                + spellCheckParam, requestBody, spellCheckParam);
 
         assertTrue(manager.isCollate());
         assertEquals(SEARCH_REQUEST_URL, manager.getUrl());
@@ -95,10 +92,7 @@ public class SpellCheckDecisionManagerTest
     }
 
     /**
-     * Test Collation Solr6. The {@code isCollate} method returns true, when the original query contains one or
-     * more misspelled terms leading to 0 hit and if spell-suggestion is available
-     * and collation's hits are greater than 0, the class should modify the
-     * original search query to replace the misspelled term with the suggested term.
+     * Test Collation Solr6. The {@code isCollate} method returns true, when the original query contains one or more misspelled terms leading to 0 hit and if spell-suggestion is available and collation's hits are greater than 0, the class should modify the original search query to replace the misspelled term with the suggested term.
      *
      * @throws Exception
      */
@@ -133,10 +127,7 @@ public class SpellCheckDecisionManagerTest
     }
 
     /**
-     * Test didYouMean Solr4. If the original query resulting in a few hits;
-     * suggestions are available and have more hits, the class should only
-     * return the suggested terms, without modifying the query or setting the
-     * collation flag to true.
+     * Test didYouMean Solr4. If the original query resulting in a few hits; suggestions are available and have more hits, the class should only return the suggested terms, without modifying the query or setting the collation flag to true.
      * 
      * @throws Exception
      */
@@ -151,7 +142,7 @@ public class SpellCheckDecisionManagerTest
         String spellCheckParam = getSpellCheckParam(searchTerm);
 
         SpellCheckDecisionManager manager = new SpellCheckDecisionManager(resultJson, SEARCH_REQUEST_URL
-                    + spellCheckParam, requestBody, spellCheckParam);
+                + spellCheckParam, requestBody, spellCheckParam);
 
         assertFalse(manager.isCollate());
         assertEquals(SEARCH_REQUEST_URL + spellCheckParam, manager.getUrl());
@@ -160,7 +151,7 @@ public class SpellCheckDecisionManagerTest
         JSONArray jsonArray = didYouMeanJsonObject.getJSONArray("didYouMean");
         assertEquals(2, jsonArray.length());
 
-        String[] suggestedTerms = { jsonArray.getString(0), jsonArray.getString(1) };
+        String[] suggestedTerms = {jsonArray.getString(0), jsonArray.getString(1)};
         Arrays.sort(suggestedTerms);
 
         assertEquals("login", suggestedTerms[0]);
@@ -176,12 +167,8 @@ public class SpellCheckDecisionManagerTest
         assertTrue(collationHit > numberFound);
     }
 
-
     /**
-     * Test didYouMean Solr6. If the original query resulting in a few hits;
-     * suggestions are available and have more hits, the class should only
-     * return the suggested terms, without modifying the query or setting the
-     * collation flag to true.
+     * Test didYouMean Solr6. If the original query resulting in a few hits; suggestions are available and have more hits, the class should only return the suggested terms, without modifying the query or setting the collation flag to true.
      *
      * @throws Exception
      */
@@ -205,7 +192,7 @@ public class SpellCheckDecisionManagerTest
         JSONArray jsonArray = didYouMeanJsonObject.getJSONArray("didYouMean");
         assertEquals(2, jsonArray.length());
 
-        String[] suggestedTerms = { jsonArray.getString(0), jsonArray.getString(1) };
+        String[] suggestedTerms = {jsonArray.getString(0), jsonArray.getString(1)};
         Arrays.sort(suggestedTerms);
 
         assertEquals("login", suggestedTerms[0]);
@@ -215,7 +202,7 @@ public class SpellCheckDecisionManagerTest
         assertEquals(createJsonSearchRequest(searchTerm).getString("query"), requestBody.getString("query"));
 
         // Check that the number of found docs (original query) is less than collation hits
-        System.out.println("###jsonResult:"+resultJson);
+        System.out.println("###jsonResult:" + resultJson);
         long numberFound = getOrigQueryHit(resultJson);
         long collationHit = getCollationHit2(resultJson);
 
@@ -223,8 +210,7 @@ public class SpellCheckDecisionManagerTest
     }
 
     /**
-     * Test no suggestions. Query contains a term that does not exist in the
-     * index and also no suggestions are available. In this case, the class can't do anything.
+     * Test no suggestions. Query contains a term that does not exist in the index and also no suggestions are available. In this case, the class can't do anything.
      *
      * @throws Exception
      */
@@ -239,7 +225,7 @@ public class SpellCheckDecisionManagerTest
         String spellCheckParam = getSpellCheckParam(searchTerm);
 
         SpellCheckDecisionManager manager = new SpellCheckDecisionManager(resultJson, SEARCH_REQUEST_URL
-                    + spellCheckParam, requestBody, spellCheckParam);
+                + spellCheckParam, requestBody, spellCheckParam);
 
         assertFalse(manager.isCollate());
         assertEquals(SEARCH_REQUEST_URL + spellCheckParam, manager.getUrl());
@@ -249,7 +235,7 @@ public class SpellCheckDecisionManagerTest
 
         // Check that the request query has NOT been modified with the suggested term
         assertEquals(createJsonSearchRequest(searchTerm).getString("query"), requestBody.getString("query"));
-        
+
         long numberFound = getOrigQueryHit(resultJson);
         assertEquals(0L, numberFound);
 
@@ -258,9 +244,7 @@ public class SpellCheckDecisionManagerTest
     }
 
     /**
-     * Solr4 Query contains a correctly spelled term; suggestions are available, but
-     * the collation's hits are less than or equal to the original query term hits. In this
-     * case, the class should not do anything
+     * Solr4 Query contains a correctly spelled term; suggestions are available, but the collation's hits are less than or equal to the original query term hits. In this case, the class should not do anything
      *
      * @throws Exception
      */
@@ -275,7 +259,7 @@ public class SpellCheckDecisionManagerTest
         String spellCheckParam = getSpellCheckParam(searchTerm);
 
         SpellCheckDecisionManager manager = new SpellCheckDecisionManager(resultJson, SEARCH_REQUEST_URL
-                    + spellCheckParam, requestBody, spellCheckParam);
+                + spellCheckParam, requestBody, spellCheckParam);
 
         assertFalse(manager.isCollate());
         assertEquals(SEARCH_REQUEST_URL + spellCheckParam, manager.getUrl());
@@ -285,19 +269,16 @@ public class SpellCheckDecisionManagerTest
 
         // Check that the request query has NOT been modified with the suggested term
         assertEquals(createJsonSearchRequest(searchTerm).getString("query"), requestBody.getString("query"));
-        
+
         // Check that the number of found docs (original query) is greater than or equal to the collation hits
         long numberFound = getOrigQueryHit(resultJson);
         long collationHit = getCollationHit(resultJson);
-        
-        
+
         assertTrue(numberFound >= collationHit);
     }
 
     /**
-     * Solr6 Query contains a correctly spelled term; suggestions are available, but
-     * the collation's hits are less than or equal to the original query term hits. In this
-     * case, the class should not do anything
+     * Solr6 Query contains a correctly spelled term; suggestions are available, but the collation's hits are less than or equal to the original query term hits. In this case, the class should not do anything
      *
      * @throws Exception
      */
@@ -331,7 +312,6 @@ public class SpellCheckDecisionManagerTest
         assertTrue(numberFound >= collationHit);
     }
 
-
     public JSONObject getSearchResponseAsJson(String jsonResponse) throws FileNotFoundException, JSONException
     {
         URL url = SpellCheckDecisionManagerTest.class.getClassLoader().getResource(RESOURCE_PREFIX + jsonResponse);
@@ -339,7 +319,7 @@ public class SpellCheckDecisionManagerTest
         {
             fail("Cannot get the resource: " + jsonResponse);
         }
-        
+
         Reader reader = new FileReader(ResourceUtils.getFile(url));
         JSONObject resultJson = new JSONObject(new JSONTokener(reader));
         return resultJson;
@@ -348,22 +328,22 @@ public class SpellCheckDecisionManagerTest
     public JSONObject createJsonSearchRequest(String searchTerm) throws JSONException
     {
         String requestStr = "{"
-                    + "\"queryConsistency\" : \"DEFAULT\","
-                    + "\"textAttributes\" : [],"
-                    + "\"allAttributes\" : [],"
-                    + "\"templates\" : [{"
-                    + "\"template\" : \"%(cm:name cm:title cm:description ia:whatEvent ia:descriptionEvent lnk:title lnk:description TEXT TAG)\","
-                    + "\"name\" : \"keywords\""
-                    + "}"
-                    + "],"
-                    + "\"authorities\" : [\"GROUP_EVERYONE\", \"ROLE_ADMINISTRATOR\", \"ROLE_AUTHENTICATED\", \"admin\"],"
-                    + "\"tenants\" : [\"\"],"
-                    + "\"query\" : \"("
-                    + searchTerm
-                    + "  AND (+TYPE:\\\"cm:content\\\" OR +TYPE:\\\"cm:folder\\\")) AND -TYPE:\\\"cm:thumbnail\\\" AND -TYPE:\\\"cm:failedThumbnail\\\" AND -TYPE:\\\"cm:rating\\\" AND -TYPE:\\\"st:site\\\" AND -ASPECT:\\\"st:siteContainer\\\" AND -ASPECT:\\\"sys:hidden\\\" AND -cm:creator:system AND -QNAME:comment\\\\-*\","
-                    + "\"locales\" : [\"en\"],"
-                    + "\"defaultNamespace\" : \"http://www.alfresco.org/model/content/1.0\","
-                    + "\"defaultFTSFieldOperator\" : \"AND\"," + "\"defaultFTSOperator\" : \"AND\"" + "}";
+                + "\"queryConsistency\" : \"DEFAULT\","
+                + "\"textAttributes\" : [],"
+                + "\"allAttributes\" : [],"
+                + "\"templates\" : [{"
+                + "\"template\" : \"%(cm:name cm:title cm:description ia:whatEvent ia:descriptionEvent lnk:title lnk:description TEXT TAG)\","
+                + "\"name\" : \"keywords\""
+                + "}"
+                + "],"
+                + "\"authorities\" : [\"GROUP_EVERYONE\", \"ROLE_ADMINISTRATOR\", \"ROLE_AUTHENTICATED\", \"admin\"],"
+                + "\"tenants\" : [\"\"],"
+                + "\"query\" : \"("
+                + searchTerm
+                + "  AND (+TYPE:\\\"cm:content\\\" OR +TYPE:\\\"cm:folder\\\")) AND -TYPE:\\\"cm:thumbnail\\\" AND -TYPE:\\\"cm:failedThumbnail\\\" AND -TYPE:\\\"cm:rating\\\" AND -TYPE:\\\"st:site\\\" AND -ASPECT:\\\"st:siteContainer\\\" AND -ASPECT:\\\"sys:hidden\\\" AND -cm:creator:system AND -QNAME:comment\\\\-*\","
+                + "\"locales\" : [\"en\"],"
+                + "\"defaultNamespace\" : \"http://www.alfresco.org/model/content/1.0\","
+                + "\"defaultFTSFieldOperator\" : \"AND\"," + "\"defaultFTSOperator\" : \"AND\"" + "}";
 
         InputStream is = new ByteArrayInputStream(requestStr.getBytes());
         Reader reader = new BufferedReader(new InputStreamReader(is));

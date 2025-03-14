@@ -26,36 +26,14 @@
 package org.alfresco.repo.webdav;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.GUID;
-import org.alfresco.util.testing.category.LuceneTests;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -65,7 +43,21 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-/** 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.LuceneTests;
+
+/**
  * 
  * Class for webdav delete method unit tests
  * 
@@ -75,37 +67,35 @@ import org.springframework.mock.web.MockHttpServletResponse;
 @Category(LuceneTests.class)
 public class DeleteMethodTest
 {
-    //protected static Log logger = LogFactory.getLog("org.alfresco.webdav.protocol");
-    
+    // protected static Log logger = LogFactory.getLog("org.alfresco.webdav.protocol");
+
     private static ApplicationContext ctx;
-    
+
     private MockHttpServletRequest request;
     private MockHttpServletResponse response;
     private DeleteMethod method;
     private UserTransaction txn = null;
-    
+
     private SearchService searchService;
     private TransactionService transactionService;
     private NodeService nodeService;
     private ContentService contentService;
     private WebDAVHelper webDAVHelper;
-    
+
     private Repository repositoryHelper;
     private NodeRef companyHomeNodeRef;
     private NodeRef versionableDoc;
     private String versionableDocName;
     private StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
 
-
     @BeforeClass
     public static void setUpBeforeClass() throws Exception
     {
-        ctx = ApplicationContextHelper.getApplicationContext(new String[]
-            {
+        ctx = ApplicationContextHelper.getApplicationContext(new String[]{
                 "classpath:alfresco/application-context.xml",
                 "classpath:alfresco/web-scripts-application-context.xml",
                 "classpath:alfresco/remote-api-context.xml"
-            });
+        });
     }
 
     @Before
@@ -115,11 +105,11 @@ public class DeleteMethodTest
         searchService = ctx.getBean("SearchService", SearchService.class);
         nodeService = ctx.getBean("NodeService", NodeService.class);
         contentService = ctx.getBean("contentService", ContentService.class);
-        webDAVHelper = ctx.getBean("webDAVHelper", WebDAVHelper.class);         
-        repositoryHelper = (Repository)ctx.getBean("repositoryHelper");
+        webDAVHelper = ctx.getBean("webDAVHelper", WebDAVHelper.class);
+        repositoryHelper = (Repository) ctx.getBean("repositoryHelper");
         companyHomeNodeRef = repositoryHelper.getCompanyHome();
     }
-    
+
     @After
     public void tearDown() throws Exception
     {
@@ -135,9 +125,9 @@ public class DeleteMethodTest
         {
             txn.commit();
         }
-        
+
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
- 
+
         nodeService.deleteNode(versionableDoc);
 
         // As per MNT-10037 try to create a node and delete it in the next txn
@@ -165,30 +155,30 @@ public class DeleteMethodTest
     }
 
     /**
-     * Checks that file with the versionable aspect applied can be deleted   
+     * Checks that file with the versionable aspect applied can be deleted
      * 
      * @throws Exception
      */
     @Test
     public void testDeleteFileWithVersionableAspect() throws Exception
     {
-        //create file
+        // create file
         createFileWithVersionableAscpect();
 
-        //delete file 
+        // delete file
         method = new DeleteMethod();
         request = new MockHttpServletRequest(WebDAV.METHOD_DELETE, "/alfresco/webdav/" + versionableDocName);
         response = new MockHttpServletResponse();
         request.setServerPort(8080);
         request.setServletPath("/webdav");
         method.setDetails(request, response, webDAVHelper, companyHomeNodeRef);
-        method.execute(); 
-       
-        //check the response
+        method.execute();
+
+        // check the response
         assertEquals(HttpServletResponse.SC_OK, response.getStatus());
 
     }
-    
+
     /**
      * Create file with versionable aspect
      * 
@@ -198,23 +188,23 @@ public class DeleteMethodTest
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-         txn = transactionService.getUserTransaction();
-         txn.begin();
-         
-         // Create a test file with versionable aspect and content
-         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-         versionableDocName = "doc-" + GUID.generate();
-         properties.put(ContentModel.PROP_NAME, versionableDocName);
+        txn = transactionService.getUserTransaction();
+        txn.begin();
 
-         versionableDoc = nodeService.createNode(companyHomeNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName(ContentModel.USER_MODEL_URI, versionableDocName),
-         ContentModel.TYPE_CONTENT, properties).getChildRef();
-         contentService.getWriter(versionableDoc, ContentModel.PROP_CONTENT, true).putContent("WebDAVTestContent");
-         nodeService.addAspect(versionableDoc, ContentModel.ASPECT_VERSIONABLE, null);
+        // Create a test file with versionable aspect and content
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        versionableDocName = "doc-" + GUID.generate();
+        properties.put(ContentModel.PROP_NAME, versionableDocName);
 
-         txn.commit();
+        versionableDoc = nodeService.createNode(companyHomeNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName(ContentModel.USER_MODEL_URI, versionableDocName),
+                ContentModel.TYPE_CONTENT, properties).getChildRef();
+        contentService.getWriter(versionableDoc, ContentModel.PROP_CONTENT, true).putContent("WebDAVTestContent");
+        nodeService.addAspect(versionableDoc, ContentModel.ASPECT_VERSIONABLE, null);
 
-         txn = transactionService.getUserTransaction();
-         txn.begin();
+        txn.commit();
+
+        txn = transactionService.getUserTransaction();
+        txn.begin();
     }
 
 }

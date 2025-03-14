@@ -41,19 +41,23 @@ public class Column extends AbstractDbObject
     private boolean autoIncrement;
     private int order;
     private boolean compareOrder = true;
-    
+
     public Column(String name)
     {
         super(null, name);
     }
-    
+
     /**
      * Construct a Column.
      * 
-     * @param table the parent table
-     * @param name String
-     * @param type String
-     * @param nullable boolean
+     * @param table
+     *            the parent table
+     * @param name
+     *            String
+     * @param type
+     *            String
+     * @param nullable
+     *            boolean
      */
     public Column(Table table, String name, String type, boolean nullable)
     {
@@ -69,15 +73,16 @@ public class Column extends AbstractDbObject
     {
         return this.type;
     }
-    
+
     /**
-     * @param type the type to set
+     * @param type
+     *            the type to set
      */
     public void setType(String type)
     {
         this.type = type;
     }
-    
+
     /**
      * @return the nullable
      */
@@ -85,16 +90,16 @@ public class Column extends AbstractDbObject
     {
         return this.nullable;
     }
-    
+
     /**
-     * @param nullable the nullable to set
+     * @param nullable
+     *            the nullable to set
      */
     public void setNullable(boolean nullable)
     {
         this.nullable = nullable;
     }
-    
-    
+
     /**
      * @return the order
      */
@@ -104,14 +109,14 @@ public class Column extends AbstractDbObject
     }
 
     /**
-     * @param order the order to set
+     * @param order
+     *            the order to set
      */
     public void setOrder(int order)
     {
         this.order = order;
     }
 
-    
     /**
      * @return whether the column has an auto-increment flag set.
      */
@@ -121,13 +126,13 @@ public class Column extends AbstractDbObject
     }
 
     /**
-     * @param autoIncrement whether this column has the auto-increment flag set.
+     * @param autoIncrement
+     *            whether this column has the auto-increment flag set.
      */
     public void setAutoIncrement(boolean autoIncrement)
     {
         this.autoIncrement = autoIncrement;
     }
-
 
     /**
      * @return the compareOrder
@@ -138,15 +143,13 @@ public class Column extends AbstractDbObject
     }
 
     /**
-     * @param compareOrder the compareOrder to set
+     * @param compareOrder
+     *            the compareOrder to set
      */
     public void setCompareOrder(boolean compareOrder)
     {
         this.compareOrder = compareOrder;
     }
-
-
-    
 
     @Override
     public int hashCode()
@@ -164,19 +167,28 @@ public class Column extends AbstractDbObject
     @Override
     public boolean equals(Object obj)
     {
-        if (this == obj) return true;
-        if (!super.equals(obj)) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
         Column other = (Column) obj;
-        if (this.autoIncrement != other.autoIncrement) return false;
-        if (this.compareOrder != other.compareOrder) return false;
-        if (this.nullable != other.nullable) return false;
-        if (this.order != other.order) return false;
+        if (this.autoIncrement != other.autoIncrement)
+            return false;
+        if (this.compareOrder != other.compareOrder)
+            return false;
+        if (this.nullable != other.nullable)
+            return false;
+        if (this.order != other.order)
+            return false;
         if (this.type == null)
         {
-            if (other.type != null) return false;
+            if (other.type != null)
+                return false;
         }
-        else if (!this.type.equals(other.type)) return false;
+        else if (!this.type.equals(other.type))
+            return false;
         return true;
     }
 
@@ -187,20 +199,20 @@ public class Column extends AbstractDbObject
         DbProperty thisNullableProp = new DbProperty(this, "nullable");
         DbProperty thisOrderProp = new DbProperty(this, "order");
         DbProperty thisAutoIncProp = new DbProperty(this, "autoIncrement");
-        
+
         Column thatColumn = (Column) right;
         DbProperty thatTypeProp = new DbProperty(thatColumn, "type");
         DbProperty thatNullableProp = new DbProperty(thatColumn, "nullable");
         DbProperty thatOrderProp = new DbProperty(thatColumn, "order");
         DbProperty thatAutoIncProp = new DbProperty(thatColumn, "autoIncrement");
-        
+
         comparisonUtils.compareSimple(thisTypeProp, thatTypeProp, ctx);
         comparisonUtils.compareSimple(thisNullableProp, thatNullableProp, ctx);
         if (compareOrder)
         {
             comparisonUtils.compareSimple(thisOrderProp, thatOrderProp, ctx);
         }
-        comparisonUtils.compareSimple(thisAutoIncProp, thatAutoIncProp, ctx);        
+        comparisonUtils.compareSimple(thisAutoIncProp, thatAutoIncProp, ctx);
     }
 
     @Override

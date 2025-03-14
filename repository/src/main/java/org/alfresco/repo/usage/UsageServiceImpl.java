@@ -40,22 +40,22 @@ import org.alfresco.service.cmr.usage.UsageService;
 public class UsageServiceImpl implements UsageService
 {
     private UsageDAO usageDAO;
-    
+
     public void setUsageDAO(UsageDAO usageDAO)
     {
         this.usageDAO = usageDAO;
     }
-    
+
     public void insertDelta(NodeRef usageNodeRef, long deltaSize)
     {
         usageDAO.insertDelta(usageNodeRef, deltaSize);
     }
-    
+
     public long getTotalDeltaSize(NodeRef usageNodeRef)
     {
         return usageDAO.getTotalDeltaSize(usageNodeRef, false);
     }
-    
+
     public long getAndRemoveTotalDeltaSize(NodeRef usageNodeRef)
     {
         return usageDAO.getTotalDeltaSize(usageNodeRef, true);
@@ -65,7 +65,7 @@ public class UsageServiceImpl implements UsageService
     {
         return usageDAO.getUsageDeltaNodes();
     }
-    
+
     public int deleteDeltas(NodeRef usageNodeRef)
     {
         return usageDAO.deleteDeltas(usageNodeRef);

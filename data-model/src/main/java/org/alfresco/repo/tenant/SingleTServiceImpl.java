@@ -44,22 +44,22 @@ public class SingleTServiceImpl implements TenantService
     {
         return nodeRef;
     }
-        
+
     public NodeRef getName(NodeRef inNodeRef, NodeRef nodeRef)
     {
         return nodeRef;
     }
-    
+
     public StoreRef getName(StoreRef storeRef)
     {
         return storeRef;
     }
-    
+
     public ChildAssociationRef getName(ChildAssociationRef childAssocRef)
     {
-    	return childAssocRef;
+        return childAssocRef;
     }
-    
+
     public AssociationRef getName(AssociationRef assocRef)
     {
         return assocRef;
@@ -69,63 +69,62 @@ public class SingleTServiceImpl implements TenantService
     {
         return storeRef;
     }
-    
+
     public QName getName(QName name)
     {
         return name;
     }
-    
+
     public QName getName(NodeRef inNodeRef, QName name)
     {
         return name;
     }
-    
+
     public String getName(String name)
     {
         return name;
     }
-    
+
     public QName getBaseName(QName name, boolean forceForNonTenant)
     {
         return name;
     }
-     
+
     public NodeRef getBaseName(NodeRef nodeRef)
     {
         return nodeRef;
     }
-    
+
     public NodeRef getBaseName(NodeRef nodeRef, boolean forceForNonTenant)
     {
         return nodeRef;
     }
-    
+
     public StoreRef getBaseName(StoreRef storeRef)
     {
         return storeRef;
     }
-    
+
     public ChildAssociationRef getBaseName(ChildAssociationRef childAssocRef)
     {
         return childAssocRef;
     }
-    
+
     public ChildAssociationRef getBaseName(ChildAssociationRef childAssocRef, boolean forceForNonTenant)
     {
         return childAssocRef;
     }
-    
+
     public AssociationRef getBaseName(AssociationRef assocRef)
     {
         return assocRef;
     }
-    
+
     public String getBaseName(String name)
     {
         return name;
     }
 
-    
     public String getBaseName(String name, boolean forceForNonTenant)
     {
         return name;
@@ -135,17 +134,17 @@ public class SingleTServiceImpl implements TenantService
     {
         return name;
     }
-    
+
     public void checkDomainUser(String username)
     {
         // NOOP
     }
-    
+
     public void checkDomain(String name)
     {
         // NOOP
     }
-    
+
     public NodeRef getRootNode(NodeService nodeService, SearchService searchService, NamespaceService namespaceService, String rootPath, NodeRef rootNodeRef)
     {
         return rootNodeRef;
@@ -155,42 +154,42 @@ public class SingleTServiceImpl implements TenantService
     {
         return false;
     }
-    
+
     public boolean isTenantUser(String username)
     {
         return false;
     }
-    
+
     public boolean isTenantName(String name)
     {
         return false;
     }
-    
+
     public String getUserDomain(String username)
     {
         return DEFAULT_DOMAIN;
     }
-    
+
     public String getCurrentUserDomain()
     {
         return DEFAULT_DOMAIN;
     }
-    
+
     public String getDomain(String name)
     {
         return DEFAULT_DOMAIN;
     }
-    
+
     public String getDomain(String name, boolean checkCurrentDomain)
     {
         return DEFAULT_DOMAIN;
     }
-    
+
     public String getDomainUser(String baseUsername, String tenantDomain)
     {
         return baseUsername;
     }
-    
+
     public Tenant getTenant(String tenantDomain)
     {
         return null;
@@ -206,7 +205,8 @@ public class SingleTServiceImpl implements TenantService
      * 
      * @see TenantService
      */
-	public String getPrimaryDomain(String user) {
-		return DEFAULT_DOMAIN;
-	}
+    public String getPrimaryDomain(String user)
+    {
+        return DEFAULT_DOMAIN;
+    }
 }

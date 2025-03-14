@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.repository.Path.ChildAssocElement;
 
 /**
  * Utility class for record categories
+ * 
  * @author Ross Gale
  * @since 2.7
  */
@@ -49,7 +50,9 @@ public class RecordCategoryUtil
 
     /**
      * Setter for the node service
-     * @param nodeService Node service
+     * 
+     * @param nodeService
+     *            Node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -58,22 +61,25 @@ public class RecordCategoryUtil
 
     /**
      * Return the record category id for a file plan element
-     * @param nodeRef the node reference of the file plan element
-     * @param includeFolders return an id for records, folders and categories
+     * 
+     * @param nodeRef
+     *            the node reference of the file plan element
+     * @param includeFolders
+     *            return an id for records, folders and categories
      * @return Record category identifier
      */
     public String getCategoryIdFromNodeId(NodeRef nodeRef, boolean includeFolders)
     {
-        if(!includeFolders)
+        if (!includeFolders)
         {
             if (nodeService.getType(nodeRef).equals(TYPE_RECORD_FOLDER) || nodeService.getType(nodeRef).equals(TYPE_RECORD_CATEGORY))
             {
                 return null;
             }
         }
-        //Search for the first category from the end of the path to save time
+        // Search for the first category from the end of the path to save time
         Path path = nodeService.getPath(nodeRef);
-        for(int x = path.size()-1; x >= 0; x--)
+        for (int x = path.size() - 1; x >= 0; x--)
         {
             NodeRef ref = ((ChildAssocElement) path.get(x)).getRef().getChildRef();
             if (nodeService.getType(ref).equals(TYPE_RECORD_CATEGORY))

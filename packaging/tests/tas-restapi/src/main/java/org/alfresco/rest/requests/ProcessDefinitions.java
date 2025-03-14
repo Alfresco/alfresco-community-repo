@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.requests;
 
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.exception.JsonToModelConversionException;
@@ -33,7 +35,6 @@ import org.alfresco.rest.model.RestHtmlResponse;
 import org.alfresco.rest.model.RestProcessDefinitionModel;
 import org.alfresco.rest.model.RestProcessDefinitionModelsCollection;
 import org.alfresco.utility.Utility;
-import org.springframework.http.HttpMethod;
 
 /**
  * Declares all Rest API under the /process-definitions path

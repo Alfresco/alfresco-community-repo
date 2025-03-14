@@ -25,11 +25,12 @@
  */
 package org.alfresco.repo.domain.permissions;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * Triggers setFixedAcl for those nodes with ASPECT_PENDING_FIX_ACL
@@ -53,7 +54,7 @@ public class FixedAclUpdaterJob implements Job
         {
             throw new AlfrescoRuntimeException("FixedAclUpdaterJob must contain a valid 'fixedAclUpdater'");
         }
-        FixedAclUpdater fixedAclUpdater = (FixedAclUpdater)fixedAclUpdaterObject;
+        FixedAclUpdater fixedAclUpdater = (FixedAclUpdater) fixedAclUpdaterObject;
         fixedAclUpdater.execute();
     }
 }

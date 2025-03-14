@@ -27,6 +27,8 @@ package org.alfresco.rest.requests;
 
 import jakarta.json.JsonArrayBuilder;
 
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
@@ -42,21 +44,22 @@ import org.alfresco.rest.model.RestTaskModelsCollection;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.ProcessModel;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.http.HttpMethod;
 
 /**
  * Created by Claudia Agache on 10/11/2016.
  */
 
-public class Processes extends ModelRequest<Processes>  
+public class Processes extends ModelRequest<Processes>
 {
     private ProcessModel processModel;
-    public Processes(RestWrapper restWrapper) 
+
+    public Processes(RestWrapper restWrapper)
     {
         super(restWrapper);
     }
 
-    public Processes(ProcessModel processModel, RestWrapper restWrapper) {
+    public Processes(ProcessModel processModel, RestWrapper restWrapper)
+    {
         this(restWrapper);
         this.processModel = processModel;
     }
@@ -87,6 +90,7 @@ public class Processes extends ModelRequest<Processes>
 
     /**
      * Retrieves the process identified by processId using GET /processes/{processId}
+     * 
      * @return
      */
     public RestProcessModel getProcess()
@@ -119,7 +123,7 @@ public class Processes extends ModelRequest<Processes>
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "processes");
         return restWrapper.processModel(RestProcessModel.class, request);
     }
-    
+
     /**
      * Starts new process with given input body using POST /processes
      *
@@ -145,7 +149,7 @@ public class Processes extends ModelRequest<Processes>
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "processes/{processId}/variables", processModel.getId());
         return restWrapper.processModel(RestProcessVariableModel.class, request);
     }
-    
+
     /**
      * Add process variables using POST /processes/{processId}/variables
      *
@@ -154,20 +158,19 @@ public class Processes extends ModelRequest<Processes>
      * @throws JsonToModelConversionException
      */
     public RestProcessVariableCollection addProcessVariables(RestProcessVariableModel... processVariablesModel)
-    {      
-        JsonArrayBuilder array = JsonBodyGenerator.defineJSONArray();        
-        for(RestProcessVariableModel processVariableModel: processVariablesModel)
-        {       
+    {
+        JsonArrayBuilder array = JsonBodyGenerator.defineJSONArray();
+        for (RestProcessVariableModel processVariableModel : processVariablesModel)
+        {
             array.add(JsonBodyGenerator.defineJSON().add("name", processVariableModel.getName())
                     .add("value", processVariableModel.getValue())
                     .add("type", processVariableModel.getType())).toString();
-        }      
-       
-        String postBody = array.build().toString();    
+        }
+
+        String postBody = array.build().toString();
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "processes/{processId}/variables", processModel.getId());
         return restWrapper.processModels(RestProcessVariableCollection.class, request);
     }
-
 
     /**
      * Retrieve all process items from Alfresco using GET /processes/{processId}/items
@@ -207,7 +210,7 @@ public class Processes extends ModelRequest<Processes>
                 variableModel.getName());
         return restWrapper.processModel(RestProcessVariableModel.class, request);
     }
-        
+
     /**
      * Retrieve all tasks of a specified process from Alfresco using GET /processes/{processId}/tasks
      *
@@ -233,7 +236,7 @@ public class Processes extends ModelRequest<Processes>
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "processes/{processId}/items", processModel.getId());
         return restWrapper.processModel(RestItemModel.class, request);
     }
-    
+
     /**
      * Add process items using POST /processes/{processId}/items
      *
@@ -243,13 +246,13 @@ public class Processes extends ModelRequest<Processes>
      */
     public RestItemModelsCollection addProcessItems(FileModel... fileModels)
     {
-        JsonArrayBuilder array = JsonBodyGenerator.defineJSONArray();        
-        for(FileModel fileModel: fileModels)
-        {                    
+        JsonArrayBuilder array = JsonBodyGenerator.defineJSONArray();
+        for (FileModel fileModel : fileModels)
+        {
             array.add(JsonBodyGenerator.defineJSON().add("id", fileModel.getNodeRefWithoutVersion()));
-        }      
-       
-        String postBody = array.build().toString();        
+        }
+
+        String postBody = array.build().toString();
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "processes/{processId}/items", processModel.getId());
         return restWrapper.processModels(RestItemModelsCollection.class, request);
     }

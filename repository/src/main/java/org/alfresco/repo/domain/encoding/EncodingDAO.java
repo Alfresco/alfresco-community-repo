@@ -38,12 +38,13 @@ public interface EncodingDAO
     /**
      * Get the encoding pair.
      * 
-     * @param encoding              the encoding string
-     * @return                      the ID-encoding pair or <tt>null</tt> if it doesn't exsit
+     * @param encoding
+     *            the encoding string
+     * @return the ID-encoding pair or <tt>null</tt> if it doesn't exsit
      */
     Pair<Long, String> getEncoding(String encoding);
-    
+
     Pair<Long, String> getEncoding(Long id);
-    
+
     Pair<Long, String> getOrCreateEncoding(String encoding);
 }

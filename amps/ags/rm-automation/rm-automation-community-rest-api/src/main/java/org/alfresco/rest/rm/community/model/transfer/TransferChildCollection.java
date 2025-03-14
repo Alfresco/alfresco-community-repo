@@ -31,6 +31,7 @@ import org.alfresco.rest.core.RestModels;
 
 /**
  * Handle collection of {@link TransferChildEntry}
+ * 
  * @author Silviu Dinuta
  * @since 2.6
  */

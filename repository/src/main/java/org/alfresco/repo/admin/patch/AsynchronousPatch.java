@@ -26,11 +26,6 @@
 
 package org.alfresco.repo.admin.patch;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.lock.JobLockService;
-import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.quartz.Job;
@@ -38,6 +33,12 @@ import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.extensions.surf.util.I18NUtil;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Base implementation of the asynchronous patch.
@@ -63,7 +64,8 @@ public abstract class AsynchronousPatch extends AbstractPatch
     private JobLockService jobLockService;
 
     /**
-     * @param jobLockService the jobLockService to set
+     * @param jobLockService
+     *            the jobLockService to set
      */
     public void setJobLockService(JobLockService jobLockService)
     {
@@ -134,7 +136,7 @@ public abstract class AsynchronousPatch extends AbstractPatch
 
         if (!appliedPatch.getWasExecuted())
         {
-            // the patch was not executed. E.g. not relevant to the current schema 
+            // the patch was not executed. E.g. not relevant to the current schema
             logger.info(I18NUtil.getMessage(MSG_NOT_EXECUTED, appliedPatch.getId(), appliedPatch.getReport()));
         }
         else if (appliedPatch.getSucceeded())
@@ -156,8 +158,7 @@ public abstract class AsynchronousPatch extends AbstractPatch
     public static class AsynchronousPatchJob implements Job
     {
         public AsynchronousPatchJob()
-        {
-        }
+        {}
 
         @Override
         public void execute(JobExecutionContext context) throws JobExecutionException

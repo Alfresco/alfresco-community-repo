@@ -32,7 +32,7 @@ import org.alfresco.module.org_alfresco_module_rm.capability.policy.Policy;
 /**
  * @author Roy Wetherall
  */
-public interface PolicyRegister 
+public interface PolicyRegister
 {
-	void registerPolicy(Policy policy);
+    void registerPolicy(Policy policy);
 }

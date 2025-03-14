@@ -33,6 +33,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -43,11 +48,6 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.testing.category.DBTests;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * @see LocaleDAO
@@ -59,33 +59,32 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class LocaleDAOTest extends TestCase
 {
     private static Log logger = LogFactory.getLog(LocaleDAOTest.class);
-    
+
     private ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-    
+
     private TransactionService transactionService;
     private RetryingTransactionHelper txnHelper;
     private LocaleDAO localeDAO;
-    
+
     @Override
     public void setUp() throws Exception
     {
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
         txnHelper = transactionService.getRetryingTransactionHelper();
-        
+
         localeDAO = (LocaleDAO) ctx.getBean("localeDAO");
     }
-    
+
     @Override
     public void tearDown() throws Exception
     {
         // NOOP
     }
-    
+
     private Pair<Long, Locale> getLocale(final Locale locale, boolean expectSuccess)
     {
-        RetryingTransactionCallback<Pair<Long, Locale>> callback = new RetryingTransactionCallback<Pair<Long, Locale>>()
-        {
+        RetryingTransactionCallback<Pair<Long, Locale>> callback = new RetryingTransactionCallback<Pair<Long, Locale>>() {
             public Pair<Long, Locale> execute() throws Throwable
             {
                 Pair<Long, Locale> localePair = localeDAO.getOrCreateLocalePair(locale);
@@ -109,8 +108,7 @@ public class LocaleDAOTest extends TestCase
             }
         }
     }
-    
-    
+
     public void testCreateLocale() throws Exception
     {
         // Create a locale
@@ -122,7 +120,7 @@ public class LocaleDAOTest extends TestCase
         // Check the duplicate checking
         getLocale(locale, false);
     }
-    
+
     public void testCreateLocaleEmpty() throws Exception
     {
         // Create a locale
@@ -132,11 +130,10 @@ public class LocaleDAOTest extends TestCase
         Pair<Long, Locale> localePairCheck = getLocale(localePair.getSecond(), true);
         assertEquals("Locale ID changed", localePair.getFirst(), localePairCheck.getFirst());
     }
-    
+
     public void testDefaultLocale() throws Exception
     {
-        RetryingTransactionCallback<Pair<Long, Locale>> callback = new RetryingTransactionCallback<Pair<Long, Locale>>()
-        {
+        RetryingTransactionCallback<Pair<Long, Locale>> callback = new RetryingTransactionCallback<Pair<Long, Locale>>() {
             public Pair<Long, Locale> execute() throws Throwable
             {
                 // What is the thread's default locale?
@@ -151,34 +148,33 @@ public class LocaleDAOTest extends TestCase
                 return localePair;
             }
         };
-        
+
         // Check that the default locale is handled properly
         txnHelper.doInTransaction(callback);
-        
+
         // Now change the default locale
         I18NUtil.setLocale(Locale.CANADA_FRENCH);
         // Repeat
         txnHelper.doInTransaction(callback);
     }
-    
+
     /**
      * Forces a bunch of threads to attempt Locale creation.
      */
     public void testConcurrentLocale() throws Throwable
     {
         final Locale locale = Locale.SIMPLIFIED_CHINESE;
-        
+
         int threadCount = 50;
         final CountDownLatch readyLatch = new CountDownLatch(threadCount);
         final CountDownLatch startLatch = new CountDownLatch(1);
         final CountDownLatch doneLatch = new CountDownLatch(threadCount);
         final List<Throwable> errors = Collections.synchronizedList(new ArrayList<Throwable>(0));
-        final RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
-        {
+        final RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>() {
             public Long execute() throws Throwable
             {
                 String threadName = Thread.currentThread().getName();
-                
+
                 // Notify that we are ready
                 logger.debug("Thread " + threadName + " is READY");
                 readyLatch.countDown();
@@ -205,8 +201,7 @@ public class LocaleDAOTest extends TestCase
                 return localePair.getFirst();
             }
         };
-        Runnable runnable = new Runnable()
-        {
+        Runnable runnable = new Runnable() {
             public void run()
             {
                 try
@@ -224,7 +219,7 @@ public class LocaleDAOTest extends TestCase
         for (int i = 0; i < threadCount; i++)
         {
             Thread thread = new Thread(runnable, getName() + "-" + i);
-            thread.setDaemon(true);     // Just in case there are complications
+            thread.setDaemon(true); // Just in case there are complications
             thread.start();
         }
         // Wait for threads to be ready

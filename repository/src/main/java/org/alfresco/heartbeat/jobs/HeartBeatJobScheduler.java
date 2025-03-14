@@ -30,13 +30,13 @@ import org.alfresco.heartbeat.HBDataCollectorServiceImpl;
 
 /**
  *
- * The implementations of this interface are used by {@link HBDataCollectorServiceImpl} to schedule and unschedule jobs
- * for associated collectors.
+ * The implementations of this interface are used by {@link HBDataCollectorServiceImpl} to schedule and unschedule jobs for associated collectors.
  *
  * @author eknizat
  */
 public interface HeartBeatJobScheduler
 {
     void scheduleJob(HBBaseDataCollector collector);
+
     void unscheduleJob(HBBaseDataCollector collector);
 }

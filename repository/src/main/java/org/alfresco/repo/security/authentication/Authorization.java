@@ -35,8 +35,7 @@ import org.alfresco.util.ParameterCheck;
  * 
  * Is ticket, if one of the following is true:
  * 
- * a) Username == "ROLE_TICKET" (in any case) b) Username is not specified (i.e.
- * null) c) Username is zero length
+ * a) Username == "ROLE_TICKET" (in any case) b) Username is not specified (i.e. null) c) Username is zero length
  */
 public class Authorization
 {
@@ -49,7 +48,8 @@ public class Authorization
     /**
      * Construct
      * 
-     * @param authorization String
+     * @param authorization
+     *            String
      */
     public Authorization(String authorization)
     {
@@ -74,8 +74,10 @@ public class Authorization
     /**
      * Construct
      * 
-     * @param username String
-     * @param password String
+     * @param username
+     *            String
+     * @param password
+     *            String
      */
     public Authorization(String username, String password)
     {

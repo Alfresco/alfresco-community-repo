@@ -27,10 +27,10 @@ package org.alfresco.rest.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.utility.constants.NetworkSubscriptionLevel;
 import org.alfresco.utility.model.TestModel;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Created by Cristina Axinte on 9/26/2016.
@@ -52,8 +52,7 @@ public class RestPersonNetworkModel extends TestModel
     private List<RestNetworkQuotaModel> quotas;
 
     public RestPersonNetworkModel()
-    {
-    }
+    {}
 
     public RestPersonNetworkModel(String id, boolean isEnabled)
     {
@@ -129,6 +128,6 @@ public class RestPersonNetworkModel extends TestModel
     public void setEnabled(boolean isEnabled)
     {
         this.isEnabled = isEnabled;
-    }  
+    }
 
 }

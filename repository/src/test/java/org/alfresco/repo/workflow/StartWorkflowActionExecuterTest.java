@@ -27,6 +27,11 @@ package org.alfresco.repo.workflow;
 
 import java.util.Date;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -40,10 +45,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Start Advanced Workflow action execution test
@@ -64,13 +65,13 @@ public class StartWorkflowActionExecuterTest extends BaseSpringTest
     @Before
     public void before() throws Exception
     {
-        this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
-        this.namespaceService = (NamespaceService)this.applicationContext.getBean("namespaceService");
-        this.personService = (PersonService)this.applicationContext.getBean("personService");
-        
-        AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
+        this.nodeService = (NodeService) this.applicationContext.getBean("nodeService");
+        this.namespaceService = (NamespaceService) this.applicationContext.getBean("namespaceService");
+        this.personService = (PersonService) this.applicationContext.getBean("personService");
+
+        AuthenticationComponent authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
-        
+
         // Create the store and get the root node
         rootNodeRef = nodeService.getRootNode(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore"));
         this.nodeRef = this.nodeService.createNode(
@@ -78,11 +79,11 @@ public class StartWorkflowActionExecuterTest extends BaseSpringTest
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}testnode"),
                 ContentModel.TYPE_CONTENT).getChildRef();
-        
-        // Get the executer instance 
-        this.executer = (StartWorkflowActionExecuter)this.applicationContext.getBean(StartWorkflowActionExecuter.NAME);
+
+        // Get the executer instance
+        this.executer = (StartWorkflowActionExecuter) this.applicationContext.getBean(StartWorkflowActionExecuter.NAME);
     }
-    
+
     /**
      * Test execution
      */
@@ -97,5 +98,5 @@ public class StartWorkflowActionExecuterTest extends BaseSpringTest
         action.setParameterValue(WorkflowModel.ASSOC_ASSIGNEE.toPrefixString(namespaceService), reviewer);
         executer.execute(action, this.nodeRef);
     }
-    
+
 }

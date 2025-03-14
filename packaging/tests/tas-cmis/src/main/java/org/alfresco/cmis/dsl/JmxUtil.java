@@ -23,7 +23,7 @@ public class JmxUtil
 
     public void enableCMISAudit() throws Exception
     {
-        if(jmx.readProperty(jmxAuditObjectName, "audit.enabled").equals(String.valueOf(false)))
+        if (jmx.readProperty(jmxAuditObjectName, "audit.enabled").equals(String.valueOf(false)))
         {
             jmx.writeProperty(jmxAuditObjectName, "audit.enabled", String.valueOf(true));
         }

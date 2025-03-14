@@ -29,22 +29,23 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.SocketException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.jlan.ftp.FTPConfigSection;
 import org.alfresco.jlan.ftp.FTPServer;
 import org.alfresco.jlan.server.NetworkServer;
 import org.alfresco.jlan.server.config.ServerConfiguration;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * FTP Server Class
  * 
- * <p>Create and start the server components required to run the FTP server.
+ * <p>
+ * Create and start the server components required to run the FTP server.
  * 
  * @author GKSpencer
  */
@@ -58,13 +59,14 @@ public class FTPServerBean extends AbstractLifecycleBean
     private FTPConfigSection m_ftpConfig;
 
     // The actual FTP server
-    
+
     private FTPServer ftpServer;
-    
+
     /**
      * Class constructor
      *
-     * @param serverConfig ServerConfiguration
+     * @param serverConfig
+     *            ServerConfiguration
      */
     public FTPServerBean(ServerConfiguration serverConfig)
     {
@@ -92,28 +94,29 @@ public class FTPServerBean extends AbstractLifecycleBean
     /**
      * Start the FTP server components
      * 
-     * @exception SocketException If a network error occurs
-     * @exception IOException If an I/O error occurs
+     * @exception SocketException
+     *                If a network error occurs
+     * @exception IOException
+     *                If an I/O error occurs
      */
     public final void startServer() throws SocketException, IOException
     {
         try
         {
             // Create the FTP server, if enabled
-            
-            m_ftpConfig = (FTPConfigSection) filesysConfig.getConfigSection( FTPConfigSection.SectionName);
-            
+
+            m_ftpConfig = (FTPConfigSection) filesysConfig.getConfigSection(FTPConfigSection.SectionName);
+
             if (m_ftpConfig != null)
             {
                 // Create the FTP server
-                
+
                 ftpServer = new FTPServer(filesysConfig);
                 filesysConfig.addServer(ftpServer);
             }
 
-
             // Start the server
-            if(ftpServer != null)
+            if (ftpServer != null)
             {
                 // Start the FTP server
                 if (logger.isInfoEnabled())
@@ -124,7 +127,7 @@ public class FTPServerBean extends AbstractLifecycleBean
         }
         catch (Throwable e)
         {
-        	ftpServer = null;
+            ftpServer = null;
             throw new AlfrescoRuntimeException("Failed to start FTP Server", e);
         }
         // success
@@ -140,20 +143,20 @@ public class FTPServerBean extends AbstractLifecycleBean
             // initialisation failed
             return;
         }
-        
+
         // Shutdown the FTP server
-        
-        if ( ftpServer != null)
+
+        if (ftpServer != null)
         {
             if (logger.isInfoEnabled())
                 logger.info("Shutting server " + ftpServer.getProtocolName() + " ...");
 
             // Stop the server
-            
+
             ftpServer.shutdownServer(false);
-            
+
             // Remove the server from the global list
-            
+
             getConfiguration().removeServer(ftpServer.getProtocolName());
             ftpServer = null;
         }
@@ -162,7 +165,8 @@ public class FTPServerBean extends AbstractLifecycleBean
     /**
      * Runs the FTP server directly
      * 
-     * @param args String[]
+     * @param args
+     *            String[]
      */
     public static void main(String[] args)
     {
@@ -175,11 +179,11 @@ public class FTPServerBean extends AbstractLifecycleBean
         try
         {
             // Create the configuration service in the same way that Spring creates it
-            
+
             ctx = new ClassPathXmlApplicationContext("alfresco/application-context.xml");
 
             // Get the FTP server bean
-            
+
             FTPServerBean server = (FTPServerBean) ctx.getBean("ftpServer");
             if (server == null)
             {
@@ -187,47 +191,47 @@ public class FTPServerBean extends AbstractLifecycleBean
             }
 
             // Stop the CIFS server components, if running
-            
+
             NetworkServer srv = server.getConfiguration().findServer("SMB");
-            if ( srv != null)
+            if (srv != null)
                 srv.shutdownServer(true);
 
             srv = server.getConfiguration().findServer("NetBIOS");
-            if ( srv != null)
+            if (srv != null)
                 srv.shutdownServer(true);
-            
+
             // Only wait for shutdown if the FTP server is enabled
-            
-            if ( server.getConfiguration().hasConfigSection(FTPConfigSection.SectionName))
+
+            if (server.getConfiguration().hasConfigSection(FTPConfigSection.SectionName))
             {
-                
+
                 // FTP server should have automatically started
                 //
                 // Wait for shutdown via the console
-                
+
                 out.println("Enter 'x' to shutdown ...");
                 boolean shutdown = false;
-    
+
                 // Wait while the server runs, user may stop the server by typing a key
-                
+
                 while (shutdown == false)
                 {
-    
+
                     // Wait for the user to enter the shutdown key
-    
+
                     int ch = System.in.read();
-    
+
                     if (ch == 'x' || ch == 'X')
                         shutdown = true;
-    
+
                     synchronized (server)
                     {
                         server.wait(20);
                     }
                 }
-    
+
                 // Stop the server
-                
+
                 server.stopServer();
             }
         }
@@ -266,9 +270,9 @@ public class FTPServerBean extends AbstractLifecycleBean
     protected void onShutdown(ApplicationEvent event)
     {
         stopServer();
-        
+
         // Clear the configuration
         filesysConfig = null;
     }
-    
+
 }

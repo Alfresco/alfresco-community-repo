@@ -46,21 +46,19 @@ public class AuditableAnnotationTest extends TestCase
     public void testAnnotations() throws Exception, NoSuchMethodException
     {
         Class clazz = AnnotationTestInterface.class;
-        
+
         Method method = clazz.getMethod("noArgs", new Class[]{});
         assertTrue(method.isAnnotationPresent(Auditable.class));
         Auditable auditable = method.getAnnotation(Auditable.class);
         assertEquals(auditable.parameters().length, 0);
-        
-        
+
         method = clazz.getMethod("getString", new Class[]{String.class, String.class});
         assertTrue(method.isAnnotationPresent(Auditable.class));
         auditable = method.getAnnotation(Auditable.class);
         assertEquals(auditable.parameters().length, 2);
         assertEquals(auditable.parameters()[0], "one");
         assertEquals(auditable.parameters()[1], "two");
-       
-        
+
         method = clazz.getMethod("getAnotherString", new Class[]{String.class});
         assertTrue(method.isAnnotationPresent(Auditable.class));
         auditable = method.getAnnotation(Auditable.class);

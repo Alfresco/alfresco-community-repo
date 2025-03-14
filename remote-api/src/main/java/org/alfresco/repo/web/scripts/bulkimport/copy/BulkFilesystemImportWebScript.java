@@ -29,14 +29,15 @@ package org.alfresco.repo.web.scripts.bulkimport.copy;
 import java.io.File;
 import java.util.Map;
 
-import org.alfresco.repo.bulkimport.NodeImporter;
-import org.alfresco.repo.bulkimport.impl.MultiThreadedBulkFilesystemImporter;
-import org.alfresco.repo.bulkimport.impl.StreamingNodeImporterFactory;
-import org.alfresco.repo.web.scripts.bulkimport.AbstractBulkFileSystemImportWebScript;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.repo.bulkimport.NodeImporter;
+import org.alfresco.repo.bulkimport.impl.MultiThreadedBulkFilesystemImporter;
+import org.alfresco.repo.bulkimport.impl.StreamingNodeImporterFactory;
+import org.alfresco.repo.web.scripts.bulkimport.AbstractBulkFileSystemImportWebScript;
 
 /**
  * Web Script class that invokes a BulkFilesystemImporter implementation.
@@ -46,17 +47,17 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class BulkFilesystemImportWebScript extends AbstractBulkFileSystemImportWebScript
 {
     private MultiThreadedBulkFilesystemImporter bulkImporter;
-	private StreamingNodeImporterFactory nodeImporterFactory;
+    private StreamingNodeImporterFactory nodeImporterFactory;
 
-	public void setBulkImporter(MultiThreadedBulkFilesystemImporter bulkImporter)
-	{
-		this.bulkImporter = bulkImporter;
-	}
+    public void setBulkImporter(MultiThreadedBulkFilesystemImporter bulkImporter)
+    {
+        this.bulkImporter = bulkImporter;
+    }
 
-	public void setNodeImporterFactory(StreamingNodeImporterFactory nodeImporterFactory)
-	{
-		this.nodeImporterFactory = nodeImporterFactory;
-	}
+    public void setNodeImporterFactory(StreamingNodeImporterFactory nodeImporterFactory)
+    {
+        this.nodeImporterFactory = nodeImporterFactory;
+    }
 
     /**
      * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)

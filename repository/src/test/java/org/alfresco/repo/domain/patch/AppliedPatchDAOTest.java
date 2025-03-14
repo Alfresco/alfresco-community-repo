@@ -28,6 +28,8 @@ package org.alfresco.repo.domain.patch;
 import java.util.Date;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.repo.admin.patch.AppliedPatch;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -37,8 +39,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.DBTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
  * @see AppliedPatchDAO
@@ -54,17 +54,17 @@ public class AppliedPatchDAOTest extends TestCase
     private TransactionService transactionService;
     private RetryingTransactionHelper txnHelper;
     private AppliedPatchDAO appliedPatchDAO;
-    
+
     @Override
     public void setUp() throws Exception
     {
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
         txnHelper = transactionService.getRetryingTransactionHelper();
-        
+
         appliedPatchDAO = (AppliedPatchDAO) ctx.getBean("appliedPatchDAO");
     }
-    
+
     private AppliedPatch create(String id, boolean allNull) throws Exception
     {
         final AppliedPatch appliedPatch = new AppliedPatchEntity();
@@ -82,8 +82,7 @@ public class AppliedPatchDAOTest extends TestCase
             appliedPatch.setSucceeded(true);
             appliedPatch.setReport("All good in test " + getName());
         }
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 appliedPatchDAO.createAppliedPatch(appliedPatch);
@@ -93,11 +92,10 @@ public class AppliedPatchDAOTest extends TestCase
         txnHelper.doInTransaction(callback);
         return appliedPatch;
     }
-    
+
     private AppliedPatch get(final String id) throws Exception
     {
-        RetryingTransactionCallback<AppliedPatch> callback = new RetryingTransactionCallback<AppliedPatch>()
-        {
+        RetryingTransactionCallback<AppliedPatch> callback = new RetryingTransactionCallback<AppliedPatch>() {
             public AppliedPatch execute() throws Throwable
             {
                 return appliedPatchDAO.getAppliedPatch(id);
@@ -105,25 +103,24 @@ public class AppliedPatchDAOTest extends TestCase
         };
         return txnHelper.doInTransaction(callback);
     }
-    
+
     public void testCreateEmpty() throws Exception
     {
         final String id = getName() + "-" + System.currentTimeMillis();
         create(id, true);
     }
-    
+
     public void testCreatePopulated() throws Exception
     {
         final String id = getName() + "-" + System.currentTimeMillis();
         create(id, false);
     }
-    
+
     public void testCreateWithRollback() throws Exception
     {
         final String id = getName() + "-" + System.currentTimeMillis();
         // Create an encoding
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 create(id, false);
@@ -143,16 +140,16 @@ public class AppliedPatchDAOTest extends TestCase
         // Check that it doesn't exist
         get(id);
     }
-//    
-//    public void testCaseInsensitivity() throws Exception
-//    {
-//        String encoding = "AAA-" + GUID.generate();
-//        Pair<Long, String> lowercasePair = get(encoding.toLowerCase(), true, true);
-//        // Check that the same pair is retrievable using uppercase
-//        Pair<Long, String> uppercasePair = get(encoding.toUpperCase(), true, true);
-//        assertNotNull(uppercasePair);
-//        assertEquals(
-//                "Upper and lowercase encoding instance IDs were not the same",
-//                lowercasePair.getFirst(), uppercasePair.getFirst());
-//    }
+    //
+    // public void testCaseInsensitivity() throws Exception
+    // {
+    // String encoding = "AAA-" + GUID.generate();
+    // Pair<Long, String> lowercasePair = get(encoding.toLowerCase(), true, true);
+    // // Check that the same pair is retrievable using uppercase
+    // Pair<Long, String> uppercasePair = get(encoding.toUpperCase(), true, true);
+    // assertNotNull(uppercasePair);
+    // assertEquals(
+    // "Upper and lowercase encoding instance IDs were not the same",
+    // lowercasePair.getFirst(), uppercasePair.getFirst());
+    // }
 }

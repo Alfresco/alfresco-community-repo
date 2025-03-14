@@ -26,28 +26,13 @@
 
 package org.alfresco.rest.framework.tests.core;
 
-import org.alfresco.rest.framework.Api;
-import org.alfresco.rest.framework.core.ResourceDictionary;
-import org.alfresco.rest.framework.core.ResourceDictionaryBuilder;
-import org.alfresco.rest.framework.core.ResourceInspector;
-import org.alfresco.rest.framework.core.ResourceLocator;
-import org.alfresco.rest.framework.core.ResourceLookupDictionary;
-import org.alfresco.rest.framework.core.ResourceMetadata;
-import org.alfresco.rest.framework.core.ResourceWithMetadata;
-import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.alfresco.rest.framework.core.exceptions.NotFoundException;
-import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
-import org.alfresco.rest.framework.resource.EntityResource;
-import org.alfresco.rest.framework.resource.RelationshipResource;
-import org.alfresco.rest.framework.tests.api.mocks.Farmer;
-import org.alfresco.rest.framework.tests.api.mocks.GoatEntityResource;
-import org.alfresco.rest.framework.tests.api.mocks.GrassEntityResource;
-import org.alfresco.rest.framework.tests.api.mocks.SheepBaaaahResource;
-import org.alfresco.rest.framework.tests.api.mocks.SheepBlackSheepResource;
-import org.alfresco.rest.framework.tests.api.mocks.SheepEntityResource;
-import org.alfresco.rest.framework.tests.api.mocks3.FlockEntityResource;
-import org.alfresco.rest.framework.tests.api.mocks3.FlocketEntityResource;
-import org.alfresco.util.Pair;
+import static org.junit.Assert.assertNotNull;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,24 +42,21 @@ import org.springframework.http.HttpMethod;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.alfresco.rest.framework.Api;
+import org.alfresco.rest.framework.core.ResourceDictionary;
+import org.alfresco.rest.framework.core.ResourceDictionaryBuilder;
+import org.alfresco.rest.framework.core.ResourceLocator;
+import org.alfresco.rest.framework.core.ResourceLookupDictionary;
+import org.alfresco.rest.framework.core.ResourceWithMetadata;
+import org.alfresco.rest.framework.resource.EntityResource;
+import org.alfresco.rest.framework.resource.RelationshipResource;
 
 /**
  *
  * @author janv
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:test-rest-context.xml" })
+@ContextConfiguration(locations = {"classpath:test-rest-context.xml"})
 public class SecondLevelRelationshipTests
 {
     @Autowired
@@ -121,7 +103,7 @@ public class SecondLevelRelationshipTests
         assertNotNull(collResource.getMetaData().getOperation(HttpMethod.GET));
 
         Collection<String> relKeys = Arrays.asList("relation-a1-b1", "relation-a1-b2");
-        Map<String,ResourceWithMetadata> embeds = locator.locateRelationResource(api,"type-a1", relKeys, HttpMethod.GET);
+        Map<String, ResourceWithMetadata> embeds = locator.locateRelationResource(api, "type-a1", relKeys, HttpMethod.GET);
         assertNotNull(embeds);
     }
 
@@ -133,7 +115,7 @@ public class SecondLevelRelationshipTests
         Collection<String> relKeys = Arrays.asList(relKey);
 
         // /type-a1/{entityId}/relation-b1-c1/{entityId}/relation-b1-c1
-        Map<String,ResourceWithMetadata> embeds = locator.locateRelationResource(api,"type-a1", relKeys, HttpMethod.GET);
+        Map<String, ResourceWithMetadata> embeds = locator.locateRelationResource(api, "type-a1", relKeys, HttpMethod.GET);
         assertNotNull(embeds);
     }
 }

@@ -104,23 +104,23 @@ public class gUnitExecutor extends org.antlr.gunit.gUnitExecutor
 
             /** Use Reflection to create instances of lexer and parser */
             lexer = classForName(lexerName);
-            Class[] lexArgTypes = new Class[] { CharStream.class }; // assign type to lexer's args
+            Class[] lexArgTypes = new Class[]{CharStream.class}; // assign type to lexer's args
             Constructor lexConstructor = lexer.getConstructor(lexArgTypes);
-            Object[] lexArgs = new Object[] { input }; // assign value to lexer's args
+            Object[] lexArgs = new Object[]{input}; // assign value to lexer's args
             Object lexObj = lexConstructor.newInstance(lexArgs); // makes new instance of lexer
 
             CommonTokenStream tokens = new CommonTokenStream((Lexer) lexObj);
 
             parser = classForName(parserName);
-            Class[] parArgTypes = new Class[] { TokenStream.class }; // assign type to parser's args
+            Class[] parArgTypes = new Class[]{TokenStream.class}; // assign type to parser's args
             Constructor parConstructor = parser.getConstructor(parArgTypes);
-            Object[] parArgs = new Object[] { tokens }; // assign value to parser's args
+            Object[] parArgs = new Object[]{tokens}; // assign value to parser's args
             Object parObj = parConstructor.newInstance(parArgs); // makes new instance of parser
 
             // set up customized tree adaptor if necessary
             if (grammarInfo.getAdaptor() != null)
             {
-                parArgTypes = new Class[] { TreeAdaptor.class };
+                parArgTypes = new Class[]{TreeAdaptor.class};
                 Method _setTreeAdaptor = parser.getMethod("setTreeAdaptor", parArgTypes);
                 Class _treeAdaptor = classForName(grammarInfo.getAdaptor());
                 _setTreeAdaptor.invoke(parObj, _treeAdaptor.newInstance());
@@ -183,7 +183,7 @@ public class gUnitExecutor extends org.antlr.gunit.gUnitExecutor
                     if (token.getType() == Token.EOF)
                     {
                         foundEof = true;
-                        if(testRuleName.equals("ftsQuery") || testRuleName.equals("query"))
+                        if (testRuleName.equals("ftsQuery") || testRuleName.equals("query"))
                         {
                             count++;
                         }
@@ -192,7 +192,7 @@ public class gUnitExecutor extends org.antlr.gunit.gUnitExecutor
                     {
                         count++;
                     }
-                   
+
                 }
             }
 

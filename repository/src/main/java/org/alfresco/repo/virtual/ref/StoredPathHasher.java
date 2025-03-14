@@ -28,7 +28,8 @@ package org.alfresco.repo.virtual.ref;
 
 /**
  * Creates string-pair hashes based on stored path hashes.<br>
- * @see HierarchicalPathHasher 
+ * 
+ * @see HierarchicalPathHasher
  */
 public class StoredPathHasher extends HierarchicalPathHasher
 {

@@ -44,13 +44,13 @@ public class StatsProcessorTest
         StatsResultSet input = testData();
         StatsResultSet result = processor.process(input);
         assertNotNull(result);
-        List<StatsResultStat> statsResults= result.getStats();
-        assertEquals(5 , statsResults.size());
-        assertEquals("Princess" , statsResults.get(0).getName());
-        assertEquals("George" , statsResults.get(1).getName()); //if it doesn't find the result then return the original
-        assertEquals("Queen" , statsResults.get(2).getName());
-        assertEquals("Prince" , statsResults.get(3).getName());
-        assertEquals("King" , statsResults.get(4).getName());
+        List<StatsResultStat> statsResults = result.getStats();
+        assertEquals(5, statsResults.size());
+        assertEquals("Princess", statsResults.get(0).getName());
+        assertEquals("George", statsResults.get(1).getName()); // if it doesn't find the result then return the original
+        assertEquals("Queen", statsResults.get(2).getName());
+        assertEquals("Prince", statsResults.get(3).getName());
+        assertEquals("King", statsResults.get(4).getName());
     }
 
     private StatsResultSet testData()
@@ -61,10 +61,10 @@ public class StatsProcessorTest
         stats.add(new StatsResultStat("Liz", 1l, 2l, 3l, 4l, 5l));
         stats.add(new StatsResultStat("William", 1l, 2l, 3l, 4l, 5l));
         stats.add(new StatsResultStat("Charles", 1l, 2l, 3l, 4l, 5l));
- 
-        StatsResultSetImpl res = new StatsResultSetImpl( 2l, 3l, 4l, 5l,stats);
+
+        StatsResultSetImpl res = new StatsResultSetImpl(2l, 3l, 4l, 5l, stats);
         return res;
-            
+
     }
 
     private Map<String, String> mappingData()
@@ -77,7 +77,8 @@ public class StatsProcessorTest
         return data;
     }
 
-    public static class StatsResultSetImpl implements StatsResultSet {
+    public static class StatsResultSetImpl implements StatsResultSet
+    {
 
         private Long numberFound;
         private Long sum;
@@ -86,7 +87,7 @@ public class StatsProcessorTest
         private List<StatsResultStat> stats;
 
         public StatsResultSetImpl(Long numberFound, Long sum, Long max, Long mean,
-                    List<StatsResultStat> stats)
+                List<StatsResultStat> stats)
         {
             super();
             this.numberFound = numberFound;
@@ -95,22 +96,27 @@ public class StatsProcessorTest
             this.mean = mean;
             this.stats = stats;
         }
+
         public long getNumberFound()
         {
             return this.numberFound;
         }
+
         public Long getSum()
         {
             return this.sum;
         }
+
         public Long getMax()
         {
             return this.max;
         }
+
         public Long getMean()
         {
             return this.mean;
         }
+
         public List<StatsResultStat> getStats()
         {
             return this.stats;

@@ -26,20 +26,21 @@
 
 package org.alfresco.rest.api.tests;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.google.common.collect.ImmutableList;
+import org.junit.Before;
+
 import org.alfresco.rest.api.model.Association;
 import org.alfresco.rest.api.model.AssociationSource;
 import org.alfresco.rest.api.model.Model;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.data.Aspect;
 import org.alfresco.rest.api.tests.client.data.Type;
-import org.junit.Before;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Collections;
-import java.util.Arrays;
-import java.util.List;
 
 public class BaseModelApiTest extends AbstractBaseApiTest
 {
@@ -148,8 +149,8 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         apiModel.setNamespaceUri("http://www.api.t1/model/1.0");
         apiModel.setNamespacePrefix("api");
 
-        AssociationSource testAllAspectSource =  new AssociationSource(null, "test2:aspect-all", true, true, null);
-        AssociationSource testAllAspectTarget =  new AssociationSource(null, "api:referenceable", false, false, false);
+        AssociationSource testAllAspectSource = new AssociationSource(null, "test2:aspect-all", true, true, null);
+        AssociationSource testAllAspectTarget = new AssociationSource(null, "api:referenceable", false, false, false);
         Association testAllAspectAssociation = new Association("api:assoc-all", null, null, null, false, testAllAspectSource, testAllAspectTarget);
         testAllAspect = new org.alfresco.rest.api.tests.client.data.Aspect();
         testAllAspect.setId("test2:aspect-all");
@@ -161,20 +162,20 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         testAllAspect.setAssociations(Collections.singletonList(testAllAspectAssociation));
         testAllAspect.setMandatoryAspects(Arrays.asList("test2:aspect-three", "api:aspect-one", "api:aspect-two"));
 
-        AssociationSource apiBaseSource =  new AssociationSource(null, "api:base", false, true, null);
-        AssociationSource apiBaseTarget =  new AssociationSource(null, "api:base", true, false, false);
+        AssociationSource apiBaseSource = new AssociationSource(null, "api:base", false, true, null);
+        AssociationSource apiBaseTarget = new AssociationSource(null, "api:base", true, false, false);
         Association apiBaseAssociation = new Association("api:assoc1", null, null, false, false, apiBaseSource, apiBaseTarget);
 
-        AssociationSource apiChildSource =  new AssociationSource(null, "api:base", true, true, null);
-        AssociationSource apiChildTarget =  new AssociationSource(null, "api:referenceable", false, false, false);
+        AssociationSource apiChildSource = new AssociationSource(null, "api:base", true, true, null);
+        AssociationSource apiChildTarget = new AssociationSource(null, "api:referenceable", false, false, false);
         Association apiChildAssociation = new Association("api:childassoc1", null, null, true, false, apiChildSource, apiChildTarget);
 
-        AssociationSource apiBaseSource2 =  new AssociationSource(null, "api:base", true, true, null);
-        AssociationSource apiBaseTarget2 =  new AssociationSource(null, "api:referenceable", false, false, false);
+        AssociationSource apiBaseSource2 = new AssociationSource(null, "api:base", true, true, null);
+        AssociationSource apiBaseTarget2 = new AssociationSource(null, "api:referenceable", false, false, false);
         Association apiBaseAssociation2 = new Association("api:assoc2", null, null, false, false, apiBaseSource2, apiBaseTarget2);
 
-        AssociationSource apiChildPropagateSource =  new AssociationSource(null, "api:base", true, true, null);
-        AssociationSource apiChildPropagateTarget =  new AssociationSource(null, "api:referenceable", false, false, false);
+        AssociationSource apiChildPropagateSource = new AssociationSource(null, "api:base", true, true, null);
+        AssociationSource apiChildPropagateTarget = new AssociationSource(null, "api:referenceable", false, false, false);
         Association apiChildPropagateAssociation = new Association("api:childassocPropagate", null, null, true, false, apiChildPropagateSource, apiChildPropagateTarget);
 
         apiBaseType = new org.alfresco.rest.api.tests.client.data.Type();
@@ -196,8 +197,8 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         apiForcedType.setAssociations(Arrays.asList(apiBaseAssociation2, apiChildPropagateAssociation, apiBaseAssociation, apiChildAssociation));
         apiForcedType.setMandatoryAspects(Collections.singletonList("api:referenceable"));
 
-        AssociationSource apiChildSource2 =  new AssociationSource(null, "api:file", false, true, null);
-        AssociationSource apiChildTarget2 =  new AssociationSource(null, "api:referenceable", true, false, false);
+        AssociationSource apiChildSource2 = new AssociationSource(null, "api:file", false, true, null);
+        AssociationSource apiChildTarget2 = new AssociationSource(null, "api:referenceable", true, false, false);
         Association apiChildAssociation2 = new Association("api:childassoc2", null, null, true, false, apiChildSource2, apiChildTarget2);
         apiFileType = new org.alfresco.rest.api.tests.client.data.Type();
         apiFileType.setId("api:file");

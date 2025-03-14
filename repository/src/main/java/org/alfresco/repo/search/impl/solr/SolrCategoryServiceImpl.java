@@ -54,7 +54,7 @@ public class SolrCategoryServiceImpl extends AbstractCategoryServiceImpl
                 .map(FieldFacet::getField)
                 .findFirst()
                 .orElse("");
-        
+
         ResultSet resultSet = null;
         try
         {
@@ -84,7 +84,7 @@ public class SolrCategoryServiceImpl extends AbstractCategoryServiceImpl
                 resultSet.close();
             }
         }
-        
+
     }
 
 }

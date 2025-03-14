@@ -25,8 +25,10 @@
  */
 package org.alfresco.rest.api.nodes;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.InputStream;
+import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.InitializingBean;
 
 import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
 import org.alfresco.rest.api.DirectAccessUrlHelper;
@@ -53,8 +55,6 @@ import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ParameterCheck;
 
-import org.springframework.beans.factory.InitializingBean;
-
 /**
  * An implementation of an Entity Resource for a Node (file or folder)
  *
@@ -62,7 +62,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Gethin James
  * @author janv
  */
-@EntityResource(name="nodes", title = "Nodes")
+@EntityResource(name = "nodes", title = "Nodes")
 public class NodesEntityResource implements
         EntityResourceAction.ReadById<Node>, EntityResourceAction.Delete, EntityResourceAction.Update<Node>,
         BinaryResourceAction.Read, BinaryResourceAction.Update<Node>, InitializingBean
@@ -85,27 +85,28 @@ public class NodesEntityResource implements
     {
         ParameterCheck.mandatory("nodes", this.nodes);
     }
-	
+
     /**
      * Returns information regarding the node 'nodeId' - folder or document
      * 
-     * @param nodeId String id of node (folder or document) - will also accept well-known aliases, eg. "-root-", "-my-", "-shared-"
+     * @param nodeId
+     *            String id of node (folder or document) - will also accept well-known aliases, eg. "-root-", "-my-", "-shared-"
      * 
-     * Optional parameters:
-     * - path
+     *            Optional parameters: - path
      */
     @WebApiDescription(title = "Get Node Information", description = "Get information for the node with id 'nodeId'")
     @WebApiParam(name = "nodeId", title = "The node id")
     public Node readById(String nodeId, Parameters parameters)
     {
-    	return nodes.getFolderOrDocument(nodeId, parameters);
+        return nodes.getFolderOrDocument(nodeId, parameters);
     }
 
     /**
      * Download content
      * 
      * @param fileNodeId
-     * @param parameters {@link Parameters}
+     * @param parameters
+     *            {@link Parameters}
      * @return
      * @throws EntityNotFoundException
      */
@@ -125,8 +126,10 @@ public class NodesEntityResource implements
      * Note: alternatively, can upload via POST (multipart/form-data) with existing file name and form "overwrite=true".
      * 
      * @param fileNodeId
-     * @param contentInfo Basic information about the content stream
-     * @param stream An inputstream
+     * @param contentInfo
+     *            Basic information about the content stream
+     * @param stream
+     *            An inputstream
      * @param parameters
      * @return
      */
@@ -141,43 +144,45 @@ public class NodesEntityResource implements
     /**
      * Update info on the node 'nodeId' - folder or document
      *
-     * Can update name (which is a "rename" and hence must be unique within the current parent folder)
-     * or update other properties.
+     * Can update name (which is a "rename" and hence must be unique within the current parent folder) or update other properties.
      *
-     * @param nodeId  String nodeId of node (folder or document)
-     * @param nodeInfo node entity with info to update (eg. name, properties ...)
+     * @param nodeId
+     *            String nodeId of node (folder or document)
+     * @param nodeInfo
+     *            node entity with info to update (eg. name, properties ...)
      * @param parameters
      * @return
      */
     @Override
-    @WebApiDescription(title="Updates a node (file or folder) with id 'nodeId'")
+    @WebApiDescription(title = "Updates a node (file or folder) with id 'nodeId'")
     public Node update(String nodeId, Node nodeInfo, Parameters parameters)
     {
         return nodes.updateNode(nodeId, nodeInfo, parameters);
     }
-    
+
     /**
      * Delete the given node. Note: will cascade delete for a folder.
      * 
-     * @param nodeId String id of node (folder or document)
+     * @param nodeId
+     *            String id of node (folder or document)
      */
     @Override
-    @WebApiDescription(title = "Delete Node", description="Delete the file or folder with id 'nodeId'. Folder will cascade delete")
+    @WebApiDescription(title = "Delete Node", description = "Delete the file or folder with id 'nodeId'. Folder will cascade delete")
     public void delete(String nodeId, Parameters parameters)
     {
         nodes.deleteNode(nodeId, parameters);
     }
 
     @Operation("copy")
-    @WebApiDescription(title = "Copy Node", description="Copy one or more nodes (files or folders) to a new target folder, with option to rename.")
+    @WebApiDescription(title = "Copy Node", description = "Copy one or more nodes (files or folders) to a new target folder, with option to rename.")
     public Node copyById(String nodeId, NodeTarget target, Parameters parameters, WithResponse withResponse)
     {
-       return nodes.moveOrCopyNode(nodeId, target.getTargetParentId(), target.getName(), parameters, true);
+        return nodes.moveOrCopyNode(nodeId, target.getTargetParentId(), target.getName(), parameters, true);
     }
 
     @Operation("move")
     @WebApiDescription(title = "Move Node",
-            description="Moves one or more nodes (files or folders) to a new target folder, with option to rename.",
+            description = "Moves one or more nodes (files or folders) to a new target folder, with option to rename.",
             successStatus = HttpServletResponse.SC_OK)
     public Node moveById(String nodeId, NodeTarget target, Parameters parameters, WithResponse withResponse)
     {
@@ -186,16 +191,16 @@ public class NodesEntityResource implements
 
     @Operation("lock")
     @WebApiDescription(title = "Lock Node",
-            description="Places a lock on a node.",
+            description = "Places a lock on a node.",
             successStatus = HttpServletResponse.SC_OK)
     public Node lock(String nodeId, LockInfo lockInfo, Parameters parameters, WithResponse withResponse)
     {
         return nodes.lock(nodeId, lockInfo, parameters);
     }
-    
+
     @Operation("unlock")
     @WebApiDescription(title = "Unlock Node",
-            description="Removes a lock on a node.",
+            description = "Removes a lock on a node.",
             successStatus = HttpServletResponse.SC_OK)
     public Node unlock(String nodeId, Void ignore, Parameters parameters, WithResponse withResponse)
     {
@@ -205,7 +210,7 @@ public class NodesEntityResource implements
     @Operation("request-direct-access-url")
     @WebApiParam(name = "directAccessUrlRequest", title = "Request direct access url", description = "Options for direct access url request", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
     @WebApiDescription(title = "Request content url",
-            description="Generates a direct access URL.",
+            description = "Generates a direct access URL.",
             successStatus = HttpServletResponse.SC_OK)
     public DirectAccessUrl requestContentDirectUrl(String nodeId, DirectAccessUrlRequest directAccessUrlRequest, Parameters parameters, WithResponse withResponse)
     {
@@ -226,4 +231,3 @@ public class NodesEntityResource implements
         return directAccessUrl;
     }
 }
-

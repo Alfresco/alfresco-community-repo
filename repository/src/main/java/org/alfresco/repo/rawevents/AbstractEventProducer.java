@@ -25,27 +25,22 @@
  */
 package org.alfresco.repo.rawevents;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.ProducerTemplate;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
- * Abstract helper to send events to an endpoint. The
- * <code>AbstractEventProducer</code> acts as a wrapper that provides
- * marshalling for a Camel <code>ProducerTemplate</code>. <br/>
+ * Abstract helper to send events to an endpoint. The <code>AbstractEventProducer</code> acts as a wrapper that provides marshalling for a Camel <code>ProducerTemplate</code>. <br/>
  * <p/>
- * A client has the option of creating an event producer without supplying an
- * endpoint. In this case, a endpoint must be provided with every send
- * operation. <br/>
+ * A client has the option of creating an event producer without supplying an endpoint. In this case, a endpoint must be provided with every send operation. <br/>
  * <p/>
- * A client also has the option to provide an <code>ObjectMapper</code> that
- * will be used to marshal basic POJOs (Plain Old Java Objects) to JSON before
- * sending the event.
+ * A client also has the option to provide an <code>ObjectMapper</code> that will be used to marshal basic POJOs (Plain Old Java Objects) to JSON before sending the event.
  * <p/>
  */
 public abstract class AbstractEventProducer

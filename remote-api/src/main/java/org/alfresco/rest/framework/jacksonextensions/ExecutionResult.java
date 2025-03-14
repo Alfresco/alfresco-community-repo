@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Represents the result of 1 or more executions.  This object will be rendered as JSON
+ * Represents the result of 1 or more executions. This object will be rendered as JSON
  *
  * @author Gethin James
  */
@@ -37,11 +37,11 @@ public class ExecutionResult
 {
     private final Object root;
     private boolean anEmbeddedEntity;
-    private final Map<String,Object> embedded = new HashMap<String,Object>();
-    private final Map<String,Object> related = new HashMap<String,Object>();
+    private final Map<String, Object> embedded = new HashMap<String, Object>();
+    private final Map<String, Object> related = new HashMap<String, Object>();
     private final BeanPropertiesFilter filter;
-    
-    public ExecutionResult(Object root,BeanPropertiesFilter filter)
+
+    public ExecutionResult(Object root, BeanPropertiesFilter filter)
     {
         super();
         this.root = root;
@@ -56,26 +56,30 @@ public class ExecutionResult
     {
         return this.filter;
     }
-    
+
     public Object getRoot()
     {
         return this.root;
     }
-    
+
     /**
      * Adds embeddeds object to the enclosing root object
-     * @param embedded objects to add
+     * 
+     * @param embedded
+     *            objects to add
      */
-    public void addEmbedded(Map<String,Object> embedded)
+    public void addEmbedded(Map<String, Object> embedded)
     {
         this.embedded.putAll(embedded);
     }
-    
+
     /**
      * Adds related object to the enclosing root object
-     * @param related objects to add
+     * 
+     * @param related
+     *            objects to add
      */
-    public void addRelated(Map<String,Object> related)
+    public void addRelated(Map<String, Object> related)
     {
         this.related.putAll(related);
     }
@@ -89,18 +93,18 @@ public class ExecutionResult
     {
         return this.anEmbeddedEntity;
     }
-    
+
     /**
      * Is this object and embedded entity
      * 
-     * @param anEmbeddedEntity - true if it is embedded, defaults to false
-     */   
+     * @param anEmbeddedEntity
+     *            - true if it is embedded, defaults to false
+     */
     public void setAnEmbeddedEntity(boolean anEmbeddedEntity)
     {
         this.anEmbeddedEntity = anEmbeddedEntity;
     }
 
-    
     /**
      * Returns the Map of related objects
      * 
@@ -138,7 +142,5 @@ public class ExecutionResult
         builder.append("]");
         return builder.toString();
     }
-
- 
 
 }

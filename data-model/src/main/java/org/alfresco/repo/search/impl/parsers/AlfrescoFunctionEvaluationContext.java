@@ -32,8 +32,8 @@ import java.util.Map;
 
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.search.adaptor.LuceneFunction;
-import org.alfresco.repo.search.adaptor.QueryParserAdaptor;
 import org.alfresco.repo.search.adaptor.QueryConstants;
+import org.alfresco.repo.search.adaptor.QueryParserAdaptor;
 import org.alfresco.repo.search.impl.querymodel.FunctionArgument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
@@ -125,9 +125,12 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
     }
 
     /**
-     * @param namespacePrefixResolver NamespacePrefixResolver
-     * @param dictionaryService DictionaryService
-     * @param defaultNamespace String
+     * @param namespacePrefixResolver
+     *            NamespacePrefixResolver
+     * @param dictionaryService
+     *            DictionaryService
+     * @param defaultNamespace
+     *            String
      */
     public AlfrescoFunctionEvaluationContext(NamespacePrefixResolver namespacePrefixResolver, DictionaryService dictionaryService, String defaultNamespace)
     {
@@ -136,54 +139,54 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
         this.defaultNamespace = defaultNamespace;
     }
 
-    public  <Q, S, E extends Throwable> Q buildLuceneEquality(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
+    public <Q, S, E extends Throwable> Q buildLuceneEquality(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
     {
         throw new UnsupportedOperationException();
     }
 
-    public  <Q, S, E extends Throwable> Q buildLuceneExists(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Boolean not) throws E
+    public <Q, S, E extends Throwable> Q buildLuceneExists(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Boolean not) throws E
     {
         throw new UnsupportedOperationException();
     }
 
-    public  <Q, S, E extends Throwable> Q buildLuceneGreaterThan(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
+    public <Q, S, E extends Throwable> Q buildLuceneGreaterThan(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
     {
         throw new UnsupportedOperationException();
     }
 
-    public  <Q, S, E extends Throwable> Q buildLuceneGreaterThanOrEquals(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction)
-    throws E
+    public <Q, S, E extends Throwable> Q buildLuceneGreaterThanOrEquals(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction)
+            throws E
     {
         throw new UnsupportedOperationException();
     }
 
-    public  <Q, S, E extends Throwable> Q buildLuceneIn(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Collection<Serializable> values, Boolean not, PredicateMode mode) throws E
+    public <Q, S, E extends Throwable> Q buildLuceneIn(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Collection<Serializable> values, Boolean not, PredicateMode mode) throws E
     {
         throw new UnsupportedOperationException();
     }
 
-    public  <Q, S, E extends Throwable> Q buildLuceneInequality(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
+    public <Q, S, E extends Throwable> Q buildLuceneInequality(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
     {
         throw new UnsupportedOperationException();
     }
 
-    public  <Q, S, E extends Throwable> Q buildLuceneLessThan(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
+    public <Q, S, E extends Throwable> Q buildLuceneLessThan(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
     {
         throw new UnsupportedOperationException();
     }
 
-    public  <Q, S, E extends Throwable> Q buildLuceneLessThanOrEquals(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction)
-    throws E
+    public <Q, S, E extends Throwable> Q buildLuceneLessThanOrEquals(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction)
+            throws E
     {
         throw new UnsupportedOperationException();
     }
 
-    public  <Q, S, E extends Throwable> Q buildLuceneLike(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, Boolean not) throws E
+    public <Q, S, E extends Throwable> Q buildLuceneLike(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, Boolean not) throws E
     {
         throw new UnsupportedOperationException();
     }
 
-    public  <Q, S, E extends Throwable> String getLuceneSortField(QueryParserAdaptor<Q, S, E> lqpa, String propertyName) throws E
+    public <Q, S, E extends Throwable> String getLuceneSortField(QueryParserAdaptor<Q, S, E> lqpa, String propertyName) throws E
     {
         // Score is special
         if (propertyName.equalsIgnoreCase("Score"))
@@ -197,14 +200,14 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
             PropertyDefinition propertyDef = dictionaryService.getProperty(QName.createQName(field.substring(1)));
 
             // Handle .size and .mimetype
-            if(propertyDef == null)
-            {   
-                if(field.endsWith(QueryConstants.FIELD_SIZE_SUFFIX))
+            if (propertyDef == null)
+            {
+                if (field.endsWith(QueryConstants.FIELD_SIZE_SUFFIX))
                 {
-                    propertyDef = dictionaryService.getProperty(QName.createQName(field.substring(1, field.length()-QueryConstants.FIELD_SIZE_SUFFIX.length())));
+                    propertyDef = dictionaryService.getProperty(QName.createQName(field.substring(1, field.length() - QueryConstants.FIELD_SIZE_SUFFIX.length())));
                     if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
                     {
-                        throw new FTSQueryException("Order for "+QueryConstants.FIELD_SIZE_SUFFIX+" only supported on content properties");
+                        throw new FTSQueryException("Order for " + QueryConstants.FIELD_SIZE_SUFFIX + " only supported on content properties");
                     }
                     else
                     {
@@ -213,7 +216,7 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
                 }
                 else if (field.endsWith(QueryConstants.FIELD_MIMETYPE_SUFFIX))
                 {
-                    propertyDef = dictionaryService.getProperty(QName.createQName(field.substring(1, field.length()-QueryConstants.FIELD_MIMETYPE_SUFFIX.length())));
+                    propertyDef = dictionaryService.getProperty(QName.createQName(field.substring(1, field.length() - QueryConstants.FIELD_MIMETYPE_SUFFIX.length())));
                     if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
                     {
                         throw new FTSQueryException("Order for .mimetype only supported on content properties");
@@ -236,13 +239,13 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
                 }
                 else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT))
                 {
-                    if(propertyDef.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
+                    if (propertyDef.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
                     {
                         return field;
                     }
 
-                    String noLocalField = field+".no_locale";
-                    if(lqpa.sortFieldExists(noLocalField))
+                    String noLocalField = field + ".no_locale";
+                    if (lqpa.sortFieldExists(noLocalField))
                     {
                         return noLocalField;
                     }
@@ -263,12 +266,14 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
     }
 
     /**
-     * @param lqpa QueryParserAdaptor<Q, S, E>
-     * @param field String
+     * @param lqpa
+     *            QueryParserAdaptor<Q, S, E>
+     * @param field
+     *            String
      * @return ... extends Throwable
-     * @throws E 
+     * @throws E
      */
-    private  <Q, S, E extends Throwable> String findSortField(QueryParserAdaptor<Q, S, E> lqpa, String field) throws E
+    private <Q, S, E extends Throwable> String findSortField(QueryParserAdaptor<Q, S, E> lqpa, String field) throws E
     {
         return lqpa.getSortField(field);
     }
@@ -329,7 +334,7 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
             {
                 return QueryConstants.PROPERTY_FIELD_PREFIX + fullQName.toString();
             }
-            else if(dictionaryService.getDataType(fullQName) != null)
+            else if (dictionaryService.getDataType(fullQName) != null)
             {
                 return fullQName.toString();
             }
@@ -349,7 +354,7 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
             {
                 return QueryConstants.PROPERTY_FIELD_PREFIX + fullQName.toString();
             }
-            else if(dictionaryService.getDataType(fullQName) != null)
+            else if (dictionaryService.getDataType(fullQName) != null)
             {
                 return fullQName.toString();
             }
@@ -389,17 +394,17 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
         {
             return QueryConstants.PROPERTY_FIELD_PREFIX + fullQName.toString();
         }
-        else if(dictionaryService.getDataType(fullQName) != null)
+        else if (dictionaryService.getDataType(fullQName) != null)
         {
             return fullQName.toString();
         }
         else
         {
-            if(propertyName.equalsIgnoreCase("Score"))
+            if (propertyName.equalsIgnoreCase("Score"))
             {
                 return propertyName.toLowerCase();
             }
-                    
+
             throw new FTSQueryException("Unknown property: " + fullQName.toString());
         }
 
@@ -408,214 +413,214 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
     public QName stripSuffixes(QName qname)
     {
         String field = qname.toString();
-        if(field.endsWith(QueryConstants.FIELD_SIZE_SUFFIX))
+        if (field.endsWith(QueryConstants.FIELD_SIZE_SUFFIX))
         {
-            QName propertyField = QName.createQName(field.substring(0, field.length()-QueryConstants.FIELD_SIZE_SUFFIX.length()));
+            QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_SIZE_SUFFIX.length()));
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyField);
             if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
             {
-                throw new FTSQueryException(QueryConstants.FIELD_SIZE_SUFFIX+" only supported on content properties");
+                throw new FTSQueryException(QueryConstants.FIELD_SIZE_SUFFIX + " only supported on content properties");
             }
             else
             {
                 return propertyField;
             }
         }
-        else if(field.endsWith(QueryConstants.FIELD_LOCALE_SUFFIX))
+        else if (field.endsWith(QueryConstants.FIELD_LOCALE_SUFFIX))
         {
-            QName propertyField = QName.createQName(field.substring(0, field.length()-QueryConstants.FIELD_LOCALE_SUFFIX.length()));
+            QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_LOCALE_SUFFIX.length()));
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyField);
             if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
             {
-                throw new FTSQueryException(QueryConstants.FIELD_LOCALE_SUFFIX+" only supported on content properties");
+                throw new FTSQueryException(QueryConstants.FIELD_LOCALE_SUFFIX + " only supported on content properties");
             }
             else
             {
                 return propertyField;
             }
         }
-        else if(field.endsWith(QueryConstants.FIELD_MIMETYPE_SUFFIX))
+        else if (field.endsWith(QueryConstants.FIELD_MIMETYPE_SUFFIX))
         {
-            QName propertyField = QName.createQName(field.substring(0, field.length()-QueryConstants.FIELD_MIMETYPE_SUFFIX.length()));
+            QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_MIMETYPE_SUFFIX.length()));
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyField);
             if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
             {
-                throw new FTSQueryException(QueryConstants.FIELD_MIMETYPE_SUFFIX+" only supported on content properties");
+                throw new FTSQueryException(QueryConstants.FIELD_MIMETYPE_SUFFIX + " only supported on content properties");
             }
             else
             {
                 return propertyField;
             }
         }
-        else if(field.endsWith(QueryConstants.FIELD_ENCODING_SUFFIX))
+        else if (field.endsWith(QueryConstants.FIELD_ENCODING_SUFFIX))
         {
-            QName propertyField = QName.createQName(field.substring(0, field.length()-QueryConstants.FIELD_ENCODING_SUFFIX.length()));
+            QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_ENCODING_SUFFIX.length()));
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyField);
             if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
             {
-                throw new FTSQueryException(QueryConstants.FIELD_ENCODING_SUFFIX+" only supported on content properties");
+                throw new FTSQueryException(QueryConstants.FIELD_ENCODING_SUFFIX + " only supported on content properties");
             }
             else
             {
                 return propertyField;
             }
         }
-        else if(field.endsWith(QueryConstants.FIELD_TRANSFORMATION_EXCEPTION_SUFFIX))
+        else if (field.endsWith(QueryConstants.FIELD_TRANSFORMATION_EXCEPTION_SUFFIX))
         {
-            QName propertyField = QName.createQName(field.substring(0, field.length()-QueryConstants.FIELD_TRANSFORMATION_EXCEPTION_SUFFIX.length()));
+            QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_TRANSFORMATION_EXCEPTION_SUFFIX.length()));
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyField);
             if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
             {
-                throw new FTSQueryException(QueryConstants.FIELD_TRANSFORMATION_EXCEPTION_SUFFIX+" only supported on content properties");
+                throw new FTSQueryException(QueryConstants.FIELD_TRANSFORMATION_EXCEPTION_SUFFIX + " only supported on content properties");
             }
             else
             {
                 return propertyField;
             }
         }
-        else if(field.endsWith(QueryConstants.FIELD_TRANSFORMATION_STATUS_SUFFIX))
+        else if (field.endsWith(QueryConstants.FIELD_TRANSFORMATION_STATUS_SUFFIX))
         {
-            QName propertyField = QName.createQName(field.substring(0, field.length()-QueryConstants.FIELD_TRANSFORMATION_STATUS_SUFFIX.length()));
+            QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_TRANSFORMATION_STATUS_SUFFIX.length()));
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyField);
             if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
             {
-                throw new FTSQueryException(QueryConstants.FIELD_TRANSFORMATION_STATUS_SUFFIX+" only supported on content properties");
+                throw new FTSQueryException(QueryConstants.FIELD_TRANSFORMATION_STATUS_SUFFIX + " only supported on content properties");
             }
             else
             {
                 return propertyField;
             }
         }
-        else if(field.endsWith(QueryConstants.FIELD_TRANSFORMATION_TIME_SUFFIX))
+        else if (field.endsWith(QueryConstants.FIELD_TRANSFORMATION_TIME_SUFFIX))
         {
-            QName propertyField = QName.createQName(field.substring(0, field.length()-QueryConstants.FIELD_TRANSFORMATION_TIME_SUFFIX.length()));
+            QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_TRANSFORMATION_TIME_SUFFIX.length()));
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyField);
             if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
             {
-                throw new FTSQueryException(QueryConstants.FIELD_TRANSFORMATION_TIME_SUFFIX+" only supported on content properties");
+                throw new FTSQueryException(QueryConstants.FIELD_TRANSFORMATION_TIME_SUFFIX + " only supported on content properties");
             }
             else
             {
                 return propertyField;
             }
         }
-        else if(field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_SECOND_SUFFIX))
+        else if (field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_SECOND_SUFFIX))
         {
             QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_SOLR_UNIT_OF_TIME_SECOND_SUFFIX.length()));
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyField);
             if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
             {
-                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_SECOND_SUFFIX+" only supported on datetime properties");
+                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_SECOND_SUFFIX + " only supported on datetime properties");
             }
             else
             {
                 return propertyField;
             }
         }
-        else if(field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_MINUTE_SUFFIX))
+        else if (field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_MINUTE_SUFFIX))
         {
             QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_SOLR_UNIT_OF_TIME_MINUTE_SUFFIX.length()));
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyField);
             if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
             {
-                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_MINUTE_SUFFIX+" only supported on datetime properties");
+                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_MINUTE_SUFFIX + " only supported on datetime properties");
             }
             else
             {
                 return propertyField;
             }
         }
-        else if(field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_HOUR_SUFFIX))
+        else if (field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_HOUR_SUFFIX))
         {
             QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_SOLR_UNIT_OF_TIME_HOUR_SUFFIX.length()));
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyField);
             if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
             {
-                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_HOUR_SUFFIX+" only supported on datetime properties");
+                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_HOUR_SUFFIX + " only supported on datetime properties");
             }
             else
             {
                 return propertyField;
             }
         }
-        else if(field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_SUFFIX))
+        else if (field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_SUFFIX))
         {
             QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_SUFFIX.length()));
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyField);
             if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE) &&
                     !propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
             {
-                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_SUFFIX+" only supported on date and datetime properties");
+                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_SUFFIX + " only supported on date and datetime properties");
             }
             else
             {
                 return propertyField;
             }
         }
-        else if(field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_OF_WEEK_SUFFIX))
+        else if (field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_OF_WEEK_SUFFIX))
         {
             QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_OF_WEEK_SUFFIX.length()));
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyField);
             if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE) &&
                     !propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
             {
-                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_OF_WEEK_SUFFIX+" only supported on date and datetime properties");
+                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_OF_WEEK_SUFFIX + " only supported on date and datetime properties");
             }
             else
             {
                 return propertyField;
             }
         }
-        else if(field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_OF_YEAR_SUFFIX))
+        else if (field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_OF_YEAR_SUFFIX))
         {
             QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_OF_YEAR_SUFFIX.length()));
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyField);
             if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE) &&
                     !propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
             {
-                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_OF_YEAR_SUFFIX+" only supported on date and datetime properties");
+                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_OF_YEAR_SUFFIX + " only supported on date and datetime properties");
             }
             else
             {
                 return propertyField;
             }
         }
-        else if(field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_MONTH_SUFFIX))
+        else if (field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_MONTH_SUFFIX))
         {
             QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_SOLR_UNIT_OF_TIME_MONTH_SUFFIX.length()));
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyField);
             if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE) &&
                     !propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
             {
-                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_MONTH_SUFFIX+" only supported on date and datetime properties");
+                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_MONTH_SUFFIX + " only supported on date and datetime properties");
             }
             else
             {
                 return propertyField;
             }
         }
-        else if(field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_QUARTER_SUFFIX))
+        else if (field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_QUARTER_SUFFIX))
         {
             QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_SOLR_UNIT_OF_TIME_QUARTER_SUFFIX.length()));
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyField);
             if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE) &&
                     !propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
             {
-                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_QUARTER_SUFFIX+" only supported on date and datetime properties");
+                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_QUARTER_SUFFIX + " only supported on date and datetime properties");
             }
             else
             {
                 return propertyField;
             }
         }
-        else if(field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_YEAR_SUFFIX))
+        else if (field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_YEAR_SUFFIX))
         {
             QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_SOLR_UNIT_OF_TIME_YEAR_SUFFIX.length()));
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyField);
             if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE) &&
                     !propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
             {
-                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_YEAR_SUFFIX+" only supported on date and datetime properties");
+                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_YEAR_SUFFIX + " only supported on date and datetime properties");
             }
             else
             {
@@ -633,29 +638,25 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
         throw new UnsupportedOperationException();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#checkFieldApplies(org.alfresco.service.namespace
-     * .QName, java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#checkFieldApplies(org.alfresco.service.namespace .QName, java.lang.String) */
     public void checkFieldApplies(Selector selector, String propertyName)
     {
         throw new UnsupportedOperationException();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#isMultiValued(java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#isMultiValued(java.lang.String) */
     public boolean isMultiValued(String propertyName)
     {
         throw new UnsupportedOperationException();
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#getAlfrescoQName(org.alfresco.service.namespace.QName)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#getAlfrescoQName(org.alfresco.service.namespace.QName) */
     @Override
     public String getAlfrescoPropertyName(String propertyName)
     {
@@ -663,8 +664,8 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#getAlfrescoTypeName(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#getAlfrescoTypeName(java.lang.String) */
     @Override
     public String getAlfrescoTypeName(String typeName)
     {

@@ -43,6 +43,9 @@ import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.history.HistoricVariableInstance;
 import org.activiti.engine.task.Task;
+import org.apache.commons.beanutils.ConversionException;
+import org.apache.commons.beanutils.ConvertUtils;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -79,19 +82,16 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.beanutils.ConversionException;
-import org.apache.commons.beanutils.ConvertUtils;
 
 /**
- * Base class for rest-implementations related to workflow. Contains utility-methods that
- * can be used, regardless of the type of resources the implementing class can handle.
+ * Base class for rest-implementations related to workflow. Contains utility-methods that can be used, regardless of the type of resources the implementing class can handle.
  *
  * @author Frederik Heremans
  */
 public class WorkflowRestImpl
 {
     protected static final String BPM_PACKAGE = "bpm_package";
-    
+
     protected TenantService tenantService;
     protected AuthorityService authorityService;
     protected NamespaceService namespaceService;
@@ -101,50 +101,50 @@ public class WorkflowRestImpl
     protected boolean deployWorkflowsInTenant;
     protected List<String> excludeModelTypes = new ArrayList<String>(Arrays.asList("bpm_priority", "bpm_description", "bpm_dueDate"));
     private ActivitiWorkflowEngine activitiWorkflowEngine;
-    
-    static 
+
+    static
     {
         // Register a custom date-converter to cope with ISO8601-parameters
         ISO8601Converter dateConverter = new ISO8601Converter();
         ConvertUtils.register(dateConverter, Date.class);
         ConvertUtils.register(dateConverter, Calendar.class);
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-    
+
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
     }
-    
+
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
-    
+
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setActivitiProcessEngine(ProcessEngine activitiProcessEngine)
     {
         this.activitiProcessEngine = activitiProcessEngine;
     }
-    
+
     public void setDeployWorkflowsInTenant(boolean deployWorkflowsInTenant)
     {
         this.deployWorkflowsInTenant = deployWorkflowsInTenant;
     }
-    
+
     /**
      * Create NodeRef from item id String
      */
@@ -161,21 +161,21 @@ public class WorkflowRestImpl
         }
         return nodeRef;
     }
-    
+
     /**
      * Get all items from the process package variable
      */
     public CollectionWithPagingInfo<Item> getItemsFromProcess(String processId, Paging paging)
     {
         ActivitiScriptNode packageScriptNode = null;
-        try 
+        try
         {
             HistoricVariableInstance variableInstance = activitiProcessEngine.getHistoryService()
                     .createHistoricVariableInstanceQuery()
                     .processInstanceId(processId)
                     .variableName(BPM_PACKAGE)
                     .singleResult();
-            
+
             if (variableInstance != null)
             {
                 packageScriptNode = (ActivitiScriptNode) variableInstance.getValue();
@@ -184,12 +184,12 @@ public class WorkflowRestImpl
             {
                 throw new EntityNotFoundException(processId);
             }
-        } 
+        }
         catch (ActivitiObjectNotFoundException e)
         {
             throw new EntityNotFoundException(processId);
         }
-        
+
         List<Item> page = new ArrayList<Item>();
         if (packageScriptNode != null)
         {
@@ -200,10 +200,10 @@ public class WorkflowRestImpl
                 page.add(item);
             }
         }
-        
+
         return CollectionWithPagingInfo.asPaged(paging, page, false, page.size());
     }
-    
+
     /**
      * Get an item from the process package variable
      */
@@ -211,14 +211,14 @@ public class WorkflowRestImpl
     {
         NodeRef nodeRef = getNodeRef(itemId);
         ActivitiScriptNode packageScriptNode = null;
-        try 
+        try
         {
             HistoricVariableInstance variableInstance = activitiProcessEngine.getHistoryService()
                     .createHistoricVariableInstanceQuery()
                     .processInstanceId(processId)
                     .variableName(BPM_PACKAGE)
                     .singleResult();
-            
+
             if (variableInstance != null)
             {
                 packageScriptNode = (ActivitiScriptNode) variableInstance.getValue();
@@ -227,57 +227,58 @@ public class WorkflowRestImpl
             {
                 throw new EntityNotFoundException(processId);
             }
-        } 
+        }
         catch (ActivitiObjectNotFoundException e)
         {
             throw new EntityNotFoundException(processId);
         }
-        
+
         Item item = null;
         if (packageScriptNode != null)
         {
             List<ChildAssociationRef> documentList = nodeService.getChildAssocs(packageScriptNode.getNodeRef());
             for (ChildAssociationRef childAssociationRef : documentList)
             {
-                if (childAssociationRef.getChildRef().equals(nodeRef)) 
+                if (childAssociationRef.getChildRef().equals(nodeRef))
                 {
                     item = createItemForNodeRef(childAssociationRef.getChildRef());
                     break;
                 }
             }
         }
-        
-        if (item == null) {
+
+        if (item == null)
+        {
             throw new EntityNotFoundException(itemId);
         }
-        
+
         return item;
     }
-    
+
     /**
-     *  Create a new item in the process package variable
+     * Create a new item in the process package variable
      */
     public Item createItemInProcess(String itemId, String processId)
     {
         NodeRef nodeRef = getNodeRef(itemId);
-        
+
         ActivitiScriptNode packageScriptNode = null;
-        try 
+        try
         {
             packageScriptNode = (ActivitiScriptNode) activitiProcessEngine.getRuntimeService().getVariable(processId, BPM_PACKAGE);
-        } 
+        }
         catch (ActivitiObjectNotFoundException e)
         {
             throw new EntityNotFoundException(processId);
         }
-        
+
         if (packageScriptNode == null)
         {
             throw new InvalidArgumentException("process doesn't contain a workflow package variable");
         }
-        
+
         // check if noderef exists
-        try 
+        try
         {
             nodeService.getProperties(nodeRef);
         }
@@ -285,61 +286,61 @@ public class WorkflowRestImpl
         {
             throw new EntityNotFoundException("item with id " + nodeRef.toString() + " not found");
         }
-        
-        try 
+
+        try
         {
             QName workflowPackageItemId = QName.createQName("wpi", nodeRef.toString());
-            nodeService.addChild(packageScriptNode.getNodeRef(), nodeRef, 
+            nodeService.addChild(packageScriptNode.getNodeRef(), nodeRef,
                     WorkflowModel.ASSOC_PACKAGE_CONTAINS, workflowPackageItemId);
         }
         catch (Exception e)
         {
             throw new ApiException("could not add item to process " + e.getMessage(), e);
         }
-        
+
         Item responseItem = createItemForNodeRef(nodeRef);
         activitiWorkflowEngine.dispatchPackageUpdatedEvent(packageScriptNode, null, null, processId, null);
         return responseItem;
     }
-    
+
     /**
-     *  Delete an item from the process package variable
+     * Delete an item from the process package variable
      */
     public void deleteItemFromProcess(String itemId, String processId)
     {
         NodeRef nodeRef = getNodeRef(itemId);
         ActivitiScriptNode packageScriptNode = null;
-        try 
+        try
         {
             packageScriptNode = (ActivitiScriptNode) activitiProcessEngine.getRuntimeService().getVariable(processId, BPM_PACKAGE);
-        } 
+        }
         catch (ActivitiObjectNotFoundException e)
         {
             throw new EntityNotFoundException(processId);
         }
-        
+
         if (packageScriptNode == null)
         {
             throw new InvalidArgumentException("process doesn't contain a workflow package variable");
         }
-        
+
         boolean itemIdFoundInPackage = false;
         List<ChildAssociationRef> documentList = nodeService.getChildAssocs(packageScriptNode.getNodeRef());
         for (ChildAssociationRef childAssociationRef : documentList)
         {
-            if (childAssociationRef.getChildRef().equals(nodeRef)) 
+            if (childAssociationRef.getChildRef().equals(nodeRef))
             {
                 itemIdFoundInPackage = true;
                 break;
             }
         }
-        
+
         if (itemIdFoundInPackage == false)
         {
             throw new EntityNotFoundException("Item " + itemId + " not found in the process package variable");
         }
-        
-        try 
+
+        try
         {
             nodeService.removeChild(packageScriptNode.getNodeRef(), nodeRef);
             activitiWorkflowEngine.dispatchPackageUpdatedEvent(packageScriptNode, null, null, processId, null);
@@ -349,19 +350,26 @@ public class WorkflowRestImpl
             throw new EntityNotFoundException("Item " + itemId + " not found");
         }
     }
-    
+
     /**
      * Get the first parameter value, converted to the requested type.
-     * @param parameters used to extract parameter value from
-     * @param parameterName name of the parameter
-     * @param returnType type of object to return
+     * 
+     * @param parameters
+     *            used to extract parameter value from
+     * @param parameterName
+     *            name of the parameter
+     * @param returnType
+     *            type of object to return
      * @return the converted parameter value. Null, if the parameter has no value.
-     * @throws IllegalArgumentException when no conversion for the given returnType is available or if returnType is null.
-     * @throws InvalidArgumentException when conversion to the given type was not possible
+     * @throws IllegalArgumentException
+     *             when no conversion for the given returnType is available or if returnType is null.
+     * @throws InvalidArgumentException
+     *             when conversion to the given type was not possible
      */
     @SuppressWarnings("unchecked")
-    public <T extends Object> T getParameter(Parameters parameters, String parameterName, Class<T> returnType) {
-        if(returnType == null) 
+    public <T extends Object> T getParameter(Parameters parameters, String parameterName, Class<T> returnType)
+    {
+        if (returnType == null)
         {
             throw new IllegalArgumentException("ReturnType cannot be null");
         }
@@ -369,10 +377,10 @@ public class WorkflowRestImpl
         {
             Object result = null;
             String stringValue = parameters.getParameter(parameterName);
-            if(stringValue != null) 
+            if (stringValue != null)
             {
                 result = ConvertUtils.convert(stringValue, returnType);
-                if(result instanceof String)
+                if (result instanceof String)
                 {
                     // If a string is returned, no converter has been found
                     throw new IllegalArgumentException("Unable to convert parameter to type: " + returnType.getName());
@@ -380,7 +388,7 @@ public class WorkflowRestImpl
             }
             return (T) result;
         }
-        catch(ConversionException ce)
+        catch (ConversionException ce)
         {
             // Conversion failed, wrap in Illegal
             throw new InvalidArgumentException("Parameter value for '" + parameterName + "' should be a valid " + returnType.getSimpleName());
@@ -388,22 +396,24 @@ public class WorkflowRestImpl
     }
 
     /**
-     * @param type the type to get the elements for
-     * @param paging Paging
+     * @param type
+     *            the type to get the elements for
+     * @param paging
+     *            Paging
      * @return collection with all valid form-model elements for the given type.
      */
     public CollectionWithPagingInfo<FormModelElement> getFormModelElements(TypeDefinition type, Paging paging)
     {
         Map<QName, PropertyDefinition> taskProperties = type.getProperties();
         Set<QName> typesToExclude = getTypesToExclude(type);
-        
+
         List<FormModelElement> page = new ArrayList<FormModelElement>();
         for (Entry<QName, PropertyDefinition> entry : taskProperties.entrySet())
         {
-        	String name = entry.getKey().toPrefixString(namespaceService).replace(':', '_');
-            
+            String name = entry.getKey().toPrefixString(namespaceService).replace(':', '_');
+
             // Only add properties which are not part of an excluded type
-            if(!typesToExclude.contains(entry.getValue().getContainerClass().getName()) && excludeModelTypes.contains(name) == false)
+            if (!typesToExclude.contains(entry.getValue().getContainerClass().getName()) && excludeModelTypes.contains(name) == false)
             {
                 FormModelElement element = new FormModelElement();
                 element.setName(name);
@@ -416,26 +426,26 @@ public class WorkflowRestImpl
                 {
                     for (ConstraintDefinition constraintDef : entry.getValue().getConstraints())
                     {
-                    	Constraint constraint = constraintDef.getConstraint();
-                    	if (constraint != null && constraint instanceof ListOfValuesConstraint)
-                    	{
-                    		ListOfValuesConstraint valuesConstraint = (ListOfValuesConstraint) constraint;
-                    		if (valuesConstraint.getAllowedValues() != null && valuesConstraint.getAllowedValues().size() > 0)
-                    		{
-                    			element.setAllowedValues(valuesConstraint.getAllowedValues());
-                    		}
-                    	}
+                        Constraint constraint = constraintDef.getConstraint();
+                        if (constraint != null && constraint instanceof ListOfValuesConstraint)
+                        {
+                            ListOfValuesConstraint valuesConstraint = (ListOfValuesConstraint) constraint;
+                            if (valuesConstraint.getAllowedValues() != null && valuesConstraint.getAllowedValues().size() > 0)
+                            {
+                                element.setAllowedValues(valuesConstraint.getAllowedValues());
+                            }
+                        }
                     }
                 }
                 page.add(element);
             }
         }
-        
+
         Map<QName, AssociationDefinition> taskAssociations = type.getAssociations();
         for (Entry<QName, AssociationDefinition> entry : taskAssociations.entrySet())
         {
             // Only add associations which are not part of an excluded type
-            if(!typesToExclude.contains(entry.getValue().getSourceClass().getName()))
+            if (!typesToExclude.contains(entry.getValue().getSourceClass().getName()))
             {
                 FormModelElement element = new FormModelElement();
                 element.setName(entry.getKey().toPrefixString(namespaceService).replace(':', '_'));
@@ -446,29 +456,30 @@ public class WorkflowRestImpl
                 page.add(element);
             }
         }
-        
+
         return CollectionWithPagingInfo.asPaged(paging, page, false, page.size());
     }
-    
+
     /**
-     * @param taskType type of the task
+     * @param taskType
+     *            type of the task
      * @return all types (and aspects) which properties should not be used for form-model elements
      */
     protected Set<QName> getTypesToExclude(TypeDefinition taskType)
     {
         HashSet<QName> typesToExclude = new HashSet<QName>();
-        
+
         ClassDefinition parentClassDefinition = taskType.getParentClassDefinition();
         boolean contentClassFound = false;
-        while(parentClassDefinition != null) 
+        while (parentClassDefinition != null)
         {
-            if(contentClassFound)
+            if (contentClassFound)
             {
                 typesToExclude.add(parentClassDefinition.getName());
             }
-            else if(ContentModel.TYPE_CONTENT.equals(parentClassDefinition.getName()))
+            else if (ContentModel.TYPE_CONTENT.equals(parentClassDefinition.getName()))
             {
-                // All parents of "cm:content" should be ignored as well for fetching start-properties 
+                // All parents of "cm:content" should be ignored as well for fetching start-properties
                 typesToExclude.add(ContentModel.TYPE_CONTENT);
                 typesToExclude.addAll(parentClassDefinition.getDefaultAspectNames());
                 contentClassFound = true;
@@ -477,12 +488,12 @@ public class WorkflowRestImpl
         }
         return typesToExclude;
     }
-    
+
     /**
-     * Validates if the logged in user is allowed to get information about a specific process instance.
-     * If the user is not allowed an exception is thrown.
+     * Validates if the logged in user is allowed to get information about a specific process instance. If the user is not allowed an exception is thrown.
      * 
-     * @param processId identifier of the process instance
+     * @param processId
+     *            identifier of the process instance
      */
     protected List<HistoricVariableInstance> validateIfUserAllowedToWorkWithProcess(String processId)
     {
@@ -490,9 +501,9 @@ public class WorkflowRestImpl
                 .createHistoricVariableInstanceQuery()
                 .processInstanceId(processId)
                 .list();
-        
+
         Map<String, Object> variableMap = new HashMap<String, Object>();
-        if (variableInstances != null && variableInstances.size() > 0) 
+        if (variableInstances != null && variableInstances.size() > 0)
         {
             for (HistoricVariableInstance variableInstance : variableInstances)
             {
@@ -503,7 +514,7 @@ public class WorkflowRestImpl
         {
             throw new EntityNotFoundException(processId);
         }
-        
+
         if (tenantService.isEnabled())
         {
             String tenantDomain = (String) variableMap.get(ActivitiConstants.VAR_TENANT_DOMAIN);
@@ -513,7 +524,7 @@ public class WorkflowRestImpl
             }
         }
 
-        //MNT-17918 - required for initiator variable already updated as NodeRef type
+        // MNT-17918 - required for initiator variable already updated as NodeRef type
         Object initiator = variableMap.get(WorkflowConstants.PROP_INITIATOR);
         String nodeId = ((initiator instanceof ActivitiScriptNode) ? ((ActivitiScriptNode) initiator).getNodeRef().getId() : ((NodeRef) initiator).getId());
 
@@ -524,7 +535,7 @@ public class WorkflowRestImpl
         }
 
         String username = AuthenticationUtil.getRunAsUser();
-        if (authorityService.isAdminAuthority(username)) 
+        if (authorityService.isAdminAuthority(username))
         {
             // Admin is allowed to read all processes in the current tenant
             return variableInstances;
@@ -548,19 +559,20 @@ public class WorkflowRestImpl
                     .createHistoricTaskInstanceQuery()
                     .processInstanceId(processId)
                     .taskInvolvedUser(AuthenticationUtil.getRunAsUser());
-            
+
             List<HistoricTaskInstance> taskList = query.list();
-            
-            if (org.apache.commons.collections.CollectionUtils.isEmpty(taskList)) 
+
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(taskList))
             {
                 throw new PermissionDeniedException("user is not allowed to access information about process " + processId);
             }
         }
-        
+
         return variableInstances;
     }
-    
-    protected Item createItemForNodeRef(NodeRef nodeRef) {
+
+    protected Item createItemForNodeRef(NodeRef nodeRef)
+    {
         Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
         Item item = new Item();
         String name = (String) properties.get(ContentModel.PROP_NAME);
@@ -570,9 +582,9 @@ public class WorkflowRestImpl
         String createdBy = (String) properties.get(ContentModel.PROP_CREATOR);
         Date modifiedAt = (Date) properties.get(ContentModel.PROP_MODIFIED);
         String modifiedBy = (String) properties.get(ContentModel.PROP_MODIFIER);
-        
+
         ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
-        
+
         item.setId(nodeRef.getId());
         item.setName(name);
         item.setTitle(title);
@@ -581,7 +593,7 @@ public class WorkflowRestImpl
         item.setCreatedBy(createdBy);
         item.setModifiedAt(modifiedAt);
         item.setModifiedBy(modifiedBy);
-        if (contentData != null) 
+        if (contentData != null)
         {
             item.setMimeType(contentData.getMimetype());
             item.setSize(contentData.getSize());
@@ -593,7 +605,7 @@ public class WorkflowRestImpl
     {
         this.activitiWorkflowEngine = activitiWorkflowEngine;
     }
-    
+
     private boolean isUserInGroup(String username, NodeRef group)
     {
         // Get the group name

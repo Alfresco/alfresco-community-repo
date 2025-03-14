@@ -38,50 +38,50 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  */
 public class ConfigurableServiceImpl implements ConfigurableService
 {
-	private NodeService nodeService;
-	
-	public void setNodeService(NodeService nodeService)
-	{
-		this.nodeService = nodeService;
-	}
+    private NodeService nodeService;
 
-	public boolean isConfigurable(NodeRef nodeRef)
-	{
-		return this.nodeService.hasAspect(nodeRef, ApplicationModel.ASPECT_CONFIGURABLE);
-	}
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
 
-	public void makeConfigurable(NodeRef nodeRef)
-	{
-		if (isConfigurable(nodeRef) == false)
-		{
-			// First apply the aspect
-			this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_CONFIGURABLE, null);
-			
-			// Next create and add the configurations folder
-			this.nodeService.createNode(
-					nodeRef,
-					ApplicationModel.ASSOC_CONFIGURATIONS,
-					ApplicationModel.ASSOC_CONFIGURATIONS,
-					ApplicationModel.TYPE_CONFIGURATIONS);
-		}		
-	}
-	
-	public NodeRef getConfigurationFolder(NodeRef nodeRef)
-	{
-		NodeRef result = null;
-		if (isConfigurable(nodeRef) == true)
-		{
-			List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(
+    public boolean isConfigurable(NodeRef nodeRef)
+    {
+        return this.nodeService.hasAspect(nodeRef, ApplicationModel.ASPECT_CONFIGURABLE);
+    }
+
+    public void makeConfigurable(NodeRef nodeRef)
+    {
+        if (isConfigurable(nodeRef) == false)
+        {
+            // First apply the aspect
+            this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_CONFIGURABLE, null);
+
+            // Next create and add the configurations folder
+            this.nodeService.createNode(
+                    nodeRef,
+                    ApplicationModel.ASSOC_CONFIGURATIONS,
+                    ApplicationModel.ASSOC_CONFIGURATIONS,
+                    ApplicationModel.TYPE_CONFIGURATIONS);
+        }
+    }
+
+    public NodeRef getConfigurationFolder(NodeRef nodeRef)
+    {
+        NodeRef result = null;
+        if (isConfigurable(nodeRef) == true)
+        {
+            List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(
                     nodeRef,
                     RegexQNamePattern.MATCH_ALL,
                     ApplicationModel.ASSOC_CONFIGURATIONS);
-			if (assocs.size() != 0)
-			{
-				ChildAssociationRef assoc = assocs.get(0);
-				result = assoc.getChildRef();
-			}
-		}		
-		return result;
-	}
+            if (assocs.size() != 0)
+            {
+                ChildAssociationRef assoc = assocs.get(0);
+                result = assoc.getChildRef();
+            }
+        }
+        return result;
+    }
 
 }

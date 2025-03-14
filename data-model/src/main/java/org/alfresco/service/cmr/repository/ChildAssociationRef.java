@@ -34,15 +34,11 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 
 /**
- * This class represents a child relationship between two nodes. This
- * relationship is named.
+ * This class represents a child relationship between two nodes. This relationship is named.
  * <p>
- * So it requires the parent node ref, the child node ref and the name of the
- * child within the particular parent.
+ * So it requires the parent node ref, the child node ref and the name of the child within the particular parent.
  * <p>
- * This combination is not a unique identifier for the relationship with regard
- * to structure. In use this does not matter as we have no concept of order,
- * particularly in the index.
+ * This combination is not a unique identifier for the relationship with regard to structure. In use this does not matter as we have no concept of order, particularly in the index.
  * 
  * @author andyh
  * 
@@ -52,7 +48,7 @@ public class ChildAssociationRef
         implements EntityRef, Comparable<ChildAssociationRef>, Serializable
 {
     private static final long serialVersionUID = 4051322336257127729L;
-    
+
     private static final String FILLER = "|";
 
     private QName assocTypeQName;
@@ -61,7 +57,6 @@ public class ChildAssociationRef
     private NodeRef childRef;
     private boolean isPrimary;
     private int nthSibling;
-    
 
     /**
      * Construct a representation of a parent --- name ----> child relationship.
@@ -77,8 +72,7 @@ public class ChildAssociationRef
      * @param isPrimary
      *            true if this represents the primary parent-child relationship
      * @param nthSibling
-     *            the nth association with the same properties. Usually -1 to be
-     *            ignored.
+     *            the nth association with the same properties. Usually -1 to be ignored.
      */
     public ChildAssociationRef(
             QName assocTypeQName,
@@ -103,8 +97,7 @@ public class ChildAssociationRef
     }
 
     /**
-     * Constructs a <b>non-primary</b>, -1th sibling parent-child association
-     * reference.
+     * Constructs a <b>non-primary</b>, -1th sibling parent-child association reference.
      * 
      * @see ChildAssociationRef#ChildAssociationRef(org.alfresco.service.namespace.QName, NodeRef, org.alfresco.service.namespace.QName, NodeRef)
      */
@@ -112,9 +105,10 @@ public class ChildAssociationRef
     {
         this(assocTypeQName, parentRef, childQName, childRef, false, -1);
     }
-    
+
     /**
-     * @param childAssocRefStr a string of the form <b>parentNodeRef|childNodeRef|assocTypeQName|assocQName|isPrimary|nthSibling</b>
+     * @param childAssocRefStr
+     *            a string of the form <b>parentNodeRef|childNodeRef|assocTypeQName|assocQName|isPrimary|nthSibling</b>
      */
     public ChildAssociationRef(String childAssocRefStr)
     {
@@ -129,7 +123,7 @@ public class ChildAssociationRef
         String assocQNameStr = tokenizer.nextToken();
         String isPrimaryStr = tokenizer.nextToken();
         String nthSiblingStr = tokenizer.nextToken();
-        
+
         this.parentRef = new NodeRef(parentNodeRefStr);
         this.childRef = new NodeRef(childNodeRefStr);
         this.assocTypeQName = QName.createQName(assocTypeQNameStr);
@@ -145,14 +139,14 @@ public class ChildAssociationRef
     {
         StringBuilder sb = new StringBuilder(250);
         sb.append(parentRef).append(FILLER)
-          .append(childRef).append(FILLER)
-          .append(assocTypeQName).append(FILLER)
-          .append(childQName).append(FILLER)
-          .append(isPrimary).append(FILLER)
-          .append(nthSibling);
+                .append(childRef).append(FILLER)
+                .append(assocTypeQName).append(FILLER)
+                .append(childQName).append(FILLER)
+                .append(isPrimary).append(FILLER)
+                .append(nthSibling);
         return sb.toString();
     }
-    
+
     /**
      * Compares:
      * <ul>
@@ -202,9 +196,7 @@ public class ChildAssociationRef
     /**
      * Get the qualified name of the association type
      * 
-     * @return Returns the qualified name of the parent-child association type
-     *      as defined in the data dictionary.  It may be null if this is the
-     *      imaginary association to the root node.
+     * @return Returns the qualified name of the parent-child association type as defined in the data dictionary. It may be null if this is the imaginary association to the root node.
      */
     public QName getTypeQName()
     {
@@ -214,8 +206,7 @@ public class ChildAssociationRef
     /**
      * Get the qualified name of the parent-child association
      * 
-     * @return Returns the qualified name of the parent-child association. It
-     *         may be null if this is the imaginary association to a root node.
+     * @return Returns the qualified name of the parent-child association. It may be null if this is the imaginary association to a root node.
      */
     public QName getQName()
     {
@@ -231,8 +222,7 @@ public class ChildAssociationRef
     }
 
     /**
-     * @return Returns the parent node reference, which may be null if this
-     *         represents the imaginary reference to the root node
+     * @return Returns the parent node reference, which may be null if this represents the imaginary reference to the root node
      */
     public NodeRef getParentRef()
     {
@@ -256,15 +246,12 @@ public class ChildAssociationRef
     }
 
     /**
-     * Allows post-creation setting of the ordering index.  This is a helper
-     * so that sorted sets and lists can be easily sorted.
+     * Allows post-creation setting of the ordering index. This is a helper so that sorted sets and lists can be easily sorted.
      * <p>
-     * This index is <b>in no way absolute</b> and should change depending on
-     * the results that appear around this instance.  Therefore, the sibling
-     * number cannot be used to construct, say, sibling number 5.  Sibling
-     * number 5 will exist only in results where there are siblings 1 - 4.
+     * This index is <b>in no way absolute</b> and should change depending on the results that appear around this instance. Therefore, the sibling number cannot be used to construct, say, sibling number 5. Sibling number 5 will exist only in results where there are siblings 1 - 4.
      * 
-     * @param nthSibling the sibling index
+     * @param nthSibling
+     *            the sibling index
      */
     public void setNthSibling(int nthSibling)
     {

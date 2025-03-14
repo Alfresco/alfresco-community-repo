@@ -26,6 +26,23 @@
 
 package org.alfresco.rest.api.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
 import org.alfresco.repo.content.ContentRestoreParams;
 import org.alfresco.rest.api.model.ArchiveContentRequest;
 import org.alfresco.rest.api.model.ContentStorageInfo;
@@ -36,22 +53,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContentStorageInformationImplTest
@@ -229,7 +230,7 @@ public class ContentStorageInformationImplTest
         when(contentService.requestRestoreContentFromArchive(eq(DUMMY_NODE_REF), any(QName.class), eq(restoreParams))).thenThrow(new org.alfresco.service.cmr.repository.RestoreInProgressException("Error"));
         when(namespaceService.getNamespaceURI(NamespaceService.CONTENT_MODEL_PREFIX)).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
 
-        assertThrows(RestoreInProgressException.class, 
+        assertThrows(RestoreInProgressException.class,
                 () -> objectUnderTest.requestRestoreContentFromArchive(DUMMY_NODE_REF, CONTENT_PROP_NAME, restoreArchivedContentRequest));
     }
 }

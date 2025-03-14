@@ -25,37 +25,36 @@
  */
 package org.alfresco.service.cmr.activities;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.sync.repo.Client;
-import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.sync.repo.Client;
+
 /**
- * A consolidated services for posting file folder activities.
- * Some code was moved from webdav.ActivityPosterImpl and
- * opencmis.ActivityPosterImpl.
+ * A consolidated services for posting file folder activities. Some code was moved from webdav.ActivityPosterImpl and opencmis.ActivityPosterImpl.
  *
  * @author Gethin James
  */
 public class FileFolderActivityPosterImpl implements ActivityPoster
 {
     private ActivityService activityService;
- 
+
     @Override
     public void postFileFolderActivity(
-                String activityType,
-                String path,
-                String tenantDomain,
-                String siteId,
-                NodeRef parentNodeRef,
-                NodeRef nodeRef,
-                String fileName,
-                String appTool,
-                Client client,
-                FileInfo fileInfo)
+            String activityType,
+            String path,
+            String tenantDomain,
+            String siteId,
+            NodeRef parentNodeRef,
+            NodeRef nodeRef,
+            String fileName,
+            String appTool,
+            Client client,
+            FileInfo fileInfo)
     {
 
         JSONObject json;
@@ -67,62 +66,67 @@ public class FileFolderActivityPosterImpl implements ActivityPoster
         {
             throw new AlfrescoRuntimeException("Unabled to create activities json", jsonError);
         }
-        
+
         activityService.postActivity(
-                    activityType,
-                    siteId,
-                    appTool,
-                    json.toString(),
-                    client,
-                    fileInfo);
+                activityType,
+                siteId,
+                appTool,
+                json.toString(),
+                client,
+                fileInfo);
     }
 
     /**
      * Create JSON suitable for create, modify or delete activity posts.
      * 
-     * @param tenantDomain String
-     * @param path String
-     * @param parentNodeRef NodeRef
-     * @param nodeRef NodeRef
-     * @param fileName String
+     * @param tenantDomain
+     *            String
+     * @param path
+     *            String
+     * @param parentNodeRef
+     *            NodeRef
+     * @param nodeRef
+     *            NodeRef
+     * @param fileName
+     *            String
      * @throws JSONException
      * @return JSONObject
      */
     protected JSONObject createActivityJSON(
-                String tenantDomain,
-                String path,
-                NodeRef parentNodeRef,
-                NodeRef nodeRef,
-                String fileName) throws JSONException
+            String tenantDomain,
+            String path,
+            NodeRef parentNodeRef,
+            NodeRef nodeRef,
+            String fileName) throws JSONException
     {
-            JSONObject json = new JSONObject();
+        JSONObject json = new JSONObject();
 
-            json.put("nodeRef", nodeRef);
-            
-            if (parentNodeRef != null)
-            {
-                // Used for deleted files.
-                json.put("parentNodeRef", parentNodeRef);
-            }
-            
-            if (path != null)
-            {
-                // Used for deleted files and folders (added or deleted)
-                json.put("page", "documentlibrary?path=" + path);
-            }
-            else
-            {
-                // Used for added or modified files.
-                json.put("page", "document-details?nodeRef=" + nodeRef);
-            }
-            json.put("title", fileName);
-            
-            if (tenantDomain!= null && !tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
-            {
-                // Only used in multi-tenant setups.
-                json.put("tenantDomain", tenantDomain);
-            }
-        
+        json.put("nodeRef", nodeRef);
+
+        if (parentNodeRef != null)
+        {
+            // Used for deleted files.
+            json.put("parentNodeRef", parentNodeRef);
+        }
+
+        if (path != null)
+        {
+            // Used for deleted files and folders (added or deleted)
+            json.put("page", "documentlibrary?path=" + path);
+        }
+        else
+        {
+            // Used for added or modified files.
+            json.put("page", "document-details?nodeRef=" + nodeRef);
+        }
+        json.put("title", fileName);
+
+        if (tenantDomain != null && !tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
+        {
+            // Only used in multi-tenant setups.
+            json.put("tenantDomain", tenantDomain);
+        }
+
         return json;
     }
 

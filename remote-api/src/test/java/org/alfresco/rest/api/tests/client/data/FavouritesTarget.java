@@ -29,6 +29,7 @@ import org.json.simple.JSONObject;
 
 public interface FavouritesTarget extends ExpectedComparison
 {
-	JSONObject toJSON();
-	String getTargetGuid();
+    JSONObject toJSON();
+
+    String getTargetGuid();
 }

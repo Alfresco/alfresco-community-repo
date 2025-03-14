@@ -33,6 +33,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -49,8 +52,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Action execution tracking service implementation
@@ -70,8 +71,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     private RuntimeActionService runtimeActionService;
 
     /**
-     * Doesn't need to be cluster unique, is just used to try to reduce the
-     * chance of clashes in the quickest and easiest way.
+     * Doesn't need to be cluster unique, is just used to try to reduce the chance of clashes in the quickest and easiest way.
      */
     private short nextExecutionId = 1;
     private short wrapExecutionIdAfter = Short.MAX_VALUE / 2;
@@ -81,7 +81,8 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     /**
      * Set the transaction service
      * 
-     * @param transactionService the transaction service
+     * @param transactionService
+     *            the transaction service
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -91,7 +92,8 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     /**
      * Set the node service
      * 
-     * @param nodeService the node service
+     * @param nodeService
+     *            the node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -101,7 +103,8 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     /**
      * Set the runtime action service
      * 
-     * @param runtimeActionService the runtime action service
+     * @param runtimeActionService
+     *            the runtime action service
      */
     public void setRuntimeActionService(RuntimeActionService runtimeActionService)
     {
@@ -109,8 +112,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     }
 
     /**
-     * Sets the cache used to store details of currently executing actions,
-     * cluster wide.
+     * Sets the cache used to store details of currently executing actions, cluster wide.
      */
     public void setExecutingActionsCache(SimpleCache<String, ExecutionDetails> executingActionsCache)
     {
@@ -127,12 +129,12 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     {
         recordActionPending((ActionImpl) action);
     }
-    
+
     public void recordActionPending(Action action, NodeRef actionedUponNodeRef)
     {
         recordActionPending((ActionImpl) action, actionedUponNodeRef);
     }
-    
+
     public void recordActionPending(ActionImpl action)
     {
         recordActionPending(action, null);
@@ -167,62 +169,57 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         action.setExecutionEndDate(new Date());
         action.setExecutionStatus(ActionStatus.Completed);
         action.setExecutionFailureMessage(null);
-        
+
         // Do we need to update the persisted details?
         if (action.getNodeRef() != null && nodeService.exists(action.getNodeRef()))
         {
-           // Make sure we re-fetch the latest action details and save
-           //  this version back into the repository
-           // (That way, if someone has a reference to the
-           // action and plays with it, we still save the
-           // correct information)
-           final Date startedAt = action.getExecutionStartDate();
-           final Date endedAt = action.getExecutionEndDate();
-           final NodeRef actionNode = action.getNodeRef();
-           
-           AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
-           {
-               public void afterCommit()
-               {
-                  transactionService.getRetryingTransactionHelper().doInTransaction(
-                      new RetryingTransactionCallback<Object>()
-                      {
-                         public Object execute() throws Throwable
-                         {
-                           // Update the action as the system user
-                          return AuthenticationUtil.runAs(new RunAsWork<Action>() 
-                             {
-                                public Action doWork() throws Exception
+            // Make sure we re-fetch the latest action details and save
+            // this version back into the repository
+            // (That way, if someone has a reference to the
+            // action and plays with it, we still save the
+            // correct information)
+            final Date startedAt = action.getExecutionStartDate();
+            final Date endedAt = action.getExecutionEndDate();
+            final NodeRef actionNode = action.getNodeRef();
+
+            AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter() {
+                public void afterCommit()
+                {
+                    transactionService.getRetryingTransactionHelper().doInTransaction(
+                            new RetryingTransactionCallback<Object>() {
+                                public Object execute() throws Throwable
                                 {
-                                   // Ensure the action persisted node still exists, and wasn't deleted
-                                   //  between when it loaded running and now
-                                   if( !nodeService.exists(actionNode) )
-                                   {
-                                       // Persisted node has gone, nothing to update
-                                       return null;
-                                   }
-                                    
-                                   // Grab the latest version of the action
-                                   ActionImpl action = (ActionImpl) runtimeActionService
-                                   .createAction(actionNode);
+                                    // Update the action as the system user
+                                    return AuthenticationUtil.runAs(new RunAsWork<Action>() {
+                                        public Action doWork() throws Exception
+                                        {
+                                            // Ensure the action persisted node still exists, and wasn't deleted
+                                            // between when it loaded running and now
+                                            if (!nodeService.exists(actionNode))
+                                            {
+                                                // Persisted node has gone, nothing to update
+                                                return null;
+                                            }
 
-                                   // Update it
-                                   action.setExecutionStatus(ActionStatus.Completed);
-                                   action.setExecutionFailureMessage(null);
-                                   action.setExecutionStartDate(startedAt);
-                                   action.setExecutionEndDate(endedAt);
-                                   runtimeActionService.saveActionImpl(actionNode, action);
+                                            // Grab the latest version of the action
+                                            ActionImpl action = (ActionImpl) runtimeActionService
+                                                    .createAction(actionNode);
 
-                                   // All done
-                                   return action;
+                                            // Update it
+                                            action.setExecutionStatus(ActionStatus.Completed);
+                                            action.setExecutionFailureMessage(null);
+                                            action.setExecutionStartDate(startedAt);
+                                            action.setExecutionEndDate(endedAt);
+                                            runtimeActionService.saveActionImpl(actionNode, action);
+
+                                            // All done
+                                            return action;
+                                        }
+                                    }, AuthenticationUtil.SYSTEM_USER_NAME);
                                 }
-                             }, AuthenticationUtil.SYSTEM_USER_NAME
-                          );
-                         }
-                      }, false, true
-                  );
-               }
-           });
+                            }, false, true);
+                }
+            });
         }
 
         // Remove it from the cache, as it's finished
@@ -234,12 +231,12 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     {
         recordActionExecuting((ActionImpl) action, null);
     }
-    
+
     public void recordActionExecuting(Action action, NodeRef actionedUponNodeRef)
     {
         recordActionExecuting((ActionImpl) action, actionedUponNodeRef);
     }
-    
+
     private void recordActionExecuting(ActionImpl action, NodeRef actionedUponNodeRef)
     {
         if (logger.isDebugEnabled() == true)
@@ -281,9 +278,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     }
 
     /**
-     * For an action that needs to go into the cache (async action that is
-     * pending, or sync action that is running), assign an execution instance
-     * and put into the cache
+     * For an action that needs to go into the cache (async action that is pending, or sync action that is running), assign an execution instance and put into the cache
      */
     private void placeActionInCache(ActionImpl action, NodeRef actionedUponNodeRef)
     {
@@ -329,8 +324,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     }
 
     /**
-     * Schedule the recording of the action failure to occur in another
-     * transaction
+     * Schedule the recording of the action failure to occur in another transaction
      */
     public void recordActionFailure(Action action, final Throwable exception)
     {
@@ -390,18 +384,15 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
 
             // Have the details updated on the action as soon
             // as the transaction has finished rolling back
-            AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
-            {
+            AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter() {
                 public void afterRollback()
                 {
                     transactionService.getRetryingTransactionHelper().doInTransaction(
-                            new RetryingTransactionCallback<Object>()
-                            {
+                            new RetryingTransactionCallback<Object>() {
                                 public Object execute() throws Throwable
                                 {
                                     // Update the action as the system user
-                                    return AuthenticationUtil.runAs(new RunAsWork<Action>()
-                                    {
+                                    return AuthenticationUtil.runAs(new RunAsWork<Action>() {
                                         public Action doWork() throws Exception
                                         {
                                             // Grab the latest version of the
@@ -488,7 +479,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         {
             logger.debug("requesting cancellation of action: " + actionKey);
         }
-        
+
         // See if the action is in the cache
         ExecutionDetails details = executingActionsCache.get(actionKey);
 
@@ -498,12 +489,11 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
             return;
         }
 
-        // Create a new copy of the details, this time with 
-        //  the cancel flag set
+        // Create a new copy of the details, this time with
+        // the cancel flag set
         details = new ExecutionDetails(
-              details.getExecutionSummary(), details.getPersistedActionRef(),
-              details.getRunningOn(), details.getStartedAt(), true
-        );
+                details.getExecutionSummary(), details.getPersistedActionRef(),
+                details.getRunningOn(), details.getStartedAt(), true);
 
         // Save the flag to the cache
         executingActionsCache.put(actionKey, details);
@@ -550,7 +540,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         }
         return details;
     }
-    
+
     public List<ExecutionSummary> getExecutingActions(String type, NodeRef actionedUponNodeRef)
     {
         List<ExecutionSummary> executionSummaries = getExecutingActions(type);
@@ -594,7 +584,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         return summary.getActionType() + cacheKeyPartSeparator + summary.getActionId()
                 + cacheKeyPartSeparator + summary.getExecutionInstance();
     }
-    
+
     /**
      * Builds up the details to be stored in a cache for a specific action
      */
@@ -623,7 +613,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         }
 
         // Generate
-        return new ExecutionDetails(buildExecutionSummary(action), 
+        return new ExecutionDetails(buildExecutionSummary(action),
                 action.getNodeRef(), actionedUponNodeRef,
                 machineName, action.getExecutionStartDate(), false);
     }
@@ -636,7 +626,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     protected static ExecutionSummary buildExecutionSummary(String key)
     {
         StringTokenizer st = new StringTokenizer(key, new String(
-                new char[] { cacheKeyPartSeparator }));
+                new char[]{cacheKeyPartSeparator}));
         String actionType = st.nextToken();
         String actionId = st.nextToken();
         int executionInstance = Integer.parseInt(st.nextToken());

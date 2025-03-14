@@ -25,16 +25,16 @@
  */
 package org.alfresco.rest.core;
 
-import jakarta.json.Json;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonBuilderFactory;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonBuilderFactory;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.model.RestProcessVariableModel;
@@ -62,7 +62,7 @@ public class JsonBodyGenerator
     {
         return jsonBuilder().createObjectBuilder();
     }
-    
+
     /**
      * @return {@link JsonArrayBuilder}
      */
@@ -70,10 +70,9 @@ public class JsonBodyGenerator
     {
         return jsonBuilder().createArrayBuilder();
     }
+
     /**
-     * {
-     *    "tag":"test-tag-1"
-     * }
+     * { "tag":"test-tag-1" }
      * 
      * @param key
      * @param value
@@ -85,13 +84,7 @@ public class JsonBodyGenerator
     }
 
     /**
-     * {
-     *  "target": {
-     *          "site": {
-     *                  "guid": "abcde-01234"
-     *                  }
-     *          }
-     * }
+     * { "target": { "site": { "guid": "abcde-01234" } } }
      * 
      * @param siteModel
      * @return
@@ -101,19 +94,14 @@ public class JsonBodyGenerator
         JsonObject value = defineJSON()
                 .add("target", defineJSON()
                         .add("site", defineJSON()
-                                .add("guid", siteModel.getGuid()))).build();
+                                .add("guid", siteModel.getGuid())))
+                .build();
 
         return value.toString();
     }
 
     /**
-     * {
-     * "target": {
-     *          "file": {
-     *                  "guid": "abcde-01234"
-     *                  }
-     *          }
-     * }
+     * { "target": { "file": { "guid": "abcde-01234" } } }
      * 
      * @param siteModel
      * @return
@@ -123,18 +111,13 @@ public class JsonBodyGenerator
         JsonObject value = defineJSON()
                 .add("target", defineJSON()
                         .add("file", defineJSON()
-                                .add("guid", fileModel.getNodeRef().replace(";1.0", "")))).build();
+                                .add("guid", fileModel.getNodeRef().replace(";1.0", ""))))
+                .build();
         return value.toString();
     }
 
     /**
-     * {
-     * "target": {
-     *                  "folder": {
-     *                          "guid": "abcde-01234"
-     *                          }
-     *          }
-     * }
+     * { "target": { "folder": { "guid": "abcde-01234" } } }
      * 
      * @param siteModel
      * @return
@@ -144,7 +127,8 @@ public class JsonBodyGenerator
         JsonObject value = defineJSON()
                 .add("target", defineJSON()
                         .add("folder", defineJSON()
-                                .add("guid", folderModel.getNodeRef()))).build();
+                                .add("guid", folderModel.getNodeRef())))
+                .build();
         return value.toString();
     }
 
@@ -168,7 +152,7 @@ public class JsonBodyGenerator
                 .add("myRating", likeOrNot).build();
         return value.toString();
     }
-    
+
     public static String fiveStarRating(int stars)
     {
         JsonObject value = defineJSON()
@@ -176,8 +160,7 @@ public class JsonBodyGenerator
                 .add("myRating", stars).build();
         return value.toString();
     }
-    
-    
+
     public static String siteMember(UserModel userModel)
     {
         Utility.checkObjectIsInitialized(userModel.getUserRole(), "userModel.getUserRole()");
@@ -186,7 +169,7 @@ public class JsonBodyGenerator
                 .add("id", userModel.getUsername()).build();
         return value.toString();
     }
-    
+
     public static String siteGroup(String authorityId, UserRole role)
     {
         Utility.checkObjectIsInitialized(authorityId, "authorityId");
@@ -204,8 +187,10 @@ public class JsonBodyGenerator
                 .add("title", title).build();
         return value.toString();
     }
+
     /**
      * Method to create a Json object for SiteBody with site title, description, visibility
+     * 
      * @param siteModel
      * @return String
      */
@@ -225,10 +210,11 @@ public class JsonBodyGenerator
                 .add("variables", jsonBuilder().createObjectBuilder()
                         .add("bpm_assignee", assignee.getUsername())
                         .add("bpm_sendEMailNotifications", sendEmailNotifications)
-                        .add("bpm_workflowPriority", priority.getLevel())).build();
+                        .add("bpm_workflowPriority", priority.getLevel()))
+                .build();
         return value.toString();
     }
-    
+
     public static String processVariable(RestProcessVariableModel variableModel)
     {
         JsonObject value = defineJSON()
@@ -237,7 +223,7 @@ public class JsonBodyGenerator
                 .add("type", variableModel.getType()).build();
         return value.toString();
     }
-    
+
     public static String taskVariable(RestVariableModel taskVariableModel)
     {
         JsonObject value = defineJSON()
@@ -249,13 +235,7 @@ public class JsonBodyGenerator
     }
 
     /**
-     * {
-     *    "actionDefinitionId": "copy",
-     *    "targetId": "4c4b3c43-f18b-43ff-af84-751f16f1ddfd",
-     *    "params": {
-             "destination-folder": "34219f79-66fa-4ebf-b371-118598af898c"
-     *      }
-     * }
+     * { "actionDefinitionId": "copy", "targetId": "4c4b3c43-f18b-43ff-af84-751f16f1ddfd", "params": { "destination-folder": "34219f79-66fa-4ebf-b371-118598af898c" } }
      * 
      * @param actionDefinitionId
      * @param targetNode
@@ -265,7 +245,7 @@ public class JsonBodyGenerator
     public static String executeActionPostBody(String actionDefinitionId, RepoTestModel targetNode, Map<String, Serializable> params)
     {
         JsonObjectBuilder objectBuilder = jsonBuilder().createObjectBuilder();
-        for(Map.Entry<String, Serializable> param : params.entrySet())
+        for (Map.Entry<String, Serializable> param : params.entrySet())
         {
             addJsonValue(objectBuilder, param.getKey(), param.getValue());
 
@@ -311,10 +291,7 @@ public class JsonBodyGenerator
     }
 
     /**
-     * {
-     * "actionDefinitionId": "check-out",
-     * "targetId": "4c4b3c43-f18b-43ff-af84-751f16f1ddfd",
-     * }
+     * { "actionDefinitionId": "check-out", "targetId": "4c4b3c43-f18b-43ff-af84-751f16f1ddfd", }
      *
      * @param actionDefinitionId
      * @param targetNode
@@ -330,11 +307,7 @@ public class JsonBodyGenerator
     }
 
     /**
-     * {
-     *    "key1":"key1",
-     *    "key2":"key2",
-     *    "key3":"key3"
-     * }
+     * { "key1":"key1", "key2":"key2", "key3":"key3" }
      * 
      * @param key
      * @param value
@@ -342,7 +315,7 @@ public class JsonBodyGenerator
      */
     public static String keyValueJson(HashMap<String, String> mapJson)
     {
-        JsonObjectBuilder builder= defineJSON();
+        JsonObjectBuilder builder = defineJSON();
 
         for (Map.Entry<String, String> entry : mapJson.entrySet())
         {
@@ -354,7 +327,8 @@ public class JsonBodyGenerator
     /**
      * Convert a collection of {@link TestModel} objects to JSON for a multi-entity POST request.
      *
-     * @param models The entities to convert.
+     * @param models
+     *            The entities to convert.
      * @return The JSON string.
      */
     public static String arrayToJson(List<? extends TestModel> models)

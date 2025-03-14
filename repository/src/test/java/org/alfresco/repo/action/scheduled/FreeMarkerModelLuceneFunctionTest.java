@@ -29,10 +29,12 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-
 import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
@@ -42,21 +44,18 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.NeverRunsTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
- * Test that the correct date ranges are generated for lucene 
+ * Test that the correct date ranges are generated for lucene
  * 
  * @author Andy Hind
  */
 @Category({OwnJVMTestsCategory.class, LuceneTests.class, NeverRunsTests.class})
 public class FreeMarkerModelLuceneFunctionTest extends TestCase
 {
-    //private static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sssZ");
+    // private static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sssZ");
     private static SimpleDateFormat SDF2 = new SimpleDateFormat("yyyy-MM-dd");
-    
+
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     private AuthenticationComponent authenticationComponent;
     private ServiceRegistry serviceRegistry;
@@ -114,7 +113,7 @@ public class FreeMarkerModelLuceneFunctionTest extends TestCase
         String result = serviceRegistry.getTemplateService().processTemplateString("freemarker", template, mf.getModel());
         assertEquals(result, SDF2.format(new Date()));
     }
-    
+
     /**
      * Test generation of lucene date ranges
      *
@@ -128,13 +127,13 @@ public class FreeMarkerModelLuceneFunctionTest extends TestCase
         String isoStartDate = ISO8601DateFormat.format(cal.getTime());
         cal.add(Calendar.DAY_OF_MONTH, 1);
         String isoEndDate = ISO8601DateFormat.format(cal.getTime());
-        String template = "${luceneDateRange(\""+isoStartDate+"\", \"P1D\")}";
+        String template = "${luceneDateRange(\"" + isoStartDate + "\", \"P1D\")}";
         FreeMarkerWithLuceneExtensionsModelFactory mf = new FreeMarkerWithLuceneExtensionsModelFactory();
         mf.setServiceRegistry(serviceRegistry);
         String result = serviceRegistry.getTemplateService().processTemplateString("freemarker", template, mf.getModel());
-        assertEquals(result, "["+isoStartDate+" TO "+isoEndDate+"]");
+        assertEquals(result, "[" + isoStartDate + " TO " + isoEndDate + "]");
     }
-    
+
     /**
      * Test generation of lucene date ranges
      *
@@ -148,13 +147,13 @@ public class FreeMarkerModelLuceneFunctionTest extends TestCase
         String isoStartDate = ISO8601DateFormat.format(cal.getTime());
         cal.add(Calendar.DAY_OF_MONTH, 4);
         String isoEndDate = ISO8601DateFormat.format(cal.getTime());
-        String template = "${luceneDateRange(\""+isoStartDate+"\", \""+isoEndDate+"\")}";
+        String template = "${luceneDateRange(\"" + isoStartDate + "\", \"" + isoEndDate + "\")}";
         FreeMarkerWithLuceneExtensionsModelFactory mf = new FreeMarkerWithLuceneExtensionsModelFactory();
         mf.setServiceRegistry(serviceRegistry);
         String result = serviceRegistry.getTemplateService().processTemplateString("freemarker", template, mf.getModel());
-        assertEquals(result, "["+isoStartDate+" TO "+isoEndDate+"]");
+        assertEquals(result, "[" + isoStartDate + " TO " + isoEndDate + "]");
     }
-    
+
     /**
      * Test generation of lucene date ranges
      *
@@ -163,7 +162,7 @@ public class FreeMarkerModelLuceneFunctionTest extends TestCase
     {
         GregorianCalendar cal = new GregorianCalendar();
         cal.setTime(new Date());
-        //cal.set(Calendar.AM_PM, Calendar.AM);
+        // cal.set(Calendar.AM_PM, Calendar.AM);
         cal.set(Calendar.HOUR, 0);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
@@ -176,9 +175,9 @@ public class FreeMarkerModelLuceneFunctionTest extends TestCase
         mf.setServiceRegistry(serviceRegistry);
         String result = serviceRegistry.getTemplateService().processTemplateString("freemarker", template, mf.getModel());
         assertNotNull(result);
-        assertEquals(result, "["+isoStartDate+" TO "+isoEndDate+"]");
+        assertEquals(result, "[" + isoStartDate + " TO " + isoEndDate + "]");
     }
-    
+
     /**
      * Test generation of lucene date ranges
      *
@@ -187,7 +186,7 @@ public class FreeMarkerModelLuceneFunctionTest extends TestCase
     {
         GregorianCalendar cal = new GregorianCalendar();
         cal.setTime(new Date());
-        //cal.set(Calendar.AM_PM, Calendar.AM);
+        // cal.set(Calendar.AM_PM, Calendar.AM);
         cal.set(Calendar.HOUR, 0);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
@@ -199,9 +198,9 @@ public class FreeMarkerModelLuceneFunctionTest extends TestCase
         FreeMarkerWithLuceneExtensionsModelFactory mf = new FreeMarkerWithLuceneExtensionsModelFactory();
         mf.setServiceRegistry(serviceRegistry);
         String result = serviceRegistry.getTemplateService().processTemplateString("freemarker", template, mf.getModel());
-        assertEquals(result, "["+isoEndDate+" TO "+isoStartDate+"]");
+        assertEquals(result, "[" + isoEndDate + " TO " + isoStartDate + "]");
     }
-    
+
     /**
      * Test generation of lucene date ranges
      *
@@ -210,7 +209,7 @@ public class FreeMarkerModelLuceneFunctionTest extends TestCase
     {
         GregorianCalendar cal = new GregorianCalendar();
         cal.setTime(new Date());
-        //cal.set(Calendar.AM_PM, Calendar.AM);
+        // cal.set(Calendar.AM_PM, Calendar.AM);
         cal.set(Calendar.HOUR, 0);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
@@ -220,42 +219,41 @@ public class FreeMarkerModelLuceneFunctionTest extends TestCase
         FreeMarkerWithLuceneExtensionsModelFactory mf = new FreeMarkerWithLuceneExtensionsModelFactory();
         mf.setServiceRegistry(serviceRegistry);
         String result = serviceRegistry.getTemplateService().processTemplateString("freemarker", template, mf.getModel());
-        assertEquals(result, "["+isoStartDate+" TO "+isoStartDate+"]");
+        assertEquals(result, "[" + isoStartDate + " TO " + isoStartDate + "]");
     }
-    
+
     /**
-     * Tests finding single nodes by a lucene query.
-     * Uses a node with a special, known noderef
+     * Tests finding single nodes by a lucene query. Uses a node with a special, known noderef
      */
     public void testSelectSingleNode()
     {
-       String renderingSpaceNodeRef = "workspace://SpacesStore/rendering_actions_space";
-       
-       // Build a selectSingleNode to get the rendering actions space by path
-       String rendering_space = "rendering_actions";
-       String path = "'PATH:\"/app:company_home/app:dictionary/app:" + rendering_space + "\"'";
-       String template = "${selectSingleNode('workspace://SpacesStore', 'lucene', "+path+" )}";
-       
-       // Evaluate the script
-       FreeMarkerWithLuceneExtensionsModelFactory mf = new FreeMarkerWithLuceneExtensionsModelFactory();
-       mf.setServiceRegistry(serviceRegistry);
-       String result = serviceRegistry.getTemplateService().processTemplateString("freemarker", template, mf.getModel());
-       
-       // Check we got the magic, known noderef back
-       assertEquals(result, renderingSpaceNodeRef);
-       
-       
-       // Now check for a node that doesn't exist
-       String invalidSpace = "DOESnotEXISTspace";
-       path = "'PATH:\"/app:company_home/app:dictionary/app:" + invalidSpace + "\"'";
-       template = "${selectSingleNode('workspace://SpacesStore', 'lucene', "+path+" )}";
-       
-       // Will fail with "No Nodes Selected"
-       try
-       {
-          result = serviceRegistry.getTemplateService().processTemplateString("freemarker", template, mf.getModel());
-          fail("Shouldn't find anything, but got" + result);
-       }
-       catch(TemplateException e) {}
+        String renderingSpaceNodeRef = "workspace://SpacesStore/rendering_actions_space";
+
+        // Build a selectSingleNode to get the rendering actions space by path
+        String rendering_space = "rendering_actions";
+        String path = "'PATH:\"/app:company_home/app:dictionary/app:" + rendering_space + "\"'";
+        String template = "${selectSingleNode('workspace://SpacesStore', 'lucene', " + path + " )}";
+
+        // Evaluate the script
+        FreeMarkerWithLuceneExtensionsModelFactory mf = new FreeMarkerWithLuceneExtensionsModelFactory();
+        mf.setServiceRegistry(serviceRegistry);
+        String result = serviceRegistry.getTemplateService().processTemplateString("freemarker", template, mf.getModel());
+
+        // Check we got the magic, known noderef back
+        assertEquals(result, renderingSpaceNodeRef);
+
+        // Now check for a node that doesn't exist
+        String invalidSpace = "DOESnotEXISTspace";
+        path = "'PATH:\"/app:company_home/app:dictionary/app:" + invalidSpace + "\"'";
+        template = "${selectSingleNode('workspace://SpacesStore', 'lucene', " + path + " )}";
+
+        // Will fail with "No Nodes Selected"
+        try
+        {
+            result = serviceRegistry.getTemplateService().processTemplateString("freemarker", template, mf.getModel());
+            fail("Shouldn't find anything, but got" + result);
+        }
+        catch (TemplateException e)
+        {}
     }
 }

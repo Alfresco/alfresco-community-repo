@@ -54,5 +54,5 @@ public class TupleEntry implements Serializable
     {
         return value;
     }
-    
+
 }

@@ -40,17 +40,18 @@ import org.alfresco.repo.web.auth.TenantAuthentication;
 public class PublicApiTenantAuthentication implements TenantAuthentication
 {
     private TenantAdminService tenantAdminService;
-    
+
     public void setTenantAdminService(TenantAdminService service)
     {
         this.tenantAdminService = service;
     }
-    
+
     /**
      * Determine whether tenant exists and enabled
      * 
-     * @param tenant String
-     * @return  true => it exists, no it doesn't
+     * @param tenant
+     *            String
+     * @return true => it exists, no it doesn't
      */
     public boolean tenantExists(final String tenant)
     {
@@ -58,9 +59,8 @@ public class PublicApiTenantAuthentication implements TenantAuthentication
         {
             return true;
         }
-        
-        return AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
-        {
+
+        return AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>() {
             public Boolean doWork() throws Exception
             {
                 return tenantAdminService.existsTenant(tenant) && tenantAdminService.isEnabled();
@@ -71,35 +71,37 @@ public class PublicApiTenantAuthentication implements TenantAuthentication
     /**
      * Authenticate user against network/tenant.
      * 
-     * @param username String
-     * @param networkId String
-     * @return  true => authenticated, false => not authenticated
+     * @param username
+     *            String
+     * @param networkId
+     *            String
+     * @return true => authenticated, false => not authenticated
      */
     public boolean authenticateTenant(String username, String networkId)
     {
-    	boolean authenticated = false;
+        boolean authenticated = false;
 
-    	String userNetworkId = tenantAdminService.getUserDomain(username);
-    	if(userNetworkId == null || userNetworkId.equals(TenantService.DEFAULT_DOMAIN))
-    	{
-    		if(networkId.equalsIgnoreCase(TenantUtil.DEFAULT_TENANT) || networkId.equalsIgnoreCase(TenantUtil.SYSTEM_TENANT))
-    		{
-    			authenticated = true;
-    		}
-    	}
-    	else
-    	{
-    		if(networkId.equalsIgnoreCase(TenantUtil.DEFAULT_TENANT))
-    		{
-    			networkId = userNetworkId;
-    		}
-    		
-    		if(userNetworkId.equalsIgnoreCase(networkId))
-        	{
-        		authenticated = tenantAdminService.isEnabledTenant(networkId);
-        	}
-    	}
+        String userNetworkId = tenantAdminService.getUserDomain(username);
+        if (userNetworkId == null || userNetworkId.equals(TenantService.DEFAULT_DOMAIN))
+        {
+            if (networkId.equalsIgnoreCase(TenantUtil.DEFAULT_TENANT) || networkId.equalsIgnoreCase(TenantUtil.SYSTEM_TENANT))
+            {
+                authenticated = true;
+            }
+        }
+        else
+        {
+            if (networkId.equalsIgnoreCase(TenantUtil.DEFAULT_TENANT))
+            {
+                networkId = userNetworkId;
+            }
 
-        return authenticated; 
+            if (userNetworkId.equalsIgnoreCase(networkId))
+            {
+                authenticated = tenantAdminService.isEnabledTenant(networkId);
+            }
+        }
+
+        return authenticated;
     }
 }

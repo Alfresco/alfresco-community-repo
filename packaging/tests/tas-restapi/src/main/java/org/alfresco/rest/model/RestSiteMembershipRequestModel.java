@@ -26,10 +26,10 @@
 package org.alfresco.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.testng.Assert;
 
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
-import org.testng.Assert;
 
 public class RestSiteMembershipRequestModel extends TestModel implements IRestModel<RestSiteMembershipRequestModel>
 {

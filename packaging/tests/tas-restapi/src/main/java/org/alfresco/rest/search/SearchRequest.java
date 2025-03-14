@@ -54,6 +54,7 @@ import org.alfresco.utility.model.TestModel;
 
 /**
  * Search Query object.
+ * 
  * @author msuzuki
  *
  */
@@ -82,14 +83,14 @@ public class SearchRequest extends TestModel
     RestRequestLimitsModel limits;
 
     public SearchRequest()
-    {
-    }
+    {}
 
     public SearchRequest(RestRequestQueryModel query)
     {
         this.query = query;
     }
-    public SearchRequest(RestRequestQueryModel query,RestRequestHighlightModel highlight)
+
+    public SearchRequest(RestRequestQueryModel query, RestRequestHighlightModel highlight)
     {
         this.query = query;
         this.highlight = highlight;
@@ -128,7 +129,8 @@ public class SearchRequest extends TestModel
     /**
      * Sets the include options within this request.
      *
-     * @param options the include options.
+     * @param options
+     *            the include options.
      */
     public void setInclude(final List<String> options)
     {
@@ -139,6 +141,7 @@ public class SearchRequest extends TestModel
     {
         return highlight;
     }
+
     public void setHighlight(RestRequestHighlightModel highlight)
     {
         this.highlight = highlight;
@@ -148,14 +151,17 @@ public class SearchRequest extends TestModel
     {
         return facetFields;
     }
+
     public void setFacetFields(RestRequestFacetFieldsModel facetFields)
     {
         this.facetFields = facetFields;
     }
+
     public List<FacetQuery> getFacetQueries()
     {
         return facetQueries;
     }
+
     public void setFacetQueries(List<FacetQuery> facetQueries)
     {
         this.facetQueries = facetQueries;
@@ -175,6 +181,7 @@ public class SearchRequest extends TestModel
     {
         return spellcheck;
     }
+
     public void setSpellcheck(RestRequestSpellcheckModel spellcheck)
     {
         this.spellcheck = spellcheck;
@@ -229,6 +236,7 @@ public class SearchRequest extends TestModel
     {
         this.filterQueries = filterQueries;
     }
+
     public List<RestRequestRangesModel> getRanges()
     {
         return ranges;
@@ -289,12 +297,14 @@ public class SearchRequest extends TestModel
     }
 
     /**
-     * Adds a new sort clause to this request.
-     * The method uses a fluent approach and it returns the same {@link SearchRequest} instance.
+     * Adds a new sort clause to this request. The method uses a fluent approach and it returns the same {@link SearchRequest} instance.
      *
-     * @param type the sort clause type (e.g. FIELD)
-     * @param fieldname the field name.
-     * @param ascending the sort criterion.
+     * @param type
+     *            the sort clause type (e.g. FIELD)
+     * @param fieldname
+     *            the field name.
+     * @param ascending
+     *            the sort criterion.
      * @return this {@link SearchRequest} instance.
      */
     public SearchRequest addSortClause(String type, String fieldname, boolean ascending)

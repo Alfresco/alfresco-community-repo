@@ -31,13 +31,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Report service implementation.
@@ -46,7 +47,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * @since 2.1
  */
 public class ReportServiceImpl extends ServiceBaseImpl
-                               implements ReportService
+        implements ReportService
 {
     /** record service */
     protected RecordService recordService;
@@ -55,7 +56,8 @@ public class ReportServiceImpl extends ServiceBaseImpl
     private Map<QName, ReportGenerator> registry = new HashMap<>();
 
     /**
-     * @param recordService record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -126,9 +128,9 @@ public class ReportServiceImpl extends ServiceBaseImpl
         ParameterCheck.mandatory("report", report);
 
         return recordService.createRecordFromContent(nodeRef,
-                                                     report.getReportName(),
-                                                     report.getReportType(),
-                                                     report.getReportProperties(),
-                                                     report.getReportContent());
+                report.getReportName(),
+                report.getReportType(),
+                report.getReportProperties(),
+                report.getReportContent());
     }
 }

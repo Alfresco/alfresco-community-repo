@@ -31,13 +31,7 @@ import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.SiteModel;
 
 /**
- * Handles single Site JSON responses
- * Example:
- * "visibility": "PUBLIC",
- * "guid": "79e140e1-5039-4efa-acaf-c22b5ba7c947",
- * "description": "Description1470255221170",
- * "id": "0-C2291-1470255221170",
- * "title": "0-C2291-1470255221170"
+ * Handles single Site JSON responses Example: "visibility": "PUBLIC", "guid": "79e140e1-5039-4efa-acaf-c22b5ba7c947", "description": "Description1470255221170", "id": "0-C2291-1470255221170", "title": "0-C2291-1470255221170"
  */
 public class RestSiteModel extends SiteModel implements IRestModel<RestSiteModel>
 {
@@ -71,6 +65,6 @@ public class RestSiteModel extends SiteModel implements IRestModel<RestSiteModel
 
     public void setRole(String role)
     {
-        this.role = role;        
+        this.role = role;
     }
 }

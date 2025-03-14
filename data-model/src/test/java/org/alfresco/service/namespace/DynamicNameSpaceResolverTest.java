@@ -61,9 +61,7 @@ public class DynamicNameSpaceResolverTest extends TestCase
         assertEquals(1, dnpr.getPrefixes("http:/namespace/two").size());
         assertEquals(2, dnpr.getPrefixes("http:/namespace/one").size());
 
-
     }
-
 
     public void testTwo()
     {

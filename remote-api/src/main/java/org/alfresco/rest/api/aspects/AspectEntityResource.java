@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.api.aspects;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.Aspects;
 import org.alfresco.rest.api.model.Aspect;
 import org.alfresco.rest.framework.resource.EntityResource;
@@ -33,7 +35,6 @@ import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAct
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 @EntityResource(name = "aspects", title = "Aspects")
 public class AspectEntityResource implements EntityResourceAction.ReadById<Aspect>, EntityResourceAction.Read<Aspect>, InitializingBean

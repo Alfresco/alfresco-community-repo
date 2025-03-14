@@ -36,6 +36,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
@@ -51,28 +58,18 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * This webscript applies necessary changes to the RM custom model in the repository. These changes
- * are to 'patch' a deployed RM custom model during the DoD certification process. With that in mind
- * they are safe to apply to a live database i.e. without side-effect to existing data and safe
- * to call multiple times.
+ * This webscript applies necessary changes to the RM custom model in the repository. These changes are to 'patch' a deployed RM custom model during the DoD certification process. With that in mind they are safe to apply to a live database i.e. without side-effect to existing data and safe to call multiple times.
  * <P>
  *
- * TODO This webscript should be removed after DOD certification as none of these patches are needed
- * for a newly-installed DoD amp.
+ * TODO This webscript should be removed after DOD certification as none of these patches are needed for a newly-installed DoD amp.
  *
  * @author neilm
  */
 @Deprecated
 public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
-                                  implements RecordsManagementModel
+        implements RecordsManagementModel
 {
     private static final NodeRef RM_CUSTOM_MODEL_NODE_REF = new NodeRef("workspace://SpacesStore/records_management_custom_model");
     private static final String RMC_CUSTOM_RECORD_SERIES_PROPERTIES = RecordsManagementCustomModel.RM_CUSTOM_PREFIX + ":customRecordSeriesProperties";
@@ -129,7 +126,7 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
 
         }
 
-        //MOB-1621. Custom fields should be created as untokenized by default.
+        // MOB-1621. Custom fields should be created as untokenized by default.
         LOGGER.info("MOB-1621. Custom fields should be created as untokenized by default.");
 
         List<String> allCustomPropertiesAspects = new ArrayList<>(4);
@@ -150,13 +147,12 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
             }
         }
 
-
         writeCustomContentModel(customModel);
 
         LOGGER.info("Completed application of webscript-based patches to RM custom model in the repo.");
 
         Map<String, Object> model = new HashMap<>(1, 1.0f);
-    	model.put("success", true);
+        model.put("success", true);
 
         return model;
     }
@@ -164,9 +160,12 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
     private M2Model readCustomContentModel()
     {
         ContentReader reader = this.contentService.getReader(RM_CUSTOM_MODEL_NODE_REF,
-                                                             ContentModel.TYPE_CONTENT);
+                ContentModel.TYPE_CONTENT);
 
-        if (!reader.exists()) {throw new AlfrescoRuntimeException("RM CustomModel has no content.");}
+        if (!reader.exists())
+        {
+            throw new AlfrescoRuntimeException("RM CustomModel has no content.");
+        }
 
         InputStream contentIn = null;
         M2Model deserializedModel = null;
@@ -195,7 +194,7 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
     private void writeCustomContentModel(M2Model deserializedModel)
     {
         ContentWriter writer = this.contentService.getWriter(RM_CUSTOM_MODEL_NODE_REF,
-                                                             ContentModel.TYPE_CONTENT, true);
+                ContentModel.TYPE_CONTENT, true);
         writer.setMimetype(MimetypeMap.MIMETYPE_XML);
         writer.setEncoding("UTF-8");
 
@@ -209,7 +208,8 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
             writer.putContent(updatedModelXml);
             // putContent closes all resources.
             // so we don't have to.
-        } catch (UnsupportedEncodingException uex)
+        }
+        catch (UnsupportedEncodingException uex)
         {
             throw new AlfrescoRuntimeException("Exception when writing custom model xml.", uex);
         }

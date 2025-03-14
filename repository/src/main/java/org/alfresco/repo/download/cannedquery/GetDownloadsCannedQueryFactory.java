@@ -51,30 +51,25 @@ public class GetDownloadsCannedQueryFactory extends AbstractQNameAwareCannedQuer
     {
         super.afterPropertiesSet();
     }
-    
+
     public CannedQuery<DownloadEntity> getDownloadsCannedQuery(NodeRef containerNode, Date before)
     {
         ParameterCheck.mandatory("before", before);
-        
-        GetDownloadsCannedQueryParams parameterBean = new GetDownloadsCannedQueryParams
-                    (
-                                getNodeId(containerNode),
-                                getQNameId(ContentModel.PROP_NAME),
-                                getQNameId(DownloadModel.TYPE_DOWNLOAD),
-                                before
-                    );
+
+        GetDownloadsCannedQueryParams parameterBean = new GetDownloadsCannedQueryParams(
+                getNodeId(containerNode),
+                getQNameId(ContentModel.PROP_NAME),
+                getQNameId(DownloadModel.TYPE_DOWNLOAD),
+                before);
         CannedQueryParameters params = new CannedQueryParameters(parameterBean);
 
         final GetDownloadsCannedQuery cq = new GetDownloadsCannedQuery(
-              cannedQueryDAO, methodSecurity, params
-        );
-        
+                cannedQueryDAO, methodSecurity, params);
+
         return cq;
     }
 
-    /*
-     * @see org.alfresco.query.CannedQueryFactory#getCannedQuery(org.alfresco.query.CannedQueryParameters)
-     */
+    /* @see org.alfresco.query.CannedQueryFactory#getCannedQuery(org.alfresco.query.CannedQueryParameters) */
     @Override
     public CannedQuery<DownloadEntity> getCannedQuery(CannedQueryParameters parameters)
     {

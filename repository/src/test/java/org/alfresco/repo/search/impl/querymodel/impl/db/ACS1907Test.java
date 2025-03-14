@@ -25,7 +25,15 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl.db;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory;
@@ -45,13 +53,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.DBTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 
 @Category({OwnJVMTestsCategory.class, DBTests.class})
 public class ACS1907Test extends TestCase
@@ -129,7 +130,8 @@ public class ACS1907Test extends TestCase
     {
         txnHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
             @Override
-            public Object execute() throws Throwable {
+            public Object execute() throws Throwable
+            {
                 setupTestUser("userA");
                 setupTestUser("userB");
                 setupTestUser(AuthenticationUtil.getAdminUserName());
@@ -140,32 +142,31 @@ public class ACS1907Test extends TestCase
 
     private void setupTestContent()
     {
-        for(int f = 0; f < 5; f++)
+        for (int f = 0; f < 5; f++)
         {
             final int ff = f;
             txnHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
                 @Override
-                public Object execute() throws Throwable {
+                public Object execute() throws Throwable
+                {
                     Map<QName, Serializable> testFolderProps = new HashMap<>();
-                    testFolderProps.put(ContentModel.PROP_NAME, "folder"+ff);
+                    testFolderProps.put(ContentModel.PROP_NAME, "folder" + ff);
                     NodeRef testFolder = nodeService.createNode(
                             rootNodeRef,
                             ContentModel.ASSOC_CHILDREN,
-                            QName.createQName("https://example.com/test", "folder"+ff),
+                            QName.createQName("https://example.com/test", "folder" + ff),
                             ContentModel.TYPE_FOLDER,
-                            testFolderProps
-                    ).getChildRef();
-                    for(int c = 0; c < 5; c++)
+                            testFolderProps).getChildRef();
+                    for (int c = 0; c < 5; c++)
                     {
                         Map<QName, Serializable> testContentProps = new HashMap<>();
-                        testContentProps.put(ContentModel.PROP_NAME, "content"+c);
+                        testContentProps.put(ContentModel.PROP_NAME, "content" + c);
                         NodeRef testContent = nodeService.createNode(
                                 testFolder,
                                 ContentModel.ASSOC_CONTAINS,
-                                QName.createQName("https://example.com/test", "content"+c),
+                                QName.createQName("https://example.com/test", "content" + c),
                                 ContentModel.TYPE_CONTENT,
-                                testContentProps
-                        ).getChildRef();
+                                testContentProps).getChildRef();
                         String user = c % 2 == 0 ? "userA" : "userB";
                         pubPermissionService.setPermission(testContent, user, "Read", true);
                     }
@@ -186,10 +187,12 @@ public class ACS1907Test extends TestCase
     {
         txnHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
             @Override
-            public Object execute() throws Throwable {
+            public Object execute() throws Throwable
+            {
                 AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
                     @Override
-                    public Object doWork() throws Exception {
+                    public Object doWork() throws Exception
+                    {
                         SearchParameters sp = new SearchParameters();
                         sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
                         sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);

@@ -37,9 +37,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+
 import org.alfresco.repo.search.impl.solr.facet.Exceptions.DuplicateFacetId;
 import org.alfresco.repo.search.impl.solr.facet.Exceptions.MissingFacetId;
-import org.alfresco.repo.search.impl.solr.facet.Exceptions.UnrecognisedFacetId;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -50,13 +57,6 @@ import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.Function;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
 
 /**
  * Integration tests for {@link SolrFacetServiceImpl}.
@@ -66,26 +66,28 @@ public class SolrFacetServiceImplTest
     private static final Log logger = LogFactory.getLog(SolrFacetServiceImplTest.class);
 
     // Rule to initialise the default Alfresco spring configuration
-    @ClassRule public static ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
-    
-    @Rule public RunAsFullyAuthenticatedRule runAsRule = new RunAsFullyAuthenticatedRule(AuthenticationUtil.getAdminUserName());
+    @ClassRule
+    public static ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
+
+    @Rule
+    public RunAsFullyAuthenticatedRule runAsRule = new RunAsFullyAuthenticatedRule(AuthenticationUtil.getAdminUserName());
 
     private static final List<String> FILTERS = new ArrayList<>();
     // Various services
-    private static SolrFacetService          SOLR_FACET_SERVICE;
+    private static SolrFacetService SOLR_FACET_SERVICE;
     private static RetryingTransactionHelper TRANSACTION_HELPER;
-    
-    @BeforeClass public static void initStaticData() throws Exception
+
+    @BeforeClass
+    public static void initStaticData() throws Exception
     {
         SOLR_FACET_SERVICE = APP_CONTEXT_INIT.getApplicationContext().getBean("solrFacetService", SolrFacetService.class);
         TRANSACTION_HELPER = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
     }
-    
+
     @AfterClass
     public static void cleanup()
     {
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -106,76 +108,77 @@ public class SolrFacetServiceImplTest
 
     }
     // TODO Ensure non-admin, non-search-admin user cannot access SolrFacetService
-    
-    @Test public void getFacetsAndReorderThem() throws Exception
+
+    @Test
+    public void getFacetsAndReorderThem() throws Exception
     {
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            @Override public Void execute() throws Throwable
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable
             {
                 final List<String> facetIds = getExistingFacetIds();
                 final List<String> reorderedFacetIds = new ArrayList<>(facetIds);
                 Collections.reverse(reorderedFacetIds);
-                
+
                 SOLR_FACET_SERVICE.reorderFacets(reorderedFacetIds);
-                
+
                 final List<String> newfacetIds = getExistingFacetIds();
-                
+
                 assertEquals(reorderedFacetIds, newfacetIds);
-                
+
                 return null;
             }
         });
     }
-    
-    @Test(expected=NullPointerException.class)
+
+    @Test(expected = NullPointerException.class)
     public void reorderNullFacetIdsShouldFail() throws Exception
     {
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            @Override public Void execute() throws Throwable
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable
             {
                 SOLR_FACET_SERVICE.reorderFacets(null);
                 return null;
             }
         });
     }
-    
-    @Test(expected=MissingFacetId.class)
+
+    @Test(expected = MissingFacetId.class)
     public void reorderEmptyFacetIdsShouldFail() throws Exception
     {
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            @Override public Void execute() throws Throwable
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable
             {
-                SOLR_FACET_SERVICE.reorderFacets(Collections.<String>emptyList());
+                SOLR_FACET_SERVICE.reorderFacets(Collections.<String> emptyList());
                 return null;
             }
         });
     }
-    
-    @Test(expected=DuplicateFacetId.class)
+
+    @Test(expected = DuplicateFacetId.class)
     public void reorderDuplicateFacetIdsShouldFail() throws Exception
     {
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            @Override public Void execute() throws Throwable
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable
             {
                 final List<String> facetIds = getExistingFacetIds();
                 facetIds.add(facetIds.get(0));
-                
+
                 SOLR_FACET_SERVICE.reorderFacets(facetIds);
                 return null;
             }
         });
     }
-    
+
     @Test
     public void reorderUnrecognisedFacetIdsShouldFail() throws Exception
     {
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            @Override public Void execute() throws Throwable
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable
             {
                 final List<String> existingFacetIds = getExistingFacetIds();
 
@@ -185,11 +188,11 @@ public class SolrFacetServiceImplTest
                 SOLR_FACET_SERVICE.reorderFacets(facetIds);
 
                 final List<String> newfacetIds = getExistingFacetIds();
-                
+
                 assertEquals(existingFacetIds, newfacetIds);
                 return null;
             }
-            
+
         });
     }
 
@@ -198,20 +201,19 @@ public class SolrFacetServiceImplTest
     {
         final String filterName = getFilterName();
         final SolrFacetProperties facetProps = new SolrFacetProperties.Builder()
-                    .filterID(filterName)
-                    .facetQName(QName.createQName("{http://www.alfresco.org/model/content/1.0}test"))
-                    .displayName("faceted-search.facet-menu.facet.test")
-                    .displayControl("alfresco/search/FacetFilters")
-                    .maxFilters(5)
-                    .hitThreshold(1)
-                    .minFilterValueLength(4)
-                    .sortBy("ALPHABETICALLY")
-                    .isEnabled(false)
-                    .scope("ALL").build();
+                .filterID(filterName)
+                .facetQName(QName.createQName("{http://www.alfresco.org/model/content/1.0}test"))
+                .displayName("faceted-search.facet-menu.facet.test")
+                .displayControl("alfresco/search/FacetFilters")
+                .maxFilters(5)
+                .hitThreshold(1)
+                .minFilterValueLength(4)
+                .sortBy("ALPHABETICALLY")
+                .isEnabled(false)
+                .scope("ALL").build();
 
         // Update a facet which isn't there
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -232,13 +234,12 @@ public class SolrFacetServiceImplTest
         this.createFacet(facetProps);
 
         // Update maxFilters
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
                 SolrFacetProperties updatedFacetProps = new SolrFacetProperties.Builder(facetProps).maxFilters(10)
-                            .build();
+                        .build();
                 SOLR_FACET_SERVICE.updateFacet(updatedFacetProps);
 
                 // Retrieve the updated facet
@@ -266,8 +267,7 @@ public class SolrFacetServiceImplTest
     public void deleteFacet_DoesNotExist()
     {
         // Delete a facet which isn't there
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -282,8 +282,7 @@ public class SolrFacetServiceImplTest
     public void deleteDefaultFacet()
     {
         // Delete a default facet, assuming it isn't persisted yet
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -304,8 +303,7 @@ public class SolrFacetServiceImplTest
         });
 
         // Update a value so that the default facet can be persisted
-        final String defaultFilterName = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<String>()
-        {
+        final String defaultFilterName = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<String>() {
             @Override
             public String execute() throws Throwable
             {
@@ -316,7 +314,7 @@ public class SolrFacetServiceImplTest
                 final String filterName = facetProperties.getFilterID();
 
                 int maxFilters = facetProperties.getMaxFilters();
-                
+
                 facetProperties = new SolrFacetProperties.Builder().filterID(filterName).maxFilters(maxFilters + 1).build();
                 SOLR_FACET_SERVICE.updateFacet(facetProperties);
 
@@ -328,8 +326,7 @@ public class SolrFacetServiceImplTest
         });
 
         // Delete a default facet which has been persisted
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -352,23 +349,22 @@ public class SolrFacetServiceImplTest
     {
         final String filterName = getFilterName();
         final SolrFacetProperties facetProps = new SolrFacetProperties.Builder()
-                    .filterID(filterName)
-                    .facetQName(QName.createQName("{http://www.alfresco.org/model/content/1.0}test2"))
-                    .displayName("faceted-search.facet-menu.facet.test2")
-                    .displayControl("alfresco/search/FacetFilters")
-                    .maxFilters(5)
-                    .hitThreshold(1)
-                    .minFilterValueLength(2)
-                    .sortBy("ALPHABETICALLY")
-                    .isEnabled(true)
-                    .scope("ALL").build();
+                .filterID(filterName)
+                .facetQName(QName.createQName("{http://www.alfresco.org/model/content/1.0}test2"))
+                .displayName("faceted-search.facet-menu.facet.test2")
+                .displayControl("alfresco/search/FacetFilters")
+                .maxFilters(5)
+                .hitThreshold(1)
+                .minFilterValueLength(2)
+                .sortBy("ALPHABETICALLY")
+                .isEnabled(true)
+                .scope("ALL").build();
 
         // Create the facet
         this.createFacet(facetProps);
 
         // Delete the facet created above
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -386,16 +382,16 @@ public class SolrFacetServiceImplTest
     {
         final String filterName = getFilterName();
         final SolrFacetProperties facetProps = new SolrFacetProperties.Builder()
-                    .filterID(filterName)
-                    .facetQName(QName.createQName("{http://www.alfresco.org/model/content/1.0}test3"))
-                    .displayName("faceted-search.facet-menu.facet.test3")
-                    .displayControl("alfresco/search/FacetFilters")
-                    .maxFilters(5)
-                    .hitThreshold(1)
-                    .minFilterValueLength(2)
-                    .sortBy("ALPHABETICALLY")
-                    .isEnabled(false)
-                    .scope("ALL").build();
+                .filterID(filterName)
+                .facetQName(QName.createQName("{http://www.alfresco.org/model/content/1.0}test3"))
+                .displayName("faceted-search.facet-menu.facet.test3")
+                .displayControl("alfresco/search/FacetFilters")
+                .maxFilters(5)
+                .hitThreshold(1)
+                .minFilterValueLength(2)
+                .sortBy("ALPHABETICALLY")
+                .isEnabled(false)
+                .scope("ALL").build();
 
         // Create the facet
         this.createFacet(facetProps);
@@ -422,21 +418,20 @@ public class SolrFacetServiceImplTest
     {
         final List<SolrFacetProperties> facetProps = SOLR_FACET_SERVICE.getFacets();
         final List<String> facetIds = CollectionUtils.transform(facetProps,
-                                                                new Function<SolrFacetProperties, String>()
-                                                                {
-                                                                    @Override public String apply(SolrFacetProperties value)
-                                                                    {
-                                                                        return value.getFilterID();
-                                                                    }
-                                                                });
+                new Function<SolrFacetProperties, String>() {
+                    @Override
+                    public String apply(SolrFacetProperties value)
+                    {
+                        return value.getFilterID();
+                    }
+                });
         return facetIds;
     }
 
     private NodeRef createFacet(final SolrFacetProperties facetProps)
     {
         // Create the facet
-        return TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-        {
+        return TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
             @Override
             public NodeRef execute() throws Throwable
             {

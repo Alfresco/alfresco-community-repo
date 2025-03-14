@@ -38,10 +38,11 @@ public interface ModulePatchExecuter
     /**
      * Register module patch with the module patch executer
      * 
-     * @param modulePatch   module patch
+     * @param modulePatch
+     *            module patch
      */
-    void register(ModulePatch modulePatch); 
-    
+    void register(ModulePatch modulePatch);
+
     /**
      * Init the schema version number
      */

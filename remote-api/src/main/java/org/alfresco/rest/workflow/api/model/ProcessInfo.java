@@ -48,14 +48,13 @@ public class ProcessInfo
     String businessKey;
     String superProcessInstanceId;
     boolean completed;
-    
+
     Map<String, Object> variables;
     List<Variable> processVariables;
     Set<String> items;
 
     public ProcessInfo()
-    {
-    }
+    {}
 
     public ProcessInfo(HistoricProcessInstance processInstance)
     {

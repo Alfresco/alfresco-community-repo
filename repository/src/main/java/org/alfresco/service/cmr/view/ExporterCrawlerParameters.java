@@ -28,11 +28,10 @@ package org.alfresco.service.cmr.view;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
-
 /**
  * Exporter Crawler Configuration.
  * 
- * This class is used to specify which Repository items are exported. 
+ * This class is used to specify which Repository items are exported.
  * 
  * @author David Caruana
  */
@@ -46,15 +45,15 @@ public class ExporterCrawlerParameters
     private boolean crawlContent = true;
     private boolean crawlNullProperties = true;
     private ReferenceType referenceType = ReferenceType.PATHREF;
-    private String[] excludeNamespaceURIs = new String[] { NamespaceService.REPOSITORY_VIEW_1_0_URI };
-    private QName[] excludeAspects = new QName[] { };
-    private QName[] excludeChildAssocs = new QName[] { };
+    private String[] excludeNamespaceURIs = new String[]{NamespaceService.REPOSITORY_VIEW_1_0_URI};
+    private QName[] excludeAspects = new QName[]{};
+    private QName[] excludeChildAssocs = new QName[]{};
     private String[] includedPaths = null;
-    
+
     /**
      * Crawl and export child nodes
      * 
-     * @return  true => crawl child nodes
+     * @return true => crawl child nodes
      */
     public boolean isCrawlChildNodes()
     {
@@ -64,7 +63,8 @@ public class ExporterCrawlerParameters
     /**
      * Sets whether to crawl child nodes
      * 
-     * @param crawlChildNodes boolean
+     * @param crawlChildNodes
+     *            boolean
      */
     public void setCrawlChildNodes(boolean crawlChildNodes)
     {
@@ -74,27 +74,28 @@ public class ExporterCrawlerParameters
     /**
      * Crawl and export associations
      * 
-     * @return  true => crawl associations
+     * @return true => crawl associations
      */
     public boolean isCrawlAssociations()
     {
         return crawlAssociations;
     }
-    
+
     /**
      * Sets whether to crawl associations
      * 
-     * @param crawlAssociations boolean
+     * @param crawlAssociations
+     *            boolean
      */
     public void setCrawlAssociations(boolean crawlAssociations)
     {
         this.crawlAssociations = crawlAssociations;
     }
-    
+
     /**
      * Crawl and export content properties
      * 
-     * @return  true => crawl content
+     * @return true => crawl content
      */
     public boolean isCrawlContent()
     {
@@ -104,7 +105,8 @@ public class ExporterCrawlerParameters
     /**
      * Sets whether to crawl content
      * 
-     * @param crawlContent boolean
+     * @param crawlContent
+     *            boolean
      */
     public void setCrawlContent(boolean crawlContent)
     {
@@ -114,7 +116,7 @@ public class ExporterCrawlerParameters
     /**
      * Crawl and export node at export path
      * 
-     * @return  true => crawl node at export path
+     * @return true => crawl node at export path
      */
     public boolean isCrawlSelf()
     {
@@ -124,7 +126,8 @@ public class ExporterCrawlerParameters
     /**
      * Sets whether to crawl and export node at export path
      * 
-     * @param crawlSelf boolean
+     * @param crawlSelf
+     *            boolean
      */
     public void setCrawlSelf(boolean crawlSelf)
     {
@@ -134,7 +137,7 @@ public class ExporterCrawlerParameters
     /**
      * Crawl and export null properties
      * 
-     * @return  true => export null properties
+     * @return true => export null properties
      */
     public boolean isCrawlNullProperties()
     {
@@ -144,17 +147,18 @@ public class ExporterCrawlerParameters
     /**
      * Sets whether to crawl null properties
      * 
-     * @param crawlNullProperties boolean
+     * @param crawlNullProperties
+     *            boolean
      */
     public void setCrawlNullProperties(boolean crawlNullProperties)
     {
         this.crawlNullProperties = crawlNullProperties;
     }
-    
+
     /**
      * Gets the list of namespace URIs to exlude from the Export
      * 
-     * @return  the list of namespace URIs
+     * @return the list of namespace URIs
      */
     public String[] getExcludeNamespaceURIs()
     {
@@ -164,7 +168,8 @@ public class ExporterCrawlerParameters
     /**
      * Sets the list of namespace URIs to exclude from the Export
      * 
-     * @param excludeNamespaceURIs String[]
+     * @param excludeNamespaceURIs
+     *            String[]
      */
     public void setExcludeNamespaceURIs(String[] excludeNamespaceURIs)
     {
@@ -174,7 +179,7 @@ public class ExporterCrawlerParameters
     /**
      * Gets the list of Aspects to exclude from the Export
      * 
-     * @return  the list of Aspects
+     * @return the list of Aspects
      */
     public QName[] getExcludeAspects()
     {
@@ -184,7 +189,8 @@ public class ExporterCrawlerParameters
     /**
      * Sets the list of Aspects to exclude from the Export
      * 
-     * @param excludeAspects QName[]
+     * @param excludeAspects
+     *            QName[]
      */
     public void setExcludeAspects(QName[] excludeAspects)
     {
@@ -194,7 +200,7 @@ public class ExporterCrawlerParameters
     /**
      * Gets the list of Child Associations to exclude from the Export
      * 
-     * @return  the list of child assocs
+     * @return the list of child assocs
      */
     public QName[] getExcludeChildAssocs()
     {
@@ -204,18 +210,19 @@ public class ExporterCrawlerParameters
     /**
      * Sets the list of Child Associations to exclude from the Export
      * 
-     * @param excludeChildAssocs QName[]
+     * @param excludeChildAssocs
+     *            QName[]
      */
     public void setExcludeChildAssocs(QName[] excludeChildAssocs)
     {
         this.excludeChildAssocs = excludeChildAssocs;
     }
-    
+
     /**
      * Gets the list of included paths to explicitly include in the Export
      * 
-     * @return  the list of included paths
-     */    
+     * @return the list of included paths
+     */
     public String[] getIncludedPaths()
     {
         return includedPaths;
@@ -224,7 +231,8 @@ public class ExporterCrawlerParameters
     /**
      * Sets the list of included paths to explicitly include in the Export
      *
-     * @param includedPaths String[]
+     * @param includedPaths
+     *            String[]
      */
     public void setIncludedPaths(String[] includedPaths)
     {
@@ -234,7 +242,7 @@ public class ExporterCrawlerParameters
     /**
      * Gets the path to export from
      * 
-     * @return  the path to export from
+     * @return the path to export from
      */
     public Location getExportFrom()
     {
@@ -244,7 +252,8 @@ public class ExporterCrawlerParameters
     /**
      * Sets the path to export from
      * 
-     * @param exportFrom Location
+     * @param exportFrom
+     *            Location
      */
     public void setExportFrom(Location exportFrom)
     {
@@ -254,17 +263,18 @@ public class ExporterCrawlerParameters
     /**
      * Gets the format of exported references
      * 
-     * @return  reference type
+     * @return reference type
      */
     public ReferenceType getReferenceType()
     {
         return referenceType;
     }
-    
+
     /**
      * Sets the format of exported references (child and association references)
      * 
-     * @param  referenceType type
+     * @param referenceType
+     *            type
      */
     public void setReferenceType(ReferenceType referenceType)
     {

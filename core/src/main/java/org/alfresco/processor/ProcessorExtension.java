@@ -23,10 +23,10 @@ package org.alfresco.processor;
  * 
  * @author Roy Wetherall
  */
-public interface ProcessorExtension 
+public interface ProcessorExtension
 {
     /**
-     * Returns the name of the extension 
+     * Returns the name of the extension
      * 
      * @return the name of the extension
      */

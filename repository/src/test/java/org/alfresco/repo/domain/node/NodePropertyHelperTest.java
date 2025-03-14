@@ -34,6 +34,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
@@ -51,18 +53,16 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.testing.category.NeverRunsTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Test low-level marshalling and unmarshalling of node properties
  * 
- * @see NodePropertyHelper 
+ * @see NodePropertyHelper
  * 
  * @author Derek Hulley
  * @since 3.4
  */
-@Category (NeverRunsTests.class)
+@Category(NeverRunsTests.class)
 public class NodePropertyHelperTest extends TestCase
 {
     private static final QName QN_BOOLEAN = createQName("boolean");
@@ -73,9 +73,9 @@ public class NodePropertyHelperTest extends TestCase
     private static final QName QN_MLTEXT = createQName("mltext");
     private static final QName QN_REF = createQName("ref");
     private static final QName QN_ANY = createQName("any");
-    
+
     /**
-     * @return              Returns a QName that uses the localname
+     * @return Returns a QName that uses the localname
      */
     private static QName createQName(String localName)
     {
@@ -83,7 +83,7 @@ public class NodePropertyHelperTest extends TestCase
     }
 
     private ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-    
+
     private NodePropertyHelper helper;
     private TransactionService transactionService;
     private RetryingTransactionHelper txnHelper;
@@ -106,13 +106,11 @@ public class NodePropertyHelperTest extends TestCase
     }
 
     /**
-     * Converts properties back and forth and ensures that the result is unchanged or
-     * at least doesn't show up in a deep equals check.
+     * Converts properties back and forth and ensures that the result is unchanged or at least doesn't show up in a deep equals check.
      */
     private void marshallAndUnmarshall(final Map<QName, Serializable> in, final boolean exact) throws Throwable
     {
-        RetryingTransactionCallback<Void> txnCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> txnCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 String diffReport;
@@ -141,25 +139,25 @@ public class NodePropertyHelperTest extends TestCase
         };
         txnHelper.doInTransaction(txnCallback);
     }
-    
+
     /**
      * Tests simple, well-typed nulls
      */
     public void testNullKnownValues() throws Throwable
     {
         Map<QName, Serializable> in = new HashMap<QName, Serializable>(17);
-        in.put(ContentModel.PROP_AUTO_VERSION, null);           // d:boolean
-        in.put(ContentModel.PROP_HITS, null);                   // d:int
-        in.put(ContentModel.PROP_SIZE_CURRENT, null);           // d:long
-        in.put(ContentModel.PROP_RATING_SCORE, null);           // d:float
-        in.put(ContentModel.PROP_NAME, null);                   // d:text
-        in.put(ContentModel.PROP_TITLE, null);                  // d:mltext
-        in.put(ContentModel.PROP_REFERENCE, null);              // d:noderef
-        in.put(VersionModel.PROP_QNAME_VALUE, null);            // d:any
-        
+        in.put(ContentModel.PROP_AUTO_VERSION, null); // d:boolean
+        in.put(ContentModel.PROP_HITS, null); // d:int
+        in.put(ContentModel.PROP_SIZE_CURRENT, null); // d:long
+        in.put(ContentModel.PROP_RATING_SCORE, null); // d:float
+        in.put(ContentModel.PROP_NAME, null); // d:text
+        in.put(ContentModel.PROP_TITLE, null); // d:mltext
+        in.put(ContentModel.PROP_REFERENCE, null); // d:noderef
+        in.put(VersionModel.PROP_QNAME_VALUE, null); // d:any
+
         marshallAndUnmarshall(in, true);
     }
-    
+
     /**
      * Tests simple, well-typed values
      */
@@ -174,10 +172,10 @@ public class NodePropertyHelperTest extends TestCase
         in.put(ContentModel.PROP_TITLE, new MLText("five"));
         in.put(ContentModel.PROP_REFERENCE, new NodeRef("protocol://identifier/six"));
         in.put(VersionModel.PROP_QNAME_VALUE, Locale.CANADA);
-        
+
         marshallAndUnmarshall(in, true);
     }
-    
+
     /**
      * Tests simple, well-typed values that need conversion
      */
@@ -192,10 +190,10 @@ public class NodePropertyHelperTest extends TestCase
         in.put(ContentModel.PROP_TITLE, "five");
         in.put(ContentModel.PROP_REFERENCE, "protocol://identifier/six");
         in.put(VersionModel.PROP_QNAME_VALUE, "en_CA_");
-        
+
         marshallAndUnmarshall(in, false);
     }
-    
+
     /**
      * Tests simple, residual nulls
      */
@@ -203,10 +201,10 @@ public class NodePropertyHelperTest extends TestCase
     {
         Map<QName, Serializable> in = new HashMap<QName, Serializable>(17);
         in.put(QN_TEXT, null);
-        
+
         marshallAndUnmarshall(in, true);
     }
-    
+
     /**
      * Tests simple, residual values
      */
@@ -221,10 +219,10 @@ public class NodePropertyHelperTest extends TestCase
         in.put(QN_MLTEXT, new MLText("five"));
         in.put(QN_REF, new NodeRef("protocol://identifier/six"));
         in.put(QN_ANY, Locale.CANADA);
-        
+
         marshallAndUnmarshall(in, true);
     }
-    
+
     /**
      * Tests simple multi-value type
      */
@@ -234,17 +232,17 @@ public class NodePropertyHelperTest extends TestCase
 
         in.put(ContentModel.PROP_ADDRESSEES, null);
         marshallAndUnmarshall(in, true);
-        
-        in.put(ContentModel.PROP_ADDRESSEES, (Serializable) Arrays.<String>asList());
+
+        in.put(ContentModel.PROP_ADDRESSEES, (Serializable) Arrays.<String> asList());
         marshallAndUnmarshall(in, true);
-        
-        in.put(ContentModel.PROP_ADDRESSEES, (Serializable) Arrays.<String>asList("A"));
+
+        in.put(ContentModel.PROP_ADDRESSEES, (Serializable) Arrays.<String> asList("A"));
         marshallAndUnmarshall(in, true);
-        
-        in.put(ContentModel.PROP_ADDRESSEES, (Serializable) Arrays.<String>asList("A", "B"));
+
+        in.put(ContentModel.PROP_ADDRESSEES, (Serializable) Arrays.<String> asList("A", "B"));
         marshallAndUnmarshall(in, true);
     }
-    
+
     /**
      * Tests d:any multi-value type
      */
@@ -254,17 +252,17 @@ public class NodePropertyHelperTest extends TestCase
 
         in.put(VersionModel.PROP_QNAME_VALUE, null);
         marshallAndUnmarshall(in, true);
-        
-        in.put(VersionModel.PROP_QNAME_VALUE, (Serializable) Arrays.<String>asList());
+
+        in.put(VersionModel.PROP_QNAME_VALUE, (Serializable) Arrays.<String> asList());
         marshallAndUnmarshall(in, true);
-        
-        in.put(VersionModel.PROP_QNAME_VALUE, (Serializable) Arrays.<String>asList("A"));
+
+        in.put(VersionModel.PROP_QNAME_VALUE, (Serializable) Arrays.<String> asList("A"));
         marshallAndUnmarshall(in, true);
-        
-        in.put(VersionModel.PROP_QNAME_VALUE, (Serializable) Arrays.<String>asList("A", "B"));
+
+        in.put(VersionModel.PROP_QNAME_VALUE, (Serializable) Arrays.<String> asList("A", "B"));
         marshallAndUnmarshall(in, true);
     }
-    
+
     /**
      * Tests residual multi-value type
      */
@@ -274,20 +272,20 @@ public class NodePropertyHelperTest extends TestCase
 
         in.put(QN_ANY, null);
         marshallAndUnmarshall(in, true);
-        
-        in.put(QN_ANY, (Serializable) Arrays.<String>asList());
+
+        in.put(QN_ANY, (Serializable) Arrays.<String> asList());
         marshallAndUnmarshall(in, true);
-        
-        in.put(QN_ANY, (Serializable) Arrays.<String>asList("A"));
+
+        in.put(QN_ANY, (Serializable) Arrays.<String> asList("A"));
         marshallAndUnmarshall(in, true);
-        
-        in.put(QN_ANY, (Serializable) Arrays.<String>asList("A", "B"));
+
+        in.put(QN_ANY, (Serializable) Arrays.<String> asList("A", "B"));
         marshallAndUnmarshall(in, true);
 
         // Collection of collections
         ArrayList<Serializable> arrayListVal = new ArrayList<Serializable>(2);
         HashSet<Serializable> hashSetVal = new HashSet<Serializable>(2);
-        in.put(QN_ANY, (Serializable) Arrays.<Serializable>asList(arrayListVal, hashSetVal));
+        in.put(QN_ANY, (Serializable) Arrays.<Serializable> asList(arrayListVal, hashSetVal));
         marshallAndUnmarshall(in, true);
     }
 }

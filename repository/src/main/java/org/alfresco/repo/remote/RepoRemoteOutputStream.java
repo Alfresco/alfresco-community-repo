@@ -31,41 +31,46 @@ import java.io.OutputStream;
 import org.alfresco.service.cmr.remote.RepoRemoteTransport;
 
 /**
- * A wrapper implementation of OutputStream to work with a
- * RepoRemoteTransport instance.
+ * A wrapper implementation of OutputStream to work with a RepoRemoteTransport instance.
+ * 
  * @author britt
  */
-public class RepoRemoteOutputStream extends OutputStream 
+public class RepoRemoteOutputStream extends OutputStream
 {
     private RepoRemoteTransport fRepoRemote;
-    
+
     private String fHandle;
-    
+
     private ClientTicketHolder fTicketHolder;
-    
+
     /**
      * Create a new one.
-     * @param handle The handle returned from an RepoRemoteTransport call.
-     * @param remote The AVMRemote instance.
+     * 
+     * @param handle
+     *            The handle returned from an RepoRemoteTransport call.
+     * @param remote
+     *            The AVMRemote instance.
      */
     public RepoRemoteOutputStream(String handle, RepoRemoteTransport remote,
-                                  ClientTicketHolder ticketHolder)
+            ClientTicketHolder ticketHolder)
     {
         fRepoRemote = remote;
         fHandle = handle;
         fTicketHolder = ticketHolder;
     }
-    
+
     /**
      * Write one character.
-     * @param b The character.
+     * 
+     * @param b
+     *            The character.
      */
     @Override
-    public void write(int b) 
-        throws IOException 
+    public void write(int b)
+            throws IOException
     {
-        byte [] buff = new byte[1];
-        buff[0] = (byte)b;
+        byte[] buff = new byte[1];
+        buff[0] = (byte) b;
         write(buff);
     }
 
@@ -73,8 +78,8 @@ public class RepoRemoteOutputStream extends OutputStream
      * Close the stream.
      */
     @Override
-    public void close() 
-        throws IOException 
+    public void close()
+            throws IOException
     {
         try
         {
@@ -88,13 +93,17 @@ public class RepoRemoteOutputStream extends OutputStream
 
     /**
      * Write a portion of a block of bytes.
-     * @param b The buffer containing the data.
-     * @param off The offset into the buffer.
-     * @param len The number of bytes to write.
+     * 
+     * @param b
+     *            The buffer containing the data.
+     * @param off
+     *            The offset into the buffer.
+     * @param len
+     *            The number of bytes to write.
      */
     @Override
-    public void write(byte[] b, int off, int len) 
-    throws IOException 
+    public void write(byte[] b, int off, int len)
+            throws IOException
     {
         try
         {
@@ -104,7 +113,7 @@ public class RepoRemoteOutputStream extends OutputStream
             }
             else
             {
-                byte [] buff = new byte[len];
+                byte[] buff = new byte[len];
                 System.arraycopy(b, off, buff, 0, len);
                 fRepoRemote.writeOutput(fTicketHolder.getTicket(), fHandle, buff, len);
             }
@@ -117,11 +126,13 @@ public class RepoRemoteOutputStream extends OutputStream
 
     /**
      * Write a buffer of data.
-     * @param b The buffer.
+     * 
+     * @param b
+     *            The buffer.
      */
     @Override
-    public void write(byte[] b) 
-        throws IOException 
+    public void write(byte[] b)
+            throws IOException
     {
         write(b, 0, b.length);
     }

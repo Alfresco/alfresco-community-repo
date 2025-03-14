@@ -44,6 +44,7 @@ import org.alfresco.util.Pair;
 
 /**
  * An empty result set
+ * 
  * @author andyh
  *
  */
@@ -61,11 +62,12 @@ public class EmptyResultSet implements ResultSet
     /**
      * Bulk fetch results in the cache
      * 
-     * @param bulkFetch boolean
+     * @param bulkFetch
+     *            boolean
      */
     public boolean setBulkFetch(boolean bulkFetch)
     {
-    	return false;
+        return false;
     }
 
     /**
@@ -81,11 +83,12 @@ public class EmptyResultSet implements ResultSet
     /**
      * Set the bulk fetch size
      * 
-     * @param bulkFetchSize int
+     * @param bulkFetchSize
+     *            int
      */
     public int setBulkFetchSize(int bulkFetchSize)
     {
-    	return 0;
+        return 0;
     }
 
     /**
@@ -97,7 +100,7 @@ public class EmptyResultSet implements ResultSet
     {
         return 0;
     }
-    
+
     public int length()
     {
         return 0;
@@ -131,12 +134,12 @@ public class EmptyResultSet implements ResultSet
 
     public List<NodeRef> getNodeRefs()
     {
-        return Collections.<NodeRef>emptyList();
+        return Collections.<NodeRef> emptyList();
     }
 
     public List<ChildAssociationRef> getChildAssocRefs()
     {
-        return Collections.<ChildAssociationRef>emptyList();
+        return Collections.<ChildAssociationRef> emptyList();
     }
 
     public ChildAssociationRef getChildAssocRef(int n)
@@ -158,22 +161,22 @@ public class EmptyResultSet implements ResultSet
     {
         return false;
     }
-    
+
     @Override
     public List<Pair<String, Integer>> getFieldFacet(String field)
     {
-        return Collections.<Pair<String, Integer>>emptyList();
+        return Collections.<Pair<String, Integer>> emptyList();
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound()
-     */
+     * 
+     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound() */
     @Override
     public long getNumberFound()
     {
         return 0;
     }
-    
+
     @Override
     public Map<String, Integer> getFacetQueries()
     {

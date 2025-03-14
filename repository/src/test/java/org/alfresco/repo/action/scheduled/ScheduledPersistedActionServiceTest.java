@@ -27,27 +27,8 @@ package org.alfresco.repo.action.scheduled;
 
 import java.util.Date;
 import java.util.List;
-
 import jakarta.transaction.UserTransaction;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.ActionImpl;
-import org.alfresco.repo.action.RuntimeActionService;
-import org.alfresco.repo.action.ActionServiceImplTest.SleepActionExecuter;
-import org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceImpl.ScheduledPersistedActionServiceBootstrap;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionService;
-import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
-import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedActionService;
-import org.alfresco.service.cmr.action.scheduled.SchedulableAction.IntervalPeriod;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.util.BaseSpringTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,6 +49,25 @@ import org.quartz.impl.triggers.SimpleTriggerImpl;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.action.ActionServiceImplTest.SleepActionExecuter;
+import org.alfresco.repo.action.RuntimeActionService;
+import org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceImpl.ScheduledPersistedActionServiceBootstrap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.action.scheduled.SchedulableAction.IntervalPeriod;
+import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
+import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedActionService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.BaseSpringTest;
 
 /**
  * Unit tests for the {@link ScheduledPersistedActionService}
@@ -258,8 +258,7 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
             fail("Should require persistence first");
         }
         catch (IllegalStateException e)
-        {
-        }
+        {}
 
         service.saveSchedule(schedule);
         schedule.asTrigger();
@@ -645,8 +644,7 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
     }
 
     /**
-     * Ensures that we can create, save, edit, save load, edit, save, load etc, all without problems, and without
-     * creating duplicates
+     * Ensures that we can create, save, edit, save load, edit, save, load etc, all without problems, and without creating duplicates
      */
     @Test
     public void testEditing() throws Exception
@@ -947,8 +945,7 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
                 .getJobKeys(GroupMatcher.groupEquals(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP))
                 .size());
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
 
@@ -983,8 +980,7 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
                 .getJobKeys(GroupMatcher.groupEquals(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP))
                 .size());
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
 
@@ -1005,8 +1001,7 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
 
         // ==========================
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
 
@@ -1030,8 +1025,7 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
                 return null;
             }
         }, false, true);
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 Thread.sleep(4250);
@@ -1062,8 +1056,7 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
 
         // ==========================
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
 
@@ -1085,8 +1078,7 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
                 return null;
             }
         }, false, true);
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
 
@@ -1118,8 +1110,7 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
     }
 
     /**
-     * Tests that when we have more than one schedule defined and active, then the correct things run at the correct
-     * times, and we never get confused
+     * Tests that when we have more than one schedule defined and active, then the correct things run at the correct times, and we never get confused
      */
     @Test
     public void testMultipleExecutions() throws Exception
@@ -1128,8 +1119,7 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         sleepActionExec.resetTimesExecuted();
         sleepActionExec.setSleepMs(1);
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
 
@@ -1165,8 +1155,7 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         Thread.sleep(10 * 1000);
 
         // Check that they really did run properly
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
 

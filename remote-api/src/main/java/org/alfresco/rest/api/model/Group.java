@@ -59,8 +59,7 @@ public class Group implements Comparable<Group>
     public static final String ZONES = "zones";
 
     public Group()
-    {
-    }
+    {}
 
     @UniqueId
     public String getId()
@@ -85,11 +84,13 @@ public class Group implements Comparable<Group>
         setFields.put(DISPLAY_NAME, true);
     }
 
-    public String getDescription() {
+    public String getDescription()
+    {
         return description;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(String description)
+    {
         this.description = description;
     }
 
@@ -104,11 +105,13 @@ public class Group implements Comparable<Group>
         setFields.put(IS_ROOT, true);
     }
 
-    public Boolean getHasSubgroups() {
+    public Boolean getHasSubgroups()
+    {
         return hasSubgroups;
     }
 
-    public void setHasSubgroups(Boolean hasSubgroups) {
+    public void setHasSubgroups(Boolean hasSubgroups)
+    {
         this.hasSubgroups = hasSubgroups;
     }
 

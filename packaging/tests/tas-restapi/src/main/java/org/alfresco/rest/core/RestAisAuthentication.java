@@ -27,11 +27,12 @@ package org.alfresco.rest.core;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import org.alfresco.utility.data.AisToken;
 import org.alfresco.utility.data.auth.DataAIS;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class RestAisAuthentication
@@ -58,7 +59,8 @@ public class RestAisAuthentication
     }
 
     /**
-     * Check if the Alfresco Identity Service is enabled 
+     * Check if the Alfresco Identity Service is enabled
+     * 
      * @return True if Alfresco Identity Service is enabled (the identity service URL is not null or empty)
      */
     public Boolean isAisAuthenticationEnabled()
@@ -67,9 +69,7 @@ public class RestAisAuthentication
     }
 
     /**
-     * Returns a valid access token for valid user credentials in userModel. An
-     * invalid access token is returned for invalid user credentials, which can
-     * be used for tests involving non existing or unauthorized users.
+     * Returns a valid access token for valid user credentials in userModel. An invalid access token is returned for invalid user credentials, which can be used for tests involving non existing or unauthorized users.
      * 
      * @param userModel
      * @return

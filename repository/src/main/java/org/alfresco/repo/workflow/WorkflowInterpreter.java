@@ -36,6 +36,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.context.ApplicationEvent;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.BaseInterpreter;
 import org.alfresco.repo.content.MimetypeMap;
@@ -70,9 +74,6 @@ import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * An interactive console for Workflows.
@@ -81,7 +82,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class WorkflowInterpreter extends BaseInterpreter
 {
-    // Service dependencies    
+    // Service dependencies
     private WorkflowService workflowService;
     private NamespaceService namespaceService;
     private NodeService nodeService;
@@ -99,17 +100,15 @@ public class WorkflowInterpreter extends BaseInterpreter
     private String currentDeployResource = null;
     private String currentDeployEngine = null;
 
-
     /**
      * Variables
      */
     private Map<QName, Serializable> vars = new HashMap<QName, Serializable>();
-    
 
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        //NOOP
+        // NOOP
     }
 
     @Override
@@ -117,9 +116,10 @@ public class WorkflowInterpreter extends BaseInterpreter
     {
         // NOOP
     }
-    
+
     /**
-     * @param workflowService The Workflow Service
+     * @param workflowService
+     *            The Workflow Service
      */
     public void setWorkflowService(WorkflowService workflowService)
     {
@@ -127,7 +127,8 @@ public class WorkflowInterpreter extends BaseInterpreter
     }
 
     /**
-     * @param nodeService The Node Service
+     * @param nodeService
+     *            The Node Service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -135,15 +136,17 @@ public class WorkflowInterpreter extends BaseInterpreter
     }
 
     /**
-     * @param tenantService The Tenant Service
-     */  
+     * @param tenantService
+     *            The Tenant Service
+     */
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
 
     /**
-     * @param dictionaryService dictionaryService
+     * @param dictionaryService
+     *            dictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -151,15 +154,17 @@ public class WorkflowInterpreter extends BaseInterpreter
     }
 
     /**
-     * @param namespaceService  namespaceService
+     * @param namespaceService
+     *            namespaceService
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
-     * @param personService  personService
+     * @param personService
+     *            personService
      */
     public void setPersonService(PersonService personService)
     {
@@ -167,7 +172,8 @@ public class WorkflowInterpreter extends BaseInterpreter
     }
 
     /**
-     * @param transactionService  transactionService
+     * @param transactionService
+     *            transactionService
      */
     @Override
     public void setTransactionService(TransactionService transactionService)
@@ -176,7 +182,8 @@ public class WorkflowInterpreter extends BaseInterpreter
     }
 
     /**
-     * @param authorityDAO  authorityDAO
+     * @param authorityDAO
+     *            authorityDAO
      */
     public void setAuthorityDAO(AuthorityDAO authorityDAO)
     {
@@ -184,7 +191,8 @@ public class WorkflowInterpreter extends BaseInterpreter
     }
 
     /**
-     * @param fileFolderService  fileFolderService
+     * @param fileFolderService
+     *            fileFolderService
      */
     public void setFileFolderService(FileFolderService fileFolderService)
     {
@@ -205,13 +213,14 @@ public class WorkflowInterpreter extends BaseInterpreter
         // admin can change to any user (via worklow command "user <username>")
         return true;
     }
-    
+
     /**
      * Execute a single command using the BufferedReader passed in for any data needed.
      * 
      * TODO: Use decent parser!
      * 
-     * @param line The unparsed command
+     * @param line
+     *            The unparsed command
      * @return The textual output of the command.
      */
     @Override
@@ -223,7 +232,7 @@ public class WorkflowInterpreter extends BaseInterpreter
             command = new String[1];
             command[0] = line;
         }
-        
+
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         PrintStream out = new PrintStream(bout);
 
@@ -236,7 +245,7 @@ public class WorkflowInterpreter extends BaseInterpreter
             }
             return "repeating command " + lastCommand + "\n\n" + executeCommand(lastCommand);
         }
-        
+
         // remember last command
         lastCommand = line;
 
@@ -261,14 +270,14 @@ public class WorkflowInterpreter extends BaseInterpreter
                 helpStream.close();
             }
         }
-        
+
         else if (command[0].equals("show"))
         {
             if (command.length < 2)
             {
                 return "Syntax Error.\n";
             }
-            
+
             else if (command[1].equals("file"))
             {
                 if (command.length != 3)
@@ -293,10 +302,10 @@ public class WorkflowInterpreter extends BaseInterpreter
                 }
                 out.println();
             }
-            
+
             else if (command[1].equals("definitions"))
             {
-                List<WorkflowDefinition> defs = null; 
+                List<WorkflowDefinition> defs = null;
                 if (command.length == 3)
                 {
                     if (command[2].equals("all"))
@@ -317,7 +326,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                     out.println("id: " + def.getId() + " , name: " + def.getName() + " , title: " + def.getTitle() + " , version: " + def.getVersion());
                 }
             }
-            
+
             else if (command[1].equals("workflows"))
             {
                 String id = (currentWorkflowDef != null) ? currentWorkflowDef.getId() : null;
@@ -336,7 +345,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                         return "Syntax Error.\n";
                     }
                 }
-                
+
                 if ("all".equals(id))
                 {
                     for (WorkflowDefinition def : workflowService.getAllDefinitions())
@@ -357,7 +366,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                     }
                 }
             }
-            
+
             else if (command[1].equals("paths"))
             {
                 String workflowId = (command.length == 3) ? command[2] : (currentPath == null) ? null : currentPath.getInstance().getId();
@@ -371,7 +380,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                     out.println("path id: " + path.getId() + " , node: " + path.getNode().getName());
                 }
             }
-            
+
             else if (command[1].equals("tasks"))
             {
                 String pathId = (command.length == 3) ? command[2] : (currentPath == null) ? null : currentPath.getId();
@@ -385,7 +394,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                     out.println("task id: " + task.getId() + " , name: " + task.getName() + " , properties: " + task.getProperties().size());
                 }
             }
-            
+
             else if (command[1].equals("transitions"))
             {
                 String workflowId = (command.length == 3) ? command[2] : (currentPath == null) ? null : currentPath.getInstance().getId();
@@ -412,7 +421,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                     }
                 }
             }
-            
+
             else if (command[1].equals("timers"))
             {
                 String id = (currentWorkflowDef != null) ? currentWorkflowDef.getId() : null;
@@ -431,9 +440,9 @@ public class WorkflowInterpreter extends BaseInterpreter
                         return "Syntax Error.\n";
                     }
                 }
-                
+
                 List<WorkflowTimer> timers = new ArrayList<WorkflowTimer>();
-                
+
                 if ("all".equals(id))
                 {
                     for (WorkflowDefinition def : workflowService.getAllDefinitions())
@@ -453,7 +462,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                         timers.addAll(workflowService.getTimers(workflow.getId()));
                     }
                 }
-                
+
                 for (WorkflowTimer timer : timers)
                 {
                     out.print("id: " + timer.getId() + " , name: " + timer.getName() + " , due date: " + timer.getDueDate() + " , path: " + timer.getPath().getId() + " , node: " + timer.getPath().getNode().getName() + " , process: " + timer.getPath().getInstance().getId());
@@ -469,14 +478,14 @@ public class WorkflowInterpreter extends BaseInterpreter
                     }
                 }
             }
-            
+
             else if (command[1].equals("my"))
             {
                 if (command.length != 3)
                 {
                     return "Syntax Error.\n";
                 }
-                
+
                 if (command[2].equals("tasks"))
                 {
                     out.println(AuthenticationUtil.getRunAsUser() + ":");
@@ -486,7 +495,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                         out.println("id: " + task.getId() + " , name: " + task.getName() + " , properties: " + task.getProperties().size() + " , workflow: " + task.getPath().getInstance().getId() + " , path: " + task.getPath().getId());
                     }
                 }
-                
+
                 else if (command[2].equals("completed"))
                 {
                     out.println(AuthenticationUtil.getRunAsUser() + ":");
@@ -496,7 +505,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                         out.println("id: " + task.getId() + " , name " + task.getName() + " , properties: " + task.getProperties().size() + " , workflow: " + task.getPath().getInstance().getId() + " , path: " + task.getPath().getId());
                     }
                 }
-                
+
                 else if (command[2].equals("pooled"))
                 {
                     out.println(AuthenticationUtil.getRunAsUser() + ":");
@@ -517,14 +526,14 @@ public class WorkflowInterpreter extends BaseInterpreter
                 return "Syntax Error.\n";
             }
         }
-        
+
         else if (command[0].equals("desc"))
         {
             if (command.length < 2)
             {
                 return "Syntax Error.\n";
             }
-            
+
             if (command[1].equals("task"))
             {
                 if (command.length != 3)
@@ -549,7 +558,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                     out.println(" " + prop.getKey() + " = " + prop.getValue());
                 }
             }
-            
+
             else if (command[1].equals("workflow"))
             {
                 if (command.length != 3)
@@ -567,7 +576,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                 out.println("context: " + workflow.getContext());
                 out.println("package: " + workflow.getWorkflowPackage());
             }
-            
+
             else if (command[1].equals("path"))
             {
                 if (command.length != 3)
@@ -582,27 +591,27 @@ public class WorkflowInterpreter extends BaseInterpreter
                     out.println(" " + prop.getKey() + " = " + prop.getValue());
                 }
             }
-            
+
             else
             {
                 return "Syntax Error.\n";
             }
         }
-        
+
         else if (command[0].equals("query"))
         {
             if (command.length < 2)
             {
                 return "Syntax Error.\n";
             }
-            
+
             if (command[1].equals("task"))
             {
                 // build query
                 WorkflowTaskQuery query = new WorkflowTaskQuery();
                 Map<QName, Object> taskProps = new HashMap<QName, Object>();
                 Map<QName, Object> procProps = new HashMap<QName, Object>();
-                
+
                 for (int i = 2; i < command.length; i++)
                 {
                     String[] predicate = command[i].split("=");
@@ -636,7 +645,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                         }
                         else if (predicate[0].equals("processId"))
                         {
-                            query.setProcessId(predicate[1]);                            
+                            query.setProcessId(predicate[1]);
                         }
                         else if (predicate[0].equals("processName"))
                         {
@@ -690,7 +699,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                         return "Syntax Error.\n";
                     }
                 }
-                
+
                 if (taskProps.size() > 0)
                 {
                     query.setTaskCustomProps(taskProps);
@@ -699,7 +708,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                 {
                     query.setProcessCustomProps(procProps);
                 }
-                                
+
                 // execute query
                 List<WorkflowTask> tasks = workflowService.queryTasks(query);
                 out.println("found " + tasks.size() + " tasks.");
@@ -708,13 +717,13 @@ public class WorkflowInterpreter extends BaseInterpreter
                     out.println("task id: " + task.getId() + " , name: " + task.getName() + " , properties: " + task.getProperties().size() + ", process id: " + task.getPath().getInstance());
                 }
             }
-            
+
             else
             {
                 return "Syntax Error.\n";
             }
         }
-        
+
         else if (command[0].equals("deploy"))
         {
             if (command.length != 3)
@@ -750,7 +759,7 @@ public class WorkflowInterpreter extends BaseInterpreter
             }
             out.print(executeCommand("deploy " + currentDeployEngine + " " + currentDeployResource));
         }
-        
+
         else if (command[0].equals("undeploy"))
         {
             if (command.length < 2)
@@ -772,7 +781,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                     {
                         out.print("undeploying...");
                         List<WorkflowDefinition> defs = workflowService.getAllDefinitionsByName(command[3]);
-                        for (WorkflowDefinition def: defs)
+                        for (WorkflowDefinition def : defs)
                         {
                             workflowService.undeployDefinition(def.getId());
                             out.print(" v" + def.getVersion());
@@ -797,7 +806,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                 return "Syntax Error.\n";
             }
         }
-        
+
         else if (command[0].equals("use"))
         {
             if (command.length == 1)
@@ -823,7 +832,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                     currentPath = null;
                     out.print(executeCommand("use"));
                 }
-                
+
                 else if (command[1].equals("workflow"))
                 {
                     if (command.length != 3)
@@ -839,9 +848,9 @@ public class WorkflowInterpreter extends BaseInterpreter
                 {
                     return "Syntax Error.\n";
                 }
-            }            
+            }
         }
-        
+
         else if (command[0].equals("user"))
         {
             if (command.length == 2)
@@ -862,7 +871,7 @@ public class WorkflowInterpreter extends BaseInterpreter
             }
             out.println("using user " + getCurrentUserName());
         }
-        
+
         else if (command[0].equals("start"))
         {
             Map<QName, Serializable> params = new HashMap<QName, Serializable>();
@@ -898,14 +907,14 @@ public class WorkflowInterpreter extends BaseInterpreter
             currentPath = path;
             out.print(interpretCommand("show transitions"));
         }
-        
+
         else if (command[0].equals("update"))
         {
             if (command.length < 3)
             {
                 return "Syntax Error.\n";
             }
-            
+
             if (command[1].equals("task"))
             {
                 if (command.length < 4)
@@ -942,7 +951,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                 return "Syntax Error.\n";
             }
         }
-        
+
         else if (command[0].equals("signal"))
         {
             if (command.length < 2)
@@ -953,7 +962,7 @@ public class WorkflowInterpreter extends BaseInterpreter
             out.println("signal sent - path id: " + path.getId());
             out.print(interpretCommand("show transitions"));
         }
-        
+
         else if (command[0].equals("event"))
         {
             if (command.length < 3)
@@ -1078,7 +1087,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                     boolean multi = false;
                     if (param[0].endsWith("*"))
                     {
-                        param[0] = param[0].substring(0, param[0].length() -1);
+                        param[0] = param[0].substring(0, param[0].length() - 1);
                         multi = true;
                     }
                     QName qname = QName.createQName(param[0], namespaceService);
@@ -1098,7 +1107,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                         {
                             values.add(strValue);
                         }
-                        vars.put(qname, (Serializable)values);
+                        vars.put(qname, (Serializable) values);
                     }
                     out.println("set var " + qname + " = " + vars.get(qname));
                 }
@@ -1114,7 +1123,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                     boolean multi = false;
                     if (command[1].endsWith("*"))
                     {
-                        command[1] = command[1].substring(0, command[1].length() -1);
+                        command[1] = command[1].substring(0, command[1].length() - 1);
                         multi = true;
                     }
                     QName qname = QName.createQName(command[1], namespaceService);
@@ -1136,7 +1145,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                             NodeRef auth = personService.getPerson(strValue);
                             values.add(auth);
                         }
-                        vars.put(qname, (Serializable)values);
+                        vars.put(qname, (Serializable) values);
                     }
                     out.println("set var " + qname + " = " + vars.get(qname));
                 }
@@ -1145,7 +1154,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                     boolean multi = false;
                     if (command[1].endsWith("*"))
                     {
-                        command[1] = command[1].substring(0, command[1].length() -1);
+                        command[1] = command[1].substring(0, command[1].length() - 1);
                         multi = true;
                     }
                     QName qname = QName.createQName(command[1], namespaceService);
@@ -1175,7 +1184,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                             }
                             values.add(auth);
                         }
-                        vars.put(qname, (Serializable)values);
+                        vars.put(qname, (Serializable) values);
                     }
                     out.println("set var " + qname + " = " + vars.get(qname));
                 }
@@ -1203,12 +1212,12 @@ public class WorkflowInterpreter extends BaseInterpreter
                 return "Syntax Error.\n";
             }
         }
-        
+
         else
         {
             return "Syntax Error.\n";
         }
- 
+
         out.flush();
         String retVal = new String(bout.toByteArray());
         out.close();
@@ -1218,25 +1227,24 @@ public class WorkflowInterpreter extends BaseInterpreter
     private String getTransition(String[] command)
     {
         int length = command.length;
-        if(length <3)
+        if (length < 3)
         {
             return null;
-        }        
+        }
         // Transition name may contain spaces
         StringBuilder builder = new StringBuilder(command[2]);
         int i = 3;
-        while(i<length)
+        while (i < length)
         {
             builder.append(" ").append(command[i++]);
         }
         return builder.toString();
     }
-    
 
     /**
      * Get currently used workflow definition
      * 
-     * @return  workflow definition
+     * @return workflow definition
      */
     public WorkflowDefinition getCurrentWorkflowDef()
     {
@@ -1252,7 +1260,7 @@ public class WorkflowInterpreter extends BaseInterpreter
         ClassDefinition startTaskDef = dictionaryService.getAnonymousType(typeDef.getName(), aspectNames);
 
         // apply default values
-        Map<QName, PropertyDefinition> propertyDefs = startTaskDef.getProperties(); 
+        Map<QName, PropertyDefinition> propertyDefs = startTaskDef.getProperties();
         for (Map.Entry<QName, PropertyDefinition> entry : propertyDefs.entrySet())
         {
             String defaultValue = entry.getValue().getDefaultValue();
@@ -1261,23 +1269,23 @@ public class WorkflowInterpreter extends BaseInterpreter
             {
                 if (defaultValue != null)
                 {
-                    params.put(entry.getKey(), (Serializable)DefaultTypeConverter.INSTANCE.convert(entry.getValue().getDataType(), defaultValue));
+                    params.put(entry.getKey(), (Serializable) DefaultTypeConverter.INSTANCE.convert(entry.getValue().getDataType(), defaultValue));
                 }
             }
             else
             {
-                params.put(entry.getKey(), (Serializable)DefaultTypeConverter.INSTANCE.convert(entry.getValue().getDataType(), params.get(entry.getKey())));
+                params.put(entry.getKey(), (Serializable) DefaultTypeConverter.INSTANCE.convert(entry.getValue().getDataType(), params.get(entry.getKey())));
             }
         }
-        
+
         if (params.containsKey(WorkflowModel.ASSOC_ASSIGNEE))
         {
-            String value = (String)params.get(WorkflowModel.ASSOC_ASSIGNEE);
+            String value = (String) params.get(WorkflowModel.ASSOC_ASSIGNEE);
             ArrayList<NodeRef> assignees = new ArrayList<NodeRef>();
             assignees.add(personService.getPerson(value));
             params.put(WorkflowModel.ASSOC_ASSIGNEE, assignees);
         }
-        
+
         params.put(WorkflowModel.ASSOC_PACKAGE, workflowService.createPackage(null));
     }
 
@@ -1298,18 +1306,18 @@ public class WorkflowInterpreter extends BaseInterpreter
     {
         if (path != null)
         {
-           List<WorkflowTask> tasks = this.workflowService.getTasksForWorkflowPath(path.id);
-           if (tasks.size() == 1)
-           {
-              WorkflowTask startTask = tasks.get(0);
-              
-              if (startTask.state == WorkflowTaskState.IN_PROGRESS)
-              {
-                 // end the start task to trigger the first 'proper'
-                 // task in the workflow
-                 this.workflowService.endTask(startTask.id, null);
-              }
-           }
+            List<WorkflowTask> tasks = this.workflowService.getTasksForWorkflowPath(path.id);
+            if (tasks.size() == 1)
+            {
+                WorkflowTask startTask = tasks.get(0);
+
+                if (startTask.state == WorkflowTaskState.IN_PROGRESS)
+                {
+                    // end the start task to trigger the first 'proper'
+                    // task in the workflow
+                    this.workflowService.endTask(startTask.id, null);
+                }
+            }
         }
     }
 }

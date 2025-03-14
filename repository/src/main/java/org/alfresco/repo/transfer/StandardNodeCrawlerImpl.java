@@ -42,12 +42,7 @@ import org.alfresco.service.cmr.transfer.NodeFinder;
 import org.alfresco.service.cmr.transfer.TransferService;
 
 /**
- * This class can be used to build a set of node references from a given starting point. The caller can provide a list
- * of {@link NodeFinder} objects and a list of {@link NodeFilter} objects. Starting with the nodes supplied by the
- * caller, the crawler uses the NodeFinder objects to find other nodes. Each node that is found is then passed to the
- * NodeFilter objects to determine whether it should be included or ignored. Any included nodes are then fed back into
- * the NodeFinder objects to continue the crawl. This class was originally written to assist users of the
- * {@link TransferService} in combination with the {@link ChildAssociatedNodeFinder} and the {@link ContentClassFilter}.
+ * This class can be used to build a set of node references from a given starting point. The caller can provide a list of {@link NodeFinder} objects and a list of {@link NodeFilter} objects. Starting with the nodes supplied by the caller, the crawler uses the NodeFinder objects to find other nodes. Each node that is found is then passed to the NodeFilter objects to determine whether it should be included or ignored. Any included nodes are then fed back into the NodeFinder objects to continue the crawl. This class was originally written to assist users of the {@link TransferService} in combination with the {@link ChildAssociatedNodeFinder} and the {@link ContentClassFilter}.
  * 
  * @author brian
  * 
@@ -67,7 +62,8 @@ public class StandardNodeCrawlerImpl implements NodeCrawler
     }
 
     /**
-     * @param serviceRegistry ServiceRegistry
+     * @param serviceRegistry
+     *            ServiceRegistry
      */
     public StandardNodeCrawlerImpl(ServiceRegistry serviceRegistry)
     {
@@ -85,16 +81,16 @@ public class StandardNodeCrawlerImpl implements NodeCrawler
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.transfer.NodeCrawler#crawl(org.alfresco.service.cmr.repository.NodeRef)
-     */
+     * 
+     * @see org.alfresco.repo.transfer.NodeCrawler#crawl(org.alfresco.service.cmr.repository.NodeRef) */
     public Set<NodeRef> crawl(NodeRef... nodes)
     {
         return crawl(new HashSet<NodeRef>(Arrays.asList(nodes)));
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.transfer.NodeCrawler#crawl(java.util.Set)
-     */
+     * 
+     * @see org.alfresco.repo.transfer.NodeCrawler#crawl(java.util.Set) */
     public synchronized Set<NodeRef> crawl(Set<NodeRef> startingNodes)
     {
         init();
@@ -138,22 +134,23 @@ public class StandardNodeCrawlerImpl implements NodeCrawler
         {
             if (nodeFinder instanceof AbstractNodeFinder)
             {
-                ((AbstractNodeFinder)nodeFinder).setServiceRegistry(serviceRegistry);
-                ((AbstractNodeFinder)nodeFinder).init();
+                ((AbstractNodeFinder) nodeFinder).setServiceRegistry(serviceRegistry);
+                ((AbstractNodeFinder) nodeFinder).init();
             }
         }
         for (NodeFilter nodeFilter : this.nodeFilters)
         {
             if (nodeFilter instanceof AbstractNodeFilter)
             {
-                ((AbstractNodeFilter)nodeFilter).setServiceRegistry(serviceRegistry);
-                ((AbstractNodeFilter)nodeFilter).init();
+                ((AbstractNodeFilter) nodeFilter).setServiceRegistry(serviceRegistry);
+                ((AbstractNodeFilter) nodeFilter).init();
             }
         }
     }
 
     /**
-     * @param thisNode NodeRef
+     * @param thisNode
+     *            NodeRef
      * @return Set<NodeRef>
      */
     private Set<NodeRef> findSubsequentNodes(NodeRef thisNode)
@@ -167,7 +164,8 @@ public class StandardNodeCrawlerImpl implements NodeCrawler
     }
 
     /**
-     * @param thisNode NodeRef
+     * @param thisNode
+     *            NodeRef
      * @return boolean
      */
     private boolean includeNode(NodeRef thisNode)
@@ -181,16 +179,16 @@ public class StandardNodeCrawlerImpl implements NodeCrawler
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.transfer.NodeCrawler#setNodeFinders(org.alfresco.service.cmr.transfer.NodeFinder)
-     */
+     * 
+     * @see org.alfresco.repo.transfer.NodeCrawler#setNodeFinders(org.alfresco.service.cmr.transfer.NodeFinder) */
     public synchronized void setNodeFinders(NodeFinder... finders)
     {
         nodeFinders = Arrays.asList(finders);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.transfer.NodeCrawler#setNodeFilters(org.alfresco.service.cmr.transfer.NodeFilter)
-     */
+     * 
+     * @see org.alfresco.repo.transfer.NodeCrawler#setNodeFilters(org.alfresco.service.cmr.transfer.NodeFilter) */
     public synchronized void setNodeFilters(NodeFilter... filters)
     {
         nodeFilters = Arrays.asList(filters);

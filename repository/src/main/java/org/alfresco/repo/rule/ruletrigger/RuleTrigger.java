@@ -38,16 +38,17 @@ public interface RuleTrigger
     public static final String RULE_TRIGGER_NEW_NODES = "RuleTrigger.NewNodes";
     /** Key to store renamed nodes for the controlling of rule triggers */
     public static final String RULE_TRIGGER_RENAMED_NODES = "RuleTrigger.RenamedNodes";
-    
+
     /**
      * Register the rule trigger
      */
-	void registerRuleTrigger();
-	
+    void registerRuleTrigger();
+
     /**
      * Register the rule type as using this trigger
      * 
-     * @param ruleType  the rule type
+     * @param ruleType
+     *            the rule type
      */
-	void registerRuleType(RuleType ruleType);
+    void registerRuleType(RuleType ruleType);
 }

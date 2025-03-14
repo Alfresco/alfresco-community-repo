@@ -74,15 +74,13 @@ public class SuggesterParameters
         return this.termIsCaseSensitive;
     }
 
-    /*
-     * @see java.lang.Object#toString()
-     */
+    /* @see java.lang.Object#toString() */
     @Override
     public String toString()
     {
         StringBuilder builder = new StringBuilder(200);
         builder.append("SuggesterParameters [term=").append(this.term).append(", limit=").append(this.limit)
-                    .append(", termIsCaseSensitive=").append(this.termIsCaseSensitive).append("]");
+                .append(", termIsCaseSensitive=").append(this.termIsCaseSensitive).append("]");
         return builder.toString();
     }
 }

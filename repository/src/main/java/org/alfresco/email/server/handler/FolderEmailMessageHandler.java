@@ -33,10 +33,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import jakarta.mail.MessagingException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.email.EmailMessage;
@@ -46,8 +47,6 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Handler implementation address to folder node.
@@ -60,13 +59,12 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
     private static final String MSG_RECEIVED_BY_SMTP = "email.server.msg.received_by_smtp";
     private static final String MSG_DEFAULT_SUBJECT = "email.server.msg.default_subject";
     private static final String ERR_MAIL_READ_ERROR = "email.server.err.mail_read_error";
-    
+
     private static final Log log = LogFactory.getLog(FolderEmailMessageHandler.class);
-    
+
     /**
-     * overwriteDuplicates.
-     * if true then overwrite an existing node with the same name.   if false the name is changed to make it unique.
-     */ 
+     * overwriteDuplicates. if true then overwrite an existing node with the same name. if false the name is changed to make it unique.
+     */
     private boolean overwriteDuplicates = false;
 
     /**
@@ -104,9 +102,12 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
     /**
      * Add content to Alfresco repository
      * 
-     * @param spaceNodeRef          Addressed node
-     * @param message            Mail message
-     * @throws IOException          Exception can be thrown while saving a content into Alfresco repository.
+     * @param spaceNodeRef
+     *            Addressed node
+     * @param message
+     *            Mail message
+     * @throws IOException
+     *             Exception can be thrown while saving a content into Alfresco repository.
      */
     public void addAlfrescoContent(NodeRef spaceNodeRef, EmailMessage message) throws IOException
     {
@@ -117,9 +118,9 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
             Date now = new Date();
             messageSubject = I18NUtil.getMessage(MSG_DEFAULT_SUBJECT, new SimpleDateFormat("dd-MM-yyyy-hh-mm-ss").format(now));
         }
-        
+
         String messageFrom = message.getFrom();
-        if(messageFrom == null)
+        if (messageFrom == null)
         {
             messageFrom = "";
         }
@@ -163,10 +164,10 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
     }
 
     /**
-     * This method writes space as a content. We need this space because rules doesn't proceed documents with empty content. We need rule processing for command email messages with
-     * empty body.
+     * This method writes space as a content. We need this space because rules doesn't proceed documents with empty content. We need rule processing for command email messages with empty body.
      * 
-     * @param nodeRef Reference to the parent node
+     * @param nodeRef
+     *            Reference to the parent node
      */
     private void writeSpace(NodeRef nodeRef)
     {
@@ -185,8 +186,10 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
     /**
      * Adds titled aspect to the specified node.
      * 
-     * @param nodeRef Target node.
-     * @param title Title
+     * @param nodeRef
+     *            Target node.
+     * @param title
+     *            Title
      */
     private void addTitledAspect(NodeRef nodeRef, String title, String from)
     {
@@ -194,7 +197,7 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
         titledProps.put(ContentModel.PROP_TITLE, title);
         titledProps.put(ContentModel.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_RECEIVED_BY_SMTP, from));
         getNodeService().addAspect(nodeRef, ContentModel.ASPECT_TITLED, titledProps);
-        
+
         if (log.isDebugEnabled())
         {
             log.debug("Titled aspect has been added.");
@@ -203,7 +206,9 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
 
     /**
      * Set the behaviour to be done on detecting a new message with the same subject.
-     * @param overwriteDuplicates boolean
+     * 
+     * @param overwriteDuplicates
+     *            boolean
      */
     public void setOverwriteDuplicates(boolean overwriteDuplicates)
     {

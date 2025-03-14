@@ -43,27 +43,26 @@ public class StoreEntity implements Serializable
     private String protocol;
     private String identifier;
     private NodeEntity rootNode;
-    
+
     /**
      * Required default constructor
      */
     public StoreEntity()
-    {
-    }
-        
+    {}
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("StoreEntity")
-          .append("[ ID=").append(id)
-          .append(", protocol=").append(protocol)
-          .append(", identifier=").append(identifier)
-          .append(", rootNode=").append(rootNode)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", protocol=").append(protocol)
+                .append(", identifier=").append(identifier)
+                .append(", rootNode=").append(rootNode)
+                .append("]");
         return sb.toString();
     }
-    
+
     public StoreRef getStoreRef()
     {
         return new StoreRef(protocol, identifier);

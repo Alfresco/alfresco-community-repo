@@ -45,15 +45,15 @@ public class RestAuditEntryModel extends TestModel implements IRestModel<RestAud
 
     @JsonProperty(required = true)
     private String id;
-    private String auditApplicationId ;
+    private String auditApplicationId;
     private String createdAt;
     @JsonProperty("createdByUser")
     private RestByUserModel createdByUser;
 
     @JsonProperty("values")
-    Map<String, Object>  values;
+    Map<String, Object> values;
 
-public Map<String, Object> getValues()
+    public Map<String, Object> getValues()
     {
         return values;
     }

@@ -29,7 +29,6 @@ package org.alfresco.repo.virtual.ref;
 import java.util.Arrays;
 
 import junit.framework.TestCase;
-
 import org.junit.Test;
 
 public class GetChildByIdMethodTest extends TestCase
@@ -40,17 +39,17 @@ public class GetChildByIdMethodTest extends TestCase
         StringParameter path = new StringParameter(parentPath);
 
         Reference ref = new Reference(Encodings.PLAIN.encoding,
-                                      Protocols.VIRTUAL.protocol,
-                                      new ClasspathResource("/a/class/path.js"),
-                                      Arrays.asList(path));
+                Protocols.VIRTUAL.protocol,
+                new ClasspathResource("/a/class/path.js"),
+                Arrays.asList(path));
         GetChildByIdMethod method = new GetChildByIdMethod(childName);
 
         Reference childRef = ref.execute(method);
 
         assertEquals(ref.getResource(),
-                     childRef.getResource());
+                childRef.getResource());
         assertEquals(ref.getProtocol(),
-                     childRef.getProtocol());
+                childRef.getProtocol());
 
         return childRef.execute(new GetTemplatePathMethod());
     }
@@ -61,19 +60,19 @@ public class GetChildByIdMethodTest extends TestCase
         final String parentPath = "/root";
         final String childName = "aChid";
         String childPath = toChildPath(parentPath,
-                                       childName);
+                childName);
 
         assertEquals(parentPath + "/" + childName,
-                     childPath);
+                childPath);
     }
 
     @Test
     public void testTrailingPath() throws Exception
     {
         String childPath = toChildPath("  /root/   ",
-                                       "child");
+                "child");
 
         assertEquals("/root/child",
-                     childPath);
+                childPath);
     }
 }

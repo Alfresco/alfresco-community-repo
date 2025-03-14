@@ -25,13 +25,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.AlgorithmParameters;
 import java.util.Arrays;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.encryption.MACUtils.MACInput;
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.util.IPUtils;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.io.IOUtils;
@@ -39,6 +35,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.Base64;
 import org.springframework.util.FileCopyUtils;
+
+import org.alfresco.encryption.MACUtils.MACInput;
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.util.IPUtils;
 
 /**
  * Various encryption utility methods.
@@ -59,14 +59,14 @@ public class DefaultEncryptionUtils implements EncryptionUtils
     protected long messageTimeout; // ms
     protected String remoteIP;
     protected String localIP;
-    
+
     public DefaultEncryptionUtils()
     {
         try
         {
             this.localIP = InetAddress.getLocalHost().getHostAddress();
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             throw new AlfrescoRuntimeException("Unable to initialise EncryptionUtils", e);
         }
@@ -98,7 +98,7 @@ public class DefaultEncryptionUtils implements EncryptionUtils
     {
         return localIP;
     }
-    
+
     public void setMessageTimeout(long messageTimeout)
     {
         this.messageTimeout = messageTimeout;
@@ -108,7 +108,7 @@ public class DefaultEncryptionUtils implements EncryptionUtils
     {
         this.encryptor = encryptor;
     }
-    
+
     public void setMacUtils(MACUtils macUtils)
     {
         this.macUtils = macUtils;
@@ -116,40 +116,43 @@ public class DefaultEncryptionUtils implements EncryptionUtils
 
     protected void setRequestMac(HttpMethod method, byte[] mac)
     {
-        if(mac == null)
+        if (mac == null)
         {
             throw new AlfrescoRuntimeException("Mac cannot be null");
         }
-        method.setRequestHeader(HEADER_MAC, Base64.encodeBytes(mac));    
+        method.setRequestHeader(HEADER_MAC, Base64.encodeBytes(mac));
     }
 
     /**
      * Set the MAC on the HTTP response
      * 
-     * @param response HttpServletResponse
-     * @param mac byte[]
+     * @param response
+     *            HttpServletResponse
+     * @param mac
+     *            byte[]
      */
     protected void setMac(HttpServletResponse response, byte[] mac)
     {
-        if(mac == null)
+        if (mac == null)
         {
             throw new AlfrescoRuntimeException("Mac cannot be null");
         }
 
-        response.setHeader(HEADER_MAC, Base64.encodeBytes(mac));    
+        response.setHeader(HEADER_MAC, Base64.encodeBytes(mac));
     }
-    
+
     /**
      * Get the MAC (Message Authentication Code) on the HTTP request
      * 
-     * @param req HttpServletRequest
+     * @param req
+     *            HttpServletRequest
      * @return the MAC
      * @throws IOException
      */
     protected byte[] getMac(HttpServletRequest req) throws IOException
     {
         String header = req.getHeader(HEADER_MAC);
-        if(header != null)
+        if (header != null)
         {
             return Base64.decode(header);
         }
@@ -158,18 +161,19 @@ public class DefaultEncryptionUtils implements EncryptionUtils
             return null;
         }
     }
-    
+
     /**
      * Get the MAC (Message Authentication Code) on the HTTP response
      * 
-     * @param res HttpMethod
+     * @param res
+     *            HttpMethod
      * @return the MAC
      * @throws IOException
      */
     protected byte[] getResponseMac(HttpMethod res) throws IOException
     {
         Header header = res.getResponseHeader(HEADER_MAC);
-        if(header != null)
+        if (header != null)
         {
             return Base64.decode(header.getValue());
         }
@@ -181,35 +185,42 @@ public class DefaultEncryptionUtils implements EncryptionUtils
 
     /**
      * Set the timestamp on the HTTP request
-     * @param method HttpMethod
-     * @param timestamp (ms, in UNIX time)
+     * 
+     * @param method
+     *            HttpMethod
+     * @param timestamp
+     *            (ms, in UNIX time)
      */
     protected void setRequestTimestamp(HttpMethod method, long timestamp)
     {
-        method.setRequestHeader(HEADER_TIMESTAMP, String.valueOf(timestamp));        
+        method.setRequestHeader(HEADER_TIMESTAMP, String.valueOf(timestamp));
     }
 
     /**
      * Set the timestamp on the HTTP response
-     * @param res HttpServletResponse
-     * @param timestamp (ms, in UNIX time)
+     * 
+     * @param res
+     *            HttpServletResponse
+     * @param timestamp
+     *            (ms, in UNIX time)
      */
     protected void setTimestamp(HttpServletResponse res, long timestamp)
     {
-        res.setHeader(HEADER_TIMESTAMP, String.valueOf(timestamp));        
+        res.setHeader(HEADER_TIMESTAMP, String.valueOf(timestamp));
     }
 
     /**
      * Get the timestamp on the HTTP response
      * 
-     * @param method HttpMethod
+     * @param method
+     *            HttpMethod
      * @return timestamp (ms, in UNIX time)
      * @throws IOException
      */
     protected Long getResponseTimestamp(HttpMethod method) throws IOException
     {
         Header header = method.getResponseHeader(HEADER_TIMESTAMP);
-        if(header != null)
+        if (header != null)
         {
             return Long.valueOf(header.getValue());
         }
@@ -218,18 +229,19 @@ public class DefaultEncryptionUtils implements EncryptionUtils
             return null;
         }
     }
-    
+
     /**
      * Get the timestamp on the HTTP request
      * 
-     * @param method HttpServletRequest
+     * @param method
+     *            HttpServletRequest
      * @return timestamp (ms, in UNIX time)
      * @throws IOException
      */
     protected Long getTimestamp(HttpServletRequest method) throws IOException
     {
         String header = method.getHeader(HEADER_TIMESTAMP);
-        if(header != null)
+        if (header != null)
         {
             return Long.valueOf(header);
         }
@@ -245,41 +257,44 @@ public class DefaultEncryptionUtils implements EncryptionUtils
     @Override
     public void setRequestAlgorithmParameters(HttpMethod method, AlgorithmParameters params) throws IOException
     {
-        if(params != null)
+        if (params != null)
         {
             method.setRequestHeader(HEADER_ALGORITHM_PARAMETERS, Base64.encodeBytes(params.getEncoded()));
         }
     }
-    
+
     /**
      * Set the algorithm parameters header on the HTTP response
      * 
-     * @param response HttpServletResponse
-     * @param params AlgorithmParameters
+     * @param response
+     *            HttpServletResponse
+     * @param params
+     *            AlgorithmParameters
      * @throws IOException
      */
     protected void setAlgorithmParameters(HttpServletResponse response, AlgorithmParameters params) throws IOException
     {
-        if(params != null)
+        if (params != null)
         {
             response.setHeader(HEADER_ALGORITHM_PARAMETERS, Base64.encodeBytes(params.getEncoded()));
         }
     }
-    
+
     /**
      * Decode cipher algorithm parameters from the HTTP method
      * 
-     * @param method HttpMethod
+     * @param method
+     *            HttpMethod
      * @return decoded algorithm parameters
      * @throws IOException
      */
     protected AlgorithmParameters decodeAlgorithmParameters(HttpMethod method) throws IOException
     {
         Header header = method.getResponseHeader(HEADER_ALGORITHM_PARAMETERS);
-        if(header != null)
+        if (header != null)
         {
             byte[] algorithmParams = Base64.decode(header.getValue());
-            AlgorithmParameters algorithmParameters  = encryptor.decodeAlgorithmParameters(algorithmParams);
+            AlgorithmParameters algorithmParameters = encryptor.decodeAlgorithmParameters(algorithmParams);
             return algorithmParameters;
         }
         else
@@ -287,7 +302,7 @@ public class DefaultEncryptionUtils implements EncryptionUtils
             return null;
         }
     }
-    
+
     /**
      * Decode cipher algorithm parameters from the HTTP method
      * 
@@ -298,10 +313,10 @@ public class DefaultEncryptionUtils implements EncryptionUtils
     protected AlgorithmParameters decodeAlgorithmParameters(HttpServletRequest req) throws IOException
     {
         String header = req.getHeader(HEADER_ALGORITHM_PARAMETERS);
-        if(header != null)
+        if (header != null)
         {
             byte[] algorithmParams = Base64.decode(header);
-            AlgorithmParameters algorithmParameters  = encryptor.decodeAlgorithmParameters(algorithmParams);
+            AlgorithmParameters algorithmParameters = encryptor.decodeAlgorithmParameters(algorithmParams);
             return algorithmParameters;
         }
         else
@@ -318,13 +333,13 @@ public class DefaultEncryptionUtils implements EncryptionUtils
     {
         // TODO fileoutputstream if content is especially large?
         InputStream body = method.getResponseBodyAsStream();
-        if(body != null)
+        if (body != null)
         {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             FileCopyUtils.copy(body, out);
 
             AlgorithmParameters params = decodeAlgorithmParameters(method);
-            if(params != null)
+            if (params != null)
             {
                 byte[] decrypted = encryptor.decrypt(KeyProvider.ALIAS_SOLR, params, out.toByteArray());
                 return decrypted;
@@ -339,17 +354,17 @@ public class DefaultEncryptionUtils implements EncryptionUtils
             return null;
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
     @Override
     public byte[] decryptBody(HttpServletRequest req) throws IOException
     {
-        if(req.getMethod().equals("POST"))
+        if (req.getMethod().equals("POST"))
         {
             InputStream bodyStream = req.getInputStream();
-            if(bodyStream != null)
+            if (bodyStream != null)
             {
                 // expect algorithParameters header
                 AlgorithmParameters p = decodeAlgorithmParameters(req);
@@ -379,19 +394,19 @@ public class DefaultEncryptionUtils implements EncryptionUtils
         {
             byte[] expectedMAC = getResponseMac(method);
             Long timestamp = getResponseTimestamp(method);
-            if(timestamp == null)
+            if (timestamp == null)
             {
                 return false;
             }
             remoteIP = IPUtils.getRealIPAddress(remoteIP);
             return authenticate(expectedMAC, new MACInput(decryptedBody, timestamp.longValue(), remoteIP));
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             throw new RuntimeException("Unable to authenticate HTTP response", e);
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -402,14 +417,14 @@ public class DefaultEncryptionUtils implements EncryptionUtils
         {
             byte[] expectedMAC = getMac(req);
             Long timestamp = getTimestamp(req);
-            if(timestamp == null)
+            if (timestamp == null)
             {
                 return false;
             }
             String ipAddress = IPUtils.getRealIPAddress(req.getRemoteAddr());
             return authenticate(expectedMAC, new MACInput(decryptedBody, timestamp.longValue(), ipAddress));
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             throw new AlfrescoRuntimeException("Unable to authenticate HTTP request", e);
         }
@@ -422,22 +437,22 @@ public class DefaultEncryptionUtils implements EncryptionUtils
     public void setRequestAuthentication(HttpMethod method, byte[] message) throws IOException
     {
         long requestTimestamp = System.currentTimeMillis();
-    
+
         // add MAC header
         byte[] mac = macUtils.generateMAC(KeyProvider.ALIAS_SOLR, new MACInput(message, requestTimestamp, getLocalIPAddress()));
-    
-        if(logger.isDebugEnabled())
+
+        if (logger.isDebugEnabled())
         {
             logger.debug("Setting MAC " + Arrays.toString(mac) + " on HTTP request " + method.getPath());
             logger.debug("Setting timestamp " + requestTimestamp + " on HTTP request " + method.getPath());
         }
-        
+
         setRequestMac(method, mac);
 
         // prevent replays
         setRequestTimestamp(method, requestTimestamp);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -449,7 +464,7 @@ public class DefaultEncryptionUtils implements EncryptionUtils
         byte[] mac = macUtils.generateMAC(KeyProvider.ALIAS_SOLR,
                 new MACInput(responseBody, responseTimestamp, getLocalIPAddress()));
 
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
             logger.debug("Setting MAC " + Arrays.toString(mac) + " on HTTP response to request " + httpRequest.getRequestURI());
             logger.debug("Setting timestamp " + responseTimestamp + " on HTTP response to request " + httpRequest.getRequestURI());
@@ -467,14 +482,14 @@ public class DefaultEncryptionUtils implements EncryptionUtils
         // check the MAC and, if valid, check that the timestamp is under the threshold and that the remote IP is
         // the expected IP
         boolean authorized = macUtils.validateMAC(KeyProvider.ALIAS_SOLR, expectedMAC, macInput) &&
-            validateTimestamp(macInput.getTimestamp());
+                validateTimestamp(macInput.getTimestamp());
         return authorized;
     }
-    
+
     protected boolean validateTimestamp(long timestamp)
     {
         long currentTime = System.currentTimeMillis();
-        return((currentTime - timestamp) < messageTimeout);
+        return ((currentTime - timestamp) < messageTimeout);
     }
 
 }

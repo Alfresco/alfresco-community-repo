@@ -27,15 +27,15 @@ package org.alfresco.repo.action.evaluator;
 
 import java.util.List;
 
-import org.alfresco.service.cmr.action.ActionCondition;
-import org.alfresco.service.cmr.action.ParameterDefinition;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-/**  
- * This class is needed to provide some infrastructure, but the actual evaluation of 
- * Composite Conditions happens inside the ActionServiceImpl as a special case.
+import org.alfresco.service.cmr.action.ActionCondition;
+import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.repository.NodeRef;
+
+/**
+ * This class is needed to provide some infrastructure, but the actual evaluation of Composite Conditions happens inside the ActionServiceImpl as a special case.
  * 
  * @author Jean Barmash
  */
@@ -46,14 +46,13 @@ public class CompositeConditionEvaluator extends ActionConditionEvaluatorAbstrac
 
     @Override
     protected boolean evaluateImpl(ActionCondition actionCondition,
-             NodeRef actionedUponNodeRef) 
+            NodeRef actionedUponNodeRef)
     {
-       logger.error("Evaluating composite condition.  Should not be called.");
-       return false;
+        logger.error("Evaluating composite condition.  Should not be called.");
+        return false;
     }
 
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-    {
-    }
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
+    {}
 }

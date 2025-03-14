@@ -29,7 +29,6 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -45,7 +44,8 @@ import org.alfresco.service.namespace.QName;
  */
 public class Document extends Node
 {
-    public Document() {
+    public Document()
+    {
         super();
     }
 
@@ -55,8 +55,9 @@ public class Document extends Node
 
         Serializable val = nodeProps.get(ContentModel.PROP_CONTENT);
 
-        if ((val != null) && (val instanceof ContentData)) {
-            ContentData cd = (ContentData)val;
+        if ((val != null) && (val instanceof ContentData))
+        {
+            ContentData cd = (ContentData) val;
             String mimeType = cd.getMimetype();
             String mimeTypeName = sr.getMimetypeService().getDisplaysByMimetype().get(mimeType);
             contentInfo = new ContentInfo(mimeType, mimeTypeName, cd.getSize(), cd.getEncoding());
@@ -82,9 +83,9 @@ public class Document extends Node
     public String toString()
     {
         return "Document [contentInfo=" + contentInfo.toString() + ", nodeRef="
-                    + nodeRef + ", name=" + name + ", createdAt=" + createdAt
-                    + ", modifiedAt=" + modifiedAt + ", createdBy=" + createdBy
-                    + ", modifiedBy=" + modifiedBy + "]";
+                + nodeRef + ", name=" + name + ", createdAt=" + createdAt
+                + ", modifiedAt=" + modifiedAt + ", createdBy=" + createdBy
+                + ", modifiedBy=" + modifiedBy + "]";
     }
 
     // TODO for backwards compat' - set explicitly when needed (ie. favourites)

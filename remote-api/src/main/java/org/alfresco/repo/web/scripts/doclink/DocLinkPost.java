@@ -31,14 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.activities.ActivityType;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.web.scripts.WebScriptUtil;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.ParameterCheck;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -48,9 +40,17 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.activities.ActivityType;
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.web.scripts.WebScriptUtil;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.ParameterCheck;
+
 /**
- * This class is the controller for the doclink.post webscript doclink.post is a
- * webscript for creating a link of a document within a target destination
+ * This class is the controller for the doclink.post webscript doclink.post is a webscript for creating a link of a document within a target destination
  * 
  * @author Ana Bozianu
  * @since 5.1

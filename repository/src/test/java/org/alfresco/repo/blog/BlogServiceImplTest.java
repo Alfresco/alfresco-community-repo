@@ -35,6 +35,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -62,9 +66,6 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * Test cases for {@link BlogServiceImpl}.
@@ -77,18 +78,17 @@ public class BlogServiceImplTest extends BaseSpringTest
 {
     // injected services
     private static MutableAuthenticationService AUTHENTICATION_SERVICE;
-    private static BehaviourFilter              BEHAVIOUR_FILTER;
-    private static BlogService                  BLOG_SERVICE;
-    private static DictionaryService            DICTIONARY_SERVICE;
-    private static NodeService                  NODE_SERVICE;
-    private static PersonService                PERSON_SERVICE;
-    private static RetryingTransactionHelper    TRANSACTION_HELPER;
-    private static SiteService                  SITE_SERVICE;
-    private static TaggingService               TAGGING_SERVICE;
+    private static BehaviourFilter BEHAVIOUR_FILTER;
+    private static BlogService BLOG_SERVICE;
+    private static DictionaryService DICTIONARY_SERVICE;
+    private static NodeService NODE_SERVICE;
+    private static PersonService PERSON_SERVICE;
+    private static RetryingTransactionHelper TRANSACTION_HELPER;
+    private static SiteService SITE_SERVICE;
+    private static TaggingService TAGGING_SERVICE;
 
     private static final String TEST_USER = BlogServiceImplTest.class.getSimpleName() + GUID.generate();
     private static final String ADMIN_USER = AuthenticationUtil.getAdminUserName();
-
 
     /**
      * Temporary test nodes (created during a test method) that need deletion after the test method.
@@ -105,15 +105,15 @@ public class BlogServiceImplTest extends BaseSpringTest
     @Before
     public void before() throws Exception
     {
-        AUTHENTICATION_SERVICE = (MutableAuthenticationService)applicationContext.getBean("authenticationService");
-        BEHAVIOUR_FILTER       = (BehaviourFilter)applicationContext.getBean("policyBehaviourFilter");
-        BLOG_SERVICE           = (BlogService)applicationContext.getBean("blogService");
-        DICTIONARY_SERVICE     = (DictionaryService)applicationContext.getBean("dictionaryService");
-        NODE_SERVICE           = (NodeService)applicationContext.getBean("nodeService");
-        PERSON_SERVICE         = (PersonService)applicationContext.getBean("personService");
-        TRANSACTION_HELPER     = (RetryingTransactionHelper)applicationContext.getBean("retryingTransactionHelper");
-        SITE_SERVICE           = (SiteService)applicationContext.getBean("siteService");
-        TAGGING_SERVICE        = (TaggingService)applicationContext.getBean("TaggingService");
+        AUTHENTICATION_SERVICE = (MutableAuthenticationService) applicationContext.getBean("authenticationService");
+        BEHAVIOUR_FILTER = (BehaviourFilter) applicationContext.getBean("policyBehaviourFilter");
+        BLOG_SERVICE = (BlogService) applicationContext.getBean("blogService");
+        DICTIONARY_SERVICE = (DictionaryService) applicationContext.getBean("dictionaryService");
+        NODE_SERVICE = (NodeService) applicationContext.getBean("nodeService");
+        PERSON_SERVICE = (PersonService) applicationContext.getBean("personService");
+        TRANSACTION_HELPER = (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
+        SITE_SERVICE = (SiteService) applicationContext.getBean("siteService");
+        TAGGING_SERVICE = (TaggingService) applicationContext.getBean("TaggingService");
 
         AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
         createUser(TEST_USER);
@@ -127,8 +127,7 @@ public class BlogServiceImplTest extends BaseSpringTest
     private static void createTestSiteWithBlogContainer() throws Exception
     {
         BLOG_SITE = TRANSACTION_HELPER.doInTransaction(
-                new RetryingTransactionHelper.RetryingTransactionCallback<SiteInfo>()
-                {
+                new RetryingTransactionHelper.RetryingTransactionCallback<SiteInfo>() {
                     @Override
                     public SiteInfo execute() throws Throwable
                     {
@@ -140,8 +139,7 @@ public class BlogServiceImplTest extends BaseSpringTest
                 });
 
         BLOG_CONTAINER_NODE = TRANSACTION_HELPER.doInTransaction(
-                new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
-                {
+                new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>() {
                     @Override
                     public NodeRef execute() throws Throwable
                     {
@@ -160,11 +158,11 @@ public class BlogServiceImplTest extends BaseSpringTest
                 });
     }
 
-    @Test public void createDraftBlogPostsAndGetPagedResults() throws Exception
+    @Test
+    public void createDraftBlogPostsAndGetPagedResults() throws Exception
     {
         final int arbitraryNumberGreaterThanPageSize = 42;
-        final List<NodeRef> submittedBlogPosts = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<List<NodeRef>>()
-        {
+        final List<NodeRef> submittedBlogPosts = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<List<NodeRef>>() {
             @Override
             public List<NodeRef> execute() throws Throwable
             {
@@ -173,7 +171,7 @@ public class BlogServiceImplTest extends BaseSpringTest
                 for (int i = 0; i < arbitraryNumberGreaterThanPageSize; i++)
                 {
                     BlogPostInfo newBlogPost;
-                    if(i % 2 == 0)
+                    if (i % 2 == 0)
                     {
                         // By container ref
                         newBlogPost = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "title_" + i, "Hello world", true);
@@ -192,8 +190,7 @@ public class BlogServiceImplTest extends BaseSpringTest
             }
         });
 
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -204,7 +201,7 @@ public class BlogServiceImplTest extends BaseSpringTest
                 pagingReq.setRequestTotalCountMax(arbitraryNumberGreaterThanPageSize); // must be set if calling getTotalResultCount() later
 
                 PagingResults<BlogPostInfo> pagedResults = BLOG_SERVICE.getDrafts(BLOG_CONTAINER_NODE, ADMIN_USER, pagingReq);
-                assertEquals("Wrong total result count.", arbitraryNumberGreaterThanPageSize, (int)pagedResults.getTotalResultCount().getFirst());
+                assertEquals("Wrong total result count.", arbitraryNumberGreaterThanPageSize, (int) pagedResults.getTotalResultCount().getFirst());
 
                 while (pagedResults.hasMoreItems())
                 {
@@ -228,9 +225,12 @@ public class BlogServiceImplTest extends BaseSpringTest
     /**
      * This method asserts that the given List<BlogPostInfo> has NodeRefs in order of the specified date property.
      *
-     * @param blogPosts List<BlogPostInfo>
-     * @param property a Date property
-     * @param ascendingOrder <tt>true</tt> if ascending order, <tt>false</tt> for descending.
+     * @param blogPosts
+     *            List<BlogPostInfo>
+     * @param property
+     *            a Date property
+     * @param ascendingOrder
+     *            <tt>true</tt> if ascending order, <tt>false</tt> for descending.
      */
     private void assertNodeRefsAreSortedBy(List<BlogPostInfo> blogPosts, QName property, boolean ascendingOrder)
     {
@@ -266,15 +266,15 @@ public class BlogServiceImplTest extends BaseSpringTest
     }
 
     @Category(RedundantTests.class)
-    @Test public void createTaggedDraftBlogPost() throws Exception
+    @Test
+    public void createTaggedDraftBlogPost() throws Exception
     {
         // Our tags, which are a mixture of English, Accented European and Chinese
         final List<String> tags = Arrays.asList(new String[]{
                 "alpha", "beta", "gamma", "fran\u00e7ais", "chinese_\u535a\u5ba2"});
 
         // Create a list of Blog Posts, all drafts, each with one of the tags above.
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<List<NodeRef>>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<List<NodeRef>>() {
 
             @Override
             public List<NodeRef> execute() throws Throwable
@@ -295,8 +295,7 @@ public class BlogServiceImplTest extends BaseSpringTest
         });
 
         // Check we get the correct tags back
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -325,8 +324,7 @@ public class BlogServiceImplTest extends BaseSpringTest
         });
 
         // Check we can find the posts by their tags
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -334,8 +332,7 @@ public class BlogServiceImplTest extends BaseSpringTest
                 RangedDateProperty dates = new RangedDateProperty(null, null, ContentModel.PROP_CREATED);
                 for (String tag : tags)
                 {
-                    PagingResults<BlogPostInfo> pagedResults =
-                            BLOG_SERVICE.findBlogPosts(BLOG_CONTAINER_NODE, dates, tag, pagingReq);
+                    PagingResults<BlogPostInfo> pagedResults = BLOG_SERVICE.findBlogPosts(BLOG_CONTAINER_NODE, dates, tag, pagingReq);
 
                     // Check we found our post
                     assertEquals("Wrong number of blog posts for " + tag, 1, pagedResults.getPage().size());
@@ -349,7 +346,8 @@ public class BlogServiceImplTest extends BaseSpringTest
      * This test method uses the eventually consistent find*() method and so may fail if Lucene is disabled.
      */
     @Category(RedundantTests.class)
-    @Test public void findBlogPostsByPublishedDate() throws Exception
+    @Test
+    public void findBlogPostsByPublishedDate() throws Exception
     {
         final List<String> tags = Arrays.asList(new String[]{"hello", "goodbye"});
 
@@ -368,8 +366,7 @@ public class BlogServiceImplTest extends BaseSpringTest
         cal.set(1991, 6, 15);
         final Date _1991 = cal.getTime();
 
-        final Map<Integer, NodeRef> blogPosts = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Map<Integer, NodeRef>>()
-        {
+        final Map<Integer, NodeRef> blogPosts = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Map<Integer, NodeRef>>() {
             @Override
             public Map<Integer, NodeRef> execute() throws Throwable
             {
@@ -401,14 +398,13 @@ public class BlogServiceImplTest extends BaseSpringTest
             }
         });
 
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @SuppressWarnings("deprecation")
             @Override
             public Void execute() throws Throwable
             {
                 // Quick sanity check: Did our cheating with the cm:created dates work?
-                assertEquals("Incorrect published date", 71, ((Date)NODE_SERVICE.getProperty(blogPosts.get(1971), ContentModel.PROP_PUBLISHED)).getYear());
+                assertEquals("Incorrect published date", 71, ((Date) NODE_SERVICE.getProperty(blogPosts.get(1971), ContentModel.PROP_PUBLISHED)).getYear());
 
                 PagingRequest pagingReq = new PagingRequest(0, 10, null);
 
@@ -429,7 +425,6 @@ public class BlogServiceImplTest extends BaseSpringTest
                 assertTrue("Missing expected BlogPost NodeRef 81", recoveredBlogNodes.contains(blogPosts.get(1981)));
                 assertTrue("Missing expected BlogPost NodeRef 91", recoveredBlogNodes.contains(blogPosts.get(1991)));
 
-
                 // Find posts before date
                 pagedResults = BLOG_SERVICE.findBlogPosts(BLOG_CONTAINER_NODE, publishedBefore1980, null, pagingReq);
                 assertEquals("Wrong blog post count", 1, pagedResults.getPage().size());
@@ -440,14 +435,12 @@ public class BlogServiceImplTest extends BaseSpringTest
                 List<String> recoveredTags = TAGGING_SERVICE.getTags(blogNode);
                 assertEquals("Incorrect tags.", tags, recoveredTags);
 
-
                 // Find posts after date
                 pagedResults = BLOG_SERVICE.findBlogPosts(BLOG_CONTAINER_NODE, publishedAfter1980, "hello", pagingReq);
                 assertEquals("Wrong blog post count", 2, pagedResults.getPage().size());
 
                 blogNode = pagedResults.getPage().get(0).getNodeRef();
                 assertEquals("Incorrect NodeRef.", blogNode, blogPosts.get(1981));
-
 
                 // Find posts between dates
                 pagedResults = BLOG_SERVICE.findBlogPosts(BLOG_CONTAINER_NODE, publishedBetween1975And1985, "hello", pagingReq);
@@ -461,13 +454,13 @@ public class BlogServiceImplTest extends BaseSpringTest
         });
     }
 
-    @Test public void ensureBlogPostsAreCorrectlySorted() throws Exception
+    @Test
+    public void ensureBlogPostsAreCorrectlySorted() throws Exception
     {
         final int testBlogCount = 3;
 
         // Set up some test data to check sorting. We don't need to retain references to these posts.
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -496,8 +489,7 @@ public class BlogServiceImplTest extends BaseSpringTest
 
         final PagingRequest pagingReq = new PagingRequest(100);
 
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @SuppressWarnings("deprecation")
             @Override
             public Void execute() throws Throwable
@@ -519,7 +511,6 @@ public class BlogServiceImplTest extends BaseSpringTest
                         blogPosts.size() >= testBlogCount);
 
                 assertSortingIsCorrect(blogPosts);
-
 
                 // And the combination. This should be ordered:
                 // published posts, most recent cm:published first - followed by
@@ -559,7 +550,7 @@ public class BlogServiceImplTest extends BaseSpringTest
             Date followingCreatedDate = (Date) NODE_SERVICE.getProperty(followingBPI.getNodeRef(), ContentModel.PROP_CREATED);
 
             // published must precede draft
-            if ( nextPublishedDate == null && followingPublishedDate != null)
+            if (nextPublishedDate == null && followingPublishedDate != null)
             {
                 fail("Published posts must precede draft posts");
             }
@@ -575,14 +566,13 @@ public class BlogServiceImplTest extends BaseSpringTest
     }
 
     /**
-     * This test uses two different users to create draft and internally published blog posts.
-     * Then it ensures that each user sees the correct posts when they retrieve them from the service.
+     * This test uses two different users to create draft and internally published blog posts. Then it ensures that each user sees the correct posts when they retrieve them from the service.
      */
-    @Test public void multipleUsersCreateDraftsAndPublishedPostsAndBrowse() throws Exception
+    @Test
+    public void multipleUsersCreateDraftsAndPublishedPostsAndBrowse() throws Exception
     {
         // Admin creates a draft and an internally-published blog post.
-        final Pair<NodeRef, NodeRef> adminPosts = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Pair<NodeRef, NodeRef>>()
-        {
+        final Pair<NodeRef, NodeRef> adminPosts = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Pair<NodeRef, NodeRef>>() {
 
             @Override
             public Pair<NodeRef, NodeRef> execute() throws Throwable
@@ -599,8 +589,7 @@ public class BlogServiceImplTest extends BaseSpringTest
 
         // Then another user does the same.
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
-        final Pair<NodeRef, NodeRef> userPosts = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Pair<NodeRef, NodeRef>>()
-        {
+        final Pair<NodeRef, NodeRef> userPosts = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Pair<NodeRef, NodeRef>>() {
 
             @Override
             public Pair<NodeRef, NodeRef> execute() throws Throwable
@@ -618,8 +607,7 @@ public class BlogServiceImplTest extends BaseSpringTest
         // Now check what we see from the service.
         AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
 
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -639,11 +627,9 @@ public class BlogServiceImplTest extends BaseSpringTest
             }
         });
 
-
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
 
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -664,12 +650,12 @@ public class BlogServiceImplTest extends BaseSpringTest
         });
     }
 
-    @Test public void getBlogPostsFilteredByDateRange() throws Exception
+    @Test
+    public void getBlogPostsFilteredByDateRange() throws Exception
     {
         final int numberOfPosts = 31 + 31 + 29;
 
-        final List<NodeRef> posts = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<List<NodeRef>>()
-        {
+        final List<NodeRef> posts = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<List<NodeRef>>() {
             @Override
             public List<NodeRef> execute() throws Throwable
             {
@@ -677,8 +663,7 @@ public class BlogServiceImplTest extends BaseSpringTest
 
                 for (int i = 0; i < numberOfPosts; i++)
                 {
-                    BlogPostInfo newBlogPost =
-                            BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "date-specific-post" + i, "", false);
+                    BlogPostInfo newBlogPost = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "date-specific-post" + i, "", false);
                     testNodesToTidy.add(newBlogPost.getNodeRef());
 
                     results.add(newBlogPost.getNodeRef());
@@ -689,8 +674,7 @@ public class BlogServiceImplTest extends BaseSpringTest
         });
 
         // Now go through and set their creation dates to specific points in the past.
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -723,8 +707,7 @@ public class BlogServiceImplTest extends BaseSpringTest
             }
         });
 
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -762,30 +745,30 @@ public class BlogServiceImplTest extends BaseSpringTest
      */
     @Test
     @Category(RedundantTests.class)
-    public void testGetBlogPostsByTagPaging() throws Exception{
+    public void testGetBlogPostsByTagPaging() throws Exception
+    {
         final String tagToSearchBy = "testtag";
         final int numberOfBlogPostsTagged = 2;
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<List<NodeRef>>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<List<NodeRef>>() {
             @Override
             public List<NodeRef> execute() throws Throwable
             {
                 List<NodeRef> results = new ArrayList<NodeRef>();
 
-                do{
+                do
+                {
                     final String blogTitle = "blogTitle" + GUID.generate();
                     BlogPostInfo newBlogPost = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, blogTitle, "Hello world", false);
-                    TAGGING_SERVICE.addTags(newBlogPost.getNodeRef(), Arrays.asList(new String[] { tagToSearchBy }));
+                    TAGGING_SERVICE.addTags(newBlogPost.getNodeRef(), Arrays.asList(new String[]{tagToSearchBy}));
                     testNodesToTidy.add(newBlogPost.getNodeRef());
                     results.add(newBlogPost.getNodeRef());
-                }while(results.size() < numberOfBlogPostsTagged);
+                } while (results.size() < numberOfBlogPostsTagged);
 
                 return results;
             }
         });
 
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -814,8 +797,7 @@ public class BlogServiceImplTest extends BaseSpringTest
 
     private static void createUser(final String userName)
     {
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {

@@ -45,23 +45,23 @@ import org.alfresco.repo.content.filestore.SpoofedTextContentReaderTest;
 public class ContentFullContextTestSuite extends TestSuite
 {
     @SuppressWarnings("unchecked")
-    public static Test suite() 
+    public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        
+
         // These tests need a full context, at least for now
         suite.addTestSuite(ContentStoreCleanerTest.class);
-        //suite.addTestSuite(CharsetFinderTest.class);
+        // suite.addTestSuite(CharsetFinderTest.class);
         suite.addTest(new JUnit4TestAdapter(SpoofedTextContentReaderTest.class));
         suite.addTest(new JUnit4TestAdapter(FileContentStoreTest.class));
         suite.addTest(new JUnit4TestAdapter(NoRandomAccessFileContentStoreTest.class));
         suite.addTest(new JUnit4TestAdapter(ReadOnlyFileContentStoreTest.class));
         suite.addTestSuite(ContentDataTest.class);
-        //suite.addTestSuite(MimetypeMapTest.class);
+        // suite.addTestSuite(MimetypeMapTest.class);
         suite.addTestSuite(RoutingContentServiceTest.class);
         suite.addTest(new JUnit4TestAdapter(RoutingContentStoreTest.class));
         suite.addTestSuite(GuessMimetypeTest.class);
-        
+
         try
         {
             @SuppressWarnings("rawtypes")
@@ -72,8 +72,7 @@ public class ContentFullContextTestSuite extends TestSuite
         {
             // Ignore
         }
-        
-                
+
         return suite;
     }
 }

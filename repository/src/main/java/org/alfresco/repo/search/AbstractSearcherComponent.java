@@ -30,7 +30,6 @@ import java.util.List;
 
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.XPathException;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
@@ -47,8 +46,7 @@ import org.alfresco.util.SearchLanguageConversion;
 public abstract class AbstractSearcherComponent implements SearchService
 {
     /**
-     * Not implemented, but will eventually map directly to
-     * {@link SearchLanguageConversion}.
+     * Not implemented, but will eventually map directly to {@link SearchLanguageConversion}.
      */
     protected String translateQuery(String fromLanguage, String toLangage, String query)
     {

@@ -1,5 +1,9 @@
 package org.alfresco.rest.models.types;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestAbstractClassModel;
 import org.alfresco.rest.model.RestTypesCollection;
@@ -7,23 +11,20 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class GetTypesTests extends RestTest
 {
 
     private UserModel regularUser;
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         regularUser = dataUser.createRandomTestUser();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL}, executionType = ExecutionType.REGRESSION,
             description = "Verify user get types and gets status code OK (200)")
     public void getTypes() throws Exception
     {
@@ -31,14 +32,14 @@ public class GetTypesTests extends RestTest
                 .getTypes();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         types.assertThat()
-            .entriesListCountIs(100)
-            .and().entriesListContains("id", "cm:content")
-            .and().entriesListContains("id", "cm:systemfolder")
-            .and().entriesListContains("id", "cm:folder");
+                .entriesListCountIs(100)
+                .and().entriesListContains("id", "cm:content")
+                .and().entriesListContains("id", "cm:systemfolder")
+                .and().entriesListContains("id", "cm:folder");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL}, executionType = ExecutionType.REGRESSION,
             description = "Should filter types using namespace uri and gets status code OK (200)")
     public void getTypeByNamespaceUri() throws Exception
     {
@@ -55,8 +56,8 @@ public class GetTypesTests extends RestTest
         types.assertThat().entriesListCountIs(0);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL}, executionType = ExecutionType.REGRESSION,
             description = "Should filter types using modelId and gets status code OK (200)")
     public void getTypeByModelsIds() throws Exception
     {
@@ -71,8 +72,8 @@ public class GetTypesTests extends RestTest
                 .field("hasMoreItems").is(false);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL}, executionType = ExecutionType.REGRESSION,
             description = "Should filter types using modelId with subtypes and gets status code OK (200)")
     public void getTypeByModelsIdsWithIncludeSubTypes() throws Exception
     {
@@ -87,8 +88,8 @@ public class GetTypesTests extends RestTest
                 .field("hasMoreItems").is(false);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL}, executionType = ExecutionType.REGRESSION,
             description = "Should filter types using parentId and gets status code OK (200)")
     public void getTypeByParentId() throws Exception
     {
@@ -101,8 +102,8 @@ public class GetTypesTests extends RestTest
                 .field("hasMoreItems").is(false);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL}, executionType = ExecutionType.REGRESSION,
             description = "Should get Type with association, properties and mandatory types and gets status code OK (200)")
     public void getTypeIncludeParams() throws Exception
     {
@@ -120,8 +121,8 @@ public class GetTypesTests extends RestTest
         }
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL}, executionType = ExecutionType.REGRESSION,
             description = "Should verify the query errors with possible options")
     public void verifyTypesQueryError() throws Exception
     {
@@ -166,9 +167,9 @@ public class GetTypesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.MODEL}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if any user gets types with high skipCount and maxItems parameter applied")
+    @Test(groups = {TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if any user gets types with high skipCount and maxItems parameter applied")
     public void getPaginationParameter() throws Exception
     {
         RestTypesCollection types = restClient.authenticateUser(regularUser)
@@ -182,9 +183,9 @@ public class GetTypesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.MODEL}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if any user gets types with hasMoreItems applied bases on skip count and maxItems")
+    @Test(groups = {TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if any user gets types with hasMoreItems applied bases on skip count and maxItems")
     public void getHighPaginationQuery() throws Exception
     {
         RestTypesCollection types = restClient.authenticateUser(regularUser).withModelAPI()

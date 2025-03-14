@@ -25,6 +25,11 @@
  */
 package org.alfresco.rest.api.groups;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.Sites;
 import org.alfresco.rest.api.model.SiteGroup;
 import org.alfresco.rest.api.sites.SiteEntityResource;
@@ -34,10 +39,6 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RelationshipResource(name = "group-members", entityResource = SiteEntityResource.class, title = "Site Groups")
 public class SiteGroupsRelation implements RelationshipResourceAction.Read<SiteGroup>,

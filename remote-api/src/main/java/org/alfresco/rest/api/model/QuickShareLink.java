@@ -32,14 +32,11 @@ import java.util.Map;
 /**
  * Representation of quick share link
  *
- * The shared link id provides a short id that can be part of a short app url that is easy to
- * copy/paste/send (via email or other).
+ * The shared link id provides a short id that can be part of a short app url that is easy to copy/paste/send (via email or other).
  *
- * As of now, these shared links are public in that they provide unauthenticated access to the
- * node's content and limited metadata info, such as file name and last modifier/modification.
+ * As of now, these shared links are public in that they provide unauthenticated access to the node's content and limited metadata info, such as file name and last modifier/modification.
  *
- * In the future, the QuickShareService *could* be enhanced to provide additional features,
- * such as link expiry &/or "password" protection, etc.
+ * In the future, the QuickShareService *could* be enhanced to provide additional features, such as link expiry &/or "password" protection, etc.
  *
  * @author janv
  *
@@ -71,8 +68,7 @@ public class QuickShareLink
     private Boolean isFavorite;
 
     public QuickShareLink()
-    {
-    }
+    {}
 
     public QuickShareLink(String sharedId, String nodeId)
     {
@@ -110,11 +106,13 @@ public class QuickShareLink
         this.isFavorite = isFavorite;
     }
 
-    public String getId() {
+    public String getId()
+    {
         return sharedId;
     }
 
-    public void setId(String sharedId) {
+    public void setId(String sharedId)
+    {
         this.sharedId = sharedId;
     }
 
@@ -128,11 +126,13 @@ public class QuickShareLink
         this.expiresAt = expiresAt;
     }
 
-    public String getNodeId() {
+    public String getNodeId()
+    {
         return nodeId;
     }
 
-    public void setNodeId(String nodeId) {
+    public void setNodeId(String nodeId)
+    {
         this.nodeId = nodeId;
     }
 

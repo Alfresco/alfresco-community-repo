@@ -30,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * Creates string-pair hashes of single digit element numeric paths.<br>
+ * 
  * @see HierarchicalPathHasher
  */
 public class NumericPathHasher extends HierarchicalPathHasher
@@ -95,6 +96,6 @@ public class NumericPathHasher extends HierarchicalPathHasher
     {
         String[] digits = hash.split("(?<=.)");
         return "/" + StringUtils.join(digits,
-                                      '/');
+                '/');
     }
 }

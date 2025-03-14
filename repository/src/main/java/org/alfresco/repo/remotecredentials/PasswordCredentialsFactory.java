@@ -44,30 +44,29 @@ import org.alfresco.service.namespace.QName;
 public class PasswordCredentialsFactory implements RemoteCredentialsInfoFactory
 {
     private MetadataEncryptor metadataEncryptor;
-    
+
     public void setMetadataEncryptor(MetadataEncryptor metadataEncryptor)
     {
         this.metadataEncryptor = metadataEncryptor;
     }
-    
+
     /**
      * Creates a new {@link PasswordCredentialsInfo} based on the details of the underlying node.
      */
-    public PasswordCredentialsInfo createCredentials(QName type, NodeRef nodeRef, String remoteSystemName, 
-            NodeRef remoteSystemContainerNodeRef, Map<QName,Serializable> properties)
+    public PasswordCredentialsInfo createCredentials(QName type, NodeRef nodeRef, String remoteSystemName,
+            NodeRef remoteSystemContainerNodeRef, Map<QName, Serializable> properties)
     {
         // Decrypt the password
-        String password = (String)metadataEncryptor.decrypt(
+        String password = (String) metadataEncryptor.decrypt(
                 RemoteCredentialsModel.PROP_REMOTE_PASSWORD, properties.get(RemoteCredentialsModel.PROP_REMOTE_PASSWORD));
-        
+
         // Build the object
-        PasswordCredentialsInfoImpl credentials = 
-            new PasswordCredentialsInfoImpl(nodeRef, remoteSystemName, remoteSystemContainerNodeRef);
-        
+        PasswordCredentialsInfoImpl credentials = new PasswordCredentialsInfoImpl(nodeRef, remoteSystemName, remoteSystemContainerNodeRef);
+
         // Populate
         RemoteCredentialsInfoFactory.FactoryHelper.setCoreCredentials(credentials, properties);
         credentials.setRemotePassword(password);
-        
+
         // All done
         return credentials;
     }
@@ -75,23 +74,24 @@ public class PasswordCredentialsFactory implements RemoteCredentialsInfoFactory
     /**
      * Serializes the given {@link BaseCredentialsInfo} object to node properties.
      * 
-     * @param info The Credentials object to serialize
+     * @param info
+     *            The Credentials object to serialize
      * @return The final set of properties to be serialized for the node
      */
-    public Map<QName,Serializable> serializeCredentials(BaseCredentialsInfo info)
+    public Map<QName, Serializable> serializeCredentials(BaseCredentialsInfo info)
     {
-        if (! (info instanceof PasswordCredentialsInfo))
+        if (!(info instanceof PasswordCredentialsInfo))
         {
             throw new IllegalStateException("Incorrect registration, info must be a PasswordCredentialsInfo");
         }
-        
+
         // Encrypt the password
-        PasswordCredentialsInfo credentials = (PasswordCredentialsInfo)info;
+        PasswordCredentialsInfo credentials = (PasswordCredentialsInfo) info;
         Serializable passwordEncrypted = metadataEncryptor.encrypt(
                 RemoteCredentialsModel.PROP_REMOTE_PASSWORD, credentials.getRemotePassword());
 
         // Store our specific types and return
-        Map<QName,Serializable> properties = new HashMap<QName, Serializable>();
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(RemoteCredentialsModel.PROP_REMOTE_PASSWORD, passwordEncrypted);
         return properties;
     }

@@ -31,6 +31,9 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
@@ -47,8 +50,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
-import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
 {
@@ -94,7 +95,7 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
         this.transactionService = (TransactionService) getServer().getApplicationContext()
                 .getBean("transactionService");
 
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -122,13 +123,12 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
                 contentWriter.setEncoding("UTF-8");
                 contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
                 contentWriter.putContent("The quick brown fox jumped over the lazy dog.");
-                
+
                 // Create a folder - will use this for child-association testing
-                FileInfo associatedDocsFolder =
-                    AbstractTestFormRestApi.this.fileFolderService.create(companyHomeNodeRef, "testFolder" + guid, ContentModel.TYPE_FOLDER);
-                
+                FileInfo associatedDocsFolder = AbstractTestFormRestApi.this.fileFolderService.create(companyHomeNodeRef, "testFolder" + guid, ContentModel.TYPE_FOLDER);
+
                 testFolderNodeRef = associatedDocsFolder.getNodeRef();
-                
+
                 AbstractTestFormRestApi.this.associatedDoc_A = createTestNode("associatedDoc_A" + guid);
                 AbstractTestFormRestApi.this.associatedDoc_B = createTestNode("associatedDoc_B" + guid);
                 AbstractTestFormRestApi.this.associatedDoc_C = createTestNode("associatedDoc_C" + guid);
@@ -149,13 +149,13 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
                         QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testContainer" + guid),
                         ContentModel.TYPE_CONTAINER,
                         containerProps).getChildRef();
-                
+
                 AbstractTestFormRestApi.this.childDoc_A = createTestNode("childDoc_A" + guid);
                 AbstractTestFormRestApi.this.childDoc_B = createTestNode("childDoc_B" + guid);
                 AbstractTestFormRestApi.this.childDoc_C = createTestNode("childDoc_C" + guid);
                 AbstractTestFormRestApi.this.childDoc_D = createTestNode("childDoc_D" + guid);
                 AbstractTestFormRestApi.this.childDoc_E = createTestNode("childDoc_E" + guid);
-                
+
                 // Now create the pre-test child-associations.
                 AbstractTestFormRestApi.this.nodeService.addChild(containerNodeRef, childDoc_A, ContentModel.ASSOC_CHILDREN, QName.createQName("childA"));
                 AbstractTestFormRestApi.this.nodeService.addChild(containerNodeRef, childDoc_B, ContentModel.ASSOC_CHILDREN, QName.createQName("childB"));
@@ -167,24 +167,25 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
                 builder.append("/api/node/workspace/").append(referencingDocNodeRef.getStoreRef().getIdentifier())
                         .append("/").append(referencingDocNodeRef.getId()).append("/formprocessor");
                 AbstractTestFormRestApi.this.referencingNodeUpdateUrl = builder.toString();
-                
+
                 builder = new StringBuilder();
                 builder.append("/api/node/workspace/").append(containerNodeRef.getStoreRef().getIdentifier())
                         .append("/").append(containerNodeRef.getId()).append("/formprocessor");
                 AbstractTestFormRestApi.this.containingNodeUpdateUrl = builder.toString();
-                
+
                 // Store the original properties of this node
                 AbstractTestFormRestApi.this.refNodePropertiesAfterCreation = nodeService.getProperties(referencingDocNodeRef);
-                
+
                 refNodePropertiesAfterCreation.toString();
                 return null;
-            }});
+            }
+        });
     }
 
     @Override
     public void tearDown()
     {
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -203,7 +204,8 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
                 nodeService.deleteNode(AbstractTestFormRestApi.this.testFolderNodeRef);
                 nodeService.deleteNode(AbstractTestFormRestApi.this.containerNodeRef);
                 return null;
-            }});
+            }
+        });
     }
 
     protected Response sendGetReq(String url, int expectedStatusCode)
@@ -218,10 +220,10 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
         Map<QName, Serializable> docProps = new HashMap<QName, Serializable>(1);
         docProps.put(ContentModel.PROP_NAME, associatedDocName + ".txt");
         return this.nodeService.createNode(
-                    testFolderNodeRef, 
-                    ContentModel.ASSOC_CONTAINS, 
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, associatedDocName + ".txt"), 
-                    ContentModel.TYPE_CONTENT,
-                    docProps).getChildRef();
+                testFolderNodeRef,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, associatedDocName + ".txt"),
+                ContentModel.TYPE_CONTENT,
+                docProps).getChildRef();
     }
 }

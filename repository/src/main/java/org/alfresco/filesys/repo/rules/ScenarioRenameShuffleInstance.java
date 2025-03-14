@@ -28,6 +28,9 @@ package org.alfresco.filesys.repo.rules;
 import java.util.ArrayList;
 import java.util.Date;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.filesys.repo.rules.ScenarioInstance.Ranking;
 import org.alfresco.filesys.repo.rules.commands.CompoundCommand;
 import org.alfresco.filesys.repo.rules.commands.CopyContentCommand;
@@ -37,136 +40,128 @@ import org.alfresco.filesys.repo.rules.operations.CreateFileOperation;
 import org.alfresco.filesys.repo.rules.operations.DeleteFileOperation;
 import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 import org.alfresco.jlan.server.filesys.FileName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * A rename scenario is ...
  * 
- * a) Rename File to File~
- * b) Create File
- * c) Delete File~
+ * a) Rename File to File~ b) Create File c) Delete File~
  * 
- * This rule will kick in and copy the content and then switch the two file over. 
+ * This rule will kick in and copy the content and then switch the two file over.
  * 
  */
 class ScenarioRenameShuffleInstance implements ScenarioInstance
 {
     private static Log logger = LogFactory.getLog(ScenarioRenameShuffleInstance.class);
-      
+
     private Date startTime = new Date();
-    
+
     /**
-     * Timeout in ms.  Default 30 seconds.
+     * Timeout in ms. Default 30 seconds.
      */
     private long timeout = 30000;
-    
+
     private boolean isComplete = false;
-    
+
     private Ranking ranking = Ranking.HIGH;
-    
+
     enum InternalState
     {
-        NONE,
-        INITIALISED,
-        LOOK_FOR_DELETE
-    } ;
-    
+        NONE, INITIALISED, LOOK_FOR_DELETE
+    };
+
     InternalState state = InternalState.NONE;
-    
+
     String from;
     String to;
-    
+
     /**
      * Evaluate the next operation
-     * @param operation Operation
+     * 
+     * @param operation
+     *            Operation
      */
     public Command evaluate(Operation operation)
-    {                
+    {
         /**
          * Anti-pattern : timeout
          */
         Date now = new Date();
-        if(now.getTime() > startTime.getTime() + getTimeout())
+        if (now.getTime() > startTime.getTime() + getTimeout())
         {
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Instance timed out");
             }
             isComplete = true;
             return null;
         }
-        
+
         switch (state)
         {
-            case NONE:
-                if(operation instanceof RenameFileOperation)
+        case NONE:
+            if (operation instanceof RenameFileOperation)
+            {
+                logger.debug("New scenario initialised");
+                RenameFileOperation r = (RenameFileOperation) operation;
+                this.from = r.getFrom();
+                this.to = r.getTo();
+                state = InternalState.INITIALISED;
+            }
+            break;
+
+        case INITIALISED:
+
+            if (operation instanceof CreateFileOperation)
+            {
+                CreateFileOperation c = (CreateFileOperation) operation;
+                if (from.equals(c.getName()))
                 {
-                    logger.debug("New scenario initialised");
-                    RenameFileOperation r = (RenameFileOperation)operation;
-                    this.from = r.getFrom();
-                    this.to = r.getTo();
-                    state = InternalState.INITIALISED;
+                    logger.debug("transition to LOOK_FOR_DELETE");
+
+                    state = InternalState.LOOK_FOR_DELETE;
                 }
-                break;
-                
-            case INITIALISED:
-                
-                if(operation instanceof CreateFileOperation)
+            }
+            break;
+
+        case LOOK_FOR_DELETE:
+            if (operation instanceof DeleteFileOperation)
+            {
+                DeleteFileOperation d = (DeleteFileOperation) operation;
+                if (to.equals(d.getName()))
                 {
-                    CreateFileOperation c = (CreateFileOperation)operation;
-                    if(from.equals(c.getName()))
-                    {
-                        logger.debug("transition to LOOK_FOR_DELETE");
-                       
-                        state = InternalState.LOOK_FOR_DELETE;
-                    }
+                    logger.debug("Rename shuffle complete - fire!");
+
+                    String[] paths = FileName.splitPath(d.getPath());
+                    String oldFolder = paths[0];
+
+                    /**
+                     * Shuffle is as follows a) Copy content from File to File~ b) Delete File c) Rename File~ to File
+                     */
+                    ArrayList<Command> commands = new ArrayList<Command>();
+                    CopyContentCommand copyContent = new CopyContentCommand(from, to, d.getRootNodeRef(), oldFolder + "\\" + from, oldFolder + "\\" + to);
+                    RenameFileCommand r1 = new RenameFileCommand(to, from, d.getRootNodeRef(), oldFolder + "\\" + to, oldFolder + "\\" + from);
+                    DeleteFileCommand d1 = new DeleteFileCommand(from, d.getRootNodeRef(), oldFolder + "\\" + from);
+
+                    commands.add(copyContent);
+                    commands.add(d1);
+                    commands.add(r1);
+
+                    logger.debug("Scenario complete");
+                    isComplete = true;
+                    return new CompoundCommand(commands);
                 }
-                break;
-                
-            case LOOK_FOR_DELETE:
-                if(operation instanceof DeleteFileOperation)
-                {
-                    DeleteFileOperation d = (DeleteFileOperation)operation;
-                    if(to.equals(d.getName()))
-                    {
-                        logger.debug("Rename shuffle complete - fire!");
-                       
-                        String[] paths = FileName.splitPath(d.getPath());
-                        String oldFolder = paths[0];
-                        
-                        /**
-                         * Shuffle is as follows
-                         * a) Copy content from File to File~
-                         * b) Delete File
-                         * c) Rename File~ to File
-                         */
-                        ArrayList<Command> commands = new ArrayList<Command>();
-                        CopyContentCommand copyContent = new CopyContentCommand(from, to, d.getRootNodeRef(), oldFolder + "\\" + from, oldFolder + "\\" + to);
-                        RenameFileCommand r1 = new RenameFileCommand(to, from, d.getRootNodeRef(), oldFolder + "\\" + to, oldFolder + "\\" + from);
-                        DeleteFileCommand d1 = new DeleteFileCommand(from, d.getRootNodeRef(), oldFolder + "\\" + from); 
-   
-                        commands.add(copyContent);
-                        commands.add(d1);
-                        commands.add(r1);
-                     
-                        logger.debug("Scenario complete");
-                        isComplete = true;
-                        return new CompoundCommand(commands);
-                    }
-                }
+            }
         }
 
-             
         return null;
     }
-    
+
     @Override
     public boolean isComplete()
     {
         return isComplete;
     }
-    
+
     public String toString()
     {
         return "ScenarioRenameShuffleInstance from:" + from + " to:" + to;
@@ -181,17 +176,16 @@ class ScenarioRenameShuffleInstance implements ScenarioInstance
     {
         return timeout;
     }
-    
+
     @Override
     public Ranking getRanking()
     {
         return ranking;
     }
-    
+
     public void setRanking(Ranking ranking)
     {
         this.ranking = ranking;
     }
 
 }
-

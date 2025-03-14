@@ -30,6 +30,8 @@ import static org.alfresco.rest.core.JsonBodyGenerator.arrayToJson;
 import java.util.List;
 
 import io.restassured.RestAssured;
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestCategoryModel;
@@ -55,14 +57,12 @@ import org.alfresco.rest.requests.Trashcan;
 import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.http.HttpMethod;
 
 /**
- * Defines the entire Rest Core API
- * {@link https://api-explorer.alfresco.com/api-explorer/} select "Core API"
+ * Defines the entire Rest Core API {@link https://api-explorer.alfresco.com/api-explorer/} select "Core API"
  */
 public class RestCoreAPI extends ModelRequest<RestCoreAPI>
-{    
+{
     public RestCoreAPI(RestWrapper restWrapper)
     {
         super(restWrapper);
@@ -157,8 +157,7 @@ public class RestCoreAPI extends ModelRequest<RestCoreAPI>
     }
 
     /**
-     * Make REST calls using current authenticated user.
-     * This is set on the {@link #authenticateUser(UserModel)} call
+     * Make REST calls using current authenticated user. This is set on the {@link #authenticateUser(UserModel)} call
      * 
      * @return {@link People}
      */
@@ -180,7 +179,8 @@ public class RestCoreAPI extends ModelRequest<RestCoreAPI>
     /**
      * Create a single orphan tag.
      *
-     * @param tag Tag model to create.
+     * @param tag
+     *            Tag model to create.
      * @return Created tag.
      */
     public RestTagModel createSingleTag(RestTagModel tag)
@@ -192,7 +192,8 @@ public class RestCoreAPI extends ModelRequest<RestCoreAPI>
     /**
      * Create several orphan tags in one request.
      *
-     * @param tags Tags models to create.
+     * @param tags
+     *            Tags models to create.
      * @return Created tags.
      */
     public RestTagModelsCollection createTags(List<RestTagModel> tags)
@@ -216,12 +217,11 @@ public class RestCoreAPI extends ModelRequest<RestCoreAPI>
         return new Tags(tag, restWrapper).getTag();
     }
 
-
     public Categories usingCategory(RestCategoryModel categoryModel)
     {
         return new Categories(restWrapper, categoryModel);
     }
-    
+
     public Queries usingQueries()
     {
         return new Queries(restWrapper);
@@ -236,7 +236,7 @@ public class RestCoreAPI extends ModelRequest<RestCoreAPI>
     {
         return new Trashcan(restWrapper);
     }
-    
+
     /**
      * SharedLinks api endpoint
      * 
@@ -253,8 +253,7 @@ public class RestCoreAPI extends ModelRequest<RestCoreAPI>
     {
         return new Groups(restWrapper);
     }
-    
-    
+
     public Actions usingActions()
     {
         return new Actions(restWrapper);

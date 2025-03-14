@@ -68,12 +68,12 @@ public class MockFieldProcessorRegistry extends ContentModelFieldProcessorRegist
     {
         return new TransitionFieldProcessor();
     }
-    
+
     private FieldProcessor makeMessageFieldProcessor()
     {
         return new MessageFieldProcessor();
     }
-    
+
     private FieldProcessor makeTaskOwnerFieldProcessor()
     {
         return new TaskOwnerFieldProcessor();
@@ -85,11 +85,11 @@ public class MockFieldProcessorRegistry extends ContentModelFieldProcessorRegist
         DefaultFieldProcessor processor = new DefaultFieldProcessor();
         processor.setDictionaryService(dictionaryService);
         processor.setNamespaceService(namespaceService);
-        try 
+        try
         {
             processor.afterPropertiesSet();
         }
-        catch (Exception e) 
+        catch (Exception e)
         {
             throw new RuntimeException(e);
         }

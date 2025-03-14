@@ -36,8 +36,7 @@ import org.alfresco.util.ParameterCheck;
 /**
  * Record metadata bootstrap bean.
  * <p>
- * This method of bootstrapping record metadata aspects into the RecordService deprecates the 
- * previous practice of extending rma:recordMetaData.
+ * This method of bootstrapping record metadata aspects into the RecordService deprecates the previous practice of extending rma:recordMetaData.
  * 
  * @author Roy Wetherall
  * @since 2.2
@@ -46,37 +45,40 @@ public class RecordMetadataBootstrap
 {
     /** record service */
     private RecordService recordService;
-    
+
     /** namespace service */
     private NamespaceService namespaceService;
-    
+
     /** map of record metadata aspects against file plan type */
     private Map<String, String> recordMetadataAspects;
-    
+
     /**
-     * @param recordMetadataAspects map of record metadata aspects against file plan types
+     * @param recordMetadataAspects
+     *            map of record metadata aspects against file plan types
      */
     public void setRecordMetadataAspects(Map<String, String> recordMetadataAspects)
     {
         this.recordMetadataAspects = recordMetadataAspects;
     }
-    
+
     /**
-     * @param namespaceService  namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
-     * @param recordService record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
         this.recordService = recordService;
     }
-    
+
     /**
      * Init method
      */
@@ -84,7 +86,7 @@ public class RecordMetadataBootstrap
     {
         ParameterCheck.mandatory("recordService", recordService);
         ParameterCheck.mandatory("namespaceService", namespaceService);
-        
+
         if (recordMetadataAspects != null)
         {
             for (Map.Entry<String, String> entry : recordMetadataAspects.entrySet())
@@ -94,7 +96,7 @@ public class RecordMetadataBootstrap
                 QName filePlanType = QName.createQName(entry.getValue(), namespaceService);
 
                 // register with record service
-                recordService.registerRecordMetadataAspect(recordMetadataAspect, filePlanType);                    
+                recordService.registerRecordMetadataAspect(recordMetadataAspect, filePlanType);
             }
         }
     }

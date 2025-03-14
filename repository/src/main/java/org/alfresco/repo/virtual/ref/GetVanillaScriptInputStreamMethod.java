@@ -32,8 +32,7 @@ import org.alfresco.repo.virtual.ActualEnvironment;
 import org.alfresco.repo.virtual.ActualEnvironmentException;
 
 /**
- * It returns an {@link InputStream} for the vanilla-virtual folder template resource
- * indicated by the given vanilla protocol reference.
+ * It returns an {@link InputStream} for the vanilla-virtual folder template resource indicated by the given vanilla protocol reference.
  * 
  * @author Bogdan Horje
  */

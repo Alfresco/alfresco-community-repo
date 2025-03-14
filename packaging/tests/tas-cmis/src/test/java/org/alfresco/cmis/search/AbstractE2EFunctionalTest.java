@@ -1,5 +1,10 @@
 package org.alfresco.cmis.search;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.BeforeClass;
+
 import org.alfresco.cmis.CmisWrapper;
 import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.utility.data.DataContent;
@@ -9,12 +14,8 @@ import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.network.ServerHealth;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.testng.annotations.BeforeClass;
 
-@ContextConfiguration ("classpath:alfresco-cmis-context.xml")
+@ContextConfiguration("classpath:alfresco-cmis-context.xml")
 public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringContextTests
 {
     /** The number of retries that a query will be tried before giving up. */
@@ -40,7 +41,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
 
     protected static String unique_searchString;
 
-    @BeforeClass (alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
     public void setup()
     {
         serverHealth.assertServerIsOnline();

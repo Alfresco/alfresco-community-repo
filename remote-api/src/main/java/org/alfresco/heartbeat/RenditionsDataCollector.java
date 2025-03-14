@@ -25,15 +25,6 @@
  */
 package org.alfresco.heartbeat;
 
-import org.alfresco.heartbeat.datasender.HBData;
-import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
-import org.alfresco.repo.descriptor.DescriptorDAO;
-import org.alfresco.repo.thumbnail.ThumbnailDefinition;
-import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -42,20 +33,28 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
+import org.alfresco.heartbeat.datasender.HBData;
+import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
+import org.alfresco.repo.descriptor.DescriptorDAO;
+import org.alfresco.repo.thumbnail.ThumbnailDefinition;
+import org.alfresco.util.PropertyCheck;
+
 /**
- * This class collects rendition request counts for HeartBeat. A rendition (such as "doclib") is always to the same
- * target mimetype, but there may be different source mimetypes. As a result that may be multiple sets of data with
- * the same rendition. It is also likely there will be multiple renditions reported in the same batch of data.
+ * This class collects rendition request counts for HeartBeat. A rendition (such as "doclib") is always to the same target mimetype, but there may be different source mimetypes. As a result that may be multiple sets of data with the same rendition. It is also likely there will be multiple renditions reported in the same batch of data.
  * <ul>
- *  <li>Collector ID: <b>acs.repository.renditions</b></li>
- *  <li>Data:
- *      <ul>
- *          <li><b>rendition:</b> String - The name of the rendition.</li>
- *          <li><b>count:</b> Integer - The number of times a rendition and sourceMimetype combination has been requested.</li>
- *          <li><b>sourceMimetype:</b> String - The source mimetype for the rendition.</li>
- *          <li><b>targetMimetype:</b> String - The target mimetype for the rendition.</li>
- *      </ul>
- *  </li>
+ * <li>Collector ID: <b>acs.repository.renditions</b></li>
+ * <li>Data:
+ * <ul>
+ * <li><b>rendition:</b> String - The name of the rendition.</li>
+ * <li><b>count:</b> Integer - The number of times a rendition and sourceMimetype combination has been requested.</li>
+ * <li><b>sourceMimetype:</b> String - The source mimetype for the rendition.</li>
+ * <li><b>targetMimetype:</b> String - The target mimetype for the rendition.</li>
+ * </ul>
+ * </li>
  * </ul>
  *
  * @author adavis
@@ -70,7 +69,7 @@ public class RenditionsDataCollector extends HBBaseDataCollector implements Init
     private final Map<ThumbnailDefinition, Map<String, AtomicInteger>> renditionRequests = new ConcurrentHashMap<>();
 
     public RenditionsDataCollector(String collectorId, String collectorVersion, String cronExpression,
-                                    HeartBeatJobScheduler hbJobScheduler)
+            HeartBeatJobScheduler hbJobScheduler)
     {
         super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
     }
@@ -91,7 +90,8 @@ public class RenditionsDataCollector extends HBBaseDataCollector implements Init
         // Increment the count of renditions. Atomically creates missing parts of the Map structures.
         renditionRequests.computeIfAbsent(rendition,
                 k -> new ConcurrentHashMap<>()).computeIfAbsent(sourceMimetype,
-                k -> new AtomicInteger()).incrementAndGet();
+                        k -> new AtomicInteger())
+                .incrementAndGet();
     }
 
     @Override
@@ -109,7 +109,7 @@ public class RenditionsDataCollector extends HBBaseDataCollector implements Init
         {
             String renditionName = rendition.getName();
             String targetMimetype = rendition.getMimetype();
-            for (Map.Entry<String, AtomicInteger> entry: renditionRequests.remove(rendition).entrySet())
+            for (Map.Entry<String, AtomicInteger> entry : renditionRequests.remove(rendition).entrySet())
             {
                 String sourceMimetype = entry.getKey();
                 AtomicInteger count = entry.getValue();
@@ -129,7 +129,7 @@ public class RenditionsDataCollector extends HBBaseDataCollector implements Init
 
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug(renditionName+" "+count+" "+sourceMimetype+" "+targetMimetype);
+                    logger.debug(renditionName + " " + count + " " + sourceMimetype + " " + targetMimetype);
                 }
             }
         }

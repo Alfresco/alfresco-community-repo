@@ -64,7 +64,7 @@ public class NotificationServiceHelperSystemTest extends BaseRMTestCase
         super.initServices();
 
         // Get the notification helper
-        notificationHelper = (RecordsManagementNotificationHelper)applicationContext.getBean("recordsManagementNotificationHelper");
+        notificationHelper = (RecordsManagementNotificationHelper) applicationContext.getBean("recordsManagementNotificationHelper");
     }
 
     @Override
@@ -72,8 +72,7 @@ public class NotificationServiceHelperSystemTest extends BaseRMTestCase
     {
         super.setupTestData();
 
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
             @Override
             public Object execute() throws Throwable
             {
@@ -130,8 +129,7 @@ public class NotificationServiceHelperSystemTest extends BaseRMTestCase
 
     public void testSendDueForReviewNotification()
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -143,8 +141,7 @@ public class NotificationServiceHelperSystemTest extends BaseRMTestCase
 
     public void testSendSupersededNotification()
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {

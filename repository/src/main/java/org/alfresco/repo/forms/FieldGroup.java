@@ -37,19 +37,23 @@ public class FieldGroup
     protected FieldGroup parent;
     protected boolean repeats;
     protected boolean mandatory;
-    
+
     /**
      * Constructs a FieldGroup
      * 
-     * @param id        The id of the group
-     * @param label     The display label of the group
-     * @param mandatory Whether the group is mandatory
-     * @param repeats   Whether the group of fields can repeat
-     * @param parent    The group's parent group or null if it 
-     *                  doesn't have a parent
+     * @param id
+     *            The id of the group
+     * @param label
+     *            The display label of the group
+     * @param mandatory
+     *            Whether the group is mandatory
+     * @param repeats
+     *            Whether the group of fields can repeat
+     * @param parent
+     *            The group's parent group or null if it doesn't have a parent
      */
-    public FieldGroup(String id, String label, boolean mandatory, 
-                      boolean repeats, FieldGroup parent)
+    public FieldGroup(String id, String label, boolean mandatory,
+            boolean repeats, FieldGroup parent)
     {
         this.id = id;
         this.label = label;
@@ -59,7 +63,7 @@ public class FieldGroup
     }
 
     /**
-     * Returns the id of the group 
+     * Returns the id of the group
      * 
      * @return The id of the group
      */
@@ -89,8 +93,7 @@ public class FieldGroup
     }
 
     /**
-     * Determines whether the fields inside this group can 
-     * repeat multiple times
+     * Determines whether the fields inside this group can repeat multiple times
      * 
      * @return true if the group repeats
      */

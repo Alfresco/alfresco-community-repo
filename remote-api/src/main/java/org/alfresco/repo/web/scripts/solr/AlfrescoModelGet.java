@@ -27,11 +27,6 @@ package org.alfresco.repo.web.scripts.solr;
 
 import java.io.IOException;
 
-import org.alfresco.repo.search.SearchTrackingComponent;
-import org.alfresco.repo.solr.AlfrescoModel;
-import org.alfresco.service.cmr.dictionary.ModelDefinition;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
@@ -40,6 +35,12 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
+
+import org.alfresco.repo.search.SearchTrackingComponent;
+import org.alfresco.repo.solr.AlfrescoModel;
+import org.alfresco.service.cmr.dictionary.ModelDefinition;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Support for SOLR: Get Alfresco model
@@ -69,21 +70,21 @@ public class AlfrescoModelGet extends AbstractWebScript
         {
             handle(req, res);
         }
-        catch(IOException e)
+        catch (IOException e)
         {
             throw new WebScriptException("IO exception parsing request", e);
         }
-        catch(JSONException e)
+        catch (JSONException e)
         {
             throw new WebScriptException("Invalid JSON", e);
         }
     }
-    
+
     private void handle(WebScriptRequest req, WebScriptResponse res) throws JSONException, IOException
     {
         // create map of template vars
         String modelQName = req.getParameter("modelQName");
-        if(modelQName == null)
+        if (modelQName == null)
         {
             throw new WebScriptException(
                     Status.STATUS_BAD_REQUEST,

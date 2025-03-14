@@ -43,8 +43,7 @@ public class ScriptFormData implements Serializable
     private static final long serialVersionUID = 5663057820580831201L;
     private FormData formData;
 
-    
-    /* default */ScriptFormData(FormData formObject)
+    /* default */ ScriptFormData(FormData formObject)
     {
         this.formData = formObject;
     }
@@ -62,11 +61,11 @@ public class ScriptFormData implements Serializable
         }
         return result;
     }
-    
+
     public class ScriptFieldData
     {
         private final FieldData wrappedFieldData;
-            
+
         public ScriptFieldData(FieldData fieldData)
         {
             this.wrappedFieldData = fieldData;
@@ -124,9 +123,9 @@ public class ScriptFormData implements Serializable
 
             if (rawResult instanceof List)
             {
-                List listValue = (List)rawResult;
+                List listValue = (List) rawResult;
                 StringBuilder result = new StringBuilder();
-                for (Iterator iter = listValue.iterator(); iter.hasNext(); )
+                for (Iterator iter = listValue.iterator(); iter.hasNext();)
                 {
                     result.append(iter.next());
                     if (iter.hasNext())
@@ -135,7 +134,8 @@ public class ScriptFormData implements Serializable
                     }
                 }
                 return result.toString();
-            } else
+            }
+            else
             {
                 return rawResult;
             }

@@ -1,5 +1,9 @@
 package org.alfresco.rest.workflow.processes.tasks;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
@@ -12,15 +16,12 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class GetProcessTasksCoreTests extends RestTest
 {
     private FileModel document, document1, document2;
     private SiteModel siteModel;
-    private UserModel  userWhoStartsProcess, candidate, anotherAssignee, assignee;
+    private UserModel userWhoStartsProcess, candidate, anotherAssignee, assignee;
     private ProcessModel process;
     private GroupModel group;
 
@@ -41,9 +42,9 @@ public class GetProcessTasksCoreTests extends RestTest
         dataGroup.addListOfUsersToGroup(group, candidate);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES}, executionType = ExecutionType.REGRESSION,
             description = "getProcessTasks with user that is candidate with REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION})
     public void getProcessTasksWithUserThatIsCandidate() throws Exception
     {
         ProcessModel processModel = dataWorkflow.usingUser(userWhoStartsProcess).usingSite(siteModel).usingResource(document1)
@@ -55,9 +56,9 @@ public class GetProcessTasksCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES}, executionType = ExecutionType.REGRESSION,
             description = "getProcessTasks for invalid processId with REST API and status code is NOT_FOUND (404)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION})
     public void getProcessTasksUsingInvalidProcessId() throws Exception
     {
         ProcessModel processModel = process;
@@ -68,9 +69,9 @@ public class GetProcessTasksCoreTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES}, executionType = ExecutionType.REGRESSION,
             description = "getProcessTasks for empty processId with REST API and status code is NOT_FOUND (404)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION})
     public void getProcessTasksUsingEmptyProcessId() throws Exception
     {
         ProcessModel processModel = process;
@@ -78,12 +79,12 @@ public class GetProcessTasksCoreTests extends RestTest
         restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI()
                 .usingProcess(processModel).getProcessTasks().assertThat().entriesListIsEmpty();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-            .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES}, executionType = ExecutionType.REGRESSION,
             description = "User completes task then getProcessTasks with REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION})
     public void completeTaskThenGetProcessTasks() throws Exception
     {
         ProcessModel processModel = dataWorkflow.usingUser(userWhoStartsProcess).usingSite(siteModel).usingResource(document2)

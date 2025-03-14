@@ -37,18 +37,22 @@ public class EntityNotFoundException extends NotFoundException
 
     /**
      * The entity id param will be shown in the default error message.
-     * @param entityId String
+     * 
+     * @param entityId
+     *            String
      */
     public EntityNotFoundException(String entityId)
     {
-        super(DEFAULT_MESSAGE_ID, new String[] {entityId});
+        super(DEFAULT_MESSAGE_ID, new String[]{entityId});
     }
 
     /**
      * The entity id param will be shown in the default error message.
      *
-     * @param msgId The message template.
-     * @param parameters The message template parameters.
+     * @param msgId
+     *            The message template.
+     * @param parameters
+     *            The message template parameters.
      */
     public EntityNotFoundException(String msgId, String[] parameters)
     {

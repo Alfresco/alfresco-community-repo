@@ -59,7 +59,7 @@ public class NodeRefTest extends TestCase
         NodeRef nodeRef2 = new NodeRef(storeRef, "456");
         assertEquals("equals failure", nodeRef, nodeRef2);
     }
-    
+
     public void testNodeRefPattern() throws Exception
     {
         StoreRef storeRef = new StoreRef("ABC", "123");

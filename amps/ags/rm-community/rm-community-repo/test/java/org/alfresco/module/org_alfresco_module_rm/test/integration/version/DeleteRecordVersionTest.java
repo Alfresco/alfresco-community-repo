@@ -59,18 +59,13 @@ import org.alfresco.util.GUID;
 public class DeleteRecordVersionTest extends RecordableVersionsBaseTest
 {
     /**
-     *  Given that a document is created
-     *  And the initial version is record
-     *  When I delete the version record
-     *  Then the version is deleted
-     *  And the version history is not deleted
+     * Given that a document is created And the initial version is record When I delete the version record Then the version is deleted And the version history is not deleted
      *
-     *  @see https://issues.alfresco.com/jira/browse/RM-2562
+     * @see https://issues.alfresco.com/jira/browse/RM-2562
      */
     public void testDeleteFirstRecordedVersion()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef myDocument;
 
             public void given() throws Exception
@@ -137,19 +132,13 @@ public class DeleteRecordVersionTest extends RecordableVersionsBaseTest
     }
 
     /**
-     *  Given that a document is created
-     *  And the initial version is record
-     *  And the associated version record is deleted
-     *  When a new version is created
-     *  Then a new associated version record is created
-     *  And the version is 1.1 (not 1.0 since this was deleted, but the version history maintained)
+     * Given that a document is created And the initial version is record And the associated version record is deleted When a new version is created Then a new associated version record is created And the version is 1.1 (not 1.0 since this was deleted, but the version history maintained)
      *
-     *  @see https://issues.alfresco.com/jira/browse/RM-2562
+     * @see https://issues.alfresco.com/jira/browse/RM-2562
      */
     public void testDeleteFirstRecordedVersionAndCreateNewVersion()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef myDocument;
 
             public void given() throws Exception
@@ -222,16 +211,13 @@ public class DeleteRecordVersionTest extends RecordableVersionsBaseTest
     }
 
     /**
-     * Given a chain of version records (1.0, 1.1, 1.2) which are all related
-     * When I delete version record 1.0
-     * Then 1.1 is the oldest version
+     * Given a chain of version records (1.0, 1.1, 1.2) which are all related When I delete version record 1.0 Then 1.1 is the oldest version
      */
     public void testDeleteOldestVersion()
     {
         final NodeRef myDocument = createDocumentWithRecordVersions();
 
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private VersionHistory versionHistory;
 
             public void given() throws Exception
@@ -285,16 +271,13 @@ public class DeleteRecordVersionTest extends RecordableVersionsBaseTest
     }
 
     /**
-     * Given a chain of version records (1.0, 1.1, 1.2) which are all related
-     * When I delete version record 1.1
-     * Then 1.2 now 'versions' 1.0
+     * Given a chain of version records (1.0, 1.1, 1.2) which are all related When I delete version record 1.1 Then 1.2 now 'versions' 1.0
      */
     public void testDeleteMiddleVersion()
     {
         final NodeRef myDocument = createDocumentWithRecordVersions();
 
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private VersionHistory versionHistory;
 
             public void given() throws Exception
@@ -349,16 +332,13 @@ public class DeleteRecordVersionTest extends RecordableVersionsBaseTest
     }
 
     /**
-     * Given a chain of version records (1.0, 1.1, 1.2) which are all related
-     * When I delete version record 1.2
-     * Then 1.1 is the most recent version
+     * Given a chain of version records (1.0, 1.1, 1.2) which are all related When I delete version record 1.2 Then 1.1 is the most recent version
      */
     public void testDeleteCurrentVersion()
     {
         final NodeRef myDocument = createDocumentWithRecordVersions();
 
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private VersionHistory versionHistory;
 
             public void given() throws Exception
@@ -411,16 +391,13 @@ public class DeleteRecordVersionTest extends RecordableVersionsBaseTest
     }
 
     /**
-     * Given that a version record
-     * When the version record is destroyed whilst retaining the meta data
-     * Then the version is marked as destroyed in the collab version history
+     * Given that a version record When the version record is destroyed whilst retaining the meta data Then the version is marked as destroyed in the collab version history
      */
     public void testDestroyVersionRecordWithMetadata()
     {
         final NodeRef myDocument = createDocumentWithRecordVersions();
 
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private VersionHistory versionHistory;
             private NodeRef recordVersion11;
 

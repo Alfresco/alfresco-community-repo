@@ -25,18 +25,7 @@
  */
 package org.alfresco.repo.rendition2;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.alfresco.transform.registry.TransformServiceRegistry;
-import org.alfresco.util.ConfigFileFinder;
-import org.alfresco.util.ConfigScheduler;
-import org.alfresco.util.Pair;
-import org.alfresco.util.PropertyCheck;
-import org.alfresco.util.ShutdownIndicator;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.quartz.CronExpression;
-import org.springframework.beans.factory.InitializingBean;
+import static org.alfresco.repo.rendition2.TransformDefinition.TRANSFORM_NAMESPACE;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -46,7 +35,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.alfresco.repo.rendition2.TransformDefinition.TRANSFORM_NAMESPACE;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.quartz.CronExpression;
+import org.springframework.beans.factory.InitializingBean;
+
+import org.alfresco.transform.registry.TransformServiceRegistry;
+import org.alfresco.util.ConfigFileFinder;
+import org.alfresco.util.ConfigScheduler;
+import org.alfresco.util.Pair;
+import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.ShutdownIndicator;
 
 /**
  * A registry of rendition definitions.
@@ -65,21 +66,18 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
         private int staticCount;
 
         /**
-         * @param currentData (optional) the registry's current data. Used to preload renditions that have been loaded
-         *                    from a source other than one of the dynamically loadable JSON files. Normally static
-         *                    Spring beans. These must be added again as the registry does not know where to look for
-         *                    them.
+         * @param currentData
+         *            (optional) the registry's current data. Used to preload renditions that have been loaded from a source other than one of the dynamically loadable JSON files. Normally static Spring beans. These must be added again as the registry does not know where to look for them.
          */
         public Data(Data currentData)
         {
             if (currentData != null)
             {
-                currentData.renditionDefinitions.forEach((renditionName, renditionDefinition) ->
-                {
+                currentData.renditionDefinitions.forEach((renditionName, renditionDefinition) -> {
                     if (renditionDefinition instanceof RenditionDefinition2Impl &&
-                        !((RenditionDefinition2Impl)renditionDefinition).isDynamicallyLoaded())
+                            !((RenditionDefinition2Impl) renditionDefinition).isDynamicallyLoaded())
                     {
-                        log.debug("Adding static rendition "+renditionName+" back into the registry");
+                        log.debug("Adding static rendition " + renditionName + " back into the registry");
                         renditionDefinitions.put(renditionName, renditionDefinition);
                         staticCount++;
                     }
@@ -91,7 +89,7 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
         public String toString()
         {
             int renditionCount = renditionDefinitions.size();
-            return "(renditions: "+renditionCount+" files: "+fileCount+" static: "+staticCount+")";
+            return "(renditions: " + renditionCount + " files: " + fileCount + " static: " + staticCount + ")";
         }
 
         public void setFileCount(int fileCount)
@@ -156,8 +154,7 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
     private CronExpression initialAndOnErrorCronExpression;
     private boolean firstTime = true;
 
-    private ConfigScheduler<Data> configScheduler = new ConfigScheduler(this)
-    {
+    private ConfigScheduler<Data> configScheduler = new ConfigScheduler(this) {
         @Override
         public boolean readConfig() throws IOException
         {
@@ -239,8 +236,7 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
         {
             PropertyCheck.mandatory(this, "initialAndOnErrorCronExpression", initialAndOnErrorCronExpression);
         }
-        configFileFinder = new ConfigFileFinder(jsonObjectMapper)
-        {
+        configFileFinder = new ConfigFileFinder(jsonObjectMapper) {
             @Override
             protected void readJson(JsonNode jsonNode, String readFromMessage, String baseUrl) throws IOException
             {
@@ -266,14 +262,14 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
                                     RenditionDefinitionRegistry2Impl.this);
                             if (original != null)
                             {
-                                log.debug(readFromMessage+" replaced the rendition "+def.renditionName);
+                                log.debug(readFromMessage + " replaced the rendition " + def.renditionName);
                             }
                         }
                     }
                 }
                 catch (IllegalArgumentException e)
                 {
-                    log.error("Error reading "+readFromMessage+" "+e.getMessage());
+                    log.error("Error reading " + readFromMessage + " " + e.getMessage());
                 }
             }
         };
@@ -317,7 +313,9 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
 
     /**
      * Obtains a {@link RenditionDefinition2} by name.
-     * @param renditionName to be returned
+     * 
+     * @param renditionName
+     *            to be returned
      * @return the {@link RenditionDefinition2} or null if not registered.
      * @deprecated use {@link #getRenditionDefinition(String)}
      */
@@ -335,9 +333,9 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
         data.renditionDefinitions.put(renditionName, renditionDefinition);
 
         if (renditionDefinition instanceof RenditionDefinition2Impl &&
-            !((RenditionDefinition2Impl)renditionDefinition).isDynamicallyLoaded())
+                !((RenditionDefinition2Impl) renditionDefinition).isDynamicallyLoaded())
         {
-            log.debug("Adding static rendition "+renditionName+" into the registry");
+            log.debug("Adding static rendition " + renditionName + " into the registry");
             data.staticCount++;
         }
         data.setFileCount(configFileFinder == null ? 0 : configFileFinder.getFileCount());
@@ -348,7 +346,7 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
         Data data = getData();
         if (data.renditionDefinitions.remove(renditionName) == null)
         {
-            throw new IllegalArgumentException("RenditionDefinition "+renditionName+" was not registered.");
+            throw new IllegalArgumentException("RenditionDefinition " + renditionName + " was not registered.");
         }
     }
 
@@ -394,9 +392,9 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
 
     // Gets a list of rendition names that can be created from the given sourceMimetype.
     // Includes the maxSize for each.
-    private Set<Pair<String,Long>> getRenditionNamesWithMaxSize(Data data, String sourceMimetype)
+    private Set<Pair<String, Long>> getRenditionNamesWithMaxSize(Data data, String sourceMimetype)
     {
-        Set<Pair<String,Long>> renditions = new HashSet();
+        Set<Pair<String, Long>> renditions = new HashSet();
         for (Map.Entry<String, RenditionDefinition2> entry : data.renditionDefinitions.entrySet())
         {
             RenditionDefinition2 renditionDefinition2 = entry.getValue();

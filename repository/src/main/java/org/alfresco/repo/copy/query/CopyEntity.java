@@ -37,19 +37,22 @@ public class CopyEntity
 {
     private NodeEntity copy;
     private String copyName;
-    
+
     public NodeEntity getCopy()
     {
         return copy;
     }
+
     public void setCopy(NodeEntity copy)
     {
         this.copy = copy;
     }
+
     public String getCopyName()
     {
         return copyName;
     }
+
     public void setCopyName(String copyName)
     {
         this.copyName = copyName;

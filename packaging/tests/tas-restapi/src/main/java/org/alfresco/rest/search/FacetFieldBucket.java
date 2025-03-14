@@ -47,19 +47,18 @@ import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
 
 /**
- * Pojo to represent facet field bucket response.
- *         {"count":1,"label":"small"},
+ * Pojo to represent facet field bucket response. {"count":1,"label":"small"},
  **/
 public class FacetFieldBucket extends TestModel implements IRestModel<FacetFieldBucket>
 {
-    
-    private String  label;
-    private String  display;
+
+    private String label;
+    private String display;
     private String filterQuery;
-    private int  count;
-    
-    
-    public FacetFieldBucket() {}
+    private int count;
+
+    public FacetFieldBucket()
+    {}
 
     public String getLabel()
     {

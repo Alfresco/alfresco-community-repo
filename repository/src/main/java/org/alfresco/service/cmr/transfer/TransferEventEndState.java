@@ -35,6 +35,6 @@ public class TransferEventEndState extends TransferEventImpl implements Transfer
 
     public String toString()
     {
-        return  ("TransferEventEndState: " + super.toString());
+        return ("TransferEventEndState: " + super.toString());
     }
 }

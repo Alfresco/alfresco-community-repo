@@ -33,14 +33,11 @@ import org.alfresco.rest.framework.tests.api.mocks.SheepEntityResource;
 /**
  * This no longer does all the actions.
  * 
- * The original SheepEntityResource has actions: update, readById, readAll, delete, deleteSet
- * update, delete and deleteSet methods are marked as deleted
- * readAll is untouched - (only present in SheepEntityResource);
- * readById is overridden.
+ * The original SheepEntityResource has actions: update, readById, readAll, delete, deleteSet update, delete and deleteSet methods are marked as deleted readAll is untouched - (only present in SheepEntityResource); readById is overridden.
  *
  * @author Gethin James
  */
-public class SheepEntityResourceWithDeletedMethods extends SheepEntityResource 
+public class SheepEntityResourceWithDeletedMethods extends SheepEntityResource
 {
     /**
      * @see org.alfresco.rest.framework.tests.api.mocks.SheepEntityResource#update(java.lang.String, org.alfresco.rest.framework.tests.api.mocks.Sheep)
@@ -49,7 +46,7 @@ public class SheepEntityResourceWithDeletedMethods extends SheepEntityResource
     @WebApiDeleted
     public Sheep update(String id, Sheep entity, Parameters parameters)
     {
-        return null; //No implementation because its deleted
+        return null; // No implementation because its deleted
     }
 
     /**
@@ -58,7 +55,7 @@ public class SheepEntityResourceWithDeletedMethods extends SheepEntityResource
     @Override
     public Sheep readById(String id, Parameters parameters)
     {
-        return new Sheep("v3_"+id);
+        return new Sheep("v3_" + id);
     }
 
     /**
@@ -68,7 +65,7 @@ public class SheepEntityResourceWithDeletedMethods extends SheepEntityResource
     @WebApiDeleted
     public void delete(String id, Parameters parameters)
     {
-        //No implementation because its deleted
+        // No implementation because its deleted
     }
 
     /**
@@ -78,6 +75,6 @@ public class SheepEntityResourceWithDeletedMethods extends SheepEntityResource
     @WebApiDeleted
     public void deleteSet(Parameters parameters)
     {
-        //No implementation because its deleted
+        // No implementation because its deleted
     }
 }

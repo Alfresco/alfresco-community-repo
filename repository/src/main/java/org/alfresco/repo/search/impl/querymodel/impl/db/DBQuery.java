@@ -58,7 +58,6 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.stringtemplate.v4.compiler.CodeGenerator.subtemplate_return;
 
 /**
  * @author Andy
@@ -71,7 +70,7 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
     private Long sysDeletedType;
 
     private Long sinceTxId;
-    
+
     Set<String> selectorGroup;
 
     private int limit = 0;
@@ -79,8 +78,10 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
     private int offset = 0;
 
     /**
-     * @param source Source
-     * @param constraint Constraint
+     * @param source
+     *            Source
+     * @param constraint
+     *            Constraint
      */
     public DBQuery(List<Column> columns, Source source, Constraint constraint, List<Ordering> orderings)
     {
@@ -130,26 +131,31 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
     }
 
     /**
-     * @param sinceTxId the sinceTxId to set
+     * @param sinceTxId
+     *            the sinceTxId to set
      */
     public void setSinceTxId(Long sinceTxId)
     {
         this.sinceTxId = sinceTxId;
     }
 
-    public int getLimit() {
+    public int getLimit()
+    {
         return limit;
     }
 
-    public void setLimit(int limit) {
+    public void setLimit(int limit)
+    {
         this.limit = limit;
     }
 
-    public int getOffset() {
+    public int getOffset()
+    {
         return offset;
     }
 
-    public void setOffset(int offset) {
+    public void setOffset(int offset)
+    {
         this.offset = offset;
     }
 
@@ -168,11 +174,10 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
     {
         return (getConstraint() != null) || (getSource().getSelectors().size() > 0);
     }
-    
+
     public boolean getHasOrderBy()
     {
         return (getOrderings() != null) && (getOrderings().size() > 0);
-     
 
     }
 
@@ -189,7 +194,7 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
         List<DBQueryBuilderPredicatePartCommand> predicateParts = getPredicateParts();
         if (predicateParts != null)
         {
-            for(DBQueryBuilderPredicatePartCommand item : predicateParts)
+            for (DBQueryBuilderPredicatePartCommand item : predicateParts)
             {
                 hasPredicatePartsOrder = hasPredicatePartsOrder || "ORDER".equals(item.getType());
             }
@@ -197,10 +202,9 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
         return hasPredicatePartsOrder;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported() */
     @Override
     public boolean isSupported()
     {
@@ -211,12 +215,9 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.cmr.dictionary
-     * .DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.cmr.dictionary .DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO) */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
             Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
@@ -249,12 +250,12 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
                 throw new UnsupportedOperationException();
             }
         }
-        
-        if(getOrderings() != null)
+
+        if (getOrderings() != null)
         {
-            for(Ordering ordering : getOrderings())
+            for (Ordering ordering : getOrderings())
             {
-                if(ordering instanceof DBQueryBuilderComponent)
+                if (ordering instanceof DBQueryBuilderComponent)
                 {
                     ((DBQueryBuilderComponent) ordering).prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectorGroup, functionArgs, functionContext, supportBooleanFloatAndDouble);
                 }
@@ -267,10 +268,9 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
 
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildJoins()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildJoins() */
     @Override
     public void buildJoins(Map<QName, DBQueryBuilderJoinCommand> singleJoins, List<DBQueryBuilderJoinCommand> multiJoins)
     {
@@ -301,11 +301,11 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
                 throw new UnsupportedOperationException();
             }
         }
-        if(getOrderings() != null)
+        if (getOrderings() != null)
         {
-            for(Ordering ordering : getOrderings())
+            for (Ordering ordering : getOrderings())
             {
-                if(ordering instanceof DBQueryBuilderComponent)
+                if (ordering instanceof DBQueryBuilderComponent)
                 {
                     ((DBQueryBuilderComponent) ordering).buildJoins(singleJoins, multiJoins);
                 }
@@ -318,10 +318,9 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
 
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildPredicateCommands()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildPredicateCommands() */
     @Override
     public void buildPredicateCommands(List<DBQueryBuilderPredicatePartCommand> predicatePartCommands)
     {
@@ -367,12 +366,12 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
                 throw new UnsupportedOperationException();
             }
         }
-        
-        if(getOrderings() != null)
+
+        if (getOrderings() != null)
         {
-            for(Ordering ordering : getOrderings())
+            for (Ordering ordering : getOrderings())
             {
-                if(ordering instanceof DBQueryBuilderComponent)
+                if (ordering instanceof DBQueryBuilderComponent)
                 {
                     ((DBQueryBuilderComponent) ordering).buildPredicateCommands(predicatePartCommands);
                 }
@@ -387,35 +386,34 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
     public static String[] getUUIDs(String[] source)
     {
         String[] uuids = new String[source.length];
-        for(int i = 0; i < source.length; i++)
+        for (int i = 0; i < source.length; i++)
         {
             uuids[i] = getUUID(source[i]);
         }
         return uuids;
     }
-    
+
     public static String getUUID(String source)
     {
-     // Ignore version label  for now
+        // Ignore version label for now
         String ref;
         String versionLabel = null;
         String[] split = source.split(";");
-        if(split.length == 1)
+        if (split.length == 1)
         {
             ref = source;
         }
         else
         {
-            if(split[1].equalsIgnoreCase("PWC"))
+            if (split[1].equalsIgnoreCase("PWC"))
             {
                 throw new UnsupportedOperationException("Query for PWC is not supported");
             }
-            
+
             ref = split[0];
             versionLabel = split[1];
         }
-        
-        
+
         if (NodeRef.isNodeRef(ref))
         {
             NodeRef nodeRef = new NodeRef(ref);
@@ -424,32 +422,31 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
 
         else
         {
-           return ref;
+            return ref;
         }
     }
-    
+
     public static Long getDbid(String source, NodeDAO nodeDAO, TenantService tenantService)
     {
-        // Ignore version label  for now
+        // Ignore version label for now
         String ref;
         String versionLabel = null;
         String[] split = source.split(";");
-        if(split.length == 1)
+        if (split.length == 1)
         {
             ref = source;
         }
         else
         {
-            if(split[1].equalsIgnoreCase("PWC"))
+            if (split[1].equalsIgnoreCase("PWC"))
             {
                 throw new UnsupportedOperationException("Query for PWC is not supported");
             }
-            
+
             ref = split[0];
             versionLabel = split[1];
         }
-        
-        
+
         if (NodeRef.isNodeRef(ref))
         {
             NodeRef nodeRef = tenantService.getName(new NodeRef(ref));
@@ -479,7 +476,7 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
         }
     }
 
-    public static List<Long> findTypeIds(String type, NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO,  boolean exact)
+    public static List<Long> findTypeIds(String type, NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, boolean exact)
     {
         ArrayList<Long> qnameIds = new ArrayList<Long>();
         TypeDefinition target = matchTypeDefinition(type, namespaceService, dictionaryService);
@@ -488,7 +485,7 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
             throw new QueryModelException("Invalid type: " + type);
         }
 
-        if(exact)
+        if (exact)
         {
             Pair<Long, QName> pair = qnameDAO.getQName(target.getName());
             if (pair != null)
@@ -517,7 +514,7 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
         return qnameIds;
     }
 
-    public static List<Long> findAspectIds(String aspect, NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO,  boolean exact)
+    public static List<Long> findAspectIds(String aspect, NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, boolean exact)
     {
         ArrayList<Long> qnameIds = new ArrayList<Long>();
         AspectDefinition target = matchAspectDefinition(aspect, namespaceService, dictionaryService);
@@ -526,7 +523,7 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
             throw new QueryModelException("Invalid aspect: " + aspect);
         }
 
-        if(exact)
+        if (exact)
         {
             Pair<Long, QName> pair = qnameDAO.getQName(target.getName());
             if (pair != null)
@@ -565,7 +562,7 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
         }
         return answer;
     }
-    
+
     public static String[] toStringValues(Object[] objects)
     {
         String[] answer = new String[objects.length];
@@ -579,22 +576,21 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
     public static String expandQName(String toStrip, NamespacePrefixResolver namespacePrefixResolver)
     {
         String qnameString;
-        if(toStrip.endsWith(".size"))
+        if (toStrip.endsWith(".size"))
         {
-            qnameString = toStrip.substring(0, toStrip.length()-5);
+            qnameString = toStrip.substring(0, toStrip.length() - 5);
         }
-        else if(toStrip.endsWith(".mimetype"))
+        else if (toStrip.endsWith(".mimetype"))
         {
-            qnameString = toStrip.substring(0, toStrip.length()-9);
+            qnameString = toStrip.substring(0, toStrip.length() - 9);
         }
         else
         {
             qnameString = toStrip;
         }
-        
-        
+
         String fieldName = qnameString;
-        if(fieldName.startsWith("@"))
+        if (fieldName.startsWith("@"))
         {
             fieldName = fieldName.substring(1);
         }
@@ -604,8 +600,7 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
             int colonPosition = fieldName.indexOf(':');
             if (colonPosition == -1)
             {
-                
-                
+
                 // use the default namespace
                 fieldName = "{" + NamespaceService.CONTENT_MODEL_1_0_URI + "}" + fieldName;
             }
@@ -740,21 +735,22 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
     }
 
     /**
-     * @param propertyQName QName
+     * @param propertyQName
+     *            QName
      * @return DBQueryBuilderJoinCommandType
      */
     public static DBQueryBuilderJoinCommandType getJoinCommandType(QName propertyQName)
     {
-        if(propertyQName.equals(ContentModel.PROP_CREATED)
+        if (propertyQName.equals(ContentModel.PROP_CREATED)
                 || propertyQName.equals(ContentModel.PROP_CREATOR) || propertyQName.equals(ContentModel.PROP_MODIFIED) || propertyQName.equals(ContentModel.PROP_MODIFIER))
         {
             return DBQueryBuilderJoinCommandType.NODE;
         }
-        else if(propertyQName.toString().endsWith(".mimetype"))
+        else if (propertyQName.toString().endsWith(".mimetype"))
         {
             return DBQueryBuilderJoinCommandType.CONTENT_MIMETYPE;
         }
-        else if(propertyQName.toString().endsWith(".size"))
+        else if (propertyQName.toString().endsWith(".size"))
         {
             return DBQueryBuilderJoinCommandType.CONTENT_URL;
         }
@@ -765,8 +761,10 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
     }
 
     /**
-     * @param dictionaryService DictionaryService
-     * @param propertyQName QName
+     * @param dictionaryService
+     *            DictionaryService
+     * @param propertyQName
+     *            QName
      * @return String
      */
     public static String getFieldName(DictionaryService dictionaryService, QName propertyQName, boolean supportBooleanFloatAndDouble)
@@ -864,28 +862,31 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
 
     public static DataTypeDefinition getDataTypeDefinition(DictionaryService dictionaryService, QName propertyQname)
     {
-        if(propertyQname == null)
+        if (propertyQname == null)
         {
             return null;
         }
         PropertyDefinition propDef = dictionaryService.getProperty(propertyQname);
-        if(propDef == null)
+        if (propDef == null)
         {
             return null;
         }
         return propDef.getDataType();
     }
-    
+
     /**
-     * @param stringValues String[]
-     * @param nodeDAO NodeDAO
-     * @param tenantService TenantService
+     * @param stringValues
+     *            String[]
+     * @param nodeDAO
+     *            NodeDAO
+     * @param tenantService
+     *            TenantService
      * @return Long[]
      */
     public static Long[] getDbids(String[] stringValues, NodeDAO nodeDAO, TenantService tenantService)
     {
         Long[] dbids = new Long[stringValues.length];
-        for(int i = 0; i < stringValues.length; i++)
+        for (int i = 0; i < stringValues.length; i++)
         {
             dbids[i] = getDbid(stringValues[i], nodeDAO, tenantService);
         }

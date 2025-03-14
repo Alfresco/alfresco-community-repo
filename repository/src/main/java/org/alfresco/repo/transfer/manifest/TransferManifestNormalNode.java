@@ -50,7 +50,7 @@ public class TransferManifestNormalNode implements TransferManifestNode
     private String uuid;
     private QName type;
     private QName ancestorType;
-    private Map<QName,Serializable> properties;
+    private Map<QName, Serializable> properties;
     private Set<QName> aspects;
     private List<ChildAssociationRef> childAssocs;
     private List<ChildAssociationRef> parentAssocs;
@@ -58,8 +58,8 @@ public class TransferManifestNormalNode implements TransferManifestNode
     private List<AssociationRef> targetAssocs;
     private Path parentPath;
     private ManifestAccessControl accessControl;
-    
-    // NodeRef is noderef of type d:category  ManifestCategory provides the extra meta-data
+
+    // NodeRef is noderef of type d:category ManifestCategory provides the extra meta-data
     private Map<NodeRef, ManifestCategory> categories;
 
     public void setNodeRef(NodeRef nodeRef)
@@ -87,12 +87,12 @@ public class TransferManifestNormalNode implements TransferManifestNode
      *
      * @return the properties
      */
-    public Map<QName,Serializable> getProperties()
+    public Map<QName, Serializable> getProperties()
     {
         return properties;
     }
 
-    public void setProperties(Map<QName,Serializable> properties)
+    public void setProperties(Map<QName, Serializable> properties)
     {
         this.properties = properties;
     }
@@ -200,15 +200,15 @@ public class TransferManifestNormalNode implements TransferManifestNode
     {
         this.ancestorType = ancestorType;
     }
-    
+
     public void setManifestCategories(Map<NodeRef, ManifestCategory> categories)
     {
-    	this.categories = categories;
+        this.categories = categories;
     }
-    
+
     public Map<NodeRef, ManifestCategory> getManifestCategories()
     {
-    	return this.categories;
+        return this.categories;
     }
-    
+
 }

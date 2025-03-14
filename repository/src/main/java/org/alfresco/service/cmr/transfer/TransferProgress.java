@@ -44,7 +44,7 @@ public class TransferProgress
 
     private static Set<Status> terminalStatuses = Collections.unmodifiableSet(new HashSet<Status>(Arrays.asList(
             Status.COMPLETE, Status.ERROR, Status.CANCELLED)));
-    
+
     private Status status;
     private int currentPosition;
     private int endPosition;
@@ -52,14 +52,13 @@ public class TransferProgress
 
     /**
      * 
-     * @return The statuses that mark the end of the transfer. Once a transfer reaches one of these statuses
-     * it can never move into a different status.
+     * @return The statuses that mark the end of the transfer. Once a transfer reaches one of these statuses it can never move into a different status.
      */
     public static Set<Status> getTerminalStatuses()
     {
         return terminalStatuses;
     }
-    
+
     /**
      * 
      * @return true if the current status is one of the terminal statuses.
@@ -68,7 +67,7 @@ public class TransferProgress
     {
         return terminalStatuses.contains(status);
     }
-    
+
     /**
      * @return the status
      */

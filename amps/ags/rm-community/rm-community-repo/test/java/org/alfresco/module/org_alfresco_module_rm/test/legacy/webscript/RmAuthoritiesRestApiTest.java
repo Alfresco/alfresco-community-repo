@@ -32,6 +32,13 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
@@ -41,12 +48,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.util.GUID;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
  * REST API Tests for adding/removing users/groups to/from a role
@@ -78,8 +79,7 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
     {
         super.setupTestData();
 
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
             @Override
             public Object execute() throws Throwable
             {
@@ -277,7 +277,8 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
     /**
      * Util method to get a formatted url string
      *
-     * @param authorityName The name of the authority which should be added/removed to/from a role
+     * @param authorityName
+     *            The name of the authority which should be added/removed to/from a role
      * @return Returns a formatted url string
      */
     private String getFormattedUrlString(String authorityName)
@@ -288,7 +289,8 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
     /**
      * Util method to send a post request. The expected status is success.
      *
-     * @param url The url which should be used to make the post request
+     * @param url
+     *            The url which should be used to make the post request
      * @return Returns the response from the server
      * @throws UnsupportedEncodingException
      * @throws IOException
@@ -301,7 +303,8 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
     /**
      * Util method to send a post request. The expected status is an internal server error.
      *
-     * @param url The url which should be used to make the post request
+     * @param url
+     *            The url which should be used to make the post request
      * @return Returns the response from the server
      * @throws UnsupportedEncodingException
      * @throws IOException
@@ -314,7 +317,8 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
     /**
      * Util method to send a delete request. The expected status is success.
      *
-     * @param url The url which should be used to make the delete request
+     * @param url
+     *            The url which should be used to make the delete request
      * @return Returns the response from the server
      * @throws IOException
      */
@@ -326,7 +330,8 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
     /**
      * Util method to send a delete request. The expected status is an internal server error.
      *
-     * @param url The url which should be used to make the delete request
+     * @param url
+     *            The url which should be used to make the delete request
      * @return Returns the response from the server
      * @throws IOException
      */
@@ -338,7 +343,8 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
     /**
      * Util method to check the server response
      *
-     * @param response The server response
+     * @param response
+     *            The server response
      * @throws UnsupportedEncodingException
      */
     private void checkContent(Response response) throws UnsupportedEncodingException

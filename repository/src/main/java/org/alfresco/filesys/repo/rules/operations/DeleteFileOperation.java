@@ -30,16 +30,20 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 public class DeleteFileOperation implements Operation
 {
-    
+
     private String name;
     private NodeRef rootNodeRef;
     private String path;
-    
+
     /**
      * Delete File Operation
-     * @param name of file
-     * @param rootNodeRef root node ref
-     * @param path path + name of file to delete
+     * 
+     * @param name
+     *            of file
+     * @param rootNodeRef
+     *            root node ref
+     * @param path
+     *            path + name of file to delete
      */
     public DeleteFileOperation(String name, NodeRef rootNodeRef, String path)
     {
@@ -52,33 +56,33 @@ public class DeleteFileOperation implements Operation
     {
         return name;
     }
-    
+
     public String getPath()
     {
         return path;
     }
-    
+
     public NodeRef getRootNodeRef()
     {
         return rootNodeRef;
     }
-    
+
     public String toString()
     {
         return "DeleteFileOperation: " + name;
     }
-    
+
     public int hashCode()
     {
         return name.hashCode();
     }
-    
+
     public boolean equals(Object o)
     {
-        if(o instanceof DeleteFileOperation)
+        if (o instanceof DeleteFileOperation)
         {
-            DeleteFileOperation c = (DeleteFileOperation)o;
-            if(name.equals(c.getName()))
+            DeleteFileOperation c = (DeleteFileOperation) o;
+            if (name.equals(c.getName()))
             {
                 return true;
             }

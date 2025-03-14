@@ -41,7 +41,8 @@ public class NodeRefProperty extends AbstractProperty
     /**
      * Construct
      * 
-     * @param serviceRegistry ServiceRegistry
+     * @param serviceRegistry
+     *            ServiceRegistry
      */
     public NodeRefProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {
@@ -56,11 +57,13 @@ public class NodeRefProperty extends AbstractProperty
             if (nodeInfo.isCurrentVersion())
             {
                 return nodeInfo.getCurrentNodeNodeRef().toString();
-            } else
+            }
+            else
             {
                 return nodeInfo.getNodeRef().toString();
             }
-        } else if (nodeInfo.getAssociationRef() != null)
+        }
+        else if (nodeInfo.getAssociationRef() != null)
         {
             return nodeInfo.getAssociationRef().toString();
         }

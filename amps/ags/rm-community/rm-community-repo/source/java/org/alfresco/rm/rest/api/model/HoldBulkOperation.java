@@ -30,4 +30,5 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.alfresco.rest.api.search.model.Query;
 
-public record HoldBulkOperation(@JsonProperty(required = true) Query query, @JsonProperty(required = true) HoldBulkOperationType op) {}
+public record HoldBulkOperation(@JsonProperty(required = true) Query query, @JsonProperty(required = true) HoldBulkOperationType op)
+{}

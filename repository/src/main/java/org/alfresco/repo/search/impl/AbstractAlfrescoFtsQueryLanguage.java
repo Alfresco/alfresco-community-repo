@@ -65,9 +65,10 @@ public abstract class AbstractAlfrescoFtsQueryLanguage extends AbstractLuceneQue
     DictionaryService dictionaryService;
 
     QueryEngine queryEngine;
-    
+
     /**
-     * @param namespaceService the namespaceService to set
+     * @param namespaceService
+     *            the namespaceService to set
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -75,7 +76,8 @@ public abstract class AbstractAlfrescoFtsQueryLanguage extends AbstractLuceneQue
     }
 
     /**
-     * @param dictionaryService the dictionaryService to set
+     * @param dictionaryService
+     *            the dictionaryService to set
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -83,23 +85,24 @@ public abstract class AbstractAlfrescoFtsQueryLanguage extends AbstractLuceneQue
     }
 
     /**
-     * @param queryEngine QueryEngine
+     * @param queryEngine
+     *            QueryEngine
      */
     public void setQueryEngine(QueryEngine queryEngine)
     {
         this.queryEngine = queryEngine;
     }
-    
+
     protected NamespacePrefixResolver getNamespacePrefixResolver()
     {
         return namespaceService;
     }
-    
+
     protected DictionaryService getDictionaryService()
     {
         return dictionaryService;
     }
-    
+
     public ResultSet executeQuery(SearchParameters searchParameters)
     {
         String ftsExpression = searchParameters.getQuery();
@@ -112,7 +115,7 @@ public abstract class AbstractAlfrescoFtsQueryLanguage extends AbstractLuceneQue
 
         FTSParser.Mode mode;
 
-        if(options.getDefaultFTSConnective() == Connective.AND)
+        if (options.getDefaultFTSConnective() == Connective.AND)
         {
             mode = FTSParser.Mode.DEFAULT_CONJUNCTION;
         }
@@ -120,7 +123,7 @@ public abstract class AbstractAlfrescoFtsQueryLanguage extends AbstractLuceneQue
         {
             mode = FTSParser.Mode.DEFAULT_DISJUNCTION;
         }
-            
+
         Constraint constraint = FTSQueryParser.buildFTS(ftsExpression, factory, context, null, null, mode, options.getDefaultFTSFieldConnective(),
                 searchParameters.getQueryTemplates(), options.getDefaultFieldName(), FTSQueryParser.RerankPhase.SINGLE_PASS);
         org.alfresco.repo.search.impl.querymodel.Query query = factory.createQuery(null, null, constraint, buildOrderings(factory, searchParameters));
@@ -146,10 +149,10 @@ public abstract class AbstractAlfrescoFtsQueryLanguage extends AbstractLuceneQue
                 Order order = sd.isAscending() ? Order.ASCENDING : Order.DESCENDING;
 
                 Ordering ordering = factory.createOrdering(column, order);
-                
+
                 orderings.add(ordering);
             }
-            else  if (sd.getSortType() == SortType.SCORE)
+            else if (sd.getSortType() == SortType.SCORE)
             {
                 Function function = factory.getFunction(Score.NAME);
                 Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
@@ -157,12 +160,12 @@ public abstract class AbstractAlfrescoFtsQueryLanguage extends AbstractLuceneQue
                 Order order = sd.isAscending() ? Order.ASCENDING : Order.DESCENDING;
 
                 Ordering ordering = factory.createOrdering(column, order);
-                
+
                 orderings.add(ordering);
             }
             else
             {
-                throw new UnsupportedOperationException("Unsupported Ordering "+sd.getSortType());
+                throw new UnsupportedOperationException("Unsupported Ordering " + sd.getSortType());
             }
         }
         return orderings;

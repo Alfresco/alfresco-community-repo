@@ -25,9 +25,17 @@
  */
 package org.alfresco.rest.api.tests;
 
-import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Test;
+
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Activities;
@@ -39,11 +47,6 @@ import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.service.cmr.activities.ActivityPoster;
-import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * V1 REST API test for posting Activities
@@ -65,7 +68,7 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
 
         List<Activity> activities = getMyActivities();
         int beforeCount = activities.size();
-        
+
         String folder1 = "folder" + System.currentTimeMillis() + "_1";
         Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
         assertNotNull(createdFolder);
@@ -74,13 +77,13 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
         String docName = "d1.txt";
         Document documentResp = createEmptyTextFile(f1Id, docName);
 
-        //Update the file
+        // Update the file
         Document dUpdate = new Document();
         dUpdate.setName("d1b.txt");
         put(URL_NODES, documentResp.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
 
-        //Now download it
-        HttpResponse response = getSingle(NodesEntityResource.class, documentResp.getId()+"/content", null, 200);
+        // Now download it
+        HttpResponse response = getSingle(NodesEntityResource.class, documentResp.getId() + "/content", null, 200);
         String textContent = response.getResponse();
         assertNotNull(textContent);
 
@@ -88,8 +91,8 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
         deleteNode(createdFolder.getId());
 
         activities = getMyActivities();
-        assertEquals(beforeCount+6, activities.size());
-        
+        assertEquals(beforeCount + 6, activities.size());
+
         Activity act = matchActivity(activities, ActivityType.FOLDER_ADDED, user1, tSiteId, tDocLibNodeId, folder1);
         assertNotNull(act);
 
@@ -116,7 +119,7 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
     public void testNonFileActivities() throws Exception
     {
         setRequestContext(user1);
-        
+
         String folder1 = "InSitefolder" + System.currentTimeMillis() + "_1";
         Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
         assertNotNull(createdFolder);
@@ -139,11 +142,11 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
     public void testNonSite() throws Exception
     {
         setRequestContext(user1);
-        
+
         List<Activity> activities = getMyActivities();
         String folder1 = "nonSitefolder" + System.currentTimeMillis() + "_1";
-        
-        //Create a folder outside a site
+
+        // Create a folder outside a site
         Folder createdFolder = createFolder(Nodes.PATH_MY, folder1, null);
         assertNotNull(createdFolder);
         String f1Id = createdFolder.getId();
@@ -152,7 +155,7 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
         Document documentResp = createEmptyTextFile(f1Id, docName);
         assertNotNull(documentResp);
 
-        //Update the file
+        // Update the file
         Document dUpdate = new Document();
         dUpdate.setName("nonsite_d2.txt");
         put(URL_NODES, documentResp.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
@@ -163,6 +166,7 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Generate the feed an get the activities for user1
+     * 
      * @return
      * @throws Exception
      */
@@ -171,15 +175,15 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
         repoService.generateFeed();
 
         setRequestContext(user1);
-        
+
         Map<String, String> meParams = new HashMap<>();
         meParams.put("who", String.valueOf(Activities.ActivityWho.me));
         return publicApiClient.people().getActivities(user1, meParams).getList();
     }
 
-
     /**
      * Match an exact activity by a combination of the parameters
+     * 
      * @param list
      * @param type
      * @param user
@@ -190,16 +194,16 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
      */
     private Activity matchActivity(List<Activity> list, String type, String user, String siteId, String parentId, String title)
     {
-        for (Activity act:list)
+        for (Activity act : list)
         {
-          if (type.equals(act.getActivityType())
-                  && user.equals(act.getPostPersonId())
-                  && siteId.equals(act.getSiteId())
-                  && parentId.equals(act.getSummary().get("parentObjectId"))
-                  && title.equals((act.getSummary().get("title"))))
-          {
-              return act;
-          }
+            if (type.equals(act.getActivityType())
+                    && user.equals(act.getPostPersonId())
+                    && siteId.equals(act.getSiteId())
+                    && parentId.equals(act.getSummary().get("parentObjectId"))
+                    && title.equals((act.getSummary().get("title"))))
+            {
+                return act;
+            }
         }
         return null;
     }

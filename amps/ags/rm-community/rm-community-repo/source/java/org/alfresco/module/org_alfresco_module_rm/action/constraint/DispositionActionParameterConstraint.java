@@ -45,7 +45,7 @@ public class DispositionActionParameterConstraint extends BaseParameterConstrain
 {
     /** Name constant */
     public static final String NAME = "rm-ac-record-types";
-    
+
     private RecordsManagementActionService rmActionService;
 
     public void setRecordsManagementActionService(RecordsManagementActionService rmActionService)
@@ -57,16 +57,15 @@ public class DispositionActionParameterConstraint extends BaseParameterConstrain
      * @see org.alfresco.service.cmr.action.ParameterConstraint#getAllowableValues()
      */
     protected Map<String, String> getAllowableValuesImpl()
-    {   
+    {
         List<RecordsManagementAction> rmActions = rmActionService.getDispositionActions();
 
         Map<String, String> result = new HashMap<>(rmActions.size());
         for (RecordsManagementAction rmAction : rmActions)
         {
             result.put(rmAction.getName(), rmAction.getLabel());
-        }        
+        }
         return result;
-    }    
-    
-    
+    }
+
 }

@@ -26,13 +26,6 @@
 
 package org.alfresco.rest.api.impl.rules;
 
-import static org.alfresco.model.ContentModel.TYPE_FOLDER;
-import static org.alfresco.model.ContentModel.TYPE_SYSTEM_FOLDER;
-import static org.alfresco.repo.rule.RuleModel.TYPE_RULE;
-import static org.alfresco.rest.api.model.rules.RuleSet.DEFAULT_ID;
-import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
-import static org.alfresco.service.cmr.security.AccessStatus.DENIED;
-import static org.alfresco.service.cmr.security.PermissionService.CHANGE_PERMISSIONS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,7 +34,22 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.reset;
 
+import static org.alfresco.model.ContentModel.TYPE_FOLDER;
+import static org.alfresco.model.ContentModel.TYPE_SYSTEM_FOLDER;
+import static org.alfresco.repo.rule.RuleModel.TYPE_RULE;
+import static org.alfresco.rest.api.model.rules.RuleSet.DEFAULT_ID;
+import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
+import static org.alfresco.service.cmr.security.AccessStatus.DENIED;
+import static org.alfresco.service.cmr.security.PermissionService.CHANGE_PERMISSIONS;
+
 import java.util.Set;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.Nodes;
@@ -56,12 +64,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 public class NodeValidatorTest
 {
@@ -130,9 +132,9 @@ public class NodeValidatorTest
     {
         given(nodesMock.validateOrLookupNode(FOLDER_NODE_ID)).willThrow(new EntityNotFoundException(FOLDER_NODE_ID));
 
-        //when
+        // when
         assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(
-            () -> nodeValidator.validateFolderNode(FOLDER_NODE_ID, false));
+                () -> nodeValidator.validateFolderNode(FOLDER_NODE_ID, false));
 
         then(nodesMock).should().validateOrLookupNode(FOLDER_NODE_ID);
         then(nodesMock).shouldHaveNoMoreInteractions();
@@ -146,7 +148,7 @@ public class NodeValidatorTest
 
         // when
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(
-            () -> nodeValidator.validateFolderNode(FOLDER_NODE_ID, false));
+                () -> nodeValidator.validateFolderNode(FOLDER_NODE_ID, false));
 
         then(nodesMock).should().validateOrLookupNode(FOLDER_NODE_ID);
         then(nodesMock).should().nodeMatches(folderNodeRef, Set.of(TYPE_FOLDER), null);
@@ -161,7 +163,7 @@ public class NodeValidatorTest
 
         // when
         assertThatExceptionOfType(PermissionDeniedException.class).isThrownBy(
-            () -> nodeValidator.validateFolderNode(FOLDER_NODE_ID, false));
+                () -> nodeValidator.validateFolderNode(FOLDER_NODE_ID, false));
 
         then(permissionServiceMock).should().hasReadPermission(folderNodeRef);
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
@@ -174,8 +176,7 @@ public class NodeValidatorTest
         given(permissionServiceMock.hasPermission(any(), any())).willReturn(DENIED);
 
         // when
-        assertThatExceptionOfType(PermissionDeniedException.class).isThrownBy(() ->
-            nodeValidator.validateFolderNode(folderNodeRef.getId(), true));
+        assertThatExceptionOfType(PermissionDeniedException.class).isThrownBy(() -> nodeValidator.validateFolderNode(folderNodeRef.getId(), true));
 
         then(permissionServiceMock).should().hasPermission(folderNodeRef, CHANGE_PERMISSIONS);
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
@@ -207,8 +208,8 @@ public class NodeValidatorTest
         given(nodeServiceMock.getPrimaryParent(any())).willReturn(primaryParentMock);
         given(primaryParentMock.getParentRef()).willReturn(parentNodeRef);
 
-        //when
-        final NodeRef nodeRef = nodeValidator.validateRuleSetNode(LINK_TO_NODE_ID,true);
+        // when
+        final NodeRef nodeRef = nodeValidator.validateRuleSetNode(LINK_TO_NODE_ID, true);
 
         assertThat(nodeRef).isNotNull().isEqualTo(parentNodeRef);
 
@@ -235,9 +236,9 @@ public class NodeValidatorTest
     {
         given(nodesMock.validateNode(RULE_SET_ID)).willThrow(new EntityNotFoundException(RULE_SET_ID));
 
-        //when
+        // when
         assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(
-            () -> nodeValidator.validateRuleSetNode(RULE_SET_ID, folderNodeRef));
+                () -> nodeValidator.validateRuleSetNode(RULE_SET_ID, folderNodeRef));
 
         then(nodesMock).should().validateNode(RULE_SET_ID);
         then(nodesMock).shouldHaveNoMoreInteractions();
@@ -251,7 +252,7 @@ public class NodeValidatorTest
 
         // when
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(
-            () -> nodeValidator.validateRuleSetNode(RULE_SET_ID, folderNodeRef));
+                () -> nodeValidator.validateRuleSetNode(RULE_SET_ID, folderNodeRef));
 
         then(nodesMock).should().validateNode(RULE_SET_ID);
         then(nodesMock).should().nodeMatches(ruleSetNodeRef, Set.of(TYPE_SYSTEM_FOLDER), null);
@@ -266,7 +267,7 @@ public class NodeValidatorTest
 
         // when
         assertThatExceptionOfType(RelationshipResourceNotFoundException.class).isThrownBy(
-            () -> nodeValidator.validateRuleSetNode(DEFAULT_ID, folderNodeRef));
+                () -> nodeValidator.validateRuleSetNode(DEFAULT_ID, folderNodeRef));
 
         then(ruleServiceMock).should().getRuleSetNode(folderNodeRef);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
@@ -280,7 +281,7 @@ public class NodeValidatorTest
 
         // when
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(
-            () -> nodeValidator.validateRuleSetNode(RULE_SET_ID, folderNodeRef));
+                () -> nodeValidator.validateRuleSetNode(RULE_SET_ID, folderNodeRef));
 
         then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
@@ -324,9 +325,9 @@ public class NodeValidatorTest
     {
         given(nodesMock.validateNode(RULE_ID)).willThrow(new EntityNotFoundException(RULE_ID));
 
-        //when
+        // when
         assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(
-            () -> nodeValidator.validateRuleNode(RULE_ID, ruleSetNodeRef));
+                () -> nodeValidator.validateRuleNode(RULE_ID, ruleSetNodeRef));
 
         then(nodesMock).should().validateNode(RULE_ID);
         then(nodesMock).shouldHaveNoMoreInteractions();
@@ -340,7 +341,7 @@ public class NodeValidatorTest
 
         // when
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(
-            () -> nodeValidator.validateRuleNode(RULE_ID, ruleSetNodeRef));
+                () -> nodeValidator.validateRuleNode(RULE_ID, ruleSetNodeRef));
 
         then(nodesMock).should().validateNode(RULE_ID);
         then(nodesMock).should().nodeMatches(ruleNodeRef, Set.of(TYPE_RULE), null);
@@ -355,7 +356,7 @@ public class NodeValidatorTest
 
         // when
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(
-            () -> nodeValidator.validateRuleNode(RULE_ID, ruleSetNodeRef));
+                () -> nodeValidator.validateRuleNode(RULE_ID, ruleSetNodeRef));
 
         then(ruleServiceMock).should().isRuleAssociatedWithRuleSet(ruleNodeRef, ruleSetNodeRef);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
@@ -364,21 +365,20 @@ public class NodeValidatorTest
     @Test
     public void testIsRuleSetNode()
     {
-        //resetting mock to bypass setup method
+        // resetting mock to bypass setup method
         resetNodesMock();
 
         boolean actual = nodeValidator.isRuleSetNode(RULE_SET_ID);
         Assert.assertTrue(actual);
     }
 
-
     @Test
     public void testIsNotRuleSetNode()
     {
-        //resetting mock to bypass setup method
+        // resetting mock to bypass setup method
         resetNodesMock();
 
-        //using an id that doesn't belong to a ruleset node
+        // using an id that doesn't belong to a ruleset node
         boolean actual = nodeValidator.isRuleSetNode(FOLDER_NODE_ID);
         Assert.assertFalse(actual);
     }

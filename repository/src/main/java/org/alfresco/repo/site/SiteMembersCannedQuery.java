@@ -50,13 +50,13 @@ import org.alfresco.util.Pair;
  * @author steveglover
  *
  */
-//TODO currently have to read all sites into memory for sorting purposes. Find a way that doesn't involve doing this.
+// TODO currently have to read all sites into memory for sorting purposes. Find a way that doesn't involve doing this.
 public class SiteMembersCannedQuery extends AbstractCannedQuery<SiteMembership>
 {
-	private NodeService nodeService;
-	private PersonService personService;
+    private NodeService nodeService;
+    private PersonService personService;
     private SiteService siteService;
-    
+
     protected SiteMembersCannedQuery(SiteService siteService, PersonService personService, NodeService nodeService, CannedQueryParameters parameters)
     {
         super(parameters);
@@ -64,79 +64,79 @@ public class SiteMembersCannedQuery extends AbstractCannedQuery<SiteMembership>
         this.nodeService = nodeService;
         this.siteService = siteService;
     }
-    
+
     @Override
     protected List<SiteMembership> queryAndFilter(CannedQueryParameters parameters)
     {
-        SiteMembersCannedQueryParams paramBean = (SiteMembersCannedQueryParams)parameters.getParameterBean();
-        
+        SiteMembersCannedQueryParams paramBean = (SiteMembersCannedQueryParams) parameters.getParameterBean();
+
         String siteShortName = paramBean.getShortName();
 
-		CannedQuerySortDetails sortDetails = parameters.getSortDetails();
-		List<Pair<? extends Object, SortOrder>> sortPairs = sortDetails.getSortPairs();
-		
-    	final CQSiteMembersCallback callback = new CQSiteMembersCallback(siteShortName, sortPairs);
-    	siteService.listMembers(siteShortName, null, null, true, false, paramBean.isExpandGroups(), callback);
-    	callback.done();
+        CannedQuerySortDetails sortDetails = parameters.getSortDetails();
+        List<Pair<? extends Object, SortOrder>> sortPairs = sortDetails.getSortPairs();
+
+        final CQSiteMembersCallback callback = new CQSiteMembersCallback(siteShortName, sortPairs);
+        siteService.listMembers(siteShortName, null, null, true, false, paramBean.isExpandGroups(), callback);
+        callback.done();
 
         return callback.getSiteMembers();
     }
-    
+
     @Override
     protected boolean isApplyPostQuerySorting()
     {
-    	// already sorted as a side effect by CQSiteMembersCallback
+        // already sorted as a side effect by CQSiteMembersCallback
         return false;
     }
 
     private class CQSiteMembersCallback implements SiteMembersCallback
     {
-    	private SiteInfo siteInfo;
-    	private Set<SiteMembership> siteMembers;
+        private SiteInfo siteInfo;
+        private Set<SiteMembership> siteMembers;
 
-    	CQSiteMembersCallback(String siteShortName, List<Pair<? extends Object, SortOrder>> sortPairs)
-    	{
-			this.siteInfo = siteService.getSite(siteShortName);
-    		this.siteMembers = sortPairs != null && sortPairs.size() > 0
-					? new TreeSet<SiteMembership>(SiteMembership.getComparator(sortPairs))
-					: new HashSet<SiteMembership>();
-    	}
+        CQSiteMembersCallback(String siteShortName, List<Pair<? extends Object, SortOrder>> sortPairs)
+        {
+            this.siteInfo = siteService.getSite(siteShortName);
+            this.siteMembers = sortPairs != null && sortPairs.size() > 0
+                    ? new TreeSet<SiteMembership>(SiteMembership.getComparator(sortPairs))
+                    : new HashSet<SiteMembership>();
+        }
 
-		/**
-		 * @deprecated from 7.0.0
-		 */
-		@Override
-		public void siteMember(String authority, String permission) {}
+        /**
+         * @deprecated from 7.0.0
+         */
+        @Override
+        public void siteMember(String authority, String permission)
+        {}
 
-		@Override
-		public void siteMember(String authority, String permission, boolean isMemberOfGroup)
-		{
-			String firstName = null;
-			String lastName = null;
+        @Override
+        public void siteMember(String authority, String permission, boolean isMemberOfGroup)
+        {
+            String firstName = null;
+            String lastName = null;
 
-			if(personService.personExists(authority))
-			{
-				NodeRef nodeRef = personService.getPerson(authority);
-				firstName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_FIRSTNAME);
-				lastName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_LASTNAME);
-			}
+            if (personService.personExists(authority))
+            {
+                NodeRef nodeRef = personService.getPerson(authority);
+                firstName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_FIRSTNAME);
+                lastName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_LASTNAME);
+            }
 
-    		siteMembers.add(new SiteMembership(siteInfo, authority, firstName, lastName, permission, isMemberOfGroup));
-		}
+            siteMembers.add(new SiteMembership(siteInfo, authority, firstName, lastName, permission, isMemberOfGroup));
+        }
 
-		@Override
-		public boolean isDone()
-		{
-			return false; // need to read in all site members for sort
-		}
-		
-		List<SiteMembership> getSiteMembers()
-		{
-    		return new ArrayList<>(siteMembers);
-		}
+        @Override
+        public boolean isDone()
+        {
+            return false; // need to read in all site members for sort
+        }
 
-		void done()
-		{
-		}
+        List<SiteMembership> getSiteMembers()
+        {
+            return new ArrayList<>(siteMembers);
+        }
+
+        void done()
+        {}
     }
 }

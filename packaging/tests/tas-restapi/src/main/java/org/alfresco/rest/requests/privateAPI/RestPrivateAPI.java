@@ -26,6 +26,7 @@
 package org.alfresco.rest.requests.privateAPI;
 
 import io.restassured.RestAssured;
+
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestCustomTypeModel;
 import org.alfresco.rest.model.RestSubscriberModel;
@@ -58,7 +59,8 @@ public class RestPrivateAPI extends ModelRequest<RestPrivateAPI>
     /**
      * Provides DSL on all REST calls under <code>cmm/{modelName}/...</code> API path
      * 
-     * @param customContentModel {@link CustomContentModel}
+     * @param customContentModel
+     *            {@link CustomContentModel}
      * @return {@link CustomModelManager}
      */
     public CustomModelManager usingCustomModel(CustomContentModel customContentModel)
@@ -74,8 +76,10 @@ public class RestPrivateAPI extends ModelRequest<RestPrivateAPI>
     /**
      * Provides DSL on all REST calls under <code>cmm/{modelName}/aspects/{aspectName}...</code> API path
      * 
-     * @param customContentModel {@link CustomContentModel}
-     * @param aspectModel {@link CustomAspectModel}
+     * @param customContentModel
+     *            {@link CustomContentModel}
+     * @param aspectModel
+     *            {@link CustomAspectModel}
      * @return {@link CustomAspectModelManager}
      */
     public CustomAspectModelManager usingAspect(CustomContentModel customContentModel, CustomAspectModel aspectModel)
@@ -86,8 +90,10 @@ public class RestPrivateAPI extends ModelRequest<RestPrivateAPI>
     /**
      * Provides DSL on all REST calls under <code>cmm/{modelName}/types/{typeName}...</code> API path
      *
-     * @param customContentModel {@link CustomContentModel}
-     * @param customType {@link RestCustomTypeModel}
+     * @param customContentModel
+     *            {@link CustomContentModel}
+     * @param customType
+     *            {@link RestCustomTypeModel}
      * @return {@link CustomTypeManager}
      */
     public CustomTypeManager usingCustomType(CustomContentModel customContentModel, RestCustomTypeModel customType)
@@ -138,6 +144,7 @@ public class RestPrivateAPI extends ModelRequest<RestPrivateAPI>
         s.setId(nodeSubscription.getDeviceSubscriptionId());
         return new Sync(nodeSubscription, restWrapper);
     }
+
     /**
      * Provides DSL on all REST calls under <code>subscribers/</code> API path
      * 

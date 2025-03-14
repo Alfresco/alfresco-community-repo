@@ -32,14 +32,15 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.repo.search.impl.solr.facet.FacetQueryProvider;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetConfigException;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * A simple handler to get the appropriate display label for the date buckets.
@@ -75,7 +76,7 @@ public class DateBucketsDisplayHandler extends AbstractFacetLabelDisplayHandler 
                 if (!matcher.find())
                 {
                     throw new SolrFacetConfigException(
-                                "Invalid date range. Example of a valid date range is: '[NOW/DAY-1DAY TO NOW/DAY+1DAY]'");
+                            "Invalid date range. Example of a valid date range is: '[NOW/DAY-1DAY TO NOW/DAY+1DAY]'");
                 }
                 // build the facet query. e.g. {http://www.alfresco.org/model/content/1.0}created:[NOW/DAY-1DAY TO NOW/DAY+1DAY]
                 String facetQuery = facetQueryField + ':' + dateRange;

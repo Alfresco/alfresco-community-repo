@@ -37,56 +37,56 @@ import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+
 /**
- * This acts as a session similar to the <code>java.lang.Process</code>, but
- * logs the system standard and error streams.
+ * This acts as a session similar to the <code>java.lang.Process</code>, but logs the system standard and error streams.
  * <p>
- * The bean can be configured to execute a command directly, or be given a map
- * of commands keyed by the <i>os.name</i> Java system property.  In this map,
- * the default key that is used when no match is found is the
- * <b>{@link #KEY_OS_DEFAULT *}</b> key.
+ * The bean can be configured to execute a command directly, or be given a map of commands keyed by the <i>os.name</i> Java system property. In this map, the default key that is used when no match is found is the <b>{@link #KEY_OS_DEFAULT *}</b> key.
  * <p>
- * Use the {@link #setProcessDirectory(String) processDirectory} property to change the default location
- * from which the command executes.  The process's environment can be configured using the
- * {@link #setProcessProperties(Map) processProperties} property.
+ * Use the {@link #setProcessDirectory(String) processDirectory} property to change the default location from which the command executes. The process's environment can be configured using the {@link #setProcessProperties(Map) processProperties} property.
  * <p>
  * Commands may use placeholders, e.g.
- * <pre><code>
+ * 
+ * <pre>
+ * <code>
  *    find
  *    -name
  *    ${filename}
- * </code></pre>
- * The <b>filename</b> property will be substituted for any supplied value prior to
- * each execution of the command.  Currently, no checks are made to get or check the
- * properties contained within the command string.  It is up to the client code to
- * dynamically extract the properties required if the required properties are not
- * known up front.
+ * </code>
+ * </pre>
+ * 
+ * The <b>filename</b> property will be substituted for any supplied value prior to each execution of the command. Currently, no checks are made to get or check the properties contained within the command string. It is up to the client code to dynamically extract the properties required if the required properties are not known up front.
  * <p>
- * Sometimes, a variable may contain several arguments.  .  In this case, the arguments
- * need to be tokenized using a standard <tt>StringTokenizer</tt>.  To force tokenization
- * of a value, use:
- * <pre><code>
+ * Sometimes, a variable may contain several arguments. . In this case, the arguments need to be tokenized using a standard <tt>StringTokenizer</tt>. To force tokenization of a value, use:
+ * 
+ * <pre>
+ * <code>
  *    SPLIT:${userArgs}
- * </code></pre>
- * You should not use this just to split up arguments that are known to require tokenization
- * up front.  The <b>SPLIT:</b> directive works for the entire argument and will not do anything
- * if it is not at the beginning of the argument.  Do not use <b>SPLIT:</b> to break up arguments
- * that are fixed, so avoid doing this:
- * <pre><code>
+ * </code>
+ * </pre>
+ * 
+ * You should not use this just to split up arguments that are known to require tokenization up front. The <b>SPLIT:</b> directive works for the entire argument and will not do anything if it is not at the beginning of the argument. Do not use <b>SPLIT:</b> to break up arguments that are fixed, so avoid doing this:
+ * 
+ * <pre>
+ * <code>
  *    SPLIT:ls -lih
- * </code></pre>
+ * </code>
+ * </pre>
+ * 
  * Instead, break the command up explicitly:
- * <pre><code>
+ * 
+ * <pre>
+ * <code>
  *    ls
  *    -lih
- * </code></pre>
+ * </code>
+ * </pre>
  * 
- * Tokenization of quoted parameter values is handled by {@link ExecParameterTokenizer}, which
- * describes the support in more detail.
+ * Tokenization of quoted parameter values is handled by {@link ExecParameterTokenizer}, which describes the support in more detail.
  * 
  * @author Derek Hulley
  */
@@ -94,7 +94,7 @@ public class RuntimeExec
 {
     /** the key to use when specifying a command for any other OS: <b>*</b> */
     public static final String KEY_OS_DEFAULT = "*";
-    
+
     private static final String KEY_OS_NAME = "os.name";
     private static final int BUFFER_SIZE = 1024;
     private static final String VAR_OPEN = "${";
@@ -114,7 +114,7 @@ public class RuntimeExec
     private Timer timer = new Timer(true);
 
     /**
-     * Default constructor.  Initialize this instance by setting individual properties.
+     * Default constructor. Initialize this instance by setting individual properties.
      */
     public RuntimeExec()
     {
@@ -123,19 +123,19 @@ public class RuntimeExec
         defaultProperties = Collections.emptyMap();
         processProperties = null;
         processDirectory = null;
-        
+
         // set default error codes
         this.errCodes = new HashSet<Integer>(2);
         errCodes.add(1);
         errCodes.add(2);
     }
-    
+
     public String toString()
     {
-        
+
         StringBuffer sb = new StringBuffer(256);
         sb.append("RuntimeExec:\n")
-          .append("   command:    ");
+                .append("   command:    ");
         if (command == null)
         {
             // command is 'null', so there's nothing to toString
@@ -150,15 +150,16 @@ public class RuntimeExec
             sb.append("\n");
         }
         sb.append("   env props:  ").append(Arrays.toString(processProperties)).append("\n")
-          .append("   dir:        ").append(processDirectory).append("\n")
-          .append("   os:         ").append(System.getProperty(KEY_OS_NAME)).append("\n");
+                .append("   dir:        ").append(processDirectory).append("\n")
+                .append("   os:         ").append(System.getProperty(KEY_OS_NAME)).append("\n");
         return sb.toString();
     }
-    
+
     /**
      * Set the command to execute regardless of operating system
      * 
-     * @param command       an array of strings representing the command (first entry) and arguments
+     * @param command
+     *            an array of strings representing the command (first entry) and arguments
      * 
      * @since 3.0
      */
@@ -168,11 +169,12 @@ public class RuntimeExec
     }
 
     /**
-     * Sets the assumed charset of OUT and ERR streams generated by the executed command.
-     * This defaults to the system default charset: {@link Charset#defaultCharset()}.
+     * Sets the assumed charset of OUT and ERR streams generated by the executed command. This defaults to the system default charset: {@link Charset#defaultCharset()}.
      * 
-     * @param charsetCode                           a supported character set code
-     * @throws UnsupportedCharsetException          if the characterset code is not recognised by Java
+     * @param charsetCode
+     *            a supported character set code
+     * @throws UnsupportedCharsetException
+     *             if the characterset code is not recognised by Java
      */
     public void setCharset(String charsetCode)
     {
@@ -180,14 +182,10 @@ public class RuntimeExec
     }
 
     /**
-     * Set whether to wait for completion of the command or not.  If there is no wait for completion,
-     * then the return value of <i>out</i> and <i>err</i> buffers cannot be relied upon as the
-     * command may still be in progress.  Failure is therefore not possible unless the calling thread
-     * waits for execution.
+     * Set whether to wait for completion of the command or not. If there is no wait for completion, then the return value of <i>out</i> and <i>err</i> buffers cannot be relied upon as the command may still be in progress. Failure is therefore not possible unless the calling thread waits for execution.
      * 
-     * @param waitForCompletion     <tt>true</tt> (default) is to wait for the command to exit,
-     *                              or <tt>false</tt> to just return an exit code of 0 and whatever
-     *                              output is available at that point.
+     * @param waitForCompletion
+     *            <tt>true</tt> (default) is to wait for the command to exit, or <tt>false</tt> to just return an exit code of 0 and whatever output is available at that point.
      * 
      * @since 2.1
      */
@@ -197,26 +195,17 @@ public class RuntimeExec
     }
 
     /**
-     * Supply a choice of commands to execute based on a mapping from the <i>os.name</i> system
-     * property to the command to execute.  The {@link #KEY_OS_DEFAULT *} key can be used
-     * to get a command where there is not direct match to the operating system key.
+     * Supply a choice of commands to execute based on a mapping from the <i>os.name</i> system property to the command to execute. The {@link #KEY_OS_DEFAULT *} key can be used to get a command where there is not direct match to the operating system key.
      * <p>
-     * Each command is an array of strings, the first of which represents the command and all subsequent
-     * entries in the array represent the arguments.  All elements of the array will be checked for
-     * the presence of any substitution parameters (e.g. '{dir}').  The parameters can be set using the
-     * {@link #setDefaultProperties(Map) defaults} or by passing the substitution values into the
-     * {@link #execute(Map)} command.
+     * Each command is an array of strings, the first of which represents the command and all subsequent entries in the array represent the arguments. All elements of the array will be checked for the presence of any substitution parameters (e.g. '{dir}'). The parameters can be set using the {@link #setDefaultProperties(Map) defaults} or by passing the substitution values into the {@link #execute(Map)} command.
      * <p>
-     * If parameters passed may be multiple arguments, or if the values provided in the map are themselves
-     * collections of arguments (not recommended), then prefix the value with <b>SPLIT:</b> to ensure that
-     * the value is tokenized before being passed to the command.  Any values that are not split, will be
-     * passed to the command as single arguments.  For example:<br>
+     * If parameters passed may be multiple arguments, or if the values provided in the map are themselves collections of arguments (not recommended), then prefix the value with <b>SPLIT:</b> to ensure that the value is tokenized before being passed to the command. Any values that are not split, will be passed to the command as single arguments. For example:<br>
      * '<b>SPLIT: dir . ..</b>' becomes '<b>dir</b>', '<b>.</b>' and '<b>..</b>'.<br>
      * '<b>SPLIT: dir ${path}</b>' (if path is '<b>. ..</b>') becomes '<b>dir</b>', '<b>.</b>' and '<b>..</b>'.<br>
-     * The splitting occurs post-subtitution.  Where the arguments are known, it is advisable to avoid
-     * <b>SPLIT:</b>.
+     * The splitting occurs post-subtitution. Where the arguments are known, it is advisable to avoid <b>SPLIT:</b>.
      * 
-     * @param commandsByOS          a map of command string arrays, keyed by operating system names
+     * @param commandsByOS
+     *            a map of command string arrays, keyed by operating system names
      * 
      * @see #setDefaultProperties(Map)
      * 
@@ -233,7 +222,7 @@ public class RuntimeExec
             // go through the commands keys, looking for one that matches by regular expression matching
             for (String osName : commandsByOS.keySet())
             {
-                // Ignore * options.  It is dealt with later.
+                // Ignore * options. It is dealt with later.
                 if (osName.equals(KEY_OS_DEFAULT))
                 {
                     continue;
@@ -256,26 +245,25 @@ public class RuntimeExec
         {
             throw new AlfrescoRuntimeException(
                     "No command found for OS " + serverOs + " or '" + KEY_OS_DEFAULT + "': \n" +
-                    "   commands: " + commandsByOS);
+                            "   commands: " + commandsByOS);
         }
         this.command = command;
     }
-    
+
     /**
-     * Supply a choice of commands to execute based on a mapping from the <i>os.name</i> system
-     * property to the command to execute.  The {@link #KEY_OS_DEFAULT *} key can be used
-     * to get a command where there is not direct match to the operating system key.
+     * Supply a choice of commands to execute based on a mapping from the <i>os.name</i> system property to the command to execute. The {@link #KEY_OS_DEFAULT *} key can be used to get a command where there is not direct match to the operating system key.
      * 
-     * @param commandsByOS a map of command string keyed by operating system names
+     * @param commandsByOS
+     *            a map of command string keyed by operating system names
      * 
-     * @deprecated          Use {@link #setCommandsAndArguments(Map)}
+     * @deprecated Use {@link #setCommandsAndArguments(Map)}
      */
     public void setCommandMap(Map<String, String> commandsByOS)
     {
         // This is deprecated, so issue a warning
         logger.warn(
                 "The bean RuntimeExec property 'commandMap' has been deprecated;" +
-                " use 'commandsAndArguments' instead.  See https://issues.alfresco.com/jira/browse/ETHREEOH-579.");
+                        " use 'commandsAndArguments' instead.  See https://issues.alfresco.com/jira/browse/ETHREEOH-579.");
         Map<String, String[]> fixed = new LinkedHashMap<String, String[]>(7);
         for (Map.Entry<String, String> entry : commandsByOS.entrySet())
         {
@@ -291,16 +279,14 @@ public class RuntimeExec
         }
         setCommandsAndArguments(fixed);
     }
-    
+
     /**
-     * Set the default command-line properties to use when executing the command.
-     * These are properties that substitute variables defined in the command string itself.
-     * Properties supplied during execution will overwrite the default properties.
+     * Set the default command-line properties to use when executing the command. These are properties that substitute variables defined in the command string itself. Properties supplied during execution will overwrite the default properties.
      * <p>
-     * <code>null</code> properties will be treated as an empty string for substitution
-     * purposes.
+     * <code>null</code> properties will be treated as an empty string for substitution purposes.
      * 
-     * @param defaultProperties property values
+     * @param defaultProperties
+     *            property values
      */
     public void setDefaultProperties(Map<String, String> defaultProperties)
     {
@@ -308,14 +294,12 @@ public class RuntimeExec
     }
 
     /**
-     * Set additional runtime properties (environment properties) that will used
-     * by the executing process.
+     * Set additional runtime properties (environment properties) that will used by the executing process.
      * <p>
-     * Any keys or properties that start and end with <b>${...}</b> will be removed on the assumption
-     * that these are unset properties.  <tt>null</tt> values are translated to empty strings.
-     * All keys and values are trimmed of leading and trailing whitespace.
+     * Any keys or properties that start and end with <b>${...}</b> will be removed on the assumption that these are unset properties. <tt>null</tt> values are translated to empty strings. All keys and values are trimmed of leading and trailing whitespace.
      * 
-     * @param processProperties     Runtime process properties
+     * @param processProperties
+     *            Runtime process properties
      * 
      * @see Runtime#exec(String, String[], java.io.File)
      */
@@ -351,85 +335,84 @@ public class RuntimeExec
             {
                 if (systemPath != null && systemPath.length() > 0)
                 {
-                    processPropList.add(key + "=" + value + File.pathSeparator + systemPath);                    
+                    processPropList.add(key + "=" + value + File.pathSeparator + systemPath);
                 }
                 else
-                {                    
+                {
                     processPropList.add(key + "=" + value);
                 }
                 hasPath = true;
             }
             else
             {
-                processPropList.add(key + "=" + value);                
+                processPropList.add(key + "=" + value);
             }
         }
         // If a path was not specified, inherit the current one
         if (!hasPath && systemPath != null && systemPath.length() > 0)
         {
-            processPropList.add("PATH=" + systemPath);                                
+            processPropList.add("PATH=" + systemPath);
         }
         this.processProperties = processPropList.toArray(new String[processPropList.size()]);
     }
-    
+
     /**
-     * Adds a property to existed processProperties. 
-     * Property should not be null or empty.
-     * If property with the same value already exists then no change is made.
-     * If property exists with a different value then old value is replaced with the new one. 
-     * @param name - property name
-     * @param value - property value 
+     * Adds a property to existed processProperties. Property should not be null or empty. If property with the same value already exists then no change is made. If property exists with a different value then old value is replaced with the new one.
+     * 
+     * @param name
+     *            - property name
+     * @param value
+     *            - property value
      */
     public void setProcessProperty(String name, String value)
     {
         boolean set = false;
-        
-        if (name == null || value == null) 
+
+        if (name == null || value == null)
             return;
-        
+
         name = name.trim();
         value = value.trim();
-        
-        if (name.isEmpty() || value.isEmpty()) 
-            return; 
-        
+
+        if (name.isEmpty() || value.isEmpty())
+            return;
+
         String property = name + "=" + value;
-             
+
         for (String prop : this.processProperties)
         {
             if (prop.equals(property))
-            {    
+            {
                 set = true;
                 break;
-            }    
-            
+            }
+
             if (prop.startsWith(name))
             {
-                String oldValue = prop.split("=")[1];  
+                String oldValue = prop.split("=")[1];
                 prop.replace(oldValue, value);
                 set = true;
             }
         }
-        
+
         if (!set)
         {
-          String[] existedProperties = this.processProperties;
-          int epl = existedProperties.length; 
-          String[] newProperties = Arrays.copyOf(existedProperties, epl + 1);
-          newProperties[epl] = property;
-          this.processProperties = newProperties;      
-          set = true;
-        }           
+            String[] existedProperties = this.processProperties;
+            int epl = existedProperties.length;
+            String[] newProperties = Arrays.copyOf(existedProperties, epl + 1);
+            newProperties[epl] = property;
+            this.processProperties = newProperties;
+            set = true;
+        }
     }
-    
-    
+
     /**
      * Set the runtime location from which the command is executed.
      * <p>
-     * If the value is an unsubsititued variable (<b>${...}</b>) then it is ignored.
-     * If the location is not visible at the time of setting, a warning is issued only.
+     * If the value is an unsubsititued variable (<b>${...}</b>) then it is ignored. If the location is not visible at the time of setting, a warning is issued only.
      * 
-     * @param processDirectory          the runtime location from which to execute the command
+     * @param processDirectory
+     *            the runtime location from which to execute the command
      */
     public void setProcessDirectory(String processDirectory)
     {
@@ -444,22 +427,22 @@ public class RuntimeExec
             {
                 logger.warn(
                         "The runtime process directory is not visible when setting property 'processDirectory': \n" +
-                        this);
+                                this);
             }
         }
     }
 
     /**
-     * A comma or space separated list of values that, if returned by the executed command,
-     * indicate an error value.  This defaults to <b>"1, 2"</b>.
+     * A comma or space separated list of values that, if returned by the executed command, indicate an error value. This defaults to <b>"1, 2"</b>.
      * 
-     * @param errCodesStr the error codes for the execution
+     * @param errCodesStr
+     *            the error codes for the execution
      */
     public void setErrorCodes(String errCodesStr)
     {
         errCodes.clear();
         StringTokenizer tokenizer = new StringTokenizer(errCodesStr, " ,");
-        while(tokenizer.hasMoreElements())
+        while (tokenizer.hasMoreElements())
         {
             String errCodeStr = tokenizer.nextToken();
             // attempt to convert it to an integer
@@ -475,7 +458,7 @@ public class RuntimeExec
             }
         }
     }
-    
+
     /**
      * Executes the command using the default properties
      * 
@@ -489,9 +472,8 @@ public class RuntimeExec
     /**
      * Executes the statement that this instance was constructed with.
      * 
-     * @param properties the properties that the command might be executed with.
-     * <code>null</code> properties will be treated as an empty string for substitution
-     * purposes.
+     * @param properties
+     *            the properties that the command might be executed with. <code>null</code> properties will be treated as an empty string for substitution purposes.
      * 
      * @return Returns the full execution results
      */
@@ -501,28 +483,25 @@ public class RuntimeExec
     }
 
     /**
-     * Executes the statement that this instance was constructed with an optional
-     * timeout after which the command is asked to 
+     * Executes the statement that this instance was constructed with an optional timeout after which the command is asked to
      * 
-     * @param properties the properties that the command might be executed with.
-     * <code>null</code> properties will be treated as an empty string for substitution
-     * purposes.
-     * @param timeoutMs a timeout after which {@link Process#destroy()} is called.
-     *        ignored if less than or equal to zero. Note this method does not guarantee
-     *        to terminate the process (it is not a kill -9).
+     * @param properties
+     *            the properties that the command might be executed with. <code>null</code> properties will be treated as an empty string for substitution purposes.
+     * @param timeoutMs
+     *            a timeout after which {@link Process#destroy()} is called. ignored if less than or equal to zero. Note this method does not guarantee to terminate the process (it is not a kill -9).
      * 
      * @return Returns the full execution results
      */
     public ExecutionResult execute(Map<String, String> properties, final long timeoutMs)
     {
-        int defaultFailureExitValue = errCodes.size() > 0 ? ((Integer)errCodes.toArray()[0]) : 1;
-        
+        int defaultFailureExitValue = errCodes.size() > 0 ? ((Integer) errCodes.toArray()[0]) : 1;
+
         // check that the command has been set
         if (command == null)
         {
             throw new AlfrescoRuntimeException("Runtime command has not been set: \n" + this);
         }
-        
+
         // create the properties
         Runtime runtime = Runtime.getRuntime();
         Process process = null;
@@ -536,8 +515,7 @@ public class RuntimeExec
             if (timeoutMs > 0)
             {
                 final String[] command = commandToExecute;
-                timer.schedule(new TimerTask()
-                {
+                timer.schedule(new TimerTask() {
                     @Override
                     public void run()
                     {
@@ -550,9 +528,9 @@ public class RuntimeExec
                         {
                             if (transformerDebugLogger.isDebugEnabled())
                             {
-                                transformerDebugLogger.debug("Process has taken too long ("+
-                                    (timeoutMs/1000)+" seconds). Killing process "+
-                                    Arrays.deepToString(command));
+                                transformerDebugLogger.debug("Process has taken too long (" +
+                                        (timeoutMs / 1000) + " seconds). Killing process " +
+                                        Arrays.deepToString(command));
                             }
                             thisProcess.destroy();
                         }
@@ -605,7 +583,7 @@ public class RuntimeExec
         // get the stream values
         String execOut = stdOutGobbler.getBuffer();
         String execErr = stdErrGobbler.getBuffer();
-        
+
         // construct the return value
         ExecutionResult result = new ExecutionResult(process, commandToExecute, errCodes, exitValue, execOut, execErr);
 
@@ -628,7 +606,7 @@ public class RuntimeExec
             if (processProperties != null && processProperties.length > 0)
             {
                 sb.append("\n   modified environment: ");
-                for (int i=0; i<processProperties.length; i++)
+                for (int i = 0; i < processProperties.length; i++)
                 {
                     String property = processProperties[i];
                     sb.append("\n        ");
@@ -653,28 +631,26 @@ public class RuntimeExec
         {
             logger.debug(result);
         }
-        
-        // close output stream (connected to input stream of native subprocess) 
+
+        // close output stream (connected to input stream of native subprocess)
     }
 
     /**
-     * @return Returns the command that will be executed if no additional properties
-     *      were to be supplied
+     * @return Returns the command that will be executed if no additional properties were to be supplied
      */
     public String[] getCommand()
     {
         return getCommand(defaultProperties);
     }
-    
+
     /**
      * Get the command that will be executed post substitution.
      * <p>
-     * <code>null</code> properties will be treated as an empty string for substitution
-     * purposes.
+     * <code>null</code> properties will be treated as an empty string for substitution purposes.
      * 
-     * @param properties the properties that the command might be executed with
-     * @return Returns the command that will be executed should the additional properties
-     *      be supplied
+     * @param properties
+     *            the properties that the command might be executed with
+     * @return Returns the command that will be executed should the additional properties be supplied
      */
     public String[] getCommand(Map<String, String> properties)
     {
@@ -720,7 +696,7 @@ public class RuntimeExec
             if (adjustedValue.startsWith(DIRECTIVE_SPLIT))
             {
                 String unsplitAdjustedValue = sb.substring(DIRECTIVE_SPLIT.length());
-                
+
                 // There may be quoted arguments here (see ALF-7482)
                 ExecParameterTokenizer quoteAwareTokenizer = new ExecParameterTokenizer(unsplitAdjustedValue);
                 List<String> tokens = quoteAwareTokenizer.getAllTokens();
@@ -734,7 +710,7 @@ public class RuntimeExec
         // done
         return adjustedCommandElements.toArray(new String[adjustedCommandElements.size()]);
     }
-    
+
     /**
      * Object to carry the results of an execution to the caller.
      * 
@@ -748,10 +724,11 @@ public class RuntimeExec
         private final int exitValue;
         private final String stdOut;
         private final String stdErr;
-       
+
         /**
          * 
-         * @param process           the process attached to Java - <tt>null</tt> is allowed
+         * @param process
+         *            the process attached to Java - <tt>null</tt> is allowed
          */
         private ExecutionResult(
                 final Process process,
@@ -768,39 +745,38 @@ public class RuntimeExec
             this.stdOut = stdOut;
             this.stdErr = stdErr;
         }
-        
+
         @Override
         public String toString()
         {
             String out = stdOut.length() > 250 ? stdOut.substring(0, 250) : stdOut;
             String err = stdErr.length() > 250 ? stdErr.substring(0, 250) : stdErr;
-            
+
             StringBuilder sb = new StringBuilder(128);
             sb.append("Execution result: \n")
-              .append("   os:         ").append(System.getProperty(KEY_OS_NAME)).append("\n")
-              .append("   command:    ");appendCommand(sb, command).append("\n")
-              .append("   succeeded:  ").append(getSuccess()).append("\n")
-              .append("   exit code:  ").append(exitValue).append("\n")
-              .append("   out:        ").append(out).append("\n")
-              .append("   err:        ").append(err);
+                    .append("   os:         ").append(System.getProperty(KEY_OS_NAME)).append("\n")
+                    .append("   command:    ");
+            appendCommand(sb, command).append("\n")
+                    .append("   succeeded:  ").append(getSuccess()).append("\n")
+                    .append("   exit code:  ").append(exitValue).append("\n")
+                    .append("   out:        ").append(out).append("\n")
+                    .append("   err:        ").append(err);
             return sb.toString();
         }
-        
+
         /**
-         * Appends the command in a form that make running from the command line simpler.
-         * It is not a real attempt at making a command given all the operating system 
-         * and shell options, but makes copy, paste and edit a bit simpler.
+         * Appends the command in a form that make running from the command line simpler. It is not a real attempt at making a command given all the operating system and shell options, but makes copy, paste and edit a bit simpler.
          */
         private StringBuilder appendCommand(StringBuilder sb, String[] command)
         {
             boolean arg = false;
-            for (String element: command)
+            for (String element : command)
             {
                 if (element == null)
                 {
                     continue;
                 }
-                
+
                 if (arg)
                 {
                     sb.append(' ');
@@ -823,15 +799,11 @@ public class RuntimeExec
             }
             return sb;
         }
-        
+
         /**
-         * A helper method to force a kill of the process that generated this result.  This is
-         * useful in cases where the process started is not expected to exit, or doesn't exit
-         * quickly.  If the {@linkplain RuntimeExec#setWaitForCompletion(boolean) "wait for completion"}
-         * flag is <tt>false</tt> then the process may still be running when this result is returned.
+         * A helper method to force a kill of the process that generated this result. This is useful in cases where the process started is not expected to exit, or doesn't exit quickly. If the {@linkplain RuntimeExec#setWaitForCompletion(boolean) "wait for completion"} flag is <tt>false</tt> then the process may still be running when this result is returned.
          * 
-         * @return
-         *      <tt>true</tt> if the process was killed, otherwise <tt>false</tt>
+         * @return <tt>true</tt> if the process was killed, otherwise <tt>false</tt>
          */
         public boolean killProcess()
         {
@@ -850,21 +822,21 @@ public class RuntimeExec
                 return false;
             }
         }
-        
+
         /**
-         * @param exitValue the command exit value
+         * @param exitValue
+         *            the command exit value
          * @return Returns true if the code is a listed failure code
          * 
          * @see #setErrorCodes(String)
          */
         private boolean isFailureCode(int exitValue)
         {
-            return errCodes.contains((Integer)exitValue);
+            return errCodes.contains((Integer) exitValue);
         }
-        
+
         /**
-         * @return Returns true if the command was deemed to be successful according to the
-         *      failure codes returned by the execution.
+         * @return Returns true if the command was deemed to be successful according to the failure codes returned by the execution.
          */
         public boolean getSuccess()
         {
@@ -875,12 +847,12 @@ public class RuntimeExec
         {
             return exitValue;
         }
-        
+
         public String getStdOut()
         {
             return stdOut;
         }
-    
+
         public String getStdErr()
         {
             return stdErr;
@@ -888,8 +860,7 @@ public class RuntimeExec
     }
 
     /**
-     * Gobbles an <code>InputStream</code> and writes it into a
-     * <code>StringBuffer</code>
+     * Gobbles an <code>InputStream</code> and writes it into a <code>StringBuffer</code>
      * <p>
      * The reading of the input stream is buffered.
      */
@@ -897,12 +868,12 @@ public class RuntimeExec
     {
         private final InputStream is;
         private final Charset charset;
-        private final StringBuffer buffer;          // we require the synchronization
+        private final StringBuffer buffer; // we require the synchronization
         private boolean completed;
 
         /**
-         * @param is an input stream to read - it will be wrapped in a buffer
-         *        for reading
+         * @param is
+         *            an input stream to read - it will be wrapped in a buffer for reading
          */
         public InputStreamReaderThread(InputStream is, Charset charset)
         {
@@ -951,13 +922,12 @@ public class RuntimeExec
                         tempIs.close();
                     }
                     catch (Exception e)
-                    {
-                    }
+                    {}
                 }
                 // The thread has finished consuming the stream
                 completed = true;
                 // Notify waiters
-                this.notifyAll();       // Note: Method is synchronized
+                this.notifyAll(); // Note: Method is synchronized
             }
         }
 
@@ -976,13 +946,13 @@ public class RuntimeExec
                     this.wait(1000L); // 200 ms
                 }
                 catch (InterruptedException e)
-                {
-                }
+                {}
             }
         }
-        
+
         /**
-         * @param msg the message to add to the buffer
+         * @param msg
+         *            the message to add to the buffer
          */
         public void addToBuffer(String msg)
         {

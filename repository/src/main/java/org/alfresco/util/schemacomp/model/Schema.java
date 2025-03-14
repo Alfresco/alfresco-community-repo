@@ -48,28 +48,29 @@ public class Schema extends AbstractDbObject implements Iterable<DbObject>
     protected final String dbPrefix;
     protected final int version;
     protected final boolean checkTableColumnOrder;
-    
+
     /**
      * Construct a schema with the given name and no database prefix.
      * 
-     * @param name String
+     * @param name
+     *            String
      */
     public Schema(String name)
     {
         this(name, "", 0, true);
     }
-    
+
     /**
-     * Construct a schema with the given name and database prefix. The database
-     * prefix specifies what filtering applies to the high-level (tables and sequences)
-     * objects in the schema. If for example dbPrefix is "alf_" then only tables and sequences
-     * whose names begin with "alf_" will be represented by this schema. Therefore any comparisons
-     * should be performed against another similarly filtered Schema object.
+     * Construct a schema with the given name and database prefix. The database prefix specifies what filtering applies to the high-level (tables and sequences) objects in the schema. If for example dbPrefix is "alf_" then only tables and sequences whose names begin with "alf_" will be represented by this schema. Therefore any comparisons should be performed against another similarly filtered Schema object.
      * 
-     * @param name String
-     * @param dbPrefix String
-     * @param schemaVersion int
-     * @param checkTableColumnOrder boolean
+     * @param name
+     *            String
+     * @param dbPrefix
+     *            String
+     * @param schemaVersion
+     *            int
+     * @param checkTableColumnOrder
+     *            boolean
      */
     public Schema(String name, String dbPrefix, int schemaVersion, boolean checkTableColumnOrder)
     {
@@ -78,7 +79,7 @@ public class Schema extends AbstractDbObject implements Iterable<DbObject>
         this.dbPrefix = dbPrefix;
         this.version = schemaVersion;
         this.checkTableColumnOrder = checkTableColumnOrder;
-        
+
         addDefaultValidators();
     }
 
@@ -91,24 +92,24 @@ public class Schema extends AbstractDbObject implements Iterable<DbObject>
         NameValidator nameValidator = new NameValidator();
         nameValidator.setPattern(Pattern.compile(".*"));
         getValidators().add(nameValidator);
-        
+
         // The schema version shouldn't have to match exactly.
         SchemaVersionValidator versionValidator = new SchemaVersionValidator();
         getValidators().add(versionValidator);
     }
 
     /**
-     * Add an object to this schema - this method will set this schema
-     * as the object's parent.
+     * Add an object to this schema - this method will set this schema as the object's parent.
      * 
-     * @param dbObject DbObject
+     * @param dbObject
+     *            DbObject
      */
     public void add(DbObject dbObject)
     {
         dbObject.setParent(this);
         objects.add(dbObject);
     }
-    
+
     @Override
     public Iterator<DbObject> iterator()
     {
@@ -116,7 +117,8 @@ public class Schema extends AbstractDbObject implements Iterable<DbObject>
     }
 
     /**
-     * @param object DbObject
+     * @param object
+     *            DbObject
      * @return boolean
      */
     public boolean contains(DbObject object)
@@ -162,40 +164,47 @@ public class Schema extends AbstractDbObject implements Iterable<DbObject>
     @Override
     public boolean equals(Object obj)
     {
-        if (this == obj) return true;
-        if (!super.equals(obj)) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
         Schema other = (Schema) obj;
         if (this.dbPrefix == null)
         {
-            if (other.dbPrefix != null) return false;
+            if (other.dbPrefix != null)
+                return false;
         }
-        else if (!this.dbPrefix.equals(other.dbPrefix)) return false;
+        else if (!this.dbPrefix.equals(other.dbPrefix))
+            return false;
         if (this.objects == null)
         {
-            if (other.objects != null) return false;
+            if (other.objects != null)
+                return false;
         }
-        else if (!this.objects.equals(other.objects)) return false;
-        if (this.version != other.version) return false;
+        else if (!this.objects.equals(other.objects))
+            return false;
+        if (this.version != other.version)
+            return false;
         return true;
     }
 
     @Override
     protected void doDiff(DbObject right, DiffContext ctx)
     {
-        Schema rightSchema = (Schema) right;        
+        Schema rightSchema = (Schema) right;
         comparisonUtils.compareSimple(
-                    new DbProperty(this, "version"), 
-                    new DbProperty(rightSchema, "version"), ctx);
+                new DbProperty(this, "version"),
+                new DbProperty(rightSchema, "version"), ctx);
         comparisonUtils.compareCollections(objects, rightSchema.objects, ctx);
     }
 
-
     @Override
     public void accept(DbObjectVisitor visitor)
-    {        
+    {
         visitor.visit(this);
-        
+
         for (DbObject child : objects)
         {
             child.accept(visitor);
@@ -210,12 +219,9 @@ public class Schema extends AbstractDbObject implements Iterable<DbObject>
             return false;
         }
         return true;
-    }    
+    }
 
-    /*
-     * ALF-14129 fix, checks whether the schema already contains object with provided name. 
-     * (this method is case insensitive to object's name)
-     */
+    /* ALF-14129 fix, checks whether the schema already contains object with provided name. (this method is case insensitive to object's name) */
     public boolean containsByName(String name)
     {
         Iterator<DbObject> iterator = iterator();

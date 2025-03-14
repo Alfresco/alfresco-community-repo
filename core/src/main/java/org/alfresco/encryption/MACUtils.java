@@ -27,16 +27,15 @@ import java.security.Key;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import javax.crypto.Mac;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+
 /**
- * Provides support for generating and checking MACs (Message Authentication Codes) using Alfresco's
- * secret keys.
+ * Provides support for generating and checking MACs (Message Authentication Codes) using Alfresco's secret keys.
  * 
  * @since 4.0
  *
@@ -58,7 +57,7 @@ public class MACUtils
     {
         threadMac = new ThreadLocal<Mac>();
     }
-    
+
     public void setKeyProvider(KeyProvider keyProvider)
     {
         this.keyProvider = keyProvider;
@@ -68,32 +67,32 @@ public class MACUtils
     {
         this.macAlgorithm = macAlgorithm;
     }
-    
+
     protected Mac getMac(String keyAlias) throws Exception
     {
         Mac mac = threadMac.get();
-        if(mac == null)
+        if (mac == null)
         {
             mac = Mac.getInstance(macAlgorithm);
 
             threadMac.set(mac);
         }
         Key key = keyProvider.getKey(keyAlias);
-        if(key == null)
+        if (key == null)
         {
             throw new AlfrescoRuntimeException("Unexpected null key for key alias " + keyAlias);
         }
         mac.init(key);
         return mac;
     }
-    
+
     protected byte[] longToByteArray(long l) throws IOException
     {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();  
-        DataOutputStream dos = new DataOutputStream(bos);  
-        dos.writeLong(l);  
-        dos.flush();  
-        return bos.toByteArray();         
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(bos);
+        dos.writeLong(l);
+        dos.flush();
+        return bos.toByteArray();
     }
 
     public byte[] generateMAC(String keyAlias, MACInput macInput)
@@ -102,7 +101,7 @@ public class MACUtils
         {
             InputStream fullMessage = macInput.getMACInput();
 
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Generating MAC for " + macInput + "...");
             }
@@ -111,13 +110,13 @@ public class MACUtils
 
             byte[] buf = new byte[1024];
             int len;
-            while((len = fullMessage.read(buf, 0, 1024)) != -1)
+            while ((len = fullMessage.read(buf, 0, 1024)) != -1)
             {
                 mac.update(buf, 0, len);
             }
             byte[] newMAC = mac.doFinal();
 
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("...done. MAC is " + Arrays.toString(newMAC));
             }
@@ -131,11 +130,14 @@ public class MACUtils
     }
 
     /**
-     * Compares the expectedMAC against the MAC generated from 
-     * Assumes message has been decrypted
-     * @param keyAlias String
-     * @param expectedMAC byte[]
-     * @param macInput MACInput
+     * Compares the expectedMAC against the MAC generated from Assumes message has been decrypted
+     * 
+     * @param keyAlias
+     *            String
+     * @param expectedMAC
+     *            byte[]
+     * @param macInput
+     *            MACInput
      * @return boolean
      */
     public boolean validateMAC(String keyAlias, byte[] expectedMAC, MACInput macInput)
@@ -144,14 +146,14 @@ public class MACUtils
         {
             byte[] mac = generateMAC(keyAlias, macInput);
 
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Validating expected MAC " + Arrays.toString(expectedMAC) + " against mac " + Arrays.toString(mac) + " for MAC input " + macInput + "...");
             }
 
             boolean areEqual = Arrays.equals(expectedMAC, mac);
-            
-            if(logger.isDebugEnabled())
+
+            if (logger.isDebugEnabled())
             {
                 logger.debug(areEqual ? "...MAC validation succeeded." : "...MAC validation failed.");
             }
@@ -161,7 +163,7 @@ public class MACUtils
         catch (Exception e)
         {
             throw new AlfrescoRuntimeException("Failed to validate MAC", e);
-        }        
+        }
     }
 
     /**
@@ -176,7 +178,7 @@ public class MACUtils
         private InputStream message;
         private long timestamp;
         private String ipAddress;
-        
+
         public MACInput(byte[] message, long timestamp, String ipAddress)
         {
             this.message = (message != null ? new ByteArrayInputStream(message) : null);
@@ -210,14 +212,14 @@ public class MACUtils
             out.writeLong(timestamp);
             inputStreams.add(new ByteArrayInputStream(bytes.toByteArray()));
 
-            if(message != null)
+            if (message != null)
             {
                 inputStreams.add(message);
             }
 
             return new MessageInputStream(inputStreams);
         }
-        
+
         public String toString()
         {
             StringBuilder sb = new StringBuilder("MACInput[");
@@ -226,7 +228,7 @@ public class MACUtils
             return sb.toString();
         }
     }
-    
+
     private static class MessageInputStream extends InputStream
     {
         private List<InputStream> input;
@@ -245,22 +247,22 @@ public class MACUtils
         {
             IOException firstIOException = null;
 
-            for(InputStream in : input)
+            for (InputStream in : input)
             {
                 try
                 {
                     in.close();
                 }
-                catch(IOException e)
+                catch (IOException e)
                 {
-                    if(firstIOException == null)
+                    if (firstIOException == null)
                     {
                         firstIOException = e;
                     }
                 }
             }
 
-            if(firstIOException != null)
+            if (firstIOException != null)
             {
                 throw firstIOException;
             }
@@ -271,10 +273,10 @@ public class MACUtils
         public int read() throws IOException
         {
             int i = activeInputStream.read();
-            if(i == -1)
+            if (i == -1)
             {
                 currentStream++;
-                if(currentStream >= input.size())
+                if (currentStream >= input.size())
                 {
                     return -1;
                 }

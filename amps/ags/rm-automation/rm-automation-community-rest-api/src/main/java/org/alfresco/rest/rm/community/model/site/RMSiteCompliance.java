@@ -34,6 +34,5 @@ package org.alfresco.rest.rm.community.model.site;
  */
 public enum RMSiteCompliance
 {
-    STANDARD,
-    DOD5015
+    STANDARD, DOD5015
 }

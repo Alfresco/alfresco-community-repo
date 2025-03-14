@@ -38,12 +38,12 @@ public class ParameterDefinitionImplTest extends TestCase
 {
     private static final String NAME = "param-name";
     private static final String DISPLAY_LABEL = "The display label.";
-    
+
     public void testConstructor()
     {
         create();
     }
-   
+
     private ParameterDefinitionImpl create()
     {
         ParameterDefinitionImpl paramDef = new ParameterDefinitionImpl(
@@ -54,28 +54,28 @@ public class ParameterDefinitionImplTest extends TestCase
         assertNotNull(paramDef);
         return paramDef;
     }
-    
+
     public void testGetName()
     {
         ParameterDefinitionImpl temp = create();
         assertEquals(NAME, temp.getName());
     }
-    
+
     public void testGetClass()
     {
         ParameterDefinitionImpl temp = create();
         assertEquals(DataTypeDefinition.TEXT, temp.getType());
     }
-    
+
     public void testIsMandatory()
     {
         ParameterDefinitionImpl temp = create();
         assertTrue(temp.isMandatory());
     }
-    
+
     public void testGetDisplayLabel()
     {
         ParameterDefinitionImpl temp = create();
-        assertEquals(DISPLAY_LABEL, temp.getDisplayLabel());    
+        assertEquals(DISPLAY_LABEL, temp.getDisplayLabel());
     }
 }

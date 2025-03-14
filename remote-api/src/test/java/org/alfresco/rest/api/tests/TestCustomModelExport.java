@@ -30,17 +30,18 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.Set;
 
+import org.junit.Test;
+
 import org.alfresco.repo.dictionary.CMMDownloadTestUtil;
+import org.alfresco.rest.api.model.CustomModel.ModelStatus;
 import org.alfresco.rest.api.model.CustomModelDownload;
 import org.alfresco.rest.api.model.CustomType;
-import org.alfresco.rest.api.model.CustomModel.ModelStatus;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.dictionary.CustomModelService;
 import org.alfresco.service.cmr.download.DownloadStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
-import org.junit.Test;
 
 /**
  * Tests REST API download of the {@link CustomModelService}.
@@ -72,7 +73,7 @@ public class TestCustomModelExport extends BaseCustomModelApiTest
     public void testCreateDownload() throws Exception
     {
         setRequestContext(customModelAdmin);
-        
+
         final String modelName = "testModel" + System.currentTimeMillis();
         final String modelExportFileName = modelName + ".xml";
         final String shareExtExportFileName = "CMM_" + modelName + "_module.xml";
@@ -94,14 +95,14 @@ public class TestCustomModelExport extends BaseCustomModelApiTest
         post("cmm/" + modelName + "/download", RestApiUtil.toJsonAsString(new CustomModelDownload()), getExtModuleQS(false), 403);
 
         setRequestContext(customModelAdmin);
-        
+
         // Create download for custom model only
         HttpResponse response = post("cmm/" + modelName + "/download", RestApiUtil.toJsonAsString(new CustomModelDownload()), getExtModuleQS(false), 201);
         CustomModelDownload returnedDownload = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModelDownload.class);
         assertNotNull(returnedDownload);
         assertNotNull(returnedDownload.getNodeRef());
 
-        NodeRef downloadNode = new NodeRef(returnedDownload.getNodeRef()); 
+        NodeRef downloadNode = new NodeRef(returnedDownload.getNodeRef());
 
         DownloadStatus status = downloadTestUtil.getDownloadStatus(downloadNode);
         while (status.getStatus() == DownloadStatus.Status.PENDING)
@@ -122,7 +123,7 @@ public class TestCustomModelExport extends BaseCustomModelApiTest
         assertNotNull(returnedDownload);
         assertNotNull(returnedDownload.getNodeRef());
 
-        downloadNode = new NodeRef(returnedDownload.getNodeRef()); 
+        downloadNode = new NodeRef(returnedDownload.getNodeRef());
 
         status = downloadTestUtil.getDownloadStatus(downloadNode);
         while (status.getStatus() == DownloadStatus.Status.PENDING)
@@ -137,7 +138,7 @@ public class TestCustomModelExport extends BaseCustomModelApiTest
         modelEntry = downloadTestUtil.getDownloadEntry(entries, modelExportFileName);
         assertNotNull(modelEntry);
         assertEquals(modelEntry, modelExportFileName);
-        
+
         String shareExtEntry = downloadTestUtil.getDownloadEntry(entries, shareExtExportFileName);
         assertNotNull(shareExtEntry);
         assertEquals(shareExtEntry, shareExtExportFileName);

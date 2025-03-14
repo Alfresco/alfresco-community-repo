@@ -45,7 +45,6 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
-
 /**
  * Class containing behaviour for the multilingual document aspect.
  *
@@ -59,11 +58,10 @@ public class MultilingualDocumentAspect implements
         NodeServicePolicies.OnUpdatePropertiesPolicy
 {
 
-    //     Dependencies
+    // Dependencies
     private PolicyComponent policyComponent;
     private MultilingualContentService multilingualContentService;
     private NodeService nodeService;
-
 
     /**
      * Initialise the Multilingual Aspect
@@ -91,7 +89,8 @@ public class MultilingualDocumentAspect implements
     }
 
     /**
-     * @param policyComponent the policy component to register behaviour with
+     * @param policyComponent
+     *            the policy component to register behaviour with
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -99,7 +98,8 @@ public class MultilingualDocumentAspect implements
     }
 
     /**
-     * @param multilingualContentService the Multilingual Content Service to set
+     * @param multilingualContentService
+     *            the Multilingual Content Service to set
      */
     public void setMultilingualContentService(MultilingualContentService multilingualContentService)
     {
@@ -107,7 +107,8 @@ public class MultilingualDocumentAspect implements
     }
 
     /**
-     * @param nodeService the Node Service to set
+     * @param nodeService
+     *            the Node Service to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -117,7 +118,7 @@ public class MultilingualDocumentAspect implements
     /**
      * The copy of a <b>cm:mlDocument</b> can't keep the Multilingual aspect.
      * 
-     * @return              Returns the {@link DoNothingCopyBehaviourCallback}
+     * @return Returns the {@link DoNothingCopyBehaviourCallback}
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
@@ -125,8 +126,7 @@ public class MultilingualDocumentAspect implements
     }
 
     /**
-     * Make sure that the child is no longer a translation and that the
-     * associated container is cleaned up, if required.
+     * Make sure that the child is no longer a translation and that the associated container is cleaned up, if required.
      */
     @Override
     public void beforeDeleteChildAssociation(ChildAssociationRef childAssocRef)
@@ -139,20 +139,19 @@ public class MultilingualDocumentAspect implements
     /**
      * Ensure that the locale is unique inside the <b>mlContainer</b>.
      *
-     * If the locale of a pivot translation is modified, the pivot locale reference of the mlContainer
-     * must be modified too.
+     * If the locale of a pivot translation is modified, the pivot locale reference of the mlContainer must be modified too.
      */
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        Locale localeBefore = (Locale)before.get(ContentModel.PROP_LOCALE);
-        
+        Locale localeBefore = (Locale) before.get(ContentModel.PROP_LOCALE);
+
         Locale localeAfter = null;
         Serializable objLocaleAfter = after.get(ContentModel.PROP_LOCALE);
         if (objLocaleAfter != null)
         {
             localeAfter = DefaultTypeConverter.INSTANCE.convert(Locale.class, objLocaleAfter);
         }
-        
+
         // if the local has been modified
         if (localeBefore == null || !localeBefore.equals(localeAfter))
         {
@@ -164,7 +163,7 @@ public class MultilingualDocumentAspect implements
             int childSize = nodeService.getChildAssocs(mlContainer, ContentModel.ASSOC_MULTILINGUAL_CHILD, RegexQNamePattern.MATCH_ALL).size();
 
             // if duplicate locale found
-            if(transSize != childSize)
+            if (transSize != childSize)
             {
                 // throw an exception and the current transaction will be rolled back. The properties will not be
                 // longer in an illegal state.
@@ -176,13 +175,13 @@ public class MultilingualDocumentAspect implements
 
             // get the locale of ML Container
             Locale localMlContainer = (Locale) nodeService.getProperty(
-                        mlContainer,
-                        ContentModel.PROP_LOCALE);
+                    mlContainer,
+                    ContentModel.PROP_LOCALE);
 
             // if locale of the container is equals to the locale of
             // the node (before update). The nodeRef is the pivot language
             // and the locale of the mlContainer must be modified
-            if(localeBefore != null && localeBefore.equals(localMlContainer))
+            if (localeBefore != null && localeBefore.equals(localMlContainer))
             {
                 nodeService.setProperty(
                         mlContainer,

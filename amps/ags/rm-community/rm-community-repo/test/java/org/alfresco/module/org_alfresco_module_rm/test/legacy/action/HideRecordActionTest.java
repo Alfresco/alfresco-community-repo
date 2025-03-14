@@ -56,8 +56,7 @@ public class HideRecordActionTest extends BaseRMTestCase
 
     public void testHideRecordAction()
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 // Create a document so that the user has the write permissions for that document
@@ -87,6 +86,6 @@ public class HideRecordActionTest extends BaseRMTestCase
                 return null;
             }
         },
-        dmCollaborator);
+                dmCollaborator);
     }
 }

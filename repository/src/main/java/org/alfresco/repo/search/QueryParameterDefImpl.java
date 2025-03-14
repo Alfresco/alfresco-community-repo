@@ -25,6 +25,9 @@
  */
 package org.alfresco.repo.search;
 
+import org.dom4j.Element;
+import org.dom4j.Namespace;
+
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -32,8 +35,6 @@ import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.dom4j.Element;
-import org.dom4j.Namespace;
 
 public class QueryParameterDefImpl implements QueryParameterDefinition
 {
@@ -48,24 +49,27 @@ public class QueryParameterDefImpl implements QueryParameterDefinition
 
     private static final org.dom4j.QName DEFAULT_VALUE = new org.dom4j.QName("default-value", new Namespace(NamespaceService.ALFRESCO_PREFIX, NamespaceService.ALFRESCO_URI));
 
-    
     private QName qName;
 
     private PropertyDefinition propertyDefintion;
 
     private DataTypeDefinition dataTypeDefintion;
-    
+
     private boolean hasDefaultValue;
-    
+
     private String defaultValue;
 
     /**
      * QueryParameterDefImpl
      * 
-     * @param qName QName
-     * @param propertyDefinition PropertyDefinition
-     * @param hasDefaultValue boolean
-     * @param defaultValue String
+     * @param qName
+     *            QName
+     * @param propertyDefinition
+     *            PropertyDefinition
+     * @param hasDefaultValue
+     *            boolean
+     * @param defaultValue
+     *            String
      */
     public QueryParameterDefImpl(QName qName, PropertyDefinition propertyDefinition, boolean hasDefaultValue, String defaultValue)
     {
@@ -76,9 +80,12 @@ public class QueryParameterDefImpl implements QueryParameterDefinition
 
     /**
      * 
-     * @param qName QName
-     * @param hasDefaultValue boolean
-     * @param defaultValue String
+     * @param qName
+     *            QName
+     * @param hasDefaultValue
+     *            boolean
+     * @param defaultValue
+     *            String
      */
     private QueryParameterDefImpl(QName qName, boolean hasDefaultValue, String defaultValue)
     {
@@ -87,13 +94,17 @@ public class QueryParameterDefImpl implements QueryParameterDefinition
         this.hasDefaultValue = hasDefaultValue;
         this.defaultValue = defaultValue;
     }
-    
+
     /**
      * 
-     * @param qName QName
-     * @param dataTypeDefintion DataTypeDefinition
-     * @param hasDefaultValue boolean
-     * @param defaultValue String
+     * @param qName
+     *            QName
+     * @param dataTypeDefintion
+     *            DataTypeDefinition
+     * @param hasDefaultValue
+     *            boolean
+     * @param defaultValue
+     *            String
      */
     public QueryParameterDefImpl(QName qName, DataTypeDefinition dataTypeDefintion, boolean hasDefaultValue, String defaultValue)
     {
@@ -117,7 +128,7 @@ public class QueryParameterDefImpl implements QueryParameterDefinition
         return dataTypeDefintion;
     }
 
-    public static QueryParameterDefinition createParameterDefinition(Element element, DictionaryService dictionaryService,  NamespacePrefixResolver nspr)
+    public static QueryParameterDefinition createParameterDefinition(Element element, DictionaryService dictionaryService, NamespacePrefixResolver nspr)
     {
 
         if (element.getQName().getName().equals(ELEMENT_QNAME.getName()))
@@ -146,12 +157,12 @@ public class QueryParameterDefImpl implements QueryParameterDefinition
             boolean hasDefault = false;
             String defaultValue = null;
             Element defaultValueElement = element.element(DEFAULT_VALUE.getName());
-            if(defaultValueElement != null)
+            if (defaultValueElement != null)
             {
                 hasDefault = true;
                 defaultValue = defaultValueElement.getText();
             }
-            
+
             if (propDef != null)
             {
                 return new QueryParameterDefImpl(qName, propDef, hasDefault, defaultValue);
@@ -178,9 +189,7 @@ public class QueryParameterDefImpl implements QueryParameterDefinition
     }
 
     /**
-     * There may be a default value which is null ie <default-value/> the empty
-     * string <default-value></default-value> or no entry at all for no default
-     * value
+     * There may be a default value which is null ie <default-value/> the empty string <default-value></default-value> or no entry at all for no default value
      */
     public String getDefault()
     {

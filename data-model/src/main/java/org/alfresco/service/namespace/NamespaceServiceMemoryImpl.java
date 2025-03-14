@@ -31,9 +31,7 @@ import java.util.Collection;
 import org.alfresco.util.OneToManyHashBiMap;
 
 /**
- * A basic implementation of the NamespaceService interface intended for use in
- * unit tests. This implementation does not persist any changes beyond the
- * lifetime of the object.
+ * A basic implementation of the NamespaceService interface intended for use in unit tests. This implementation does not persist any changes beyond the lifetime of the object.
  * 
  * @author Nick Smith
  */

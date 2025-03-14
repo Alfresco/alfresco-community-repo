@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.requests;
 
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.RestWrapper;
@@ -33,13 +35,12 @@ import org.alfresco.rest.model.RestNodeModelsCollection;
 import org.alfresco.rest.model.RestRenditionInfoModel;
 import org.alfresco.rest.model.RestRenditionInfoModelCollection;
 import org.alfresco.utility.model.RepoTestModel;
-import org.springframework.http.HttpMethod;
 
 public class Trashcan extends ModelRequest<Trashcan>
 {
-    public Trashcan(RestWrapper restWrapper) 
+    public Trashcan(RestWrapper restWrapper)
     {
-      super(restWrapper);
+        super(restWrapper);
     }
 
     /**

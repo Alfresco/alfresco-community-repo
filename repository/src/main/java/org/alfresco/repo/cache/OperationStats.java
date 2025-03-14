@@ -25,11 +25,8 @@
  */
 package org.alfresco.repo.cache;
 
-
 /**
- * Represents a single cache operation type's statistics.
- * For example, the cummalative time spent performing a cache's remove operation
- * and the number of times that the remove was performed.
+ * Represents a single cache operation type's statistics. For example, the cummalative time spent performing a cache's remove operation and the number of times that the remove was performed.
  * <p>
  * Instances are immutable.
  */
@@ -39,13 +36,13 @@ public final class OperationStats
     private final double totalTime;
     /** Count of how many instances of this operation occurred. */
     private final long count;
-    
+
     public OperationStats(double totalTime, long count)
     {
         this.totalTime = totalTime;
         this.count = count;
     }
-    
+
     public OperationStats(OperationStats source, double totalTime, long count)
     {
         if (Double.compare(source.totalTime, Double.NaN) == 0)
@@ -59,7 +56,7 @@ public final class OperationStats
         }
         this.count = source.count + count;
     }
-    
+
     public double meanTime()
     {
         return totalTime / count;

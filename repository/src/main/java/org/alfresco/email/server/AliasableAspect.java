@@ -28,14 +28,17 @@ package org.alfresco.email.server;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
-import org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeRemoveAspectPolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -46,8 +49,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Class that supports functionality of email aliasable aspect.
@@ -56,32 +57,34 @@ import org.apache.commons.logging.LogFactory;
  * @since 2.2
  */
 public class AliasableAspect implements NodeServicePolicies.OnAddAspectPolicy,
-    NodeServicePolicies.BeforeRemoveAspectPolicy,
-    NodeServicePolicies.OnUpdatePropertiesPolicy,
-    NodeServicePolicies.BeforeDeleteNodePolicy,
-    CopyServicePolicies.OnCopyNodePolicy
+        NodeServicePolicies.BeforeRemoveAspectPolicy,
+        NodeServicePolicies.OnUpdatePropertiesPolicy,
+        NodeServicePolicies.BeforeDeleteNodePolicy,
+        CopyServicePolicies.OnCopyNodePolicy
 {
     private PolicyComponent policyComponent;
 
     private NodeService nodeService;
-    
+
     private AttributeService attributeService;
-    
+
     private static Log logger = LogFactory.getLog(AliasableAspect.class);
 
     /**
      * The first "key" into the attribute table - identifies that the attribute is for this class
      */
     public final static String ALIASABLE_ATTRIBUTE_KEY_1 = "AliasableAspect";
-    
+
     /**
      * The second "key" into the attribute table - identifies that the attribute is an alias
      */
     public final static String ALIASABLE_ATTRIBUTE_KEY_2 = "Alias";
-    
-    private final static String ERROR_MSG_DUPLICATE_ALIAS="email.server.err.duplicate_alias";
+
+    private final static String ERROR_MSG_DUPLICATE_ALIAS = "email.server.err.duplicate_alias";
+
     /**
-     * @param nodeService  Alfresco Node Service
+     * @param nodeService
+     *            Alfresco Node Service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -89,7 +92,8 @@ public class AliasableAspect implements NodeServicePolicies.OnAddAspectPolicy,
     }
 
     /**
-     * @param policyComponent  Alfresco Policy Component
+     * @param policyComponent
+     *            Alfresco Policy Component
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -104,32 +108,31 @@ public class AliasableAspect implements NodeServicePolicies.OnAddAspectPolicy,
         PropertyCheck.mandatory(this, "policyComponent", policyComponent);
         PropertyCheck.mandatory(this, "nodeService", nodeService);
         PropertyCheck.mandatory(this, "attributeService", attributeService);
-        
-        // Register the policy behaviours
-        policyComponent.bindClassBehaviour(OnAddAspectPolicy.QNAME, 
-           EmailServerModel.ASPECT_ALIASABLE, 
-            new JavaBehaviour(this, "onAddAspect", NotificationFrequency.FIRST_EVENT));
- 
-        policyComponent.bindClassBehaviour(BeforeRemoveAspectPolicy.QNAME,
-           EmailServerModel.ASPECT_ALIASABLE, 
-           new JavaBehaviour(this, "beforeRemoveAspect", NotificationFrequency.FIRST_EVENT));
 
-        policyComponent.bindClassBehaviour(OnUpdatePropertiesPolicy.QNAME, 
-            EmailServerModel.ASPECT_ALIASABLE, 
-            new JavaBehaviour(this, "onUpdateProperties"));
-        
-        policyComponent.bindClassBehaviour(BeforeDeleteNodePolicy.QNAME, 
-                EmailServerModel.ASPECT_ALIASABLE, 
+        // Register the policy behaviours
+        policyComponent.bindClassBehaviour(OnAddAspectPolicy.QNAME,
+                EmailServerModel.ASPECT_ALIASABLE,
+                new JavaBehaviour(this, "onAddAspect", NotificationFrequency.FIRST_EVENT));
+
+        policyComponent.bindClassBehaviour(BeforeRemoveAspectPolicy.QNAME,
+                EmailServerModel.ASPECT_ALIASABLE,
+                new JavaBehaviour(this, "beforeRemoveAspect", NotificationFrequency.FIRST_EVENT));
+
+        policyComponent.bindClassBehaviour(OnUpdatePropertiesPolicy.QNAME,
+                EmailServerModel.ASPECT_ALIASABLE,
+                new JavaBehaviour(this, "onUpdateProperties"));
+
+        policyComponent.bindClassBehaviour(BeforeDeleteNodePolicy.QNAME,
+                EmailServerModel.ASPECT_ALIASABLE,
                 new JavaBehaviour(this, "beforeDeleteNode"));
-        
-        policyComponent.bindClassBehaviour(CopyServicePolicies.OnCopyNodePolicy.QNAME, 
-            EmailServerModel.ASPECT_ALIASABLE, 
-            new JavaBehaviour(this, "getCopyCallback"));
+
+        policyComponent.bindClassBehaviour(CopyServicePolicies.OnCopyNodePolicy.QNAME,
+                EmailServerModel.ASPECT_ALIASABLE,
+                new JavaBehaviour(this, "getCopyCallback"));
     }
-       
-    
+
     /**
-     * method to normalise an email alias.   
+     * method to normalise an email alias.
      * 
      * Currently this involves trimmimg and lower casing, but it may change in future
      * 
@@ -138,7 +141,7 @@ public class AliasableAspect implements NodeServicePolicies.OnAddAspectPolicy,
      */
     public static String normaliseAlias(String value)
     {
-        if(value != null)
+        if (value != null)
         {
             return value.toLowerCase();
         }
@@ -146,21 +149,24 @@ public class AliasableAspect implements NodeServicePolicies.OnAddAspectPolicy,
     }
 
     /**
-     * Set the email alias for the specified node. 
+     * Set the email alias for the specified node.
      * 
      * If the rule is broken, AlfrescoRuntimeException will be thrown.
      * 
-     * @param nodeRef Reference to target node
-     * @param alias Alias that we want to set to the target node
-     * @exception AlfrescoRuntimeException if the <b>alias</b> property is duplicated by another node.
+     * @param nodeRef
+     *            Reference to target node
+     * @param alias
+     *            Alias that we want to set to the target node
+     * @exception AlfrescoRuntimeException
+     *                if the <b>alias</b> property is duplicated by another node.
      */
     public void addAlias(NodeRef nodeRef, String alias)
     {
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
             logger.debug("add email alias nodeRef:" + nodeRef + ", alias:" + alias);
         }
-        // first try to see if the new alias is in use elsewhere?   
+        // first try to see if the new alias is in use elsewhere?
         try
         {
             attributeService.createAttribute(nodeRef, ALIASABLE_ATTRIBUTE_KEY_1, ALIASABLE_ATTRIBUTE_KEY_2, normaliseAlias(alias));
@@ -169,41 +175,45 @@ public class AliasableAspect implements NodeServicePolicies.OnAddAspectPolicy,
         {
             throw AlfrescoRuntimeException.create(ERROR_MSG_DUPLICATE_ALIAS, normaliseAlias(alias));
         }
-        
+
     }
-    
+
     /**
      * remove the specified alias
-     * @param alias to remove
+     * 
+     * @param alias
+     *            to remove
      */
     public void removeAlias(String alias)
     {
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
             logger.debug("remove email alias alias:" + alias);
         }
         attributeService.removeAttribute(ALIASABLE_ATTRIBUTE_KEY_1, ALIASABLE_ATTRIBUTE_KEY_2, normaliseAlias(alias));
-    }    
-    
+    }
+
     /**
      * Get a node ref by its email alias
+     * 
      * @return the node ref, or null if there is no node for that alias
      */
     public NodeRef getByAlias(String alias)
     {
         Serializable value = attributeService.getAttribute(ALIASABLE_ATTRIBUTE_KEY_1, ALIASABLE_ATTRIBUTE_KEY_2, normaliseAlias(alias));
-        
-        if(value instanceof NodeRef)
+
+        if (value instanceof NodeRef)
         {
-            return (NodeRef)value;
+            return (NodeRef) value;
         }
-        
+
         return null;
     }
 
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     * @exception AlfrescoRuntimeException Throws if the <b>alias</b> property is duplicated.
+     * @exception AlfrescoRuntimeException
+     *                Throws if the <b>alias</b> property is duplicated.
      */
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
@@ -216,25 +226,26 @@ public class AliasableAspect implements NodeServicePolicies.OnAddAspectPolicy,
 
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
-     * @exception AlfrescoRuntimeException Throws if the <b>alias</b> property is duplicated.
+     * @exception AlfrescoRuntimeException
+     *                Throws if the <b>alias</b> property is duplicated.
      */
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        String oldAlias = (String)before.get(EmailServerModel.PROP_ALIAS);
-        String newAlias = (String)after.get(EmailServerModel.PROP_ALIAS);
-        
-        if(oldAlias != null && newAlias != null && (normaliseAlias(oldAlias)).equals(normaliseAlias(newAlias)))
+        String oldAlias = (String) before.get(EmailServerModel.PROP_ALIAS);
+        String newAlias = (String) after.get(EmailServerModel.PROP_ALIAS);
+
+        if (oldAlias != null && newAlias != null && (normaliseAlias(oldAlias)).equals(normaliseAlias(newAlias)))
         {
             // alias has not changed
             return;
         }
-        
+
         if (newAlias != null)
         {
             addAlias(nodeRef, newAlias);
         }
-        
-        if(oldAlias != null)
+
+        if (oldAlias != null)
         {
             removeAlias(oldAlias);
         }
@@ -244,18 +255,18 @@ public class AliasableAspect implements NodeServicePolicies.OnAddAspectPolicy,
     @Override
     public void beforeRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        String alias = (String)nodeService.getProperty(nodeRef, EmailServerModel.PROP_ALIAS);
-        if(alias != null)
+        String alias = (String) nodeService.getProperty(nodeRef, EmailServerModel.PROP_ALIAS);
+        if (alias != null)
         {
             removeAlias(alias);
         }
     }
-    
+
     @Override
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-        String alias = (String)nodeService.getProperty(nodeRef, EmailServerModel.PROP_ALIAS);
-        if(alias != null)
+        String alias = (String) nodeService.getProperty(nodeRef, EmailServerModel.PROP_ALIAS);
+        if (alias != null)
         {
             removeAlias(alias);
         }

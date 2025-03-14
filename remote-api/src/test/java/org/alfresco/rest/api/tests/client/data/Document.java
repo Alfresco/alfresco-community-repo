@@ -35,7 +35,8 @@ import static org.junit.Assert.assertTrue;
  */
 public class Document extends Node
 {
-    public Document() {
+    public Document()
+    {
         super();
     }
 

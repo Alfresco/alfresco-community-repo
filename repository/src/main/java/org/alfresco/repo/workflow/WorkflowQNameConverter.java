@@ -41,7 +41,7 @@ public class WorkflowQNameConverter
     private static final int MAX_QNAME_CACHE_SIZE = 5000;
     private final QNameCache cache = new QNameCache(MAX_QNAME_CACHE_SIZE);
     private final NamespacePrefixResolver prefixResolver;
-    
+
     public WorkflowQNameConverter(NamespacePrefixResolver prefixResolver)
     {
         this.prefixResolver = prefixResolver;
@@ -50,8 +50,9 @@ public class WorkflowQNameConverter
     /**
      * Map QName to workflow variable name
      * 
-     * @param qName  QName
-     * @return  workflow variable name
+     * @param qName
+     *            QName
+     * @return workflow variable name
      */
     public String mapQNameToName(QName qName)
     {
@@ -68,8 +69,9 @@ public class WorkflowQNameConverter
     /**
      * Map QName to workflow variable name
      * 
-     * @param name  QName
-     * @return  workflow variable name
+     * @param name
+     *            QName
+     * @return workflow variable name
      */
     public QName mapNameToQName(String name)
     {
@@ -87,22 +89,22 @@ public class WorkflowQNameConverter
     {
         cache.clear();
     }
-    
+
     private QName convertNameToQName(String name)
     {
         return convertNameToQName(name, prefixResolver);
     }
-    
+
     public static QName convertNameToQName(String name, NamespacePrefixResolver prefixResolver)
     {
-        if (name.indexOf(QName.NAMESPACE_BEGIN)==0)
+        if (name.indexOf(QName.NAMESPACE_BEGIN) == 0)
         {
             return QName.createQName(name);
         }
         String qName = name;
-        if (name.indexOf(QName.NAMESPACE_PREFIX)==-1)
+        if (name.indexOf(QName.NAMESPACE_PREFIX) == -1)
         {
-            if (name.indexOf('_')==-1)
+            if (name.indexOf('_') == -1)
             {
                 return QName.createQName(NamespaceService.DEFAULT_URI, name);
             }
@@ -122,7 +124,7 @@ public class WorkflowQNameConverter
     {
         return convertQNameToName(name, prefixResolver);
     }
-    
+
     public static String convertQNameToName(QName name, NamespacePrefixResolver prefixResolver)
     {
         // NOTE: Map names using old conversion scheme (i.e. : -> _) as well as new scheme (i.e. } -> _)

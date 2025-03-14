@@ -25,8 +25,6 @@
  */
 package org.alfresco.repo.jscript;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.Context;
 
 /**

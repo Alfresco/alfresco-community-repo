@@ -73,7 +73,7 @@ public class WorkflowModelBuilderTest extends TestCase
     private static final String lastName = "Bloggs";
     private static final NodeRef person = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, userName);
     private static final NodeRef workflowPackage = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "workflowPackage");
-    
+
     private NamespaceService namespaceService;
     private PersonService personService;
     private NodeService nodeService;
@@ -87,7 +87,7 @@ public class WorkflowModelBuilderTest extends TestCase
     {
         Date date = new Date();
         WorkflowTask task = makeTask(date);
-        
+
         Map<String, Object> model = builder.buildSimple(task, null);
         Object id = model.get(WorkflowModelBuilder.TASK_ID);
         assertEquals(task.getId(), id);
@@ -103,12 +103,12 @@ public class WorkflowModelBuilderTest extends TestCase
         assertEquals(false, model.get(WorkflowModelBuilder.TASK_IS_REASSIGNABLE));
         assertEquals(false, model.get(WorkflowModelBuilder.TASK_IS_CLAIMABLE));
         assertEquals(false, model.get(WorkflowModelBuilder.TASK_IS_RELEASABLE));
-        
+
         Map<String, Object> owner = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_OWNER);
         assertEquals(userName, owner.get(WorkflowModelBuilder.PERSON_USER_NAME));
         assertEquals(firstName, owner.get(WorkflowModelBuilder.PERSON_FIRST_NAME));
         assertEquals(lastName, owner.get(WorkflowModelBuilder.PERSON_LAST_NAME));
-        
+
         Map<String, Object> props = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_PROPERTIES);
         assertEquals(task.getProperties().size() + 1, props.size());
         assertEquals(5, props.get("test_int"));
@@ -116,8 +116,8 @@ public class WorkflowModelBuilderTest extends TestCase
         assertEquals("foo bar", props.get("test_string"));
         String dateStr = (String) props.get("test_date");
         assertEquals(date, ISO8601DateFormat.parse(dateStr));
-        
-        Map<String, Object> workflowInstance = (Map<String, Object>)model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE);
+
+        Map<String, Object> workflowInstance = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE);
         assertNotNull(workflowInstance);
         WorkflowInstance instance = task.getPath().getInstance();
         assertEquals(instance.getId(), workflowInstance.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_ID));
@@ -125,11 +125,11 @@ public class WorkflowModelBuilderTest extends TestCase
         String startDateStr = ISO8601DateFormat.format(instance.getStartDate());
         String workFlowStartDateStr = (String) workflowInstance.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_START_DATE);
         assertEquals(startDateStr, ISO8601DateFormat.formatToZulu(workFlowStartDateStr));
-        
+
         task.getProperties().put(WorkflowModel.ASSOC_POOLED_ACTORS, new ArrayList<NodeRef>(0));
         model = builder.buildSimple(task, null);
         assertEquals(false, model.get(WorkflowModelBuilder.TASK_IS_POOLED));
-        
+
         ArrayList<NodeRef> actors = new ArrayList<NodeRef>(1);
         actors.add(person);
         task.getProperties().put(WorkflowModel.ASSOC_POOLED_ACTORS, actors);
@@ -137,7 +137,7 @@ public class WorkflowModelBuilderTest extends TestCase
         assertEquals(true, model.get(WorkflowModelBuilder.TASK_IS_POOLED));
 
         model = builder.buildSimple(task, Arrays.asList("test_int", "test_string"));
-        //Check task owner still created properly.
+        // Check task owner still created properly.
         owner = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_OWNER);
         assertEquals(userName, owner.get(WorkflowModelBuilder.PERSON_USER_NAME));
 
@@ -153,7 +153,7 @@ public class WorkflowModelBuilderTest extends TestCase
     {
         Date date = new Date();
         WorkflowTask workflowTask = makeTask(date);
-        
+
         Map<String, Object> model = builder.buildDetailed(workflowTask);
 
         Object id = model.get(WorkflowModelBuilder.TASK_ID);
@@ -175,19 +175,19 @@ public class WorkflowModelBuilderTest extends TestCase
         assertEquals(workflowTask.getProperties().size() + 1, props.size());
 
         Map<String, Object> workflowInstance = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE);
-        
+
         WorkflowInstance instance = workflowTask.getPath().getInstance();
         assertEquals(instance.getId(), workflowInstance.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_ID));
         assertEquals(instance.isActive(), workflowInstance.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_IS_ACTIVE));
         String startDateStr = ISO8601DateFormat.format(instance.getStartDate());
         String startDateBuilderStr = ISO8601DateFormat.formatToZulu((String) workflowInstance.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_START_DATE));
-        assertEquals(startDateStr, startDateBuilderStr);        
-        
+        assertEquals(startDateStr, startDateBuilderStr);
+
         WorkflowDefinition workflowDef = instance.getDefinition();
         assertEquals(workflowDef.getName(), workflowInstance.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_NAME));
         assertEquals(workflowDef.getTitle(), workflowInstance.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_TITLE));
         assertEquals(workflowDef.getDescription(), workflowInstance.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_DESCRIPTION));
-        
+
         Map<String, Object> actualDefinition = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_DEFINITION);
         WorkflowTaskDefinition taskDef = workflowTask.getDefinition();
         assertEquals(taskDef.getId(), actualDefinition.get(WorkflowModelBuilder.TASK_DEFINITION_ID));
@@ -220,12 +220,12 @@ public class WorkflowModelBuilderTest extends TestCase
             i++;
         }
     }
-    
+
     public void testBuildWorkflowDefinition() throws Exception
     {
         WorkflowTaskDefinition workflowTaskDefinition = makeTaskDefinition();
         WorkflowDefinition workflowDefinition = new WorkflowDefinition("The Id", "The Name", "The Version", "The Title", "The Description", workflowTaskDefinition);
-        
+
         Map<String, Object> model = builder.buildSimple(workflowDefinition);
         assertEquals(workflowDefinition.getId(), model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_ID));
         assertEquals("api/workflow-definitions/" + workflowDefinition.getId(), model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_URL));
@@ -237,24 +237,24 @@ public class WorkflowModelBuilderTest extends TestCase
     @SuppressWarnings("unchecked")
     public void testBuildWorkflowInstance() throws Exception
     {
-        WorkflowInstance workflowInstance = makeWorkflowInstance(null);                        
-        
+        WorkflowInstance workflowInstance = makeWorkflowInstance(null);
+
         Map<String, Object> model = builder.buildSimple(workflowInstance);
-        
+
         assertEquals(workflowInstance.getId(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_ID));
         assertTrue(model.containsKey(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_URL));
         assertEquals(workflowInstance.getDefinition().getName(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_NAME));
         assertEquals(workflowInstance.getDefinition().getTitle(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_TITLE));
         assertEquals(workflowInstance.getDefinition().getDescription(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_DESCRIPTION));
         assertEquals(workflowInstance.getDescription(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_MESSAGE));
-        assertEquals(workflowInstance.isActive(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_IS_ACTIVE));        
+        assertEquals(workflowInstance.isActive(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_IS_ACTIVE));
         String startDate = ISO8601DateFormat.format(workflowInstance.getStartDate());
         String endDate = ISO8601DateFormat.format(workflowInstance.getEndDate());
         String startDateBuilder = ISO8601DateFormat.formatToZulu((String) model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_START_DATE));
         String endDateBuilder = ISO8601DateFormat.formatToZulu((String) model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_END_DATE));
         assertEquals(startDate, startDateBuilder);
         assertEquals(endDate, endDateBuilder);
-        
+
         Map<String, Object> initiator = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_INITIATOR);
         if (initiator != null)
         {
@@ -262,10 +262,10 @@ public class WorkflowModelBuilderTest extends TestCase
             assertEquals(firstName, initiator.get(WorkflowModelBuilder.PERSON_FIRST_NAME));
             assertEquals(lastName, initiator.get(WorkflowModelBuilder.PERSON_LAST_NAME));
         }
-        
+
         assertTrue(model.containsKey(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_DEFINITION_URL));
     }
-    
+
     @SuppressWarnings("unchecked")
     public void testBuildWorkflowInstanceDetailed() throws Exception
     {
@@ -274,11 +274,11 @@ public class WorkflowModelBuilderTest extends TestCase
         when(workflowTaskDefinition.getMetadata().getName()).thenReturn(taskTypeName);
         when(workflowTaskDefinition.getMetadata().getTitle(dictionaryService)).thenReturn("The Type Title");
         when(workflowTaskDefinition.getMetadata().getDescription(dictionaryService)).thenReturn("The Type Description");
-        
+
         WorkflowInstance workflowInstance = makeWorkflowInstance(workflowTaskDefinition);
-        
+
         Map<String, Object> model = builder.buildDetailed(workflowInstance, true);
-        
+
         assertEquals(workflowInstance.getId(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_ID));
         assertEquals(workflowInstance.getDefinition().getName(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_NAME));
         assertEquals(workflowInstance.getDefinition().getTitle(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_TITLE));
@@ -286,11 +286,11 @@ public class WorkflowModelBuilderTest extends TestCase
         assertEquals(workflowInstance.isActive(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_IS_ACTIVE));
         String startDateStr = ISO8601DateFormat.format(workflowInstance.getStartDate());
         String endDateStr = ISO8601DateFormat.format(workflowInstance.getEndDate());
-        String startDateBuilderStr = ISO8601DateFormat.formatToZulu((String)model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_START_DATE)) ;
-        String endDateBuilderStr = ISO8601DateFormat.formatToZulu((String)model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_END_DATE)); 
-        assertEquals( startDateStr,startDateBuilderStr);
+        String startDateBuilderStr = ISO8601DateFormat.formatToZulu((String) model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_START_DATE));
+        String endDateBuilderStr = ISO8601DateFormat.formatToZulu((String) model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_END_DATE));
+        assertEquals(startDateStr, startDateBuilderStr);
         assertEquals(endDateStr, endDateBuilderStr);
-        
+
         Map<String, Object> initiator = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_INITIATOR);
         if (initiator != null)
         {
@@ -298,24 +298,24 @@ public class WorkflowModelBuilderTest extends TestCase
             assertEquals(firstName, initiator.get(WorkflowModelBuilder.PERSON_FIRST_NAME));
             assertEquals(lastName, initiator.get(WorkflowModelBuilder.PERSON_LAST_NAME));
         }
-        
-        assertEquals(workflowInstance.getContext().toString(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_CONTEXT));        
+
+        assertEquals(workflowInstance.getContext().toString(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_CONTEXT));
         assertEquals(workflowInstance.getWorkflowPackage().toString(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_PACKAGE));
-        
+
         Map<String, Object> taskInstanceModel = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_DEFINITION);
-        
+
         assertEquals(workflowInstance.getDefinition().getVersion(), taskInstanceModel.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_VERSION));
-        assertEquals(workflowInstance.getDefinition().getStartTaskDefinition().getMetadata().getName(), 
-                    taskInstanceModel.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_START_TASK_DEFINITION_TYPE));
-        
+        assertEquals(workflowInstance.getDefinition().getStartTaskDefinition().getMetadata().getName(),
+                taskInstanceModel.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_START_TASK_DEFINITION_TYPE));
+
     }
-    
+
     private WorkflowNode makeNode()
     {
         String name = "The Node Name";
         String title = "The Node Title";
         String description = "The Node Description";
-        String type= "The Node Type";
+        String type = "The Node Type";
         boolean isTaskNode = true;
         WorkflowTransition workflowTransition = makeTransition();
         return new WorkflowNode(name, title, description, type, isTaskNode, workflowTransition);
@@ -354,11 +354,11 @@ public class WorkflowModelBuilderTest extends TestCase
         WorkflowDefinition definition = new WorkflowDefinition(
                 "The Id", "The Name", "1", "The Title", "The Description", null);
         WorkflowInstance instance = new WorkflowInstance("",
-                    definition, null, null, null,
-                    workflowPackage, true, startDate, null);
+                definition, null, null, null,
+                workflowPackage, true, startDate, null);
         return new WorkflowPath(id, instance, null, true);
     }
-    
+
     private WorkflowTask makeTask(Date date)
     {
         String description = "Task Desc";
@@ -370,9 +370,9 @@ public class WorkflowModelBuilderTest extends TestCase
         WorkflowTaskDefinition definition = makeTaskDefinition();
         HashMap<QName, Serializable> properties = makeTaskProperties(date);
         return new WorkflowTask(id,
-                    definition, name, title, description, state, path, properties);
+                definition, name, title, description, state, path, properties);
     }
-    
+
     private WorkflowInstance makeWorkflowInstance(WorkflowTaskDefinition taskDefinition)
     {
         String id = "The id";
@@ -381,10 +381,10 @@ public class WorkflowModelBuilderTest extends TestCase
         Date endDate = new Date();
         NodeRef initiator = person;
         WorkflowDefinition definition = new WorkflowDefinition(
-                    "The Id", "The Name", "The Version", "The Title", "The Description", taskDefinition);
+                "The Id", "The Name", "The Version", "The Title", "The Description", taskDefinition);
         return new WorkflowInstance(id,
-                    definition, "", initiator, workflowPackage,
-                    workflowPackage, active, startDate, endDate);
+                definition, "", initiator, workflowPackage,
+                workflowPackage, active, startDate, endDate);
     }
 
     private HashMap<QName, Serializable> makeTaskProperties(Date date)
@@ -410,11 +410,11 @@ public class WorkflowModelBuilderTest extends TestCase
         namespaceService.registerNamespace("test", URI);
         namespaceService.registerNamespace(NamespaceService.CONTENT_MODEL_PREFIX, NamespaceService.CONTENT_MODEL_1_0_URI);
         namespaceService.registerNamespace(NamespaceService.BPM_MODEL_PREFIX, NamespaceService.BPM_MODEL_1_0_URI);
-        
+
         personService = mock(PersonService.class);
         when(personService.getPerson(userName)).thenReturn(person);
         when(personService.personExists(userName)).thenReturn(true);
-        
+
         nodeService = mock(NodeService.class);
         Map<QName, Serializable> personProps = new HashMap<QName, Serializable>();
         personProps.put(ContentModel.PROP_USERNAME, userName);
@@ -424,11 +424,11 @@ public class WorkflowModelBuilderTest extends TestCase
         when(nodeService.getProperty(person, ContentModel.PROP_USERNAME)).thenReturn(userName);
         when(nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME)).thenReturn(firstName);
         when(nodeService.getProperty(person, ContentModel.PROP_LASTNAME)).thenReturn(lastName);
-        
+
         workflowService = mock(WorkflowService.class);
         dictionaryService = mock(DictionaryService.class);
         authenticationService = mock(AuthenticationService.class);
-        
+
         builder = new WorkflowModelBuilder(namespaceService, nodeService, authenticationService, personService, workflowService, dictionaryService);
     }
 }

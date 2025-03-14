@@ -32,6 +32,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import freemarker.template.TemplateDateModel;
+import freemarker.template.TemplateMethodModelEx;
+import freemarker.template.TemplateModelException;
+import freemarker.template.TemplateScalarModel;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
+
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -40,12 +46,6 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
-
-import freemarker.template.TemplateDateModel;
-import freemarker.template.TemplateMethodModelEx;
-import freemarker.template.TemplateModelException;
-import freemarker.template.TemplateScalarModel;
 
 /**
  * A factory implementation to build suitable models for the freemarker templating language.
@@ -54,9 +54,7 @@ import freemarker.template.TemplateScalarModel;
  */
 public class FreeMarkerWithLuceneExtensionsModelFactory implements TemplateActionModelFactory
 {
-    /*
-     * Service registry
-     */
+    /* Service registry */
     private ServiceRegistry serviceRegistry;
 
     /**
@@ -68,23 +66,25 @@ public class FreeMarkerWithLuceneExtensionsModelFactory implements TemplateActio
     }
 
     // IOC
-    
+
     /**
      * Set the service registry
-     * @param serviceRegistry ServiceRegistry
+     * 
+     * @param serviceRegistry
+     *            ServiceRegistry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
     }
 
-    /** 
+    /**
      * Get the non-contextual model.
      * 
-     * This defines: 
+     * This defines:
      * <ol>
-     *     <li>dates: date, today, yesterday, tomorrow
-     *     <li>functions: luceneDateRange, selectSingleNode
+     * <li>dates: date, today, yesterday, tomorrow
+     * <li>functions: luceneDateRange, selectSingleNode
      * </ol>
      */
     public Map<String, Object> getModel()
@@ -94,16 +94,16 @@ public class FreeMarkerWithLuceneExtensionsModelFactory implements TemplateActio
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
-        
+
         HashMap<String, Object> model = new HashMap<String, Object>();
 
         model.put("date", new Date());
-        
+
         Date today = cal.getTime();
         model.put("today", today);
-        
+
         model.put("yesterday", Duration.add(today, new Duration("-P1D")));
-        
+
         model.put("tomorrow", Duration.add(today, new Duration("P1D")));
 
         model.put("luceneDateRange", new LuceneDateRangeFunction());
@@ -114,7 +114,7 @@ public class FreeMarkerWithLuceneExtensionsModelFactory implements TemplateActio
     }
 
     /**
-     * Defines a non-contextual nod model + the contextual node 
+     * Defines a non-contextual nod model + the contextual node
      */
     public Map<String, Object> getModel(NodeRef nodeRef)
     {
@@ -127,7 +127,7 @@ public class FreeMarkerWithLuceneExtensionsModelFactory implements TemplateActio
     }
 
     /**
-     * Function to find a single node by query 
+     * Function to find a single node by query
      * 
      * @author Andy Hind
      */
@@ -177,8 +177,8 @@ public class FreeMarkerWithLuceneExtensionsModelFactory implements TemplateActio
                 sp.setLanguage(language);
                 sp.setQuery(query);
 
-                ResultSet results = null; 
-                    
+                ResultSet results = null;
+
                 try
                 {
                     results = serviceRegistry.getSearchService().query(sp);
@@ -199,7 +199,7 @@ public class FreeMarkerWithLuceneExtensionsModelFactory implements TemplateActio
                 }
                 finally
                 {
-                    if(results != null)
+                    if (results != null)
                     {
                         results.close();
                     }
@@ -295,8 +295,7 @@ public class FreeMarkerWithLuceneExtensionsModelFactory implements TemplateActio
     }
 
     /**
-     * The name of the template engine for which this model applies.
-     * In this case, "freemarker".
+     * The name of the template engine for which this model applies. In this case, "freemarker".
      */
     public String getTemplateEngine()
     {

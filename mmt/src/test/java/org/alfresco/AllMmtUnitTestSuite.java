@@ -39,5 +39,4 @@ import org.junit.runners.Suite;
         org.alfresco.repo.module.tool.ModuleServiceImplTest.class
 })
 public class AllMmtUnitTestSuite
-{
-}
+{}

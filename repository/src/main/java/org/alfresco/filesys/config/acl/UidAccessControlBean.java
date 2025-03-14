@@ -59,10 +59,9 @@ public class UidAccessControlBean extends AccessControlBean
         return this.uid;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.filesys.config.acl.AccessControlBean#toAccessControl()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.filesys.config.acl.AccessControlBean#toAccessControl() */
     @Override
     public AccessControl toAccessControl()
     {

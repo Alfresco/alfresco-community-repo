@@ -47,12 +47,12 @@ public class ProcessItemsRelation implements RelationshipResourceAction.ReadById
 {
     private Processes processes;
 
-	public void setProcesses(Processes processes)
-	{
-		this.processes = processes;
-	}
-	
-	@Override
+    public void setProcesses(Processes processes)
+    {
+        this.processes = processes;
+    }
+
+    @Override
     public Item readById(String processId, String id, Parameters parameters) throws RelationshipResourceNotFoundException
     {
         return processes.getItem(processId, id);
@@ -76,15 +76,15 @@ public class ProcessItemsRelation implements RelationshipResourceAction.ReadById
         List<Item> result = new ArrayList<Item>(entity.size());
         for (Item item : entity)
         {
-           result.add(processes.createItem(processId, item));
+            result.add(processes.createItem(processId, item));
         }
         return result;
     }
-    
+
     @Override
     public void delete(String processId, String id, Parameters parameters)
     {
         processes.deleteItem(processId, id);
-        
+
     }
 }

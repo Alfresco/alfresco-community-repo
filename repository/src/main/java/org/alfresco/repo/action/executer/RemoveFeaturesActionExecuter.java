@@ -47,18 +47,19 @@ public class RemoveFeaturesActionExecuter extends ActionExecuterAbstractBase
      */
     public static final String NAME = "remove-features";
     public static final String PARAM_ASPECT_NAME = "aspect-name";
-    
+
     /**
      * The node service
      */
     private NodeService nodeService;
-    
+
     /**
      * Set the node service
      * 
-     * @param nodeService  the node service
+     * @param nodeService
+     *            the node service
      */
-    public void setNodeService(NodeService nodeService) 
+    public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
@@ -71,7 +72,7 @@ public class RemoveFeaturesActionExecuter extends ActionExecuterAbstractBase
         if (this.nodeService.exists(actionedUponNodeRef) == true)
         {
             // Remove the aspect
-            QName aspectQName = (QName)ruleAction.getParameterValue(PARAM_ASPECT_NAME);
+            QName aspectQName = (QName) ruleAction.getParameterValue(PARAM_ASPECT_NAME);
             this.nodeService.removeAspect(actionedUponNodeRef, aspectQName);
         }
     }
@@ -80,7 +81,7 @@ public class RemoveFeaturesActionExecuter extends ActionExecuterAbstractBase
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_ASPECT_NAME, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_ASPECT_NAME), false, "ac-aspects"));
     }

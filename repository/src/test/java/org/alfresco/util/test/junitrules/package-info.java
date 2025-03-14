@@ -28,5 +28,5 @@
  */
 @PackageMarker
 package org.alfresco.util.test.junitrules;
-import org.alfresco.util.PackageMarker;
 
+import org.alfresco.util.PackageMarker;

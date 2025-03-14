@@ -29,6 +29,11 @@ package org.alfresco.repo.invitation;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.service.cmr.invitation.Invitation;
@@ -38,10 +43,6 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.test_category.BaseSpringTestsCategory;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Nick Smith
@@ -53,7 +54,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ActivitiInvitationServiceImplTests extends AbstractInvitationServiceImplTest
 {
     private WorkflowService workflowService;
-    
+
     /**
      * Nominated invites workflows finish without waiting for user accept
      */
@@ -72,26 +73,25 @@ public class ActivitiInvitationServiceImplTests extends AbstractInvitationServic
         List<WorkflowPath> paths = workflowService.getWorkflowPaths(nomInvite.getInviteId());
         assertEquals(0, paths.size());
     }
-    
+
     @Before
     public void before() throws Exception
     {
         super.before();
         this.workflowService = (WorkflowService) applicationContext.getBean("WorkflowService");
-        
+
         // Enable Activiti
         workflowAdminService.setEnabledEngines(Arrays.asList(ActivitiConstants.ENGINE_ID));
     }
-    
+
     @Test
     public void testAddExistingUser() throws Exception
     {
         this.invitationServiceImpl.setNominatedInvitationWorkflowId(
                 WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI_ADD_DIRECT);
         testNominatedInvitationExistingUser(false);
-        
-        List<WorkflowTask> initiatorTasks = 
-                this.workflowService.getAssignedTasks(USER_MANAGER, WorkflowTaskState.IN_PROGRESS);
+
+        List<WorkflowTask> initiatorTasks = this.workflowService.getAssignedTasks(USER_MANAGER, WorkflowTaskState.IN_PROGRESS);
         assertEquals(0, initiatorTasks.size());
     }
 }

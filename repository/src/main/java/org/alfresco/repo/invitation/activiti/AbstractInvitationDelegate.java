@@ -37,9 +37,10 @@ import org.alfresco.service.cmr.invitation.InvitationService;
 public abstract class AbstractInvitationDelegate extends BaseJavaDelegate
 {
     protected InvitationService invitationService;
-    
+
     /**
-     * @param invitationService the invitationService to set
+     * @param invitationService
+     *            the invitationService to set
      */
     public void setInvitationService(InvitationService invitationService)
     {

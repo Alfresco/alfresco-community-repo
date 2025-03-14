@@ -62,72 +62,80 @@ public class GetPeopleCannedQueryFactory extends AbstractCannedQueryFactory<Node
     protected TenantService tenantService;
     protected NodeService nodeService;
     protected AuthorityService authorityService;
-    
+
     public void setNodeDAO(NodeDAO nodeDAO)
     {
         this.nodeDAO = nodeDAO;
     }
-    
+
     public void setQnameDAO(QNameDAO qnameDAO)
     {
         this.qnameDAO = qnameDAO;
     }
-    
-    public void setCannedQueryDAO(CannedQueryDAO cannedQueryDAO) 
+
+    public void setCannedQueryDAO(CannedQueryDAO cannedQueryDAO)
     {
         this.cannedQueryDAO = cannedQueryDAO;
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
     }
-    
+
     @Override
     public CannedQuery<NodeRef> getCannedQuery(CannedQueryParameters parameters)
     {
         return (CannedQuery<NodeRef>) new GetPeopleCannedQuery(nodeDAO, qnameDAO, cannedQueryDAO, tenantService, nodeService, authorityService, parameters);
     }
-    
+
     /**
      * Retrieve an optionally filtered/sorted instance of a {@link CannedQuery} based on parameters including request for a total count (up to a given max)
      * 
      * Note: if both filtering and sorting is required then the combined total of unique QName properties should be the 0 to 3.
      *
-     * @param parentRef             parent node ref
-     * @param pattern               the pattern to use to filter children (wildcard character is '*')
-     * @param filterProps           filter props
-     * @param inclusiveAspects      If not null, only child nodes with any aspect in this collection will be included in the results.
-     * @param exclusiveAspects      If not null, any child nodes with any aspect in this collection will be excluded in the results.
-     * @param includeAdministrators include administrators in the returned results
-     * @param sortProps             sort property pairs (QName and Boolean - true if ascending)
-     * @param pagingRequest         skipCount, maxItems - optionally queryExecutionId and requestTotalCountMax
+     * @param parentRef
+     *            parent node ref
+     * @param pattern
+     *            the pattern to use to filter children (wildcard character is '*')
+     * @param filterProps
+     *            filter props
+     * @param inclusiveAspects
+     *            If not null, only child nodes with any aspect in this collection will be included in the results.
+     * @param exclusiveAspects
+     *            If not null, any child nodes with any aspect in this collection will be excluded in the results.
+     * @param includeAdministrators
+     *            include administrators in the returned results
+     * @param sortProps
+     *            sort property pairs (QName and Boolean - true if ascending)
+     * @param pagingRequest
+     *            skipCount, maxItems - optionally queryExecutionId and requestTotalCountMax
      * 
-     * @return                      an implementation that will execute the query
+     * @return an implementation that will execute the query
      */
     public CannedQuery<NodeRef> getCannedQuery(NodeRef parentRef, String pattern, List<QName> filterProps, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects, boolean includeAdministrators, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         ParameterCheck.mandatory("parentRef", parentRef);
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
-        
+
         int requestTotalCountMax = pagingRequest.getRequestTotalCountMax();
-        
+
         // specific query params - context (parent) and inclusive filters (property values)
         GetPeopleCannedQueryParams paramBean = new GetPeopleCannedQueryParams(tenantService.getName(parentRef), filterProps, pattern, inclusiveAspects, exclusiveAspects, includeAdministrators);
 
         // page details
         CannedQueryPageDetails cqpd = new CannedQueryPageDetails(pagingRequest.getSkipCount(), pagingRequest.getMaxItems(), CannedQueryPageDetails.DEFAULT_PAGE_NUMBER, CannedQueryPageDetails.DEFAULT_PAGE_COUNT);
-        
+
         // sort details
         CannedQuerySortDetails cqsd = null;
         if (sortProps != null)
@@ -138,23 +146,22 @@ public class GetPeopleCannedQueryFactory extends AbstractCannedQueryFactory<Node
                 boolean sortAsc = ((sortProp.getSecond() == null) || sortProp.getSecond());
                 sortPairs.add(new Pair<QName, SortOrder>(sortProp.getFirst(), (sortAsc ? SortOrder.ASCENDING : SortOrder.DESCENDING)));
             }
-            
+
             cqsd = new CannedQuerySortDetails(sortPairs);
         }
-        
+
         // create query params holder
         CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, requestTotalCountMax, pagingRequest.getQueryExecutionId());
-        
+
         // return canned query instance
         return getCannedQuery(params);
     }
 
-    
     @Override
     public void afterPropertiesSet() throws Exception
     {
         super.afterPropertiesSet();
-        
+
         PropertyCheck.mandatory(this, "tenantService", tenantService);
         PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);
         PropertyCheck.mandatory(this, "qnameDAO", qnameDAO);

@@ -25,8 +25,8 @@
  */
 package org.alfresco.repo.node.integrity;
 
-import java.util.List;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Represents an integrity violation
@@ -37,31 +37,33 @@ public class IntegrityRecord implements Serializable
 {
     private String msg;
     private List<StackTraceElement[]> traces;
-    
+
     /**
-     * @param msg the violation message
+     * @param msg
+     *            the violation message
      */
     public IntegrityRecord(String msg)
     {
         this.msg = msg;
         this.traces = null;
     }
-    
+
     /**
      * Add a stack trace to the list of traces associated with this failure
      * 
-     * @param traces a stack trace
+     * @param traces
+     *            a stack trace
      */
     public void setTraces(List<StackTraceElement[]> traces)
     {
         this.traces = traces;
     }
-    
+
     public String getMessage()
     {
         return msg;
     }
-    
+
     /**
      * Dumps the integrity message and, if present, the stack trace
      */

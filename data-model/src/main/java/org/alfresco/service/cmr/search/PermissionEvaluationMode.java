@@ -35,5 +35,5 @@ import org.alfresco.api.AlfrescoPublicApi;
 @AlfrescoPublicApi
 public enum PermissionEvaluationMode
 {
-    EAGER, NONE; 
+    EAGER, NONE;
 }

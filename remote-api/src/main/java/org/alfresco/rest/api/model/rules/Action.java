@@ -103,7 +103,8 @@ public class Action
             return this;
         }
 
-        public Action create() {
+        public Action create()
+        {
             final Action action = new Action();
             action.setActionDefinitionId(actionDefinitionId);
             action.setParams(params);

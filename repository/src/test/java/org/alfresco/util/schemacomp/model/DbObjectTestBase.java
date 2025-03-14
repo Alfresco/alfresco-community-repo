@@ -30,18 +30,19 @@ import static org.mockito.Mockito.inOrder;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.repo.domain.dialect.Dialect;
-import org.alfresco.util.schemacomp.ComparisonUtils;
-import org.alfresco.util.schemacomp.DbObjectVisitor;
-import org.alfresco.util.schemacomp.DbProperty;
-import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Results;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import org.alfresco.repo.domain.dialect.Dialect;
+import org.alfresco.util.schemacomp.ComparisonUtils;
+import org.alfresco.util.schemacomp.DbObjectVisitor;
+import org.alfresco.util.schemacomp.DbProperty;
+import org.alfresco.util.schemacomp.DiffContext;
+import org.alfresco.util.schemacomp.Results;
 
 /**
  * Abstract base class for tests for AbstractDbObject subclasses.
@@ -57,10 +58,13 @@ public abstract class DbObjectTestBase<T extends AbstractDbObject>
     protected DiffContext ctx;
     protected @Mock ComparisonUtils comparisonUtils;
     protected InOrder inOrder;
+
     protected abstract T getThisObject();
+
     protected abstract T getThatObject();
+
     protected @Mock DbObjectVisitor visitor;
-    
+
     @Before
     public final void baseSetUp()
     {
@@ -69,8 +73,7 @@ public abstract class DbObjectTestBase<T extends AbstractDbObject>
         inOrder = inOrder(mocks.toArray());
         ctx = new DiffContext(dialect, differences, null, null);
     }
-    
-    
+
     /**
      * Override to add additional mocks to the InOrder call verification.
      * 
@@ -83,8 +86,7 @@ public abstract class DbObjectTestBase<T extends AbstractDbObject>
         objects.add(comparisonUtils);
         return objects;
     }
-    
-    
+
     @Test
     public void canDiffObjects()
     {
@@ -92,19 +94,19 @@ public abstract class DbObjectTestBase<T extends AbstractDbObject>
         thisObject.setComparisonUtils(comparisonUtils);
         AbstractDbObject thatObject = getThatObject();
         thatObject.setComparisonUtils(comparisonUtils);
-        
+
         // Invoke the method under test
         thisObject.diff(thatObject, ctx);
-        
+
         // The name of the object should be diffed
         inOrder.verify(comparisonUtils).compareSimple(
-                    new DbProperty(thisObject, "name"),
-                    new DbProperty(thatObject, "name"),
-                    ctx);
-        
+                new DbProperty(thisObject, "name"),
+                new DbProperty(thatObject, "name"),
+                ctx);
+
         // Then the doDiff() method should be processed...
         doDiffTests();
     }
-    
+
     protected abstract void doDiffTests();
 }

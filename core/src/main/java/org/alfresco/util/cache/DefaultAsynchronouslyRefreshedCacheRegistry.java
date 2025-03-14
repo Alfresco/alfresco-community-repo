@@ -1,4 +1,5 @@
 package org.alfresco.util.cache;
+
 /*
  * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
@@ -24,20 +25,20 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Base registry implementation 
+ * Base registry implementation
  * 
  * @author Andy
  */
 public class DefaultAsynchronouslyRefreshedCacheRegistry implements AsynchronouslyRefreshedCacheRegistry
 {
     private static Log logger = LogFactory.getLog(DefaultAsynchronouslyRefreshedCacheRegistry.class);
-    
+
     private List<RefreshableCacheListener> listeners = new LinkedList<RefreshableCacheListener>();
 
     @Override
     public void register(RefreshableCacheListener listener)
     {
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
             logger.debug("Listener added for " + listener.getCacheId());
         }
@@ -51,7 +52,7 @@ public class DefaultAsynchronouslyRefreshedCacheRegistry implements Asynchronous
         {
             if (toAll)
             {
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Delivering event (" + event + ") to listener (" + listener + ").");
                 }
@@ -61,7 +62,7 @@ public class DefaultAsynchronouslyRefreshedCacheRegistry implements Asynchronous
             {
                 if (listener.getCacheId().equals(event.getCacheId()))
                 {
-                    if(logger.isDebugEnabled())
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("Delivering event (" + event + ") to listener (" + listener + ").");
                     }
@@ -71,4 +72,3 @@ public class DefaultAsynchronouslyRefreshedCacheRegistry implements Asynchronous
         }
     }
 }
-

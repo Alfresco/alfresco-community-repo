@@ -35,15 +35,16 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.alfresco.rest.api.tests.PublicApiDateFormat;
-import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
-import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import org.alfresco.rest.api.tests.PublicApiDateFormat;
+import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
+import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
+
 public class SiteMembershipRequest implements ExpectedComparison, Comparable<SiteMembershipRequest>
 {
-	private Collator collator = Collator.getInstance();
+    private Collator collator = Collator.getInstance();
 
     private String id; // site id
     private String message;
@@ -52,211 +53,213 @@ public class SiteMembershipRequest implements ExpectedComparison, Comparable<Sit
     private String title;
     private Site site;
     private Person person;
-    
+
     public SiteMembershipRequest()
-    {
-    }
+    {}
 
     public String getTitle()
-	{
-		return title;
-	}
-
-	public void setTitle(String title)
-	{
-		this.title = title;
-	}
-
-	public String getId()
     {
-		return id;
+        return title;
     }
-	
+
+    public void setTitle(String title)
+    {
+        this.title = title;
+    }
+
+    public String getId()
+    {
+        return id;
+    }
+
     public void setId(String id)
     {
-		this.id = id;
+        this.id = id;
     }
-    
-	public Site getSite()
-	{
-		return site;
-	}
 
-	public void setSite(Site site)
-	{
-		this.site = site;
-	}
+    public Site getSite()
+    {
+        return site;
+    }
 
-	public Date getCreatedAt()
-	{
-		return createdAt;
-	}
+    public void setSite(Site site)
+    {
+        this.site = site;
+    }
 
-	public void setCreatedAt(Date createdAt)
-	{
-		this.createdAt = createdAt;
-	}
+    public Date getCreatedAt()
+    {
+        return createdAt;
+    }
 
-	public Date getModifiedAt()
-	{
-		return modifiedAt;
-	}
+    public void setCreatedAt(Date createdAt)
+    {
+        this.createdAt = createdAt;
+    }
 
-	public void setModifiedAt(Date modifiedAt)
-	{
-		this.modifiedAt = modifiedAt;
-	}
+    public Date getModifiedAt()
+    {
+        return modifiedAt;
+    }
 
-	public String getMessage()
-	{
-		return message;
-	}
+    public void setModifiedAt(Date modifiedAt)
+    {
+        this.modifiedAt = modifiedAt;
+    }
 
-	public void setMessage(String message)
-	{
-		this.message = message;
-	}
+    public String getMessage()
+    {
+        return message;
+    }
 
-	public Person getPerson() {
-		return person;
-	}
+    public void setMessage(String message)
+    {
+        this.message = message;
+    }
 
-	public void setPerson(Person person) {
-		this.person = person;
-	}
+    public Person getPerson()
+    {
+        return person;
+    }
 
-	@SuppressWarnings("unchecked")
-	public JSONObject toJSON()
-	{
-		JSONObject siteMembershipRequestJson = new JSONObject();
-		siteMembershipRequestJson.put("id", getId());
-		siteMembershipRequestJson.put("message", getMessage());
-		return siteMembershipRequestJson;
-	}
+    public void setPerson(Person person)
+    {
+        this.person = person;
+    }
 
-	public static SiteMembershipRequest parseSiteMembershipRequest(JSONObject jsonObject) throws ParseException
-	{
-		String id = (String)jsonObject.get("id");
-		String createdAt = (String)jsonObject.get("createdAt");
-		String message = (String)jsonObject.get("message");
-		String modifiedAt = (String)jsonObject.get("modifiedAt");
-		JSONObject siteJSON = (JSONObject)jsonObject.get("site");
-		JSONObject personJSON = (JSONObject)jsonObject.get("person");
-		
-		SiteMembershipRequest siteMembershipRequest = new SiteMembershipRequest();
-		siteMembershipRequest.setId(id);
-		siteMembershipRequest.setCreatedAt(PublicApiDateFormat.getDateFormat().parse(createdAt));
-		siteMembershipRequest.setMessage(message);
-		if(modifiedAt != null)
-		{
-			siteMembershipRequest.setModifiedAt(PublicApiDateFormat.getDateFormat().parse(modifiedAt));
-		}
-		if(siteJSON != null)
-		{
-			Site site = SiteImpl.parseSite(siteJSON);
-			siteMembershipRequest.setSite(site);
-		}
-		if (personJSON != null)
-		{
-			Person person = Person.parsePerson(personJSON);
-			siteMembershipRequest.setPerson(person);
-		}
+    @SuppressWarnings("unchecked")
+    public JSONObject toJSON()
+    {
+        JSONObject siteMembershipRequestJson = new JSONObject();
+        siteMembershipRequestJson.put("id", getId());
+        siteMembershipRequestJson.put("message", getMessage());
+        return siteMembershipRequestJson;
+    }
 
-		return siteMembershipRequest;
-	}
+    public static SiteMembershipRequest parseSiteMembershipRequest(JSONObject jsonObject) throws ParseException
+    {
+        String id = (String) jsonObject.get("id");
+        String createdAt = (String) jsonObject.get("createdAt");
+        String message = (String) jsonObject.get("message");
+        String modifiedAt = (String) jsonObject.get("modifiedAt");
+        JSONObject siteJSON = (JSONObject) jsonObject.get("site");
+        JSONObject personJSON = (JSONObject) jsonObject.get("person");
 
-	public static ListResponse<SiteMembershipRequest> parseSiteMembershipRequests(JSONObject jsonObject) throws ParseException
-	{
-		List<SiteMembershipRequest> siteMembershipRequests = new ArrayList<SiteMembershipRequest>();
+        SiteMembershipRequest siteMembershipRequest = new SiteMembershipRequest();
+        siteMembershipRequest.setId(id);
+        siteMembershipRequest.setCreatedAt(PublicApiDateFormat.getDateFormat().parse(createdAt));
+        siteMembershipRequest.setMessage(message);
+        if (modifiedAt != null)
+        {
+            siteMembershipRequest.setModifiedAt(PublicApiDateFormat.getDateFormat().parse(modifiedAt));
+        }
+        if (siteJSON != null)
+        {
+            Site site = SiteImpl.parseSite(siteJSON);
+            siteMembershipRequest.setSite(site);
+        }
+        if (personJSON != null)
+        {
+            Person person = Person.parsePerson(personJSON);
+            siteMembershipRequest.setPerson(person);
+        }
 
-		JSONObject jsonList = (JSONObject)jsonObject.get("list");
-		assertNotNull(jsonList);
+        return siteMembershipRequest;
+    }
 
-		JSONArray jsonEntries = (JSONArray)jsonList.get("entries");
-		assertNotNull(jsonEntries);
+    public static ListResponse<SiteMembershipRequest> parseSiteMembershipRequests(JSONObject jsonObject) throws ParseException
+    {
+        List<SiteMembershipRequest> siteMembershipRequests = new ArrayList<SiteMembershipRequest>();
 
-		for(int i = 0; i < jsonEntries.size(); i++)
-		{
-			JSONObject jsonEntry = (JSONObject)jsonEntries.get(i);
-			JSONObject entry = (JSONObject)jsonEntry.get("entry");
-			siteMembershipRequests.add(SiteMembershipRequest.parseSiteMembershipRequest(entry));
-		}
+        JSONObject jsonList = (JSONObject) jsonObject.get("list");
+        assertNotNull(jsonList);
 
-		ExpectedPaging paging = ExpectedPaging.parsePagination(jsonList);
-		return new ListResponse<>(paging, siteMembershipRequests);
-	}
-	
-	@Override
-	public void expected(Object o)
-	{
-		assertTrue(o instanceof SiteMembershipRequest);
-		
-		SiteMembershipRequest other = (SiteMembershipRequest)o;
+        JSONArray jsonEntries = (JSONArray) jsonList.get("entries");
+        assertNotNull(jsonEntries);
 
-		assertNotNull(other.getCreatedAt());
+        for (int i = 0; i < jsonEntries.size(); i++)
+        {
+            JSONObject jsonEntry = (JSONObject) jsonEntries.get(i);
+            JSONObject entry = (JSONObject) jsonEntry.get("entry");
+            siteMembershipRequests.add(SiteMembershipRequest.parseSiteMembershipRequest(entry));
+        }
 
-		if(other.getModifiedAt() != null)
-		{
-			assertFalse(other.getModifiedAt().before(other.getCreatedAt()));
-		}
+        ExpectedPaging paging = ExpectedPaging.parsePagination(jsonList);
+        return new ListResponse<>(paging, siteMembershipRequests);
+    }
 
-		if(modifiedAt != null)
-		{
-			// check that the modifiedAt is higher in the RHS
-			assertFalse(other.getModifiedAt().before(modifiedAt));
-		}
+    @Override
+    public void expected(Object o)
+    {
+        assertTrue(o instanceof SiteMembershipRequest);
 
-		if(createdAt != null)
-		{
-			AssertUtil.assertEquals("createdAt", createdAt, other.getCreatedAt());
-		}
+        SiteMembershipRequest other = (SiteMembershipRequest) o;
 
-		AssertUtil.assertEquals("createdAt", createdAt, other.getCreatedAt());
-		// ignore case when comparing site (membership request) id
-		AssertUtil.assertEquals("id", id.toLowerCase(), other.getId().toLowerCase());
-		AssertUtil.assertEquals("message", message, other.getMessage());
-	}
-	
-	@Override
-	public String toString()
-	{
-		return "SiteMembershipRequest [id=" + id + ", message=" + message
-				+ ", createdAt=" + createdAt + ", modifiedAt=" + modifiedAt
-				+ ", title=" + title + "]";
-	}
+        assertNotNull(other.getCreatedAt());
 
-	@Override
-	public int compareTo(SiteMembershipRequest o)
-	{
-		int ret = collator.compare(site.getTitle(), o.getSite().getTitle());
-		return ret;
-	}
+        if (other.getModifiedAt() != null)
+        {
+            assertFalse(other.getModifiedAt().before(other.getCreatedAt()));
+        }
 
-	@Override
-	public int hashCode()
-	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		return result;
-	}
+        if (modifiedAt != null)
+        {
+            // check that the modifiedAt is higher in the RHS
+            assertFalse(other.getModifiedAt().before(modifiedAt));
+        }
 
-	@Override
-	public boolean equals(Object obj)
-	{
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		SiteMembershipRequest other = (SiteMembershipRequest) obj;
-		if (id == null)
-		{
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		return true;
-	}
+        if (createdAt != null)
+        {
+            AssertUtil.assertEquals("createdAt", createdAt, other.getCreatedAt());
+        }
+
+        AssertUtil.assertEquals("createdAt", createdAt, other.getCreatedAt());
+        // ignore case when comparing site (membership request) id
+        AssertUtil.assertEquals("id", id.toLowerCase(), other.getId().toLowerCase());
+        AssertUtil.assertEquals("message", message, other.getMessage());
+    }
+
+    @Override
+    public String toString()
+    {
+        return "SiteMembershipRequest [id=" + id + ", message=" + message
+                + ", createdAt=" + createdAt + ", modifiedAt=" + modifiedAt
+                + ", title=" + title + "]";
+    }
+
+    @Override
+    public int compareTo(SiteMembershipRequest o)
+    {
+        int ret = collator.compare(site.getTitle(), o.getSite().getTitle());
+        return ret;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        SiteMembershipRequest other = (SiteMembershipRequest) obj;
+        if (id == null)
+        {
+            if (other.id != null)
+                return false;
+        }
+        else if (!id.equals(other.id))
+            return false;
+        return true;
+    }
 }

@@ -28,6 +28,9 @@ package org.alfresco.repo.attributes;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.domain.propval.PropertyUniqueConstraintViolation;
 import org.alfresco.repo.domain.propval.PropertyValueDAO;
 import org.alfresco.repo.domain.propval.PropertyValueDAO.PropertyUniqueContextCallback;
@@ -35,8 +38,6 @@ import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.attributes.DuplicateAttributeException;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Layers on the storage of property values to provide generic attribute storage
@@ -47,12 +48,11 @@ import org.apache.commons.logging.LogFactory;
 public class AttributeServiceImpl implements AttributeService
 {
     private static final Log logger = LogFactory.getLog(AttributeServiceImpl.class);
-    
+
     private PropertyValueDAO propertyValueDAO;
 
     public AttributeServiceImpl()
-    {
-    }
+    {}
 
     /**
      * Set the DAO that handles the unique property persistence
@@ -61,21 +61,21 @@ public class AttributeServiceImpl implements AttributeService
     {
         this.propertyValueDAO = propertyValueDAO;
     }
-    
+
     /**
      * Formalize the shape of the variable-size array.
      * 
-     * @param keys              the variable-size array of 1 to 3 keys
-     * @return                  an array of exactly 3 keys (incl. <tt>null</tt> values)
+     * @param keys
+     *            the variable-size array of 1 to 3 keys
+     * @return an array of exactly 3 keys (incl. <tt>null</tt> values)
      */
-    private Serializable[] normalizeKeys(Serializable ... keys)
+    private Serializable[] normalizeKeys(Serializable... keys)
     {
         if (keys.length < 1 || keys.length > 3)
         {
             ParameterCheck.mandatory("keys", null);
         }
-        return new Serializable[]
-        {
+        return new Serializable[]{
                 keys[0],
                 keys.length > 1 ? keys[1] : null,
                 keys.length > 2 ? keys[2] : null
@@ -85,7 +85,7 @@ public class AttributeServiceImpl implements AttributeService
     /**
      * {@inheritDoc}
      */
-    public boolean exists(Serializable ... keys)
+    public boolean exists(Serializable... keys)
     {
         keys = normalizeKeys(keys);
         Pair<Long, Long> pair = propertyValueDAO.getPropertyUniqueContext(keys[0], keys[1], keys[2]);
@@ -95,8 +95,8 @@ public class AttributeServiceImpl implements AttributeService
         {
             logger.debug(
                     "Check attribute exists: \n" +
-                    "   Keys:   " + Arrays.asList(keys) + "\n" +
-                    "   exists: " + exists);
+                            "   Keys:   " + Arrays.asList(keys) + "\n" +
+                            "   exists: " + exists);
         }
         return exists;
     }
@@ -104,7 +104,7 @@ public class AttributeServiceImpl implements AttributeService
     /**
      * {@inheritDoc}
      */
-    public Serializable getAttribute(Serializable ... keys)
+    public Serializable getAttribute(Serializable... keys)
     {
         keys = normalizeKeys(keys);
         Pair<Long, Long> pair = propertyValueDAO.getPropertyUniqueContext(keys[0], keys[1], keys[2]);
@@ -119,8 +119,8 @@ public class AttributeServiceImpl implements AttributeService
         {
             logger.debug(
                     "Got attribute: \n" +
-                    "   Keys:   " + Arrays.asList(keys) + "\n" +
-                    "   Value: " + value);
+                            "   Keys:   " + Arrays.asList(keys) + "\n" +
+                            "   Value: " + value);
         }
         return value;
     }
@@ -128,11 +128,11 @@ public class AttributeServiceImpl implements AttributeService
     /**
      * {@inheritDoc}
      */
-    public void getAttributes(final AttributeQueryCallback callback, Serializable ... keys)
+    public void getAttributes(final AttributeQueryCallback callback, Serializable... keys)
     {
-        PropertyUniqueContextCallback propertyUniqueContextCallback = new PropertyUniqueContextCallback()
-        {
+        PropertyUniqueContextCallback propertyUniqueContextCallback = new PropertyUniqueContextCallback() {
             private boolean more = true;
+
             public void handle(Long id, Long valueId, Serializable[] resultKeyIds)
             {
                 if (!more)
@@ -140,63 +140,63 @@ public class AttributeServiceImpl implements AttributeService
                     // The callback has terminated fetching
                     return;
                 }
-                
+
                 Serializable value = null;
                 if (valueId != null)
                 {
                     value = propertyValueDAO.getPropertyById(valueId);
                 }
-                
+
                 Serializable[] resultsKeyValues = new Serializable[resultKeyIds.length];
                 for (int i = 0; i < resultKeyIds.length; i++)
                 {
                     if (resultKeyIds[i] != null)
                     {
-                        Pair<Long, Serializable> keyValuePair = propertyValueDAO.getPropertyValueById((Long)resultKeyIds[i]);
+                        Pair<Long, Serializable> keyValuePair = propertyValueDAO.getPropertyValueById((Long) resultKeyIds[i]);
                         resultsKeyValues[i] = (keyValuePair != null ? keyValuePair.getSecond() : null);
                     }
                 }
-                
+
                 more = callback.handleAttribute(id, value, resultsKeyValues);
-                
+
                 // Done
                 if (logger.isTraceEnabled())
                 {
                     logger.trace(
                             "Got attribute: \n" +
-                            "   Keys:   " + Arrays.asList(resultsKeyValues) + "\n" +
-                            "   Value: " + value);
+                                    "   Keys:   " + Arrays.asList(resultsKeyValues) + "\n" +
+                                    "   Value: " + value);
                 }
             }
         };
         propertyValueDAO.getPropertyUniqueContext(propertyUniqueContextCallback, keys);
         // Done
     }
-    
+
     /**
      * {@inheritDoc}
      */
-    public void setAttribute(Serializable value, Serializable ... keys)
+    public void setAttribute(Serializable value, Serializable... keys)
     {
         keys = normalizeKeys(keys);
         Pair<Long, Long> pair = propertyValueDAO.getPropertyUniqueContext(keys[0], keys[1], keys[2]);
         if (pair == null)
         {
-            // We can create it.  Any concurrency issue will be handled by the transaction.
+            // We can create it. Any concurrency issue will be handled by the transaction.
             propertyValueDAO.createPropertyUniqueContext(keys[0], keys[1], keys[2], value);
         }
         else
         {
             propertyValueDAO.updatePropertyUniqueContext(keys[0], keys[1], keys[2], value);
         }
-        
+
         // Done
         if (logger.isDebugEnabled())
         {
             logger.debug(
                     "Set attribute Value: \n" +
-                    "   Keys:   " + Arrays.asList(keys) + "\n" +
-                    "   Value: " + value);
+                            "   Keys:   " + Arrays.asList(keys) + "\n" +
+                            "   Value: " + value);
         }
     }
 
@@ -212,15 +212,15 @@ public class AttributeServiceImpl implements AttributeService
         }
         catch (PropertyUniqueConstraintViolation e)
         {
-            throw new DuplicateAttributeException(keys[0], keys[1], keys[2], e); 
+            throw new DuplicateAttributeException(keys[0], keys[1], keys[2], e);
         }
         // Done
         if (logger.isDebugEnabled())
         {
             logger.debug(
                     "Created attribute: \n" +
-                    "   Keys:   " + Arrays.asList(keys) + "\n" +
-                    "   Value: " + value);
+                            "   Keys:   " + Arrays.asList(keys) + "\n" +
+                            "   Value: " + value);
         }
     }
 
@@ -250,7 +250,7 @@ public class AttributeServiceImpl implements AttributeService
         }
         catch (PropertyUniqueConstraintViolation e)
         {
-            throw new DuplicateAttributeException(keyAfter1, keyAfter2, keyAfter3, e); 
+            throw new DuplicateAttributeException(keyAfter1, keyAfter2, keyAfter3, e);
         }
         // Done
         if (logger.isDebugEnabled())
@@ -259,15 +259,15 @@ public class AttributeServiceImpl implements AttributeService
             Serializable[] keysAfter = normalizeKeys(keyAfter1, keyAfter2, keyAfter3);
             logger.debug(
                     "Updated attribute: \n" +
-                    "   Before:   " + Arrays.asList(keysBefore) + "\n" +
-                    "   After:    " + Arrays.asList(keysAfter));
+                            "   Before:   " + Arrays.asList(keysBefore) + "\n" +
+                            "   After:    " + Arrays.asList(keysAfter));
         }
     }
 
     /**
      * {@inheritDoc}
      */
-    public void removeAttribute(Serializable ... keys)
+    public void removeAttribute(Serializable... keys)
     {
         keys = normalizeKeys(keys);
         int deleted = propertyValueDAO.deletePropertyUniqueContext(keys[0], keys[1], keys[2]);
@@ -276,15 +276,15 @@ public class AttributeServiceImpl implements AttributeService
         {
             logger.debug(
                     "Deleted attribute: \n" +
-                    "   Keys:  " + Arrays.asList(keys) + "\n" +
-                    "   Count: " + deleted);
+                            "   Keys:  " + Arrays.asList(keys) + "\n" +
+                            "   Count: " + deleted);
         }
     }
 
     /**
      * {@inheritDoc}
      */
-    public void removeAttributes(Serializable ... keys)
+    public void removeAttributes(Serializable... keys)
     {
         int deleted = propertyValueDAO.deletePropertyUniqueContext(keys);
         // Done
@@ -292,8 +292,8 @@ public class AttributeServiceImpl implements AttributeService
         {
             logger.debug(
                     "Deleted attributes: \n" +
-                    "   Keys:  " + Arrays.asList(keys) + "\n" +
-                    "   Count: " + deleted);
+                            "   Keys:  " + Arrays.asList(keys) + "\n" +
+                            "   Count: " + deleted);
         }
     }
 }

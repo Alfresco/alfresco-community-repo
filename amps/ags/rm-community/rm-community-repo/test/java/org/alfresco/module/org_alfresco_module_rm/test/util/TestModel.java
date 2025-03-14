@@ -37,7 +37,7 @@ public interface TestModel
 {
     public static final String TEST_URI = "http://www.alfresco.org/model/rmtest/1.0";
     public static final String TEST_PREFIX = "rmt";
-    
+
     public static final QName ASPECT_RECORD_METADATA = QName.createQName(TEST_URI, "recordMetaData");
     public static final QName PROPERTY_RECORD_METADATA = QName.createQName(TEST_URI, "recordMetaDataProperty");
     public static final QName NOT_RM_FOLDER_TYPE = QName.createQName(TEST_URI, "notRmFolderType");

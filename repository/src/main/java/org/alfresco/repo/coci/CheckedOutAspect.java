@@ -56,13 +56,14 @@ public class CheckedOutAspect
     /**
      * Sets the policy component
      * 
-     * @param policyComponent  the policy component
+     * @param policyComponent
+     *            the policy component
      */
-    public void setPolicyComponent(PolicyComponent policyComponent) 
+    public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
+
     public void init()
     {
         this.policyComponent.bindClassBehaviour(
@@ -82,11 +83,11 @@ public class CheckedOutAspect
     {
         nodeDetails.getAspects().remove(ContentModel.ASPECT_CHECKED_OUT);
     }
-    
+
     /**
      * Callback behaviour retrieval for the 'checkedOut' aspect.
      * 
-     * @return              Returns {@link DoNothingCopyBehaviourCallback} always
+     * @return Returns {@link DoNothingCopyBehaviourCallback} always
      */
     public CopyBehaviourCallback getCallbackForCheckedOutAspect(QName classRef, CopyDetails copyDetails)
     {

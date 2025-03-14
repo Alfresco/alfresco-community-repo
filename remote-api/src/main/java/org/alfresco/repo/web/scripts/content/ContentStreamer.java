@@ -38,26 +38,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.filestore.FileContentReader;
-import org.alfresco.repo.web.scripts.MimeTypeUtil;
-import org.alfresco.sync.repo.events.EventPublisher;
-import org.alfresco.repo.web.util.HttpRangeProcessor;
-import org.alfresco.rest.framework.resource.content.CacheDirective;
-import org.alfresco.service.cmr.repository.ArchivedIOException;
-import org.alfresco.service.cmr.repository.ContentIOException;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.site.SiteService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.attachment.Rfc5987Util;
@@ -69,10 +51,26 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.util.FileCopyUtils;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.web.scripts.MimeTypeUtil;
+import org.alfresco.repo.web.util.HttpRangeProcessor;
+import org.alfresco.rest.framework.resource.content.CacheDirective;
+import org.alfresco.service.cmr.repository.ArchivedIOException;
+import org.alfresco.service.cmr.repository.ContentIOException;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.sync.repo.events.EventPublisher;
+import org.alfresco.util.TempFileProvider;
 
 /**
- * Can be used when the binary data of a content property needs to be streamed back to the client
- * as the result of executing a web script.
+ * Can be used when the binary data of a content property needs to be streamed back to the client as the result of executing a web script.
  * 
  * These methods are taken from the StreamContent class so they can be reused by other webscripts.
  *
@@ -109,7 +107,8 @@ public class ContentStreamer implements ResourceLoaderAware
     protected SiteService siteService;
 
     /**
-     * @param mimetypeService MimetypeService
+     * @param mimetypeService
+     *            MimetypeService
      */
     public void setMimetypeService(MimetypeService mimetypeService)
     {
@@ -117,7 +116,8 @@ public class ContentStreamer implements ResourceLoaderAware
     }
 
     /**
-     * @param nodeService NodeService
+     * @param nodeService
+     *            NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -125,7 +125,8 @@ public class ContentStreamer implements ResourceLoaderAware
     }
 
     /**
-     * @param eventPublisher EventPublisher
+     * @param eventPublisher
+     *            EventPublisher
      */
     public void setEventPublisher(EventPublisher eventPublisher)
     {
@@ -133,7 +134,8 @@ public class ContentStreamer implements ResourceLoaderAware
     }
 
     /**
-     * @param siteService SiteService
+     * @param siteService
+     *            SiteService
      */
     public void setSiteService(SiteService siteService)
     {
@@ -147,7 +149,8 @@ public class ContentStreamer implements ResourceLoaderAware
     }
 
     /**
-     * @param contentService ContentService
+     * @param contentService
+     *            ContentService
      */
     public void setContentService(ContentService contentService)
 
@@ -155,30 +158,34 @@ public class ContentStreamer implements ResourceLoaderAware
         this.contentService = contentService;
     }
 
-
     /**
      * Streams content back to client from a given File.
      * 
-     * @param req               The request
-     * @param res               The response
-     * @param file              The file whose content is to be streamed.
-     * @param modifiedTime      The modified datetime to use for the streamed content. If <tt>null</tt> the
-     *                          file's timestamp will be used.
-     * @param attach            Indicates whether the content should be streamed as an attachment or not
-     * @param attachFileName    Optional file name to use when attach is <code>true</code>
+     * @param req
+     *            The request
+     * @param res
+     *            The response
+     * @param file
+     *            The file whose content is to be streamed.
+     * @param modifiedTime
+     *            The modified datetime to use for the streamed content. If <tt>null</tt> the file's timestamp will be used.
+     * @param attach
+     *            Indicates whether the content should be streamed as an attachment or not
+     * @param attachFileName
+     *            Optional file name to use when attach is <code>true</code>
      * @throws IOException
      */
-    public void streamContent(WebScriptRequest req, 
-                                 WebScriptResponse res, 
-                                 File file, 
-                                 Long modifiedTime,
-                                 boolean attach, 
-                                 String attachFileName,
-                                 Map<String, Object> model) throws IOException
+    public void streamContent(WebScriptRequest req,
+            WebScriptResponse res,
+            File file,
+            Long modifiedTime,
+            boolean attach,
+            String attachFileName,
+            Map<String, Object> model) throws IOException
     {
         if (logger.isDebugEnabled())
             logger.debug("Retrieving content from file " + file.getAbsolutePath() + " (attach: " + attach + ")");
-        
+
         // determine mimetype from file extension
         String filePath = file.getAbsolutePath();
         String mimetype = MimetypeMap.MIMETYPE_BINARY;
@@ -187,49 +194,55 @@ public class ContentStreamer implements ResourceLoaderAware
         {
             mimetype = mimetypeService.getMimetype(filePath.substring(extIndex + 1));
         }
-        
+
         // setup file reader and stream
         FileContentReader reader = new FileContentReader(file);
         reader.setMimetype(mimetype);
         reader.setEncoding("UTF-8");
-        
+
         long lastModified = modifiedTime == null ? file.lastModified() : modifiedTime;
         Date lastModifiedDate = new Date(lastModified);
-        
+
         streamContentImpl(req, res, reader, null, null, attach, lastModifiedDate, String.valueOf(lastModifiedDate.getTime()), attachFileName, model);
     }
 
     /**
      * Streams the content on a given node's content property to the response of the web script.
      *
-     * @param req            Request
-     * @param res            Response
-     * @param nodeRef        The node reference
-     * @param propertyQName  The content property name
-     * @param attach         Indicates whether the content should be streamed as an attachment or not
-     * @param attachFileName Optional file name to use when attach is <code>true</code>
+     * @param req
+     *            Request
+     * @param res
+     *            Response
+     * @param nodeRef
+     *            The node reference
+     * @param propertyQName
+     *            The content property name
+     * @param attach
+     *            Indicates whether the content should be streamed as an attachment or not
+     * @param attachFileName
+     *            Optional file name to use when attach is <code>true</code>
      * @throws IOException
      */
     public void streamContent(WebScriptRequest req,
-                WebScriptResponse res,
-                NodeRef nodeRef,
-                QName propertyQName,
-                boolean attach,
-                String attachFileName,
-                Map<String, Object> model) throws IOException
+            WebScriptResponse res,
+            NodeRef nodeRef,
+            QName propertyQName,
+            boolean attach,
+            String attachFileName,
+            Map<String, Object> model) throws IOException
     {
         if (logger.isDebugEnabled())
             logger.debug("Retrieving content from node ref " + nodeRef.toString() + " (property: " + propertyQName.toString() + ") (attach: " + attach + ")");
 
         // TODO
-        // This was commented out to accomadate records management permissions.  We need to review how we cope with this
+        // This was commented out to accomadate records management permissions. We need to review how we cope with this
         // hard coded permission checked.
 
         // check that the user has at least READ_CONTENT access - else redirect to the login page
-        //        if (permissionService.hasPermission(nodeRef, PermissionService.READ_CONTENT) == AccessStatus.DENIED)
-        //        {
-        //            throw new WebScriptException(HttpServletResponse.SC_FORBIDDEN, "Permission denied");
-        //        }
+        // if (permissionService.hasPermission(nodeRef, PermissionService.READ_CONTENT) == AccessStatus.DENIED)
+        // {
+        // throw new WebScriptException(HttpServletResponse.SC_FORBIDDEN, "Permission denied");
+        // }
 
         // check If-Modified-Since header and set Last-Modified header as appropriate
         Date modified = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
@@ -276,17 +289,21 @@ public class ContentStreamer implements ResourceLoaderAware
     /**
      * Streams content back to client from a given resource path.
      * 
-     * @param req               The request
-     * @param res               The response
-     * @param resourcePath      The classpath resource path the content is required for
-     * @param attach            Indicates whether the content should be streamed as an attachment or not
+     * @param req
+     *            The request
+     * @param res
+     *            The response
+     * @param resourcePath
+     *            The classpath resource path the content is required for
+     * @param attach
+     *            Indicates whether the content should be streamed as an attachment or not
      * @throws IOException
      */
-    public void streamContent(WebScriptRequest req, 
-                                 WebScriptResponse res, 
-                                 String resourcePath,
-                                 boolean attach,
-                                 Map<String, Object> model) throws IOException
+    public void streamContent(WebScriptRequest req,
+            WebScriptResponse res,
+            String resourcePath,
+            boolean attach,
+            Map<String, Object> model) throws IOException
     {
         streamContent(req, res, resourcePath, attach, null, model);
     }
@@ -294,23 +311,28 @@ public class ContentStreamer implements ResourceLoaderAware
     /**
      * Streams content back to client from a given resource path.
      * 
-     * @param req               The request
-     * @param res               The response
-     * @param resourcePath      The classpath resource path the content is required for.
-     * @param attach            Indicates whether the content should be streamed as an attachment or not
-     * @param attachFileName    Optional file name to use when attach is <code>true</code>
+     * @param req
+     *            The request
+     * @param res
+     *            The response
+     * @param resourcePath
+     *            The classpath resource path the content is required for.
+     * @param attach
+     *            Indicates whether the content should be streamed as an attachment or not
+     * @param attachFileName
+     *            Optional file name to use when attach is <code>true</code>
      * @throws IOException
      */
-    protected void streamContent(WebScriptRequest req, 
-                                 WebScriptResponse res, 
-                                 String resourcePath,
-                                 boolean attach, 
-                                 String attachFileName,
-                                 Map<String, Object> model) throws IOException
+    protected void streamContent(WebScriptRequest req,
+            WebScriptResponse res,
+            String resourcePath,
+            boolean attach,
+            String attachFileName,
+            Map<String, Object> model) throws IOException
     {
         if (logger.isDebugEnabled())
             logger.debug("Retrieving content from resource path " + resourcePath + " (attach: " + attach + ")");
-        
+
         // get extension of resource
         String ext = "";
         int extIndex = resourcePath.lastIndexOf('.');
@@ -318,20 +340,20 @@ public class ContentStreamer implements ResourceLoaderAware
         {
             ext = resourcePath.substring(extIndex);
         }
-        
+
         // We need to retrieve the modification date/time from the resource itself.
         StringBuilder sb = new StringBuilder("classpath:").append(resourcePath);
         final String classpathResource = sb.toString();
-        
+
         long resourceLastModified = resourceLoader.getResource(classpathResource).lastModified();
-        
-        // create temporary file 
+
+        // create temporary file
         File file = TempFileProvider.createTempFile("streamContent-", ext);
-    
+
         InputStream is = resourceLoader.getResource(classpathResource).getInputStream();
         OutputStream os = new FileOutputStream(file);
         FileCopyUtils.copy(is, os);
-        
+
         // stream the contents of the file, but using the modifiedDate of the original resource.
         streamContent(req, res, file, resourceLastModified, attach, attachFileName, model);
     }
@@ -339,33 +361,42 @@ public class ContentStreamer implements ResourceLoaderAware
     /**
      * Stream content implementation
      * 
-     * @param req               The request
-     * @param res               The response
-     * @param reader            The reader
-     * @param nodeRef           The content nodeRef if applicable
-     * @param propertyQName     The content property if applicable
-     * @param attach            Indicates whether the content should be streamed as an attachment or not
-     * @param modified          Modified date of content
-     * @param eTag              ETag to use
-     * @param attachFileName    Optional file name to use when attach is <code>true</code>
+     * @param req
+     *            The request
+     * @param res
+     *            The response
+     * @param reader
+     *            The reader
+     * @param nodeRef
+     *            The content nodeRef if applicable
+     * @param propertyQName
+     *            The content property if applicable
+     * @param attach
+     *            Indicates whether the content should be streamed as an attachment or not
+     * @param modified
+     *            Modified date of content
+     * @param eTag
+     *            ETag to use
+     * @param attachFileName
+     *            Optional file name to use when attach is <code>true</code>
      * @throws IOException
      */
-    public void streamContentImpl(WebScriptRequest req, 
-                                    WebScriptResponse res, 
-                                    ContentReader reader, 
-                                    final NodeRef nodeRef,
-                                    final QName propertyQName,
-                                    final boolean attach,
-                                    final Date modified, 
-                                    String eTag, 
-                                    final String attachFileName, 
-                                    Map<String, Object> model) throws IOException
+    public void streamContentImpl(WebScriptRequest req,
+            WebScriptResponse res,
+            ContentReader reader,
+            final NodeRef nodeRef,
+            final QName propertyQName,
+            final boolean attach,
+            final Date modified,
+            String eTag,
+            final String attachFileName,
+            Map<String, Object> model) throws IOException
     {
         setAttachment(req, res, attach, attachFileName);
-    
+
         // establish mimetype
         String mimetype = MimeTypeUtil.determineMimetype(reader, req, mimetypeService);
-        
+
         res.setHeader(HEADER_ACCEPT_RANGES, "bytes");
         try
         {
@@ -373,68 +404,69 @@ public class ContentStreamer implements ResourceLoaderAware
             String range = req.getHeader(HEADER_CONTENT_RANGE);
             final long size = reader.getSize();
             final String encoding = reader.getEncoding();
-                  
-//            if (attach)
-//            {
-//                final String finalMimetype = mimetype;
-//                
-//                eventPublisher.publishEvent(new EventPreparator(){
-//                    @Override
-//                    public Event prepareEvent(String user, String networkId, String transactionId)
-//                    {
-//                        String siteId = siteService.getSiteShortName(nodeRef);
-//                        
-//                        return new ContentEventImpl(ContentEvent.DOWNLOAD, user, networkId, transactionId,
-//                                    nodeRef.getId(), siteId, propertyQName.toString(), Client.asType(ClientType.webclient), attachFileName, finalMimetype, size, encoding);
-//                    }
-//                });
-//            }
-            
+
+            // if (attach)
+            // {
+            // final String finalMimetype = mimetype;
+            //
+            // eventPublisher.publishEvent(new EventPreparator(){
+            // @Override
+            // public Event prepareEvent(String user, String networkId, String transactionId)
+            // {
+            // String siteId = siteService.getSiteShortName(nodeRef);
+            //
+            // return new ContentEventImpl(ContentEvent.DOWNLOAD, user, networkId, transactionId,
+            // nodeRef.getId(), siteId, propertyQName.toString(), Client.asType(ClientType.webclient), attachFileName, finalMimetype, size, encoding);
+            // }
+            // });
+            // }
+
             if (range == null)
             {
-               range = req.getHeader(HEADER_RANGE);
+                range = req.getHeader(HEADER_RANGE);
             }
             if (range != null)
             {
-               if (logger.isDebugEnabled())
-                  logger.debug("Found content range header: " + range);
-               
-               // ensure the range header is starts with "bytes=" and process the range(s)
-               if (range.length() > 6)
-               {
-                  if (range.indexOf(',') != -1 && (nodeRef == null || propertyQName == null))
-                  {
-                       if (logger.isInfoEnabled())
-                           logger.info("Multi-range only supported for nodeRefs");
-                  }
-                  else {
-                      HttpRangeProcessor rangeProcessor = new HttpRangeProcessor(contentService);
-                      processedRange = rangeProcessor.processRange(
-                            res, reader, range.substring(6), nodeRef, propertyQName,
-                            mimetype, req.getHeader(HEADER_USER_AGENT));
-                  }
-               }
+                if (logger.isDebugEnabled())
+                    logger.debug("Found content range header: " + range);
+
+                // ensure the range header is starts with "bytes=" and process the range(s)
+                if (range.length() > 6)
+                {
+                    if (range.indexOf(',') != -1 && (nodeRef == null || propertyQName == null))
+                    {
+                        if (logger.isInfoEnabled())
+                            logger.info("Multi-range only supported for nodeRefs");
+                    }
+                    else
+                    {
+                        HttpRangeProcessor rangeProcessor = new HttpRangeProcessor(contentService);
+                        processedRange = rangeProcessor.processRange(
+                                res, reader, range.substring(6), nodeRef, propertyQName,
+                                mimetype, req.getHeader(HEADER_USER_AGENT));
+                    }
+                }
             }
             if (processedRange == false)
             {
-               if (logger.isDebugEnabled())
-                  logger.debug("Sending complete file content...");
-               
-               // set mimetype for the content and the character encoding for the stream
-               res.setContentType(mimetype);
-               res.setContentEncoding(encoding);
-               
-               // return the complete entity range
-               res.setHeader(HEADER_CONTENT_RANGE, "bytes 0-" + Long.toString(size-1L) + "/" + Long.toString(size));
-               res.setHeader(HEADER_CONTENT_LENGTH, Long.toString(size));
-               
-               // set caching
-               setResponseCache(res, modified, eTag, model);
-               
-               // get the content and stream directly to the response output stream
-               // assuming the repository is capable of streaming in chunks, this should allow large files
-               // to be streamed directly to the browser response stream.
-               reader.getContent( res.getOutputStream() );
+                if (logger.isDebugEnabled())
+                    logger.debug("Sending complete file content...");
+
+                // set mimetype for the content and the character encoding for the stream
+                res.setContentType(mimetype);
+                res.setContentEncoding(encoding);
+
+                // return the complete entity range
+                res.setHeader(HEADER_CONTENT_RANGE, "bytes 0-" + Long.toString(size - 1L) + "/" + Long.toString(size));
+                res.setHeader(HEADER_CONTENT_LENGTH, Long.toString(size));
+
+                // set caching
+                setResponseCache(res, modified, eTag, model);
+
+                // get the content and stream directly to the response output stream
+                // assuming the repository is capable of streaming in chunks, this should allow large files
+                // to be streamed directly to the browser response stream.
+                reader.getContent(res.getOutputStream());
             }
         }
         catch (SocketException e1)
@@ -457,10 +489,14 @@ public class ContentStreamer implements ResourceLoaderAware
     /**
      * Set attachment header
      * 
-     * @param req WebScriptRequest
-     * @param res WebScriptResponse
-     * @param attach boolean
-     * @param attachFileName String
+     * @param req
+     *            WebScriptRequest
+     * @param res
+     *            WebScriptResponse
+     * @param attach
+     *            boolean
+     * @param attachFileName
+     *            String
      */
     public void setAttachment(WebScriptRequest req, WebScriptResponse res, boolean attach, String attachFileName)
     {
@@ -492,7 +528,7 @@ public class ContentStreamer implements ResourceLoaderAware
                     }
                 }
             }
-            
+
             // set header based on filename - will force a Save As from the browse if it doesn't recognize it
             // this is better than the default response of the browser trying to display the contents
             res.setHeader("Content-Disposition", headerValue);
@@ -513,14 +549,14 @@ public class ContentStreamer implements ResourceLoaderAware
             return URLEncoder.encode(attachFileName, StandardCharsets.UTF_8);
         }
     }
-    
+
     protected String filterNameForQuotedString(String s)
     {
         StringBuilder sb = new StringBuilder();
-        for(int i = 0; i < s.length(); i++)
+        for (int i = 0; i < s.length(); i++)
         {
             char c = s.charAt(i);
-            if(isValidQuotedStringHeaderParamChar(c))
+            if (isValidQuotedStringHeaderParamChar(c))
             {
                 sb.append(c);
             }
@@ -531,27 +567,30 @@ public class ContentStreamer implements ResourceLoaderAware
         }
         return sb.toString();
     }
-    
+
     protected boolean isValidQuotedStringHeaderParamChar(char c)
     {
-        // see RFC2616 section 2.2: 
-        // qdtext         = <any TEXT except <">>
-        // TEXT           = <any OCTET except CTLs, but including LWS>
-        // CTL            = <any US-ASCII control character (octets 0 - 31) and DEL (127)>
+        // see RFC2616 section 2.2:
+        // qdtext = <any TEXT except <">>
+        // TEXT = <any OCTET except CTLs, but including LWS>
+        // CTL = <any US-ASCII control character (octets 0 - 31) and DEL (127)>
         // A CRLF is allowed in the definition of TEXT only as part of a header field continuation.
         // Note: we dis-allow header field continuation
-        return     (c < 256)  // message header param fields must be ISO-8859-1. Lower 256 codepoints of Unicode represent ISO-8859-1
+        return (c < 256) // message header param fields must be ISO-8859-1. Lower 256 codepoints of Unicode represent ISO-8859-1
                 && (c != 127) // CTL - see RFC2616 section 2.2
                 && (c != '"') // <">
-                && (c > 31);  // CTL - see RFC2616 section 2.2
+                && (c > 31); // CTL - see RFC2616 section 2.2
     }
 
     /**
      * Set the cache settings on the response
      * 
-     * @param res WebScriptResponse
-     * @param modified Date
-     * @param eTag String
+     * @param res
+     *            WebScriptResponse
+     * @param modified
+     *            Date
+     * @param eTag
+     *            String
      */
     protected void setResponseCache(WebScriptResponse res, Date modified, String eTag, Map<String, Object> model)
     {

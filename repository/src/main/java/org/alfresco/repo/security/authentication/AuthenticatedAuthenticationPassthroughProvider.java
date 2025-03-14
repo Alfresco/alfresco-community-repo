@@ -39,10 +39,11 @@ public class AuthenticatedAuthenticationPassthroughProvider implements Authentic
 
     public Authentication authenticate(Authentication authentication) throws AuthenticationException
     {
-        if (!supports(authentication.getClass())) {
+        if (!supports(authentication.getClass()))
+        {
             return null;
         }
-        if(authentication.isAuthenticated())
+        if (authentication.isAuthenticated())
         {
             return authentication;
         }

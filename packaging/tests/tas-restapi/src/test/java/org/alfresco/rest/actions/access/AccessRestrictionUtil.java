@@ -12,16 +12,17 @@ import org.alfresco.rest.actions.access.pojo.ActionCondition;
 import org.alfresco.rest.actions.access.pojo.Rule;
 import org.alfresco.utility.model.UserModel;
 
-public class AccessRestrictionUtil {
+public class AccessRestrictionUtil
+{
 
     public static final String MAIL_ACTION = "mail";
 
     public static final String ERROR_MESSAGE_FIELD = "message";
-    public static final String ERROR_MESSAGE_ACCESS_RESTRICTED =
-            "Only admin or system user is allowed to define uses of or directly execute this action";
+    public static final String ERROR_MESSAGE_ACCESS_RESTRICTED = "Only admin or system user is allowed to define uses of or directly execute this action";
     private static final String ERROR_MESSAGE_FAILED_TO_SEND_EMAIL = "Failed to send email to:";
 
-    public static Map<String, Serializable> createMailParameters(UserModel sender, UserModel recipient) {
+    public static Map<String, Serializable> createMailParameters(UserModel sender, UserModel recipient)
+    {
         Map<String, Serializable> parameterValues = new HashMap<>();
         parameterValues.put("from", sender.getEmailAddress());
         parameterValues.put("to", recipient.getEmailAddress());
@@ -31,7 +32,8 @@ public class AccessRestrictionUtil {
         return parameterValues;
     }
 
-    public static Rule createRuleWithAction(String actionName, Map<String, Serializable> parameterValues) {
+    public static Rule createRuleWithAction(String actionName, Map<String, Serializable> parameterValues)
+    {
         Rule rule = new Rule();
         rule.setId("");
         rule.setTitle("Test rule title");
@@ -59,7 +61,8 @@ public class AccessRestrictionUtil {
         return rule;
     }
 
-    public static Action createActionWithParameters(String actionName, Map<String, Serializable> parameterValues) {
+    public static Action createActionWithParameters(String actionName, Map<String, Serializable> parameterValues)
+    {
         Action compositeAction = new Action();
         compositeAction.setActionDefinitionName("composite-action");
 
@@ -77,8 +80,8 @@ public class AccessRestrictionUtil {
         return action;
     }
 
-
-    public static Action createAction(String actionName, Map<String, Serializable> parameterValues) {
+    public static Action createAction(String actionName, Map<String, Serializable> parameterValues)
+    {
         Action action = new Action();
         action.setActionDefinitionName(actionName);
         action.setParameterValues(parameterValues);
@@ -86,19 +89,20 @@ public class AccessRestrictionUtil {
         return action;
     }
 
-    public static String mapObjectToJSON(Object object) {
+    public static String mapObjectToJSON(Object object)
+    {
         Gson gson = new Gson();
         return gson.toJson(object);
     }
 
     /**
-     * Return error message that in fact means that the action has passed access restriction correctly,
-     * but due to non-configured smtp couldn't send email.
+     * Return error message that in fact means that the action has passed access restriction correctly, but due to non-configured smtp couldn't send email.
      *
      * @param userModel
      * @return
      */
-    public static String getExpectedEmailSendFailureMessage(UserModel userModel) {
+    public static String getExpectedEmailSendFailureMessage(UserModel userModel)
+    {
         return ERROR_MESSAGE_FAILED_TO_SEND_EMAIL + userModel.getEmailAddress();
     }
 }

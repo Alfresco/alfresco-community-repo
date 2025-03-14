@@ -31,14 +31,9 @@ public enum DeploymentMethod
     /**
      * The deployment method was not specified.
      */
-    DEFAULT,
-    INSTALLER,
-    DOCKER_COMPOSE,
-    HELM_CHART,
-    ANSIBLE,
+    DEFAULT, INSTALLER, DOCKER_COMPOSE, HELM_CHART, ANSIBLE,
     /**
      * The distribution zip was used to lay down the ACS artifacts
      */
-    ZIP,
-    QUICK_START
+    ZIP, QUICK_START
 }

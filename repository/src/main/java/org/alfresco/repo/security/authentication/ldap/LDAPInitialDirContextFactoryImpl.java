@@ -39,7 +39,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import javax.naming.AuthenticationNotSupportedException;
 import javax.naming.CommunicationException;
 import javax.naming.Context;
@@ -56,6 +55,11 @@ import javax.naming.ldap.LdapContext;
 import javax.naming.ldap.PagedResultsControl;
 import javax.naming.ldap.PagedResultsResponseControl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AlfrescoSSLSocketFactory;
@@ -63,10 +67,6 @@ import org.alfresco.repo.security.authentication.AuthenticationDiagnostic;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
 
 public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFactory, InitializingBean
 {
@@ -76,7 +76,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 
     private Map<String, String> defaultEnvironment = Collections.<String, String> emptyMap();
     private Map<String, String> authenticatedEnvironment = Collections.<String, String> emptyMap();
-    private Map<String, String> poolSystemProperties = Collections.<String, String> emptyMap();	
+    private Map<String, String> poolSystemProperties = Collections.<String, String> emptyMap();
     private String trustStorePath;
     private String trustStoreType;
     private String trustStorePassPhrase;
@@ -147,12 +147,12 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
     {
         return authenticatedEnvironment;
     }
-    
+
     public void setDefaultIntialDirContextEnvironment(Map<String, String> defaultEnvironment)
     {
         this.defaultEnvironment = new LinkedHashMap<String, String>(defaultEnvironment.size());
         this.defaultEnvironment.putAll(defaultEnvironment);
-        
+
         // filter out empty values, as this usually means that property should be omitted.
         for (Entry<String, String> entry : defaultEnvironment.entrySet())
         {
@@ -162,13 +162,13 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
             }
         }
         this.defaultEnvironment.values().removeAll(Collections.singleton(null));
-    }    
+    }
 
     public InitialDirContext getDefaultIntialDirContext() throws AuthenticationException
     {
         return getDefaultIntialDirContext(0, new AuthenticationDiagnostic());
     }
-    
+
     public void setPoolSystemProperties(Map<String, String> poolSystemProperties)
     {
         this.poolSystemProperties = poolSystemProperties;
@@ -180,12 +180,12 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
             }
         }
     }
-    
+
     public InitialDirContext getDefaultIntialDirContext(int pageSize) throws AuthenticationException
     {
         return getDefaultIntialDirContext(pageSize, new AuthenticationDiagnostic());
     }
-    
+
     @Override
     public InitialDirContext getDefaultIntialDirContext(
             AuthenticationDiagnostic diagnostic) throws AuthenticationException
@@ -213,7 +213,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
             env.put("java.naming.ldap.factory.socket", AlfrescoSSLSocketFactory.class.getName());
         }
 
-        if(diagnostic == null)
+        if (diagnostic == null)
         {
             diagnostic = new AuthenticationDiagnostic();
         }
@@ -223,9 +223,8 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
             if (pageSize > 0)
             {
                 InitialLdapContext ctx = new InitialLdapContext(env, null);
-                ctx.setRequestControls(new Control[]
-                {
-                    new PagedResultsControl(pageSize, Control.CRITICAL)
+                ctx.setRequestControls(new Control[]{
+                        new PagedResultsControl(pageSize, Control.CRITICAL)
                 });
                 return ctx;
             }
@@ -243,7 +242,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
             Object[] args = {providerURL, securityPrincipal};
             diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_LDAP_CONNECTED, true, args);
             diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_LDAP_AUTHENTICATION, false, args1);
-            
+
             // wrong user/password - if we get this far the connection is O.K
             Object[] args2 = {securityPrincipal, ax.getLocalizedMessage()};
             throw new AuthenticationException("authentication.err.authentication", diagnostic, args2, ax);
@@ -254,9 +253,9 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
             diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_LDAP_CONNECTING, false, args1);
 
             StringBuffer message = new StringBuffer();
-            
+
             message.append(ce.getClass().getName() + ", " + ce.getMessage());
-            
+
             Throwable cause = ce.getCause();
             while (cause != null)
             {
@@ -264,7 +263,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
                 message.append(cause.getClass().getName() + ", " + cause.getMessage());
                 cause = cause.getCause();
             }
-            
+
             // failed to connect
             Object[] args = {providerURL, message.toString()};
             throw new AuthenticationException("authentication.err.communication", diagnostic, args, cause);
@@ -273,11 +272,11 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         {
             Object[] args = {providerURL};
             diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_LDAP_CONNECTING, false, args);
-            
+
             StringBuffer message = new StringBuffer();
-            
+
             message.append(nx.getClass().getName() + ", " + nx.getMessage());
-            
+
             Throwable cause = nx.getCause();
             while (cause != null)
             {
@@ -285,7 +284,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
                 message.append(cause.getClass().getName() + ", " + cause.getMessage());
                 cause = cause.getCause();
             }
-           
+
             // failed to connect
             Object[] args1 = {providerURL, message.toString()};
             throw new AuthenticationException("authentication.err.connection", diagnostic, args1, nx);
@@ -294,7 +293,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         {
             Object[] args = {providerURL, securityPrincipal};
             diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_LDAP_CONNECTED, true, args);
-            
+
             throw new AuthenticationException("Unable to encode LDAP v3 request controls", e);
         }
     }
@@ -319,9 +318,8 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
                             if (cookie != null)
                             {
                                 // Prepare for next page
-                                ldapContext.setRequestControls(new Control[]
-                                {
-                                    new PagedResultsControl(pageSize, cookie, Control.CRITICAL)
+                                ldapContext.setRequestControls(new Control[]{
+                                        new PagedResultsControl(pageSize, cookie, Control.CRITICAL)
                                 });
                                 return true;
                             }
@@ -342,7 +340,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         }
         return false;
     }
-    
+
     @Override
     public InitialDirContext getInitialDirContext(String principal,
             String credentials)
@@ -353,11 +351,11 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 
     public InitialDirContext getInitialDirContext(String principal, String credentials, AuthenticationDiagnostic diagnostic) throws AuthenticationException
     {
-        if(diagnostic == null)
+        if (diagnostic == null)
         {
             diagnostic = new AuthenticationDiagnostic();
         }
-        
+
         if (principal == null)
         {
             // failed before we tried to do anything
@@ -382,7 +380,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
             diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_VALIDATION, false, null);
             throw new AuthenticationException("Empty credentials provided.", diagnostic);
         }
-        
+
         diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_VALIDATION, true, null);
 
         Hashtable<String, String> env = new Hashtable<String, String>(authenticatedEnvironment.size());
@@ -392,8 +390,6 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 
         return buildInitialDirContext(env, 0, diagnostic);
     }
-    
-
 
     public static void main(String[] args)
     {
@@ -680,9 +676,9 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
     }
 
     /**
-     * Check if it required to use custom SSL socket factory with custom trustStore.
-     * <br>Required for LDAPS configuration. The <code>ldap.authentication.java.naming.security.protocol</code> should be set to "ssl" for LDAPS.
-     * <br>The following properties should be set:
+     * Check if it required to use custom SSL socket factory with custom trustStore. <br>
+     * Required for LDAPS configuration. The <code>ldap.authentication.java.naming.security.protocol</code> should be set to "ssl" for LDAPS. <br>
+     * The following properties should be set:
      * <ul>
      * <li>ldap.authentication.truststore.path
      * <li>ldap.authentication.truststore.type
@@ -764,7 +760,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         {
             envs = Collections.synchronizedSet(new HashSet<Map<String, String>>(11));
         }
-        
+
         if (!envs.contains(value))
         {
             envs.add(value);
@@ -804,7 +800,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
                 isCached = true;
             }
         }
-        
+
         logger.debug("LDAP check: " + key + " / isCached: " + (isCached ? "yes" : "no"));
 
         return isCached;

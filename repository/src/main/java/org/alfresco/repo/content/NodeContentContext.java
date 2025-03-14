@@ -25,10 +25,11 @@
  */
 package org.alfresco.repo.content;
 
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Context information for node-related content.
@@ -41,14 +42,18 @@ public class NodeContentContext extends ContentContext
 
     private NodeRef nodeRef;
     private QName propertyQName;
-    
+
     /**
      * Construct the instance with the content URL.
      * 
-     * @param   existingContentReader   content with which to seed the new writer - may be <tt>null</tt>
-     * @param   contentUrl              the content URL - may be <tt>null</tt>
-     * @param   nodeRef                 the node holding the content metadata - may not be <tt>null</tt>
-     * @param   propertyQName           the property holding the content metadata  - may not be <tt>null</tt>
+     * @param existingContentReader
+     *            content with which to seed the new writer - may be <tt>null</tt>
+     * @param contentUrl
+     *            the content URL - may be <tt>null</tt>
+     * @param nodeRef
+     *            the node holding the content metadata - may not be <tt>null</tt>
+     * @param propertyQName
+     *            the property holding the content metadata - may not be <tt>null</tt>
      */
     public NodeContentContext(
             ContentReader existingContentReader,
@@ -68,16 +73,16 @@ public class NodeContentContext extends ContentContext
     {
         StringBuilder sb = new StringBuilder(128);
         sb.append("NodeContentContext")
-          .append("[ contentUrl=").append(getContentUrl())
-          .append(", existing=").append((getExistingContentReader() == null ? false : true))
-          .append(", nodeRef=").append(nodeRef)
-          .append(", propertyQName=").append(propertyQName)
-          .append("]");
+                .append("[ contentUrl=").append(getContentUrl())
+                .append(", existing=").append((getExistingContentReader() == null ? false : true))
+                .append(", nodeRef=").append(nodeRef)
+                .append(", propertyQName=").append(propertyQName)
+                .append("]");
         return sb.toString();
     }
 
     /**
-     * @return  Returns the node holding the content metadata
+     * @return Returns the node holding the content metadata
      */
     public NodeRef getNodeRef()
     {
@@ -86,7 +91,7 @@ public class NodeContentContext extends ContentContext
 
     /**
      * 
-     * @return  Returns the property holding the content metadata
+     * @return Returns the property holding the content metadata
      */
     public QName getPropertyQName()
     {

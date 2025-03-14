@@ -30,6 +30,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.importer.ACPImportPackageHandler;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -46,9 +50,6 @@ import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * 
@@ -60,71 +61,70 @@ public class DynamicCreateRepositoryLocation extends RepositoryLocation
     private static final Log logger = LogFactory.getLog(DynamicCreateRepositoryLocation.class);
 
     private ImporterService importerService;
-	private String contentViewLocation;
+    private String contentViewLocation;
     private ResourceBundle bundle;
     private NamespaceService namespaceService;
     private SearchService searchService;
     private TransactionService transactionService;
 
-	public void setSearchService(SearchService searchService)
-	{
-		this.searchService = searchService;
-	}
-
-	public void setNamespaceService(NamespaceService namespaceService)
-	{
-		this.namespaceService = namespaceService;
-	}
-
-	public void setContentViewLocation(String contentViewLocation)
-	{
-		this.contentViewLocation = contentViewLocation;
-	}
-
-	public void setImporterService(ImporterService importerService)
+    public void setSearchService(SearchService searchService)
     {
-		this.importerService = importerService;
-	}
+        this.searchService = searchService;
+    }
 
-	public void setBundleName(String bundleName)
-	{
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+
+    public void setContentViewLocation(String contentViewLocation)
+    {
+        this.contentViewLocation = contentViewLocation;
+    }
+
+    public void setImporterService(ImporterService importerService)
+    {
+        this.importerService = importerService;
+    }
+
+    public void setBundleName(String bundleName)
+    {
         Locale bindingLocale = I18NUtil.getLocale();
         this.bundle = ResourceBundle.getBundle(bundleName, bindingLocale);
-	}
+    }
 
     public void checkAndCreate(NodeRef rootNodeRef)
     {
-		List<NodeRef> nodes = searchService.selectNodes(rootNodeRef, getPath(), null, namespaceService, false);
-		if(nodes.size() == 0)
-		{
-    		logger.info("Repository location " + getPath() + " does not exist for tenant "
-    				+ TenantUtil.getCurrentDomain() + ", creating");
-    		create();
-		}
+        List<NodeRef> nodes = searchService.selectNodes(rootNodeRef, getPath(), null, namespaceService, false);
+        if (nodes.size() == 0)
+        {
+            logger.info("Repository location " + getPath() + " does not exist for tenant "
+                    + TenantUtil.getCurrentDomain() + ", creating");
+            create();
+        }
     }
 
     protected String getParentPath()
     {
-    	String parentPath = null;
+        String parentPath = null;
 
-    	String path = getPath();
-    	int idx = path.lastIndexOf("/");
-    	if(idx != -1)
-    	{
-    		parentPath = path.substring(0, idx);
-    	}
-    	else
-    	{
-    		parentPath = "/";
-    	}
+        String path = getPath();
+        int idx = path.lastIndexOf("/");
+        if (idx != -1)
+        {
+            parentPath = path.substring(0, idx);
+        }
+        else
+        {
+            parentPath = "/";
+        }
 
-    	return parentPath;
+        return parentPath;
     }
 
     protected void create()
     {
-        RetryingTransactionCallback<Void> initCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> initCallback = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -135,15 +135,15 @@ public class DynamicCreateRepositoryLocation extends RepositoryLocation
         getTransactionService().getRetryingTransactionHelper().doInTransaction(initCallback, false, true);
 
     }
+
     private void onCreateInTxn()
-    {       
+    {
         final File viewFile = ImporterBootstrap.getFile(contentViewLocation);
         ImportPackageHandler acpHandler = new ACPImportPackageHandler(viewFile, null);
         Location location = new Location(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         location.setPath(getParentPath());
 
-        final ImporterBinding binding = new ImporterBinding()
-        {
+        final ImporterBinding binding = new ImporterBinding() {
             @Override
             public String getValue(String key)
             {
@@ -167,7 +167,7 @@ public class DynamicCreateRepositoryLocation extends RepositoryLocation
             {
                 return false;
             }
-            
+
             @Override
             public ImporterContentCache getImportConentCache()
             {
@@ -178,13 +178,13 @@ public class DynamicCreateRepositoryLocation extends RepositoryLocation
         importerService.importView(acpHandler, location, binding, (ImporterProgress) null);
     }
 
-	public TransactionService getTransactionService() 
-	{
-		return transactionService;
-	}
+    public TransactionService getTransactionService()
+    {
+        return transactionService;
+    }
 
-	public void setTransactionService(TransactionService transactionService) 
-	{
-		this.transactionService = transactionService;
-	}
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
 }

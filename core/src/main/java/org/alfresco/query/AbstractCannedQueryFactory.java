@@ -18,11 +18,12 @@
  */
 package org.alfresco.query;
 
+import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.registry.NamedObjectRegistry;
-import org.springframework.beans.factory.BeanNameAware;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Basic services for {@link CannedQueryFactory} implementations.
@@ -38,7 +39,9 @@ public abstract class AbstractCannedQueryFactory<R> implements CannedQueryFactor
 
     /**
      * Set the name with which to {@link #setRegistry(NamedObjectRegistry) register}
-     * @param name          the name of the bean
+     * 
+     * @param name
+     *            the name of the bean
      */
     public void setBeanName(String name)
     {
@@ -64,13 +67,13 @@ public abstract class AbstractCannedQueryFactory<R> implements CannedQueryFactor
 
         registry.register(name, this);
     }
-    
+
     /**
-     * Helper method to construct a unique query execution ID based on the
-     * instance of the factory and the parameters provided.
+     * Helper method to construct a unique query execution ID based on the instance of the factory and the parameters provided.
      * 
-     * @param parameters                the query parameters
-     * @return                          a unique query instance ID
+     * @param parameters
+     *            the query parameters
+     * @return a unique query instance ID
      */
     protected String getQueryExecutionId(CannedQueryParameters parameters)
     {
@@ -78,8 +81,8 @@ public abstract class AbstractCannedQueryFactory<R> implements CannedQueryFactor
         String uuid = name + "-" + GUID.generate();
         return uuid;
     }
-    
-    /** 
+
+    /**
      * {@inheritDoc}
      */
     @Override

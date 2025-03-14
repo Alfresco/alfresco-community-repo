@@ -53,14 +53,14 @@ public class FilesFoldersConstraint extends VirtualQueryConstraintDecorator
 
     @Override
     protected SearchParameters applyDecorations(ActualEnvironment environment, SearchParameters searchParameters,
-                VirtualQuery query)
+            VirtualQuery query)
     {
         String queryString = searchParameters.getQuery();
         String language = searchParameters.getLanguage();
         String filteredQuery = filter(language,
-                                      queryString,
-                                      files,
-                                      folders);
+                queryString,
+                files,
+                folders);
         SearchParameters searchParametersCopy = searchParameters.copy();
         searchParametersCopy.setQuery(filteredQuery);
         return searchParametersCopy;
@@ -86,7 +86,7 @@ public class FilesFoldersConstraint extends VirtualQueryConstraintDecorator
             else
             {
                 throw new VirtualizationException("Disjunctive file-folder filters are only supported on "
-                            + SearchService.LANGUAGE_FTS_ALFRESCO + " virtual query language.");
+                        + SearchService.LANGUAGE_FTS_ALFRESCO + " virtual query language.");
             }
 
         }

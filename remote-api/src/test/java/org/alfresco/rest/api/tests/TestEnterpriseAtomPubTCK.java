@@ -29,23 +29,6 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.opencmis.OpenCMISClientContext;
-import org.alfresco.opencmis.tck.tests.query.QueryForObjectCustom;
-import org.alfresco.opencmis.tck.tests.query.QueryInFolderTestCustom;
-import org.alfresco.opencmis.tck.tests.query.QueryLikeTestCustom;
-import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.repo.web.util.JettyComponent;
-import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.testing.category.LuceneTests;
-import org.alfresco.util.testing.category.RedundantTests;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.tck.impl.AbstractSessionTestGroup;
 import org.apache.chemistry.opencmis.tck.impl.JUnitHelper;
@@ -65,6 +48,24 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.opencmis.OpenCMISClientContext;
+import org.alfresco.opencmis.tck.tests.query.QueryForObjectCustom;
+import org.alfresco.opencmis.tck.tests.query.QueryInFolderTestCustom;
+import org.alfresco.opencmis.tck.tests.query.QueryLikeTestCustom;
+import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.web.util.JettyComponent;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
+
 /**
  * OpenCMIS TCK unit tests.
  * 
@@ -73,45 +74,45 @@ import org.junit.experimental.categories.Category;
  */
 public class TestEnterpriseAtomPubTCK extends AbstractEnterpriseOpenCMIS10TCKTest
 {
-	private static final String CMIS_URL = "http://{0}:{1}/{2}/cmisatom";
-	protected static final Log logger = LogFactory.getLog(TestEnterpriseAtomPubTCK.class);
+    private static final String CMIS_URL = "http://{0}:{1}/{2}/cmisatom";
+    protected static final Log logger = LogFactory.getLog(TestEnterpriseAtomPubTCK.class);
 
-	@Before
-	public void setup() throws Exception
-	{
-		JettyComponent jetty = getTestFixture().getJettyComponent();
-		
-		final SearchService searchService = (SearchService)jetty.getApplicationContext().getBean("searchService");;
-		final NodeService nodeService = (NodeService)jetty.getApplicationContext().getBean("nodeService");
-		final FileFolderService fileFolderService = (FileFolderService)jetty.getApplicationContext().getBean("fileFolderService");
-		final NamespaceService namespaceService = (NamespaceService)jetty.getApplicationContext().getBean("namespaceService");
-		final TransactionService transactionService = (TransactionService)jetty.getApplicationContext().getBean("transactionService");
-		final String name = "abc" + System.currentTimeMillis();
+    @Before
+    public void setup() throws Exception
+    {
+        JettyComponent jetty = getTestFixture().getJettyComponent();
 
-		transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-		{
-			@Override
-			public Void execute() throws Throwable
-			{
-				AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        final SearchService searchService = (SearchService) jetty.getApplicationContext().getBean("searchService");
+        ;
+        final NodeService nodeService = (NodeService) jetty.getApplicationContext().getBean("nodeService");
+        final FileFolderService fileFolderService = (FileFolderService) jetty.getApplicationContext().getBean("fileFolderService");
+        final NamespaceService namespaceService = (NamespaceService) jetty.getApplicationContext().getBean("namespaceService");
+        final TransactionService transactionService = (TransactionService) jetty.getApplicationContext().getBean("transactionService");
+        final String name = "abc" + System.currentTimeMillis();
 
-                Repository repositoryHelper = (Repository)jetty.getApplicationContext().getBean("repositoryHelper");
-				NodeRef companyHome = repositoryHelper.getCompanyHome();
-				fileFolderService.create(companyHome, name, ContentModel.TYPE_FOLDER).getNodeRef();
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable
+            {
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-				return null;
-			}
-		}, false, true);
+                Repository repositoryHelper = (Repository) jetty.getApplicationContext().getBean("repositoryHelper");
+                NodeRef companyHome = repositoryHelper.getCompanyHome();
+                fileFolderService.create(companyHome, name, ContentModel.TYPE_FOLDER).getNodeRef();
 
-    	int port = jetty.getPort();
-    	Map<String, String> cmisParameters = new HashMap<String, String>();
-    	cmisParameters.put(TestParameters.DEFAULT_RELATIONSHIP_TYPE, "R:cm:replaces");
-    	cmisParameters.put(TestParameters.DEFAULT_TEST_FOLDER_PARENT, "/" + name);
-    	clientContext = new OpenCMISClientContext(BindingType.ATOMPUB,
-    			MessageFormat.format(CMIS_URL, "localhost", String.valueOf(port), "alfresco"), "admin", "admin", cmisParameters, jetty.getApplicationContext());
+                return null;
+            }
+        }, false, true);
+
+        int port = jetty.getPort();
+        Map<String, String> cmisParameters = new HashMap<String, String>();
+        cmisParameters.put(TestParameters.DEFAULT_RELATIONSHIP_TYPE, "R:cm:replaces");
+        cmisParameters.put(TestParameters.DEFAULT_TEST_FOLDER_PARENT, "/" + name);
+        clientContext = new OpenCMISClientContext(BindingType.ATOMPUB,
+                MessageFormat.format(CMIS_URL, "localhost", String.valueOf(port), "alfresco"), "admin", "admin", cmisParameters, jetty.getApplicationContext());
 
         overrideVersionableAspectProperties(jetty.getApplicationContext());
-	}
+    }
 
     @Test
     public void testCMISTCKBasics() throws Exception
@@ -119,7 +120,7 @@ public class TestEnterpriseAtomPubTCK extends AbstractEnterpriseOpenCMIS10TCKTes
         AlfrescoCMISBasicsTestGroup basicsTestGroup = new AlfrescoCMISBasicsTestGroup();
         JUnitHelper.run(basicsTestGroup);
     }
-    
+
     @Test
     public void testCMISTCKCRUD() throws Exception
     {
@@ -133,14 +134,14 @@ public class TestEnterpriseAtomPubTCK extends AbstractEnterpriseOpenCMIS10TCKTes
         OverrideVersioningTestGroup versioningTestGroup = new OverrideVersioningTestGroup();
         JUnitHelper.run(versioningTestGroup);
     }
-    
+
     @Test
     public void testCMISTCKFiling() throws Exception
     {
         FilingTestGroup filingTestGroup = new FilingTestGroup();
         JUnitHelper.run(filingTestGroup);
     }
-    
+
     @Test
     public void testCMISTCKControl() throws Exception
     {

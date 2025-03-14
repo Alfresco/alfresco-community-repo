@@ -26,6 +26,7 @@
 package org.alfresco.repo.rendition2;
 
 import static java.lang.Thread.sleep;
+
 import static org.alfresco.model.ContentModel.PROP_CONTENT;
 import static org.alfresco.model.RenditionModel.PROP_RENDITION_CONTENT_HASH_CODE;
 import static org.alfresco.repo.content.MimetypeMap.EXTENSION_BINARY;
@@ -34,6 +35,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.Collections;
+
+import junit.framework.AssertionFailedError;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.quartz.CronExpression;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ResourceUtils;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -61,15 +71,6 @@ import org.alfresco.transform.registry.TransformServiceRegistry;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.quartz.CronExpression;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.ResourceUtils;
-
-import junit.framework.AssertionFailedError;
 
 /**
  * Class unites common utility methods for {@link org.alfresco.repo.rendition2} package tests.
@@ -152,7 +153,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
 
         // Strict MimetypeCheck
         System.setProperty("transformer.strict.mimetype.check", "true");
-        //  Retry on DifferentMimetype
+        // Retry on DifferentMimetype
         System.setProperty("content.transformer.retryOn.different.mimetype", "true");
     }
 
@@ -181,7 +182,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
 
         if (transformServiceRegistry instanceof LocalTransformServiceRegistry)
         {
-            ((LocalTransformServiceRegistry)transformServiceRegistry).setEnabled(localTransformServiceEnabled);
+            ((LocalTransformServiceRegistry) transformServiceRegistry).setEnabled(localTransformServiceEnabled);
         }
 
         thumbnailRegistry.setTransformServiceRegistry(transformServiceRegistry);
@@ -257,9 +258,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     // Creates a new source node as the given user in its own transaction.
     protected NodeRef createSource(String user, String testFileName)
     {
-        return AuthenticationUtil.runAs(() ->
-                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                        createSource(testFileName)), user);
+        return AuthenticationUtil.runAs(() -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> createSource(testFileName)), user);
     }
 
     // Creates a new source node as the current user in the current transaction.
@@ -271,12 +270,10 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     // Changes the content of a source node as the given user in its own transaction.
     protected void updateContent(String user, NodeRef sourceNodeRef, String testFileName)
     {
-        AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () ->
-                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                {
-                    updateContent(sourceNodeRef, testFileName);
-                    return null;
-                }), user);
+        AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+            updateContent(sourceNodeRef, testFileName);
+            return null;
+        }), user);
     }
 
     // Changes the content of a source node as the current user in the current transaction.
@@ -295,12 +292,10 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     // Clears the content of a source node as the given user in its own transaction.
     protected void clearContent(String user, NodeRef sourceNodeRef)
     {
-        AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () ->
-                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                {
-                    clearContent(sourceNodeRef);
-                    return null;
-                }), user);
+        AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+            clearContent(sourceNodeRef);
+            return null;
+        }), user);
     }
 
     // Clears the content of a source node as the current user in the current transaction.
@@ -312,23 +307,19 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     // Requests a new rendition as the given user in its own transaction.
     protected void render(String user, NodeRef sourceNode, String renditionName)
     {
-        AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () ->
-                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                {
-                    render(sourceNode, renditionName);
-                    return null;
-                }), user);
+        AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+            render(sourceNode, renditionName);
+            return null;
+        }), user);
     }
 
     // Requests a new metadata extract as the given user in its own transaction.
     protected void extract(String user, NodeRef sourceNode)
     {
-        AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () ->
-                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                {
-                    extract(sourceNode);
-                    return null;
-                }), user);
+        AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+            extract(sourceNode);
+            return null;
+        }), user);
     }
 
     // Requests a new rendition as the current user in the current transaction.
@@ -357,7 +348,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
             Throwable cause = e.getCause();
             if (cause instanceof AssertionFailedError)
             {
-                throw (AssertionFailedError)cause;
+                throw (AssertionFailedError) cause;
             }
             throw e;
         }
@@ -375,7 +366,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
             Throwable cause = e.getCause();
             if (cause instanceof AssertionFailedError)
             {
-                throw (AssertionFailedError)cause;
+                throw (AssertionFailedError) cause;
             }
             throw e;
         }
@@ -386,16 +377,15 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     {
         long maxMillis = 10000;
         ChildAssociationRef assoc = null;
-        for (int i = (int)(maxMillis / 1000); i >= 0; i--)
+        for (int i = (int) (maxMillis / 1000); i >= 0; i--)
         {
             // Must create a new transaction in order to see changes that take place after this method started.
-            assoc = transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                    renditionService2.getRenditionByName(sourceNodeRef, renditionName), true, true);
+            assoc = transactionService.getRetryingTransactionHelper().doInTransaction(() -> renditionService2.getRenditionByName(sourceNodeRef, renditionName), true, true);
             if (assoc != null)
             {
                 break;
             }
-            logger.debug("RenditionService2.getRenditionByName(...) sleep "+i);
+            logger.debug("RenditionService2.getRenditionByName(...) sleep " + i);
             sleep(1000);
         }
         if (shouldExist)
@@ -415,11 +405,10 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     {
         long maxMillis = 5000;
         boolean nodeModified = true;
-        for (int i = (int)(maxMillis / 1000); i >= 0; i--)
+        for (int i = (int) (maxMillis / 1000); i >= 0; i--)
         {
             // Must create a new transaction in order to see changes that take place after this method started.
-            nodeModified = transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-            {
+            nodeModified = transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
                 Serializable created = nodeService.getProperty(sourceNodeRef, ContentModel.PROP_CREATED);
                 Serializable modified = nodeService.getProperty(sourceNodeRef, ContentModel.PROP_MODIFIED);
                 return !created.equals(modified);
@@ -428,7 +417,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
             {
                 break;
             }
-            logger.debug("waitForExtract sleep "+i);
+            logger.debug("waitForExtract sleep " + i);
             sleep(1000);
         }
         if (nodePropsShouldChange)
@@ -445,7 +434,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     protected String getTestFileName(String sourceMimetype) throws FileNotFoundException
     {
         String extension = mimetypeMap.getExtension(sourceMimetype);
-        String testFileName = extension.equals(EXTENSION_BINARY) ? null : "quick."+extension;
+        String testFileName = extension.equals(EXTENSION_BINARY) ? null : "quick." + extension;
         if (testFileName != null)
         {
             try
@@ -491,8 +480,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
 
     String createRandomUser()
     {
-        return AuthenticationUtil.runAs(() ->
-        {
+        return AuthenticationUtil.runAs(() -> {
             String username = generateNewUsernameString();
             createUser(username);
             return username;
@@ -505,13 +493,12 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     }
 
     void createUser(final String username,
-                            final String firstName,
-                            final String lastName,
-                            final String jobTitle,
-                            final long quota)
+            final String firstName,
+            final String lastName,
+            final String jobTitle,
+            final long quota)
     {
-        RetryingTransactionHelper.RetryingTransactionCallback<Void> createUserCallback = () ->
-        {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> createUserCallback = () -> {
             authenticationService.createAuthentication(username, PASSWORD.toCharArray());
 
             PropertyMap personProperties = new PropertyMap();
@@ -519,7 +506,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
             personProperties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME, "title" + username);
             personProperties.put(ContentModel.PROP_FIRSTNAME, firstName);
             personProperties.put(ContentModel.PROP_LASTNAME, lastName);
-            personProperties.put(ContentModel.PROP_EMAIL, username+"@example.com");
+            personProperties.put(ContentModel.PROP_EMAIL, username + "@example.com");
             personProperties.put(ContentModel.PROP_JOBTITLE, jobTitle);
             if (quota > 0)
             {
@@ -548,14 +535,12 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     }
 
     /**
-     * Helper method which gets the content hash code from the supplied rendition node without specific validations (the
-     * equivalent method from {@link RenditionService2Impl} is not exposed)
+     * Helper method which gets the content hash code from the supplied rendition node without specific validations (the equivalent method from {@link RenditionService2Impl} is not exposed)
      *
      * @param renditionNodeRef
      *            the rendition node
      *
-     * @return -1 in case of there is no content, -2 in case rendition doesn't exist, the actual content hash code
-     *         otherwise
+     * @return -1 in case of there is no content, -2 in case rendition doesn't exist, the actual content hash code otherwise
      */
     protected int getRenditionContentHashCode(NodeRef renditionNodeRef)
     {

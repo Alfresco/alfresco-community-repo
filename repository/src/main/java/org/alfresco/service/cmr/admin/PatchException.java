@@ -37,7 +37,8 @@ public class PatchException extends AlfrescoRuntimeException
     private static final long serialVersionUID = 7022368915143884315L;
 
     /**
-     * @param msgId the patch failure message ID
+     * @param msgId
+     *            the patch failure message ID
      */
     public PatchException(String msgId)
     {
@@ -45,10 +46,12 @@ public class PatchException extends AlfrescoRuntimeException
     }
 
     /**
-     * @param msgId the patch failure message ID
-     * @param args variable number of message arguments
+     * @param msgId
+     *            the patch failure message ID
+     * @param args
+     *            variable number of message arguments
      */
-    public PatchException(String msgId, Object ... args)
+    public PatchException(String msgId, Object... args)
     {
         super(msgId, args);
     }

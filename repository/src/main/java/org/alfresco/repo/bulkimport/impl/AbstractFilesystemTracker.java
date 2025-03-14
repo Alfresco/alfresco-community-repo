@@ -30,13 +30,14 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.alfresco.repo.bulkimport.AnalysedDirectory;
 import org.alfresco.repo.bulkimport.DirectoryAnalyser;
 import org.alfresco.repo.bulkimport.FilesystemTracker;
 import org.alfresco.repo.bulkimport.ImportableItem;
 import org.alfresco.util.PropertyCheck;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -45,7 +46,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractFilesystemTracker implements FilesystemTracker
 {
-	protected static Logger logger = LoggerFactory.getLogger(FilesystemTracker.class);
+    protected static Logger logger = LoggerFactory.getLogger(FilesystemTracker.class);
 
     protected DirectoryAnalyser directoryAnalyser = null;
 
@@ -54,10 +55,10 @@ public abstract class AbstractFilesystemTracker implements FilesystemTracker
         this.directoryAnalyser = directoryAnalyser;
     }
 
-	public void afterPropertiesSet() throws Exception
-	{
-        PropertyCheck.mandatory(this, "directoryAnalyser", directoryAnalyser);		
-	}
+    public void afterPropertiesSet() throws Exception
+    {
+        PropertyCheck.mandatory(this, "directoryAnalyser", directoryAnalyser);
+    }
 
     protected final AnalysedDirectory getImportableItemsInDirectory(ImportableItem directory)
     {
@@ -69,10 +70,9 @@ public abstract class AbstractFilesystemTracker implements FilesystemTracker
     {
         DirectoryStream.Filter<Path> filter = null;
 
-    	if (count != -1)
-    	{
-            filter = new DirectoryStream.Filter<Path>()
-            {
+        if (count != -1)
+        {
+            filter = new DirectoryStream.Filter<Path>() {
                 private int i = count;
 
                 @Override
@@ -81,18 +81,17 @@ public abstract class AbstractFilesystemTracker implements FilesystemTracker
                     return Files.isDirectory(entry) && i-- > 0;
                 }
             };
-    	}
-    	else
-    	{
-            filter = new DirectoryStream.Filter<Path>()
-            {
+        }
+        else
+        {
+            filter = new DirectoryStream.Filter<Path>() {
                 @Override
                 public boolean accept(Path entry) throws IOException
                 {
                     return Files.isDirectory(entry);
                 }
             };
-    	}
+        }
 
         AnalysedDirectory analysedDirectory = directoryAnalyser.analyseDirectory(directory, filter);
         return analysedDirectory;

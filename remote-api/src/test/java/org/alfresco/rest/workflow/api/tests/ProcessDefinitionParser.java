@@ -25,8 +25,9 @@
  */
 package org.alfresco.rest.workflow.api.tests;
 
-import org.alfresco.rest.workflow.api.model.ProcessDefinition;
 import org.json.simple.JSONObject;
+
+import org.alfresco.rest.workflow.api.model.ProcessDefinition;
 
 public class ProcessDefinitionParser extends ListParser<ProcessDefinition>
 {

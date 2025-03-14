@@ -27,6 +27,10 @@ package org.alfresco.util.test.junitrules;
 
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.rules.ExternalResource;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -34,14 +38,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.rules.ExternalResource;
 
 /**
- * A JUnit rule designed to help with finding well known nodes
- *  in the system. It provides functionality similar to
- *  {@link Repository}, but with extra nodes needed for testing
+ * A JUnit rule designed to help with finding well known nodes in the system. It provides functionality similar to {@link Repository}, but with extra nodes needed for testing
  * 
  * @author Nick Burch
  * @since Odin
@@ -49,37 +48,38 @@ import org.junit.rules.ExternalResource;
 public class WellKnownNodes extends ExternalResource
 {
     private static final Log log = LogFactory.getLog(WellKnownNodes.class);
-    
+
     private final ApplicationContextInit appContextRule;
     private final Repository repositoryHelper;
     private final NodeService nodeService;
-    
-    private static QName SYSTEM_FOLDER_QNAME = 
-        QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "system");
-    
+
+    private static QName SYSTEM_FOLDER_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "system");
+
     /**
      * Constructs the rule with a reference to a {@link ApplicationContextInit rule} which can be used to retrieve the ApplicationContext.
      * 
-     * @param appContextRule a rule which can be used to retrieve the spring app context.
+     * @param appContextRule
+     *            a rule which can be used to retrieve the spring app context.
      */
     public WellKnownNodes(ApplicationContextInit appContextRule)
     {
         this.appContextRule = appContextRule;
-        this.repositoryHelper = (Repository)appContextRule.getApplicationContext().getBean("repositoryHelper");
-        this.nodeService = (NodeService)appContextRule.getApplicationContext().getBean("NodeService");
+        this.repositoryHelper = (Repository) appContextRule.getApplicationContext().getBean("repositoryHelper");
+        this.nodeService = (NodeService) appContextRule.getApplicationContext().getBean("NodeService");
     }
-    
-    
-    @Override protected void before() throws Throwable
+
+    @Override
+    protected void before() throws Throwable
     {
         // Intentionally empty
     }
-    
-    @Override protected void after()
+
+    @Override
+    protected void after()
     {
         // Intentionally empty
     }
-    
+
     /**
      * Returns the root of the workspace store
      */
@@ -87,6 +87,7 @@ public class WellKnownNodes extends ExternalResource
     {
         return repositoryHelper.getRootHome();
     }
+
     /**
      * Returns company home
      */
@@ -94,6 +95,7 @@ public class WellKnownNodes extends ExternalResource
     {
         return repositoryHelper.getCompanyHome();
     }
+
     /**
      * Returns the system root
      */
@@ -109,6 +111,7 @@ public class WellKnownNodes extends ExternalResource
         final NodeRef system = sysRefs.get(0).getChildRef();
         return system;
     }
+
     /**
      * Returns the given System Container
      */

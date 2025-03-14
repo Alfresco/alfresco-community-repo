@@ -35,6 +35,16 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.extensions.config.element.GenericConfigElement;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfoFactory;
 import org.alfresco.filesys.alfresco.ExtendedDiskInterface;
@@ -60,15 +70,6 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.extensions.config.element.GenericConfigElement;
 
 /**
  * Alfresco File Server Configuration Bean Class
@@ -79,422 +80,435 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
         ExtendedServerConfigurationAccessor, ApplicationListener, ApplicationContextAware
 {
 
-  // Debug logging
+    // Debug logging
 
-  protected static final Log logger = LogFactory.getLog("org.alfresco.fileserver");
+    protected static final Log logger = LogFactory.getLog("org.alfresco.fileserver");
 
-  // IP address representing null
-  
-  public static final String BIND_TO_IGNORE = "0.0.0.0";
+    // IP address representing null
 
-  // FTP server debug type strings
+    public static final String BIND_TO_IGNORE = "0.0.0.0";
 
-  protected static final String m_ftpDebugStr[] = { "STATE", "RXDATA", "TXDATA", "DUMPDATA", "SEARCH", "INFO", "FILE", "FILEIO", "ERROR", "PKTTYPE",
-      "TIMING", "DATAPORT", "DIRECTORY", "SSL" };
+    // FTP server debug type strings
 
-  // Default FTP server port
-  
-  protected static final int DefaultFTPServerPort = 21;
+    protected static final String m_ftpDebugStr[] = {"STATE", "RXDATA", "TXDATA", "DUMPDATA", "SEARCH", "INFO", "FILE", "FILEIO", "ERROR", "PKTTYPE",
+            "TIMING", "DATAPORT", "DIRECTORY", "SSL"};
 
-  // Default FTP server session timeout
-  protected static final int DefaultFTPSrvSessionTimeout = 5000;
+    // Default FTP server port
 
-  // Default FTP anonymous account name
-  
-  protected static final String DefaultFTPAnonymousAccount = "anonymous";
-  
-  //  NFS server debug type strings
-  
-  protected static final String m_nfsDebugStr[] = { "RXDATA", "TXDATA", "DUMPDATA", "SEARCH", "INFO", "FILE",
-    "FILEIO", "ERROR", "TIMING", "DIRECTORY", "SESSION" };
-  
-  // Default thread pool size
-	
-  protected static final int DefaultThreadPoolInit	= 25;
-  protected static final int DefaultThreadPoolMax		= 50;
-	
-  // Default memory pool settings
-	
-  protected static final int[] DefaultMemoryPoolBufSizes  = { 256, 4096, 16384, 66000 };
-  protected static final int[] DefaultMemoryPoolInitAlloc = {  20,   20,     5,     5 };
-  protected static final int[] DefaultMemoryPoolMaxAlloc  = { 100,   50,    50,    50 };
-	
-		
-  // Memory pool allocation limits
-	
-  protected static final int MemoryPoolMinimumAllocation	= 5;
-  protected static final int MemoryPoolMaximumAllocation   = 500;
-	
-  // Maximum session timeout
-  
-  public static final int MaxSessionTimeout    = 60 * 60;  // 1 hour
-    
-  // Disk interface to use for shared filesystems
-  
-  private ExtendedDiskInterface m_repoDiskInterface;
-  
-  // Runtime platform type
-  
-  private Platform.Type m_platform = Platform.Type.Unchecked;
+    protected static final int DefaultFTPServerPort = 21;
 
-  // flag to indicate successful initialization
-  
-  private boolean m_initialised;
+    // Default FTP server session timeout
+    protected static final int DefaultFTPSrvSessionTimeout = 5000;
 
-  // Main authentication service, public API
-  
-  private AuthenticationService m_authenticationService;
+    // Default FTP anonymous account name
 
-  // Authentication component, for internal functions
-  
-  protected AuthenticationComponent m_authenticationComponent;
-  
-  // Various services
-  
-  private NodeService m_nodeService;
-  private PersonService m_personService;
-  private TransactionService m_transactionService;
-  protected TenantService m_tenantService;
-  private SearchService m_searchService;
-  private NamespaceService m_namespaceService;
-  private AuthorityService m_authorityService;
-  
-  // Local server name and domain/workgroup name
+    protected static final String DefaultFTPAnonymousAccount = "anonymous";
 
-  private String m_localName;
-  private String m_localNameFull;
-  private String m_localDomain;
-  
-  // Disable use of native code on Windows, do not use any JNI calls
-  
-  protected boolean m_disableNativeCode = false;
-  
-  /**
-   * Default constructor
-   */
-  public AbstractServerConfigurationBean()
-  {
-    super ( "");
-  }
-  
-  /**
-   * Class constructor
-   * 
-   * @param srvName String
-   */
-  public AbstractServerConfigurationBean( String srvName)
-  {
-      super( srvName);
-  }
-  
-  /**
-   * Set the authentication service
-   * 
-   * @param authenticationService AuthenticationService
-   */
-  public void setAuthenticationService(AuthenticationService authenticationService)
-  {
-      m_authenticationService = authenticationService;
-  }
+    // NFS server debug type strings
 
-  /**
-   * Set the filesystem driver for the node service based filesystem
-   * 
-   * @param diskInterface DiskInterface
-   */
-  public void setDiskInterface(ExtendedDiskInterface diskInterface)
-  {
-      m_repoDiskInterface = diskInterface;
-  }
+    protected static final String m_nfsDebugStr[] = {"RXDATA", "TXDATA", "DUMPDATA", "SEARCH", "INFO", "FILE",
+            "FILEIO", "ERROR", "TIMING", "DIRECTORY", "SESSION"};
 
-  /**
-   * Set the authentication component
-   * 
-   * @param component AuthenticationComponent
-   */
-  public void setAuthenticationComponent(AuthenticationComponent component)
-  {
-      m_authenticationComponent = component;
-  }
+    // Default thread pool size
 
-  /**
-   * Set the node service
-   * 
-   * @param service NodeService
-   */
-  public void setNodeService(NodeService service)
-  {
-      m_nodeService = service;
-  }
+    protected static final int DefaultThreadPoolInit = 25;
+    protected static final int DefaultThreadPoolMax = 50;
 
-  /**
-   * Set the person service
-   * 
-   * @param service PersonService
-   */
-  public void setPersonService(PersonService service)
-  {
-      m_personService = service;
-  }
+    // Default memory pool settings
 
-  /**
-   * Set the transaction service
-   * 
-   * @param service TransactionService
-   */
-  public void setTransactionService(TransactionService service)
-  {
-      m_transactionService = service;
-  }
+    protected static final int[] DefaultMemoryPoolBufSizes = {256, 4096, 16384, 66000};
+    protected static final int[] DefaultMemoryPoolInitAlloc = {20, 20, 5, 5};
+    protected static final int[] DefaultMemoryPoolMaxAlloc = {100, 50, 50, 50};
 
-  /**
-   * Set the tenant service
-   * 
-   * @param tenantService TenantService
-   */
-  public void setTenantService(TenantService tenantService)
-  {
-	  m_tenantService = tenantService;
-  }
+    // Memory pool allocation limits
 
-  /**
-   * Set the search service
-   * 
-   * @param searchService SearchService
-   */
-  public void setSearchService(SearchService searchService)
-  {
-	  m_searchService = searchService;
-  }
-  
-  /**
-   * Set the namespace service
-   * 
-   * @param namespaceService NamespaceService
-   */
-  public void setNamespaceService(NamespaceService namespaceService)
-  {
-	  m_namespaceService = namespaceService;
-  }
-  
-  /**
-   * Set the authority service
-   * 
-   * @param authService AuthorityService
-   */
-  public void setAuthorityService(AuthorityService authService)
-  {
-  	m_authorityService = authService;
-  }
-  
-  /**
-   * Check if the configuration has been initialized
-   * 
-   * @return Returns true if the configuration was fully initialised
-   */
-  public boolean isInitialised()
-  {
-      return m_initialised;
-  }
+    protected static final int MemoryPoolMinimumAllocation = 5;
+    protected static final int MemoryPoolMaximumAllocation = 500;
 
-  /**
-   * Check if the FTP server is enabled
-   * 
-   * @return boolean
-   */
-  public final boolean isFTPServerEnabled()
-  {
-      return hasConfigSection( FTPConfigSection.SectionName);
-  }
+    // Maximum session timeout
 
-  /**
-   * Check if the NFS server is enabled
-   * 
-   * @return boolean
-   */
-  public final boolean isNFSServerEnabled()
-  {
-      return hasConfigSection( NFSConfigSection.SectionName);
-  }
-  
-  /**
-   * Return the repository disk interface to be used to create shares
-   * 
-   * @return DiskInterface
-   */
-  public final ExtendedDiskInterface getRepoDiskInterface()
-  {
-      return m_repoDiskInterface;
-  }
-  
-  /**
-   * Initialize the configuration using the configuration service
-   */
-  public void init()
-  {
-      // Check that all required properties have been set
-	  
-      if (m_authenticationComponent == null)
-      {
-          throw new AlfrescoRuntimeException("Property 'authenticationComponent' not set");
-      }
-      else if (m_authenticationService == null)
-      {
-          throw new AlfrescoRuntimeException("Property 'authenticationService' not set");
-      }
-      else if (m_nodeService == null)
-      {
-          throw new AlfrescoRuntimeException("Property 'nodeService' not set");
-      }
-      else if (m_personService == null)
-      {
-          throw new AlfrescoRuntimeException("Property 'personService' not set");
-      }
-      else if (m_transactionService == null)
-      {
-          throw new AlfrescoRuntimeException("Property 'transactionService' not set");
-      }
-      else if (m_repoDiskInterface == null)
-      {
-          throw new AlfrescoRuntimeException("Property 'diskInterface' not set");
-      }
-      else if (m_authorityService == null)
-      {
-      	throw new AlfrescoRuntimeException("Property 'authorityService' not set");
-      }
-      
-      // Set the platform type
+    public static final int MaxSessionTimeout = 60 * 60; // 1 hour
 
-      determinePlatformType();
+    // Disk interface to use for shared filesystems
 
-      // Create the debug output configuration using a logger for all file server debug output
-      
-      DebugConfigSection debugConfig = new DebugConfigSection( this);
-      try
-      {
-          debugConfig.setDebug("org.alfresco.filesys.debug.FileServerDebugInterface", new GenericConfigElement( "params"));
-      }
-      catch ( InvalidConfigurationException ex)
-      {
-      }
-      
-      // Create the global configuration and Alfresco configuration sections
-      
-      new GlobalConfigSection( this);
-      new AlfrescoConfigSection( this);
-      
-      // Install the Alfresco client information factory
-      
-      ClientInfo.setFactory( new AlfrescoClientInfoFactory());
-      
-      // We need to check for a WINS server configuration in the CIFS server config section to initialize
-      // the NetBIOS name lookups to use WINS rather broadcast lookups, which may be used to get the local
-      // domain
-      
-      try {
+    private ExtendedDiskInterface m_repoDiskInterface;
 
-    	  // Get the CIFS server config section and extract the WINS server config, if available
-    	  
-          processWINSServerConfig();
-      }
-      catch (Exception ex) {
-    	  
-          // Configuration error
+    // Runtime platform type
 
-          logger.error("File server configuration error (WINS), " + ex.getMessage(), ex);
-      }
-      
-      // Initialize the filesystems
-      
-      try
-      {
-    	  // Process the core server configuration
-    	  processCoreServerConfig();
-    	  
-          // Process the security configuration
-          processSecurityConfig();
-          
-          // Process the filesystems configuration
-          processFilesystemsConfig();
-      }
-      catch (Exception ex)
-      {
-          // Configuration error
-          throw new AlfrescoRuntimeException("File server configuration error, " + ex.getMessage(), ex);
-      }
+    private Platform.Type m_platform = Platform.Type.Unchecked;
 
-      // Initialize the FTP server
+    // flag to indicate successful initialization
 
-      try
-      {
-          // Process the FTP server configuration
-          processFTPServerConfig();
-          
-          // Log the successful startup
-          
-          logger.info("FTP server " + (isFTPServerEnabled() ? "" : "NOT ") + "started");
-      }
-      catch (Exception ex)
-      {
-          // Configuration error
-        
-          logger.error("FTP server configuration error, " + ex.getMessage(), ex);
-      }                 
-  }
+    private boolean m_initialised;
 
-  protected abstract void processCoreServerConfig() throws InvalidConfigurationException;
+    // Main authentication service, public API
 
-  protected abstract void processSecurityConfig();
-  
-  protected abstract void processFilesystemsConfig();
+    private AuthenticationService m_authenticationService;
 
-  protected abstract void processFTPServerConfig();
+    // Authentication component, for internal functions
 
-  protected void processWINSServerConfig() {}
+    protected AuthenticationComponent m_authenticationComponent;
 
-  /**
-   * Close the configuration bean
-   */
-  public final void closeConfiguration()
-  {
-      super.closeConfiguration();
-  }
-  
-  /**
-   * Determine the platform type
-   */
-  private final void determinePlatformType()
-  {
-    if ( m_platform == Platform.Type.Unchecked)
-      m_platform = Platform.isPlatformType();
-  }
-  
+    // Various services
+
+    private NodeService m_nodeService;
+    private PersonService m_personService;
+    private TransactionService m_transactionService;
+    protected TenantService m_tenantService;
+    private SearchService m_searchService;
+    private NamespaceService m_namespaceService;
+    private AuthorityService m_authorityService;
+
+    // Local server name and domain/workgroup name
+
+    private String m_localName;
+    private String m_localNameFull;
+    private String m_localDomain;
+
+    // Disable use of native code on Windows, do not use any JNI calls
+
+    protected boolean m_disableNativeCode = false;
+
+    /**
+     * Default constructor
+     */
+    public AbstractServerConfigurationBean()
+    {
+        super("");
+    }
+
+    /**
+     * Class constructor
+     * 
+     * @param srvName
+     *            String
+     */
+    public AbstractServerConfigurationBean(String srvName)
+    {
+        super(srvName);
+    }
+
+    /**
+     * Set the authentication service
+     * 
+     * @param authenticationService
+     *            AuthenticationService
+     */
+    public void setAuthenticationService(AuthenticationService authenticationService)
+    {
+        m_authenticationService = authenticationService;
+    }
+
+    /**
+     * Set the filesystem driver for the node service based filesystem
+     * 
+     * @param diskInterface
+     *            DiskInterface
+     */
+    public void setDiskInterface(ExtendedDiskInterface diskInterface)
+    {
+        m_repoDiskInterface = diskInterface;
+    }
+
+    /**
+     * Set the authentication component
+     * 
+     * @param component
+     *            AuthenticationComponent
+     */
+    public void setAuthenticationComponent(AuthenticationComponent component)
+    {
+        m_authenticationComponent = component;
+    }
+
+    /**
+     * Set the node service
+     * 
+     * @param service
+     *            NodeService
+     */
+    public void setNodeService(NodeService service)
+    {
+        m_nodeService = service;
+    }
+
+    /**
+     * Set the person service
+     * 
+     * @param service
+     *            PersonService
+     */
+    public void setPersonService(PersonService service)
+    {
+        m_personService = service;
+    }
+
+    /**
+     * Set the transaction service
+     * 
+     * @param service
+     *            TransactionService
+     */
+    public void setTransactionService(TransactionService service)
+    {
+        m_transactionService = service;
+    }
+
+    /**
+     * Set the tenant service
+     * 
+     * @param tenantService
+     *            TenantService
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        m_tenantService = tenantService;
+    }
+
+    /**
+     * Set the search service
+     * 
+     * @param searchService
+     *            SearchService
+     */
+    public void setSearchService(SearchService searchService)
+    {
+        m_searchService = searchService;
+    }
+
+    /**
+     * Set the namespace service
+     * 
+     * @param namespaceService
+     *            NamespaceService
+     */
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        m_namespaceService = namespaceService;
+    }
+
+    /**
+     * Set the authority service
+     * 
+     * @param authService
+     *            AuthorityService
+     */
+    public void setAuthorityService(AuthorityService authService)
+    {
+        m_authorityService = authService;
+    }
+
+    /**
+     * Check if the configuration has been initialized
+     * 
+     * @return Returns true if the configuration was fully initialised
+     */
+    public boolean isInitialised()
+    {
+        return m_initialised;
+    }
+
+    /**
+     * Check if the FTP server is enabled
+     * 
+     * @return boolean
+     */
+    public final boolean isFTPServerEnabled()
+    {
+        return hasConfigSection(FTPConfigSection.SectionName);
+    }
+
+    /**
+     * Check if the NFS server is enabled
+     * 
+     * @return boolean
+     */
+    public final boolean isNFSServerEnabled()
+    {
+        return hasConfigSection(NFSConfigSection.SectionName);
+    }
+
+    /**
+     * Return the repository disk interface to be used to create shares
+     * 
+     * @return DiskInterface
+     */
+    public final ExtendedDiskInterface getRepoDiskInterface()
+    {
+        return m_repoDiskInterface;
+    }
+
+    /**
+     * Initialize the configuration using the configuration service
+     */
+    public void init()
+    {
+        // Check that all required properties have been set
+
+        if (m_authenticationComponent == null)
+        {
+            throw new AlfrescoRuntimeException("Property 'authenticationComponent' not set");
+        }
+        else if (m_authenticationService == null)
+        {
+            throw new AlfrescoRuntimeException("Property 'authenticationService' not set");
+        }
+        else if (m_nodeService == null)
+        {
+            throw new AlfrescoRuntimeException("Property 'nodeService' not set");
+        }
+        else if (m_personService == null)
+        {
+            throw new AlfrescoRuntimeException("Property 'personService' not set");
+        }
+        else if (m_transactionService == null)
+        {
+            throw new AlfrescoRuntimeException("Property 'transactionService' not set");
+        }
+        else if (m_repoDiskInterface == null)
+        {
+            throw new AlfrescoRuntimeException("Property 'diskInterface' not set");
+        }
+        else if (m_authorityService == null)
+        {
+            throw new AlfrescoRuntimeException("Property 'authorityService' not set");
+        }
+
+        // Set the platform type
+
+        determinePlatformType();
+
+        // Create the debug output configuration using a logger for all file server debug output
+
+        DebugConfigSection debugConfig = new DebugConfigSection(this);
+        try
+        {
+            debugConfig.setDebug("org.alfresco.filesys.debug.FileServerDebugInterface", new GenericConfigElement("params"));
+        }
+        catch (InvalidConfigurationException ex)
+        {}
+
+        // Create the global configuration and Alfresco configuration sections
+
+        new GlobalConfigSection(this);
+        new AlfrescoConfigSection(this);
+
+        // Install the Alfresco client information factory
+
+        ClientInfo.setFactory(new AlfrescoClientInfoFactory());
+
+        // We need to check for a WINS server configuration in the CIFS server config section to initialize
+        // the NetBIOS name lookups to use WINS rather broadcast lookups, which may be used to get the local
+        // domain
+
+        try
+        {
+
+            // Get the CIFS server config section and extract the WINS server config, if available
+
+            processWINSServerConfig();
+        }
+        catch (Exception ex)
+        {
+
+            // Configuration error
+
+            logger.error("File server configuration error (WINS), " + ex.getMessage(), ex);
+        }
+
+        // Initialize the filesystems
+
+        try
+        {
+            // Process the core server configuration
+            processCoreServerConfig();
+
+            // Process the security configuration
+            processSecurityConfig();
+
+            // Process the filesystems configuration
+            processFilesystemsConfig();
+        }
+        catch (Exception ex)
+        {
+            // Configuration error
+            throw new AlfrescoRuntimeException("File server configuration error, " + ex.getMessage(), ex);
+        }
+
+        // Initialize the FTP server
+
+        try
+        {
+            // Process the FTP server configuration
+            processFTPServerConfig();
+
+            // Log the successful startup
+
+            logger.info("FTP server " + (isFTPServerEnabled() ? "" : "NOT ") + "started");
+        }
+        catch (Exception ex)
+        {
+            // Configuration error
+
+            logger.error("FTP server configuration error, " + ex.getMessage(), ex);
+        }
+    }
+
+    protected abstract void processCoreServerConfig() throws InvalidConfigurationException;
+
+    protected abstract void processSecurityConfig();
+
+    protected abstract void processFilesystemsConfig();
+
+    protected abstract void processFTPServerConfig();
+
+    protected void processWINSServerConfig()
+    {}
+
+    /**
+     * Close the configuration bean
+     */
+    public final void closeConfiguration()
+    {
+        super.closeConfiguration();
+    }
+
+    /**
+     * Determine the platform type
+     */
+    private final void determinePlatformType()
+    {
+        if (m_platform == Platform.Type.Unchecked)
+            m_platform = Platform.isPlatformType();
+    }
+
     /**
      * Parse the platforms attribute returning the set of platform ids
      * 
-     * @param platformStr String
+     * @param platformStr
+     *            String
      */
     protected final EnumSet<Platform.Type> parsePlatformString(String platformStr)
     {
         // Split the platform string and build up a set of platform types
-  
+
         EnumSet<Platform.Type> platformTypes = EnumSet.noneOf(Platform.Type.class);
         if (platformStr == null || platformStr.length() == 0)
             return platformTypes;
-  
+
         StringTokenizer token = new StringTokenizer(platformStr.toUpperCase(Locale.ENGLISH), ",");
         String typ = null;
-  
+
         try
         {
             while (token.hasMoreTokens())
             {
-  
+
                 // Get the current platform type string and validate
-  
+
                 typ = token.nextToken().trim();
                 Platform.Type platform = Platform.Type.valueOf(typ);
-  
+
                 if (platform != Platform.Type.Unknown)
                     platformTypes.add(platform);
                 else
@@ -505,16 +519,17 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
         {
             throw new AlfrescoRuntimeException("Invalid platform type, " + typ);
         }
-  
+
         // Return the platform types
-  
+
         return platformTypes;
     }
-    
+
     /**
      * Get the local server name and optionally trim the domain name
      * 
-     * @param trimDomain boolean
+     * @param trimDomain
+     *            boolean
      * @return String
      */
     public final String getLocalServerName(boolean trimDomain)
@@ -524,7 +539,7 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
         {
             return getLocalServerName();
         }
-        
+
         // Check if the name has already been set
         if (m_localName != null)
             return m_localName;
@@ -581,8 +596,7 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
                 srvName = InetAddress.getLocalHost().getHostName();
             }
             catch (UnknownHostException ex)
-            {
-            }
+            {}
         }
 
         // Save the local server name
@@ -648,8 +662,7 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
                 }
             }
             catch (IOException ex)
-            {
-            }
+            {}
         }
 
         // Save the local domain name
@@ -660,83 +673,87 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
 
         return domainName;
     }
-    
+
     /**
      * Parse an adapter name string and return the matching address
      * 
-     * @param adapter String
+     * @param adapter
+     *            String
      * @return InetAddress
      * @exception InvalidConfigurationException
      */
     protected final InetAddress parseAdapterName(String adapter)
-      throws InvalidConfigurationException {
+            throws InvalidConfigurationException
+    {
 
-      NetworkInterface ni = null;
-      
-      try {
-        ni = NetworkInterface.getByName( adapter);
-      }
-      catch (SocketException ex) {
-        throw new InvalidConfigurationException( "Invalid adapter name, " + adapter);
-      }
-      
-      if ( ni == null)
-        throw new InvalidConfigurationException( "Invalid network adapter name, " + adapter);
-      
-      // Get the IP address for the adapter
+        NetworkInterface ni = null;
 
-      InetAddress adapAddr = null;
-      Enumeration<InetAddress> addrEnum = ni.getInetAddresses();
-      
-      while ( addrEnum.hasMoreElements() && adapAddr == null) {
-        
-        // Get the current address
-        
-        InetAddress addr = addrEnum.nextElement();
-        if ( IPAddress.isNumericAddress( addr.getHostAddress()))
-          adapAddr = addr;
-      }
-      
-      // Check if we found the IP address to bind to
-      
-      if ( adapAddr == null)
-        throw new InvalidConfigurationException( "Adapter " + adapter + " does not have a valid IP address");
+        try
+        {
+            ni = NetworkInterface.getByName(adapter);
+        }
+        catch (SocketException ex)
+        {
+            throw new InvalidConfigurationException("Invalid adapter name, " + adapter);
+        }
 
-      // Return the adapter address
-      
-      return adapAddr;
+        if (ni == null)
+            throw new InvalidConfigurationException("Invalid network adapter name, " + adapter);
+
+        // Get the IP address for the adapter
+
+        InetAddress adapAddr = null;
+        Enumeration<InetAddress> addrEnum = ni.getInetAddresses();
+
+        while (addrEnum.hasMoreElements() && adapAddr == null)
+        {
+
+            // Get the current address
+
+            InetAddress addr = addrEnum.nextElement();
+            if (IPAddress.isNumericAddress(addr.getHostAddress()))
+                adapAddr = addr;
+        }
+
+        // Check if we found the IP address to bind to
+
+        if (adapAddr == null)
+            throw new InvalidConfigurationException("Adapter " + adapter + " does not have a valid IP address");
+
+        // Return the adapter address
+
+        return adapAddr;
     }
-    
+
     private ApplicationContext applicationContext = null;
-    
-    
+
     /* (non-Javadoc)
-     * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
-     */
+     * 
+     * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent) */
     public void onApplicationEvent(ApplicationEvent event)
     {
         if (event instanceof ContextRefreshedEvent)
         {
-            ContextRefreshedEvent refreshEvent = (ContextRefreshedEvent)event;
+            ContextRefreshedEvent refreshEvent = (ContextRefreshedEvent) event;
             ApplicationContext refreshContext = refreshEvent.getApplicationContext();
             if (refreshContext != null && refreshContext.equals(applicationContext))
             {
                 // Initialize the bean
-              
+
                 init();
             }
         }
     }
 
     /* (non-Javadoc)
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-     */
+     * 
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext) */
     public void setApplicationContext(ApplicationContext applicationContext)
-        throws BeansException
+            throws BeansException
     {
         this.applicationContext = applicationContext;
     }
-    
+
     /**
      * Return the authentication service
      * 
@@ -746,7 +763,7 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
     {
         return m_authenticationService;
     }
-    
+
     /**
      * Return the authentication component
      * 
@@ -756,7 +773,7 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
     {
         return m_authenticationComponent;
     }
-    
+
     /**
      * Return the node service
      * 
@@ -766,7 +783,7 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
     {
         return m_nodeService;
     }
-    
+
     /**
      * Return the person service
      * 
@@ -776,7 +793,7 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
     {
         return m_personService;
     }
-    
+
     /**
      * Return the transaction service
      * 
@@ -786,7 +803,7 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
     {
         return m_transactionService;
     }
-    
+
     /**
      * Return the tenant service
      * 
@@ -794,9 +811,9 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
      */
     protected final TenantService getTenantService()
     {
-    	return m_tenantService;
+        return m_tenantService;
     }
-    
+
     /**
      * Return the search service
      * 
@@ -804,9 +821,9 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
      */
     protected final SearchService getSearchService()
     {
-    	return m_searchService;
+        return m_searchService;
     }
-    
+
     /**
      * Return the namespace service
      * 
@@ -814,9 +831,9 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
      */
     protected final NamespaceService getNamespaceService()
     {
-    	return m_namespaceService;
+        return m_namespaceService;
     }
-    
+
     /**
      * Check if native code calls are disabled
      * 
@@ -824,20 +841,21 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
      */
     public final boolean isNativeCodeDisabled()
     {
-    	return m_disableNativeCode;
+        return m_disableNativeCode;
     }
-    
+
     /**
      * Return the named bean
      * 
-     * @param beanName String
+     * @param beanName
+     *            String
      * @return Object
      */
-    public final Object getBean( String beanName)
+    public final Object getBean(String beanName)
     {
-    	return applicationContext.getBean( beanName);
+        return applicationContext.getBean(beanName);
     }
-    
+
     /**
      * Return the applicatin context
      * 
@@ -845,7 +863,7 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
      */
     public final ApplicationContext getApplicationsContext()
     {
-    	return applicationContext;
+        return applicationContext;
     }
 
     /**
@@ -855,6 +873,6 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
      */
     public final AuthorityService getAuthorityService()
     {
-    	return m_authorityService;
+        return m_authorityService;
     }
 }

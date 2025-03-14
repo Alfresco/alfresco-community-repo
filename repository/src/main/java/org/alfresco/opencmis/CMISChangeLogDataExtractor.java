@@ -28,6 +28,8 @@ package org.alfresco.opencmis;
 import java.io.Serializable;
 import java.util.HashMap;
 
+import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
+
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.repo.audit.extractor.AbstractDataExtractor;
@@ -36,11 +38,9 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
 
 /**
- * An extractor that allows to filter data using the following rule: Audit
- * records should only be created for items in the CMIS domain model.
+ * An extractor that allows to filter data using the following rule: Audit records should only be created for items in the CMIS domain model.
  * 
  * @author Stas Sokolovsky
  */
@@ -125,7 +125,8 @@ public class CMISChangeLogDataExtractor extends AbstractDataExtractor
         this.cmisDictionaryService = cmisDictionaryService;
     }
 
-    public void setCmisConnector(CMISConnector cmisConnector) {
+    public void setCmisConnector(CMISConnector cmisConnector)
+    {
         this.cmisConnector = cmisConnector;
     }
 }

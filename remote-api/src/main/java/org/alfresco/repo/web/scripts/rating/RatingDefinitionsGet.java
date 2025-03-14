@@ -28,10 +28,11 @@ package org.alfresco.repo.web.scripts.rating;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.service.cmr.rating.RatingScheme;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.service.cmr.rating.RatingScheme;
 
 /**
  * This class is the controller class for the rating.definitions.get webscript.
@@ -47,7 +48,7 @@ public class RatingDefinitionsGet extends AbstractRatingWebScript
         Map<String, Object> model = new HashMap<String, Object>();
 
         Map<String, RatingScheme> schemes = this.ratingService.getRatingSchemes();
-        
+
         model.put("schemeDefs", schemes);
 
         return model;

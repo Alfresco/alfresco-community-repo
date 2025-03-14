@@ -26,6 +26,7 @@
 package org.alfresco.repo.management.subsystems.test;
 
 import java.io.IOException;
+
 import org.alfresco.repo.management.subsystems.PortEarlyPropertyChecker;
 
 public class TestPortEarlyPropertyChecker extends PortEarlyPropertyChecker

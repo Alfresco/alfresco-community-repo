@@ -2,23 +2,28 @@ package org.alfresco.rest.actions.access.pojo;
 
 import java.util.Map;
 
-public class ActionCondition {
+public class ActionCondition
+{
     private String conditionDefinitionName;
     private Map<String, String> parameterValues;
 
-    public String getConditionDefinitionName() {
+    public String getConditionDefinitionName()
+    {
         return conditionDefinitionName;
     }
 
-    public void setConditionDefinitionName(String conditionDefinitionName) {
+    public void setConditionDefinitionName(String conditionDefinitionName)
+    {
         this.conditionDefinitionName = conditionDefinitionName;
     }
 
-    public Map<String, String> getParameterValues() {
+    public Map<String, String> getParameterValues()
+    {
         return parameterValues;
     }
 
-    public void setParameterValues(Map<String, String> parameterValues) {
+    public void setParameterValues(Map<String, String> parameterValues)
+    {
         this.parameterValues = parameterValues;
     }
 }

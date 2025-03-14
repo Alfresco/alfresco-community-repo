@@ -30,15 +30,16 @@ import static org.mockito.Mockito.*;
 
 import java.util.Properties;
 
-import org.alfresco.repo.descriptor.DescriptorServiceAvailableEvent;
-import org.alfresco.service.descriptor.DescriptorService;
-import org.alfresco.service.license.LicenseDescriptor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.context.ApplicationContext;
+
+import org.alfresco.repo.descriptor.DescriptorServiceAvailableEvent;
+import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.service.license.LicenseDescriptor;
 
 /**
  * Tests for the {@link CryptodocSwitchableApplicationContextFactory} class.
@@ -53,16 +54,16 @@ public class CryptodocSwitchableApplicationContextFactoryTest
     private static final String ENCRYPTED_STORE_SUBSYSTEM = "encryptedContentStore";
     private static final String NEW_STORE_SUBSYSTEM = "newContentStore";
     private static final String UNKNOWN_STORE_SUBSYSTEM = "unknownBean";
-    
+
     private static final String SOURCE_BEAN_NAME_PROPERTY = "sourceBeanName";
-    
+
     // The class under test
     private CryptodocSwitchableApplicationContextFactory switchableContext;
     private @Mock ChildApplicationContextFactory unencrytedContentStore;
     private @Mock ChildApplicationContextFactory newUnencrytedContentStore;
     private @Mock ChildApplicationContextFactory cryptodocContentStore;
     private @Mock EncryptedContentStoreChildApplicationContextFactory newContentStore;
-    
+
     private @Mock PropertyBackedBeanRegistry propertyBackedBeanRegistry;
     private @Mock ApplicationContext parentContext;
     private @Mock DescriptorService descriptorService;
@@ -78,18 +79,18 @@ public class CryptodocSwitchableApplicationContextFactoryTest
 
         when(parentContext.containsBean(NEW_UNENCRYPTED_STORE_SUBSYSTEM)).thenReturn(true);
         when(parentContext.getBean(NEW_UNENCRYPTED_STORE_SUBSYSTEM, ChildApplicationContextFactory.class)).thenReturn(newUnencrytedContentStore);
-        
+
         when(parentContext.containsBean(ENCRYPTED_STORE_SUBSYSTEM)).thenReturn(true);
         when(parentContext.getBean(ENCRYPTED_STORE_SUBSYSTEM)).thenReturn(cryptodocContentStore);
         when(parentContext.getBean(ENCRYPTED_STORE_SUBSYSTEM, ChildApplicationContextFactory.class)).thenReturn(cryptodocContentStore);
-        
+
         when(parentContext.containsBean(NEW_STORE_SUBSYSTEM)).thenReturn(true);
         when(parentContext.getBean(NEW_STORE_SUBSYSTEM)).thenReturn(newContentStore);
         when(parentContext.getBean(NEW_STORE_SUBSYSTEM, ChildApplicationContextFactory.class)).thenReturn(newContentStore);
 
         when(parentContext.containsBean(UNKNOWN_STORE_SUBSYSTEM)).thenReturn(false);
     }
-    
+
     private void initSwitchableContext(String sourceBeanName)
     {
         switchableContext.setSourceBeanName(sourceBeanName);
@@ -103,7 +104,7 @@ public class CryptodocSwitchableApplicationContextFactoryTest
     public void canSwitchFromUnencryptedToUnencrypted()
     {
         initSwitchableContext(UNENCRYPTED_STORE_SUBSYSTEM);
-        
+
         switchableContext.setProperty(SOURCE_BEAN_NAME_PROPERTY, NEW_UNENCRYPTED_STORE_SUBSYSTEM);
         assertEquals(NEW_UNENCRYPTED_STORE_SUBSYSTEM, switchableContext.getProperty(SOURCE_BEAN_NAME_PROPERTY));
     }
@@ -112,21 +113,21 @@ public class CryptodocSwitchableApplicationContextFactoryTest
     public void canSwitchFromUnencryptedToEncrypted_NoLicenseInfo()
     {
         initSwitchableContext(UNENCRYPTED_STORE_SUBSYSTEM);
-        
+
         switchableContext.setProperty(SOURCE_BEAN_NAME_PROPERTY, ENCRYPTED_STORE_SUBSYSTEM);
         assertEquals(ENCRYPTED_STORE_SUBSYSTEM, switchableContext.getProperty(SOURCE_BEAN_NAME_PROPERTY));
     }
-    
+
     @Test
     public void canSwitchFromUnencryptedToEncrypted_Supported()
     {
         initSwitchableContext(UNENCRYPTED_STORE_SUBSYSTEM);
-        
+
         DescriptorServiceAvailableEvent event = new DescriptorServiceAvailableEvent(descriptorService);
         when(descriptorService.getLicenseDescriptor()).thenReturn(licenseDescriptor);
         when(licenseDescriptor.isCryptodocEnabled()).thenReturn(true);
         switchableContext.onApplicationEvent(event);
-                
+
         switchableContext.setProperty(SOURCE_BEAN_NAME_PROPERTY, ENCRYPTED_STORE_SUBSYSTEM);
         assertEquals(ENCRYPTED_STORE_SUBSYSTEM, switchableContext.getProperty(SOURCE_BEAN_NAME_PROPERTY));
     }
@@ -135,7 +136,7 @@ public class CryptodocSwitchableApplicationContextFactoryTest
     public void canSwitchFromEncryptedToEncrypted_NoLicenseInfo()
     {
         initSwitchableContext(ENCRYPTED_STORE_SUBSYSTEM);
-        
+
         when(newContentStore.isEncryptedContent()).thenReturn(true);
         switchableContext.setProperty(SOURCE_BEAN_NAME_PROPERTY, NEW_STORE_SUBSYSTEM);
         assertEquals(NEW_STORE_SUBSYSTEM, switchableContext.getProperty(SOURCE_BEAN_NAME_PROPERTY));
@@ -155,7 +156,7 @@ public class CryptodocSwitchableApplicationContextFactoryTest
     public void cannotSwitchFromUnencryptedToEncrypted_NotSupported()
     {
         initSwitchableContext(UNENCRYPTED_STORE_SUBSYSTEM);
-        
+
         DescriptorServiceAvailableEvent event = new DescriptorServiceAvailableEvent(descriptorService);
         when(descriptorService.getLicenseDescriptor()).thenReturn(licenseDescriptor);
         when(licenseDescriptor.isCryptodocEnabled()).thenReturn(false);
@@ -172,7 +173,7 @@ public class CryptodocSwitchableApplicationContextFactoryTest
         // The content store didn't change
         assertEquals(UNENCRYPTED_STORE_SUBSYSTEM, switchableContext.getProperty(SOURCE_BEAN_NAME_PROPERTY));
     }
-    
+
     @Test
     public void cannotSwitchFromEncryptedToUnencrypted()
     {
@@ -194,7 +195,7 @@ public class CryptodocSwitchableApplicationContextFactoryTest
     public void cannotSwitchFromEncryptedToNewUnencrypted()
     {
         initSwitchableContext(ENCRYPTED_STORE_SUBSYSTEM);
-        
+
         when(newContentStore.isEncryptedContent()).thenReturn(false);
         try
         {
@@ -208,7 +209,7 @@ public class CryptodocSwitchableApplicationContextFactoryTest
         // The content store didn't change
         assertEquals(ENCRYPTED_STORE_SUBSYSTEM, switchableContext.getProperty(SOURCE_BEAN_NAME_PROPERTY));
     }
-    
+
     @Test
     public void sourceBeanIsNotUpdatableToUnknownBean()
     {

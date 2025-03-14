@@ -28,6 +28,7 @@ package org.alfresco.rest.core;
 import static io.restassured.RestAssured.basic;
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.oauth2;
+
 import static org.alfresco.utility.report.log.Step.STEP;
 
 import java.io.StringReader;
@@ -40,10 +41,34 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import javax.annotation.PostConstruct;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.http.ContentType;
+import io.restassured.http.Headers;
+import io.restassured.parsing.Parser;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.testng.Assert;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 
 import org.alfresco.rest.exception.EmptyJsonResponseException;
 import org.alfresco.rest.exception.JsonToModelConversionException;
@@ -77,31 +102,6 @@ import org.alfresco.utility.dsl.DSLWrapper;
 import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestModel;
 import org.alfresco.utility.model.UserModel;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.testng.Assert;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.restassured.RestAssured;
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.parsing.Parser;
-import io.restassured.http.Headers;
-import io.restassured.response.Response;
-import io.restassured.specification.RequestSpecification;
 
 @SuppressWarnings("deprecation")
 @Service
@@ -132,7 +132,8 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     /**
      * After configuring {@link #setServerURI(String)} and {@link #setServerPort(int)} call {@link #configureServerEndpoint()}
      *
-     * @param serverURI in format of "http://localhost", without port. Set port via {@link #setServerPort(int)}
+     * @param serverURI
+     *            in format of "http://localhost", without port. Set port via {@link #setServerPort(int)}
      */
     public void setServerURI(String serverURI)
     {
@@ -158,12 +159,12 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     }
 
     /**
-     * Verify response header contains a specific value
-     * Example:
-     * assertHeaderValueContains("Content-Disposition", "filename=\"myfile.txt\"");
+     * Verify response header contains a specific value Example: assertHeaderValueContains("Content-Disposition", "filename=\"myfile.txt\"");
      * 
-     * @param headerName the header name from response
-     * @param expectedHeaderValue the header property value to be checked
+     * @param headerName
+     *            the header name from response
+     * @param expectedHeaderValue
+     *            the header property value to be checked
      * @return
      */
     public RestWrapper assertHeaderValueContains(String headerName, String expectedHeaderValue)
@@ -212,7 +213,7 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     {
         if (currentUser != null)
         {
-            if(aisAuthentication.isAisAuthenticationEnabled())
+            if (aisAuthentication.isAisAuthenticationEnabled())
             {
                 configureRequestSpec().setAuth(oauth2(aisAuthentication.getAisAuthenticationToken(currentUser)));
             }
@@ -267,8 +268,10 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     /**
      * Process responses for a collection of models as {@link RestSiteModelsCollection}
      *
-     * @throws JsonToModelConversionException If the response cannot be converted to the given model.
-     * @throws EmptyJsonResponseException If there is no response from the server.
+     * @throws JsonToModelConversionException
+     *             If the response cannot be converted to the given model.
+     * @throws EmptyJsonResponseException
+     *             If there is no response from the server.
      */
 
     public <T> T processModels(Class<T> classz, RestRequest restRequest)
@@ -294,8 +297,10 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     /**
      * Process responses for a single model as {@link RestSiteModel}
      *
-     * @throws JsonToModelConversionException If the response cannot be converted to the given model.
-     * @throws EmptyJsonResponseException If there is no response from the server.
+     * @throws JsonToModelConversionException
+     *             If the response cannot be converted to the given model.
+     * @throws EmptyJsonResponseException
+     *             If there is no response from the server.
      */
     public <T> T processModel(Class<T> classz, RestRequest restRequest)
             throws EmptyJsonResponseException, JsonToModelConversionException
@@ -320,9 +325,12 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     /**
      * Send the request and convert the response to the appropriate model.
      *
-     * @param classz The class of the model to create.
-     * @param restRequest The request to send.
-     * @param path The path to the part of the response from which the model should be populated.
+     * @param classz
+     *            The class of the model to create.
+     * @param restRequest
+     *            The request to send.
+     * @param path
+     *            The path to the part of the response from which the model should be populated.
      * @return The populated model object.
      */
     private <T> T callAPIAndCreateModel(Class<T> classz, RestRequest restRequest, String path)
@@ -355,8 +363,10 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     /**
      * Process responses for a single model as {@link RestSiteModel}
      *
-     * @throws JsonToModelConversionException If the response cannot be converted to the given model.
-     * @throws EmptyJsonResponseException If there is no response from the server.
+     * @throws JsonToModelConversionException
+     *             If the response cannot be converted to the given model.
+     * @throws EmptyJsonResponseException
+     *             If there is no response from the server.
      */
     public JSONObject processJson(RestRequest restRequest)
             throws EmptyJsonResponseException, JsonToModelConversionException
@@ -520,7 +530,8 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
      *
      * @param restRequest
      * @return
-     * @throws EmptyJsonResponseException If there is no response from the server.
+     * @throws EmptyJsonResponseException
+     *             If there is no response from the server.
      */
     public RestHtmlResponse processHtmlResponse(RestRequest restRequest) throws EmptyJsonResponseException
     {
@@ -652,13 +663,13 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
         else if (HttpMethod.POST.equals(httpMethod))
         {
             returnedResponse = onRequest().body(restRequest.getBody())
-                                          .post(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+                    .post(restRequest.getPath(), restRequest.getPathParams()).andReturn();
         }
         else if (HttpMethod.PUT.equals(httpMethod))
         {
             returnedResponse = onRequest().body(restRequest.getBody())
-                                          .contentType(ContentType.JSON.withCharset(restRequest.getContentType()))
-                                          .put(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+                    .contentType(ContentType.JSON.withCharset(restRequest.getContentType()))
+                    .put(restRequest.getPath(), restRequest.getPathParams()).andReturn();
         }
         else if (HttpMethod.TRACE.equals(httpMethod))
         {
@@ -683,7 +694,7 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
         {
             LOG.info("On {} {}, received a response size that was {} bytes.\n"
                     + "This is bigger than the limit of {} bytes so its content will not be displayed: \n", restRequest.getHttpMethod(),
-                restRequest.getPath(), Integer.valueOf(responseSizeString), IGNORE_CONTENT_LIMIT_BYTES);
+                    restRequest.getPath(), Integer.valueOf(responseSizeString), IGNORE_CONTENT_LIMIT_BYTES);
         }
         else
         {
@@ -724,8 +735,8 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
             DocumentBuilder db = dbf.newDocumentBuilder();
             InputSource is = new InputSource(new StringReader(returnedResponse.asString()));
             Document document = db.parse(is);
-            
-			OutputFormat format = new OutputFormat(document);
+
+            OutputFormat format = new OutputFormat(document);
             format.setLineWidth(65);
             format.setIndenting(true);
             format.setIndent(2);
@@ -737,7 +748,7 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
         }
         catch (Exception e)
         {
-            result = "Error Parsing XML file returned: "+ e.getMessage();
+            result = "Error Parsing XML file returned: " + e.getMessage();
             setStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
         }
 
@@ -807,8 +818,7 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     /**
      * Assert that a specific status code is returned
      * 
-     * @param statusCode
-     * @return;
+     * @param statusCode @return;
      */
     public RestWrapper assertStatusCodeIs(HttpStatus statusCode)
     {
@@ -819,8 +829,7 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     }
 
     /**
-     * Backtrack algorithm to gather all declared fields within SuperClasses
-     * but stopping on TestModel.class
+     * Backtrack algorithm to gather all declared fields within SuperClasses but stopping on TestModel.class
      * 
      * @param fields
      * @param classz
@@ -860,9 +869,7 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
 
         for (Field field : allFields)
         {
-            /*
-             * check for required fields
-             */
+            /* check for required fields */
             if (field.isAnnotationPresent(JsonProperty.class))
             {
                 if (field.getAnnotation(JsonProperty.class).required())
@@ -900,8 +907,7 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     }
 
     /**
-     * Define the entire string of parameters that will be send to request
-     * Don't forget to call {@link #getParameters()} in the request to enable this.
+     * Define the entire string of parameters that will be send to request Don't forget to call {@link #getParameters()} in the request to enable this.
      * 
      * @param parameters
      */
@@ -934,7 +940,8 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
      * <p>
      * Note that this will replace any existing parameters.
      *
-     * @param parameters A list of URL query parameters - e.g. "maxItems=10000"
+     * @param parameters
+     *            A list of URL query parameters - e.g. "maxItems=10000"
      * @return The RestWrapper
      */
     public RestWrapper withParams(String... parameters)
@@ -997,7 +1004,7 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     {
         return new SolrAPI(this);
     }
-    
+
     public SolrAdminAPI withSolrAdminAPI()
     {
         return new SolrAdminAPI(this);
@@ -1030,9 +1037,7 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     }
 
     /**
-     * Construct the Where clause of any REST API call
-     * You can use the where parameter to restrict the list in the response to entries of a specific kind.
-     * The where parameter takes a value.
+     * Construct the Where clause of any REST API call You can use the where parameter to restrict the list in the response to entries of a specific kind. The where parameter takes a value.
      */
     public RestWrapper where(String whereExpression)
     {
@@ -1053,8 +1058,7 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     }
 
     /**
-     * You can handle the request sent to server by calling this method.
-     * If for example you want to sent multipart form data you can use: <code>
+     * You can handle the request sent to server by calling this method. If for example you want to sent multipart form data you can use: <code>
      * restClient.configureRequestSpec() 
                     .addMultiPart("filedata", Utility.getResourceTestDataFile("restapi-resource"))
                     .addFormParam("renditions", "doclib")
@@ -1106,11 +1110,12 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     }
 
     /**
-     * Process responses for a single model as {@link RestSyncSetRequestModel}
-     * Notice that {@link RestSyncSetRequestModel} doesn't have one "entry" field as any other rest request model
+     * Process responses for a single model as {@link RestSyncSetRequestModel} Notice that {@link RestSyncSetRequestModel} doesn't have one "entry" field as any other rest request model
      *
-     * @throws JsonToModelConversionException If the response cannot be converted to the given model.
-     * @throws EmptyJsonResponseException If there is no response from the server.
+     * @throws JsonToModelConversionException
+     *             If the response cannot be converted to the given model.
+     * @throws EmptyJsonResponseException
+     *             If there is no response from the server.
      */
     public <T> T processModelWithoutEntryObject(Class<T> classz, RestRequest restRequest)
             throws EmptyJsonResponseException, JsonToModelConversionException
@@ -1173,7 +1178,7 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     private void configureSecretHeader()
     {
         String solrSecret = restProperties.envProperty().getSolrSecret();
-        if(!solrSecret.isEmpty())
+        if (!solrSecret.isEmpty())
         {
             String solrSecretName = restProperties.envProperty().getSolrSecretName();
             configureRequestSpec().addHeader(solrSecretName, solrSecret);
@@ -1196,12 +1201,11 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
         configureRequestSpec().setPort(this.serverPort);
     }
 
-    /** 
-     * Adding new method to configure Alfresco Endpoint.
-     * Reconfiguration is required when restClient is used to executed apis on different <host>:<port> e.g. solr api followed by search api
+    /**
+     * Adding new method to configure Alfresco Endpoint. Reconfiguration is required when restClient is used to executed apis on different <host>:<port> e.g. solr api followed by search api
      */
     public void configureAlfrescoEndpoint()
-    {        
+    {
         this.serverURI = restProperties.envProperty().getTestServerUrl();
         this.serverPort = restProperties.envProperty().getPort();
         configureServerEndpoint();

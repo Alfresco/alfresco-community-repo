@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.workflow;
 
-
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -44,7 +43,7 @@ public class WorkflowTestSuite extends TestSuite
     /**
      * Creates the test suite
      *
-     * @return  the test suite
+     * @return the test suite
      */
     public static Test suite()
     {
@@ -53,19 +52,19 @@ public class WorkflowTestSuite extends TestSuite
         // Ensure that the default context is available
         ApplicationContextHelper.getApplicationContext();
 
-        suite.addTestSuite( StartWorkflowActionExecuterTest.class );
+        suite.addTestSuite(StartWorkflowActionExecuterTest.class);
 
         // Add the Activiti tests to be run
-        suite.addTestSuite( ActivitiWorkflowServiceIntegrationTest.class );
-        suite.addTestSuite( ActivitiSpringTransactionTest.class );
-        suite.addTestSuite( ActivitiTimerExecutionTest.class );
+        suite.addTestSuite(ActivitiWorkflowServiceIntegrationTest.class);
+        suite.addTestSuite(ActivitiSpringTransactionTest.class);
+        suite.addTestSuite(ActivitiTimerExecutionTest.class);
 
-         // This test will force the application context properly, which avoids
+        // This test will force the application context properly, which avoids
         // periodic wierd build failures
-        suite.addTestSuite( WorkflowSuiteContextShutdownTest.class );
+        suite.addTestSuite(WorkflowSuiteContextShutdownTest.class);
 
         // These tests use a different Spring config.
-        suite.addTestSuite( ActivitiMultitenantWorkflowTest.class );
+        suite.addTestSuite(ActivitiMultitenantWorkflowTest.class);
 
         // General workflows tests
         suite.addTestSuite(WorklfowObjectFactoryTest.class);

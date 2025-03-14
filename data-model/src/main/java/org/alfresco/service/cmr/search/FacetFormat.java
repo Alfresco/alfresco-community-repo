@@ -27,5 +27,5 @@ package org.alfresco.service.cmr.search;
 
 public enum FacetFormat
 {
-    V1,V2
+    V1, V2
 }

@@ -34,8 +34,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 
 /**
- * Implementation of a {@link Log} that logs messages to a structure accessible via
- * {@link TransformerConfigMBean#getTransformationDebugLog(int)}.<p>
+ * Implementation of a {@link Log} that logs messages to a structure accessible via {@link TransformerConfigMBean#getTransformationDebugLog(int)}.
+ * <p>
  * 
  * @author Alan Davis
  */
@@ -44,9 +44,9 @@ public class TransformerDebugLog extends TransformerLogger<DebugEntry>
     private static Pattern END_OF_REQUEST_ID_PATTERN = Pattern.compile("[^0-9]");
 
     /**
-     * {@inheritDoc}<p>
-     * Returns 20 as this is debug and we must currently walk the whole structure each time
-     * an new request id is added.
+     * {@inheritDoc}
+     * <p>
+     * Returns 20 as this is debug and we must currently walk the whole structure each time an new request id is added.
      */
     @Override
     protected int getUpperMaxEntries()
@@ -66,7 +66,7 @@ public class TransformerDebugLog extends TransformerLogger<DebugEntry>
     @Override
     protected void addOrModify(Deque<DebugEntry> entries, Object message)
     {
-        String msg = (String)message;
+        String msg = (String) message;
         String requestId = getRequestId(msg);
         if (requestId != null)
         {
@@ -85,8 +85,7 @@ public class TransformerDebugLog extends TransformerLogger<DebugEntry>
     }
 
     /**
-     * Returns the request id from the debug message. This is the integer at
-     * the start of the message.
+     * Returns the request id from the debug message. This is the integer at the start of the message.
      */
     private String getRequestId(String message)
     {
@@ -110,24 +109,24 @@ class DebugEntry
     final String requestId;
     private final StringBuilder sb = new StringBuilder();
     boolean complete = false;
-    
+
     DebugEntry(String requestId, String message)
     {
         this.requestId = requestId;
         sb.append(requestId);
         sb.append("             ");
         sb.append(TransformerLogger.DATE_FORMAT.format(new Date()));
-        
+
         addLine(message);
     }
-    
+
     void addLine(String message)
     {
         sb.append('\n');
         sb.append(message);
-        complete = message.contains("Finished in"); 
+        complete = message.contains("Finished in");
     }
-    
+
     public String toString()
     {
         String string;

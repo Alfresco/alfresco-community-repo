@@ -28,8 +28,7 @@ package org.alfresco.repo.management.subsystems;
 import org.springframework.context.ApplicationContext;
 
 /**
- * An interface providing access to a child application context corresonding to a particular subsystem. As with other
- * {@link PropertyBackedBean}s, can be stopped, reconfigured, started and tested.
+ * An interface providing access to a child application context corresonding to a particular subsystem. As with other {@link PropertyBackedBean}s, can be stopped, reconfigured, started and tested.
  * 
  * @author dward
  */

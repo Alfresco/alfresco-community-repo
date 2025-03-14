@@ -48,8 +48,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
- * Sets the ghost on destroy property for existing destroy disposition actions
- * to the value specified in the global properties file
+ * Sets the ghost on destroy property for existing destroy disposition actions to the value specified in the global properties file
  *
  * @author Mark Hibbins
  * @since 2.2
@@ -69,7 +68,8 @@ public class RMv22GhostOnDestroyDispositionActionPatch extends AbstractModulePat
     private boolean ghostingEnabled;
 
     /**
-     * @param dispositionService disposition service
+     * @param dispositionService
+     *            disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -77,7 +77,8 @@ public class RMv22GhostOnDestroyDispositionActionPatch extends AbstractModulePat
     }
 
     /**
-     * @param filePlanService file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -85,7 +86,8 @@ public class RMv22GhostOnDestroyDispositionActionPatch extends AbstractModulePat
     }
 
     /**
-     * @param nodeService file plan service
+     * @param nodeService
+     *            file plan service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -93,8 +95,8 @@ public class RMv22GhostOnDestroyDispositionActionPatch extends AbstractModulePat
     }
 
     /**
-     * @param ghostingEnabled Ghost on destroy setting from
-     *            alfresco-global.properties
+     * @param ghostingEnabled
+     *            Ghost on destroy setting from alfresco-global.properties
      */
     public void setGhostingEnabled(boolean ghostingEnabled)
     {
@@ -130,9 +132,7 @@ public class RMv22GhostOnDestroyDispositionActionPatch extends AbstractModulePat
     }
 
     /**
-     * Add the disposition schedule associated with the node ref to the passed
-     * set of disposition schedule then call this method recursively for this
-     * node's children
+     * Add the disposition schedule associated with the node ref to the passed set of disposition schedule then call this method recursively for this node's children
      *
      * @param nodeRef
      * @param dispositionSchedules
@@ -156,17 +156,14 @@ public class RMv22GhostOnDestroyDispositionActionPatch extends AbstractModulePat
     }
 
     /**
-     * Patch the specified disposition schedule. To do this add the host on
-     * destroy to any action definition that doesn't already have it defined and
-     * set the value to the value set in the global properties file. Leave any
-     * action definitions that have this property already defined untouched.
+     * Patch the specified disposition schedule. To do this add the host on destroy to any action definition that doesn't already have it defined and set the value to the value set in the global properties file. Leave any action definitions that have this property already defined untouched.
      *
      * @param dispositionSchedule
      */
     private void processDispositionSchedule(DispositionSchedule dispositionSchedule)
     {
         List<DispositionActionDefinition> actionDefinitions = dispositionSchedule.getDispositionActionDefinitions();
-        for(DispositionActionDefinition actionDefinition : actionDefinitions)
+        for (DispositionActionDefinition actionDefinition : actionDefinitions)
         {
             String actionName = (String) nodeService.getProperty(actionDefinition.getNodeRef(),
                     RecordsManagementModel.PROP_DISPOSITION_ACTION_NAME);

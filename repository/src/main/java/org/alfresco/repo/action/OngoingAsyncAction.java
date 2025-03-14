@@ -36,7 +36,7 @@ public class OngoingAsyncAction
 {
     private final NodeRef node;
     private final Action action;
-    
+
     public OngoingAsyncAction(NodeRef node, Action action)
     {
         this.node = node;
@@ -60,14 +60,15 @@ public class OngoingAsyncAction
         {
             return false;
         }
-        OngoingAsyncAction otherNodeBeingActioned = (OngoingAsyncAction)otherObj;
-        
+        OngoingAsyncAction otherNodeBeingActioned = (OngoingAsyncAction) otherObj;
+
         return EqualsHelper.nullSafeEquals(this.node, otherNodeBeingActioned.node) &&
-            EqualsHelper.nullSafeEquals(this.action.getActionDefinitionName(), otherNodeBeingActioned.action.getActionDefinitionName());
+                EqualsHelper.nullSafeEquals(this.action.getActionDefinitionName(), otherNodeBeingActioned.action.getActionDefinitionName());
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         return this.node.hashCode() + 7 * this.action.getActionDefinitionName().hashCode();
     }
 

@@ -33,11 +33,12 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for DataGenerators complex type.
+ * <p>
+ * Java class for DataGenerators complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType name="DataGenerators">
@@ -55,9 +56,10 @@ import jakarta.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "DataGenerators", propOrder = {
-    "dataGenerator"
+        "dataGenerator"
 })
-public class DataGenerators {
+public class DataGenerators
+{
 
     @XmlElement(name = "DataGenerator", required = true)
     protected List<DataGenerator> dataGenerator;
@@ -66,26 +68,25 @@ public class DataGenerators {
      * Gets the value of the dataGenerator property.
      * 
      * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the dataGenerator property.
+     * This accessor method returns a reference to the live list, not a snapshot. Therefore any modification you make to the returned list will be present inside the JAXB object. This is why there is not a <CODE>set</CODE> method for the dataGenerator property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
+     * 
      * <pre>
-     *    getDataGenerator().add(newItem);
+     * getDataGenerator().add(newItem);
      * </pre>
      * 
      * 
      * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link DataGenerator }
+     * Objects of the following type(s) are allowed in the list {@link DataGenerator }
      * 
      * 
      */
-    public List<DataGenerator> getDataGenerator() {
-        if (dataGenerator == null) {
+    public List<DataGenerator> getDataGenerator()
+    {
+        if (dataGenerator == null)
+        {
             dataGenerator = new ArrayList<DataGenerator>();
         }
         return this.dataGenerator;

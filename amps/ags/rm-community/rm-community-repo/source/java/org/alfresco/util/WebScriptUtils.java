@@ -27,9 +27,10 @@
 
 package org.alfresco.util;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import static org.alfresco.util.ParameterCheck.mandatory;
 import static org.alfresco.util.ParameterCheck.mandatoryString;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.IOException;
 import java.util.List;
@@ -60,7 +61,8 @@ public final class WebScriptUtils
     /**
      * Gets the template variable substitutions map
      *
-     * @param req The webscript request
+     * @param req
+     *            The webscript request
      * @return The template variable substitutions
      */
     public static Map<String, String> getTemplateVars(WebScriptRequest req)
@@ -84,8 +86,10 @@ public final class WebScriptUtils
     /**
      * Gets the value of a request parameter
      *
-     * @param req The webscript request
-     * @param parameter The request parameter
+     * @param req
+     *            The webscript request
+     * @param parameter
+     *            The request parameter
      * @return The value of the request parameter
      */
     public static String getRequestParameterValue(WebScriptRequest req, String parameter)
@@ -99,9 +103,12 @@ public final class WebScriptUtils
     /**
      * Gets the value of a request parameter
      *
-     * @param req The webscript request
-     * @param parameter The request parameter
-     * @param checkValue Determines if the value of the parameter should be checked or not
+     * @param req
+     *            The webscript request
+     * @param parameter
+     *            The request parameter
+     * @param checkValue
+     *            Determines if the value of the parameter should be checked or not
      * @return The value of the request parameter
      */
     public static String getRequestParameterValue(WebScriptRequest req, String parameter, boolean checkValue)
@@ -123,7 +130,8 @@ public final class WebScriptUtils
     /**
      * Gets the request content as JSON object
      *
-     * @param req The webscript request
+     * @param req
+     *            The webscript request
      * @return The request content as JSON object
      */
     public static JSONObject getRequestContentAsJSONObject(WebScriptRequest req)
@@ -169,8 +177,10 @@ public final class WebScriptUtils
     /**
      * Checks if the json object contains an entry with the specified parameter name
      *
-     * @param jsonObject The json object
-     * @param paramName The parameter name to check for
+     * @param jsonObject
+     *            The json object
+     * @param paramName
+     *            The parameter name to check for
      */
     public static void checkMandatoryJSONParam(JSONObject jsonObject, String paramName)
     {
@@ -186,8 +196,10 @@ public final class WebScriptUtils
     /**
      * Checks if the json object contains entries with the specified parameter names
      *
-     * @param jsonObject The json object.
-     * @param paramNames The parameter names to check for
+     * @param jsonObject
+     *            The json object.
+     * @param paramNames
+     *            The parameter names to check for
      */
     public static void checkMandatoryJSONParams(JSONObject jsonObject, List<String> paramNames)
     {
@@ -203,8 +215,10 @@ public final class WebScriptUtils
     /**
      * Gets the {@link String} value of a given key from a json object
      *
-     * @param jsonObject The json object
-     * @param key The key
+     * @param jsonObject
+     *            The json object
+     * @param key
+     *            The key
      * @return The {@link String} value of the given key from the json object
      */
     public static String getStringValueFromJSONObject(JSONObject jsonObject, String key)
@@ -218,10 +232,14 @@ public final class WebScriptUtils
     /**
      * Gets the {@link String} value of a given key from a json object
      *
-     * @param jsonObject The json object
-     * @param key The key
-     * @param checkKey Determines if the existence of the key should be checked
-     * @param checkValue Determines if the value should be checked if it is blank or not
+     * @param jsonObject
+     *            The json object
+     * @param key
+     *            The key
+     * @param checkKey
+     *            Determines if the existence of the key should be checked
+     * @param checkValue
+     *            Determines if the value should be checked if it is blank or not
      * @return The {@link String} value of the given key from the json object
      */
     public static String getStringValueFromJSONObject(JSONObject jsonObject, String key, boolean checkKey, boolean checkValue)
@@ -258,9 +276,12 @@ public final class WebScriptUtils
     /**
      * Puts the given key and value to the json object
      *
-     * @param jsonObject The json object
-     * @param key The key
-     * @param value The value
+     * @param jsonObject
+     *            The json object
+     * @param key
+     *            The key
+     * @param value
+     *            The value
      */
     public static void putValueToJSONObject(JSONObject jsonObject, String key, Object value)
     {
@@ -281,8 +302,10 @@ public final class WebScriptUtils
     /**
      * Gets the value of an element from a json array at the given index
      *
-     * @param jsonArray The json array
-     * @param index The index
+     * @param jsonArray
+     *            The json array
+     * @param index
+     *            The index
      * @return The value of the element
      */
     public static Object getJSONArrayValue(JSONArray jsonArray, int index)
@@ -306,7 +329,8 @@ public final class WebScriptUtils
     /**
      * Creates a json object from the given {@link String}
      *
-     * @param json The json object as {@link String}
+     * @param json
+     *            The json object as {@link String}
      * @return The json object created from the given {@link String}
      */
     public static JSONObject createJSONObject(String json)
@@ -330,7 +354,8 @@ public final class WebScriptUtils
     /**
      * Creates a json array from the given {@link String}
      *
-     * @param json The json array as {@link String}
+     * @param json
+     *            The json array as {@link String}
      * @return The json array created from the given {@link String}
      */
     public static JSONArray createJSONArray(String json)
@@ -354,8 +379,10 @@ public final class WebScriptUtils
     /**
      * Gets the {@link JSONArray} value of a given key from a json object
      *
-     * @param jsonObject The json object
-     * @param key The key
+     * @param jsonObject
+     *            The json object
+     * @param key
+     *            The key
      * @return The {@link JSONArray} value of the given key from the json object
      */
     public static JSONArray getJSONArrayFromJSONObject(JSONObject jsonObject, String key)
@@ -378,8 +405,7 @@ public final class WebScriptUtils
     }
 
     /**
-     * Returns {@code true} if the provided {@link WebScriptException}
-     * represents an HTTP 4xx error, else {@code false}.
+     * Returns {@code true} if the provided {@link WebScriptException} represents an HTTP 4xx error, else {@code false}.
      */
     public static boolean is4xxError(WebScriptException e)
     {
@@ -387,8 +413,7 @@ public final class WebScriptUtils
     }
 
     /**
-     * Returns {@code true} if the provided {@link WebScriptException}
-     * represents an HTTP 5xx error, else {@code false}.
+     * Returns {@code true} if the provided {@link WebScriptException} represents an HTTP 5xx error, else {@code false}.
      */
     public static boolean is5xxError(WebScriptException e)
     {
@@ -404,8 +429,10 @@ public final class WebScriptUtils
     /**
      * Gets the {@link JSONObject} value of a given key from a json object
      *
-     * @param jsonObject The json object
-     * @param key The key
+     * @param jsonObject
+     *            The json object
+     * @param key
+     *            The key
      * @return The {@link JSONObject} value of the given key from the json object
      */
     public static JSONObject getValueFromJSONObject(JSONObject jsonObject, String key)

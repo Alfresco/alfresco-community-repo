@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
@@ -55,7 +57,6 @@ import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Ownership service support. Use in permissions framework as dynamic authority.
@@ -117,10 +118,10 @@ public class OwnableServiceImpl implements
     {
         this.nodeOwnerCache = ownerCache;
     }
-    
-   
+
     /**
-     * @param renditionService the renditionService to set
+     * @param renditionService
+     *            the renditionService to set
      */
     public void setRenditionService(RenditionService renditionService)
     {
@@ -135,7 +136,7 @@ public class OwnableServiceImpl implements
         PropertyCheck.mandatory(this, "policyComponent", policyComponent);
         PropertyCheck.mandatory(this, "renditionService", renditionService);
     }
-    
+
     public void init()
     {
         policyComponent.bindClassBehaviour(
@@ -154,7 +155,7 @@ public class OwnableServiceImpl implements
                 NodeServicePolicies.OnDeleteNodePolicy.QNAME,
                 ContentModel.ASPECT_OWNABLE,
                 new JavaBehaviour(this, "onDeleteNode"));
-        
+
         policyComponent.bindClassBehaviour(
                 NodeServicePolicies.OnAddAspectPolicy.QNAME,
                 ContentModel.ASPECT_AUDITABLE,
@@ -171,15 +172,15 @@ public class OwnableServiceImpl implements
                 NodeServicePolicies.OnDeleteNodePolicy.QNAME,
                 ContentModel.ASPECT_AUDITABLE,
                 new JavaBehaviour(this, "onDeleteNode"));
-        
+
         policyComponent.bindClassBehaviour(
                 CopyServicePolicies.OnCopyNodePolicy.QNAME,
-                ContentModel.ASPECT_OWNABLE, 
-                new JavaBehaviour(this, "onCopyNode", NotificationFrequency.EVERY_EVENT));      
+                ContentModel.ASPECT_OWNABLE,
+                new JavaBehaviour(this, "onCopyNode", NotificationFrequency.EVERY_EVENT));
         policyComponent.bindClassBehaviour(
                 CopyServicePolicies.OnCopyNodePolicy.QNAME,
-                ContentModel.ASPECT_AUDITABLE, 
-                new JavaBehaviour(this, "onCopyNode", NotificationFrequency.EVERY_EVENT));      
+                ContentModel.ASPECT_AUDITABLE,
+                new JavaBehaviour(this, "onCopyNode", NotificationFrequency.EVERY_EVENT));
     }
 
     // OwnableService implementation
@@ -211,11 +212,11 @@ public class OwnableServiceImpl implements
 
     public void setOwner(NodeRef nodeRef, String userName)
     {
-        if(isRendition(nodeRef))
+        if (isRendition(nodeRef))
         {
-           return;
+            return;
         }
-        
+
         if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE))
         {
             HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>(1, 1.0f);
@@ -232,18 +233,17 @@ public class OwnableServiceImpl implements
 
     private void clearOwnerCacheForRenditions(final NodeRef nodeRef)
     {
-       AuthenticationUtil.runAs(new RunAsWork<Void>()
-       {
-           public Void doWork() throws Exception
-           {
-              List<ChildAssociationRef> renditions = renditionService.getRenditions(nodeRef);
-              for (ChildAssociationRef rendition : renditions)
-              {
-                 nodeOwnerCache.remove(rendition.getChildRef());
-              }
-              return null;
-           }
-       }, AuthenticationUtil.getSystemUserName());
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
+            public Void doWork() throws Exception
+            {
+                List<ChildAssociationRef> renditions = renditionService.getRenditions(nodeRef);
+                for (ChildAssociationRef rendition : renditions)
+                {
+                    nodeOwnerCache.remove(rendition.getChildRef());
+                }
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     public void takeOwnership(NodeRef nodeRef)
@@ -281,7 +281,7 @@ public class OwnableServiceImpl implements
             nodeOwnerCache.remove(nodeRef);
             return;
         }
-        
+
         pb = before.get(ContentModel.PROP_CREATOR);
         pa = after.get(ContentModel.PROP_CREATOR);
 
@@ -292,16 +292,15 @@ public class OwnableServiceImpl implements
             return;
         }
     }
-    
+
     /**
-     * When an owned or audited node is copied, control which properties
-     *  go over, and which are re-created
+     * When an owned or audited node is copied, control which properties go over, and which are re-created
      */
     public CopyBehaviourCallback onCopyNode(QName classRef, CopyDetails copyDetails)
     {
-        return AuditableOwnableAspectCopyBehaviourCallback.INSTANCE;   
+        return AuditableOwnableAspectCopyBehaviourCallback.INSTANCE;
     }
-    
+
     private void cacheOwner(NodeRef nodeRef, String userName)
     {
         // do not cache owners of nodes that are from stores that ignores policies
@@ -311,10 +310,9 @@ public class OwnableServiceImpl implements
             nodeOwnerCache.put(nodeRef, userName);
         }
     }
-    
+
     /**
-     * Extends the default copy behaviour to prevent copying of some ownable and
-     *  auditable properties, but lets the aspects themselves go through.
+     * Extends the default copy behaviour to prevent copying of some ownable and auditable properties, but lets the aspects themselves go through.
      * 
      * @author Nick Burch
      * @since 3.4
@@ -322,7 +320,7 @@ public class OwnableServiceImpl implements
     private static class AuditableOwnableAspectCopyBehaviourCallback extends DefaultCopyBehaviourCallback
     {
         private static final CopyBehaviourCallback INSTANCE = new AuditableOwnableAspectCopyBehaviourCallback();
-        
+
         /**
          * Don't copy certain auditable p
          */
@@ -330,15 +328,15 @@ public class OwnableServiceImpl implements
         public Map<QName, Serializable> getCopyProperties(
                 QName classQName, CopyDetails copyDetails, Map<QName, Serializable> properties)
         {
-            if(classQName.equals(ContentModel.ASPECT_OWNABLE))
+            if (classQName.equals(ContentModel.ASPECT_OWNABLE))
             {
                 // The owner should become the user doing the copying
-                if(properties.containsKey(ContentModel.PROP_OWNER))
+                if (properties.containsKey(ContentModel.PROP_OWNER))
                 {
                     properties.put(ContentModel.PROP_OWNER, AuthenticationUtil.getFullyAuthenticatedUser());
                 }
             }
-            else if(classQName.equals(ContentModel.ASPECT_AUDITABLE))
+            else if (classQName.equals(ContentModel.ASPECT_AUDITABLE))
             {
                 // Have the key properties reset by the aspect
                 properties.remove(ContentModel.PROP_CREATED);
@@ -346,14 +344,14 @@ public class OwnableServiceImpl implements
                 properties.remove(ContentModel.PROP_MODIFIED);
                 properties.remove(ContentModel.PROP_MODIFIER);
             }
-            
+
             return properties;
         }
-        
+
         /**
          * Do copy the aspects
          * 
-         * @return          Returns <tt>true</tt> always
+         * @return Returns <tt>true</tt> always
          */
         @Override
         public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
@@ -361,11 +359,10 @@ public class OwnableServiceImpl implements
             return true;
         }
     }
-    
+
     private boolean isRendition(final NodeRef node)
     {
-        return AuthenticationUtil.runAs(new RunAsWork<Boolean>()
-        {
+        return AuthenticationUtil.runAs(new RunAsWork<Boolean>() {
             public Boolean doWork() throws Exception
             {
                 return renditionService.isRendition(node);

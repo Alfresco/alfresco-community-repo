@@ -38,95 +38,95 @@ import org.alfresco.rest.framework.resource.UniqueId;
  */
 public class PersonNetwork implements Network, Comparable<PersonNetwork>
 {
-	private Boolean homeNetwork;
-	private Network network;
+    private Boolean homeNetwork;
+    private Network network;
 
-	public PersonNetwork()
-	{
-	}
+    public PersonNetwork()
+    {}
 
-	public PersonNetwork(Boolean homeNetwork, Network network)
-	{
-		super();
-		this.homeNetwork = homeNetwork;
-		this.network = network;
-	}
+    public PersonNetwork(Boolean homeNetwork, Network network)
+    {
+        super();
+        this.homeNetwork = homeNetwork;
+        this.network = network;
+    }
 
-	@UniqueId
+    @UniqueId
     public String getId()
     {
-    	return network.getId();
-    }
-    
-    public Date getCreatedAt()
-    {
-    	return network.getCreatedAt();
+        return network.getId();
     }
 
-	public List<Quota> getQuotas()
+    public Date getCreatedAt()
     {
-    	return network.getQuotas();
+        return network.getCreatedAt();
+    }
+
+    public List<Quota> getQuotas()
+    {
+        return network.getQuotas();
     }
 
     public Boolean getIsEnabled()
     {
-    	return network.getIsEnabled();
+        return network.getIsEnabled();
     }
-    
+
     public String getSubscriptionLevel()
     {
-    	return network.getSubscriptionLevel();
+        return network.getSubscriptionLevel();
     }
-    
-	public Boolean getPaidNetwork()
-	{
-    	return network.getPaidNetwork();		
-	}
 
-	@Override
-	public int compareTo(PersonNetwork member)
-	{
-		int ret = getId().compareTo(member.getId());
-		return ret;
-	}
-	
-	public Boolean getHomeNetwork()
-	{
-		return homeNetwork;
-	}
+    public Boolean getPaidNetwork()
+    {
+        return network.getPaidNetwork();
+    }
 
-	@Override
-	public int hashCode()
-	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((network == null) ? 0 : network.hashCode());
-		return result;
-	}
+    @Override
+    public int compareTo(PersonNetwork member)
+    {
+        int ret = getId().compareTo(member.getId());
+        return ret;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		PersonNetwork other = (PersonNetwork) obj;
-		if (network == null)
-		{
-			if (other.network != null)
-				return false;
-		}
-		else if (!network.equals(other.network))
-			return false;
-		return true;
-	}
+    public Boolean getHomeNetwork()
+    {
+        return homeNetwork;
+    }
 
-	@Override
-	public String toString()
-	{
-		return "PersonNetwork [homeNetwork=" + homeNetwork + ", network="
-				+ network + "]";
-	}
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((network == null) ? 0 : network.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        PersonNetwork other = (PersonNetwork) obj;
+        if (network == null)
+        {
+            if (other.network != null)
+                return false;
+        }
+        else if (!network.equals(other.network))
+            return false;
+        return true;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "PersonNetwork [homeNetwork=" + homeNetwork + ", network="
+                + network + "]";
+    }
 }

@@ -25,18 +25,18 @@
  */
 package org.alfresco.rest.api.lookups;
 
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+
 /**
- * Looks up mimetype values
- * Pass in a mimetype value and a display string is returned.
+ * Looks up mimetype values Pass in a mimetype value and a display string is returned.
+ * 
  * @author Gethin James
  */
 public class MimeTypePropertyLookup implements PropertyLookup<String>
@@ -47,7 +47,7 @@ public class MimeTypePropertyLookup implements PropertyLookup<String>
     @Override
     public String lookup(String propertyValue)
     {
-        Map<String,String> mimetypes = serviceRegistry.getMimetypeService().getDisplaysByMimetype();
+        Map<String, String> mimetypes = serviceRegistry.getMimetypeService().getDisplaysByMimetype();
         return mimetypes.get(propertyValue);
     }
 

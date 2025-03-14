@@ -42,6 +42,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -58,16 +65,9 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.commons.collections.CollectionUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 /**
- * This test class covers part of the code implemented in abstract class {@link org.alfresco.repo.search.impl.AbstractCategoryServiceImpl}.
- * That's because abstract class cannot be instantiated and directly tested.
+ * This test class covers part of the code implemented in abstract class {@link org.alfresco.repo.search.impl.AbstractCategoryServiceImpl}. That's because abstract class cannot be instantiated and directly tested.
  */
 @RunWith(MockitoJUnitRunner.class)
 public class SolrCategoryServiceImplTest
@@ -110,7 +110,7 @@ public class SolrCategoryServiceImplTest
         given(nodeServiceMock.getChildAssocs(categoryRootChildAssociationRefMock.getChildRef()))
                 .willReturn(List.of(categoryChildAssociationRefMock));
 
-        //when
+        // when
         final Optional<NodeRef> rooCategoryNodeRef = objectUnderTest.getRootCategoryNodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
 
         then(nodeServiceMock).should().getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
@@ -138,7 +138,7 @@ public class SolrCategoryServiceImplTest
         given(searcherMock.query(searchParameters)).willReturn(resultSetMock);
         given(nodeServiceMock.exists(any(NodeRef.class))).willReturn(true);
 
-        //when
+        // when
         final List<Pair<NodeRef, Integer>> topCategories = objectUnderTest.getTopCategories(STORE_REF, aspectGenClassifiable, count);
 
         then(indexerAndSearcherMock).should().getSearcher(STORE_REF, false);
@@ -164,7 +164,7 @@ public class SolrCategoryServiceImplTest
         final QName aspectGenClassifiable = ContentModel.ASPECT_GEN_CLASSIFIABLE;
         given(dictionaryServiceMock.getAspect(aspectGenClassifiable)).willReturn(null);
 
-        //when
+        // when
         assertThrows(IllegalStateException.class, () -> objectUnderTest.getTopCategories(STORE_REF, aspectGenClassifiable, 100));
 
         then(indexerAndSearcherMock).shouldHaveNoInteractions();
@@ -189,7 +189,7 @@ public class SolrCategoryServiceImplTest
         given(searcherMock.query(searchParameters)).willReturn(resultSetMock);
         given(nodeServiceMock.exists(any(NodeRef.class))).willReturn(true);
 
-        //when
+        // when
         final List<Pair<NodeRef, Integer>> topCategories = objectUnderTest.getTopCategories(STORE_REF, aspectCustomCategories, count);
 
         then(indexerAndSearcherMock).should().getSearcher(STORE_REF, false);
@@ -218,7 +218,7 @@ public class SolrCategoryServiceImplTest
         final String field = getField(aspectCustomCategories);
         final int count = 100;
 
-        //when
+        // when
         assertThrows(IllegalStateException.class, () -> objectUnderTest.getTopCategories(STORE_REF, aspectCustomCategories, count));
 
         then(indexerAndSearcherMock).shouldHaveNoInteractions();

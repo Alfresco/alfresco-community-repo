@@ -33,5 +33,5 @@ package org.alfresco.rest.api.impl.activities;
  */
 public interface ActivitySummaryProcessorRegistry
 {
-	public void register(String activityType, ActivitySummaryProcessor processor);
+    public void register(String activityType, ActivitySummaryProcessor processor);
 }

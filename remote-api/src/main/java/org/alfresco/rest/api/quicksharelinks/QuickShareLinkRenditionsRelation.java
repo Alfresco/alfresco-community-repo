@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.quicksharelinks;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.framework.BinaryProperties;
@@ -37,7 +39,6 @@ import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Enable rendition(s) to be download via Shared Link
@@ -46,10 +47,10 @@ import org.springframework.beans.factory.InitializingBean;
  */
 @RelationshipResource(name = "renditions", entityResource = QuickShareLinkEntityResource.class, title = "Node renditions via shared link")
 public class QuickShareLinkRenditionsRelation implements
-            RelationshipResourceAction.Read<Rendition>,
-            RelationshipResourceAction.ReadById<Rendition>,
-            RelationshipResourceBinaryAction.Read,
-            InitializingBean
+        RelationshipResourceAction.Read<Rendition>,
+        RelationshipResourceAction.ReadById<Rendition>,
+        RelationshipResourceBinaryAction.Read,
+        InitializingBean
 {
     private QuickShareLinks quickShareLinks;
 
@@ -89,4 +90,3 @@ public class QuickShareLinkRenditionsRelation implements
         return quickShareLinks.getRendition(entityResourceId, id);
     }
 }
-

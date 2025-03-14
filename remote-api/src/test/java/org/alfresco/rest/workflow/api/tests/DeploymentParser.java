@@ -25,8 +25,9 @@
  */
 package org.alfresco.rest.workflow.api.tests;
 
-import org.alfresco.rest.workflow.api.model.Deployment;
 import org.json.simple.JSONObject;
+
+import org.alfresco.rest.workflow.api.model.Deployment;
 
 public class DeploymentParser extends ListParser<Deployment>
 {

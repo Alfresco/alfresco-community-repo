@@ -34,6 +34,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
@@ -44,7 +48,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -53,9 +56,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  * This class contains tests for {@link ImporterActionExecuter}.
@@ -87,8 +87,7 @@ public class ImporterActionExecuterTest
         AuthenticationUtil.setRunAsUserSystem();
 
         // we need a store
-        storeRef = serviceRegistry.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<StoreRef>()
-        {
+        storeRef = serviceRegistry.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<StoreRef>() {
             public StoreRef execute()
             {
                 StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.nanoTime());
@@ -102,8 +101,7 @@ public class ImporterActionExecuterTest
     {
         try
         {
-            serviceRegistry.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-            {
+            serviceRegistry.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
                 public Void execute()
                 {
                     if (storeRef != null)
@@ -125,8 +123,7 @@ public class ImporterActionExecuterTest
     {
         final RetryingTransactionHelper retryingTransactionHelper = serviceRegistry.getRetryingTransactionHelper();
 
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute()
             {
                 NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
@@ -162,8 +159,7 @@ public class ImporterActionExecuterTest
     }
 
     /**
-     * MNT-16292: Unzipped files which have folders do not get the cm:titled
-     * aspect applied
+     * MNT-16292: Unzipped files which have folders do not get the cm:titled aspect applied
      * 
      * @throws IOException
      */
@@ -172,8 +168,7 @@ public class ImporterActionExecuterTest
     {
         final RetryingTransactionHelper retryingTransactionHelper = serviceRegistry.getRetryingTransactionHelper();
 
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute()
             {
                 NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
@@ -190,7 +185,7 @@ public class ImporterActionExecuterTest
                 {
                     importerActionExecuter.execute(action, zipFileNodeRef);
 
-                    // check if import succeeded 
+                    // check if import succeeded
                     NodeRef importedFolder = nodeService.getChildByName(targetFolderNodeRef, ContentModel.ASSOC_CONTAINS, "folderCmTitledAspectArchive");
                     assertNotNull("import action failed", importedFolder);
 
@@ -199,7 +194,7 @@ public class ImporterActionExecuterTest
                     assertTrue("folder didn't get the cm:titled aspect applied", hasAspectTitled);
 
                     // MNT-17017 check ContentModel.PROP_TITLE is not set on the top level folder, just like Share
-                    String title = (String)nodeService.getProperty(importedFolder, ContentModel.PROP_TITLE);
+                    String title = (String) nodeService.getProperty(importedFolder, ContentModel.PROP_TITLE);
                     assertNull("The title should not have cm:title set", title);
                 }
                 finally
@@ -224,8 +219,7 @@ public class ImporterActionExecuterTest
     {
         final RetryingTransactionHelper retryingTransactionHelper = serviceRegistry.getRetryingTransactionHelper();
 
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute()
             {
                 NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
@@ -270,8 +264,7 @@ public class ImporterActionExecuterTest
     {
         final RetryingTransactionHelper retryingTransactionHelper = serviceRegistry.getRetryingTransactionHelper();
 
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute()
             {
                 NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
@@ -310,7 +303,7 @@ public class ImporterActionExecuterTest
     {
         URL url = AbstractContentTransformerTest.class.getClassLoader().getResource(resource);
         final File file = new File(url.getFile());
-        
+
         ContentWriter writer = contentService.getWriter(zipFileNodeRef, ContentModel.PROP_CONTENT, true);
         writer.setMimetype(MimetypeMap.MIMETYPE_ZIP);
         writer.putContent(file);

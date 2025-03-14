@@ -44,10 +44,12 @@ public class WorkflowPropertyHandlerRegistry
 
     private final WorkflowPropertyHandler defaultHandler;
     private final WorkflowQNameConverter qNameConverter;
-    
+
     /**
-     * @param defaultHandler WorkflowPropertyHandler
-     * @param qNameConverter WorkflowQNameConverter
+     * @param defaultHandler
+     *            WorkflowPropertyHandler
+     * @param qNameConverter
+     *            WorkflowQNameConverter
      */
     public WorkflowPropertyHandlerRegistry(WorkflowPropertyHandler defaultHandler, WorkflowQNameConverter qNameConverter)
     {
@@ -59,15 +61,15 @@ public class WorkflowPropertyHandlerRegistry
     {
         handlers.put(key, handler);
     }
-    
+
     public void clear()
     {
         handlers.clear();
     }
-    
-    public Map<String, Object> handleVariablesToSet(Map<QName, Serializable> properties, 
-                TypeDefinition type,
-                Object object, Class<?> objectType)
+
+    public Map<String, Object> handleVariablesToSet(Map<QName, Serializable> properties,
+            TypeDefinition type,
+            Object object, Class<?> objectType)
     {
         Map<String, Object> variablesToSet = new HashMap<String, Object>();
         for (Entry<QName, Serializable> entry : properties.entrySet())
@@ -80,7 +82,7 @@ public class WorkflowPropertyHandlerRegistry
                 handler = defaultHandler;
             }
             Object result = handler.handleProperty(key, value, type, object, objectType);
-            if (WorkflowPropertyHandler.DO_NOT_ADD.equals(result)==false) 
+            if (WorkflowPropertyHandler.DO_NOT_ADD.equals(result) == false)
             {
                 String keyStr = qNameConverter.mapQNameToName(key);
                 variablesToSet.put(keyStr, result);

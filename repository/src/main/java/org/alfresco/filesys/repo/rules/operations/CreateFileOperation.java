@@ -40,7 +40,7 @@ public class CreateFileOperation implements Operation
     private String path;
     private long allocationSize;
     boolean isHidden;
-    
+
     public CreateFileOperation(String name, NodeRef rootNodeRef, String path, long allocationSize, boolean isHidden)
     {
         this.name = name;
@@ -54,33 +54,33 @@ public class CreateFileOperation implements Operation
     {
         return name;
     }
-    
+
     public String toString()
     {
         return "CreateFileOperation: " + name;
     }
-    
+
     public String getPath()
     {
         return path;
     }
-    
+
     public NodeRef getRootNodeRef()
     {
         return rootNodeRef;
     }
-    
+
     public int hashCode()
     {
         return name.hashCode();
     }
-    
+
     public boolean equals(Object o)
     {
-        if(o instanceof CreateFileOperation)
+        if (o instanceof CreateFileOperation)
         {
-            CreateFileOperation c = (CreateFileOperation)o;
-            if(name.equals(c.getName()))
+            CreateFileOperation c = (CreateFileOperation) o;
+            if (name.equals(c.getName()))
             {
                 return true;
             }
@@ -97,7 +97,7 @@ public class CreateFileOperation implements Operation
     {
         return allocationSize;
     }
-    
+
     public boolean isHidden()
     {
         return isHidden;

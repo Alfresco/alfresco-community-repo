@@ -1,5 +1,9 @@
 package org.alfresco.rest.workflow.tasks.candidates;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestCandidateModelsCollection;
@@ -13,16 +17,13 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  *
  * @author bogdan.bocancea
  *
  */
-public class GetTaskCandidatesRegressionTests extends  RestTest
+public class GetTaskCandidatesRegressionTests extends RestTest
 {
     private UserModel userModel, userModel1, userModel2;
     private SiteModel siteModel;
@@ -31,7 +32,7 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
     private GroupModel group;
     private RestCandidateModelsCollection candidateModels;
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         userModel = dataUser.createRandomTestUser();
@@ -43,8 +44,8 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
         dataGroup.addListOfUsersToGroup(group, userModel1, userModel2);
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify get task candidates with invalid task id")
     public void getTaskCandidatesWithInvalidTaskId() throws Exception
     {
@@ -60,8 +61,8 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify get task candidates with empty task id")
     public void getTaskCandidatesWithEmptyTaskId() throws Exception
     {
@@ -74,8 +75,8 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify get task candidates for completed task")
     public void getTaskCandidatesForCompletedTask() throws Exception
     {
@@ -97,8 +98,8 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, taskModel.getId()));
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Verify get task candidates by non candidate user")
     public void getTaskCandidatesByNonCandidateUser() throws Exception
     {
@@ -111,9 +112,9 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
                 .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Bug(id="MNT-17438")
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Bug(id = "MNT-17438")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates with skip count parameter")
     public void getTaskCandidatesWithSkipCount() throws Exception
     {
@@ -121,15 +122,15 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
                 .usingSite(siteModel)
                 .usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
         candidateModels = restClient.authenticateUser(userModel).withWorkflowAPI()
-                              .usingParams("skipCount=1").usingTask(taskModel).getTaskCandidates();
+                .usingParams("skipCount=1").usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         candidateModels.assertThat()
-            .entriesListIsNotEmpty()
+                .entriesListIsNotEmpty()
                 .and().paginationField("count").is("0");
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates with max items parameter set to 0")
     public void getTaskCandidatesWithZeroMaxItems() throws Exception
     {
@@ -137,16 +138,16 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
                 .usingSite(siteModel)
                 .usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
         candidateModels = restClient.authenticateUser(userModel).withWorkflowAPI()
-                              .usingParams("maxItems=0").usingTask(taskModel).getTaskCandidates();
+                .usingParams("maxItems=0").usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-            .assertLastError().containsErrorKey(RestErrorModel.ONLY_POSITIVE_VALUES_MAXITEMS)
-                              .containsSummary(RestErrorModel.ONLY_POSITIVE_VALUES_MAXITEMS)
-                              .stackTraceIs(RestErrorModel.STACKTRACE)
-                              .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
+                .assertLastError().containsErrorKey(RestErrorModel.ONLY_POSITIVE_VALUES_MAXITEMS)
+                .containsSummary(RestErrorModel.ONLY_POSITIVE_VALUES_MAXITEMS)
+                .stackTraceIs(RestErrorModel.STACKTRACE)
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates with max items parameter")
     public void getTaskCandidatesWithMaxItems() throws Exception
     {
@@ -154,15 +155,15 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
                 .usingSite(siteModel)
                 .usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
         candidateModels = restClient.authenticateUser(userModel).withWorkflowAPI()
-                              .usingParams("maxItems=2").usingTask(taskModel).getTaskCandidates();
+                .usingParams("maxItems=2").usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         candidateModels.assertThat()
-            .entriesListIsNotEmpty()
+                .entriesListIsNotEmpty()
                 .and().paginationField("count").is("1");
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates with properties")
     public void getTaskCandidatesWithProperties() throws Exception
     {
@@ -173,12 +174,12 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
                 .usingParams("properties=candidateId").usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         candidateModels.getEntries().get(0).onModel().assertThat()
-            .field("candidateId").contains(group.getGroupIdentifier()).and()
-            .field("candidateType").isNull();
+                .field("candidateId").contains(group.getGroupIdentifier()).and()
+                .field("candidateType").isNull();
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates with invalid properties")
     public void getTaskCandidatesWithInvalidProperties() throws Exception
     {
@@ -189,11 +190,11 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
                 .usingParams("properties=unknown-prop").usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         candidateModels.getEntries().get(0).onModel().assertThat()
-            .fieldsCount().is(0).and();
+                .fieldsCount().is(0).and();
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates by deleted candidate")
     public void getTaskCandidatesByDeletedCandidate() throws Exception
     {
@@ -203,18 +204,18 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
                 .usingSite(siteModel)
                 .usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
         restClient.authenticateUser(newUser).withWorkflowAPI()
-                              .usingTask(taskModel).getTaskCandidates();
+                .usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         dataUser.usingAdmin().deleteUser(newUser);
 
         restClient.authenticateUser(newUser).withWorkflowAPI()
-            .usingTask(taskModel).getTaskCandidates();
+                .usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates by deleted group")
     public void getTaskCandidatesByDeletedGroup() throws Exception
     {
@@ -225,21 +226,21 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
                 .usingSite(siteModel)
                 .usingResource(fileModel).createPooledReviewTaskAndAssignTo(deletedGroup);
         restClient.authenticateUser(newUser).withWorkflowAPI()
-            .usingTask(taskModel).getTaskCandidates();
+                .usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         dataGroup.usingAdmin().deleteGroup(deletedGroup);
 
         restClient.authenticateUser(newUser).withWorkflowAPI()
-            .usingTask(taskModel).getTaskCandidates();
+                .usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-            .assertLastError().containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
-                              .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
-                              .stackTraceIs(RestErrorModel.STACKTRACE);
+                .assertLastError().containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
+                .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
+                .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates by user that was removed from group")
     public void getTaskCandidatesByUserRemovedFromGroup() throws Exception
     {
@@ -249,16 +250,16 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
                 .usingSite(siteModel)
                 .usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
         restClient.authenticateUser(newUser).withWorkflowAPI()
-            .usingTask(taskModel).getTaskCandidates();
+                .usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         dataGroup.usingAdmin().removeUserFromGroup(group, newUser);
 
         restClient.authenticateUser(newUser).withWorkflowAPI()
-            .usingTask(taskModel).getTaskCandidates();
+                .usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-            .assertLastError().containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
-                              .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
-                              .stackTraceIs(RestErrorModel.STACKTRACE);
+                .assertLastError().containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
+                .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
+                .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 }

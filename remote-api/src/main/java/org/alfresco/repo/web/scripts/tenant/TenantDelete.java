@@ -43,16 +43,16 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class TenantDelete extends AbstractTenantAdminWebScript
 {
     protected static final Log logger = LogFactory.getLog(TenantPost.class);
-    
+
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         // get request parameters
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String tenantDomain = templateVars.get("tenantDomain");
-        
+
         tenantAdminService.deleteTenant(tenantDomain);
-        
+
         Map<String, Object> model = new HashMap<String, Object>(0);
         return model;
     }

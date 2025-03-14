@@ -39,7 +39,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.traitextender.SpringBeanExtension;
 
 public class VirtualRatingServiceExtension extends SpringBeanExtension<RatingServiceExtension, RatingServiceTrait>
-            implements RatingServiceExtension
+        implements RatingServiceExtension
 {
 
     private VirtualStore smartStore;
@@ -54,42 +54,40 @@ public class VirtualRatingServiceExtension extends SpringBeanExtension<RatingSer
         this.smartStore = smartStore;
     }
 
-  
-
     public void applyRating(NodeRef targetNode, float rating, String ratingSchemeName)
     {
         NodeRef materialNode = smartStore.materializeIfPossible(targetNode);
         getTrait().applyRating(materialNode,
-                               rating,
-                               ratingSchemeName);
+                rating,
+                ratingSchemeName);
     }
 
     public int getRatingsCount(NodeRef targetNode, String ratingSchemeName)
     {
         NodeRef materialNode = smartStore.materializeIfPossible(targetNode);
         return getTrait().getRatingsCount(materialNode,
-                                          ratingSchemeName);
+                ratingSchemeName);
     }
 
     public float getTotalRating(NodeRef targetNode, String ratingSchemeName)
     {
         NodeRef materialNode = smartStore.materializeIfPossible(targetNode);
         return getTrait().getTotalRating(materialNode,
-                                         ratingSchemeName);
+                ratingSchemeName);
     }
 
     public float getAverageRating(NodeRef targetNode, String ratingSchemeName)
     {
         NodeRef materialNode = smartStore.materializeIfPossible(targetNode);
         return getTrait().getAverageRating(materialNode,
-                                           ratingSchemeName);
+                ratingSchemeName);
     }
 
     public Rating getRatingByCurrentUser(NodeRef targetNode, String ratingSchemeName)
     {
         NodeRef materialNode = smartStore.materializeIfPossible(targetNode);
         return getTrait().getRatingByCurrentUser(materialNode,
-                                                 ratingSchemeName);
+                ratingSchemeName);
     }
 
     public List<Rating> getRatingsByCurrentUser(NodeRef targetNode)
@@ -102,15 +100,15 @@ public class VirtualRatingServiceExtension extends SpringBeanExtension<RatingSer
     {
         NodeRef materialNode = smartStore.materializeIfPossible(targetNode);
         return getTrait().removeRatingByCurrentUser(materialNode,
-                                                    ratingSchemeName);
+                ratingSchemeName);
     }
 
     public Serializable getRatingRollup(NodeRef targetNode, String ratingSchemeName, String ratingRollupName)
     {
         NodeRef materialNode = smartStore.materializeIfPossible(targetNode);
         return getTrait().getRatingRollup(materialNode,
-                                          ratingSchemeName,
-                                          ratingRollupName);
+                ratingSchemeName,
+                ratingRollupName);
     }
 
     @Override

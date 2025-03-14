@@ -38,17 +38,16 @@ public class PropertyDoubleValueEntity
 {
     private Long id;
     private Double doubleValue;
-    
+
     public PropertyDoubleValueEntity()
-    {
-    }
-    
+    {}
+
     @Override
     public int hashCode()
     {
-        return (doubleValue == null ? 0 : doubleValue.hashCode()); 
+        return (doubleValue == null ? 0 : doubleValue.hashCode());
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -66,26 +65,26 @@ public class PropertyDoubleValueEntity
             return false;
         }
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("PropertyNumericValueEntity")
-          .append("[ ID=").append(id)
-          .append(", value=").append(doubleValue)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", value=").append(doubleValue)
+                .append("]");
         return sb.toString();
     }
-    
+
     /**
-     * @return          Returns the ID-value pair
+     * @return Returns the ID-value pair
      */
     public Pair<Long, Double> getEntityPair()
     {
         return new Pair<Long, Double>(id, doubleValue);
     }
-    
+
     public Long getId()
     {
         return id;

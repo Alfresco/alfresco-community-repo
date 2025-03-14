@@ -35,6 +35,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.util.StringUtils;
+
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
@@ -61,19 +65,16 @@ import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.BeanNameAware;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.util.StringUtils;
 
 /**
  * Records management action executer base class
  *
  * @author Roy Wetherall
  */
-public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExecuterAbstractBase
-                                                    implements RecordsManagementAction,
-                                                               RecordsManagementModel,
-                                                               BeanNameAware
+public abstract class RMActionExecuterAbstractBase extends PropertySubActionExecuterAbstractBase
+        implements RecordsManagementAction,
+        RecordsManagementModel,
+        BeanNameAware
 {
     /** Namespace service */
     private NamespaceService namespaceService;
@@ -148,7 +149,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Set the transaction service
      *
-     * @param transactionService The transaction service
+     * @param transactionService
+     *            The transaction service
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -168,7 +170,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Set the namespace service
      *
-     * @param namespaceService The namespace service
+     * @param namespaceService
+     *            The namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -188,7 +191,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Set the node service
      *
-     * @param nodeService The node service
+     * @param nodeService
+     *            The node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -208,7 +212,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Set the dictionary service
      *
-     * @param dictionaryService The dictionary service
+     * @param dictionaryService
+     *            The dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -228,7 +233,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Set the content service
      *
-     * @param contentService The content service
+     * @param contentService
+     *            The content service
      */
     public void setContentService(ContentService contentService)
     {
@@ -248,7 +254,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Set action service
      *
-     * @param actionService The action service
+     * @param actionService
+     *            The action service
      */
     public void setActionService(ActionService actionService)
     {
@@ -268,7 +275,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Set the audit service that action details will be sent to
      *
-     * @param recordsManagementAuditService The audit service that action details will be sent to
+     * @param recordsManagementAuditService
+     *            The audit service that action details will be sent to
      */
     public void setRecordsManagementAuditService(RecordsManagementAuditService recordsManagementAuditService)
     {
@@ -288,7 +296,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Set records management service
      *
-     * @param recordsManagementActionService The records management service
+     * @param recordsManagementActionService
+     *            The records management service
      */
     public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
     {
@@ -308,7 +317,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Set the disposition service
      *
-     * @param dispositionService The disposition service
+     * @param dispositionService
+     *            The disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -328,7 +338,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Sets the vital record service
      *
-     * @param vitalRecordService vital record service
+     * @param vitalRecordService
+     *            vital record service
      */
     public void setVitalRecordService(VitalRecordService vitalRecordService)
     {
@@ -348,7 +359,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Set the records management event service
      *
-     * @param recordsManagementEventService The records management event service
+     * @param recordsManagementEventService
+     *            The records management event service
      */
     public void setRecordsManagementEventService(RecordsManagementEventService recordsManagementEventService)
     {
@@ -368,7 +380,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Set the ownable service
      *
-     * @param ownableService The ownable service
+     * @param ownableService
+     *            The ownable service
      */
     public void setOwnableService(OwnableService ownableService)
     {
@@ -388,7 +401,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Set freeze service
      *
-     * @param freezeService freeze service
+     * @param freezeService
+     *            freeze service
      */
     public void setFreezeService(FreezeService freezeService)
     {
@@ -408,7 +422,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Set record service
      *
-     * @param recordService record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -428,7 +443,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Sets the records management admin service
      *
-     * @param recordsManagementAdminService records management admin service
+     * @param recordsManagementAdminService
+     *            records management admin service
      */
     public void setRecordsManagementAdminService(RecordsManagementAdminService recordsManagementAdminService)
     {
@@ -448,7 +464,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Sets the model security service
      *
-     * @param modelSecurityService  model security service
+     * @param modelSecurityService
+     *            model security service
      */
     public void setModelSecurityService(ModelSecurityService modelSecurityService)
     {
@@ -468,7 +485,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Sets the record folder service
      *
-     * @param recordFolderService record folder service
+     * @param recordFolderService
+     *            record folder service
      */
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
@@ -488,7 +506,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Sets the hold service
      *
-     * @param holdService hold service
+     * @param holdService
+     *            hold service
      */
     public void setHoldService(HoldService holdService)
     {
@@ -508,7 +527,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Sets the identifier service
      * 
-     * @param identifierService the identifier service
+     * @param identifierService
+     *            the identifier service
      */
     public void setIdentifierService(IdentifierService identifierService)
     {
@@ -518,11 +538,12 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Sets the applicable kinds
      *
-     * @param applicableKinds   kinds that this action is applicable for
+     * @param applicableKinds
+     *            kinds that this action is applicable for
      */
     public void setApplicableKinds(String[] applicableKinds)
     {
-        for(String kind : applicableKinds)
+        for (String kind : applicableKinds)
         {
             this.applicableKinds.add(FilePlanComponentKind.valueOf(kind));
         }
@@ -544,7 +565,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     public ActionDefinition getActionDefinition()
     {
         ActionDefinition actionDefinition = super.getActionDefinition();
-        ((RecordsManagementActionDefinitionImpl)this.actionDefinition).setApplicableKinds(applicableKinds);
+        ((RecordsManagementActionDefinitionImpl) this.actionDefinition).setApplicableKinds(applicableKinds);
         return actionDefinition;
     }
 
@@ -554,7 +575,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     @Override
     public RecordsManagementActionDefinition getRecordsManagementActionDefinition()
     {
-        return (RecordsManagementActionDefinition)getActionDefinition();
+        return (RecordsManagementActionDefinition) getActionDefinition();
     }
 
     /**
@@ -582,7 +603,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Indicates whether this records management action is public or not
      *
-     * @return  boolean true if public, false otherwise
+     * @return boolean true if public, false otherwise
      */
     @Override
     public boolean isPublicAction()
@@ -678,8 +699,10 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Function to pad a string with zero '0' characters to the required length
      *
-     * @param s     String to pad with leading zero '0' characters
-     * @param len   Length to pad to
+     * @param s
+     *            String to pad with leading zero '0' characters
+     * @param len
+     *            Length to pad to
      *
      * @return padded string or the original if already at &gt;= len characters
      *
@@ -688,7 +711,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     @Deprecated
     protected String padString(String s, int len)
     {
-       return leftPad(s, len);
+        return leftPad(s, len);
     }
 
     /**

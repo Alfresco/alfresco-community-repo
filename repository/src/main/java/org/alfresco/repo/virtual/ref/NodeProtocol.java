@@ -44,17 +44,17 @@ public class NodeProtocol extends Protocol
     public static Reference newReference(NodeRef nodeRef, Reference parentReference)
     {
         return new Reference(DEFAULT_ENCODING,
-                             Protocols.NODE.protocol,
-                             new RepositoryResource(new RepositoryNodeRef(nodeRef)),
-                             Arrays.asList(new ReferenceParameter(parentReference)));
+                Protocols.NODE.protocol,
+                new RepositoryResource(new RepositoryNodeRef(nodeRef)),
+                Arrays.asList(new ReferenceParameter(parentReference)));
     }
 
     public static Reference newReference(Encoding encoding, Resource actualNodeResource, Reference parentReference)
     {
         return new Reference(DEFAULT_ENCODING,
-                             Protocols.NODE.protocol,
-                             actualNodeResource,
-                             Arrays.asList(new ReferenceParameter(parentReference)));
+                Protocols.NODE.protocol,
+                actualNodeResource,
+                Arrays.asList(new ReferenceParameter(parentReference)));
     }
 
     public NodeProtocol()
@@ -79,7 +79,7 @@ public class NodeProtocol extends Protocol
     public <R> R dispatch(ProtocolMethod<R> method, Reference reference) throws ProtocolMethodException
     {
         return method.execute(this,
-                              reference);
+                reference);
     }
 
     @Override
@@ -90,7 +90,7 @@ public class NodeProtocol extends Protocol
         String protocol = storeRef.getProtocol();
 
         if (Version2Model.STORE_ID.equals(storeId) || VersionModel.STORE_ID.equals(storeId)
-                    || VersionBaseModel.STORE_PROTOCOL.equals(protocol))
+                || VersionBaseModel.STORE_PROTOCOL.equals(protocol))
         {
             Resource resource = reference.getResource();
             if (resource instanceof RepositoryResource)
@@ -102,13 +102,13 @@ public class NodeProtocol extends Protocol
                     RepositoryNodeRef repositoryNodeRef = (RepositoryNodeRef) location;
                     NodeRef nodeRef = repositoryNodeRef.getNodeRef();
                     NodeRef nodeRefPropagation = new NodeRef(mutatedNodeRef.getStoreRef(),
-                                                             nodeRef.getId());
+                            nodeRef.getId());
                     Resource resourcePropagation = new RepositoryResource(new RepositoryNodeRef(nodeRefPropagation));
 
                     return new Reference(reference.getEncoding(),
-                                         reference.getProtocol(),
-                                         resourcePropagation,
-                                         reference.getParameters());
+                            reference.getProtocol(),
+                            resourcePropagation,
+                            reference.getParameters());
                 }
             }
         }

@@ -27,10 +27,11 @@
 
 package org.alfresco.module.org_alfresco_module_rm.relationship;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_FROZEN;
 import static org.alfresco.util.ParameterCheck.mandatory;
 import static org.alfresco.util.ParameterCheck.mandatoryString;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.util.HashSet;
 import java.util.List;
@@ -87,7 +88,8 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     /**
      * Sets the policy component instance
      *
-     * @param policyComponent The policy component instance
+     * @param policyComponent
+     *            The policy component instance
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -166,25 +168,25 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
 
         switch (type)
         {
-            case BIDIRECTIONAL:
+        case BIDIRECTIONAL:
 
-                title = displayName.getSourceText();
-                break;
+            title = displayName.getSourceText();
+            break;
 
-            case PARENTCHILD:
+        case PARENTCHILD:
 
-                String sourceText = displayName.getSourceText();
-                String targetText = displayName.getTargetText();
-                title = composeAssociationDefinitionTitle(sourceText, targetText);
-                break;
+            String sourceText = displayName.getSourceText();
+            String targetText = displayName.getTargetText();
+            title = composeAssociationDefinitionTitle(sourceText, targetText);
+            break;
 
-            default:
+        default:
 
-                StringBuilder sb = new StringBuilder();
-                sb.append("Unsupported relationship type: '")
+            StringBuilder sb = new StringBuilder();
+            sb.append("Unsupported relationship type: '")
                     .append(type.toString())
                     .append("'.");
-                throw new AlfrescoRuntimeException(sb.toString());
+            throw new AlfrescoRuntimeException(sb.toString());
         }
 
         // If this title is already taken...
@@ -192,8 +194,8 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
         {
             StringBuilder sb = new StringBuilder();
             sb.append("Cannot create a relationship definition for the display name: '")
-                .append(displayName.toString())
-                .append("' as there is already a relationship definition with this display name.");
+                    .append(displayName.toString())
+                    .append("' as there is already a relationship definition with this display name.");
             throw new AlfrescoRuntimeException(sb.toString());
         }
 
@@ -207,8 +209,8 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
         {
             StringBuilder sb = new StringBuilder();
             sb.append("The aspect: '")
-                .append(customAspectName)
-                .append("' is undefined.");
+                    .append(customAspectName)
+                    .append("' is undefined.");
             throw new AlfrescoRuntimeException(sb.toString());
         }
 
@@ -220,8 +222,8 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
         {
             StringBuilder sb = new StringBuilder();
             sb.append("The association: '")
-                .append(customAssoc.getName())
-                .append("' already exists.");
+                    .append(customAssoc.getName())
+                    .append("' already exists.");
             throw new AlfrescoRuntimeException(sb.toString());
         }
 
@@ -229,23 +231,23 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
 
         switch (type)
         {
-            case BIDIRECTIONAL:
+        case BIDIRECTIONAL:
 
-                newAssoc = customAssocsAspect.createAssociation(generatedShortQName);
-                break;
+            newAssoc = customAssocsAspect.createAssociation(generatedShortQName);
+            break;
 
-            case PARENTCHILD:
+        case PARENTCHILD:
 
-                newAssoc = customAssocsAspect.createChildAssociation(generatedShortQName);
-                break;
+            newAssoc = customAssocsAspect.createChildAssociation(generatedShortQName);
+            break;
 
-            default:
+        default:
 
-                StringBuilder sb = new StringBuilder();
-                sb.append("Unsupported relationship type: '")
+            StringBuilder sb = new StringBuilder();
+            sb.append("Unsupported relationship type: '")
                     .append(type.toString())
                     .append("'.");
-                throw new AlfrescoRuntimeException(sb.toString());
+            throw new AlfrescoRuntimeException(sb.toString());
         }
 
         newAssoc.setSourceMandatory(false);
@@ -275,8 +277,8 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
         {
             StringBuilder sb = new StringBuilder();
             sb.append("The relationship definition for the unique name '")
-                .append(uniqueName)
-                .append("' was not found.");
+                    .append(uniqueName)
+                    .append("' was not found.");
             throw new AlfrescoRuntimeException(sb.toString());
         }
 
@@ -285,56 +287,56 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
 
         switch (type)
         {
-            case BIDIRECTIONAL:
+        case BIDIRECTIONAL:
 
-                title = displayName.getSourceText();
+            title = displayName.getSourceText();
 
-                if (isBlank(title))
-                {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("Label text '")
+            if (isBlank(title))
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.append("Label text '")
                         .append(title)
                         .append(" cannot be blank.");
-                    throw new AlfrescoRuntimeException(sb.toString());
-                }
+                throw new AlfrescoRuntimeException(sb.toString());
+            }
 
-                break;
+            break;
 
-            case PARENTCHILD:
+        case PARENTCHILD:
 
-                String sourceText = displayName.getSourceText();
-                String targetText = displayName.getTargetText();
+            String sourceText = displayName.getSourceText();
+            String targetText = displayName.getTargetText();
 
-                if (isBlank(sourceText) || isBlank(targetText))
-                {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("Neither source text '")
+            if (isBlank(sourceText) || isBlank(targetText))
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.append("Neither source text '")
                         .append(sourceText)
                         .append("' nor target text '")
                         .append(targetText)
                         .append(" can be blank.");
-                    throw new AlfrescoRuntimeException(sb.toString());
-                }
+                throw new AlfrescoRuntimeException(sb.toString());
+            }
 
-                title = composeAssociationDefinitionTitle(sourceText, targetText);
+            title = composeAssociationDefinitionTitle(sourceText, targetText);
 
-                break;
+            break;
 
-            default:
+        default:
 
-                StringBuilder sb = new StringBuilder();
-                sb.append("Unsupported relationship type: '")
+            StringBuilder sb = new StringBuilder();
+            sb.append("Unsupported relationship type: '")
                     .append(type.toString())
                     .append("'.");
-                throw new AlfrescoRuntimeException(sb.toString());
+            throw new AlfrescoRuntimeException(sb.toString());
         }
 
         if (existsTitle(title))
         {
             StringBuilder sb = new StringBuilder();
             sb.append("Cannot update the relationship definition as '")
-                .append(title)
-                .append("' already exists.");
+                    .append(title)
+                    .append("' already exists.");
             throw new AlfrescoRuntimeException(sb.toString());
         }
 
@@ -388,7 +390,7 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     {
         return getRelationshipsFrom(nodeRef, null);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService#getRelationshipsFrom(org.alfresco.service.cmr.repository.NodeRef, String)
      */
@@ -416,7 +418,7 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     {
         return getRelationshipsTo(nodeRef, null);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService#getRelationshipsTo(org.alfresco.service.cmr.repository.NodeRef, String)
      */
@@ -435,7 +437,7 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
 
         return relationships;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService#addRelationship(java.lang.String, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -445,25 +447,23 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
         mandatoryString("uniqueName", uniqueName);
         mandatory("source", source);
         mandatory("target", target);
-        
+
         // check the source node exists
         if (!getNodeService().exists(source))
         {
             throw new AlfrescoRuntimeException("Can't create relationship '" + uniqueName + "', because source node doesn't exist.");
         }
-        
+
         // check the target node exists
         if (!getNodeService().exists(target))
         {
             throw new AlfrescoRuntimeException("Can't create relationship " + uniqueName + ", because target node doesn't exist.");
         }
-        
+
         if (getNodeService().hasAspect(target, ASPECT_FROZEN))
         {
             StringBuilder sb = new StringBuilder();
-            sb.append("Relationship cannot be created as the target '").
-                append(getNodeService().getProperty(target, ContentModel.PROP_NAME)).
-                append("' is in a hold.");
+            sb.append("Relationship cannot be created as the target '").append(getNodeService().getProperty(target, ContentModel.PROP_NAME)).append("' is in a hold.");
             throw new AlfrescoRuntimeException(sb.toString());
         }
 
@@ -472,9 +472,7 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
         if (associationDefinition == null)
         {
             StringBuilder sb = new StringBuilder();
-            sb.append("No association definition found for '").
-                append(uniqueName).
-                append("'.");
+            sb.append("No association definition found for '").append(uniqueName).append("'.");
             throw new IllegalArgumentException(sb.toString());
         }
 
@@ -487,13 +485,7 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
         if (associationAlreadyExists)
         {
             StringBuilder sb = new StringBuilder();
-            sb.append("Association '").
-                append(associationDefinitionName.getLocalName()).
-                append("' already exists from '").
-                append(source).
-                append("' to '").
-                append(target).
-                append("'.");
+            sb.append("Association '").append(associationDefinitionName.getLocalName()).append("' already exists from '").append(source).append("' to '").append(target).append("'.");
             throw new AlfrescoRuntimeException(sb.toString());
         }
 
@@ -528,9 +520,7 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
         if (associationDefinition == null)
         {
             StringBuilder sb = new StringBuilder();
-            sb.append("No association definition found for '").
-                append(uniqueName).
-                append("'.");
+            sb.append("No association definition found for '").append(uniqueName).append("'.");
             throw new IllegalArgumentException(sb.toString());
         }
 
@@ -543,8 +533,7 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
 
         if (associationDefinition.isChild())
         {
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
                 @Override
                 public Void doWork()
                 {
@@ -572,7 +561,8 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     /**
      * Creates the relationship definition from the association definition
      *
-     * @param associationDefinition The association definition
+     * @param associationDefinition
+     *            The association definition
      * @return The relationship definition if <code>associationDefinition</code> exists, <code>null</code> otherwise
      */
     private RelationshipDefinition createRelationshipDefinition(AssociationDefinition associationDefinition)
@@ -597,7 +587,8 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     /**
      * Gets the relationship type from the association definition
      *
-     * @param associationDefinition The association definition
+     * @param associationDefinition
+     *            The association definition
      * @return The type of the relationship definition
      */
     private RelationshipType getRelationshipType(AssociationDefinition associationDefinition)
@@ -619,8 +610,10 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     /**
      * Gets the relationship display name of the relationship definition
      *
-     * @param type The type of the relationship definition
-     * @param title The title of the association definition
+     * @param type
+     *            The type of the relationship definition
+     * @param title
+     *            The title of the association definition
      * @return The relationship display name of the relationship definition
      */
     private RelationshipDisplayName getRelationshipDisplayName(RelationshipType type, String title)
@@ -630,26 +623,26 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
 
         switch (type)
         {
-            case BIDIRECTIONAL:
+        case BIDIRECTIONAL:
 
-                sourceText = title;
-                targetText = title;
-                break;
+            sourceText = title;
+            targetText = title;
+            break;
 
-            case PARENTCHILD:
+        case PARENTCHILD:
 
-                String[] sourceAndTarget = splitAssociationDefinitionTitle(title);
-                sourceText = sourceAndTarget[0];
-                targetText = sourceAndTarget[1];
-                break;
+            String[] sourceAndTarget = splitAssociationDefinitionTitle(title);
+            sourceText = sourceAndTarget[0];
+            targetText = sourceAndTarget[1];
+            break;
 
-            default:
+        default:
 
-                StringBuilder sb = new StringBuilder();
-                sb.append("Unsupported relationship type: '")
+            StringBuilder sb = new StringBuilder();
+            sb.append("Unsupported relationship type: '")
                     .append(type.toString())
                     .append("'.");
-                throw new AlfrescoRuntimeException(sb.toString());
+            throw new AlfrescoRuntimeException(sb.toString());
         }
 
         return new RelationshipDisplayName(sourceText, targetText);
@@ -658,7 +651,8 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     /**
      * Generates relationships from the given association references
      *
-     * @param associationRefs Association references
+     * @param associationRefs
+     *            Association references
      * @return Relationships generated from the given association references
      */
     private Set<Relationship> generateRelationshipFromAssociationRef(List<AssociationRef> associationRefs, String nameFilter)
@@ -669,7 +663,7 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
         {
             String uniqueName = associationRef.getTypeQName().getLocalName();
             if (existsRelationshipDefinition(uniqueName) &&
-                (nameFilter == null || uniqueName.equals(nameFilter)))
+                    (nameFilter == null || uniqueName.equals(nameFilter)))
             {
                 NodeRef from = associationRef.getSourceRef();
                 NodeRef to = associationRef.getTargetRef();
@@ -683,7 +677,8 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     /**
      * Generates relationships from the given child association references
      *
-     * @param childAssociationRefs Child association references
+     * @param childAssociationRefs
+     *            Child association references
      * @return Relationships generated from the given child association references
      */
     private Set<Relationship> generateRelationshipFromParentChildAssociationRef(List<ChildAssociationRef> childAssociationRefs, String nameFilter)
@@ -693,8 +688,8 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
         for (ChildAssociationRef childAssociationRef : childAssociationRefs)
         {
             String uniqueName = childAssociationRef.getQName().getLocalName();
-            if (existsRelationshipDefinition(uniqueName)&&
-                (nameFilter == null || uniqueName.equals(nameFilter)))
+            if (existsRelationshipDefinition(uniqueName) &&
+                    (nameFilter == null || uniqueName.equals(nameFilter)))
             {
                 NodeRef from = childAssociationRef.getParentRef();
                 NodeRef to = childAssociationRef.getChildRef();
@@ -708,7 +703,8 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     /**
      * Determines the relationship type from the display name
      *
-     * @param displayName The display name of the relationship
+     * @param displayName
+     *            The display name of the relationship
      * @return The relationship type from the display name
      */
     private RelationshipType determineRelationshipTypeFromDisplayName(RelationshipDisplayName displayName)
@@ -740,9 +736,12 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     /**
      * Invoke before create reference policy
      *
-     * @param source The source node reference
-     * @param target The target node reference
-     * @param associationDefinitionName The association definition name
+     * @param source
+     *            The source node reference
+     * @param target
+     *            The target node reference
+     * @param associationDefinitionName
+     *            The association definition name
      */
     private void invokeBeforeCreateReference(NodeRef source, NodeRef target, QName associationDefinitionName)
     {
@@ -756,9 +755,12 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     /**
      * Invoke on create reference policy
      *
-     * @param source The source node reference
-     * @param target The target node reference
-     * @param associationDefinitionName The association definition name
+     * @param source
+     *            The source node reference
+     * @param target
+     *            The target node reference
+     * @param associationDefinitionName
+     *            The association definition name
      */
     private void invokeOnCreateReference(NodeRef source, NodeRef target, QName associationDefinitionName)
     {
@@ -772,9 +774,12 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     /**
      * Invoke before remove reference policy
      *
-     * @param source The source node reference
-     * @param target The target node reference
-     * @param associationDefinitionName The association definition name
+     * @param source
+     *            The source node reference
+     * @param target
+     *            The target node reference
+     * @param associationDefinitionName
+     *            The association definition name
      */
     private void invokeBeforeRemoveReference(NodeRef source, NodeRef target, QName associationDefinitionName)
     {
@@ -788,9 +793,12 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     /**
      * Invoke on remove reference policy
      *
-     * @param source The source node reference
-     * @param target The target node reference
-     * @param associationDefinitionName The association definition name
+     * @param source
+     *            The source node reference
+     * @param target
+     *            The target node reference
+     * @param associationDefinitionName
+     *            The association definition name
      */
     private void invokeOnRemoveReference(NodeRef source, NodeRef target, QName associationDefinitionName)
     {
@@ -802,12 +810,14 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     }
 
     /**
-     * Check if an instance of the association already exists from the given
-     * source node reference to the given target node reference
+     * Check if an instance of the association already exists from the given source node reference to the given target node reference
      *
-     * @param associationDefinition The association definition
-     * @param source The source node reference
-     * @param target The target node reference
+     * @param associationDefinition
+     *            The association definition
+     * @param source
+     *            The source node reference
+     * @param target
+     *            The target node reference
      * @return <code>true</code> if an association already exists, <code>false</code> otherwise
      */
     private boolean associationExists(AssociationDefinition associationDefinition, NodeRef source, NodeRef target)
@@ -844,7 +854,8 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     /**
      * Gets the association definition for the given unique name
      *
-     * @param uniqueName The unique name
+     * @param uniqueName
+     *            The unique name
      * @return The association definition for the given unique name if exists, <code>null</code> otherwise
      */
     private AssociationDefinition getAssociationDefinition(String uniqueName)
@@ -868,7 +879,8 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     /**
      * Gets the qualified name of the association definition for the given unique name
      *
-     * @param uniqueName The unique name
+     * @param uniqueName
+     *            The unique name
      * @return The qualified name of the association definition for the given unique name
      */
     private QName getAssociationDefinitionName(String uniqueName)
@@ -879,8 +891,8 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
         {
             StringBuilder sb = new StringBuilder();
             sb.append("The qualified name for '")
-                .append(uniqueName)
-                .append("' was not found.");
+                    .append(uniqueName)
+                    .append("' was not found.");
             throw new AlfrescoRuntimeException(sb.toString());
         }
 
@@ -888,12 +900,14 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     }
 
     /**
-     * This method writes the specified String into the association's title property.
-     * For RM custom properties and references, Title is used to store the identifier.
+     * This method writes the specified String into the association's title property. For RM custom properties and references, Title is used to store the identifier.
      *
      * NOTE: Currently RMC custom associations only
-     * @param associationDefinitionQName Qualified name for the association definition
-     * @param newTitle The new title
+     * 
+     * @param associationDefinitionQName
+     *            Qualified name for the association definition
+     * @param newTitle
+     *            The new title
      * @return Qualified name for the association definition
      */
     private QName persistUpdatedAssocTitle(QName associationDefinitionQName, String newTitle)
@@ -904,9 +918,7 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
         if (assocDefn == null)
         {
             StringBuilder sb = new StringBuilder();
-            sb.append("Cannot find the association definiton for '").
-                append(associationDefinitionQName.getLocalName()).
-                append("'.");
+            sb.append("Cannot find the association definiton for '").append(associationDefinitionQName.getLocalName()).append("'.");
             throw new AlfrescoRuntimeException(sb.toString());
         }
 
@@ -937,7 +949,8 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     /**
      * Generates a qualified name for the given relationship definition unique name
      *
-     * @param uniqueName The unique name of the relationship definition
+     * @param uniqueName
+     *            The unique name of the relationship definition
      * @return The qualified name of relationship definition
      */
     private QName generateRelationshipDefinitionQNameFor(String uniqueName)
@@ -958,9 +971,7 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
         if (existingQName != null)
         {
             StringBuilder sb = new StringBuilder();
-            sb.append("Cannot create qualified name for given unique name '").
-                append(uniqueName).
-                append("' as it already exists.");
+            sb.append("Cannot create qualified name for given unique name '").append(uniqueName).append("' as it already exists.");
             throw new AlfrescoRuntimeException(sb.toString());
         }
 

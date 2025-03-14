@@ -36,8 +36,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.traitextender.SpringBeanExtension;
 
 public class VirtualLockableAspectInterceptorExtension extends
-            SpringBeanExtension<LockableAspectInterceptorExtension, LockableAspectInterceptorTrait> implements
-            LockableAspectInterceptorExtension
+        SpringBeanExtension<LockableAspectInterceptorExtension, LockableAspectInterceptorTrait> implements
+        LockableAspectInterceptorExtension
 {
 
     private ActualEnvironment environment;
@@ -55,8 +55,9 @@ public class VirtualLockableAspectInterceptorExtension extends
     @Override
     public LockState getLockState(NodeRef nodeRef)
     {
-    	Reference reference = Reference.fromNodeRef(nodeRef);
-        if(reference != null){
+        Reference reference = Reference.fromNodeRef(nodeRef);
+        if (reference != null)
+        {
             NodeRef actualNodeRef = reference.execute(new GetActualNodeRefMethod(environment));
             return getTrait().traitImplOf_getLockState(actualNodeRef);
         }

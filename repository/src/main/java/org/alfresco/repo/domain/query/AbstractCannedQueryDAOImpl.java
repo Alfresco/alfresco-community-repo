@@ -25,11 +25,11 @@
  */
 package org.alfresco.repo.domain.query;
 
-import org.alfresco.repo.domain.control.ControlDAO;
-import org.alfresco.repo.domain.query.CannedQueryDAO;
-import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.repo.domain.control.ControlDAO;
+import org.alfresco.util.PropertyCheck;
 
 /**
  * DAO implementation providing canned query support.
@@ -40,17 +40,18 @@ import org.apache.commons.logging.LogFactory;
 public abstract class AbstractCannedQueryDAOImpl implements CannedQueryDAO
 {
     protected Log logger = LogFactory.getLog(this.getClass());
-    
+
     protected ControlDAO controlDAO;
 
     /**
-     * @param controlDAO        the DAO that allows controlled rollback, if required
+     * @param controlDAO
+     *            the DAO that allows controlled rollback, if required
      */
     public void setControlDAO(ControlDAO controlDAO)
     {
         this.controlDAO = controlDAO;
     }
-    
+
     /**
      * Checks that properties have been set
      */

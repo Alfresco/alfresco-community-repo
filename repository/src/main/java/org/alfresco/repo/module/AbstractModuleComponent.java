@@ -30,6 +30,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -38,12 +41,9 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.BeanNameAware;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * Implementation of a {@link org.alfresco.repo.module.ModuleComponent} to provide
- * the basic necessities.
+ * Implementation of a {@link org.alfresco.repo.module.ModuleComponent} to provide the basic necessities.
  * 
  * @see #executeInternal()
  * 
@@ -56,13 +56,13 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
 {
     private static final String ERR_ALREADY_EXECUTED = "module.err.already_executed";
     private static final String ERR_EXECUTION_FAILED = "module.err.execution_failed";
-    
+
     // Supporting components
     protected ServiceRegistry serviceRegistry;
     protected AuthenticationComponent authenticationComponent;
     protected ModuleService moduleService;
     private TenantAdminService tenantAdminService;
-    
+
     private String moduleId;
     private String name;
     private String description;
@@ -83,7 +83,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
         executeOnceOnly = true;
         executed = new HashMap<String, Boolean>(1);
     }
-    
+
     /**
      * Checks for the presence of all generally-required properties.
      */
@@ -107,13 +107,13 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     {
         StringBuilder sb = new StringBuilder(128);
         sb.append("ModuleComponent")
-          .append("[ module=").append(moduleId)
-          .append(", name=").append(name)
-          .append(", since=").append(sinceVersion)
-          .append(", appliesFrom=").append(appliesFromVersion)
-          .append(", appliesTo=").append(appliesToVersion)
-          .append(", onceOnly=").append(executeOnceOnly)
-          .append("]");
+                .append("[ module=").append(moduleId)
+                .append(", name=").append(name)
+                .append(", since=").append(sinceVersion)
+                .append(", appliesFrom=").append(appliesFromVersion)
+                .append(", appliesTo=").append(appliesToVersion)
+                .append(", onceOnly=").append(executeOnceOnly)
+                .append("]");
         return sb.toString();
     }
 
@@ -145,10 +145,10 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     }
 
     /**
-     * Set the module service to register with.  If not set, the component will not be
-     * automatically started.
+     * Set the module service to register with. If not set, the component will not be automatically started.
      * 
-     * @param moduleService the service to register against.  This is optional.
+     * @param moduleService
+     *            the service to register against. This is optional.
      */
     public void setModuleService(ModuleService moduleService)
     {
@@ -159,7 +159,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     {
         this.serviceRegistry = serviceRegistry;
     }
-    
+
     public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
         this.tenantAdminService = tenantAdminService;
@@ -174,7 +174,8 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     }
 
     /**
-     * @param moduleId the globally unique module name.
+     * @param moduleId
+     *            the globally unique module name.
      */
     public void setModuleId(String moduleId)
     {
@@ -190,10 +191,10 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     }
 
     /**
-     * Set the component name, which must be unique within the context of the
-     * module.  If the is not set, then the bean name will be used.
+     * Set the component name, which must be unique within the context of the module. If the is not set, then the bean name will be used.
      * 
-     * @param name the name of the component within the module.
+     * @param name
+     *            the name of the component within the module.
      * 
      * @see #setBeanName(String)
      */
@@ -203,9 +204,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     }
 
     /**
-     * Convenience method that will set the name of the component to
-     * match the bean name, unless the {@link #setName(String) name}  has
-     * been explicitly set.
+     * Convenience method that will set the name of the component to match the bean name, unless the {@link #setName(String) name} has been explicitly set.
      */
     public void setBeanName(String name)
     {
@@ -221,10 +220,10 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     }
 
     /**
-     * Set the component's description.  This will automatically be I18N'ized, so it may just
-     * be a resource bundle key.
+     * Set the component's description. This will automatically be I18N'ized, so it may just be a resource bundle key.
      * 
-     * @param description a description of the component.
+     * @param description
+     *            a description of the component.
      */
     public void setDescription(String description)
     {
@@ -256,8 +255,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     }
 
     /**
-     * Set the minimum module version number to which this component applies.
-     * Default <b>0.0</b>.
+     * Set the minimum module version number to which this component applies. Default <b>0.0</b>.
      */
     public void setAppliesFromVersion(String version)
     {
@@ -273,8 +271,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     }
 
     /**
-     * Set the minimum module version number to which this component applies.
-     * Default <b>999.0</b>.
+     * Set the minimum module version number to which this component applies. Default <b>999.0</b>.
      */
     public void setAppliesToVersion(String version)
     {
@@ -290,7 +287,8 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     }
 
     /**
-     * @param dependsOn a list of modules that must be executed before this one
+     * @param dependsOn
+     *            a list of modules that must be executed before this one
      */
     public void setDependsOn(List<ModuleComponent> dependsOn)
     {
@@ -300,16 +298,16 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     /**
      * {@inheritDoc}
      * 
-     * @return Returns <tt>true</tt> always.  Override as required.
+     * @return Returns <tt>true</tt> always. Override as required.
      */
     public boolean isExecuteOnceOnly()
     {
         return executeOnceOnly;
     }
-    
+
     /**
-     * @param executeOnceOnly <tt>true</tt> to force execution of this component with
-     *      each startup or <tt>false</tt> if it must only be executed once.
+     * @param executeOnceOnly
+     *            <tt>true</tt> to force execution of this component with each startup or <tt>false</tt> if it must only be executed once.
      */
     public void setExecuteOnceOnly(boolean executeOnceOnly)
     {
@@ -321,17 +319,17 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
         // Ensure that the description gets I18N'ized
         description = I18NUtil.getMessage(description);
         // Register the component with the service
-        if (moduleService != null)                  // Allows optional registration of the component
+        if (moduleService != null) // Allows optional registration of the component
         {
             moduleService.registerComponent(this);
         }
     }
 
     /**
-     * The method that performs the actual work.  For the most part, derived classes will
-     * only have to override this method to be fully functional.
+     * The method that performs the actual work. For the most part, derived classes will only have to override this method to be fully functional.
      * 
-     * @throws Throwable any problems, just throw them
+     * @throws Throwable
+     *             any problems, just throw them
      */
     protected abstract void executeInternal() throws Throwable;
 
@@ -343,12 +341,12 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     public final synchronized void execute()
     {
         // ensure that this has not been executed already
-    	String tenantDomain = tenantAdminService.getCurrentUserDomain();
-    	if (! executed.containsKey(tenantDomain))
-    	{
-    		executed.put(tenantDomain, false);
-    	}
-    	
+        String tenantDomain = tenantAdminService.getCurrentUserDomain();
+        if (!executed.containsKey(tenantDomain))
+        {
+            executed.put(tenantDomain, false);
+        }
+
         if (executed.get(tenantDomain))
         {
             throw AlfrescoRuntimeException.create(ERR_ALREADY_EXECUTED, moduleId, name);
@@ -367,7 +365,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
         finally
         {
             // There are no second chances
-        	executed.put(tenantDomain, true);
+            executed.put(tenantDomain, true);
         }
     }
 

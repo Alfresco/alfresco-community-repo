@@ -28,17 +28,13 @@ package org.alfresco.repo.imap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
-
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
-import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
-import jakarta.mail.internet.MimeUtility;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ImapModel;
@@ -48,12 +44,7 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.util.FileCopyUtils;
 
 /**
  * This class is used to serve incoming IMAP message. E.g. when message is copied /moved into some IMAP older.
@@ -64,12 +55,16 @@ public class IncomingImapMessage extends AbstractMimeMessage
 {
     private Log logger = LogFactory.getLog(IncomingImapMessage.class);
     private ContentReader contentReader;
+
     /**
      * Constructs {@link IncomingImapMessage} object based on {@link MimeMessage}
      * 
-     * @param fileInfo - reference to the {@link FileInfo} object representing the message.
-     * @param serviceRegistry - reference to serviceRegistry object.
-     * @param message - {@link MimeMessage}
+     * @param fileInfo
+     *            - reference to the {@link FileInfo} object representing the message.
+     * @param serviceRegistry
+     *            - reference to serviceRegistry object.
+     * @param message
+     *            - {@link MimeMessage}
      * @throws MessagingException
      */
     public IncomingImapMessage(FileInfo fileInfo, ServiceRegistry serviceRegistry, MimeMessage message) throws MessagingException
@@ -131,7 +126,7 @@ public class IncomingImapMessage extends AbstractMimeMessage
         }
         catch (Exception e)
         {
-            throw new MessagingException(e.getMessage(),e);
+            throw new MessagingException(e.getMessage(), e);
         }
     }
 

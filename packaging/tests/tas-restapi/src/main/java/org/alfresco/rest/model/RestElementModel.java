@@ -30,15 +30,7 @@ import java.util.List;
 import org.alfresco.utility.model.TestModel;
 
 /**
- * Created by Meenal Bhave
- * "elements": [
- * {
- *      "aspectNames": ["cm:titled", "cm:auditable", "app:uifacets"],
- *      "id": "7f0c47ae-d334-4b66-a86b-1a60d2518ad1",
- *      "name": "Folder-oawzdncUXFLgnFe",
- *      "nodeType": "cm:folder"
- * }
- * ]
+ * Created by Meenal Bhave "elements": [ { "aspectNames": ["cm:titled", "cm:auditable", "app:uifacets"], "id": "7f0c47ae-d334-4b66-a86b-1a60d2518ad1", "name": "Folder-oawzdncUXFLgnFe", "nodeType": "cm:folder" } ]
  */
 
 public class RestElementModel extends TestModel

@@ -40,7 +40,11 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.api.AlfrescoPublicApi; 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.aop.framework.ProxyFactory;
+
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.ContentLimitProvider.NoLimitProvider;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
@@ -53,16 +57,12 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.MimetypeServiceAware;
 import org.alfresco.util.TempFileProvider;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.aop.framework.ProxyFactory;
 
 /**
- * Implements all the convenience methods of the interface.  The only methods
- * that need to be implemented, i.e. provide low-level content access are:
+ * Implements all the convenience methods of the interface. The only methods that need to be implemented, i.e. provide low-level content access are:
  * <ul>
- *   <li>{@link #getReader()} to create a reader to the underlying content</li>
- *   <li>{@link #getDirectWritableChannel()} to write content to the repository</li>
+ * <li>{@link #getReader()} to create a reader to the underlying content</li>
+ * <li>{@link #getDirectWritableChannel()} to write content to the repository</li>
  * </ul>
  * 
  * @author Derek Hulley
@@ -71,46 +71,48 @@ import org.springframework.aop.framework.ProxyFactory;
 public abstract class AbstractContentWriter extends AbstractContentAccessor implements ContentWriter, MimetypeServiceAware
 {
     private static final Log logger = LogFactory.getLog(AbstractContentWriter.class);
-    
+
     private List<ContentStreamListener> listeners;
     private WritableByteChannel channel;
     private ContentReader existingContentReader;
     private MimetypeService mimetypeService;
     private DoGuessingOnCloseListener guessingOnCloseListener;
-    
+
     /**
      * This object provides a maximum size limit for content.
+     * 
      * @since Thor
      */
     private ContentLimitProvider limitProvider = new NoLimitProvider();
     private LimitedStreamCopier sizeLimitedStreamCopier = new LimitedStreamCopier();
-    
+
     /**
-     * @param contentUrl the content URL
-     * @param existingContentReader a reader of a previous version of this content
+     * @param contentUrl
+     *            the content URL
+     * @param existingContentReader
+     *            a reader of a previous version of this content
      */
     protected AbstractContentWriter(String contentUrl, ContentReader existingContentReader)
     {
         super(contentUrl);
         this.existingContentReader = existingContentReader;
-        
+
         listeners = new ArrayList<ContentStreamListener>(2);
-        
+
         // We always register our own listener as the first one
         // This allows us to perform any guessing (if needed) before
-        //  the normal listeners kick in and eg write things to the DB
+        // the normal listeners kick in and eg write things to the DB
         guessingOnCloseListener = new DoGuessingOnCloseListener();
         listeners.add(guessingOnCloseListener);
     }
-    
+
     public void setContentLimitProvider(ContentLimitProvider limitProvider)
     {
         this.limitProvider = limitProvider;
     }
-    
+
     /**
-     * Supplies the Mimetype Service to be used when guessing
-     *  encoding and mimetype information. 
+     * Supplies the Mimetype Service to be used when guessing encoding and mimetype information.
      */
     public void setMimetypeService(MimetypeService mimetypeService)
     {
@@ -126,8 +128,7 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
     }
 
     /**
-     * Adds the listener after checking that the output stream isn't already in
-     * use.
+     * Adds the listener after checking that the output stream isn't already in use.
      */
     public synchronized void addListener(ContentStreamListener listener)
     {
@@ -139,19 +140,16 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
     }
 
     /**
-     * A factory method for subclasses to implement that will ensure the proper
-     * implementation of the {@link ContentWriter#getReader()} method.
+     * A factory method for subclasses to implement that will ensure the proper implementation of the {@link ContentWriter#getReader()} method.
      * <p>
-     * Only the instance need be constructed.  The required mimetype, encoding, etc
-     * will be copied across by this class.
+     * Only the instance need be constructed. The required mimetype, encoding, etc will be copied across by this class.
      * <p>
-     *  
-     * @return Returns a reader onto the location referenced by this instance.
-     *      The instance must <b>always</b> be a new instance and never null.
+     * 
+     * @return Returns a reader onto the location referenced by this instance. The instance must <b>always</b> be a new instance and never null.
      * @throws ContentIOException
      */
     protected abstract ContentReader createReader() throws ContentIOException;
-    
+
     /**
      * Performs checks and copies required reader attributes
      */
@@ -187,10 +185,10 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
         }
         return reader;
     }
-    
+
     /**
-     * This method returns the configured {@link ContentLimitProvider} for this writer.
-     * By default a {@link NoLimitProvider} will be returned.
+     * This method returns the configured {@link ContentLimitProvider} for this writer. By default a {@link NoLimitProvider} will be returned.
+     * 
      * @since Thor
      */
     protected ContentLimitProvider getContentLimitProvider()
@@ -224,24 +222,25 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
             return false;
         }
     }
-    
+
     /**
      * Provides low-level access to write content to the repository.
      * <p>
-     * This is the only of the content <i>writing</i> methods that needs to be implemented
-     * by derived classes.  All other content access methods make use of this in their
-     * underlying implementations.
+     * This is the only of the content <i>writing</i> methods that needs to be implemented by derived classes. All other content access methods make use of this in their underlying implementations.
      * 
      * @return Returns a channel with which to write content
-     * @throws ContentIOException if the channel could not be opened
+     * @throws ContentIOException
+     *             if the channel could not be opened
      */
     protected abstract WritableByteChannel getDirectWritableChannel() throws ContentIOException;
-    
+
     /**
      * Create a channel that performs callbacks to the given listeners.
-     *  
-     * @param directChannel the result of {@link #getDirectWritableChannel()}
-     * @param listeners the listeners to call
+     * 
+     * @param directChannel
+     *            the result of {@link #getDirectWritableChannel()}
+     * @param listeners
+     *            the listeners to call
      * @return Returns a channel that executes callbacks
      * @throws ContentIOException
      */
@@ -298,23 +297,16 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
         }
         return channel;
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public FileChannel getFileChannel(boolean truncate) throws ContentIOException
     {
-        /*
-         * By calling this method, clients indicate that they wish to make random
-         * changes to the file.  It is possible that the client might only want
-         * to update a tiny proportion of the file (truncate == false) or
-         * start afresh (truncate == true).
+        /* By calling this method, clients indicate that they wish to make random changes to the file. It is possible that the client might only want to update a tiny proportion of the file (truncate == false) or start afresh (truncate == true).
          * 
-         * Where the underlying support is not present for this method, a temporary
-         * file will be used as a substitute.  When the write is complete, the
-         * results are copied directly to the underlying channel.
-         */
-        
+         * Where the underlying support is not present for this method, a temporary file will be used as a substitute. When the write is complete, the results are copied directly to the underlying channel. */
+
         // get the underlying implementation's best writable channel
         channel = getWritableChannel();
         // now use this channel if it can provide the random access, otherwise spoof it
@@ -349,7 +341,12 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
                 }
                 finally
                 {
-                    try { existingContentChannel.close(); } catch (IOException e) {}
+                    try
+                    {
+                        existingContentChannel.close();
+                    }
+                    catch (IOException e)
+                    {}
                 }
             }
             // debug
@@ -365,13 +362,12 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
             // Spoof it by providing a 2-stage write via a temp file
             File tempFile = TempFileProvider.createTempFile("random_write_spoof_", ".bin");
             final FileContentWriter spoofWriter = new FileContentWriter(
-                    tempFile,                           // the file to write to
-                    getExistingContentReader());        // this ensures that the existing content is pulled in
+                    tempFile, // the file to write to
+                    getExistingContentReader()); // this ensures that the existing content is pulled in
             // Attach a listener
             // - to ensure that the content gets loaded from the temp file once writing has finished
             // - to ensure that the close call gets passed on to the underlying channel
-            ContentStreamListener spoofListener = new ContentStreamListener()
-            {
+            ContentStreamListener spoofListener = new ContentStreamListener() {
                 public void contentStreamClosed() throws ContentIOException
                 {
                     // the spoofed temp channel has been closed, so get a new reader for it
@@ -392,7 +388,12 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
                     }
                     finally
                     {
-                        try { spoofChannel.close(); } catch (Throwable e) {}
+                        try
+                        {
+                            spoofChannel.close();
+                        }
+                        catch (Throwable e)
+                        {}
                         try
                         {
                             channel.close();
@@ -441,7 +442,7 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
 
     /**
      * @see ContentReader#getContentInputStream()
-     * @see #putContent(InputStream) 
+     * @see #putContent(InputStream)
      */
     public void putContent(ContentReader reader) throws ContentIOException
     {
@@ -466,7 +467,7 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
         try
         {
             OutputStream os = getContentOutputStream();
-            copyStreams(is, os);     // both streams are closed
+            copyStreams(is, os); // both streams are closed
             // done
         }
         catch (IOException e)
@@ -476,14 +477,14 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
                     e);
         }
     }
-    
+
     public final void putContent(File file) throws ContentIOException
     {
         try
         {
             OutputStream os = getContentOutputStream();
             FileInputStream is = new FileInputStream(file);
-            copyStreams(is, os);     // both streams are closed
+            copyStreams(is, os); // both streams are closed
             // done
         }
         catch (IOException e)
@@ -494,10 +495,9 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
                     e);
         }
     }
-    
+
     /**
-     * Copy of the the Spring FileCopyUtils, but does not silently absorb IOExceptions
-     * when the streams are closed.  We require the stream write to happen successfully.
+     * Copy of the the Spring FileCopyUtils, but does not silently absorb IOExceptions when the streams are closed. We require the stream write to happen successfully.
      * <p/>
      * Both streams are closed but any IOExceptions are thrown
      */
@@ -505,11 +505,11 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
     {
         ContentLimitProvider contentLimitProvider = getContentLimitProvider();
         final long sizeLimit = contentLimitProvider.getSizeLimit();
-        
+
         long byteCount = sizeLimitedStreamCopier.copyStreamsLong(in, out, sizeLimit);
         return byteCount;
     }
-    
+
     /**
      * Makes use of the encoding, if available, to convert the string to bytes.
      * 
@@ -522,11 +522,11 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
             // attempt to use the correct encoding
             String encoding = getEncoding();
             byte[] bytes;
-            if(encoding == null) 
+            if (encoding == null)
             {
                 // Use the system default, and record what that was
                 bytes = content.getBytes();
-                setEncoding( System.getProperty("file.encoding") );
+                setEncoding(System.getProperty("file.encoding"));
             }
             else
             {
@@ -537,7 +537,7 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
             // get the stream
             OutputStream os = getContentOutputStream();
             ByteArrayInputStream is = new ByteArrayInputStream(bytes);
-            copyStreams(is, os);     // both streams are closed
+            copyStreams(is, os); // both streams are closed
             // done
         }
         catch (IOException e)
@@ -548,11 +548,10 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
                     e);
         }
     }
-    
+
     /**
-     * When the content has been written, attempt to guess
-     *  the encoding of it.
-     *  
+     * When the content has been written, attempt to guess the encoding of it.
+     * 
      * @see ContentWriter#guessEncoding()
      */
     public void guessEncoding()
@@ -562,8 +561,8 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
             logger.warn("MimetypeService not supplied, but required for content guessing");
             return;
         }
-        
-        if(isClosed())
+
+        if (isClosed())
         {
             // Content written, can do it now
             doGuessEncoding();
@@ -571,14 +570,15 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
         else
         {
             // Content not yet written, wait for the
-            //  data to be written before doing so
+            // data to be written before doing so
             guessingOnCloseListener.guessEncoding = true;
         }
     }
+
     private void doGuessEncoding()
     {
         ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
-        
+
         ContentReader reader = getReader();
         InputStream is = reader.getContentInputStream();
         Charset charset = charsetFinder.getCharset(is, getMimetype());
@@ -586,16 +586,15 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
         {
             is.close();
         }
-        catch(IOException e)
+        catch (IOException e)
         {}
-        
+
         setEncoding(charset.name());
     }
 
     /**
-     * When the content has been written, attempt to guess
-     *  the mimetype of it, using the filename and contents.
-     *  
+     * When the content has been written, attempt to guess the mimetype of it, using the filename and contents.
+     * 
      * @see ContentWriter#guessMimetype(String)
      */
     public void guessMimetype(String filename)
@@ -605,9 +604,8 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
             logger.warn("MimetypeService not supplied, but required for content guessing");
             return;
         }
-        
-        
-        if(isClosed())
+
+        if (isClosed())
         {
             // Content written, can do it now
             doGuessMimetype(filename);
@@ -615,7 +613,7 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
         else
         {
             // Content not yet written, wait for the
-            //  data to be written before doing so
+            // data to be written before doing so
             guessingOnCloseListener.guessMimetype = true;
             guessingOnCloseListener.filename = filename;
         }
@@ -634,11 +632,9 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
         }
         setMimetype(mimetype);
     }
-    
+
     /**
-     * Our own listener that is always the first on the list,
-     *  which lets us perform guessing operations when the
-     *  content has been written.
+     * Our own listener that is always the first on the list, which lets us perform guessing operations when the content has been written.
      */
     private class DoGuessingOnCloseListener implements ContentStreamListener
     {
@@ -649,11 +645,11 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
         @Override
         public void contentStreamClosed() throws ContentIOException
         {
-            if(guessMimetype)
+            if (guessMimetype)
             {
                 doGuessMimetype(filename);
             }
-            if(guessEncoding)
+            if (guessEncoding)
             {
                 doGuessEncoding();
             }

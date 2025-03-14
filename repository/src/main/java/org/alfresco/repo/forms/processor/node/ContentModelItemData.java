@@ -36,8 +36,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Simple data transfer object used by the ContentModelFormProcessor and its
- * descendants.
+ * Simple data transfer object used by the ContentModelFormProcessor and its descendants.
  * 
  * @since 3.4
  * @author Nick Smith
@@ -52,11 +51,11 @@ public class ContentModelItemData<ItemType> implements TransientValueGetter
     private final Map<String, Object> transientValues;
 
     public ContentModelItemData(ItemType item,
-                Map<QName, PropertyDefinition> propDefs,
-                Map<QName, AssociationDefinition> assocDefs,
-                Map<QName, Serializable> propValues,
-                Map<QName, Serializable> assocValues,
-                Map<String, Object> transientValues)
+            Map<QName, PropertyDefinition> propDefs,
+            Map<QName, AssociationDefinition> assocDefs,
+            Map<QName, Serializable> propValues,
+            Map<QName, Serializable> assocValues,
+            Map<String, Object> transientValues)
     {
         this.item = item;
         this.propDefs = propDefs;
@@ -75,8 +74,7 @@ public class ContentModelItemData<ItemType> implements TransientValueGetter
     }
 
     /**
-     * @return the property value associated with the <code>key</code> or
-     *         <code>null</code> if none exists.
+     * @return the property value associated with the <code>key</code> or <code>null</code> if none exists.
      */
     public Serializable getPropertyValue(QName key)
     {
@@ -84,8 +82,7 @@ public class ContentModelItemData<ItemType> implements TransientValueGetter
     }
 
     /**
-     * @return the association value associated with the <code>key</code> or
-     *         <code>null</code> if none exists.
+     * @return the association value associated with the <code>key</code> or <code>null</code> if none exists.
      */
     public Serializable getAssociationValue(QName key)
     {
@@ -93,18 +90,17 @@ public class ContentModelItemData<ItemType> implements TransientValueGetter
     }
 
     /**
-     * @return the value associated with the transient property specified by the
-     *         fieldName or <code>null</code> if none exists.
+     * @return the value associated with the transient property specified by the fieldName or <code>null</code> if none exists.
      */
     public Object getTransientValue(String fieldName)
     {
         Object value = null;
-        
+
         if (transientValues != null)
         {
             value = transientValues.get(fieldName);
         }
-        
+
         return value;
     }
 
@@ -119,8 +115,7 @@ public class ContentModelItemData<ItemType> implements TransientValueGetter
     }
 
     /**
-     * @return The PropertyDefinition associated with the <code>propName</code>
-     *         or <code>null</code> if none exists.
+     * @return The PropertyDefinition associated with the <code>propName</code> or <code>null</code> if none exists.
      */
     public PropertyDefinition getPropertyDefinition(QName propName)
     {
@@ -133,8 +128,7 @@ public class ContentModelItemData<ItemType> implements TransientValueGetter
     }
 
     /**
-     * @return The AssociationDefinition associated with the
-     *         <code>assocName</code> or <code>null</code> if none exists.
+     * @return The AssociationDefinition associated with the <code>assocName</code> or <code>null</code> if none exists.
      */
     public AssociationDefinition getAssociationDefinition(QName assocName)
     {
@@ -147,8 +141,7 @@ public class ContentModelItemData<ItemType> implements TransientValueGetter
     }
 
     /**
-     * @return Returns an unmodifiable Collection containing all the association
-     *         definition {@link QName QNames} for the item.
+     * @return Returns an unmodifiable Collection containing all the association definition {@link QName QNames} for the item.
      */
     public Collection<QName> getAllAssociationDefinitionNames()
     {
@@ -163,8 +156,7 @@ public class ContentModelItemData<ItemType> implements TransientValueGetter
     }
 
     /**
-     * @return Returns an unmodifiable Collection containing all the property
-     *         definitions for the item.
+     * @return Returns an unmodifiable Collection containing all the property definitions for the item.
      */
     public Collection<QName> getAllPropertyDefinitionNames()
     {
@@ -179,8 +171,7 @@ public class ContentModelItemData<ItemType> implements TransientValueGetter
     }
 
     /**
-     * @return Returns an unmodifiable Collection containing all the property
-     *         definitions for the item.
+     * @return Returns an unmodifiable Collection containing all the property definitions for the item.
      */
     public Collection<String> getAllTransientFieldNames()
     {

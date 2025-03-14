@@ -30,8 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Trait based extension reference holder.<br>
- * Keeps track of extension references for one extensible and allows the
- * collection of those extensions when the extensible is collected.
+ * Keeps track of extension references for one extensible and allows the collection of those extensions when the extensible is collected.
  * 
  * @author Bogdan Horje
  */
@@ -69,7 +68,7 @@ public class ExtendedTrait<T extends Trait>
         {
             extension = factory.createExtension(trait);
             extensions.put(extensionAPI,
-                           extension);
+                    extension);
 
         }
 

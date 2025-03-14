@@ -92,7 +92,7 @@ public interface Audit
      * @param parameters
      * @return Collection of audit entries
      */
-     CollectionWithPagingInfo<AuditEntry> listAuditEntries(String auditAppId, Parameters parameters);
+    CollectionWithPagingInfo<AuditEntry> listAuditEntries(String auditAppId, Parameters parameters);
 
     /**
      * Delete a single audit entry by id
@@ -107,7 +107,8 @@ public interface Audit
      * Delete set of audit entities
      *
      * @param auditAppId
-     * @param parameters - required - delete is based on "where" query
+     * @param parameters
+     *            - required - delete is based on "where" query
      */
     void deleteAuditEntries(String auditAppId, Parameters parameters);
 

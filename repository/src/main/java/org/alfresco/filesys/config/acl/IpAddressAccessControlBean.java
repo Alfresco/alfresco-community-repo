@@ -82,10 +82,9 @@ public class IpAddressAccessControlBean extends AccessControlBean
         return this.netMask;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.filesys.config.acl.AccessControlBean#toAccessControl()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.filesys.config.acl.AccessControlBean#toAccessControl() */
     @Override
     public AccessControl toAccessControl()
     {

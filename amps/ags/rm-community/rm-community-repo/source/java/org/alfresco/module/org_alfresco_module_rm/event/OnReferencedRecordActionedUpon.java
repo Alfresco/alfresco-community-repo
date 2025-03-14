@@ -60,8 +60,8 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  */
 @BehaviourBean
 public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEventTypeImpl
-                                            implements RecordsManagementModel,
-                                            BeforeRMActionExecution
+        implements RecordsManagementModel,
+        BeforeRMActionExecution
 
 {
     /** Disposition service */
@@ -86,7 +86,8 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     private QName reference;
 
     /**
-     * @param dispositionService    the disposition service
+     * @param dispositionService
+     *            the disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -94,7 +95,8 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     }
 
     /**
-     * @param recordsManagementActionService the recordsManagementActionService to set
+     * @param recordsManagementActionService
+     *            the recordsManagementActionService to set
      */
     public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
     {
@@ -102,7 +104,8 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     }
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -110,7 +113,8 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     }
 
     /**
-     * @param recordService record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -118,7 +122,8 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     }
 
     /**
-     * @param recordFolderService record folder service
+     * @param recordFolderService
+     *            record folder service
      */
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
@@ -126,7 +131,8 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     }
 
     /**
-     * @param reference reference name
+     * @param reference
+     *            reference name
      */
     public void setReferenceName(String reference)
     {
@@ -134,7 +140,8 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     }
 
     /**
-     * @param actionName    action name
+     * @param actionName
+     *            action name
      */
     public void setActionName(String actionName)
     {
@@ -158,16 +165,13 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
      * @param parameters
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
             type = "rma:filePlanComponent",
-            notificationFrequency = NotificationFrequency.FIRST_EVENT
-    )
+            notificationFrequency = NotificationFrequency.FIRST_EVENT)
     public void beforeRMActionExecution(final NodeRef nodeRef, final String name, final Map<String, Serializable> parameters)
     {
-        AuthenticationUtil.RunAsWork<Object> work = new AuthenticationUtil.RunAsWork<Object>()
-        {
+        AuthenticationUtil.RunAsWork<Object> work = new AuthenticationUtil.RunAsWork<Object>() {
             public Object doWork()
             {
                 if (nodeService.exists(nodeRef) && name.equals(actionName))
@@ -243,7 +247,7 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
             {
                 RecordsManagementEvent rmEvent = getRecordsManagementEventService().getEvent(event.getEventName());
                 if (!event.isEventComplete() &&
-                    rmEvent.getType().equals(getName()))
+                        rmEvent.getType().equals(getName()))
                 {
                     // Complete the event
                     Map<String, Serializable> params = new HashMap<>(3);

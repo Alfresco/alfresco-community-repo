@@ -25,19 +25,21 @@
  */
 package org.alfresco.repo.jscript;
 
-import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
-import org.alfresco.service.namespace.QNameMap;
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 
+import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
+import org.alfresco.service.namespace.QNameMap;
+
 /**
  * @author Kevin Roast
  */
-public class ScriptableQNameMap<K,V> extends QNameMap<K,V> implements Scriptable
+public class ScriptableQNameMap<K, V> extends QNameMap<K, V> implements Scriptable
 {
     /**
-     * @param resolver NamespacePrefixResolverProvider
+     * @param resolver
+     *            NamespacePrefixResolverProvider
      */
     public ScriptableQNameMap(NamespacePrefixResolverProvider resolver)
     {
@@ -64,8 +66,7 @@ public class ScriptableQNameMap<K,V> extends QNameMap<K,V> implements Scriptable
         }
         else if ("hasOwnProperty".equals(name))
         {
-            return new Callable()
-            {
+            return new Callable() {
                 @Override
                 public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args)
                 {
@@ -90,7 +91,8 @@ public class ScriptableQNameMap<K,V> extends QNameMap<K,V> implements Scriptable
     /**
      * ECMAScript 5 hasOwnProperty method support.
      * 
-     * @param key   Object key to test for
+     * @param key
+     *            Object key to test for
      * @return true if found, false otherwise
      */
     public boolean hasOwnProperty(Object key)
@@ -128,8 +130,7 @@ public class ScriptableQNameMap<K,V> extends QNameMap<K,V> implements Scriptable
      * @see org.mozilla.javascript.Scriptable#put(int, org.mozilla.javascript.Scriptable, java.lang.Object)
      */
     public void put(int index, Scriptable start, Object value)
-    {
-    }
+    {}
 
     /**
      * @see org.mozilla.javascript.Scriptable#delete(java.lang.String)
@@ -144,8 +145,7 @@ public class ScriptableQNameMap<K,V> extends QNameMap<K,V> implements Scriptable
      * @see org.mozilla.javascript.Scriptable#delete(int)
      */
     public void delete(int index)
-    {
-    }
+    {}
 
     /**
      * @see org.mozilla.javascript.Scriptable#getPrototype()
@@ -159,8 +159,7 @@ public class ScriptableQNameMap<K,V> extends QNameMap<K,V> implements Scriptable
      * @see org.mozilla.javascript.Scriptable#setPrototype(org.mozilla.javascript.Scriptable)
      */
     public void setPrototype(Scriptable prototype)
-    {
-    }
+    {}
 
     /**
      * @see org.mozilla.javascript.Scriptable#getParentScope()
@@ -174,8 +173,7 @@ public class ScriptableQNameMap<K,V> extends QNameMap<K,V> implements Scriptable
      * @see org.mozilla.javascript.Scriptable#setParentScope(org.mozilla.javascript.Scriptable)
      */
     public void setParentScope(Scriptable parent)
-    {
-    }
+    {}
 
     /**
      * @see org.mozilla.javascript.Scriptable#getIds()

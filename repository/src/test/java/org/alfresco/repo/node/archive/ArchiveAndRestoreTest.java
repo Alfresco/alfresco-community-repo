@@ -35,11 +35,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingResults;
@@ -68,12 +69,9 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.ScriptPagingDetails;
 import org.alfresco.util.TestWithUserUtils;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
- * Test the archive and restore functionality provided by the low-level
- * node service.
+ * Test the archive and restore functionality provided by the low-level node service.
  * 
  * @author Derek Hulley
  */
@@ -92,7 +90,7 @@ public class ArchiveAndRestoreTest extends TestCase
     private static final QName TYPE_QNAME_TEST_CONTENT = QName.createQName("http://www.alfresco.org/test/nodearchive", "content");
 
     private ApplicationContext ctx;
-    
+
     private NodeArchiveService nodeArchiveService;
     private NodeService nodeService;
     private PermissionService permissionService;
@@ -100,7 +98,7 @@ public class ArchiveAndRestoreTest extends TestCase
     private MutableAuthenticationService authenticationService;
     private OwnableService ownableService;
     private TransactionService transactionService;
-    
+
     private UserTransaction txn;
     private StoreRef workStoreRef;
     private NodeRef workStoreRootNodeRef;
@@ -123,12 +121,12 @@ public class ArchiveAndRestoreTest extends TestCase
     private NodeRef bb_;
     ChildAssociationRef childAssocAtoAA_;
     ChildAssociationRef childAssocBtoBB_;
-    
+
     @Override
     public void setUp() throws Exception
     {
         ctx = ApplicationContextHelper.getApplicationContext();
-        
+
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
         nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
         nodeService = serviceRegistry.getNodeService();
@@ -149,10 +147,10 @@ public class ArchiveAndRestoreTest extends TestCase
         // Start a transaction
         txn = transactionService.getUserTransaction();
         txn.begin();
-        
+
         // downgrade integrity checks
         IntegrityChecker.setWarnInTransaction();
-        
+
         try
         {
             authenticationComponent.setSystemUserAsCurrentUser();
@@ -161,11 +159,11 @@ public class ArchiveAndRestoreTest extends TestCase
             workStoreRootNodeRef = nodeService.getRootNode(workStoreRef);
             archiveStoreRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "archive" + getName() + System.currentTimeMillis());
             archiveStoreRootNodeRef = nodeService.getRootNode(archiveStoreRef);
-            
-            // Map the work store to the archive store.  This will already be wired into the NodeService.
+
+            // Map the work store to the archive store. This will already be wired into the NodeService.
             StoreArchiveMap archiveMap = (StoreArchiveMap) ctx.getBean("storeArchiveMap");
             archiveMap.put(workStoreRef, archiveStoreRef);
-            
+
             TestWithUserUtils.createUser(USER_A, USER_A, workStoreRootNodeRef, nodeService, authenticationService);
             TestWithUserUtils.createUser(USER_B, USER_B, workStoreRootNodeRef, nodeService, authenticationService);
             TestWithUserUtils.createUser(USER_C, USER_C, workStoreRootNodeRef, nodeService, authenticationService);
@@ -194,7 +192,7 @@ public class ArchiveAndRestoreTest extends TestCase
         authenticationService.authenticate(USER_A, USER_A.toCharArray());
         createNodeStructure();
     }
-    
+
     @Override
     public void tearDown() throws Exception
     {
@@ -208,9 +206,10 @@ public class ArchiveAndRestoreTest extends TestCase
         }
         AuthenticationUtil.clearCurrentSecurityContext();
     }
-    
+
     /**
-     * Create the following: 
+     * Create the following:
+     * 
      * <pre>
      *        root
      *       /  |
@@ -226,18 +225,17 @@ public class ArchiveAndRestoreTest extends TestCase
      *   |/    \|
      *   AA <-> BB
      * </pre>
-     * Explicit UUIDs are used for debugging purposes.  Live nodes are <b>cm:countable</b> with the
-     * <b>cm:counter</b> property.
+     * 
+     * Explicit UUIDs are used for debugging purposes. Live nodes are <b>cm:countable</b> with the <b>cm:counter</b> property.
      * <p>
-     * <b>A</b>, <b>B</b>, <b>AA</b> and <b>BB</b> are set up to archive automatically
-     * on deletion.
+     * <b>A</b>, <b>B</b>, <b>AA</b> and <b>BB</b> are set up to archive automatically on deletion.
      */
     private void createNodeStructure() throws Exception
     {
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(5);
 
         properties.put(ContentModel.PROP_COUNTER, 50);
-        
+
         properties.put(ContentModel.PROP_NODE_UUID, "a");
         a = nodeService.createNode(
                 workStoreRootNodeRef,
@@ -299,12 +297,12 @@ public class ArchiveAndRestoreTest extends TestCase
                 childAssocBtoBB.getQName(),
                 bb_);
     }
-    
+
     private void verifyNodeExistence(NodeRef nodeRef, boolean exists)
     {
         assertEquals("Node should " + (exists ? "" : "not ") + "exist", exists, nodeService.exists(nodeRef));
     }
-    
+
     private void verifyChildAssocExistence(ChildAssociationRef childAssocRef, boolean exists)
     {
         List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(
@@ -320,7 +318,7 @@ public class ArchiveAndRestoreTest extends TestCase
             assertEquals("Expected zero matches for child association: " + childAssocRef, 0, childAssocs.size());
         }
     }
-    
+
     @SuppressWarnings("unused")
     private void verifyTargetAssocExistence(AssociationRef assocRef, boolean exists)
     {
@@ -336,21 +334,21 @@ public class ArchiveAndRestoreTest extends TestCase
             assertEquals("Expected zero matches for target association: " + assocRef, 0, assocs.size());
         }
     }
-    
+
     private void verifyPropertyExistence(NodeRef nodeRef, QName propertyQName, boolean exists)
     {
         assertEquals(
                 "Property is not present " + nodeRef + " - " + propertyQName,
                 exists, nodeService.getProperty(nodeRef, propertyQName) != null);
     }
-    
+
     private void verifyAspectExistence(NodeRef nodeRef, QName aspectQName, boolean exists)
     {
         assertEquals(
                 "Aspect is not present " + nodeRef + " - " + aspectQName,
                 exists, nodeService.hasAspect(nodeRef, aspectQName));
     }
-    
+
     public void verifyAll()
     {
         // work store references
@@ -360,11 +358,11 @@ public class ArchiveAndRestoreTest extends TestCase
         verifyNodeExistence(bb, true);
         verifyChildAssocExistence(childAssocAtoAA, true);
         verifyChildAssocExistence(childAssocBtoBB, true);
-// TODO: Secondary and peer associations
-//        verifyChildAssocExistence(childAssocAtoBB, true);
-//        verifyChildAssocExistence(childAssocBtoAA, true);
-//        verifyTargetAssocExistence(assocAtoB, true);
-//        verifyTargetAssocExistence(assocAAtoBB, true);
+        // TODO: Secondary and peer associations
+        // verifyChildAssocExistence(childAssocAtoBB, true);
+        // verifyChildAssocExistence(childAssocBtoAA, true);
+        // verifyTargetAssocExistence(assocAtoB, true);
+        // verifyTargetAssocExistence(assocAAtoBB, true);
         verifyPropertyExistence(a, ContentModel.PROP_COUNTER, true);
         verifyAspectExistence(a, ContentModel.ASPECT_COUNTABLE, true);
         verifyPropertyExistence(b, ContentModel.PROP_COUNTER, true);
@@ -379,18 +377,18 @@ public class ArchiveAndRestoreTest extends TestCase
         verifyNodeExistence(aa_, false);
         verifyNodeExistence(bb_, false);
     }
-    
+
     public void testSetUp() throws Exception
     {
         verifyAll();
     }
-    
+
     public void testGetStoreArchiveNode() throws Exception
     {
         NodeRef archiveNodeRef = nodeService.getStoreArchiveNode(workStoreRef);
         assertEquals("Mapping of archived store is not correct", archiveStoreRootNodeRef, archiveNodeRef);
     }
-    
+
     /**
      * Ensure that nodes are tracking by deleting user
      */
@@ -398,10 +396,9 @@ public class ArchiveAndRestoreTest extends TestCase
     {
         // We start with one parent assoc for the original node
         assertEquals(1, nodeService.getParentAssocs(a).size());
-        
+
         nodeService.deleteNode(a);
-        RunAsWork<List<ChildAssociationRef>> getAssocsWork = new RunAsWork<List<ChildAssociationRef>>()
-        {
+        RunAsWork<List<ChildAssociationRef>> getAssocsWork = new RunAsWork<List<ChildAssociationRef>>() {
             @Override
             public List<ChildAssociationRef> doWork() throws Exception
             {
@@ -413,17 +410,17 @@ public class ArchiveAndRestoreTest extends TestCase
         };
         List<ChildAssociationRef> assocs = AuthenticationUtil.runAsSystem(getAssocsWork);
         assertEquals("Expected exactly one child association for current user", 1, assocs.size());
-        
+
         // The archived node must have two parents
         assertEquals(2, nodeService.getParentAssocs(a_).size());
-        
+
         // Now restore
         nodeService.restoreNode(a_, null, null, null);
-        
+
         // We should be back to a single parent association
         assertEquals(1, nodeService.getParentAssocs(a).size());
     }
-    
+
     public void testArchivedAspect() throws Exception
     {
         // delete 'a'
@@ -446,7 +443,7 @@ public class ArchiveAndRestoreTest extends TestCase
         assertEquals("Original owner property is incorrect", USER_B, properties_b.get(ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER));
 
     }
-    
+
     public void testArchiveAndRestoreNodeBB() throws Exception
     {
         // delete a child
@@ -454,25 +451,25 @@ public class ArchiveAndRestoreTest extends TestCase
         // check
         verifyNodeExistence(b, true);
         verifyNodeExistence(bb, false);
-//        verifyChildAssocExistence(childAssocAtoBB, false);
-//        verifyChildAssocExistence(childAssocBtoBB, false);
+        // verifyChildAssocExistence(childAssocAtoBB, false);
+        // verifyChildAssocExistence(childAssocBtoBB, false);
         verifyNodeExistence(b_, false);
         verifyNodeExistence(bb_, true);
-        
+
         // flush
-        //AlfrescoTransactionSupport.flush();
-        
+        // AlfrescoTransactionSupport.flush();
+
         // check that the required properties are present and correct
         Map<QName, Serializable> bb_Properties = nodeService.getProperties(bb_);
         ChildAssociationRef bb_originalParent = (ChildAssociationRef) bb_Properties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
         assertNotNull("Original parent not stored", bb_originalParent);
-        
+
         // restore the node
         nodeService.restoreNode(bb_, null, null, null);
         // check
         verifyAll();
     }
-    
+
     public void testArchiveAndRestoreNodeB() throws Exception
     {
         // delete a child
@@ -480,22 +477,22 @@ public class ArchiveAndRestoreTest extends TestCase
         // check
         verifyNodeExistence(b, false);
         verifyNodeExistence(bb, false);
-//        verifyChildAssocExistence(childAssocAtoBB, false);
-//        verifyTargetAssocExistence(assocAtoB, false);
-//        verifyTargetAssocExistence(assocAAtoBB, false);
+        // verifyChildAssocExistence(childAssocAtoBB, false);
+        // verifyTargetAssocExistence(assocAtoB, false);
+        // verifyTargetAssocExistence(assocAAtoBB, false);
         verifyNodeExistence(b_, true);
         verifyNodeExistence(bb_, true);
-//        verifyChildAssocExistence(childAssocBtoBB_, true);
-        
+        // verifyChildAssocExistence(childAssocBtoBB_, true);
+
         // flush
-        //AlfrescoTransactionSupport.flush();
-        
+        // AlfrescoTransactionSupport.flush();
+
         // restore the node
         nodeService.restoreNode(b_, null, null, null);
         // check
         verifyAll();
     }
-    
+
     public void testArchiveAndRestoreAll_B_A() throws Exception
     {
         // delete both trees in order 'b', 'a'
@@ -503,15 +500,15 @@ public class ArchiveAndRestoreTest extends TestCase
         nodeService.deleteNode(a);
 
         // flush
-        //AlfrescoTransactionSupport.flush();
-        
+        // AlfrescoTransactionSupport.flush();
+
         // restore in reverse order
         nodeService.restoreNode(a_, null, null, null);
         nodeService.restoreNode(b_, null, null, null);
         // check
         verifyAll();
     }
-    
+
     public void testArchiveAndRestoreAll_A_B() throws Exception
     {
         // delete both trees in order 'b', 'a'
@@ -519,15 +516,15 @@ public class ArchiveAndRestoreTest extends TestCase
         nodeService.deleteNode(b);
 
         // flush
-        //AlfrescoTransactionSupport.flush();
-        
+        // AlfrescoTransactionSupport.flush();
+
         // restore in reverse order
         nodeService.restoreNode(b_, null, null, null);
         nodeService.restoreNode(a_, null, null, null);
         // check
         verifyAll();
     }
-    
+
     public void testArchiveAndRestoreWithMissingAssocTargets() throws Exception
     {
         // delete a then b
@@ -535,12 +532,12 @@ public class ArchiveAndRestoreTest extends TestCase
         nodeService.deleteNode(b);
 
         // flush
-        //AlfrescoTransactionSupport.flush();
-        
+        // AlfrescoTransactionSupport.flush();
+
         // in restoring 'a' first, there will be some associations that won't be recreated
         nodeService.restoreNode(a_, null, null, null);
         nodeService.restoreNode(b_, null, null, null);
-        
+
         // check
         verifyNodeExistence(a, true);
         verifyNodeExistence(b, true);
@@ -548,16 +545,16 @@ public class ArchiveAndRestoreTest extends TestCase
         verifyNodeExistence(bb, true);
         verifyChildAssocExistence(childAssocAtoAA, true);
         verifyChildAssocExistence(childAssocBtoBB, true);
-//        verifyChildAssocExistence(childAssocAtoBB, false);
-//        verifyChildAssocExistence(childAssocBtoAA, false);
-//        verifyTargetAssocExistence(assocAtoB, false);
-//        verifyTargetAssocExistence(assocAAtoBB, false);
+        // verifyChildAssocExistence(childAssocAtoBB, false);
+        // verifyChildAssocExistence(childAssocBtoAA, false);
+        // verifyTargetAssocExistence(assocAtoB, false);
+        // verifyTargetAssocExistence(assocAAtoBB, false);
         verifyNodeExistence(a_, false);
         verifyNodeExistence(b_, false);
         verifyNodeExistence(aa_, false);
         verifyNodeExistence(bb_, false);
     }
-    
+
     /**
      * Ensures that the archival is performed based on the node type.
      */
@@ -571,7 +568,7 @@ public class ArchiveAndRestoreTest extends TestCase
         verifyNodeExistence(a, false);
         verifyNodeExistence(a_, false);
     }
-    
+
     /**
      * Attempt to measure how much archiving affects the deletion performance.
      */
@@ -591,19 +588,19 @@ public class ArchiveAndRestoreTest extends TestCase
             cumulatedArchiveTimeNs += (end - start);
 
             // flush
-            //AlfrescoTransactionSupport.flush();
-            
+            // AlfrescoTransactionSupport.flush();
+
             // now restore
             start = System.nanoTime();
             nodeService.restoreNode(b_, null, null, null);
             end = System.nanoTime();
             cumulatedRestoreTimeNs += (end - start);
         }
-        double averageArchiveTimeMs = (double)cumulatedArchiveTimeNs / 1E6 / (double)iterations;
-        double averageRestoreTimeMs = (double)cumulatedRestoreTimeNs / 1E6 / (double)iterations;
+        double averageArchiveTimeMs = (double) cumulatedArchiveTimeNs / 1E6 / (double) iterations;
+        double averageRestoreTimeMs = (double) cumulatedRestoreTimeNs / 1E6 / (double) iterations;
         System.out.println("Average archive time: " + averageArchiveTimeMs + " ms");
         System.out.println("Average restore time: " + averageRestoreTimeMs + " ms");
-        
+
         // Now force full deletions and creations
         StoreArchiveMap archiveMap = (StoreArchiveMap) ctx.getBean("storeArchiveMap");
         archiveMap.clear();
@@ -624,12 +621,12 @@ public class ArchiveAndRestoreTest extends TestCase
             end = System.nanoTime();
             cumulatedCreateTimeNs += (end - start);
         }
-        double averageDeleteTimeMs = (double)cumulatedDeleteTimeNs / 1E6 / (double)iterations;
-        double averageCreateTimeMs = (double)cumulatedCreateTimeNs / 1E6 / (double)iterations;
+        double averageDeleteTimeMs = (double) cumulatedDeleteTimeNs / 1E6 / (double) iterations;
+        double averageCreateTimeMs = (double) cumulatedCreateTimeNs / 1E6 / (double) iterations;
         System.out.println("Average delete time: " + averageDeleteTimeMs + " ms");
         System.out.println("Average create time: " + averageCreateTimeMs + " ms");
     }
-    
+
     public void testInTransactionRestore() throws Exception
     {
         RestoreNodeReport report = nodeArchiveService.restoreArchivedNode(a_);
@@ -638,51 +635,51 @@ public class ArchiveAndRestoreTest extends TestCase
         // check that our transaction was not affected
         assertEquals("Transaction should still be valid", Status.STATUS_ACTIVE, txn.getStatus());
     }
-    
+
     public void testInTransactionPurge() throws Exception
     {
         nodeArchiveService.purgeArchivedNode(a_);
         // the node should still be there (it was not available to the purge transaction)
         assertEquals("Transaction should still be valid", Status.STATUS_ACTIVE, txn.getStatus());
     }
-    
+
     private void commitAndBeginNewTransaction() throws Exception
     {
         txn.commit();
         txn = transactionService.getUserTransaction();
         txn.begin();
     }
-    
+
     public void testSimple_Create_Commit_Delete_Commit() throws Exception
     {
         commitAndBeginNewTransaction();
         nodeService.deleteNode(a);
         commitAndBeginNewTransaction();
     }
-    
+
     public void testSimple_Create_Delete_Commit() throws Exception
     {
         nodeService.deleteNode(a);
         commitAndBeginNewTransaction();
     }
-    
+
     public void testRestoreToMissingParent() throws Exception
     {
         nodeService.deleteNode(a);
         nodeService.deleteNode(b);
         commitAndBeginNewTransaction();
-        
+
         // attempt to restore b_ to a
         RestoreNodeReport report = nodeArchiveService.restoreArchivedNode(b_, a, null, null);
         assertEquals("Incorrect report status", RestoreStatus.FAILURE_INVALID_PARENT, report.getStatus());
     }
-    
+
     public void testMassRestore() throws Exception
     {
         nodeService.deleteNode(a);
         nodeService.deleteNode(b);
         commitAndBeginNewTransaction();
-        
+
         List<NodeRef> nodesToRestore = new ArrayList<NodeRef>();
         nodesToRestore.add(a_);
         nodesToRestore.add(b_);
@@ -701,17 +698,17 @@ public class ArchiveAndRestoreTest extends TestCase
         verifyNodeExistence(aa_, false);
         verifyNodeExistence(bb_, false);
     }
-    
+
     public void testMassPurge() throws Exception
     {
         nodeService.deleteNode(a);
         nodeService.deleteNode(b);
         commitAndBeginNewTransaction();
-        
+
         // check that archived nodes are visible
         verifyNodeExistence(a_, true);
         verifyNodeExistence(b_, true);
-        
+
         nodeArchiveService.purgeAllArchivedNodes(workStoreRef);
 
         commitAndBeginNewTransaction();
@@ -725,7 +722,7 @@ public class ArchiveAndRestoreTest extends TestCase
         verifyNodeExistence(aa_, false);
         verifyNodeExistence(bb_, false);
     }
-    
+
     public void testDeletedOwnership() throws Exception
     {
         // check that A is the current owner of 'b'
@@ -738,7 +735,7 @@ public class ArchiveAndRestoreTest extends TestCase
         String b_Owner = ownableService.getOwner(b_);
         assertEquals("User B must own 'b_'", USER_B, b_Owner);
     }
-    
+
     public void testMNT8916RestoreWithoutPermissionsSet() throws Exception
     {
         permissionService.setInheritParentPermissions(a, false);
@@ -752,7 +749,7 @@ public class ArchiveAndRestoreTest extends TestCase
         assertTrue("Restored node shouldn't have any permissions set", permissionService.getAllSetPermissions(a).isEmpty());
         assertFalse("Restored node shouldn't inherit parent permissions", permissionService.getInheritParentPermissions(a));
     }
-    
+
     /**
      * Check that node ownership changes correctly
      */
@@ -789,10 +786,9 @@ public class ArchiveAndRestoreTest extends TestCase
             }
         }
     }
-    
+
     /**
-     * Deny the current user the rights to write to the destination location
-     * and ensure that the use-case is handled properly.
+     * Deny the current user the rights to write to the destination location and ensure that the use-case is handled properly.
      */
     public void testPermissionsLackingOnDestination() throws Exception
     {
@@ -800,17 +796,15 @@ public class ArchiveAndRestoreTest extends TestCase
         nodeService.deleteNode(b);
         permissionService.setPermission(workStoreRootNodeRef, USER_B, PermissionService.ADD_CHILDREN, false);
         commitAndBeginNewTransaction();
-        
+
         // the restore of b should fail for user B
         authenticationService.authenticate(USER_B, USER_B.toCharArray());
         RestoreNodeReport report = nodeArchiveService.restoreArchivedNode(b_);
         assertEquals("Expected permission denied status", RestoreStatus.FAILURE_PERMISSION, report.getStatus());
     }
-    
+
     /**
-     * Check that the existence of the node in the archive store doesn't prevent archival.
-     * It is possible to restore a node to the SpacesStore from some other source.  When
-     * that node is archived, the currently archived node must be overwritten.
+     * Check that the existence of the node in the archive store doesn't prevent archival. It is possible to restore a node to the SpacesStore from some other source. When that node is archived, the currently archived node must be overwritten.
      */
     public void testAR1519ArchiveCleansDuplicateUuid() throws Exception
     {
@@ -824,37 +818,37 @@ public class ArchiveAndRestoreTest extends TestCase
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
         props.put(ContentModel.PROP_NODE_UUID, a.getId());
         NodeRef aRecreated = nodeService.createNode(
-                workStoreRootNodeRef, 
-                ContentModel.ASSOC_CHILDREN, 
-                ContentModel.ASSOC_CHILDREN, 
-                ContentModel.TYPE_CONTENT, 
+                workStoreRootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_CONTENT,
                 props).getChildRef();
         assertEquals("NodeRef for recreated node should be the same as the original", a, aRecreated);
         props.put(ContentModel.PROP_NODE_UUID, b.getId());
         NodeRef bRecreated = nodeService.createNode(
-                a, 
-                ContentModel.ASSOC_CHILDREN, 
-                ContentModel.ASSOC_CHILDREN, 
-                ContentModel.TYPE_CONTENT, 
+                a,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_CONTENT,
                 props).getChildRef();
         assertEquals("NodeRef for recreated node should be the same as the original", b, bRecreated);
-        
+
         // Check existence
         verifyNodeExistence(a, true);
         verifyNodeExistence(b, true);
         verifyNodeExistence(a_, true);
         verifyNodeExistence(b_, true);
-        
+
         // Now check that the parent a can be deleted and the conflict is handled
         nodeService.deleteNode(a);
-        
+
         // Check existence
         verifyNodeExistence(a, false);
         verifyNodeExistence(b, false);
         verifyNodeExistence(a_, true);
         verifyNodeExistence(b_, true);
     }
-    
+
     /**
      * <a href="https://issues.alfresco.com/jira/browse/ALF-7889">ALF-7889</a>
      */
@@ -862,10 +856,10 @@ public class ArchiveAndRestoreTest extends TestCase
     {
         AuthenticationUtil.setFullyAuthenticatedUser(USER_A);
         nodeService.addAspect(b, ContentModel.ASPECT_AUDITABLE, null);
-        
+
         // Do a little wait to ensure that the cm:auditable modified date is at least 1s old
         wait(2000L);
-        
+
         // Get the cm:auditable modified time
         String modifierOriginal = (String) nodeService.getProperty(b, ContentModel.PROP_MODIFIER);
         Date modifiedOriginal = (Date) nodeService.getProperty(b, ContentModel.PROP_MODIFIED);
@@ -874,7 +868,7 @@ public class ArchiveAndRestoreTest extends TestCase
 
         nodeService.deleteNode(b);
         verifyNodeExistence(b_, true);
-        
+
         // Check that the cm:auditable modified did not change
         String modifierArchived = (String) nodeService.getProperty(b_, ContentModel.PROP_MODIFIER);
         Date modifiedArchived = (Date) nodeService.getProperty(b_, ContentModel.PROP_MODIFIED);
@@ -887,7 +881,7 @@ public class ArchiveAndRestoreTest extends TestCase
         // Restore and check cm:auditable
         RestoreNodeReport report = nodeArchiveService.restoreArchivedNode(b_);
         assertEquals("Restore failed", RestoreStatus.SUCCESS, report.getStatus());
-        
+
         // Check that the cm:auditable modified did not change
         String modifierRestored = (String) nodeService.getProperty(b, ContentModel.PROP_MODIFIER);
         Date modifiedRestored = (Date) nodeService.getProperty(b, ContentModel.PROP_MODIFIED);
@@ -897,7 +891,8 @@ public class ArchiveAndRestoreTest extends TestCase
     }
 
     /**
-     * Use a custom node ref because it isn't auditable.  Tests restoring it correctly
+     * Use a custom node ref because it isn't auditable. Tests restoring it correctly
+     * 
      * @throws Exception
      */
     public synchronized void testMNT15211ArchiveAndRestoreNotAuditable() throws Exception
@@ -927,13 +922,12 @@ public class ArchiveAndRestoreTest extends TestCase
 
         commitAndBeginNewTransaction();
 
-        //It is restored, still with no AUDITABLE ASPECT
+        // It is restored, still with no AUDITABLE ASPECT
         verifyNodeExistence(r, true);
         verifyAspectExistence(r, ContentModel.ASPECT_AUDITABLE, false);
 
         nodeService.deleteNode(r);
     }
-
 
     /**
      * <a href="https://issues.alfresco.com/jira/browse/MNT-2777">MNT-2777</a>
@@ -970,7 +964,7 @@ public class ArchiveAndRestoreTest extends TestCase
      */
     public void testMNT2715ArchiveAndRestoreWithOwnableAndWithout() throws Exception
     {
-        //explicitly remove ownable aspect
+        // explicitly remove ownable aspect
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         nodeService.removeAspect(a, ContentModel.ASPECT_OWNABLE);
         nodeService.removeAspect(b, ContentModel.ASPECT_OWNABLE);
@@ -1003,20 +997,20 @@ public class ArchiveAndRestoreTest extends TestCase
         nodeService.restoreNode(a_, null, null, null);
 
         assertTrue("The node should have the same owner after restoring as before deleting",
-            nodeService.getProperty(a, ContentModel.PROP_OWNER).equals(USER_A));
+                nodeService.getProperty(a, ContentModel.PROP_OWNER).equals(USER_A));
     }
-    
+
     /**
      * Test listArchivedNodes based on the user's permission.
      */
     public void testListArchivedNodesPermissions()
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_B);        
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_B);
         // Create paging
         ScriptPagingDetails paging = new ScriptPagingDetails(2, 0);
         // Create canned query
         ArchivedNodesCannedQueryBuilder queryBuilder = new ArchivedNodesCannedQueryBuilder.Builder(
-                    this.archiveStoreRootNodeRef, paging).build();
+                this.archiveStoreRootNodeRef, paging).build();
 
         // Query the DB
         PagingResults<NodeRef> result = runListArchivedNodesAsAdmin(queryBuilder);
@@ -1037,8 +1031,8 @@ public class ArchiveAndRestoreTest extends TestCase
 
         // Create canned query
         queryBuilder = new ArchivedNodesCannedQueryBuilder.Builder(
-                    this.archiveStoreRootNodeRef, paging)
-                    .build();
+                this.archiveStoreRootNodeRef, paging)
+                        .build();
 
         result = nodeArchiveService.listArchivedNodes(queryBuilder);
         assertEquals("USER_A deleted 1 item and USER_A can see it.", 1, result.getPage().size());
@@ -1046,24 +1040,23 @@ public class ArchiveAndRestoreTest extends TestCase
         result = runListArchivedNodesAsAdmin(queryBuilder);
         assertEquals("USER_A deleted only 1 item.", 1, result.getPage().size());
         assertEquals(QNAME_AA.getLocalName(),
-                    nodeService.getProperty(result.getPage().get(0), ContentModel.PROP_NAME));
+                nodeService.getProperty(result.getPage().get(0), ContentModel.PROP_NAME));
 
         // Set the authentication to Admin
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         queryBuilder = new ArchivedNodesCannedQueryBuilder.Builder(this.archiveStoreRootNodeRef, paging)
-                    .build();
+                .build();
 
         result = nodeArchiveService.listArchivedNodes(queryBuilder);
         // Admin can retrieve all users' deleted nodes
         assertEquals("Admin can retrieve all users' deleted nodes.", 2, result.getPage().size());
     }
-    
+
     private PagingResults<NodeRef> runListArchivedNodesAsAdmin(final ArchivedNodesCannedQueryBuilder queryBuilder)
     {
-        return AuthenticationUtil.runAs(new RunAsWork<PagingResults<NodeRef>>()
-        {
+        return AuthenticationUtil.runAs(new RunAsWork<PagingResults<NodeRef>>() {
             @Override
             public PagingResults<NodeRef> doWork() throws Exception
             {
@@ -1071,7 +1064,7 @@ public class ArchiveAndRestoreTest extends TestCase
             }
         }, AuthenticationUtil.getAdminUserName());
     }
-    
+
     /**
      * Test listArchivedNodes sorted by ARCHIVED_DATE (DESC).
      */
@@ -1082,8 +1075,8 @@ public class ArchiveAndRestoreTest extends TestCase
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
         properties.put(ContentModel.PROP_NAME, "testDoc.txt");
         NodeRef testDoc = nodeService.createNode(a, ContentModel.ASSOC_CONTAINS,
-                    ContentModel.ASSOC_CONTAINS, ContentModel.TYPE_CONTENT, properties)
-                    .getChildRef();
+                ContentModel.ASSOC_CONTAINS, ContentModel.TYPE_CONTENT, properties)
+                .getChildRef();
 
         // delete created nodes
         nodeService.deleteNode(aa);
@@ -1097,26 +1090,28 @@ public class ArchiveAndRestoreTest extends TestCase
         ScriptPagingDetails paging = new ScriptPagingDetails(3, 0);
 
         ArchivedNodesCannedQueryBuilder queryBuilder = new ArchivedNodesCannedQueryBuilder.Builder(
-                    this.archiveStoreRootNodeRef, paging)
-                    // Sorting by Node_DBID. DESC. (same as sorting by archived date).
-                    .sortOrderAscending(false)
-                    .build();
+                this.archiveStoreRootNodeRef, paging)
+                        // Sorting by Node_DBID. DESC. (same as sorting by archived date).
+                        .sortOrderAscending(false)
+                        .build();
 
         // Query the DB
         PagingResults<NodeRef> result = nodeArchiveService.listArchivedNodes(queryBuilder);
         assertEquals("There are 3 nodes deleted by the Admin.", 3, result.getPage().size());
         // Node "bb" deleted last, so it must be first in the sorted list.
         assertEquals(QNAME_BB.getLocalName(),
-                    nodeService.getProperty(result.getPage().get(0), ContentModel.PROP_NAME));
+                nodeService.getProperty(result.getPage().get(0), ContentModel.PROP_NAME));
         assertEquals("testDoc.txt",
-                    nodeService.getProperty(result.getPage().get(1), ContentModel.PROP_NAME));
+                nodeService.getProperty(result.getPage().get(1), ContentModel.PROP_NAME));
         assertEquals(QNAME_AA.getLocalName(),
-                    nodeService.getProperty(result.getPage().get(2), ContentModel.PROP_NAME));
+                nodeService.getProperty(result.getPage().get(2), ContentModel.PROP_NAME));
     }
-    
+
     /**
-     * Test listArchivedNodes based on the following example patterns: <li>
-     * something*.jpg</li> <li>process*</li> <li>*dev.doc"</li>
+     * Test listArchivedNodes based on the following example patterns:
+     * <li>something*.jpg</li>
+     * <li>process*</li>
+     * <li>*dev.doc"</li>
      */
     public void testListArchivedNodesFilter()
     {
@@ -1125,20 +1120,20 @@ public class ArchiveAndRestoreTest extends TestCase
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
         properties.put(ContentModel.PROP_NAME, "pictureOneTest.jpg");
         NodeRef pic1 = nodeService.createNode(a, ContentModel.ASSOC_CONTAINS,
-                    ContentModel.ASSOC_CONTAINS, ContentModel.TYPE_CONTENT, properties)
-                    .getChildRef();
+                ContentModel.ASSOC_CONTAINS, ContentModel.TYPE_CONTENT, properties)
+                .getChildRef();
 
         properties = new HashMap<QName, Serializable>(1);
         properties.put(ContentModel.PROP_NAME, "pictureTwoTest.jpg");
         NodeRef pic2 = nodeService.createNode(a, ContentModel.ASSOC_CONTAINS,
-                    ContentModel.ASSOC_CONTAINS, ContentModel.TYPE_CONTENT, properties)
-                    .getChildRef();
+                ContentModel.ASSOC_CONTAINS, ContentModel.TYPE_CONTENT, properties)
+                .getChildRef();
 
         properties = new HashMap<QName, Serializable>(1);
         properties.put(ContentModel.PROP_NAME, "pictureThreeTest.png");
         NodeRef pic3 = nodeService.createNode(a, ContentModel.ASSOC_CONTAINS,
-                    ContentModel.ASSOC_CONTAINS, ContentModel.TYPE_CONTENT, properties)
-                    .getChildRef();
+                ContentModel.ASSOC_CONTAINS, ContentModel.TYPE_CONTENT, properties)
+                .getChildRef();
 
         // delete created nodes
         nodeService.deleteNode(aa);
@@ -1153,49 +1148,49 @@ public class ArchiveAndRestoreTest extends TestCase
         String filter = "picture*";
 
         ArchivedNodesCannedQueryBuilder queryBuilder = new ArchivedNodesCannedQueryBuilder.Builder(
-                    this.archiveStoreRootNodeRef, paging).filter(filter)
-                    .sortOrderAscending(false).build();
+                this.archiveStoreRootNodeRef, paging).filter(filter)
+                        .sortOrderAscending(false).build();
 
         // Query the DB
         PagingResults<NodeRef> result = nodeArchiveService.listArchivedNodes(queryBuilder);
         assertEquals("There are 3 nodes that match 'picture*' pattern.", 3, result.getPage().size());
         // Node "pictureThreeTest.png" deleted last, so it must be first in the sorted list
         assertEquals("pictureThreeTest.png",
-                    nodeService.getProperty(result.getPage().get(0), ContentModel.PROP_NAME));
+                nodeService.getProperty(result.getPage().get(0), ContentModel.PROP_NAME));
         assertEquals("pictureTwoTest.jpg",
-                    nodeService.getProperty(result.getPage().get(1), ContentModel.PROP_NAME));
+                nodeService.getProperty(result.getPage().get(1), ContentModel.PROP_NAME));
         assertEquals("pictureOneTest.jpg",
-                    nodeService.getProperty(result.getPage().get(2), ContentModel.PROP_NAME));
+                nodeService.getProperty(result.getPage().get(2), ContentModel.PROP_NAME));
 
         // Change the filter
         filter = "pictureT*.jpg";
         queryBuilder = new ArchivedNodesCannedQueryBuilder.Builder(this.archiveStoreRootNodeRef,
-                    paging).filter(filter).sortOrderAscending(false).build();
+                paging).filter(filter).sortOrderAscending(false).build();
 
         result = nodeArchiveService.listArchivedNodes(queryBuilder);
         assertEquals("There is only 1 node that matches 'pictureT*.jpg' pattern.", 1, result
-                    .getPage().size());
+                .getPage().size());
         assertEquals("pictureTwoTest.jpg",
-                    nodeService.getProperty(result.getPage().get(0), ContentModel.PROP_NAME));
+                nodeService.getProperty(result.getPage().get(0), ContentModel.PROP_NAME));
 
         // Change the filter
         filter = "*Test.jpg";
 
         queryBuilder = new ArchivedNodesCannedQueryBuilder.Builder(this.archiveStoreRootNodeRef,
-                    paging).filter(filter).sortOrderAscending(false).build();
+                paging).filter(filter).sortOrderAscending(false).build();
 
         result = nodeArchiveService.listArchivedNodes(queryBuilder);
         assertEquals("There are 2 nodes that match '*Test.jpg' pattern.", 2, result.getPage().size());
         assertEquals("pictureTwoTest.jpg",
-                    nodeService.getProperty(result.getPage().get(0), ContentModel.PROP_NAME));
+                nodeService.getProperty(result.getPage().get(0), ContentModel.PROP_NAME));
         assertEquals("pictureOneTest.jpg",
-                    nodeService.getProperty(result.getPage().get(1), ContentModel.PROP_NAME));
+                nodeService.getProperty(result.getPage().get(1), ContentModel.PROP_NAME));
 
         // Change the filter and make it case sensitive
         filter = "*test.jpg";
 
         queryBuilder = new ArchivedNodesCannedQueryBuilder.Builder(this.archiveStoreRootNodeRef,
-                    paging).filter(filter).sortOrderAscending(false).build();
+                paging).filter(filter).sortOrderAscending(false).build();
 
         result = nodeArchiveService.listArchivedNodes(queryBuilder);
         assertEquals("There are 2 nodes that matches '*test.jpg' pattern.", 2, result.getPage().size());

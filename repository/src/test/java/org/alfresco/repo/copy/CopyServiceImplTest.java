@@ -31,10 +31,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
 import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
@@ -91,9 +93,6 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Unit tests for copy service
@@ -105,10 +104,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class CopyServiceImplTest extends TestCase
 {
     private ApplicationContext ctx;
-    
-    /*
-     * Services used by the tests
-     */
+
+    /* Services used by the tests */
     private TransactionService transactionService;
     private NodeService nodeService;
     private NodeService publicNodeService;
@@ -122,64 +119,59 @@ public class CopyServiceImplTest extends TestCase
     private AuthenticationComponent authenticationComponent;
     private MutableAuthenticationService authenticationService;
     private CheckOutCheckInService cociService;
-    
-    /*
-     * Data used by the tests
-     */
+
+    /* Data used by the tests */
     private UserTransaction txn;
     private StoreRef storeRef;
-    private NodeRef sourceNodeRef;    
-    private NodeRef rootNodeRef;    
+    private NodeRef sourceNodeRef;
+    private NodeRef rootNodeRef;
     private NodeRef targetNodeRef;
     private NodeRef nonPrimaryChildNodeRef;
     private NodeRef childNodeRef;
     private NodeRef destinationNodeRef;
-    
-    /*
-     * Types and properties used by the tests
-     */
+
+    /* Types and properties used by the tests */
     private static final String TEST_TYPE_NAMESPACE = "testTypeNamespaceURI";
     private static final QName TEST_TYPE_QNAME = QName.createQName(TEST_TYPE_NAMESPACE, "testType");
     private static final QName PROP1_QNAME_MANDATORY = QName.createQName(TEST_TYPE_NAMESPACE, "prop1Mandatory");
     private static final QName PROP2_QNAME_OPTIONAL = QName.createQName(TEST_TYPE_NAMESPACE, "prop2Optional");
-    
+
     private static final QName TEST_ASPECT_QNAME = QName.createQName(TEST_TYPE_NAMESPACE, "testAspect");
     private static final QName PROP3_QNAME_MANDATORY = QName.createQName(TEST_TYPE_NAMESPACE, "prop3Mandatory");
     private static final QName PROP4_QNAME_OPTIONAL = QName.createQName(TEST_TYPE_NAMESPACE, "prop4Optional");
-    
+
     private static final QName PROP_QNAME_MY_NODE_REF = QName.createQName(TEST_TYPE_NAMESPACE, "myNodeRef");
-    private static final QName PROP_QNAME_MY_ANY = QName.createQName(TEST_TYPE_NAMESPACE, "myAny");    
-    
+    private static final QName PROP_QNAME_MY_ANY = QName.createQName(TEST_TYPE_NAMESPACE, "myAny");
+
     private static final QName PROP_QNAME_RESIDUAL_NODE_REF = QName.createQName(TEST_TYPE_NAMESPACE, "residualNodeRef");
-    private static final QName PROP_QNAME_RESIDUAL_ANY = QName.createQName(TEST_TYPE_NAMESPACE, "residualAny"); 
-    
+    private static final QName PROP_QNAME_RESIDUAL_ANY = QName.createQName(TEST_TYPE_NAMESPACE, "residualAny");
+
     private static final QName TEST_MANDATORY_ASPECT_QNAME = QName.createQName(TEST_TYPE_NAMESPACE, "testMandatoryAspect");
     private static final QName PROP5_QNAME_MANDATORY = QName.createQName(TEST_TYPE_NAMESPACE, "prop5Mandatory");
-    
+
     private static final String TEST_NAME = "testName";
     private static final String TEST_VALUE_1 = "testValue1";
     private static final String TEST_VALUE_2 = "testValue2";
     private static final String TEST_VALUE_3 = "testValue3";
-    
+
     private static final QName TEST_CHILD_ASSOC_TYPE_QNAME = QName.createQName(TEST_TYPE_NAMESPACE, "contains");
     private static final QName TEST_CHILD_ASSOC_QNAME = QName.createQName(TEST_TYPE_NAMESPACE, "testChildAssocName");
     private static final QName TEST_ASSOC_TYPE_QNAME = QName.createQName(TEST_TYPE_NAMESPACE, "testAssocName");
     private static final QName TEST_CHILD_ASSOC_QNAME2 = QName.createQName(TEST_TYPE_NAMESPACE, "testChildAssocName2");
-    
+
     private static final ContentData CONTENT_DATA_TEXT = new ContentData(null, "text/plain", 0L, "UTF-8");
-    
+
     private static final String USER_1 = "User1";
     private static final String USER_2 = "User2";
-    
+
     private static final QName TYPE_CUSTOM_CMIS_DOCUMENT = QName.createQName("{http://www.alfresco.org/model/cmis/custom}document");
     private static final QName PROP_CUSTOM_STRING = QName.createQName("{http://www.alfresco.org/model/cmis/custom}docprop_string");
-
 
     /**
      * Test content
      */
-    private static final String SOME_CONTENT = "This is some content ...";    
-    
+    private static final String SOME_CONTENT = "This is some content ...";
+
     @Override
     protected void setUp() throws Exception
     {
@@ -188,7 +180,7 @@ public class CopyServiceImplTest extends TestCase
         {
             fail("Test started with transaction in progress");
         }
-        
+
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         // Set the services
         transactionService = serviceRegistry.getTransactionService();
@@ -197,27 +189,27 @@ public class CopyServiceImplTest extends TestCase
         copyService = (CopyService) ctx.getBean("copyService");
         contentService = (ContentService) ctx.getBean("contentService");
         ruleService = (RuleService) ctx.getBean("ruleService");
-        actionService = (ActionService)ctx.getBean("actionService");
-        permissionService = (PermissionService)ctx.getBean("PermissionService");
+        actionService = (ActionService) ctx.getBean("actionService");
+        permissionService = (PermissionService) ctx.getBean("PermissionService");
         personService = serviceRegistry.getPersonService();
-        authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
+        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         authenticationService = (MutableAuthenticationService) ctx.getBean("authenticationService");
         cociService = (CheckOutCheckInService) ctx.getBean("checkOutCheckInService");
         dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
-        
+
         authenticationComponent.setSystemUserAsCurrentUser();
-        
+
         // Ensure that a transaction is present
         txn = transactionService.getUserTransaction();
         txn.begin();
-        
+
         // Create the test model
         createTestModel();
-        
+
         // Create the store and get the root node reference
         storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
-        
+
         // Create the node used for copying
         ChildAssociationRef childAssocRef = nodeService.createNode(
                 rootNodeRef,
@@ -226,29 +218,29 @@ public class CopyServiceImplTest extends TestCase
                 TEST_TYPE_QNAME,
                 createTypePropertyBag());
         sourceNodeRef = childAssocRef.getChildRef();
-        
+
         // Create another bag of properties
         Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>();
         aspectProperties.put(PROP3_QNAME_MANDATORY, TEST_VALUE_1);
         aspectProperties.put(PROP4_QNAME_OPTIONAL, TEST_VALUE_2);
-        
+
         // Apply the test aspect
         nodeService.addAspect(
-                sourceNodeRef, 
-                TEST_ASPECT_QNAME, 
+                sourceNodeRef,
+                TEST_ASPECT_QNAME,
                 aspectProperties);
-        
+
         nodeService.addAspect(sourceNodeRef, ContentModel.ASPECT_TITLED, null);
-        
+
         // Add a child
-        ChildAssociationRef temp3 =nodeService.createNode(
-                sourceNodeRef, 
-                TEST_CHILD_ASSOC_TYPE_QNAME, 
-                TEST_CHILD_ASSOC_QNAME, 
-                TEST_TYPE_QNAME, 
+        ChildAssociationRef temp3 = nodeService.createNode(
+                sourceNodeRef,
+                TEST_CHILD_ASSOC_TYPE_QNAME,
+                TEST_CHILD_ASSOC_QNAME,
+                TEST_TYPE_QNAME,
                 createTypePropertyBag());
         childNodeRef = temp3.getChildRef();
-        
+
         // Add a child that is primary
         ChildAssociationRef temp2 = nodeService.createNode(
                 rootNodeRef,
@@ -256,14 +248,14 @@ public class CopyServiceImplTest extends TestCase
                 QName.createQName("{test}testNonPrimaryChild"),
                 TEST_TYPE_QNAME,
                 createTypePropertyBag());
-        
+
         nonPrimaryChildNodeRef = temp2.getChildRef();
         nodeService.addChild(
                 sourceNodeRef,
                 nonPrimaryChildNodeRef,
                 TEST_CHILD_ASSOC_TYPE_QNAME,
                 TEST_CHILD_ASSOC_QNAME2);
-        
+
         // Add a target assoc
         ChildAssociationRef temp = nodeService.createNode(
                 rootNodeRef,
@@ -273,11 +265,11 @@ public class CopyServiceImplTest extends TestCase
                 createTypePropertyBag());
         targetNodeRef = temp.getChildRef();
         nodeService.createAssociation(sourceNodeRef, targetNodeRef, TEST_ASSOC_TYPE_QNAME);
-        
+
         // Create a node we can use as the destination in a copy
         Map<QName, Serializable> destinationProps = new HashMap<QName, Serializable>();
-        destinationProps.put(PROP1_QNAME_MANDATORY, TEST_VALUE_1);            
-        destinationProps.put(PROP5_QNAME_MANDATORY, TEST_VALUE_3); 
+        destinationProps.put(PROP1_QNAME_MANDATORY, TEST_VALUE_1);
+        destinationProps.put(PROP5_QNAME_MANDATORY, TEST_VALUE_3);
         destinationProps.put(ContentModel.PROP_CONTENT, CONTENT_DATA_TEXT);
         ChildAssociationRef temp5 = nodeService.createNode(
                 rootNodeRef,
@@ -286,45 +278,50 @@ public class CopyServiceImplTest extends TestCase
                 TEST_TYPE_QNAME,
                 destinationProps);
         destinationNodeRef = temp5.getChildRef();
-        
+
         // Create two users, for use as part of
-        //  the permission related tests
+        // the permission related tests
         authenticationService.createAuthentication(USER_1, "PWD".toCharArray());
         authenticationService.createAuthentication(USER_2, "PWD".toCharArray());
-        
+
         PropertyMap personProperties = new PropertyMap();
         personProperties.put(ContentModel.PROP_USERNAME, USER_1);
         personProperties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME, "title" + USER_1);
         personProperties.put(ContentModel.PROP_FIRSTNAME, "firstName");
         personProperties.put(ContentModel.PROP_LASTNAME, "lastName");
-        personProperties.put(ContentModel.PROP_EMAIL, USER_1+"@example.com");
+        personProperties.put(ContentModel.PROP_EMAIL, USER_1 + "@example.com");
         personProperties.put(ContentModel.PROP_JOBTITLE, "jobTitle");
         personService.createPerson(personProperties);
-        
+
         personProperties = new PropertyMap();
         personProperties.put(ContentModel.PROP_USERNAME, USER_2);
         personProperties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME, "title" + USER_2);
         personProperties.put(ContentModel.PROP_FIRSTNAME, "firstName");
         personProperties.put(ContentModel.PROP_LASTNAME, "lastName");
-        personProperties.put(ContentModel.PROP_EMAIL, USER_2+"@example.com");
+        personProperties.put(ContentModel.PROP_EMAIL, USER_2 + "@example.com");
         personProperties.put(ContentModel.PROP_JOBTITLE, "jobTitle");
         personService.createPerson(personProperties);
     }
-    
+
     @Override
     protected void tearDown() throws Exception
     {
         if (txn != null)
         {
-            try { txn.rollback(); } catch (Throwable e) {}
+            try
+            {
+                txn.rollback();
+            }
+            catch (Throwable e)
+            {}
         }
         authenticationComponent.clearCurrentSecurityContext();
     }
-    
+
     /**
      * Helper method that creates a bag of properties for the test type
      * 
-     * @return  bag of properties
+     * @return bag of properties
      */
     private Map<QName, Serializable> createTypePropertyBag()
     {
@@ -336,7 +333,7 @@ public class CopyServiceImplTest extends TestCase
         result.put(ContentModel.PROP_CONTENT, CONTENT_DATA_TEXT);
         return result;
     }
-    
+
     /**
      * Creates the test model used by the tests
      */
@@ -350,42 +347,42 @@ public class CopyServiceImplTest extends TestCase
 
         M2Type testType = model.createType("test:" + TEST_TYPE_QNAME.getLocalName());
         testType.setParentName("cm:" + ContentModel.TYPE_CONTENT.getLocalName());
-        
+
         M2Property prop1 = testType.createProperty("test:" + PROP1_QNAME_MANDATORY.getLocalName());
         prop1.setMandatory(true);
         prop1.setType("d:" + DataTypeDefinition.TEXT.getLocalName());
         prop1.setMultiValued(false);
-        
+
         M2Property prop2 = testType.createProperty("test:" + PROP2_QNAME_OPTIONAL.getLocalName());
         prop2.setMandatory(false);
         prop2.setType("d:" + DataTypeDefinition.TEXT.getLocalName());
         prop2.setMandatory(false);
-        
+
         M2Property propNodeRef = testType.createProperty("test:" + PROP_QNAME_MY_NODE_REF.getLocalName());
         propNodeRef.setMandatory(false);
         propNodeRef.setType("d:" + DataTypeDefinition.NODE_REF.getLocalName());
         propNodeRef.setMandatory(false);
-        
+
         M2Property propAnyNodeRef = testType.createProperty("test:" + PROP_QNAME_MY_ANY.getLocalName());
         propAnyNodeRef.setMandatory(false);
         propAnyNodeRef.setType("d:" + DataTypeDefinition.ANY.getLocalName());
         propAnyNodeRef.setMandatory(false);
-        
+
         M2ChildAssociation childAssoc = testType.createChildAssociation("test:" + TEST_CHILD_ASSOC_TYPE_QNAME.getLocalName());
         childAssoc.setTargetClassName("sys:base");
         childAssoc.setTargetMandatory(false);
-        
+
         M2Association assoc = testType.createAssociation("test:" + TEST_ASSOC_TYPE_QNAME.getLocalName());
         assoc.setTargetClassName("sys:base");
         assoc.setTargetMandatory(false);
-        
+
         M2Aspect testAspect = model.createAspect("test:" + TEST_ASPECT_QNAME.getLocalName());
-        
+
         M2Property prop3 = testAspect.createProperty("test:" + PROP3_QNAME_MANDATORY.getLocalName());
         prop3.setMandatory(true);
         prop3.setType("d:" + DataTypeDefinition.TEXT.getLocalName());
         prop3.setMultiValued(false);
-        
+
         M2Property prop4 = testAspect.createProperty("test:" + PROP4_QNAME_OPTIONAL.getLocalName());
         prop4.setMandatory(false);
         prop4.setType("d:" + DataTypeDefinition.TEXT.getLocalName());
@@ -397,27 +394,27 @@ public class CopyServiceImplTest extends TestCase
         prop5.setMandatory(true);
 
         testType.addMandatoryAspect("test:" + TEST_MANDATORY_ASPECT_QNAME.getLocalName());
-        
+
         dictionaryDAO.putModel(model);
     }
-    
+
     public void testCopyToNewNodeWithPermissions()
     {
         permissionService.setPermission(sourceNodeRef, "Test", PermissionService.READ_PERMISSIONS, true);
         permissionService.setPermission(rootNodeRef, AuthenticationUtil.getGuestUserName(), PermissionService.READ, true);
         permissionService.setPermission(rootNodeRef, AuthenticationUtil.getGuestUserName(), PermissionService.CREATE_CHILDREN, true);
         assertEquals(3, permissionService.getAllSetPermissions(sourceNodeRef).size());
-        
+
         NodeRef copy = copyService.copy(
                 sourceNodeRef,
                 rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}aclCopyOne"));
-        
+
         assertEquals(3, permissionService.getAllSetPermissions(copy).size());
-       
+
         // Admin
-        
+
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
 
         copy = copyService.copy(
@@ -440,7 +437,7 @@ public class CopyServiceImplTest extends TestCase
         assertEquals(2, permissionService.getAllSetPermissions(copy).size());
 
         // guest with read permissions - write from ownership
-        
+
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         permissionService.setPermission(sourceNodeRef, AuthenticationUtil.getGuestUserName(), PermissionService.READ_PERMISSIONS, true);
         authenticationComponent.setCurrentUser(AuthenticationUtil.getGuestUserName());
@@ -466,9 +463,9 @@ public class CopyServiceImplTest extends TestCase
                 QName.createQName("{test}aclCopyFour"));
 
         assertEquals(5, permissionService.getAllSetPermissions(copy).size());
-        
+
         // guest with write but not read
-                      
+
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         permissionService.setPermission(sourceNodeRef, AuthenticationUtil.getGuestUserName(), PermissionService.READ_PERMISSIONS, false);
         authenticationComponent.setCurrentUser(AuthenticationUtil.getGuestUserName());
@@ -493,31 +490,30 @@ public class CopyServiceImplTest extends TestCase
 
         assertEquals(3, permissionService.getAllSetPermissions(copy).size());
 
-        
     }
-    
+
     /**
-     * Test copy new node within store     
+     * Test copy new node within store
      */
     public void testCopyToNewNode()
     {
         PagingRequest pageRequest = new PagingRequest(10);
         PagingResults<CopyInfo> copies = null;
-        
+
         // Check that the node has no copies
         copies = copyService.getCopies(sourceNodeRef, pageRequest);
         assertEquals("Incorrect number of copies", 0, copies.getPage().size());
-        
+
         // Copy to new node without copying children
         NodeRef copy = copyService.copy(
                 sourceNodeRef,
                 rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
-                QName.createQName("{test}copyAssoc"));        
-        checkCopiedNode(sourceNodeRef, copy, true, true, false);        
+                QName.createQName("{test}copyAssoc"));
+        checkCopiedNode(sourceNodeRef, copy, true, true, false);
         copies = copyService.getCopies(sourceNodeRef, pageRequest);
         assertEquals("Incorrect number of copies", 1, copies.getPage().size());
-        
+
         // Copy to new node, copying children
         NodeRef copy2 = copyService.copy(
                 sourceNodeRef,
@@ -528,7 +524,7 @@ public class CopyServiceImplTest extends TestCase
         checkCopiedNode(sourceNodeRef, copy2, true, true, true);
         copies = copyService.getCopies(sourceNodeRef, pageRequest);
         assertEquals("Incorrect number of copies", 2, copies.getPage().size());
-        
+
         // Check that a copy of a copy works correctly
         NodeRef copyOfCopy = copyService.copy(
                 copy,
@@ -536,13 +532,13 @@ public class CopyServiceImplTest extends TestCase
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}copyOfCopy"));
         checkCopiedNode(copy, copyOfCopy, true, true, false);
-        
+
         // TODO check copying from a versioned copy
         // TODO check copying from a lockable copy
-        
-        // Check copying from a node with content    
+
+        // Check copying from a node with content
         ContentWriter contentWriter = contentService.getWriter(sourceNodeRef, ContentModel.PROP_CONTENT, true);
-        contentWriter.putContent(SOME_CONTENT);        
+        contentWriter.putContent(SOME_CONTENT);
         NodeRef copyWithContent = copyService.copy(
                 sourceNodeRef,
                 rootNodeRef,
@@ -552,13 +548,13 @@ public class CopyServiceImplTest extends TestCase
         ContentReader contentReader = contentService.getReader(copyWithContent, ContentModel.PROP_CONTENT);
         assertNotNull(contentReader);
         assertEquals(SOME_CONTENT, contentReader.getContentString());
-        
+
         // TODO check copying to a different store
-        
-        //System.out.println(
-        //        NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
+
+        // System.out.println(
+        // NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
     }
-    
+
     public void testCopiedFromAspect()
     {
         IntegrityChecker integrityChecker = (IntegrityChecker) ctx.getBean("integrityChecker");
@@ -575,7 +571,7 @@ public class CopyServiceImplTest extends TestCase
         PagingRequest pageRequest = new PagingRequest(10);
         pageRequest.setRequestTotalCountMax(200);
         PagingResults<CopyInfo> copies = null;
-        
+
         NodeRef firstCopy = null;
         NodeRef secondCopy = null;
 
@@ -597,12 +593,12 @@ public class CopyServiceImplTest extends TestCase
             copies = copyService.getCopies(nodeRef, pageRequest);
             assertEquals("Total count not correct", new Pair<Integer, Integer>(i, i), copies.getTotalResultCount());
             assertEquals("Incorrect number of copies", (i > 10 ? 10 : i), copies.getPage().size());
-            
+
             // Since the results are paged, make sure that we have the correct results while we only have a page
             boolean found = (i > 10) ? true : false;
             for (CopyInfo copy : copies.getPage())
             {
-                if (found)          // Might not be checking if we are over a page
+                if (found) // Might not be checking if we are over a page
                 {
                     break;
                 }
@@ -612,15 +608,15 @@ public class CopyServiceImplTest extends TestCase
                 }
             }
             assertTrue("Did not find the copy in the list of copies.", found);
-            
+
             // Run integrity checks to ensure that commit has a chance
             integrityChecker.checkIntegrity();
-            
+
             // Now query for copies in current parent location
             copies = copyService.getCopies(nodeRef, rootNodeRef, pageRequest);
             assertEquals("Total count not correct", new Pair<Integer, Integer>(i, i), copies.getTotalResultCount());
             assertEquals("Incorrect number of copies", (i > 10 ? 10 : i), copies.getPage().size());
-            
+
             // Check that the original node can be retrieved
             NodeRef originalCheck = copyService.getOriginal(copyNodeRef);
             assertEquals("Original is not as expected. ", nodeRef, originalCheck);
@@ -629,12 +625,12 @@ public class CopyServiceImplTest extends TestCase
             copies = copyService.getCopies(nodeRef, rootNodeRef, pageRequest);
             assertEquals("Total count not correct", new Pair<Integer, Integer>(i, i), copies.getTotalResultCount());
             assertEquals("Incorrect number of copies", (i > 10 ? 10 : i), copies.getPage().size());
-            
+
             // And query against some other parent node
-            copies = copyService.getCopies(nodeRef, sourceNodeRef, pageRequest);        // Some arbitrary parent
+            copies = copyService.getCopies(nodeRef, sourceNodeRef, pageRequest); // Some arbitrary parent
             assertEquals("Expected to find no copies", 0, copies.getPage().size());
         }
-        
+
         // Should be able to delete the original
         nodeService.deleteNode(nodeRef);
         // Run integrity checks to ensure that commit has a chance
@@ -644,11 +640,9 @@ public class CopyServiceImplTest extends TestCase
         assertNull("Original should not be present. ", originalCheck);
         assertFalse("Copy should not have cm:copiedfrom aspect. ", nodeService.hasAspect(firstCopy, ContentModel.ASPECT_COPIEDFROM));
     }
-    
+
     /**
-     * <a href="https://issues.alfresco.com/jira/browse/MNT-9580">
-     *      MNT-9580: Daisy chained cm:original associations are cascade-deleted when the first original is deleted
-     * </a>
+     * <a href="https://issues.alfresco.com/jira/browse/MNT-9580"> MNT-9580: Daisy chained cm:original associations are cascade-deleted when the first original is deleted </a>
      */
     public void testCopyOfCopyOfCopy()
     {
@@ -666,7 +660,7 @@ public class CopyServiceImplTest extends TestCase
         PagingRequest pageRequest = new PagingRequest(10);
         pageRequest.setRequestTotalCountMax(200);
         PagingResults<CopyInfo> copies = null;
-        
+
         NodeRef currentOriginal = nodeRef;
         NodeRef copyNodeRef = null;
 
@@ -676,7 +670,7 @@ public class CopyServiceImplTest extends TestCase
                     currentOriginal,
                     rootNodeRef,
                     ContentModel.ASSOC_CHILDREN,
-                    QName.createQName("{test}copyAssoc"+i));
+                    QName.createQName("{test}copyAssoc" + i));
             copies = copyService.getCopies(currentOriginal, pageRequest);
             assertEquals("Incorrect number of copies on iteration " + i, 1, copies.getPage().size());
 
@@ -685,10 +679,10 @@ public class CopyServiceImplTest extends TestCase
             assertEquals("Original is not as expected. ", currentOriginal, originalCheck);
             // Run integrity checks to ensure that commit has a chance
             integrityChecker.checkIntegrity();
-            
+
             currentOriginal = copyNodeRef;
         }
-        
+
         // Now, delete the nodes starting with the first original
         currentOriginal = nodeRef;
         copyNodeRef = null;
@@ -702,11 +696,11 @@ public class CopyServiceImplTest extends TestCase
             nodeService.deleteNode(currentOriginal);
             // Run integrity checks to ensure that commit has a chance
             integrityChecker.checkIntegrity();
-            
+
             currentOriginal = copyNodeRef;
         }
     }
-    
+
     /**
      * Test the behaviour of the aspect when copying types not derived from <b>cm:object</b>
      */
@@ -726,35 +720,35 @@ public class CopyServiceImplTest extends TestCase
                 rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}copyAssoc"));
-        
+
         assertFalse(
                 "cm:copiedfrom should not be present",
                 nodeService.hasAspect(copyNodeRef, ContentModel.ASPECT_COPIEDFROM));
     }
-    
+
     public void testCopyNodeWithRules()
     {
         // Create a new rule and add it to the source noderef
         Rule rule = new Rule();
         rule.setRuleType(RuleType.INBOUND);
         rule.setTitle("Rule name");
-        
+
         Map<String, Serializable> props = new HashMap<String, Serializable>(1);
         props.put(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_VERSIONABLE);
         Action action = actionService.createAction(AddFeaturesActionExecuter.NAME, props);
         rule.setAction(action);
-        
+
         ActionCondition actionCondition = actionService.createActionCondition(NoConditionEvaluator.NAME);
         action.addActionCondition(actionCondition);
-        
+
         ruleService.saveRule(sourceNodeRef, rule);
         assertNotNull(rule.getNodeRef());
         assertEquals(sourceNodeRef, ruleService.getOwningNodeRef(rule));
-        
-        //System.out.println(
-        //        NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
-        //System.out.println(" ------------------------------ ");
-        
+
+        // System.out.println(
+        // NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
+        // System.out.println(" ------------------------------ ");
+
         // Now copy the node that has rules associated with it
         NodeRef copy = copyService.copy(
                 sourceNodeRef,
@@ -762,27 +756,27 @@ public class CopyServiceImplTest extends TestCase
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}withRulesCopy"),
                 true);
-        
-        //System.out.println(
-         //          NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
-        
-        checkCopiedNode(sourceNodeRef, copy, true, true, true);   
-        
+
+        // System.out.println(
+        // NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
+
+        checkCopiedNode(sourceNodeRef, copy, true, true, true);
+
         assertTrue(nodeService.hasAspect(copy, RuleModel.ASPECT_RULES));
         assertTrue(ruleService.hasRules(copy));
         assertTrue(ruleService.rulesEnabled(copy));
-        
+
         List<Rule> copiedRules = ruleService.getRules(copy);
         assertEquals(1, copiedRules.size());
         Rule copiedRule = copiedRules.get(0);
-        
+
         assertNotNull(copiedRule.getNodeRef());
         assertFalse(copiedRule.getNodeRef().equals(rule.getNodeRef()));
         assertEquals(rule.getTitle(), copiedRule.getTitle());
         assertEquals(rule.getDescription(), copiedRule.getDescription());
         assertEquals(copy, ruleService.getOwningNodeRef(copiedRule));
         assertEquals(rule.getAction().getActionDefinitionName(), copiedRule.getAction().getActionDefinitionName());
-        
+
         // Now copy the node without copying the children and check that the rules have been copied
         NodeRef copy2 = copyService.copy(
                 sourceNodeRef,
@@ -790,16 +784,16 @@ public class CopyServiceImplTest extends TestCase
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}withRuleCopyNoChildren"),
                 false);
-        
-//      System.out.println(
-        //         NodeStoreInspector.dumpNodeStore(nodeService, storeRef));        
-        
+
+        // System.out.println(
+        // NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
+
         checkCopiedNode(sourceNodeRef, copy2, true, true, false);
-        
-        //assertTrue(configurableService.isConfigurable(copy2));
-        //assertNotNull(configurableService.getConfigurationFolder(copy2));
-        //assertFalse(configurableService.getConfigurationFolder(sourceNodeRef) == configurableService.getConfigurationFolder(copy2));
-        
+
+        // assertTrue(configurableService.isConfigurable(copy2));
+        // assertNotNull(configurableService.getConfigurationFolder(copy2));
+        // assertFalse(configurableService.getConfigurationFolder(sourceNodeRef) == configurableService.getConfigurationFolder(copy2));
+
         assertTrue(nodeService.hasAspect(copy2, RuleModel.ASPECT_RULES));
         assertTrue(ruleService.hasRules(copy2));
         assertTrue(ruleService.rulesEnabled(copy2));
@@ -810,26 +804,26 @@ public class CopyServiceImplTest extends TestCase
         assertEquals(rule.getTitle(), copiedRule2.getTitle());
         assertEquals(rule.getDescription(), copiedRule2.getDescription());
         assertEquals(ruleService.getOwningNodeRef(copiedRule2), copy2);
-        assertEquals(rule.getAction().getActionDefinitionName(), copiedRule2.getAction().getActionDefinitionName());                                
+        assertEquals(rule.getAction().getActionDefinitionName(), copiedRule2.getAction().getActionDefinitionName());
     }
-    
+
     public void testCopyToExistingNode()
     {
         // Copy nodes within the same store
         copyService.copy(sourceNodeRef, destinationNodeRef);
         checkCopiedNode(sourceNodeRef, destinationNodeRef, false, true, true);
-        
+
         // TODO check copying from a copy
         // TODO check copying from a versioned copy
         // TODO check copying from a lockable copy
         // TODO check copying from a node with content
-        
+
         // TODO check copying nodes between stores
-        
-        //System.out.println(
-        //        NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
+
+        // System.out.println(
+        // NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
     }
-    
+
     /**
      * Test a potentially recursive copy
      */
@@ -858,21 +852,21 @@ public class CopyServiceImplTest extends TestCase
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER,
                 props).getChildRef();
-        
+
         // Issue a potentialy recursive copy
         copyService.copy(nodeOne, nodeThree, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN, true);
-        
-        //System.out.println(
-        //         NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
+
+        // System.out.println(
+        // NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
     }
-    
+
     /**
      * Tests copying a folder that contains both a node and a copy of that node.
      */
     public void testALF11964_part1()
     {
         IntegrityChecker integrityChecker = (IntegrityChecker) ctx.getBean("integrityChecker");
-        
+
         PropertyMap props = new PropertyMap();
         // Need to create a potentially recursive node structure
         props.put(ContentModel.PROP_NODE_UUID, "nodeOne");
@@ -896,21 +890,21 @@ public class CopyServiceImplTest extends TestCase
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER,
                 props).getChildRef();
-        
+
         copyService.copy(nodeTwo, nodeOne, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN, true);
 
         copyService.copy(nodeOne, nodeThree, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN, true);
-        
+
         integrityChecker.checkIntegrity();
     }
-    
+
     /**
-     * Tests copying a folder that contains both a checked-out node and its working copy. 
+     * Tests copying a folder that contains both a checked-out node and its working copy.
      */
     public void testALF11964_part2()
     {
         IntegrityChecker integrityChecker = (IntegrityChecker) ctx.getBean("integrityChecker");
-        
+
         PropertyMap props = new PropertyMap();
         // Need to create a potentially recursive node structure
         props.put(ContentModel.PROP_NODE_UUID, "nodeOne");
@@ -934,18 +928,18 @@ public class CopyServiceImplTest extends TestCase
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER,
                 props).getChildRef();
-        
+
         cociService.checkout(nodeTwo);
 
         copyService.copy(nodeOne, nodeThree, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN, true);
-        
+
         integrityChecker.checkIntegrity();
     }
-    
+
     public void testCopyResidualProperties() throws Exception
     {
         QName nodeOneAssocName = QName.createQName("{test}nodeOne");
-        
+
         NodeRef nodeOne = nodeService.createNode(
                 rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
@@ -961,13 +955,13 @@ public class CopyServiceImplTest extends TestCase
         // Check the node ref property
         Serializable propNodeRef = nodeService.getProperty(nodeOneCopy, PROP_QNAME_RESIDUAL_NODE_REF);
         assertEquals("Residual d:noderef not copied", nodeOne, propNodeRef);
-        
+
         // Check the any property
         Serializable propAny = nodeService.getProperty(nodeOneCopy, PROP_QNAME_RESIDUAL_ANY);
         assertEquals("Residual d:any not copied", nodeOne, propAny);
-        
+
     }
-    
+
     /**
      * Test that realtive links between nodes are restored once the copy is completed
      */
@@ -977,7 +971,7 @@ public class CopyServiceImplTest extends TestCase
         QName nodeTwoAssocName = QName.createQName("{test}nodeTwo");
         QName nodeThreeAssocName = QName.createQName("{test}nodeThree");
         QName nodeFourAssocName = QName.createQName("{test}nodeFour");
-        
+
         NodeRef nodeNotCopied = nodeService.createNode(
                 rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
@@ -1006,7 +1000,7 @@ public class CopyServiceImplTest extends TestCase
         nodeService.addChild(nodeFour, nodeThree, TEST_CHILD_ASSOC_TYPE_QNAME, TEST_CHILD_ASSOC_QNAME);
         nodeService.createAssociation(nodeTwo, nodeThree, TEST_ASSOC_TYPE_QNAME);
         nodeService.createAssociation(nodeTwo, nodeNotCopied, TEST_ASSOC_TYPE_QNAME);
-        
+
         // Make node one actionable with a rule to copy nodes into node two
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);
         params.put(MoveActionExecuter.PARAM_DESTINATION_FOLDER, nodeTwo);
@@ -1018,16 +1012,16 @@ public class CopyServiceImplTest extends TestCase
         action.addActionCondition(condition);
         rule.setAction(action);
         ruleService.saveRule(nodeOne, rule);
-        
+
         // Do a deep copy
         NodeRef nodeOneCopy = copyService.copy(nodeOne, rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}copiedNodeOne"), true);
         NodeRef nodeTwoCopy = null;
         NodeRef nodeThreeCopy = null;
         NodeRef nodeFourCopy = null;
-        
-        //System.out.println(
-        //        NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
-        
+
+        // System.out.println(
+        // NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
+
         List<ChildAssociationRef> nodeOneCopyChildren = nodeService.getChildAssocs(nodeOneCopy);
         assertNotNull(nodeOneCopyChildren);
         assertEquals(3, nodeOneCopyChildren.size());
@@ -1036,8 +1030,8 @@ public class CopyServiceImplTest extends TestCase
             if (nodeOneCopyChild.getQName().equals(nodeTwoAssocName) == true)
             {
                 nodeTwoCopy = nodeOneCopyChild.getChildRef();
-                                
-                List<ChildAssociationRef>  nodeTwoCopyChildren = nodeService.getChildAssocs(nodeTwoCopy);
+
+                List<ChildAssociationRef> nodeTwoCopyChildren = nodeService.getChildAssocs(nodeTwoCopy);
                 assertNotNull(nodeTwoCopyChildren);
                 assertEquals(1, nodeTwoCopyChildren.size());
                 for (ChildAssociationRef nodeTwoCopyChild : nodeTwoCopyChildren)
@@ -1056,7 +1050,7 @@ public class CopyServiceImplTest extends TestCase
         assertNotNull(nodeTwoCopy);
         assertNotNull(nodeThreeCopy);
         assertNotNull(nodeFourCopy);
-        
+
         // Check the non primary child assoc
         List<ChildAssociationRef> children = nodeService.getChildAssocs(
                 nodeFourCopy,
@@ -1066,16 +1060,16 @@ public class CopyServiceImplTest extends TestCase
         assertEquals(1, children.size());
         ChildAssociationRef child = children.get(0);
         assertEquals(child.getChildRef(), nodeThree);
-        
+
         // Check the target assoc
         List<AssociationRef> assocs = nodeService.getTargetAssocs(nodeTwoCopy, TEST_ASSOC_TYPE_QNAME);
         assertNotNull(assocs);
         assertEquals(2, assocs.size());
         AssociationRef assoc0 = assocs.get(0);
-        assertTrue(assoc0.getTargetRef().equals(nodeThreeCopy) || assoc0.getTargetRef().equals(nodeNotCopied));        
+        assertTrue(assoc0.getTargetRef().equals(nodeThreeCopy) || assoc0.getTargetRef().equals(nodeNotCopied));
         AssociationRef assoc1 = assocs.get(1);
-        assertTrue(assoc1.getTargetRef().equals(nodeThreeCopy) || assoc1.getTargetRef().equals(nodeNotCopied));        
-        
+        assertTrue(assoc1.getTargetRef().equals(nodeThreeCopy) || assoc1.getTargetRef().equals(nodeNotCopied));
+
         // Check that the rule parameter values have been made relative
         List<Rule> rules = ruleService.getRules(nodeOneCopy);
         assertNotNull(rules);
@@ -1084,11 +1078,11 @@ public class CopyServiceImplTest extends TestCase
         assertNotNull(copiedRule);
         Action ruleAction = copiedRule.getAction();
         assertNotNull(ruleAction);
-        NodeRef value = (NodeRef)ruleAction.getParameterValue(MoveActionExecuter.PARAM_DESTINATION_FOLDER);
+        NodeRef value = (NodeRef) ruleAction.getParameterValue(MoveActionExecuter.PARAM_DESTINATION_FOLDER);
         assertNotNull(value);
         assertEquals(nodeTwoCopy, value);
     }
-     
+
     public void testCopyAndRename()
     {
         // Check a normal copy with no dup restrictions
@@ -1097,53 +1091,52 @@ public class CopyServiceImplTest extends TestCase
                 rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}copyAssoc"),
-                false);        
-        checkCopiedNode(sourceNodeRef, copy, true, true, false);         
+                false);
+        checkCopiedNode(sourceNodeRef, copy, true, true, false);
         assertTrue(TEST_NAME.equals(nodeService.getProperty(copy, ContentModel.PROP_NAME)));
-        
-        // Create a folder and content node        
+
+        // Create a folder and content node
         Map<QName, Serializable> propsFolder = new HashMap<QName, Serializable>(1);
         propsFolder.put(ContentModel.PROP_NAME, "tempFolder");
-        NodeRef folderNode = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}tempFolder"), ContentModel.TYPE_FOLDER, propsFolder).getChildRef();        
+        NodeRef folderNode = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}tempFolder"), ContentModel.TYPE_FOLDER, propsFolder).getChildRef();
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
         props.put(ContentModel.PROP_NAME, TEST_NAME);
         NodeRef contentNode = nodeService.createNode(folderNode, ContentModel.ASSOC_CONTAINS, QName.createQName("{test}renametest"), ContentModel.TYPE_CONTENT, props).getChildRef();
-        
+
         // Now copy the content node with the duplicate name restriction
         NodeRef contentCopy = copyService.copy(contentNode, folderNode, ContentModel.ASSOC_CONTAINS, QName.createQName("{test}bobbins"), false);
         assertFalse(TEST_NAME.equals(nodeService.getProperty(contentCopy, ContentModel.PROP_NAME)));
     }
-    
+
     /**
      * https://issues.alfresco.com/jira/browse/ETWOONE-224
      */
     public void testETWOONE_244()
     {
-        // Create a folder and content node        
+        // Create a folder and content node
         Map<QName, Serializable> propsFolder = new HashMap<QName, Serializable>(1);
         propsFolder.put(ContentModel.PROP_NAME, "tempFolder");
-        NodeRef folderNode = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "tempFolder"), ContentModel.TYPE_FOLDER, propsFolder).getChildRef();        
+        NodeRef folderNode = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "tempFolder"), ContentModel.TYPE_FOLDER, propsFolder).getChildRef();
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
         props.put(ContentModel.PROP_NAME, "myDoc.txt");
-        NodeRef contentNode = nodeService.createNode(folderNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,  "myDoc.txt"), ContentModel.TYPE_CONTENT, props).getChildRef();
-        
+        NodeRef contentNode = nodeService.createNode(folderNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "myDoc.txt"), ContentModel.TYPE_CONTENT, props).getChildRef();
+
         NodeRef copy = copyService.copyAndRename(contentNode, folderNode, ContentModel.ASSOC_CONTAINS, null, false);
         assertEquals("Copy of myDoc.txt", nodeService.getProperty(copy, ContentModel.PROP_NAME));
         QName copyQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Copy of myDoc.txt");
         assertEquals(copyQName, nodeService.getPrimaryParent(copy).getQName());
-        
+
         copy = copyService.copyAndRename(contentNode, folderNode, ContentModel.ASSOC_CONTAINS, null, false);
         assertEquals("Copy of Copy of myDoc.txt", nodeService.getProperty(copy, ContentModel.PROP_NAME));
         copyQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Copy of Copy of myDoc.txt");
-        assertEquals(copyQName, nodeService.getPrimaryParent(copy).getQName());        
+        assertEquals(copyQName, nodeService.getPrimaryParent(copy).getQName());
 
         copy = copyService.copyAndRename(contentNode, folderNode, ContentModel.ASSOC_CONTAINS, null, false);
         assertEquals("Copy of Copy of Copy of myDoc.txt", nodeService.getProperty(copy, ContentModel.PROP_NAME));
         copyQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Copy of Copy of Copy of myDoc.txt");
         assertEquals(copyQName, nodeService.getPrimaryParent(copy).getQName());
     }
-    
-    
+
     /**
      * https://issues.alfresco.com/jira/browse/ALF-3119
      * 
@@ -1151,14 +1144,14 @@ public class CopyServiceImplTest extends TestCase
      */
     public void testCopyMLText()
     {
-        // Create a folder and content node        
+        // Create a folder and content node
         Map<QName, Serializable> propsFolder = new HashMap<QName, Serializable>(1);
         propsFolder.put(ContentModel.PROP_NAME, "tempFolder");
-        NodeRef folderNode = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "tempFolder"), ContentModel.TYPE_FOLDER, propsFolder).getChildRef();        
-        
+        NodeRef folderNode = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "tempFolder"), ContentModel.TYPE_FOLDER, propsFolder).getChildRef();
+
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
         props.put(ContentModel.PROP_NAME, "myDoc.txt");
-        
+
         String FRENCH_DESCRIPTION = "french description";
         String GERMAN_DESCRIPTION = "german description";
         String ITALY_DESCRIPTION = "italy description";
@@ -1169,9 +1162,9 @@ public class CopyServiceImplTest extends TestCase
         description.addValue(Locale.GERMAN, GERMAN_DESCRIPTION);
         description.addValue(Locale.ITALY, ITALY_DESCRIPTION);
         props.put(ContentModel.PROP_DESCRIPTION, description);
-        
-        NodeRef contentNode = nodeService.createNode(folderNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,  "myDoc.txt"), ContentModel.TYPE_CONTENT, props).getChildRef();
-        
+
+        NodeRef contentNode = nodeService.createNode(folderNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "myDoc.txt"), ContentModel.TYPE_CONTENT, props).getChildRef();
+
         NodeRef copy = copyService.copyAndRename(contentNode, folderNode, ContentModel.ASSOC_CONTAINS, null, false);
         assertEquals("Copy of myDoc.txt", nodeService.getProperty(copy, ContentModel.PROP_NAME));
         QName copyQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Copy of myDoc.txt");
@@ -1179,157 +1172,158 @@ public class CopyServiceImplTest extends TestCase
 
         // Test uses DB Node Service.
         Serializable desc = nodeService.getProperty(copy, ContentModel.PROP_DESCRIPTION);
-        if(desc instanceof MLText)
+        if (desc instanceof MLText)
         {
             // Using a node service without a MLProperty interceptor
-            MLText value = (MLText)desc;
+            MLText value = (MLText) desc;
             assertEquals("French description is wrong", FRENCH_DESCRIPTION, value.get(Locale.FRANCE));
-            assertEquals("German description is wrong", GERMAN_DESCRIPTION, value.get(Locale.GERMAN));               
+            assertEquals("German description is wrong", GERMAN_DESCRIPTION, value.get(Locale.GERMAN));
         }
         else
-        {    
-          I18NUtil.setLocale(Locale.FRANCE);
-          assertEquals("French description is wrong", FRENCH_DESCRIPTION, nodeService.getProperty(copy, ContentModel.PROP_DESCRIPTION));
-       
-          I18NUtil.setLocale(Locale.GERMAN);
-          assertEquals("German description is wrong", GERMAN_DESCRIPTION, nodeService.getProperty(copy, ContentModel.PROP_DESCRIPTION));   
+        {
+            I18NUtil.setLocale(Locale.FRANCE);
+            assertEquals("French description is wrong", FRENCH_DESCRIPTION, nodeService.getProperty(copy, ContentModel.PROP_DESCRIPTION));
+
+            I18NUtil.setLocale(Locale.GERMAN);
+            assertEquals("German description is wrong", GERMAN_DESCRIPTION, nodeService.getProperty(copy, ContentModel.PROP_DESCRIPTION));
         }
-   }
+    }
 
-   /**
-    * Creates some content as one user, then as another checks:
-    *  * If you don't have read permissions to the source you can't copy
-    *  * If you don't have write permissions to the target you can't copy
-    *  * If you do, you can copy just fine
-    */
-   public void testCopyUserPermissions() throws Exception
-   {
-       String nodeTitle = "Test Title String";
-       
-       // Create a node under the source
-       permissionService.setPermission(sourceNodeRef, USER_1, PermissionService.EDITOR, true);
-       permissionService.setPermission(targetNodeRef, USER_1, PermissionService.CONTRIBUTOR, true);
-       permissionService.setPermission(targetNodeRef, USER_2, PermissionService.CONTRIBUTOR, true);
-       
-       AuthenticationUtil.setFullyAuthenticatedUser(USER_1);
-       NodeRef toCopy = nodeService.createNode(
-               sourceNodeRef, ContentModel.ASSOC_CONTAINS, 
-               QName.createQName("content"), ContentModel.TYPE_CONTENT).getChildRef();
-       nodeService.setProperty(toCopy, ContentModel.PROP_TITLE, nodeTitle);
-       
-       // Check we can't copy it
-       AuthenticationUtil.setFullyAuthenticatedUser(USER_2);
-       try {
-           copyService.copy(toCopy, targetNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("NewCopy"));
-       } catch(AccessDeniedException e) {}
-       
-       // Allow the read, but the destination won't accept it
-       authenticationComponent.setSystemUserAsCurrentUser();
-       permissionService.setPermission(sourceNodeRef, USER_2, PermissionService.CONTRIBUTOR, true);
-       permissionService.setPermission(targetNodeRef, USER_2, PermissionService.CONTRIBUTOR, false);
-       AuthenticationUtil.setFullyAuthenticatedUser(USER_2);
-       
-       try {
-           copyService.copy(toCopy, targetNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("NewCopy"));
-       } catch(AccessDeniedException e) {}
-       
-       
-       // Now allow on the destination, should go through
-       authenticationComponent.setSystemUserAsCurrentUser();
-       permissionService.setPermission(targetNodeRef, USER_2, PermissionService.CONTRIBUTOR, true);
-       AuthenticationUtil.setFullyAuthenticatedUser(USER_2);
-       
-       NodeRef copied = copyService.copy(toCopy, targetNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("NewCopy"));
-       
-       // Check it got there
-       assertEquals(true, nodeService.exists(copied));
-       assertEquals(
-               nodeTitle, 
-               ((MLText)nodeService.getProperty(copied, ContentModel.PROP_TITLE)).getDefaultValue()
-       );
-       
-       
-       // Check the owners
-       // (The new node should be owned by the person who did the copy)
-       assertEquals(USER_1, nodeService.getProperty(toCopy, ContentModel.PROP_CREATOR));
-       assertEquals(USER_1, nodeService.getProperty(toCopy, ContentModel.PROP_MODIFIER));
-       assertEquals(USER_2, nodeService.getProperty(copied, ContentModel.PROP_CREATOR));
-       assertEquals(USER_2, nodeService.getProperty(copied, ContentModel.PROP_MODIFIER));
-       
-       
-       // Check the permissions on the source and target
-       
-       // On the source, 1 is editor, 2 is contributor
-       Set<AccessPermission> perms = permissionService.getAllSetPermissions(toCopy);
-       boolean done1 = false;
-       boolean done2 = false;
-       for(AccessPermission perm : perms)
-       {
-           if(perm.getAuthority().equals(USER_1))
-           {
-               done1 = true;
-               assertEquals(PermissionService.EDITOR, perm.getPermission());
-           }
-           if(perm.getAuthority().equals(USER_2))
-           {
-               done2 = true;
-               assertEquals(PermissionService.CONTRIBUTOR, perm.getPermission());
-           }
-       }
-       assertEquals(true, done1);
-       assertEquals(true, done2);
-       
-       // On the target, will have inherited from the folder, so both are contributors
-       perms = permissionService.getAllSetPermissions(copied);
-       done1 = false;
-       done2 = false;
-       for(AccessPermission perm : perms)
-       {
-           if(perm.getAuthority().equals(USER_1))
-           {
-               done1 = true;
-               assertEquals(PermissionService.CONTRIBUTOR, perm.getPermission());
-           }
-           if(perm.getAuthority().equals(USER_2))
-           {
-               done2 = true;
-               assertEquals(PermissionService.CONTRIBUTOR, perm.getPermission());
-           }
-       }       
-       assertEquals(true, done1);
-       assertEquals(true, done2);
+    /**
+     * Creates some content as one user, then as another checks: * If you don't have read permissions to the source you can't copy * If you don't have write permissions to the target you can't copy * If you do, you can copy just fine
+     */
+    public void testCopyUserPermissions() throws Exception
+    {
+        String nodeTitle = "Test Title String";
 
-       
-       // User 2 should be able to edit the new node
-       // User 1 should be able to edit the old node
-       // They shouldn't be allowed to edit each others
-       String titleToFailToSet = "Set Title";
-       String description = "Set Description";
-       
-       AuthenticationUtil.setFullyAuthenticatedUser(USER_1);
-       try {
-           publicNodeService.setProperty(copied, ContentModel.PROP_TITLE, titleToFailToSet);
-           fail("User 1 should no longer have write permissions");
-       } catch(AccessDeniedException e) {}
-       
-       AuthenticationUtil.setFullyAuthenticatedUser(USER_2);
-       publicNodeService.setProperty(copied, ContentModel.PROP_DESCRIPTION, description);
-       
-       assertEquals(
-               nodeTitle, 
-               ((MLText)nodeService.getProperty(copied, ContentModel.PROP_TITLE)).getDefaultValue()
-       );
-       assertEquals(
-               description, 
-               ((MLText)nodeService.getProperty(copied, ContentModel.PROP_DESCRIPTION)).getDefaultValue()
-       );
-   }
-   
+        // Create a node under the source
+        permissionService.setPermission(sourceNodeRef, USER_1, PermissionService.EDITOR, true);
+        permissionService.setPermission(targetNodeRef, USER_1, PermissionService.CONTRIBUTOR, true);
+        permissionService.setPermission(targetNodeRef, USER_2, PermissionService.CONTRIBUTOR, true);
+
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_1);
+        NodeRef toCopy = nodeService.createNode(
+                sourceNodeRef, ContentModel.ASSOC_CONTAINS,
+                QName.createQName("content"), ContentModel.TYPE_CONTENT).getChildRef();
+        nodeService.setProperty(toCopy, ContentModel.PROP_TITLE, nodeTitle);
+
+        // Check we can't copy it
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_2);
+        try
+        {
+            copyService.copy(toCopy, targetNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("NewCopy"));
+        }
+        catch (AccessDeniedException e)
+        {}
+
+        // Allow the read, but the destination won't accept it
+        authenticationComponent.setSystemUserAsCurrentUser();
+        permissionService.setPermission(sourceNodeRef, USER_2, PermissionService.CONTRIBUTOR, true);
+        permissionService.setPermission(targetNodeRef, USER_2, PermissionService.CONTRIBUTOR, false);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_2);
+
+        try
+        {
+            copyService.copy(toCopy, targetNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("NewCopy"));
+        }
+        catch (AccessDeniedException e)
+        {}
+
+        // Now allow on the destination, should go through
+        authenticationComponent.setSystemUserAsCurrentUser();
+        permissionService.setPermission(targetNodeRef, USER_2, PermissionService.CONTRIBUTOR, true);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_2);
+
+        NodeRef copied = copyService.copy(toCopy, targetNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("NewCopy"));
+
+        // Check it got there
+        assertEquals(true, nodeService.exists(copied));
+        assertEquals(
+                nodeTitle,
+                ((MLText) nodeService.getProperty(copied, ContentModel.PROP_TITLE)).getDefaultValue());
+
+        // Check the owners
+        // (The new node should be owned by the person who did the copy)
+        assertEquals(USER_1, nodeService.getProperty(toCopy, ContentModel.PROP_CREATOR));
+        assertEquals(USER_1, nodeService.getProperty(toCopy, ContentModel.PROP_MODIFIER));
+        assertEquals(USER_2, nodeService.getProperty(copied, ContentModel.PROP_CREATOR));
+        assertEquals(USER_2, nodeService.getProperty(copied, ContentModel.PROP_MODIFIER));
+
+        // Check the permissions on the source and target
+
+        // On the source, 1 is editor, 2 is contributor
+        Set<AccessPermission> perms = permissionService.getAllSetPermissions(toCopy);
+        boolean done1 = false;
+        boolean done2 = false;
+        for (AccessPermission perm : perms)
+        {
+            if (perm.getAuthority().equals(USER_1))
+            {
+                done1 = true;
+                assertEquals(PermissionService.EDITOR, perm.getPermission());
+            }
+            if (perm.getAuthority().equals(USER_2))
+            {
+                done2 = true;
+                assertEquals(PermissionService.CONTRIBUTOR, perm.getPermission());
+            }
+        }
+        assertEquals(true, done1);
+        assertEquals(true, done2);
+
+        // On the target, will have inherited from the folder, so both are contributors
+        perms = permissionService.getAllSetPermissions(copied);
+        done1 = false;
+        done2 = false;
+        for (AccessPermission perm : perms)
+        {
+            if (perm.getAuthority().equals(USER_1))
+            {
+                done1 = true;
+                assertEquals(PermissionService.CONTRIBUTOR, perm.getPermission());
+            }
+            if (perm.getAuthority().equals(USER_2))
+            {
+                done2 = true;
+                assertEquals(PermissionService.CONTRIBUTOR, perm.getPermission());
+            }
+        }
+        assertEquals(true, done1);
+        assertEquals(true, done2);
+
+        // User 2 should be able to edit the new node
+        // User 1 should be able to edit the old node
+        // They shouldn't be allowed to edit each others
+        String titleToFailToSet = "Set Title";
+        String description = "Set Description";
+
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_1);
+        try
+        {
+            publicNodeService.setProperty(copied, ContentModel.PROP_TITLE, titleToFailToSet);
+            fail("User 1 should no longer have write permissions");
+        }
+        catch (AccessDeniedException e)
+        {}
+
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_2);
+        publicNodeService.setProperty(copied, ContentModel.PROP_DESCRIPTION, description);
+
+        assertEquals(
+                nodeTitle,
+                ((MLText) nodeService.getProperty(copied, ContentModel.PROP_TITLE)).getDefaultValue());
+        assertEquals(
+                description,
+                ((MLText) nodeService.getProperty(copied, ContentModel.PROP_DESCRIPTION)).getDefaultValue());
+    }
+
     /**
      * Check that the copied node contains the state we are expecting
      * 
-     * @param sourceNodeRef       the source node reference
-     * @param destinationNodeRef  the destination node reference
+     * @param sourceNodeRef
+     *            the source node reference
+     * @param destinationNodeRef
+     *            the destination node reference
      */
     private void checkCopiedNode(
             NodeRef sourceNodeRef, NodeRef destinationNodeRef,
@@ -1353,26 +1347,26 @@ public class CopyServiceImplTest extends TestCase
                 assertEquals(sourceNodeRef.getId(), destinationNodeRef.getId());
             }
         }
-        
+
         boolean hasTestAspect = nodeService.hasAspect(destinationNodeRef, TEST_ASPECT_QNAME);
         assertTrue(hasTestAspect);
-        
+
         // Check that all the correct properties have been copied
         Map<QName, Serializable> destinationProperties = nodeService.getProperties(destinationNodeRef);
         assertNotNull(destinationProperties);
-        String value1 = (String)destinationProperties.get(PROP1_QNAME_MANDATORY);
+        String value1 = (String) destinationProperties.get(PROP1_QNAME_MANDATORY);
         assertNotNull(value1);
         assertEquals(TEST_VALUE_1, value1);
-        String value2 = (String)destinationProperties.get(PROP2_QNAME_OPTIONAL);
+        String value2 = (String) destinationProperties.get(PROP2_QNAME_OPTIONAL);
         assertNotNull(value2);
         assertEquals(TEST_VALUE_2, value2);
-        String value3 = (String)destinationProperties.get(PROP3_QNAME_MANDATORY);
+        String value3 = (String) destinationProperties.get(PROP3_QNAME_MANDATORY);
         assertNotNull(value3);
         assertEquals(TEST_VALUE_1, value3);
-        String value4 = (String)destinationProperties.get(PROP4_QNAME_OPTIONAL);
+        String value4 = (String) destinationProperties.get(PROP4_QNAME_OPTIONAL);
         assertNotNull(value4);
         assertEquals(TEST_VALUE_2, value4);
-        
+
         // Check all the target associations have been copied
         List<AssociationRef> destinationTargets = nodeService.getTargetAssocs(destinationNodeRef, TEST_ASSOC_TYPE_QNAME);
         assertNotNull(destinationTargets);
@@ -1380,7 +1374,7 @@ public class CopyServiceImplTest extends TestCase
         AssociationRef nodeAssocRef = destinationTargets.get(0);
         assertNotNull(nodeAssocRef);
         assertEquals(targetNodeRef, nodeAssocRef.getTargetRef());
-        
+
         // Check all the child associations have been copied
         List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(destinationNodeRef);
         assertNotNull(childAssocRefs);
@@ -1389,9 +1383,9 @@ public class CopyServiceImplTest extends TestCase
         {
             expectedSize = expectedSize + 1;
         }
-        
+
         assertEquals(expectedSize, childAssocRefs.size());
-        for (ChildAssociationRef ref : childAssocRefs) 
+        for (ChildAssociationRef ref : childAssocRefs)
         {
             if (ref.getQName().equals(TEST_CHILD_ASSOC_QNAME2) == true)
             {
@@ -1418,10 +1412,10 @@ public class CopyServiceImplTest extends TestCase
                 {
                     assertTrue(ref.isPrimary());
                     assertTrue(childNodeRef.equals(ref.getChildRef()) == false);
-                    
+
                     // TODO need to check that the copied child has all the correct details ..
                 }
-            }    
+            }
         }
     }
 
@@ -1434,18 +1428,18 @@ public class CopyServiceImplTest extends TestCase
 
         customProperties.put(PROP_CUSTOM_STRING, null);
         nodeService.setProperties(sourceNodeRef, customProperties);
-        
+
         Serializable customPropValue = nodeService.getProperty(sourceNodeRef, PROP_CUSTOM_STRING);
         assertNull((PROP_CUSTOM_STRING.toString() + " property must be set to NULL on the source node!"), customPropValue);
 
         customProperties.put(PROP_CUSTOM_STRING, TEST_VALUE_1);
         nodeService.setProperties(targetNodeRef, customProperties);
         Serializable customProp = nodeService.getProperty(targetNodeRef, PROP_CUSTOM_STRING);
-        assertEquals((PROP_CUSTOM_STRING.toString() + " must be set to '" + TEST_VALUE_1 + "' on the target node!"), TEST_VALUE_1, customProp );
+        assertEquals((PROP_CUSTOM_STRING.toString() + " must be set to '" + TEST_VALUE_1 + "' on the target node!"), TEST_VALUE_1, customProp);
 
         copyService.copy(sourceNodeRef, targetNodeRef);
         Serializable updatedCustomProp = nodeService.getProperty(targetNodeRef, PROP_CUSTOM_STRING);
-        assertNull((PROP_CUSTOM_STRING.toString() + " property must be set to NULL on the target node after copying!"), updatedCustomProp );
+        assertNull((PROP_CUSTOM_STRING.toString() + " property must be set to NULL on the target node after copying!"), updatedCustomProp);
     }
 
     /**
@@ -1504,10 +1498,10 @@ public class CopyServiceImplTest extends TestCase
         assertNotNull(newNameAfterCopy);
         assertTrue(newNameAfterCopy.startsWith(TEST_NAME));
         assertFalse(newNameAfterCopy.contains("(Working Copy)"));
-        
+
         // Test copyAndRename call
         NodeRef copyRef = copyService.copyAndRename(workingCopyRef, rootNodeRef, ContentModel.ASSOC_CHILDREN, null, false);
-        String copyofWCName = (String)nodeService.getProperty(copyRef, ContentModel.PROP_NAME);
+        String copyofWCName = (String) nodeService.getProperty(copyRef, ContentModel.PROP_NAME);
         assertTrue(copyofWCName.startsWith(TEST_NAME));
         assertFalse(copyofWCName.contains("(Working Copy)"));
     }

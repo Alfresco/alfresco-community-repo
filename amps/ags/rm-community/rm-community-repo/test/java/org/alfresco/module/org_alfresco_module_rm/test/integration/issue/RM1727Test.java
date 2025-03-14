@@ -66,13 +66,13 @@ public class RM1727Test extends BaseRMTestCase
     @Override
     protected void setupTestUsersImpl(NodeRef filePlan)
     {
-        nodeFormFilter = (RecordsManagementNodeFormFilter)applicationContext.getBean("rmNodeFormFilter");
-        //create user
+        nodeFormFilter = (RecordsManagementNodeFormFilter) applicationContext.getBean("rmNodeFormFilter");
+        // create user
         myUser = GUID.generate();
         createPerson(myUser);
-        //give user RM Manager role
+        // give user RM Manager role
         filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, myUser);
-        //create category > folder > record
+        // create category > folder > record
         NodeRef category = filePlanService.createRecordCategory(filePlan, GUID.generate());
         folder = recordFolderService.createRecordFolder(category, GUID.generate());
         record = recordService.createRecordFromContent(folder, GUID.generate(), TYPE_CONTENT, null, null);
@@ -80,23 +80,21 @@ public class RM1727Test extends BaseRMTestCase
 
     public void testRM1727()
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
-                //set read and file permissions for folder
+                // set read and file permissions for folder
                 filePlanPermissionService.setPermission(folder, myUser, RMPermissionModel.FILING);
                 return null;
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
-                Item item = new Item("node",folder.toString());
+                Item item = new Item("node", folder.toString());
                 item.setType("rma:recordFolder");
                 form = new Form(item);
                 nodeFormFilter.afterGenerate(folder, null, null, form, null);
@@ -104,12 +102,11 @@ public class RM1727Test extends BaseRMTestCase
             }
         }, myUser);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
-                Item item = new Item("node",record.toString());
+                Item item = new Item("node", record.toString());
                 item.setType("rma:record");
                 form = new Form(item);
                 nodeFormFilter.afterGenerate(record, null, null, form, null);

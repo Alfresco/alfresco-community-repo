@@ -25,6 +25,24 @@
  */
 package org.alfresco.repo.content.transform;
 
+import java.io.File;
+import java.io.Serializable;
+import java.net.URI;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.model.Repository;
@@ -41,23 +59,6 @@ import org.alfresco.transform.registry.SupportedTransform;
 import org.alfresco.transform.registry.TransformServiceRegistry;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-
-import java.io.File;
-import java.io.Serializable;
-import java.net.URI;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * Provides methods to support the Admin UI Test Transform actions.
@@ -155,11 +156,14 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
     }
 
     /**
-     * Returns a String and /or debug that provides a list of supported transformations
-     * sorted by source and target mimetype extension. Used in the Test Transforms Admin UI.
-     * @param sourceExtension restricts the list to one source extension. Unrestricted if null.
-     * @param targetExtension restricts the list to one target extension. Unrestricted if null.
-     * @param toString indicates that a String value should be returned in addition to any debug.
+     * Returns a String and /or debug that provides a list of supported transformations sorted by source and target mimetype extension. Used in the Test Transforms Admin UI.
+     * 
+     * @param sourceExtension
+     *            restricts the list to one source extension. Unrestricted if null.
+     * @param targetExtension
+     *            restricts the list to one target extension. Unrestricted if null.
+     * @param toString
+     *            indicates that a String value should be returned in addition to any debug.
      */
     public String transformationsByExtension(String sourceExtension, String targetExtension, boolean toString)
     {
@@ -173,7 +177,7 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
         Collection<String> sourceMimetypes = sourceExtension != null
                 ? getSourceMimetypes(sourceExtension)
                 : mimetypeService.getMimetypes();
-        Collection<String> targetMimetypes =  targetExtension != null
+        Collection<String> targetMimetypes = targetExtension != null
                 ? getTargetMimetypes(sourceExtension, targetExtension, sourceMimetypes)
                 : mimetypeService.getMimetypes();
 
@@ -186,16 +190,16 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
                 setStringBuilder(sb);
             }
             pushMisc();
-            for (String sourceMimetype: sourceMimetypes)
+            for (String sourceMimetype : sourceMimetypes)
             {
-                for (String targetMimetype: targetMimetypes)
+                for (String targetMimetype : targetMimetypes)
                 {
                     // Log the transformers
                     boolean supportedByTransformService = remoteTransformServiceRegistry == null ||
-                                    remoteTransformServiceRegistry instanceof DummyTransformServiceRegistry
-                            ? false
-                            : remoteTransformServiceRegistry.isSupported(sourceMimetype,
-                            -1, targetMimetype, Collections.emptyMap(), null);
+                            remoteTransformServiceRegistry instanceof DummyTransformServiceRegistry
+                                    ? false
+                                    : remoteTransformServiceRegistry.isSupported(sourceMimetype,
+                                            -1, targetMimetype, Collections.emptyMap(), null);
                     List<SupportedTransform> localTransformers = localTransformServiceRegistry == null
                             ? Collections.emptyList()
                             : localTransformServiceRegistry.findTransformers(sourceMimetype,
@@ -218,7 +222,7 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
                                 long maxSourceSizeKBytes = localTransformer.getMaxSourceSizeBytes();
                                 String transformName = "Local:" + localTransformer.getName();
                                 String transformerPriority = "[" + localTransformer.getPriority() + ']';
-                                transformerPriority = spaces(5-transformerPriority.length())+transformerPriority;
+                                transformerPriority = spaces(5 - transformerPriority.length()) + transformerPriority;
                                 activeTransformer(sourceMimetype, targetMimetype, transformerCount, transformerPriority,
                                         transformName, maxSourceSizeKBytes, transformerCount++ == 0);
                             }
@@ -241,22 +245,24 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
     }
 
     protected void activeTransformer(String sourceMimetype, String targetMimetype, int transformerCount,
-                                     String priority, String transformName, long maxSourceSizeKBytes,
-                                     boolean firstTransformer)
+            String priority, String transformName, long maxSourceSizeKBytes,
+            boolean firstTransformer)
     {
         String mimetypes = firstTransformer
                 ? getSourceAndTargetExt(sourceMimetype, targetMimetype)
                 : spaces(10);
-        char c = (char)('a'+transformerCount);
-        log(mimetypes+
-                "  "+c+") " + priority + ' '+transformName+' '+
-                fileSize((maxSourceSizeKBytes > 0) ? maxSourceSizeKBytes*1024 : maxSourceSizeKBytes)+
+        char c = (char) ('a' + transformerCount);
+        log(mimetypes +
+                "  " + c + ") " + priority + ' ' + transformName + ' ' +
+                fileSize((maxSourceSizeKBytes > 0) ? maxSourceSizeKBytes * 1024 : maxSourceSizeKBytes) +
                 (maxSourceSizeKBytes == 0 ? " disabled" : ""));
     }
 
     /**
      * Removes the final "Finished in..." message from a StringBuilder
-     * @param sb which contains the debug message.
+     * 
+     * @param sb
+     *            which contains the debug message.
      */
     void stripFinishedLine(StringBuilder sb)
     {
@@ -274,7 +280,9 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
 
     /**
      * Strips the leading number in a reference
-     * @param sb which contains the debug message.
+     * 
+     * @param sb
+     *            which contains the debug message.
      */
     String stripLeadingNumber(StringBuilder sb)
     {
@@ -284,44 +292,48 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
     }
 
     /**
-     * Returns a collection of mimetypes ordered by extension, but unlike the version in MimetypeService
-     * throws an exception if the sourceExtension is supplied but does not match a mimetype.
-     * @param sourceExtension to restrict the collection to one entry
-     * @throws IllegalArgumentException if there is no match. The message indicates this.
+     * Returns a collection of mimetypes ordered by extension, but unlike the version in MimetypeService throws an exception if the sourceExtension is supplied but does not match a mimetype.
+     * 
+     * @param sourceExtension
+     *            to restrict the collection to one entry
+     * @throws IllegalArgumentException
+     *             if there is no match. The message indicates this.
      */
     public Collection<String> getSourceMimetypes(String sourceExtension)
     {
         Collection<String> sourceMimetypes = mimetypeService.getMimetypes(sourceExtension);
         if (sourceMimetypes.isEmpty())
         {
-            throw new IllegalArgumentException("Unknown source extension "+sourceExtension);
+            throw new IllegalArgumentException("Unknown source extension " + sourceExtension);
         }
         return sourceMimetypes;
     }
 
     /**
-     * Identical to getSourceMimetypes for the target, but avoids doing the look up if the sourceExtension
-     * is the same as the tragetExtension, so will have the same result.
-     * @param sourceExtension used to restrict the sourceMimetypes
-     * @param targetExtension to restrict the collection to one entry
-     * @param sourceMimetypes that match the sourceExtension
-     * @throws IllegalArgumentException if there is no match. The message indicates this.
+     * Identical to getSourceMimetypes for the target, but avoids doing the look up if the sourceExtension is the same as the tragetExtension, so will have the same result.
+     * 
+     * @param sourceExtension
+     *            used to restrict the sourceMimetypes
+     * @param targetExtension
+     *            to restrict the collection to one entry
+     * @param sourceMimetypes
+     *            that match the sourceExtension
+     * @throws IllegalArgumentException
+     *             if there is no match. The message indicates this.
      */
     public Collection<String> getTargetMimetypes(String sourceExtension, String targetExtension,
-                                                 Collection<String> sourceMimetypes)
+            Collection<String> sourceMimetypes)
     {
-        Collection<String> targetMimetypes =
-                (targetExtension == null && sourceExtension == null) ||
-                        (targetExtension != null && targetExtension.equals(sourceExtension))
+        Collection<String> targetMimetypes = (targetExtension == null && sourceExtension == null) ||
+                (targetExtension != null && targetExtension.equals(sourceExtension))
                         ? sourceMimetypes
                         : mimetypeService.getMimetypes(targetExtension);
         if (targetMimetypes.isEmpty())
         {
-            throw new IllegalArgumentException("Unknown target extension "+targetExtension);
+            throw new IllegalArgumentException("Unknown target extension " + targetExtension);
         }
         return targetMimetypes;
     }
-
 
     public String testTransform(String sourceExtension, String targetExtension)
     {
@@ -332,12 +344,12 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
     {
         List<String> sourceExtensions = new ArrayList<String>();
         Collection<String> sourceMimetypes = mimetypeService.getMimetypes(null);
-        for (String sourceMimetype: sourceMimetypes)
+        for (String sourceMimetype : sourceMimetypes)
         {
             String sourceExtension = mimetypeService.getExtension(sourceMimetype);
             if (loadQuickTestFile(sourceExtension) != null)
             {
-                sourceExtensions.add(sourceExtension+" - "+sourceMimetype);
+                sourceExtensions.add(sourceExtension + " - " + sourceMimetype);
             }
         }
 
@@ -346,9 +358,10 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
 
     /**
      * Load one of the "The quick brown fox" files from the classpath.
-     * @param extension required, eg <b>txt</b> for the file quick.txt
-     * @return Returns a test resource loaded from the classpath or <tt>null</tt> if
-     *      no resource could be found.
+     * 
+     * @param extension
+     *            required, eg <b>txt</b> for the file quick.txt
+     * @return Returns a test resource loaded from the classpath or <tt>null</tt> if no resource could be found.
      */
     private URL loadQuickTestFile(String extension)
     {
@@ -367,8 +380,7 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
 
         String run(String sourceExtension, String targetExtension)
         {
-            RetryingTransactionHelper.RetryingTransactionCallback<String> makeNodeCallback = new RetryingTransactionHelper.RetryingTransactionCallback<String>()
-            {
+            RetryingTransactionHelper.RetryingTransactionCallback<String> makeNodeCallback = new RetryingTransactionHelper.RetryingTransactionCallback<String>() {
                 public String execute() throws Throwable
                 {
                     return runWithinTransaction(sourceExtension, targetExtension);
@@ -422,7 +434,7 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
             }
             if (mimetype == null)
             {
-                throw new IllegalArgumentException("Unknown "+(isSource ? "source" : "target")+" extension: "+extension);
+                throw new IllegalArgumentException("Unknown " + (isSource ? "source" : "target") + " extension: " + extension);
             }
             return mimetype;
         }
@@ -430,8 +442,7 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
         public NodeRef createSourceNode(String extension, String sourceMimetype)
         {
             // Create a content node which will serve as test data for our transformations.
-            RetryingTransactionHelper.RetryingTransactionCallback<NodeRef> makeNodeCallback = new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
-            {
+            RetryingTransactionHelper.RetryingTransactionCallback<NodeRef> makeNodeCallback = new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>() {
                 public NodeRef execute() throws Throwable
                 {
                     // Create a source node loaded with a quick file.
@@ -469,8 +480,7 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
             if (sourceNodeRef != null)
             {
                 getTransactionService().getRetryingTransactionHelper().doInTransaction(
-                        (RetryingTransactionHelper.RetryingTransactionCallback<Void>) () ->
-                        {
+                        (RetryingTransactionHelper.RetryingTransactionCallback<Void>) () -> {
                             if (nodeService.exists(sourceNodeRef))
                             {
                                 nodeService.deleteNode(sourceNodeRef);

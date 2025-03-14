@@ -34,8 +34,7 @@ import org.alfresco.util.Pair;
 /**
  * Entity bean for <b>alf_content_url</b> table.
  * <p>
- * These are unique (see {@link #equals(Object) equals} and {@link #hashCode() hashCode}) based
- * on the {@link #getContentUrl() content URL} value.
+ * These are unique (see {@link #equals(Object) equals} and {@link #hashCode() hashCode}) based on the {@link #getContentUrl() content URL} value.
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -48,7 +47,7 @@ public class ContentUrlEntity implements Serializable
     private static final long serialVersionUID = -7697859151521433536L;
     public static final Long CONST_LONG_ZERO = Long.valueOf(0L);
     public static final String EMPTY_URL = "empty";
-    
+
     private Long id;
     private String contentUrl;
     private String contentUrlShort;
@@ -62,13 +61,13 @@ public class ContentUrlEntity implements Serializable
     {
         this.size = 0L;
     }
-    
+
     @Override
     public int hashCode()
     {
         return (contentUrl == null ? 0 : contentUrl.hashCode());
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -87,31 +86,32 @@ public class ContentUrlEntity implements Serializable
             return false;
         }
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("ContentUrlEntity")
-          .append("[ ID=").append(id)
-          .append(", contentUrl=").append(contentUrl)
-          .append(", size=").append(size)
-          .append(", orphanTime=").append(orphanTime)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", contentUrl=").append(contentUrl)
+                .append(", size=").append(size)
+                .append(", orphanTime=").append(orphanTime)
+                .append("]");
         return sb.toString();
     }
-    
+
     /**
-     * @param internalContentUrl String
-     * @return              Returns a pair of the short (12 chars lowercase) URL and the CRC value
+     * @param internalContentUrl
+     *            String
+     * @return Returns a pair of the short (12 chars lowercase) URL and the CRC value
      */
     private static Pair<String, Long> getContentUrlCrcPair(String internalContentUrl)
     {
         return CrcHelper.getStringCrcPair(internalContentUrl, 12, false, true);
     }
-    
+
     /**
-     * @return              Returns the originally-set content URL
+     * @return Returns the originally-set content URL
      */
     private static String getExternalUrl(String contentUrl)
     {
@@ -178,7 +178,7 @@ public class ContentUrlEntity implements Serializable
         this.contentUrlShort = contentUrlPair.getFirst();
         this.contentUrlCrc = contentUrlPair.getSecond();
     }
-    
+
     /**
      * For persistence use
      */

@@ -25,6 +25,11 @@
  */
 package org.alfresco.rest.api.quicksharelinks;
 
+import java.util.List;
+
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.webscripts.Status;
+
 import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.model.QuickShareLink;
 import org.alfresco.rest.api.model.QuickShareLinkEmailRequest;
@@ -41,10 +46,6 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.extensions.webscripts.Status;
-
-import java.util.List;
 
 /**
  * An implementation of an Entity Resource for Shared Links.
@@ -52,13 +53,13 @@ import java.util.List;
  * @author janv
  * @author Jamal Kaabi-Mofrad
  */
-@EntityResource(name="shared-links", title = "Shared Links")
+@EntityResource(name = "shared-links", title = "Shared Links")
 public class QuickShareLinkEntityResource implements EntityResourceAction.ReadById<QuickShareLink>,
-                                                     BinaryResourceAction.Read,
-                                                     EntityResourceAction.Delete,
-                                                     EntityResourceAction.Create<QuickShareLink>,
-                                                     EntityResourceAction.Read<QuickShareLink>,
-                                                     InitializingBean
+        BinaryResourceAction.Read,
+        EntityResourceAction.Delete,
+        EntityResourceAction.Create<QuickShareLink>,
+        EntityResourceAction.Read<QuickShareLink>,
+        InitializingBean
 {
     private QuickShareLinks quickShareLinks;
 
@@ -79,7 +80,7 @@ public class QuickShareLinkEntityResource implements EntityResourceAction.ReadBy
      * Note: does *not* require authenticated access for (public) shared link.
      */
     @Override
-    @WebApiDescription(title="Get shared link info", description = "Return limited metadata for shared link")
+    @WebApiDescription(title = "Get shared link info", description = "Return limited metadata for shared link")
     @WebApiNoAuth
     public QuickShareLink readById(String sharedId, Parameters parameters)
     {
@@ -92,7 +93,8 @@ public class QuickShareLinkEntityResource implements EntityResourceAction.ReadBy
      * Note: does *not* require authenticated access for (public) shared link.
      *
      * @param sharedId
-     * @param parameters {@link Parameters}
+     * @param parameters
+     *            {@link Parameters}
      * @return
      * @throws EntityNotFoundException
      */
@@ -108,15 +110,15 @@ public class QuickShareLinkEntityResource implements EntityResourceAction.ReadBy
     /**
      * Delete the shared link.
      *
-     * Once deleted, the shared link will no longer exist hence get/download will no longer work (ie. return 404).
-     * If the link is later re-created then a new unique shared id will be generated.
+     * Once deleted, the shared link will no longer exist hence get/download will no longer work (ie. return 404). If the link is later re-created then a new unique shared id will be generated.
      *
      * Requires authenticated access.
      *
-     * @param sharedId String id of the quick share
+     * @param sharedId
+     *            String id of the quick share
      */
     @Override
-    @WebApiDescription(title = "Delete shared link", description="Delete the shared link")
+    @WebApiDescription(title = "Delete shared link", description = "Delete the shared link")
     public void delete(String sharedId, Parameters parameters)
     {
         quickShareLinks.delete(sharedId, parameters);
@@ -132,7 +134,7 @@ public class QuickShareLinkEntityResource implements EntityResourceAction.ReadBy
      * @return
      */
     @Override
-    @WebApiDescription(title="Create shared link", description="Create a new unique system-generated shared (link) id")
+    @WebApiDescription(title = "Create shared link", description = "Create a new unique system-generated shared (link) id")
     public List<QuickShareLink> create(List<QuickShareLink> nodeIds, Parameters parameters)
     {
         return quickShareLinks.create(nodeIds, parameters);
@@ -150,7 +152,7 @@ public class QuickShareLinkEntityResource implements EntityResourceAction.ReadBy
      *
      */
     @Override
-    @WebApiDescription(title="Find shared links", description = "Find ('search') & return result set of shared links")
+    @WebApiDescription(title = "Find shared links", description = "Find ('search') & return result set of shared links")
     public CollectionWithPagingInfo<QuickShareLink> readAll(Parameters parameters)
     {
         return quickShareLinks.findLinks(parameters);

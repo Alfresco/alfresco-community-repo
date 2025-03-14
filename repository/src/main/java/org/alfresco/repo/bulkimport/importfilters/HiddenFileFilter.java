@@ -33,7 +33,6 @@ import java.nio.file.Path;
 import org.alfresco.repo.bulkimport.ImportFilter;
 import org.alfresco.repo.bulkimport.ImportableItem;
 
-
 /**
  * This class is an <code>ImportFilter</code> that filters out hidden files.
  * 
@@ -50,7 +49,7 @@ public class HiddenFileFilter implements ImportFilter
     public boolean shouldFilter(final ImportableItem importableItem)
     {
         boolean result = false;
-        
+
         if (importableItem.getHeadRevision().contentFileExists())
         {
             Path file = importableItem.getHeadRevision().getContentFile();
@@ -59,11 +58,10 @@ public class HiddenFileFilter implements ImportFilter
                 result = Files.isHidden(file);
             }
             catch (IOException e)
-            {
-            }
+            {}
         }
 
-        return(result);
+        return (result);
     }
 
 }

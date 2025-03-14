@@ -27,36 +27,32 @@ package org.alfresco.heartbeat;
 
 import java.util.List;
 
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  *
  * <p>
- * This class is to be extended by HeartBeat data collectors.
- * Every new collector needs to provide details of the data it collects. As an example use one
- * of the existing collectors {@link AuthoritiesDataCollector}, {@link ConfigurationDataCollector},
- * {@link InfoDataCollector}, {@link ModelUsageDataCollector}, {@link SystemUsageDataCollector}.
+ * This class is to be extended by HeartBeat data collectors. Every new collector needs to provide details of the data it collects. As an example use one of the existing collectors {@link AuthoritiesDataCollector}, {@link ConfigurationDataCollector}, {@link InfoDataCollector}, {@link ModelUsageDataCollector}, {@link SystemUsageDataCollector}.
  * </p>
  * <p>
- * Each collector provides a reference to a {@link HeartBeatJobScheduler} which
- * is then used by the {@link HBDataCollectorService} to schedule and unschedule jobs for this collector.
+ * Each collector provides a reference to a {@link HeartBeatJobScheduler} which is then used by the {@link HBDataCollectorService} to schedule and unschedule jobs for this collector.
  * </p>
  *
  * Example Javadoc for implementations:
  *
  * <ul>
- *  <li>Collector ID: <b>a.collector.id</b></li>
- *  <li>Data:
- *      <ul>
- *          <li><b>dataP1:</b> data type - description</li>
- *          <li><b>dataP2:</b> data type - description</li>
- *          ...
- *      </ul>
- *  </li>
+ * <li>Collector ID: <b>a.collector.id</b></li>
+ * <li>Data:
+ * <ul>
+ * <li><b>dataP1:</b> data type - description</li>
+ * <li><b>dataP2:</b> data type - description</li> ...
+ * </ul>
+ * </li>
  * </ul>
  *
  * @author eknizat
@@ -75,13 +71,17 @@ public abstract class HBBaseDataCollector
 
     /**
      *
-     * @param collectorId Unique collector ID e.g.: acs.repository.info
-     * @param collectorVersion Version of the collector e.g.: 1.0
-     * @param cronExpression Cron expression that will be used to schedule jobs for this collector. e.g.: "0 0 0 ? * SUN" (Weekly)
-     * @param hbJobScheduler Scheduler that will be used to schedule jobs for this collector.
+     * @param collectorId
+     *            Unique collector ID e.g.: acs.repository.info
+     * @param collectorVersion
+     *            Version of the collector e.g.: 1.0
+     * @param cronExpression
+     *            Cron expression that will be used to schedule jobs for this collector. e.g.: "0 0 0 ? * SUN" (Weekly)
+     * @param hbJobScheduler
+     *            Scheduler that will be used to schedule jobs for this collector.
      */
     public HBBaseDataCollector(String collectorId, String collectorVersion, String cronExpression,
-                               HeartBeatJobScheduler hbJobScheduler)
+            HeartBeatJobScheduler hbJobScheduler)
     {
         PropertyCheck.mandatory(this, "collectorId", collectorId);
         PropertyCheck.mandatory(this, "collectorVersion", collectorVersion);
@@ -116,7 +116,8 @@ public abstract class HBBaseDataCollector
 
     /**
      *
-     * @param hbJobScheduler The scheduler which will be used to schedule jobs for this collector.
+     * @param hbJobScheduler
+     *            The scheduler which will be used to schedule jobs for this collector.
      */
     public void setHbJobScheduler(HeartBeatJobScheduler hbJobScheduler)
     {
@@ -159,6 +160,7 @@ public abstract class HBBaseDataCollector
 
     /**
      * This method returns data to be collected.
+     * 
      * @return List of {@link HBData}
      */
     public abstract List<HBData> collectData();

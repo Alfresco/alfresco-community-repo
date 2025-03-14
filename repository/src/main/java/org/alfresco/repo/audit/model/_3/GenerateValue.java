@@ -31,11 +31,12 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for GenerateValue complex type.
+ * <p>
+ * Java class for GenerateValue complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType name="GenerateValue">
@@ -52,7 +53,7 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "GenerateValue")
 public class GenerateValue
-    extends KeyedAuditDefinition
+        extends KeyedAuditDefinition
 {
 
     @XmlAttribute(required = true)
@@ -61,12 +62,11 @@ public class GenerateValue
     /**
      * Gets the value of the dataGenerator property.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     * @return possible object is {@link String }
+     * 
      */
-    public String getDataGenerator() {
+    public String getDataGenerator()
+    {
         return dataGenerator;
     }
 
@@ -74,11 +74,11 @@ public class GenerateValue
      * Sets the value of the dataGenerator property.
      * 
      * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *            allowed object is {@link String }
+     * 
      */
-    public void setDataGenerator(String value) {
+    public void setDataGenerator(String value)
+    {
         this.dataGenerator = value;
     }
 

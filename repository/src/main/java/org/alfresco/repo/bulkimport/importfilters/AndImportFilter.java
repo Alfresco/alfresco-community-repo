@@ -38,33 +38,32 @@ import org.alfresco.repo.bulkimport.ImportableItem;
  * @since 4.0
  */
 public class AndImportFilter
-    implements ImportFilter
+        implements ImportFilter
 {
     private final List<ImportFilter> filters;
-    
+
     public AndImportFilter(final ImportFilter left, final ImportFilter right)
     {
         // PRECONDITIONS
-        assert left  != null : "left must not be null.";
+        assert left != null : "left must not be null.";
         assert right != null : "right must not be null.";
-        
+
         // Body
         this.filters = new ArrayList<ImportFilter>(2);
-        
+
         filters.add(left);
         filters.add(right);
     }
-    
+
     public AndImportFilter(final List<ImportFilter> filters)
     {
         // PRECONDITIONS
-        assert filters        != null : "filters must not be null.";
-        assert filters.size() >= 2    : "filters must contain at least 2 items.";
-        
+        assert filters != null : "filters must not be null.";
+        assert filters.size() >= 2 : "filters must contain at least 2 items.";
+
         // Body
         this.filters = filters;
     }
-    
 
     /**
      * @see org.alfresco.repo.bulkimport.ImportFilter#shouldFilter(org.alfresco.repo.bulkimport.ImportableItem)
@@ -72,7 +71,7 @@ public class AndImportFilter
     public boolean shouldFilter(final ImportableItem importableItem)
     {
         boolean result = true;
-        
+
         for (final ImportFilter sourceFilter : filters)
         {
             if (!sourceFilter.shouldFilter(importableItem))
@@ -82,7 +81,7 @@ public class AndImportFilter
             }
         }
 
-        return(result);
+        return (result);
     }
 
 }

@@ -40,11 +40,10 @@ import org.alfresco.rm.rest.api.model.HoldBulkStatusEntry;
 public final class HoldBulkUtils
 {
     private HoldBulkUtils()
-    {
-    }
+    {}
 
     public static HoldBulkStatusEntry toHoldBulkStatusEntry(
-        HoldBulkStatusAndProcessDetails holdBulkStatusAndProcessDetails)
+            HoldBulkStatusAndProcessDetails holdBulkStatusAndProcessDetails)
     {
         HoldBulkStatus bulkStatus = holdBulkStatusAndProcessDetails.holdBulkStatus();
         BulkOperation bulkOperation = holdBulkStatusAndProcessDetails.holdBulkProcessDetails().bulkOperation();
@@ -52,13 +51,13 @@ public final class HoldBulkUtils
         try
         {
             HoldBulkOperation holdBulkOperation = new HoldBulkOperation(
-                new Query(bulkOperation.searchQuery().getLanguage(),
-                    bulkOperation.searchQuery().getQuery(), bulkOperation.searchQuery().getUserQuery()),
-                HoldBulkOperationType.valueOf(bulkOperation.operationType()));
+                    new Query(bulkOperation.searchQuery().getLanguage(),
+                            bulkOperation.searchQuery().getQuery(), bulkOperation.searchQuery().getUserQuery()),
+                    HoldBulkOperationType.valueOf(bulkOperation.operationType()));
             return new HoldBulkStatusEntry(bulkStatus.bulkStatusId(), bulkStatus.startTime(),
-                bulkStatus.endTime(), bulkStatus.processedItems(), bulkStatus.errorsCount(),
-                bulkStatus.totalItems(), bulkStatus.lastError(), bulkStatus.getStatus(),
-                bulkStatus.cancellationReason(), holdBulkOperation);
+                    bulkStatus.endTime(), bulkStatus.processedItems(), bulkStatus.errorsCount(),
+                    bulkStatus.totalItems(), bulkStatus.lastError(), bulkStatus.getStatus(),
+                    bulkStatus.cancellationReason(), holdBulkOperation);
         }
         catch (IllegalArgumentException e)
         {

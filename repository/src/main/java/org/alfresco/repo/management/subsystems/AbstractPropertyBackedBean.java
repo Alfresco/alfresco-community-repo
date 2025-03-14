@@ -50,12 +50,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.util.PropertyPlaceholderHelper;
 
 /**
- * A base class for {@link PropertyBackedBean}s. Gets its category from its Spring bean name and automatically
- * propagates and resolves property defaults on initialization. Automatically destroys itself on server shutdown.
- * Communicates its creation and destruction and start and stop events to a {@link PropertyBackedBeanRegistry}. Listens
- * for start and stop events from remote nodes in order to keep the bean in sync with edits made on a remote node. On
- * receiving a start event from a remote node, the bean is completely reinitialized, allowing it to be resynchronized
- * with any persisted changes.
+ * A base class for {@link PropertyBackedBean}s. Gets its category from its Spring bean name and automatically propagates and resolves property defaults on initialization. Automatically destroys itself on server shutdown. Communicates its creation and destruction and start and stop events to a {@link PropertyBackedBeanRegistry}. Listens for start and stop events from remote nodes in order to keep the bean in sync with edits made on a remote node. On receiving a start event from a remote node, the bean is completely reinitialized, allowing it to be resynchronized with any persisted changes.
  * 
  * @author dward
  */
@@ -63,7 +58,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         ApplicationListener<ApplicationEvent>, InitializingBean, DisposableBean, BeanNameAware
 {
     /**
-     *  When true, calls to setProperties / setProperty are persisted to the MBean if it exists.
+     * When true, calls to setProperties / setProperty are persisted to the MBean if it exists.
      */
     private boolean saveSetProperty = false;
 
@@ -78,7 +73,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
 
     /** The category (first part of the ID). */
     private String category;
-    
+
     /** The bean name if we have been initialized by Spring. */
     private String beanName;
 
@@ -93,7 +88,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
 
     /** Property defaults provided by the installer or System properties. */
     private Properties propertyDefaults;
-    
+
     /** Property defaults provided by the JASYPT decryptor. */
     private Properties encryptedPropertyDefaults;
 
@@ -101,34 +96,30 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     private DefaultResolver defaultResolver = new DefaultResolver();
 
     /** The lifecycle states. */
-    protected enum RuntimeState {UNINITIALIZED, STOPPED, PENDING_BROADCAST_START, STARTED};
-    
+    protected enum RuntimeState
+    {
+        UNINITIALIZED, STOPPED, PENDING_BROADCAST_START, STARTED
+    };
+
     protected RuntimeState runtimeState = RuntimeState.UNINITIALIZED;
 
     /** The state. */
     private PropertyBackedBeanState state;
-    
+
     /** Lock for concurrent access. */
     protected ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-    
+
     private Map<String, SubsystemEarlyPropertyChecker> earlyPropertyCheckers;
-    
+
     public void setEarlyPropertyCheckers(Map<String, SubsystemEarlyPropertyChecker> earlyPropertyCheckers)
     {
         this.earlyPropertyCheckers = earlyPropertyCheckers;
     }
-    
+
     /**
-     * Used in conjunction with {@link #localSetProperties} to control setting of
-     * properties from either a JMX client or by code in the local Alfresco
-     * node calling {@link AbstractPropertyBackedBean#setProperties(Map)} or
-     * {@link AbstractPropertyBackedBean#setProperty(String, String)}.
-     * Is <code>true</code> when there is a nested call to either of these
-     * methods. This is the case when there is an MBean AND one of these method was
-     * NOT originally called from that MBean (it is a local code).
+     * Used in conjunction with {@link #localSetProperties} to control setting of properties from either a JMX client or by code in the local Alfresco node calling {@link AbstractPropertyBackedBean#setProperties(Map)} or {@link AbstractPropertyBackedBean#setProperty(String, String)}. Is <code>true</code> when there is a nested call to either of these methods. This is the case when there is an MBean AND one of these method was NOT originally called from that MBean (it is a local code).
      */
-    private ThreadLocal<Boolean> nestedCall = new ThreadLocal<Boolean>()
-    {
+    private ThreadLocal<Boolean> nestedCall = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue()
         {
@@ -136,31 +127,23 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         }
     };
 
-   /**
-    * Used in conjunction with {@link #nestedCall} to control setting of
-    * properties from either a JMX client or by code in the local Alfresco
-    * node calling {@link AbstractPropertyBackedBean#setProperties(Map)} or
-    * {@link AbstractPropertyBackedBean#setProperty(String, String)}.
-    * Is set to <code>true</code> when there is a nested call back from
-    * a JMX bean.
-    */
-    private ThreadLocal<Boolean> localSetProperties = new ThreadLocal<Boolean>()
-    {
+    /**
+     * Used in conjunction with {@link #nestedCall} to control setting of properties from either a JMX client or by code in the local Alfresco node calling {@link AbstractPropertyBackedBean#setProperties(Map)} or {@link AbstractPropertyBackedBean#setProperty(String, String)}. Is set to <code>true</code> when there is a nested call back from a JMX bean.
+     */
+    private ThreadLocal<Boolean> localSetProperties = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue()
         {
             return false;
         }
     };
-    
+
     /** The logger. */
     private static Log logger = LogFactory.getLog(AbstractPropertyBackedBean.class);
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.
-     * ApplicationContext)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context. ApplicationContext) */
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         this.parent = applicationContext;
@@ -187,15 +170,14 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         return this.registry;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String) */
     public void setBeanName(String name)
     {
         this.beanName = name;
     }
-    
+
     /**
      * Sets the category (first part of the ID).
      * 
@@ -239,11 +221,11 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     {
         this.propertyDefaults = propertyDefaults;
     }
-    
+
     public void setEncryptedPropertyDefaults(Properties propertyDefaults)
     {
         this.encryptedPropertyDefaults = propertyDefaults;
-        
+
     }
 
     /**
@@ -271,23 +253,23 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     protected String resolveDefault(String name)
     {
         Properties props = new Properties();
-        
-        if(propertyDefaults != null)
+
+        if (propertyDefaults != null)
         {
-            for( Object key : propertyDefaults.keySet())
+            for (Object key : propertyDefaults.keySet())
             {
-                props.setProperty((String)key, propertyDefaults.getProperty((String)key));
+                props.setProperty((String) key, propertyDefaults.getProperty((String) key));
             }
         }
-        
-        if(encryptedPropertyDefaults != null)
+
+        if (encryptedPropertyDefaults != null)
         {
-            for( Object key : encryptedPropertyDefaults.keySet())
+            for (Object key : encryptedPropertyDefaults.keySet())
             {
-                props.setProperty((String)key, encryptedPropertyDefaults.getProperty((String)key));
+                props.setProperty((String) key, encryptedPropertyDefaults.getProperty((String) key));
             }
         }
-        
+
         String value = props.getProperty(name);
         if (value != null)
         {
@@ -321,9 +303,9 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         }
         return this.state;
     }
-    
+
     /**
-     *  When set to true, calls to setProperties / setProperty are persisted to the MBean if it exists.
+     * When set to true, calls to setProperties / setProperty are persisted to the MBean if it exists.
      */
     public void setSaveSetProperty(boolean saveSetProperty)
     {
@@ -332,6 +314,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
 
     /**
      * Check properties for invalid values using {@link SubsystemEarlyPropertyChecker}s
+     * 
      * @param properties
      * @return The complete error message in case of exceptions or empty string otherwise
      */
@@ -373,7 +356,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             if (exceptions.size() > 0)
             {
                 String allExceptionsMessages = "";
-                
+
                 for (InvalidPropertyValueException ipve : exceptions)
                 {
                     if (!allExceptionsMessages.equals(""))
@@ -387,10 +370,10 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
                 return allExceptionsMessages;
             }
         }
-        
+
         return "";
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -450,7 +433,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
                 {
                     logger.debug("doInit() createInitialState");
                     this.state = createInitialState();
-                    logger.debug("doInit() applyDefaultOverrides "+state);
+                    logger.debug("doInit() applyDefaultOverrides " + state);
                     applyDefaultOverrides(this.state);
                     this.runtimeState = RuntimeState.STOPPED;
                     logger.debug("doInit() register");
@@ -464,7 +447,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             }
             finally
             {
-                logger.debug("doInit() state="+runtimeState);
+                logger.debug("doInit() state=" + runtimeState);
                 if (!hadWriteLock)
                 {
                     this.lock.readLock().lock();
@@ -569,9 +552,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
      * Releases any resources held by this component.
      * 
      * @param isPermanent
-     *            is the component being destroyed forever, i.e. should persisted values be removed? On server shutdown,
-     *            this value would be <code>false</code>, whereas on the removal of a dynamically created instance, this
-     *            value would be <code>true</code>.
+     *            is the component being destroyed forever, i.e. should persisted values be removed? On server shutdown, this value would be <code>false</code>, whereas on the removal of a dynamically created instance, this value would be <code>true</code>.
      */
     protected void destroy(boolean isPermanent)
     {
@@ -587,9 +568,9 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             {
                 if (this.runtimeState != RuntimeState.UNINITIALIZED)
                 {
-                    logger.debug("destroy() stop state="+runtimeState);
+                    logger.debug("destroy() stop state=" + runtimeState);
                     stop(false);
-                    logger.debug("destroy() deregister "+isPermanent);
+                    logger.debug("destroy() deregister " + isPermanent);
                     this.registry.deregister(this, isPermanent);
                     this.state = null;
                     this.runtimeState = RuntimeState.UNINITIALIZED;
@@ -598,7 +579,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             }
             finally
             {
-                logger.debug("destroy() state="+runtimeState);
+                logger.debug("destroy() state=" + runtimeState);
                 if (!hadWriteLock)
                 {
                     this.lock.readLock().lock();
@@ -660,12 +641,12 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
                     destroy(false);
                     // fall through
                 case UNINITIALIZED:
-                    start(false, false);                
+                    start(false, false);
                 }
             }
             finally
             {
-                this.lock.writeLock().unlock();                
+                this.lock.writeLock().unlock();
             }
         }
         else if (event instanceof PropertyBackedBeanStoppedEvent)
@@ -756,7 +737,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             {
                 this.state.setProperty(entry.getKey(), entry.getValue());
             }
-            
+
             // Bring the bean back up across the cluster
             start(true, false);
             if (e instanceof RuntimeException)
@@ -766,12 +747,13 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             throw new IllegalStateException(e);
         }
     }
-   
+
     /**
      * {@inheritDoc}
      * 
-     * <p> When called from code within the local node the values are saved to the
-     * database in the Enterprise edition and will be visible in a JMX client.<p>
+     * <p>
+     * When called from code within the local node the values are saved to the database in the Enterprise edition and will be visible in a JMX client.
+     * <p>
      *
      * @param name
      * @param value
@@ -780,7 +762,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("setProperty("+name+','+value+")");
+            logger.debug("setProperty(" + name + ',' + value + ")");
         }
         if (!nestedCall.get())
         {
@@ -810,9 +792,9 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
                         // Re register the bean so new properties are visible in JConsole which does
                         // not check MBeanInfo for changes otherwise.
                         logger.debug("setProperty() destroy");
-//                      Commented out to avoid "UserTransaction is not visible from class loader" as it drops the context.
-//                      So we have to just live with the JConsole as it is.
-//                      destroy(false);
+                        // Commented out to avoid "UserTransaction is not visible from class loader" as it drops the context.
+                        // So we have to just live with the JConsole as it is.
+                        // destroy(false);
 
                         // Attempt to start locally
                         start(false, true);
@@ -845,21 +827,23 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     /**
      * {@inheritDoc}
      * 
-     * <p> When called from code within the local node the values are saved to the
-     * database in the Enterprise edition and will be visible in a JMX client.<p>
+     * <p>
+     * When called from code within the local node the values are saved to the database in the Enterprise edition and will be visible in a JMX client.
+     * <p>
      *
-     * @param properties to be saved.
+     * @param properties
+     *            to be saved.
      */
     public void setProperties(Map<String, String> properties)
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("setProperties("+properties+")");
+            logger.debug("setProperties(" + properties + ")");
         }
         if (!nestedCall.get())
         {
             nestedCall.set(true);
-            
+
             boolean hadWriteLock = this.lock.isWriteLockedByCurrentThread();
             if (!hadWriteLock)
             {
@@ -889,9 +873,9 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
                         // Re register the bean so new properties are visible in JConsole which does
                         // not check MBeanInfo for changes otherwise.
                         logger.debug("setProperties() destroy");
-//                      Commented out to avoid "UserTransaction is not visible from class loader" as it drops the context.
-//                      So we have to just live with the JConsole as it is.
-//                      destroy(false);
+                        // Commented out to avoid "UserTransaction is not visible from class loader" as it drops the context.
+                        // So we have to just live with the JConsole as it is.
+                        // destroy(false);
 
                         // Attempt to start locally
                         start(true, false);
@@ -923,32 +907,34 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             setPropertiesInternal(properties);
         }
     }
-    
+
     /**
      * Removes a property added by code within the local node.
      *
-     * @param name to be removed.
+     * @param name
+     *            to be removed.
      */
     public void removeProperty(String name)
     {
         removeProperties(Collections.singleton(name));
     }
-    
+
     /**
      * Removes properties added by code within the local node.
      *
-     * @param properties to be removed.
+     * @param properties
+     *            to be removed.
      */
     public void removeProperties(Collection<String> properties)
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("removeProperties("+properties+")");
+            logger.debug("removeProperties(" + properties + ")");
         }
         if (!nestedCall.get())
         {
             nestedCall.set(true);
-            
+
             boolean hadWriteLock = this.lock.isWriteLockedByCurrentThread();
             if (!hadWriteLock)
             {
@@ -978,9 +964,9 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
                         // Re register the bean so new properties are visible in JConsole which does
                         // not check MBeanInfo for changes otherwise.
                         logger.debug("removeProperties() destroy");
-//                      Commented out to avoid "UserTransaction is not visible from class loader" as it drops the context.
-//                      So we have to just live with the JConsole as it is.
-//                      destroy(false);
+                        // Commented out to avoid "UserTransaction is not visible from class loader" as it drops the context.
+                        // So we have to just live with the JConsole as it is.
+                        // destroy(false);
 
                         // Attempt to start locally
                         start(true, false);
@@ -1042,7 +1028,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             {
                 this.state.setProperty(entry.getKey(), entry.getValue());
             }
-            
+
             // Bring the bean back up across the cluster
             start(true, false);
             if (e instanceof RuntimeException)
@@ -1052,7 +1038,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             throw new IllegalStateException(e);
         }
     }
-   
+
     /**
      * {@inheritDoc}
      */
@@ -1178,8 +1164,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     }
 
     /**
-     * Uses a Spring {@link PropertyPlaceholderHelper} to resolve placeholders in the property defaults. This means
-     * that placeholders need not be displayed in the configuration UI or JMX console.
+     * Uses a Spring {@link PropertyPlaceholderHelper} to resolve placeholders in the property defaults. This means that placeholders need not be displayed in the configuration UI or JMX console.
      */
     public class DefaultResolver extends PropertyPlaceholderHelper
     {
@@ -1202,20 +1187,20 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         public String resolveValue(String val)
         {
             Properties props = new Properties();
-            
-            if(propertyDefaults != null)
+
+            if (propertyDefaults != null)
             {
-                for( Object key : propertyDefaults.keySet())
+                for (Object key : propertyDefaults.keySet())
                 {
-                    props.setProperty((String)key, propertyDefaults.getProperty((String)key));
+                    props.setProperty((String) key, propertyDefaults.getProperty((String) key));
                 }
             }
-            
-            if(encryptedPropertyDefaults != null)
+
+            if (encryptedPropertyDefaults != null)
             {
-                for( Object key : encryptedPropertyDefaults.keySet())
+                for (Object key : encryptedPropertyDefaults.keySet())
                 {
-                    props.setProperty((String)key, encryptedPropertyDefaults.getProperty((String)key));
+                    props.setProperty((String) key, encryptedPropertyDefaults.getProperty((String) key));
                 }
             }
             return replacePlaceholders(val, props);

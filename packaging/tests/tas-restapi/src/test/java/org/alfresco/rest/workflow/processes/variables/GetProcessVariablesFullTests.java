@@ -1,5 +1,9 @@
 package org.alfresco.rest.workflow.processes.variables;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
@@ -10,9 +14,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Created by Claudia Agache on 2/2/2017.
@@ -32,9 +33,9 @@ public class GetProcessVariablesFullTests extends RestTest
         processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, CMISUtil.Priority.Normal);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES}, executionType = ExecutionType.REGRESSION,
             description = "Verify get all process variables call using admin user. Admin can see the process even if he isn't involved in it.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION})
     public void getProcessVariablesUsingAdmin() throws Exception
     {
         variables = restClient.authenticateUser(admin).withWorkflowAPI().usingProcess(processModel).getProcessVariables();
@@ -59,9 +60,9 @@ public class GetProcessVariablesFullTests extends RestTest
     }
 
     @Bug(id = "MNT-17438")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES}, executionType = ExecutionType.REGRESSION,
             description = "Verify get all process variables with valid skip count parameter applied.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION})
     public void getProcessVariablesWithValidSkipCount() throws Exception
     {
         variables = restClient.authenticateUser(admin).withWorkflowAPI().usingProcess(processModel).getProcessVariables();
@@ -73,13 +74,13 @@ public class GetProcessVariablesFullTests extends RestTest
         variablesSkipped
                 .assertThat().entriesListDoesNotContain("name", variables.getEntries().get(0).onModel().getName())
                 .assertThat().entriesListDoesNotContain("name", variables.getEntries().get(1).onModel().getName())
-                .assertThat().entriesListCountIs(variables.getEntries().size()-2)
+                .assertThat().entriesListCountIs(variables.getEntries().size() - 2)
                 .assertThat().paginationField("skipCount").is("2");
     }
 
-    @TestRail(section = { TestGroup.REST_API,TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES}, executionType = ExecutionType.REGRESSION,
             description = "Verify get all process variables with negative skip count parameter applied.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION})
     public void getProcessVariablesWithNegativeSkipCount() throws Exception
     {
         restClient.authenticateUser(admin).withParams("skipCount=-2").withWorkflowAPI().usingProcess(processModel).getProcessVariables();
@@ -91,9 +92,9 @@ public class GetProcessVariablesFullTests extends RestTest
                 .statusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES}, executionType = ExecutionType.REGRESSION,
             description = "Verify get all process variables with not numeric skip count parameter applied.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION})
     public void getProcessVariablesWithNonNumericSkipCount() throws Exception
     {
         restClient.authenticateUser(admin).withParams("skipCount=A").withWorkflowAPI().usingProcess(processModel).getProcessVariables();
@@ -102,9 +103,9 @@ public class GetProcessVariablesFullTests extends RestTest
     }
 
     @Bug(id = "MNT-17438")
-    @TestRail(section = { TestGroup.REST_API,TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES}, executionType = ExecutionType.REGRESSION,
             description = "Verify get all process variables with valid maxItems parameter applied.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION})
     public void getProcessVariablesWithValidMaxItems() throws Exception
     {
         variables = restClient.authenticateUser(admin).withWorkflowAPI().usingProcess(processModel).getProcessVariables();
@@ -120,9 +121,9 @@ public class GetProcessVariablesFullTests extends RestTest
                 .assertThat().paginationField("maxItems").is("2");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES}, executionType = ExecutionType.REGRESSION,
             description = "Verify get all process variables with negative maxItems parameter applied.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION})
     public void getProcessVariablesWithNegativeMaxItems() throws Exception
     {
         restClient.authenticateUser(admin).withParams("maxItems=-2").withWorkflowAPI().usingProcess(processModel).getProcessVariables();
@@ -134,9 +135,9 @@ public class GetProcessVariablesFullTests extends RestTest
                 .statusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
-    @TestRail(section = { TestGroup.REST_API,TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES}, executionType = ExecutionType.REGRESSION,
             description = "Verify get all process variables with not numeric maxItems parameter applied.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION})
     public void getProcessVariablesWithNonNumericMaxItems() throws Exception
     {
         restClient.authenticateUser(admin).withParams("maxItems=A").withWorkflowAPI().usingProcess(processModel).getProcessVariables();
@@ -144,9 +145,9 @@ public class GetProcessVariablesFullTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.INVALID_MAXITEMS, "A"));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES}, executionType = ExecutionType.REGRESSION,
             description = "Verify get all process variables with properties parameter.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION})
     public void getProcessVariablesWithPropertiesParameter() throws Exception
     {
         variables = restClient.authenticateUser(admin).withParams("properties=name").withWorkflowAPI().usingProcess(processModel).getProcessVariables();

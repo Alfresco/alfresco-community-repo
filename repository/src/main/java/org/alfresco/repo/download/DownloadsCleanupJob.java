@@ -27,6 +27,12 @@ package org.alfresco.repo.download;
 
 import java.util.List;
 
+import org.joda.time.DateTime;
+import org.quartz.Job;
+import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
@@ -34,15 +40,10 @@ import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.service.cmr.download.DownloadService;
-import org.joda.time.DateTime;
-import org.quartz.Job;
-import org.quartz.JobDataMap;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 
 /**
  * Executes the clean up of download nodes.
- *  
+ * 
  * @author Alex Miller
  */
 public class DownloadsCleanupJob implements Job
@@ -53,41 +54,36 @@ public class DownloadsCleanupJob implements Job
     private static final String KEY_MAX_AGE = "maxAgeInMinutes";
     private static final String BATCH_SIZE = "batchSize";
     private static final String CLEAN_All_SYS_DOWNLOAD_FOLDERS = "cleanAllSysDownloadFolders";
-    
 
-    /*
-     * @see org.quartz.Job#execute(org.quartz.JobExecutionContext)
-     */
+    /* @see org.quartz.Job#execute(org.quartz.JobExecutionContext) */
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException
     {
         JobDataMap jobData = context.getJobDetail().getJobDataMap();
-        
+
         // extract the services and max age to use
-        final DownloadService downloadService = (DownloadService)jobData.get(KEY_DOWNLOAD_SERVICE);
-        final TenantAdminService tenantAdminService = (TenantAdminService)jobData.get(KEY_TENANT_ADMIN_SERVICE);
-        final int maxAgeInMinutes = Integer.parseInt((String)jobData.get(KEY_MAX_AGE));
-        final int batchSize = Integer.parseInt((String)jobData.get(BATCH_SIZE));
-        final boolean cleanAllSysDownloadFolders = Boolean.parseBoolean((String)jobData.get(CLEAN_All_SYS_DOWNLOAD_FOLDERS));
-        
+        final DownloadService downloadService = (DownloadService) jobData.get(KEY_DOWNLOAD_SERVICE);
+        final TenantAdminService tenantAdminService = (TenantAdminService) jobData.get(KEY_TENANT_ADMIN_SERVICE);
+        final int maxAgeInMinutes = Integer.parseInt((String) jobData.get(KEY_MAX_AGE));
+        final int batchSize = Integer.parseInt((String) jobData.get(BATCH_SIZE));
+        final boolean cleanAllSysDownloadFolders = Boolean.parseBoolean((String) jobData.get(CLEAN_All_SYS_DOWNLOAD_FOLDERS));
+
         final DateTime before = new DateTime().minusMinutes(maxAgeInMinutes);
 
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Object>() {
             public Object doWork() throws Exception
             {
                 downloadService.deleteDownloads(before.toDate(), batchSize, cleanAllSysDownloadFolders);
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
-        
+
         if ((tenantAdminService != null) && tenantAdminService.isEnabled())
         {
             List<Tenant> tenants = tenantAdminService.getAllTenants();
             for (Tenant tenant : tenants)
             {
-                TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
-                {
+                TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>() {
                     public Object doWork() throws Exception
                     {
                         downloadService.deleteDownloads(before.toDate(), batchSize, cleanAllSysDownloadFolders);

@@ -37,13 +37,19 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.id.Identifier;
 import com.nimbusds.oauth2.sdk.id.State;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.external.AdminConsoleAuthenticator;
@@ -53,16 +59,9 @@ import org.alfresco.repo.security.authentication.identityservice.IdentityService
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
- * An {@link AdminConsoleAuthenticator} implementation to extract an externally authenticated user ID
- * or to initiate the OIDC authorization code flow.
+ * An {@link AdminConsoleAuthenticator} implementation to extract an externally authenticated user ID or to initiate the OIDC authorization code flow.
  */
 public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAuthenticator, ActivateableBean
 {
@@ -145,7 +144,7 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
         try
         {
             AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(
-                authorizationCode(code, request.getRequestURL().toString()));
+                    authorizationCode(code, request.getRequestURL().toString()));
             addCookies(response, accessTokenAuthorization);
             bearerToken = accessTokenAuthorization.getAccessToken().getTokenValue();
         }
@@ -154,8 +153,8 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
             if (LOGGER.isWarnEnabled())
             {
                 LOGGER.warn(
-                    "Error while trying to retrieve a response using the Authorization Code at the Token Endpoint: {}",
-                    exception.getMessage());
+                        "Error while trying to retrieve a response using the Authorization Code at the Token Endpoint: {}",
+                        exception.getMessage());
             }
         }
         return bearerToken;
@@ -188,7 +187,7 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
     {
         cookiesService.addCookie(ALFRESCO_ACCESS_TOKEN, accessTokenAuthorization.getAccessToken().getTokenValue(), response);
         cookiesService.addCookie(ALFRESCO_TOKEN_EXPIRATION, String.valueOf(
-            accessTokenAuthorization.getAccessToken().getExpiresAt().toEpochMilli()), response);
+                accessTokenAuthorization.getAccessToken().getExpiresAt().toEpochMilli()), response);
         cookiesService.addCookie(ALFRESCO_REFRESH_TOKEN, accessTokenAuthorization.getRefreshTokenValue(), response);
     }
 
@@ -198,13 +197,13 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
         State state = new State();
 
         UriComponentsBuilder authRequestBuilder = UriComponentsBuilder.fromUriString(clientRegistration.getProviderDetails().getAuthorizationUri())
-            .queryParam("client_id", clientRegistration.getClientId())
-            .queryParam("redirect_uri", getRedirectUri(request.getRequestURL().toString()))
-            .queryParam("response_type", "code")
-            .queryParam("scope", String.join("+", getScopes(clientRegistration)))
-            .queryParam("state", state.toString());
+                .queryParam("client_id", clientRegistration.getClientId())
+                .queryParam("redirect_uri", getRedirectUri(request.getRequestURL().toString()))
+                .queryParam("response_type", "code")
+                .queryParam("scope", String.join("+", getScopes(clientRegistration)))
+                .queryParam("state", state.toString());
 
-        if(StringUtils.isNotBlank(identityServiceConfig.getAudience()))
+        if (StringUtils.isNotBlank(identityServiceConfig.getAudience()))
         {
             authRequestBuilder.queryParam("audience", identityServiceConfig.getAudience());
         }
@@ -215,20 +214,20 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
     private Set<String> getScopes(ClientRegistration clientRegistration)
     {
         return Optional.ofNullable(clientRegistration.getProviderDetails())
-            .map(ProviderDetails::getConfigurationMetadata)
-            .map(metadata -> metadata.get(SCOPES_SUPPORTED.getValue()))
-            .filter(Scope.class::isInstance)
-            .map(Scope.class::cast)
-            .map(this::getSupportedScopes)
-            .orElse(clientRegistration.getScopes());
+                .map(ProviderDetails::getConfigurationMetadata)
+                .map(metadata -> metadata.get(SCOPES_SUPPORTED.getValue()))
+                .filter(Scope.class::isInstance)
+                .map(Scope.class::cast)
+                .map(this::getSupportedScopes)
+                .orElse(clientRegistration.getScopes());
     }
 
     private Set<String> getSupportedScopes(Scope scopes)
     {
         return scopes.stream()
-            .filter(scope -> SCOPES.contains(scope.getValue()))
-            .map(Identifier::getValue)
-            .collect(Collectors.toSet());
+                .filter(scope -> SCOPES.contains(scope.getValue()))
+                .map(Identifier::getValue)
+                .collect(Collectors.toSet());
     }
 
     private String getRedirectUri(String requestURL)
@@ -263,7 +262,7 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
     private AccessTokenAuthorization doRefreshAuthToken(String refreshToken)
     {
         AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(
-            AuthorizationGrant.refreshToken(refreshToken));
+                AuthorizationGrant.refreshToken(refreshToken));
         if (accessTokenAuthorization == null || accessTokenAuthorization.getAccessToken() == null)
         {
             throw new AuthenticationException("AccessTokenResponse is null or empty");
@@ -284,7 +283,7 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
     }
 
     public void setIdentityServiceFacade(
-        IdentityServiceFacade identityServiceFacade)
+            IdentityServiceFacade identityServiceFacade)
     {
         this.identityServiceFacade = identityServiceFacade;
     }
@@ -295,13 +294,13 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
     }
 
     public void setCookiesService(
-        AdminConsoleAuthenticationCookiesService cookiesService)
+            AdminConsoleAuthenticationCookiesService cookiesService)
     {
         this.cookiesService = cookiesService;
     }
 
     public void setIdentityServiceConfig(
-        IdentityServiceConfig identityServiceConfig)
+            IdentityServiceConfig identityServiceConfig)
     {
         this.identityServiceConfig = identityServiceConfig;
     }

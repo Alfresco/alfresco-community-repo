@@ -29,8 +29,9 @@ package org.alfresco.repo.domain.contentdata;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-import org.alfresco.service.cmr.repository.ContentUrlKey;
 import org.apache.commons.codec.DecoderException;
+
+import org.alfresco.service.cmr.repository.ContentUrlKey;
 
 /**
  * 
@@ -51,15 +52,14 @@ public class ContentUrlKeyEntity implements Serializable
     private Long unencryptedFileSize;
 
     public ContentUrlKeyEntity()
-    {
-    }
+    {}
 
     public ContentUrlKey getContentUrlKey() throws DecoderException
     {
         ContentUrlKey contentUrlKey = new ContentUrlKey();
         contentUrlKey.setAlgorithm(algorithm);
         contentUrlKey.setKeySize(keySize);
-          contentUrlKey.setEncryptedKeyBytes(ByteBuffer.wrap(encryptedKeyAsBytes));
+        contentUrlKey.setEncryptedKeyBytes(ByteBuffer.wrap(encryptedKeyAsBytes));
         contentUrlKey.setMasterKeyAlias(masterKeyAlias);
         contentUrlKey.setMasterKeystoreId(masterKeystoreId);
         contentUrlKey.setUnencryptedFileSize(unencryptedFileSize);
@@ -92,7 +92,7 @@ public class ContentUrlKeyEntity implements Serializable
         encryptedKey.getByteBuffer().get(encryptedKeyAsBytes);
 
         this.encryptedKeyAsBytes = encryptedKeyAsBytes;
-        this.keySize = encryptedKeyAsBytes.length*8;
+        this.keySize = encryptedKeyAsBytes.length * 8;
         this.algorithm = encryptedKey.getAlgorithm();
         this.masterKeyAlias = encryptedKey.getMasterKeyAlias();
         this.masterKeystoreId = encryptedKey.getMasterKeystoreId();
@@ -105,7 +105,7 @@ public class ContentUrlKeyEntity implements Serializable
         byte[] encryptedKeyAsBytes = new byte[encryptedKey.getByteBuffer().remaining()];
         encryptedKey.getByteBuffer().get(encryptedKeyAsBytes);
         newContentUrlKeyEntity.setEncryptedKeyAsBytes(encryptedKeyAsBytes);
-        newContentUrlKeyEntity.setKeySize(encryptedKeyAsBytes.length*8);
+        newContentUrlKeyEntity.setKeySize(encryptedKeyAsBytes.length * 8);
         newContentUrlKeyEntity.setAlgorithm(encryptedKey.getAlgorithm());
         newContentUrlKeyEntity.setMasterKeyAlias(encryptedKey.getMasterKeyAlias());
         newContentUrlKeyEntity.setMasterKeystoreId(encryptedKey.getMasterKeystoreId());
@@ -125,7 +125,7 @@ public class ContentUrlKeyEntity implements Serializable
     {
         this.id = id;
     }
-    
+
     public EncryptedKey getEncryptedKey() throws DecoderException
     {
         EncryptedKey encryptedKey = new EncryptedKey(getMasterKeystoreId(), getMasterKeyAlias(),
@@ -178,14 +178,14 @@ public class ContentUrlKeyEntity implements Serializable
         return masterKeyAlias;
     }
 
-    public void setMasterKeyAlias(String masterKeyAlias) 
+    public void setMasterKeyAlias(String masterKeyAlias)
     {
         this.masterKeyAlias = masterKeyAlias;
     }
 
-	@Override
+    @Override
     public int hashCode()
-	{
+    {
         final int prime = 31;
         int result = 1;
         result = prime * result
@@ -209,25 +209,33 @@ public class ContentUrlKeyEntity implements Serializable
         if (getClass() != obj.getClass())
             return false;
         ContentUrlKeyEntity other = (ContentUrlKeyEntity) obj;
-        if (algorithm == null) {
+        if (algorithm == null)
+        {
             if (other.algorithm != null)
                 return false;
-        } else if (!algorithm.equals(other.algorithm))
+        }
+        else if (!algorithm.equals(other.algorithm))
             return false;
-        if (id == null) {
+        if (id == null)
+        {
             if (other.id != null)
                 return false;
-        } else if (!id.equals(other.id))
+        }
+        else if (!id.equals(other.id))
             return false;
-        if (masterKeyAlias == null) {
+        if (masterKeyAlias == null)
+        {
             if (other.masterKeyAlias != null)
                 return false;
-        } else if (!masterKeyAlias.equals(other.masterKeyAlias))
+        }
+        else if (!masterKeyAlias.equals(other.masterKeyAlias))
             return false;
-        if (masterKeystoreId == null) {
+        if (masterKeystoreId == null)
+        {
             if (other.masterKeystoreId != null)
                 return false;
-        } else if (!masterKeystoreId.equals(other.masterKeystoreId))
+        }
+        else if (!masterKeystoreId.equals(other.masterKeystoreId))
             return false;
         return true;
     }
@@ -236,7 +244,7 @@ public class ContentUrlKeyEntity implements Serializable
     public String toString()
     {
         return "ContentUrlKeyEntity [id=" + id + ", encryptedKeyAsBytes="
-                + encryptedKeyAsBytes+ ", keySize=" + keySize + ", algorithm="
+                + encryptedKeyAsBytes + ", keySize=" + keySize + ", algorithm="
                 + algorithm + ", masterKeystoreId=" + masterKeystoreId
                 + ", masterKeyAlias=" + masterKeyAlias
                 + ", unencryptedFileSize=" + unencryptedFileSize + "]";

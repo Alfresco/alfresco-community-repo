@@ -45,6 +45,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import freemarker.cache.URLTemplateLoader;
+import freemarker.core.TemplateClassResolver;
+import freemarker.template.Configuration;
+import freemarker.template.DefaultObjectWrapper;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import freemarker.template.Version;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.springframework.extensions.surf.util.Base64;
+
 import org.alfresco.repo.activities.post.lookup.PostLookup;
 import org.alfresco.repo.domain.activities.ActivitiesDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedDAO;
@@ -56,20 +70,6 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.JSONtoFmModel;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.springframework.extensions.surf.util.Base64;
-
-import freemarker.cache.URLTemplateLoader;
-import freemarker.core.TemplateClassResolver;
-import freemarker.template.Configuration;
-import freemarker.template.DefaultObjectWrapper;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.Version;
 
 /**
  * Responsible for processing the individual task
@@ -77,84 +77,87 @@ import freemarker.template.Version;
 public abstract class FeedTaskProcessor
 {
     private static final Log logger = LogFactory.getLog(FeedTaskProcessor.class);
-    
+
     public static final String FEED_FORMAT_JSON = "json";
     public static final String FEED_FORMAT_ATOMENTRY = "atomentry";
     public static final String FEED_FORMAT_HTML = "html";
     public static final String FEED_FORMAT_RSS = "rss";
     public static final String FEED_FORMAT_TEXT = "text";
     public static final String FEED_FORMAT_XML = "xml";
-    
-    private static final String URL_SERVICE_SITES     = "/api/sites";
-    private static final String URL_MEMBERSHIPS       = "/memberships";
-    
+
+    private static final String URL_SERVICE_SITES = "/api/sites";
+    private static final String URL_MEMBERSHIPS = "/memberships";
+
     private static final String URL_SERVICE_TEMPLATES = "/api/activities/templates";
-    private static final String URL_SERVICE_TEMPLATE  = "/api/activities/template";
-    
+    private static final String URL_SERVICE_TEMPLATE = "/api/activities/template";
+
     private boolean userNamesAreCaseSensitive = false;
-    
+
     public void setUserNamesAreCaseSensitive(boolean userNamesAreCaseSensitive)
     {
         this.userNamesAreCaseSensitive = userNamesAreCaseSensitive;
     }
-    
+
     public void process(int jobTaskNode, long minSeq, long maxSeq, RepoCtx ctx) throws Exception
     {
         long startTime = System.currentTimeMillis();
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("Process: jobTaskNode '" + jobTaskNode + "' from seq '" + minSeq + "' to seq '" + maxSeq + "' on this node from grid job.");
         }
-        
+
         ActivityPostEntity selector = new ActivityPostEntity();
         selector.setJobTaskNode(jobTaskNode);
         selector.setMinId(minSeq);
         selector.setMaxId(maxSeq);
         selector.setStatus(ActivityPostEntity.STATUS.POSTED.toString());
-        
+
         List<ActivityPostEntity> activityPosts = null;
         int totalGenerated = 0;
-        
+
         try
         {
             activityPosts = selectPosts(selector);
-            
-            if (logger.isDebugEnabled()) { logger.debug("Process: " + activityPosts.size() + " activity posts"); }
-            
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Process: " + activityPosts.size() + " activity posts");
+            }
+
             // local caches for this run of activity posts
-            Map<String, Set<String>> siteConnectedUsers = new HashMap<String, Set<String>>();                                 // site -> site members
+            Map<String, Set<String>> siteConnectedUsers = new HashMap<String, Set<String>>(); // site -> site members
             Map<Pair<String, String>, Set<String>> followerConnectedUsers = new HashMap<Pair<String, String>, Set<String>>(); // user -> followers
-            Map<Pair<String, String>, Boolean> canUserReadSite = new HashMap<Pair<String, String>, Boolean>();                // <user, site> -> true/false (note: used when following, implied as true for site members)
+            Map<Pair<String, String>, Boolean> canUserReadSite = new HashMap<Pair<String, String>, Boolean>(); // <user, site> -> true/false (note: used when following, implied as true for site members)
             Map<String, List<FeedControlEntity>> userFeedControls = new HashMap<String, List<FeedControlEntity>>();
-            
+
             List<String> fmTemplates = Arrays.asList(new String[]{"activities/org/alfresco/generic.json.ftl"});
-            
+
             // for each activity post ...
             for (ActivityPostEntity activityPost : activityPosts)
             {
                 String postingUserId = activityPost.getUserId();
                 String activityType = activityPost.getActivityType();
-                
+
                 if (fmTemplates.size() == 0)
                 {
-                    logger.error("Skipping activity post " + activityPost.getId() + " since no specific/generic templates for activityType: " + activityType );
+                    logger.error("Skipping activity post " + activityPost.getId() + " since no specific/generic templates for activityType: " + activityType);
                     updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
                     continue;
                 }
-                
+
                 Map<String, Object> model = null;
                 try
                 {
                     model = JSONtoFmModel.convertJSONObjectToMap(activityPost.getActivityData());
                 }
-                catch(JSONException je)
+                catch (JSONException je)
                 {
                     logger.error("Skipping activity post " + activityPost.getId() + " due to invalid activity data: ", je);
                     updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
                     continue;
                 }
-                
+
                 String nodeRefStr = (String) model.get(PostLookup.JSON_NODEREF);
                 try
                 {
@@ -168,16 +171,16 @@ public abstract class FeedTaskProcessor
                 catch (Exception e)
                 {
                     logger.error("Skipping activity post " + activityPost.getId() +
-                                " due to invalid nodeRef: " + nodeRefStr);
+                            " due to invalid nodeRef: " + nodeRefStr);
                     updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
                     continue;
                 }
-                
+
                 // note: for MT share, site id should already be mangled - in addition to extra tenant domain info
-                
+
                 String thisSite = activityPost.getSiteNetwork();
-                String tenantDomain = (String)model.get(PostLookup.JSON_TENANT_DOMAIN);
-                
+                String tenantDomain = (String) model.get(PostLookup.JSON_TENANT_DOMAIN);
+
                 if (thisSite != null)
                 {
                     if (tenantDomain != null)
@@ -194,7 +197,7 @@ public abstract class FeedTaskProcessor
                 {
                     tenantDomain = TenantService.DEFAULT_DOMAIN;
                 }
-                
+
                 model.put(ActivityFeedEntity.KEY_ACTIVITY_FEED_TYPE, activityPost.getActivityType());
                 model.put(ActivityFeedEntity.KEY_ACTIVITY_FEED_SITE, thisSite);
                 model.put("userId", activityPost.getUserId());
@@ -202,7 +205,7 @@ public abstract class FeedTaskProcessor
                 model.put("date", activityPost.getPostDate()); // post date rather than time that feed is generated
                 model.put("xmldate", new ISO8601DateFormatMethod());
                 model.put("repoEndPoint", ctx.getRepoEndPoint());
-                
+
                 // Get recipients of this post
                 Set<String> recipients = null;
                 try
@@ -215,22 +218,22 @@ public abstract class FeedTaskProcessor
                     updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
                     continue;
                 }
-                
-                try 
-                { 
+
+                try
+                {
                     startTransaction();
-                    
+
                     if (logger.isTraceEnabled())
                     {
                         logger.trace("Process: " + recipients.size() + " candidate connections for activity post " + activityPost.getId());
                     }
-                    
+
                     int excludedConnections = 0;
-                    
+
                     for (String recipient : recipients)
                     {
                         List<FeedControlEntity> feedControls = null;
-                        if (! recipient.equals(""))
+                        if (!recipient.equals(""))
                         {
                             // Get user's feed controls
                             feedControls = userFeedControls.get(recipient);
@@ -240,30 +243,30 @@ public abstract class FeedTaskProcessor
                                 userFeedControls.put(recipient, feedControls);
                             }
                         }
-                        
+
                         // filter based on opt-out feed controls (if any)
-                        if (! acceptActivity(activityPost, feedControls))
+                        if (!acceptActivity(activityPost, feedControls))
                         {
                             excludedConnections++;
                         }
                         else
                         {
                             // node read permission check (if nodeRef is present)
-                            if (! canRead(ctx, recipient, model))
+                            if (!canRead(ctx, recipient, model))
                             {
                                 excludedConnections++;
                                 continue;
                             }
-                            
+
                             for (String fmTemplate : fmTemplates)
                             {
                                 String formatFound = FeedTaskProcessor.FEED_FORMAT_JSON;
-                                
+
                                 ActivityFeedEntity feed = new ActivityFeedEntity();
-                                
-                                // Generate activity feed summary 
-                                //MNT-9104 If username contains uppercase letters the action of joining a site will not be displayed in "My activities" 
-                                if (! userNamesAreCaseSensitive)
+
+                                // Generate activity feed summary
+                                // MNT-9104 If username contains uppercase letters the action of joining a site will not be displayed in "My activities"
+                                if (!userNamesAreCaseSensitive)
                                 {
                                     recipient = recipient.toLowerCase();
                                     postingUserId = postingUserId.toLowerCase();
@@ -271,12 +274,12 @@ public abstract class FeedTaskProcessor
                                 feed.setFeedUserId(recipient);
                                 feed.setPostUserId(postingUserId);
                                 feed.setActivityType(activityType);
-                                
+
                                 String activitySummary = null;
-                                    // allows JSON to simply pass straight through
-                                    activitySummary = activityPost.getActivityData();
-                                
-                                if (! activitySummary.equals(""))
+                                // allows JSON to simply pass straight through
+                                activitySummary = activityPost.getActivityData();
+
+                                if (!activitySummary.equals(""))
                                 {
                                     if (activitySummary.length() > ActivityFeedDAO.MAX_LEN_ACTIVITY_SUMMARY)
                                     {
@@ -290,10 +293,10 @@ public abstract class FeedTaskProcessor
                                         feed.setPostDate(activityPost.getPostDate());
                                         feed.setPostId(activityPost.getId());
                                         feed.setFeedDate(new Date());
-                                        
+
                                         // Insert activity feed
                                         insertFeedEntry(feed); // ignore returned feedId
-                                        
+
                                         totalGenerated++;
                                     }
                                 }
@@ -307,23 +310,23 @@ public abstract class FeedTaskProcessor
                             }
                         }
                     }
-                    
+
                     updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.PROCESSED);
-                    
+
                     commitTransaction();
-                    
+
                     if (logger.isDebugEnabled())
                     {
                         logger.debug("Processed: " + (recipients.size() - excludedConnections) + " connections for activity post " + activityPost.getId() + " (excluded " + excludedConnections + ")");
                     }
-                } 
-                finally 
-                { 
+                }
+                finally
+                {
                     endTransaction();
-                } 
+                }
             }
         }
-        catch(SQLException se)
+        catch (SQLException se)
         {
             logger.error(se);
             throw se;
@@ -331,7 +334,7 @@ public abstract class FeedTaskProcessor
         finally
         {
             int postCnt = activityPosts == null ? 0 : activityPosts.size();
-            
+
             // TODO i18n info message
             StringBuilder sb = new StringBuilder();
             sb.append("Generated ").append(totalGenerated).append(" activity feed entr").append(totalGenerated == 1 ? "y" : "ies");
@@ -339,13 +342,13 @@ public abstract class FeedTaskProcessor
             logger.info(sb.toString());
         }
     }
-    
+
     private Set<String> getRecipients(RepoCtx ctx, String siteId, String postUserId, String tenantDomain,
-                                      Map<String, Set<String>> siteConnectedUsers, Map<Pair<String, String>, Set<String>> followerConnectedUsers, Map<Pair<String, String>, Boolean> canUserReadSite) throws Exception
+            Map<String, Set<String>> siteConnectedUsers, Map<Pair<String, String>, Set<String>> followerConnectedUsers, Map<Pair<String, String>, Boolean> canUserReadSite) throws Exception
     {
         // Recipients of this post
         Set<String> recipients = new HashSet<String>();
-        
+
         // Add site members to recipient list
         if ((null != siteId) && (siteId.length() > 0))
         {
@@ -359,20 +362,20 @@ public abstract class FeedTaskProcessor
                     connectedUsers = getSiteMembers(ctx, siteId, tenantDomain);
                     connectedUsers.add(""); // add empty posting userid - to represent site feed !
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
-                    throw new Exception("Failed to get site members: "+e);
+                    throw new Exception("Failed to get site members: " + e);
                 }
-                
+
                 // Cache them for future use (across activity posts handled) by this same invocation
                 siteConnectedUsers.put(siteId, connectedUsers);
             }
-            
+
             recipients.addAll(connectedUsers);
         }
-        
+
         // Add followers to recipient list
-        
+
         // MT Share
         Pair<String, String> userTenantKey = new Pair<String, String>(postUserId, tenantDomain);
         Set<String> followerUsers = followerConnectedUsers.get(userTenantKey);
@@ -382,15 +385,15 @@ public abstract class FeedTaskProcessor
             {
                 followerUsers = getFollowers(postUserId, tenantDomain);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                throw new Exception("Failed to get followers: "+e);
+                throw new Exception("Failed to get followers: " + e);
             }
-            
+
             // Cache them for future use (across activity posts handled) by this same invocation
             followerConnectedUsers.put(userTenantKey, followerUsers);
         }
-        
+
         if ((null != siteId) && (siteId.length() > 0))
         {
             for (String followerUser : followerUsers)
@@ -403,7 +406,7 @@ public abstract class FeedTaskProcessor
                 {
                     continue;
                 }
-                
+
                 Pair<String, String> userSiteKey = new Pair<String, String>(followerUser, siteId);
                 Boolean canRead = canUserReadSite.get(userSiteKey);
                 if (canRead == null)
@@ -412,7 +415,7 @@ public abstract class FeedTaskProcessor
                     canRead = canReadSite(ctx, siteId, followerUser, tenantDomain);
                     canUserReadSite.put(userSiteKey, canRead);
                 }
-                
+
                 if (canRead)
                 {
                     recipients.add(followerUser);
@@ -423,14 +426,13 @@ public abstract class FeedTaskProcessor
         {
             recipients.addAll(followerUsers);
         }
-        
-        
+
         // Add the originator to recipients
         recipients.add(postUserId);
-        
+
         return recipients;
     }
-    
+
     public abstract void startTransaction() throws SQLException;
 
     public abstract void commitTransaction() throws SQLException;
@@ -450,40 +452,40 @@ public abstract class FeedTaskProcessor
     protected String callWebScript(String urlString, String ticket) throws MalformedURLException, URISyntaxException, IOException
     {
         URL url = new URL(urlString);
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("Request URI: " + url.toURI());
         }
-        
-        HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
-        
+
         if (ticket != null)
         {
             // add Base64 encoded authorization header
             // refer to: http://wiki.alfresco.com/wiki/Web_Scripts_Framework#HTTP_Basic_Authentication
             conn.addRequestProperty("Authorization", "Basic " + Base64.encodeBytes(ticket.getBytes()));
         }
-        
+
         String result = null;
         InputStream is = null;
         BufferedReader br = null;
-        
+
         try
         {
             is = conn.getInputStream();
             br = new BufferedReader(new InputStreamReader(is));
-            
+
             String line = null;
             StringBuffer sb = new StringBuffer();
-            while(((line = br.readLine()) !=null))  
+            while (((line = br.readLine()) != null))
             {
                 sb.append(line);
             }
-            
+
             result = sb.toString();
-            
+
             if (logger.isDebugEnabled())
             {
                 int responseCode = conn.getResponseCode();
@@ -492,25 +494,33 @@ public abstract class FeedTaskProcessor
         }
         finally
         {
-            if (br != null) { br.close(); };
-            if (is != null) { is.close(); };
+            if (br != null)
+            {
+                br.close();
+            }
+            ;
+            if (is != null)
+            {
+                is.close();
+            }
+            ;
         }
-        
+
         return result;
     }
-    
+
     protected String getTenantName(String name, String tenantDomain)
     {
         // note: for MT impl, see override in LocalFeedTaskProcessor
         return name;
     }
-    
+
     protected String getTenantDomain(String name)
     {
         // note: for MT impl, see override in LocalFeedTaskProcessor
         return TenantService.DEFAULT_DOMAIN;
     }
-    
+
     protected Set<String> getSiteMembers(RepoCtx ctx, String siteId, String tenantDomain) throws Exception
     {
         // note: tenant domain ignored her - it should already be part of the siteId
@@ -518,20 +528,19 @@ public abstract class FeedTaskProcessor
         if ((siteId != null) && (siteId.length() != 0))
         {
             StringBuffer sbUrl = new StringBuffer();
-            sbUrl.append(ctx.getRepoEndPoint()).
-                  append(URL_SERVICE_SITES).append("/").append(siteId).append(URL_MEMBERSHIPS);
-            
+            sbUrl.append(ctx.getRepoEndPoint()).append(URL_SERVICE_SITES).append("/").append(siteId).append(URL_MEMBERSHIPS);
+
             String jsonArrayResult = callWebScript(sbUrl.toString(), ctx.getTicket());
             if ((jsonArrayResult != null) && (jsonArrayResult.length() != 0))
             {
                 JSONArray ja = new JSONArray(jsonArrayResult);
                 for (int i = 0; i < ja.length(); i++)
                 {
-                    JSONObject member = (JSONObject)ja.get(i);
-                    JSONObject person = (JSONObject)member.getJSONObject("person");
-                    
+                    JSONObject member = (JSONObject) ja.get(i);
+                    JSONObject person = (JSONObject) member.getJSONObject("person");
+
                     String userName = person.getString("userName");
-                    if (! ctx.isUserNamesAreCaseSensitive())
+                    if (!ctx.isUserNamesAreCaseSensitive())
                     {
                         userName = userName.toLowerCase();
                     }
@@ -539,19 +548,21 @@ public abstract class FeedTaskProcessor
                 }
             }
         }
-        
+
         return members;
     }
-    
+
     protected abstract Set<String> getFollowers(String userId, String tenantDomain) throws Exception;
+
     protected abstract boolean canReadSite(final RepoCtx ctx, String siteIdIn, String connectedUser, final String tenantDomain) throws Exception;
+
     protected abstract boolean canRead(RepoCtx ctx, final String connectedUser, Map<String, Object> model) throws Exception;
-    
+
     protected Map<String, List<String>> getActivityTypeTemplates(String repoEndPoint, String ticket, String subPath) throws Exception
     {
         StringBuffer sbUrl = new StringBuffer();
         sbUrl.append(repoEndPoint).append(URL_SERVICE_TEMPLATES).append(subPath).append("*").append("?format=json");
-        
+
         String jsonArrayResult = null;
         try
         {
@@ -561,9 +572,9 @@ public abstract class FeedTaskProcessor
         {
             return null;
         }
-        
+
         List<String> allTemplateNames = new ArrayList<String>(10);
-        
+
         if ((jsonArrayResult != null) && (jsonArrayResult.length() != 0))
         {
             JSONArray ja = new JSONArray(jsonArrayResult);
@@ -573,28 +584,28 @@ public abstract class FeedTaskProcessor
                 allTemplateNames.add(name);
             }
         }
-        
+
         return getActivityTemplates(allTemplateNames);
     }
 
     protected Map<String, List<String>> getActivityTemplates(List<String> allTemplateNames)
     {
         Map<String, List<String>> activityTemplates = new HashMap<String, List<String>>(10);
-        
+
         for (String template : allTemplateNames)
         {
-            if (! template.contains(" (Working Copy)."))
+            if (!template.contains(" (Working Copy)."))
             {
                 // assume template path = <path>/<base-activityType>.<format>.ftl
                 // and base-activityType can contain "."
-                
+
                 String baseActivityType = template;
                 int idx1 = baseActivityType.lastIndexOf("/");
                 if (idx1 != -1)
                 {
-                    baseActivityType = baseActivityType.substring(idx1+1);
+                    baseActivityType = baseActivityType.substring(idx1 + 1);
                 }
-                
+
                 int idx2 = baseActivityType.lastIndexOf(".");
                 if (idx2 != -1)
                 {
@@ -602,7 +613,7 @@ public abstract class FeedTaskProcessor
                     if (idx3 != -1)
                     {
                         baseActivityType = baseActivityType.substring(0, idx3);
-                        
+
                         List<String> activityTypeTemplateList = activityTemplates.get(baseActivityType);
                         if (activityTypeTemplateList == null)
                         {
@@ -614,7 +625,7 @@ public abstract class FeedTaskProcessor
                 }
             }
         }
-        
+
         return activityTemplates;
     }
 
@@ -643,21 +654,21 @@ public abstract class FeedTaskProcessor
             myTemplate = cfg.getTemplate(fmTemplate);
             templateCache.put(fmTemplate, myTemplate);
         }
-        
+
         StringWriter textWriter = new StringWriter();
         myTemplate.process(model, textWriter);
-        
+
         return textWriter.toString();
     }
 
     protected List<FeedControlEntity> getFeedControls(String connectedUser) throws SQLException
     {
-        //MNT-9104 If username contains uppercase letters the action of joining a site will not be displayed in "My activities" 
-        if (! userNamesAreCaseSensitive)
+        // MNT-9104 If username contains uppercase letters the action of joining a site will not be displayed in "My activities"
+        if (!userNamesAreCaseSensitive)
         {
             connectedUser = connectedUser.toLowerCase();
         }
-        
+
         return selectUserFeedControls(connectedUser);
     }
 
@@ -667,7 +678,7 @@ public abstract class FeedTaskProcessor
         {
             return true;
         }
-        
+
         for (FeedControlEntity feedControl : feedControls)
         {
             if (ActivitiesDAO.KEY_ACTIVITY_NULL_VALUE.equals(feedControl.getSiteNetwork()) && (feedControl.getAppTool() != null))
@@ -687,17 +698,17 @@ public abstract class FeedTaskProcessor
                 }
             }
             else if (((feedControl.getSiteNetwork() != null) && (feedControl.getSiteNetwork().length() > 0)) &&
-                     ((feedControl.getAppTool() != null) && (feedControl.getAppTool().length() > 0)))
+                    ((feedControl.getAppTool() != null) && (feedControl.getAppTool().length() > 0)))
             {
                 if ((feedControl.getSiteNetwork().equals(activityPost.getSiteNetwork())) &&
-                    (feedControl.getAppTool().equals(activityPost.getAppTool())))
+                        (feedControl.getAppTool().equals(activityPost.getAppTool())))
                 {
                     // exclude this appTool for this site
                     return false;
                 }
             }
         }
-        
+
         return true;
     }
 
@@ -711,18 +722,18 @@ public abstract class FeedTaskProcessor
                 int idx2 = templateToAdd.substring(0, idx1).lastIndexOf(".");
                 if (idx2 != -1)
                 {
-                    String templateFormat = templateToAdd.substring(idx2+1, idx1);
-                    
+                    String templateFormat = templateToAdd.substring(idx2 + 1, idx1);
+
                     boolean found = false;
                     for (String fmTemplate : fmTemplates)
                     {
-                        if (fmTemplate.contains("."+templateFormat+"."))
+                        if (fmTemplate.contains("." + templateFormat + "."))
                         {
                             found = true;
                         }
                     }
-                    
-                    if (! found)
+
+                    if (!found)
                     {
                         if (logger.isDebugEnabled())
                         {
@@ -737,48 +748,45 @@ public abstract class FeedTaskProcessor
 
     protected String getTemplateSubPath(String activityType)
     {
-        return (! activityType.startsWith("/") ? "/" : "") + activityType.replace(".", "/");
+        return (!activityType.startsWith("/") ? "/" : "") + activityType.replace(".", "/");
     }
-    
+
     protected String getBaseActivityType(String activityType)
     {
         String[] parts = activityType.split("\\.");
-        
-        return (parts.length != 0 ? parts[parts.length-1] : "");
+
+        return (parts.length != 0 ? parts[parts.length - 1] : "");
     }
-    
+
     protected class TemplateWebScriptLoader extends URLTemplateLoader
     {
         private String repoEndPoint;
         private String ticketId;
-        
+
         public TemplateWebScriptLoader(String repoEndPoint, String ticketId)
         {
             this.repoEndPoint = repoEndPoint;
             this.ticketId = ticketId;
-            }
-        
+        }
+
         public URL getURL(String templatePath)
         {
             try
             {
                 StringBuffer sb = new StringBuffer();
-                sb.append(this.repoEndPoint).
-                   append(URL_SERVICE_TEMPLATE).append("/").append(templatePath).
-                   append("?format=text").
-                   append("&alf_ticket=").append(ticketId);
-                
+                sb.append(this.repoEndPoint).append(URL_SERVICE_TEMPLATE).append("/").append(templatePath).append("?format=text").append("&alf_ticket=").append(ticketId);
+
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("getURL: " + sb.toString());
                 }
-                
+
                 return new URL(sb.toString());
-            } 
+            }
             catch (Exception e)
             {
                 throw new RuntimeException(e);
             }
-         }
+        }
     }
 }

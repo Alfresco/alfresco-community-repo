@@ -25,10 +25,11 @@
  */
 package org.alfresco.service.cmr.view;
 
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Importer / Exporter Location
@@ -42,12 +43,12 @@ public class Location
     private NodeRef[] nodeRefs = null;
     private String path = null;
     private QName childAssocType = null;
-    
 
     /**
      * Construct
      * 
-     * @param nodeRef NodeRef
+     * @param nodeRef
+     *            NodeRef
      */
     public Location(NodeRef nodeRef)
     {
@@ -59,7 +60,8 @@ public class Location
     /**
      * Construct
      * 
-     * @param nodeRefs NodeRef[]
+     * @param nodeRefs
+     *            NodeRef[]
      */
     public Location(NodeRef[] nodeRefs)
     {
@@ -68,11 +70,11 @@ public class Location
         this.nodeRefs = nodeRefs;
     }
 
-
     /**
      * Construct
      * 
-     * @param storeRef StoreRef
+     * @param storeRef
+     *            StoreRef
      */
     public Location(StoreRef storeRef)
     {
@@ -81,47 +83,48 @@ public class Location
     }
 
     /**
-     * @return  the store ref
+     * @return the store ref
      */
     public StoreRef getStoreRef()
     {
         return storeRef;
     }
-    
+
     /**
-     * @return  the node ref
+     * @return the node ref
      */
     public NodeRef getNodeRef()
     {
         return nodeRef;
     }
-    
+
     /**
-     * @return  the node refs
+     * @return the node refs
      */
     public NodeRef[] getNodeRefs()
     {
         return nodeRefs;
     }
-    
+
     public void setNodeRefs(NodeRef[] nodeRefs)
     {
         this.nodeRef = null;
-        this.nodeRefs = nodeRefs;   
+        this.nodeRefs = nodeRefs;
     }
-    
+
     /**
      * Sets the location to the specified path
-     *  
-     * @param path  path relative to store or node reference
+     * 
+     * @param path
+     *            path relative to store or node reference
      */
     public void setPath(String path)
     {
         this.path = path;
     }
-    
+
     /**
-     * @return  the location
+     * @return the location
      */
     public String getPath()
     {
@@ -131,15 +134,16 @@ public class Location
     /**
      * Sets the child association type
      * 
-     * @param childAssocType  child association type
+     * @param childAssocType
+     *            child association type
      */
     public void setChildAssocType(QName childAssocType)
     {
         this.childAssocType = childAssocType;
     }
-    
+
     /**
-     * @return  the child association type
+     * @return the child association type
      */
     public QName getChildAssocType()
     {

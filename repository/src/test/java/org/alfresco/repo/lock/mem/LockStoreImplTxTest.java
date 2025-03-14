@@ -25,8 +25,9 @@
  */
 package org.alfresco.repo.lock.mem;
 
-import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.junit.experimental.categories.Category;
+
+import org.alfresco.test_category.OwnJVMTestsCategory;
 
 /**
  * Test transaction related functions of {@link LockStoreImpl}.

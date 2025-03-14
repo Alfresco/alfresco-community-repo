@@ -33,23 +33,23 @@ package org.alfresco.repo.site;
  */
 public class SiteMembersCannedQueryParams
 {
-	private String shortName;
-	final private boolean expandGroups;
+    private String shortName;
+    final private boolean expandGroups;
 
-	public SiteMembersCannedQueryParams(String shortName, boolean expandGroups)
-	{
-		super();
-		this.shortName = shortName;
-		this.expandGroups = expandGroups;
-	}
+    public SiteMembersCannedQueryParams(String shortName, boolean expandGroups)
+    {
+        super();
+        this.shortName = shortName;
+        this.expandGroups = expandGroups;
+    }
 
-	public String getShortName()
-	{
-		return shortName;
-	}
+    public String getShortName()
+    {
+        return shortName;
+    }
 
-	public boolean isExpandGroups()
-	{
-		return expandGroups;
-	}
+    public boolean isExpandGroups()
+    {
+        return expandGroups;
+    }
 }

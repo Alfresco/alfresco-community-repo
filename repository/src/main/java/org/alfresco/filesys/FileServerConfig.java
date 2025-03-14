@@ -25,94 +25,94 @@
  */
 package org.alfresco.filesys;
 
-import java.net.InetAddress;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.jlan.ftp.FTPConfigSection;
 import org.alfresco.jlan.server.config.ServerConfiguration;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * File Server Configuration MBean Class
  * 
- * <p>Implements the file server configuration interface using the fileServerConfigurationBase bean
- * from network-protocol-context.xml.
+ * <p>
+ * Implements the file server configuration interface using the fileServerConfigurationBase bean from network-protocol-context.xml.
  * 
  * @author gkspencer
  */
-public class FileServerConfig implements FileServerConfigMBean {
+public class FileServerConfig implements FileServerConfigMBean
+{
 
-	// Debug logging
-	
-    private static final Log logger = LogFactory.getLog( FileServerConfig.class);
-    
-	// File server configuration
-	
-	private ServerConfiguration m_serverConfig;
-	
-	private FTPServerBean  m_ftpServer;
+    // Debug logging
 
-	/**
-	 * Default constructor
-	 */
-	public FileServerConfig()
-	{
-	}
+    private static final Log logger = LogFactory.getLog(FileServerConfig.class);
 
-	/**
-	 * Set the file server configuration
-	 * 
-	 * @return ServerConfiguration
-	 */
-	public ServerConfiguration getFileServerConfiguration()
-	{
-		return m_serverConfig;
-	}
-	
-	/**
-	 * Set the file server configuration
-	 * 
-	 * @param serverConfig ServerConfiguration
-	 */
-	public void setFileServerConfiguration(ServerConfiguration serverConfig)
-	{
-		m_serverConfig = serverConfig;
-	}
-	
-	/**
-	 * Set the FTP server
-	 * 
-	 * @param ftpServer  FTP server
-	 */
-	public void setFtpServer(FTPServerBean ftpServer)
-	{
-		m_ftpServer = ftpServer;
-	}
-	
-	/**
-	 * Check if the FTP server is enabled
-	 * 
-	 * @return boolean
-	 */
-	public boolean isFTPServerEnabled()
-	{
-		return (m_ftpServer.isStarted() && m_serverConfig.hasConfigSection(FTPConfigSection.SectionName));
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.alfresco.filesys.server.config.FileServerConfigMBean#setFTPServerEnabled(boolean)
-	 */
-	public void setFTPServerEnabled(boolean enabled) throws Exception
-	{
-		if (!enabled && isFTPServerEnabled())
-		{
-			m_ftpServer.stopServer();
-		}
-		
-		if (enabled && !isFTPServerEnabled())
-		{
-			m_ftpServer.startServer();
-		}
-	}
+    // File server configuration
+
+    private ServerConfiguration m_serverConfig;
+
+    private FTPServerBean m_ftpServer;
+
+    /**
+     * Default constructor
+     */
+    public FileServerConfig()
+    {}
+
+    /**
+     * Set the file server configuration
+     * 
+     * @return ServerConfiguration
+     */
+    public ServerConfiguration getFileServerConfiguration()
+    {
+        return m_serverConfig;
+    }
+
+    /**
+     * Set the file server configuration
+     * 
+     * @param serverConfig
+     *            ServerConfiguration
+     */
+    public void setFileServerConfiguration(ServerConfiguration serverConfig)
+    {
+        m_serverConfig = serverConfig;
+    }
+
+    /**
+     * Set the FTP server
+     * 
+     * @param ftpServer
+     *            FTP server
+     */
+    public void setFtpServer(FTPServerBean ftpServer)
+    {
+        m_ftpServer = ftpServer;
+    }
+
+    /**
+     * Check if the FTP server is enabled
+     * 
+     * @return boolean
+     */
+    public boolean isFTPServerEnabled()
+    {
+        return (m_ftpServer.isStarted() && m_serverConfig.hasConfigSection(FTPConfigSection.SectionName));
+    }
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.filesys.server.config.FileServerConfigMBean#setFTPServerEnabled(boolean) */
+    public void setFTPServerEnabled(boolean enabled) throws Exception
+    {
+        if (!enabled && isFTPServerEnabled())
+        {
+            m_ftpServer.stopServer();
+        }
+
+        if (enabled && !isFTPServerEnabled())
+        {
+            m_ftpServer.startServer();
+        }
+    }
 }

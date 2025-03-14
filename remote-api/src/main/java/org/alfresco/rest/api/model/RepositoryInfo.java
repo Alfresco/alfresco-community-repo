@@ -25,17 +25,15 @@
  */
 package org.alfresco.rest.api.model;
 
-import org.alfresco.service.descriptor.Descriptor;
-import org.alfresco.service.license.LicenseDescriptor;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+
+import org.alfresco.service.descriptor.Descriptor;
+import org.alfresco.service.license.LicenseDescriptor;
 
 /**
  * Representation of the repository information.
@@ -122,11 +120,11 @@ public class RepositoryInfo
     {
         final StringBuilder sb = new StringBuilder(450);
         sb.append("RepositoryInfo [edition=").append(edition)
-                    .append(", version=").append(version)
-                    .append(", license=").append(license)
-                    .append(", status=").append(status)
-                    .append(", modules=").append(modules)
-                    .append(']');
+                .append(", version=").append(version)
+                .append(", license=").append(license)
+                .append(", status=").append(status)
+                .append(", modules=").append(modules)
+                .append(']');
         return sb.toString();
     }
 
@@ -148,8 +146,7 @@ public class RepositoryInfo
 
         // Default constructor required for test purposes
         public VersionInfo()
-        {
-        }
+        {}
 
         public VersionInfo(Descriptor descriptor)
         {
@@ -199,10 +196,7 @@ public class RepositoryInfo
 
         private String getHotfix(String versionLabel)
         {
-            /*
-             * if the label starts with a dot, then digit(s), or just digit(s), we return the number only.
-             * for anything else zero will be returned.
-             */
+            /* if the label starts with a dot, then digit(s), or just digit(s), we return the number only. for anything else zero will be returned. */
             if (StringUtils.isNotEmpty(versionLabel))
             {
                 if (versionLabel.startsWith("."))
@@ -222,11 +216,11 @@ public class RepositoryInfo
         {
             StringBuilder version = new StringBuilder(major);
             version.append('.')
-                        .append(minor)
-                        .append('.')
-                        .append(patch)
-                        .append('.')
-                        .append(getHotfix());
+                    .append(minor)
+                    .append('.')
+                    .append(patch)
+                    .append('.')
+                    .append(getHotfix());
 
             if (StringUtils.isNotEmpty(label))
             {
@@ -243,13 +237,13 @@ public class RepositoryInfo
         {
             final StringBuilder sb = new StringBuilder(250);
             sb.append("VersionInfo [major=").append(major)
-                        .append(", minor=").append(minor)
-                        .append(", patch=").append(patch)
-                        .append(", hotfix=").append(hotfix)
-                        .append(", schema=").append(schema)
-                        .append(", label=").append(label)
-                        .append(", display=").append(display)
-                        .append(']');
+                    .append(", minor=").append(minor)
+                    .append(", patch=").append(patch)
+                    .append(", hotfix=").append(hotfix)
+                    .append(", schema=").append(schema)
+                    .append(", label=").append(label)
+                    .append(", display=").append(display)
+                    .append(']');
             return sb.toString();
         }
     }
@@ -270,8 +264,7 @@ public class RepositoryInfo
 
         // Default constructor required for test purposes
         public LicenseInfo()
-        {
-        }
+        {}
 
         public LicenseInfo(LicenseDescriptor licenseDescriptor)
         {
@@ -281,11 +274,11 @@ public class RepositoryInfo
             this.holder = licenseDescriptor.getHolderOrganisation();
             this.mode = licenseDescriptor.getLicenseMode().name();
             this.entitlements = new LicenseEntitlement()
-                        .setMaxDocs(licenseDescriptor.getMaxDocs())
-                        .setMaxUsers(licenseDescriptor.getMaxUsers())
-                        .setClusterEnabled(licenseDescriptor.isClusterEnabled())
-                        .setCryptodocEnabled(licenseDescriptor.isCryptodocEnabled())
-                        .setCustomEmbeddedWorkflowEnabled(licenseDescriptor.isCustomEmbeddedWorkflowEnabled());
+                    .setMaxDocs(licenseDescriptor.getMaxDocs())
+                    .setMaxUsers(licenseDescriptor.getMaxUsers())
+                    .setClusterEnabled(licenseDescriptor.isClusterEnabled())
+                    .setCryptodocEnabled(licenseDescriptor.isCryptodocEnabled())
+                    .setCustomEmbeddedWorkflowEnabled(licenseDescriptor.isCustomEmbeddedWorkflowEnabled());
         }
 
         public Date getIssuedAt()
@@ -323,12 +316,12 @@ public class RepositoryInfo
         {
             final StringBuilder sb = new StringBuilder(250);
             sb.append("LicenseInfo [issuedAt=").append(issuedAt)
-                        .append(", expiresAt=").append(expiresAt)
-                        .append(", remainingDays=").append(remainingDays)
-                        .append(", holder=").append(holder)
-                        .append(", mode=").append(mode)
-                        .append(", entitlements=").append(entitlements)
-                        .append(']');
+                    .append(", expiresAt=").append(expiresAt)
+                    .append(", remainingDays=").append(remainingDays)
+                    .append(", holder=").append(holder)
+                    .append(", mode=").append(mode)
+                    .append(", entitlements=").append(entitlements)
+                    .append(']');
             return sb.toString();
         }
     }
@@ -347,8 +340,7 @@ public class RepositoryInfo
         private boolean isCustomEmbeddedWorkflowEnabled;
 
         public LicenseEntitlement()
-        {
-        }
+        {}
 
         public Long getMaxUsers()
         {
@@ -410,11 +402,11 @@ public class RepositoryInfo
         {
             final StringBuilder sb = new StringBuilder(100);
             sb.append("LicenseEntitlement [maxUsers=").append(maxUsers)
-                        .append(", maxDocs=").append(maxDocs)
-                        .append(", isClusterEnabled=").append(isClusterEnabled)
-                        .append(", isCryptodocEnabled=").append(isCryptodocEnabled)
-                        .append(", isCustomEmbeddedWorkflowEnabled=").append(isCustomEmbeddedWorkflowEnabled)
-                        .append(']');
+                    .append(", maxDocs=").append(maxDocs)
+                    .append(", isClusterEnabled=").append(isClusterEnabled)
+                    .append(", isCryptodocEnabled=").append(isCryptodocEnabled)
+                    .append(", isCustomEmbeddedWorkflowEnabled=").append(isCustomEmbeddedWorkflowEnabled)
+                    .append(']');
             return sb.toString();
         }
     }
@@ -433,8 +425,7 @@ public class RepositoryInfo
         private boolean isDirectAccessUrlEnabled;
 
         public StatusInfo()
-        {
-        }
+        {}
 
         public boolean getIsReadOnly()
         {
@@ -496,11 +487,11 @@ public class RepositoryInfo
         {
             final StringBuilder sb = new StringBuilder(250);
             sb.append("StatusInfo [isReadOnly=").append(isReadOnly)
-                        .append(", isAuditEnabled=").append(isAuditEnabled)
-                        .append(", isQuickShareEnabled=").append(isQuickShareEnabled)
-                        .append(", isThumbnailGenerationEnabled=").append(isThumbnailGenerationEnabled)
-                        .append(", isDirectAccessUrlEnabled=").append(isDirectAccessUrlEnabled)
-                        .append(']');
+                    .append(", isAuditEnabled=").append(isAuditEnabled)
+                    .append(", isQuickShareEnabled=").append(isQuickShareEnabled)
+                    .append(", isThumbnailGenerationEnabled=").append(isThumbnailGenerationEnabled)
+                    .append(", isDirectAccessUrlEnabled=").append(isDirectAccessUrlEnabled)
+                    .append(']');
             return sb.toString();
         }
     }

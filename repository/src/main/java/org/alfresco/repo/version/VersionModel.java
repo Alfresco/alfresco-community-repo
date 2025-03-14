@@ -32,7 +32,7 @@ import org.alfresco.service.namespace.QName;
  *
  * @author Roy Wetherall, janv
  * 
- * NOTE: deprecated since 3.1 (migrate and useVersion2 Model)
+ *         NOTE: deprecated since 3.1 (migrate and useVersion2 Model)
  */
 public interface VersionModel extends VersionBaseModel
 {
@@ -69,7 +69,7 @@ public interface VersionModel extends VersionBaseModel
     /**
      * Version type properties and associations
      */
-    
+
     /**
      * @deprecated since 3.1
      */
@@ -90,9 +90,9 @@ public interface VersionModel extends VersionBaseModel
      * @deprecated since 3.1
      */
     public static final String PROP_FROZEN_ASPECTS = "frozenAspects";
-    
+
     public static final QName PROP_QNAME_VERSION_LABEL = QName.createQName(NAMESPACE_URI, PROP_VERSION_LABEL);
-    
+
     /**
      * @deprecated since 3.3
      */
@@ -121,7 +121,7 @@ public interface VersionModel extends VersionBaseModel
      * @deprecated since 3.1
      */
     public static final QName ASSOC_SUCCESSOR = QName.createQName(NAMESPACE_URI, "successor");
-    
+
     /**
      * Version Meta Data Value type
      */
@@ -194,5 +194,5 @@ public interface VersionModel extends VersionBaseModel
     /**
      * Created version associated to the deleted translations of an mlContainer
      */
-    public static final QName  PROP_QNAME_TRANSLATION_VERSIONS = QName.createQName(VersionModel.NAMESPACE_URI, PROP_TRANSLATION_VERSIONS);    
+    public static final QName PROP_QNAME_TRANSLATION_VERSIONS = QName.createQName(VersionModel.NAMESPACE_URI, PROP_TRANSLATION_VERSIONS);
 }

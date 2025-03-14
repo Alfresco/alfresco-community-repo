@@ -42,11 +42,12 @@ import org.springframework.extensions.config.ConfigImpl;
 public class ImmutableConfig extends ConfigImpl
 {
     private final Map<String, ConfigElement> configElements;
-    
+
     /**
      * Make a read-only copy of the given configuration
      * 
-     * @param config            the configuration to copy
+     * @param config
+     *            the configuration to copy
      */
     public ImmutableConfig(Config config)
     {
@@ -60,7 +61,7 @@ public class ImmutableConfig extends ConfigImpl
             this.configElements = Collections.unmodifiableMap(configElements);
         }
     }
-    
+
     @Override
     public ConfigElement getConfigElement(String name)
     {
@@ -71,13 +72,14 @@ public class ImmutableConfig extends ConfigImpl
     public String getConfigElementValue(String name)
     {
         ConfigElement ce = configElements.get(name);
-        return ce != null ? ce.getValue() : null; 
+        return ce != null ? ce.getValue() : null;
     }
 
     @Override
     public boolean hasConfigElement(String name)
     {
-        return configElements.containsKey(name);    }
+        return configElements.containsKey(name);
+    }
 
     @Override
     public Map<String, ConfigElement> getConfigElements()

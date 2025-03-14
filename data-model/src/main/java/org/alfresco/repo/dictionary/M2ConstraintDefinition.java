@@ -29,6 +29,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.InvalidPropertyException;
+import org.springframework.beans.PropertyAccessException;
+
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.dictionary.constraint.NumericRangeConstraint;
 import org.alfresco.repo.dictionary.constraint.RegexConstraint;
@@ -43,10 +48,6 @@ import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.beans.InvalidPropertyException;
-import org.springframework.beans.PropertyAccessException;
 
 /**
  * Compiled Property Constraint
@@ -58,7 +59,7 @@ import org.springframework.beans.PropertyAccessException;
     private static final String PROP_SHORT_NAME = "shortName";
     private static final String PROP_TITLE = "title";
     private static final String PROP_DESCRIPTION = "description";
-    
+
     public static final String ERR_CYCLIC_REF = "d_dictionary.constraint.err.cyclic_ref";
     public static final String ERR_TYPE_AND_REF = "d_dictionary.constraint.err.type_and_ref";
     public static final String ERR_TYPE_OR_REF = "d_dictionary.constraint.err.type_or_ref";
@@ -81,13 +82,13 @@ import org.springframework.beans.PropertyAccessException;
     private boolean resolving;
     private transient MessageLookup staticMessageLookup = new StaticMessageLookup();
 
-    /* package */M2ConstraintDefinition(M2PropertyDefinition m2PropertyDef, M2Constraint m2Constraint,
+    /* package */ M2ConstraintDefinition(M2PropertyDefinition m2PropertyDef, M2Constraint m2Constraint,
             NamespacePrefixResolver prefixResolver)
     {
         this(m2PropertyDef.getModel(), m2PropertyDef, m2Constraint, prefixResolver);
     }
 
-    /* package */M2ConstraintDefinition(ModelDefinition modelDefinition, M2PropertyDefinition m2PropertyDef,
+    /* package */ M2ConstraintDefinition(ModelDefinition modelDefinition, M2PropertyDefinition m2PropertyDef,
             M2Constraint m2Constraint, NamespacePrefixResolver prefixResolver)
     {
         this.model = modelDefinition;
@@ -142,14 +143,14 @@ import org.springframework.beans.PropertyAccessException;
             // already been resolved
             return;
         }
-        
+
         String shortName = name.toPrefixString();
         String ref = m2Constraint.getRef();
         String type = m2Constraint.getType();
-        
+
         String title = m2Constraint.getTitle();
         String description = m2Constraint.getDescription();
-        
+
         if (ref != null && type != null)
         {
             throw new DictionaryException(ERR_TYPE_AND_REF, shortName);
@@ -172,17 +173,16 @@ import org.springframework.beans.PropertyAccessException;
             constraintDef.resolveDependencies(query, enableConstraintClassLoading);
             // just use the constraint provided by the referenced definition
             this.constraint = constraintDef.getConstraint();
-            
-            //use real constraint name instead of anonymous name
-            //TODO Fix backed out - breaks DictionaryDAOTest
-            //this.name = constraintDef.getName();
-     
-            
+
+            // use real constraint name instead of anonymous name
+            // TODO Fix backed out - breaks DictionaryDAOTest
+            // this.name = constraintDef.getName();
+
             if (m2Constraint.getTitle() == null)
             {
                 m2Constraint.setTitle(constraintDef.getTitle(null));
             }
-            
+
             if (m2Constraint.getDescription() == null)
             {
                 m2Constraint.setDescription(constraintDef.getDescription(null));
@@ -201,7 +201,7 @@ import org.springframework.beans.PropertyAccessException;
                 // try to establish it as a class
                 try
                 {
-                    if(enableConstraintClassLoading)
+                    if (enableConstraintClassLoading)
                     {
                         @SuppressWarnings("unchecked")
                         Class clazz = Class.forName(type);
@@ -221,8 +221,8 @@ import org.springframework.beans.PropertyAccessException;
                     throw new DictionaryException(ERR_CONSTRUCT_FAILURE, type, shortName);
                 }
             }
-            
-            if(constraint != null)
+
+            if (constraint != null)
             {
                 // property setters
                 BeanWrapper beanWrapper = new BeanWrapperImpl(constraint);
@@ -294,8 +294,8 @@ import org.springframework.beans.PropertyAccessException;
                     }
                 }
 
-            // now initialize
-            constraint.initialize();
+                // now initialize
+                constraint.initialize();
             }
         }
     }
@@ -320,7 +320,7 @@ import org.springframework.beans.PropertyAccessException;
     {
         return name;
     }
-    
+
     @Override
     public String getTitle()
     {
@@ -336,18 +336,18 @@ import org.springframework.beans.PropertyAccessException;
     @Override
     public String getTitle(MessageLookup messageLookup)
     {
-        String value = M2Label.getLabel(model, messageLookup, "constraint", name, "title"); 
+        String value = M2Label.getLabel(model, messageLookup, "constraint", name, "title");
         if (value == null)
         {
             value = m2Constraint.getTitle();
         }
         return value;
     }
-    
+
     @Override
     public String getDescription(MessageLookup messageLookup)
     {
-        String value = M2Label.getLabel(model, messageLookup, "constraint", name, "description"); 
+        String value = M2Label.getLabel(model, messageLookup, "constraint", name, "description");
         if (value == null)
         {
             value = m2Constraint.getDescription();
@@ -360,7 +360,7 @@ import org.springframework.beans.PropertyAccessException;
     {
         return constraint;
     }
-    
+
     @Override
     public QName getRef()
     {
@@ -372,7 +372,7 @@ import org.springframework.beans.PropertyAccessException;
         }
         return refQName;
     }
-    
+
     /**
      * Well-known constraint types
      */
@@ -418,49 +418,49 @@ import org.springframework.beans.PropertyAccessException;
                 return new ListOfValuesConstraint();
             }
         };
-        
+
         /**
          * @return Returns the constraint implementation
          */
         protected abstract Constraint newInstance();
     }
-    
+
     /* package */ M2ModelDiff diffConstraint(ConstraintDefinition conDef)
     {
         M2ModelDiff modelDiff = null;
         boolean isUpdated = false;
         boolean isUpdatedIncrementally = false;
-        
+
         if (this == conDef)
         {
             modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_CONSTRAINT, M2ModelDiff.DIFF_UNCHANGED);
             return modelDiff;
         }
-        
+
         // check name - cannot be null
-        if (! name.equals(conDef.getName()))
-        { 
+        if (!name.equals(conDef.getName()))
+        {
             isUpdated = true;
         }
-        
+
         // check title
-        if (! EqualsHelper.nullSafeEquals(getTitle(null), conDef.getTitle(null), false))
-        { 
+        if (!EqualsHelper.nullSafeEquals(getTitle(null), conDef.getTitle(null), false))
+        {
             isUpdatedIncrementally = true;
         }
-        
+
         // check description
-        if (! EqualsHelper.nullSafeEquals(getDescription(null), conDef.getDescription(null), false))
-        { 
+        if (!EqualsHelper.nullSafeEquals(getDescription(null), conDef.getDescription(null), false))
+        {
             isUpdatedIncrementally = true;
         }
-        
+
         // check type string
-        if (! EqualsHelper.nullSafeEquals(getConstraint().getType(), conDef.getConstraint().getType()))
-        { 
+        if (!EqualsHelper.nullSafeEquals(getConstraint().getType(), conDef.getConstraint().getType()))
+        {
             isUpdated = true;
         }
-        
+
         if (isUpdated)
         {
             modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_CONSTRAINT, M2ModelDiff.DIFF_UPDATED);
@@ -473,14 +473,14 @@ import org.springframework.beans.PropertyAccessException;
         {
             modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_CONSTRAINT, M2ModelDiff.DIFF_UNCHANGED);
         }
-        
+
         return modelDiff;
     }
-    
-    /*package*/ static Collection<M2ModelDiff> diffConstraintLists(Collection<ConstraintDefinition> previousConstraints, Collection<ConstraintDefinition> newConstraints)
+
+    /* package */ static Collection<M2ModelDiff> diffConstraintLists(Collection<ConstraintDefinition> previousConstraints, Collection<ConstraintDefinition> newConstraints)
     {
         List<M2ModelDiff> modelDiffs = new ArrayList<M2ModelDiff>();
-        
+
         for (ConstraintDefinition previousConstraint : previousConstraints)
         {
             boolean found = false;
@@ -488,18 +488,18 @@ import org.springframework.beans.PropertyAccessException;
             {
                 if (newConstraint.getName().equals(previousConstraint.getName()))
                 {
-                    modelDiffs.add(((M2ConstraintDefinition)previousConstraint).diffConstraint(previousConstraint));
+                    modelDiffs.add(((M2ConstraintDefinition) previousConstraint).diffConstraint(previousConstraint));
                     found = true;
                     break;
                 }
             }
-            
-            if (! found)
+
+            if (!found)
             {
                 modelDiffs.add(new M2ModelDiff(previousConstraint.getName(), M2ModelDiff.TYPE_CONSTRAINT, M2ModelDiff.DIFF_DELETED));
             }
         }
-        
+
         for (ConstraintDefinition newConstraint : newConstraints)
         {
             boolean found = false;
@@ -511,13 +511,13 @@ import org.springframework.beans.PropertyAccessException;
                     break;
                 }
             }
-            
-            if (! found)
+
+            if (!found)
             {
                 modelDiffs.add(new M2ModelDiff(newConstraint.getName(), M2ModelDiff.TYPE_CONSTRAINT, M2ModelDiff.DIFF_CREATED));
             }
         }
-        
+
         return modelDiffs;
     }
 }

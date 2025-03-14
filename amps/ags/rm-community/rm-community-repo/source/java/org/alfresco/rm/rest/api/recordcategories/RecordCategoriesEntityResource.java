@@ -30,6 +30,8 @@ package org.alfresco.rm.rest.api.recordcategories;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.Nodes;
@@ -45,7 +47,6 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Record category entity resource
@@ -54,7 +55,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Tuna Aksoy
  * @since 2.6
  */
-@EntityResource(name="record-categories", title = "Record Categories")
+@EntityResource(name = "record-categories", title = "Record Categories")
 public class RecordCategoriesEntityResource implements
         EntityResourceAction.ReadById<RecordCategory>,
         EntityResourceAction.Delete,
@@ -111,7 +112,7 @@ public class RecordCategoriesEntityResource implements
     }
 
     @Override
-    @WebApiDescription(title="Update record category", description = "Updates a record category with id 'recordCategoryId'")
+    @WebApiDescription(title = "Update record category", description = "Updates a record category with id 'recordCategoryId'")
     public RecordCategory update(String recordCategoryId, RecordCategory recordCategoryInfo, Parameters parameters)
     {
         checkNotBlank("recordCategoryId", recordCategoryId);
@@ -120,8 +121,7 @@ public class RecordCategoriesEntityResource implements
 
         NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(recordCategoryId, RecordsManagementModel.TYPE_RECORD_CATEGORY);
 
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
             public Void execute()
             {
                 apiUtils.updateNode(nodeRef, recordCategoryInfo, parameters);
@@ -130,20 +130,19 @@ public class RecordCategoriesEntityResource implements
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
-        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
-        {
+        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>() {
             public FileInfo execute()
             {
                 return fileFolderService.getFileInfo(nodeRef);
             }
         };
         FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
-        
+
         return nodesModelFactory.createRecordCategory(info, parameters, null, false);
     }
 
     @Override
-    @WebApiDescription(title = "Delete record category", description="Deletes a record category with id 'recordCategoryId'")
+    @WebApiDescription(title = "Delete record category", description = "Deletes a record category with id 'recordCategoryId'")
     public void delete(String recordCategoryId, Parameters parameters)
     {
         checkNotBlank("recordCategoryId", recordCategoryId);

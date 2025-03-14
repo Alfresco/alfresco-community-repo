@@ -29,7 +29,7 @@ import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.QName;
 
 @AlfrescoPublicApi
-public interface NamedQueryParameterDefinition 
+public interface NamedQueryParameterDefinition
 {
 
     /**
@@ -40,9 +40,10 @@ public interface NamedQueryParameterDefinition
      * @return QName
      */
     public QName getQName();
-    
+
     /**
      * Get the query parameter definition
+     * 
      * @return QueryParameterDefinition
      */
     public QueryParameterDefinition getQueryParameterDefinition();

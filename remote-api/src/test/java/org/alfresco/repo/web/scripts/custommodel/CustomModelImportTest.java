@@ -42,6 +42,18 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.httpclient.methods.multipart.FilePart;
+import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
+import org.apache.commons.httpclient.methods.multipart.Part;
+import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+import org.springframework.util.ResourceUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.CustomModelServiceImpl;
 import org.alfresco.repo.dictionary.M2Association;
@@ -61,17 +73,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.XMLUtil;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.params.HttpMethodParams;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
-import org.springframework.util.ResourceUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 
 /**
  * This class tests the custom model upload REST API.
@@ -106,8 +107,7 @@ public class CustomModelImportTest extends BaseWebScriptTest
 
         AuthenticationUtil.clearCurrentSecurityContext();
 
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -115,7 +115,7 @@ public class CustomModelImportTest extends BaseWebScriptTest
                 createUser(CUSTOM_MODEL_ADMIN);
 
                 if (!authorityService.getContainingAuthorities(AuthorityType.GROUP, CUSTOM_MODEL_ADMIN, true).contains(
-                            CustomModelServiceImpl.GROUP_ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY))
+                        CustomModelServiceImpl.GROUP_ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY))
                 {
                     authorityService.addAuthority(CustomModelServiceImpl.GROUP_ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY, CUSTOM_MODEL_ADMIN);
                 }
@@ -133,8 +133,7 @@ public class CustomModelImportTest extends BaseWebScriptTest
             file.delete();
         }
 
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 for (String modelName : importedModels)
@@ -145,13 +144,11 @@ public class CustomModelImportTest extends BaseWebScriptTest
             }
         });
 
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
-                transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-                {
+                transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
                     public Void execute() throws Throwable
                     {
                         deleteUser(NON_ADMIN_USER);
@@ -250,11 +247,11 @@ public class CustomModelImportTest extends BaseWebScriptTest
     public void testInvalidZipUpload() throws Exception
     {
         String content = "<note>"
-                        +   "<from>Jane</from>"
-                        +   "<to>John</to>"
-                        +   "<heading>Upload test</heading>"
-                        +   "<body>This is an invalid model or a Share extension module</body>"
-                        +"</note>";
+                + "<from>Jane</from>"
+                + "<to>John</to>"
+                + "<heading>Upload test</heading>"
+                + "<body>This is an invalid model or a Share extension module</body>"
+                + "</note>";
 
         ZipEntryContext context = new ZipEntryContext("invalidFormat.xml", content.getBytes());
         File zipFile = createZip(context);
@@ -301,8 +298,8 @@ public class CustomModelImportTest extends BaseWebScriptTest
 
         long timestamp = System.currentTimeMillis();
         final String modelName = getClass().getSimpleName() + timestamp;
-        final String prefix = "prefix"+timestamp;
-        final String uri = "uriNamespace"+timestamp;
+        final String prefix = "prefix" + timestamp;
+        final String uri = "uriNamespace" + timestamp;
         final String aspectName = prefix + QName.NAMESPACE_PREFIX + "testAspec";
         final String typeName = prefix + QName.NAMESPACE_PREFIX + "testType";
         final String associationName = prefix + QName.NAMESPACE_PREFIX + "testAssociation";
@@ -386,7 +383,7 @@ public class CustomModelImportTest extends BaseWebScriptTest
 
     public PostRequest buildMultipartPostRequest(File file) throws IOException
     {
-        Part[] parts = { new FilePart("filedata", file.getName(), file, "application/zip", null) };
+        Part[] parts = {new FilePart("filedata", file.getName(), file, "application/zip", null)};
 
         MultipartRequestEntity multipartRequestEntity = new MultipartRequestEntity(parts, new HttpMethodParams());
 

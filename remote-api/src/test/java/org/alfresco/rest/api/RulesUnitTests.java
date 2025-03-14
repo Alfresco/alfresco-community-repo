@@ -26,6 +26,9 @@
 
 package org.alfresco.rest.api;
 
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+
 import org.alfresco.rest.api.impl.mapper.rules.RestRuleActionModelMapperTest;
 import org.alfresco.rest.api.impl.mapper.rules.RestRuleCompositeConditionModelMapperTest;
 import org.alfresco.rest.api.impl.mapper.rules.RestRuleModelMapperTest;
@@ -41,27 +44,24 @@ import org.alfresco.rest.api.impl.validator.actions.ActionParameterDefinitionVal
 import org.alfresco.rest.api.rules.NodeRuleSetsRelationTest;
 import org.alfresco.rest.api.rules.NodeRulesRelationTest;
 import org.alfresco.service.Experimental;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
 
 @Experimental
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    NodeRulesRelationTest.class,
-    NodeRuleSetsRelationTest.class,
-    RulesImplTest.class,
-    RuleSetsImplTest.class,
-    NodeValidatorTest.class,
-    RuleLoaderTest.class,
-    ActionParameterConverterTest.class,
-    ActionPermissionValidatorTest.class,
-    ActionParameterDefinitionValidatorTest.class,
-    ActionNodeParameterValidatorTest.class,
-    RestRuleSimpleConditionModelMapperTest.class,
-    RestRuleCompositeConditionModelMapperTest.class,
-    RestRuleActionModelMapperTest.class,
-    RestRuleModelMapperTest.class
+        NodeRulesRelationTest.class,
+        NodeRuleSetsRelationTest.class,
+        RulesImplTest.class,
+        RuleSetsImplTest.class,
+        NodeValidatorTest.class,
+        RuleLoaderTest.class,
+        ActionParameterConverterTest.class,
+        ActionPermissionValidatorTest.class,
+        ActionParameterDefinitionValidatorTest.class,
+        ActionNodeParameterValidatorTest.class,
+        RestRuleSimpleConditionModelMapperTest.class,
+        RestRuleCompositeConditionModelMapperTest.class,
+        RestRuleActionModelMapperTest.class,
+        RestRuleModelMapperTest.class
 })
 public class RulesUnitTests
-{
-}
+{}

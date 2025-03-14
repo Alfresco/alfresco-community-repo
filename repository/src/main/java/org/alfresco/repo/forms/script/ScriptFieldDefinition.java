@@ -27,13 +27,13 @@ package org.alfresco.repo.forms.script;
 
 import java.util.List;
 
-import org.alfresco.repo.forms.FieldDefinition;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
+import org.alfresco.repo.forms.FieldDefinition;
+
 /**
- * FieldDefinition JavaScript Object. This object acts as a wrapper for the Java object
- * {@link org.alfresco.repo.forms.FieldDefinition} and all of its subclasses also.
+ * FieldDefinition JavaScript Object. This object acts as a wrapper for the Java object {@link org.alfresco.repo.forms.FieldDefinition} and all of its subclasses also.
  * 
  * @author Neil McErlean
  */
@@ -45,22 +45,19 @@ public class ScriptFieldDefinition extends ScriptableObject
      */
     private FieldDefinition fieldDefinition;
     private JSPropertyExtractor propertyExtractor = new JSPropertyExtractor();
-    
+
     /* default */ ScriptFieldDefinition(FieldDefinition fieldDefinition)
     {
         this.fieldDefinition = fieldDefinition;
     }
 
     /**
-     * This method retrieves a named property value in the normal (Mozilla JS) way.
-     * If the named property is not found, an attempt is made to discover a Java
-     * accessor method appropriate to the named property e.g. getFoo() or isFoo() for
-     * a property named 'foo'. If such an accessor method is found, it is invoked and
-     * the value is returned. (If there are both a getFoo() and an isFoo() method, then
-     * the getFoo() method is invoked.)
+     * This method retrieves a named property value in the normal (Mozilla JS) way. If the named property is not found, an attempt is made to discover a Java accessor method appropriate to the named property e.g. getFoo() or isFoo() for a property named 'foo'. If such an accessor method is found, it is invoked and the value is returned. (If there are both a getFoo() and an isFoo() method, then the getFoo() method is invoked.)
      * 
-     * @param name the named property
-     * @param start the object in which the lookup began
+     * @param name
+     *            the named property
+     * @param start
+     *            the object in which the lookup began
      * @return the property value if found, else NOT_FOUND.
      * 
      * @see org.mozilla.javascript.Scriptable#get(String, Scriptable)
@@ -77,7 +74,7 @@ public class ScriptFieldDefinition extends ScriptableObject
         }
 
         Object result = propertyExtractor.extractProperty(name, fieldDefinition);
-        
+
         if (result == null)
         {
             return NOT_FOUND;
@@ -85,7 +82,7 @@ public class ScriptFieldDefinition extends ScriptableObject
 
         if (result instanceof List)
         {
-            return ((List)result).toArray();
+            return ((List) result).toArray();
         }
         return result;
     }

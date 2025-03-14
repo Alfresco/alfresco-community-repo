@@ -30,17 +30,17 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.service.cmr.repository.DeleteLinksStatusReport;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.cmr.repository.DeleteLinksStatusReport;
+import org.alfresco.service.cmr.repository.NodeRef;
+
 /**
- * This class is the controller for the doclink.post webscript doclink.post is a
- * webscript for creating a link of a document within a target destination
+ * This class is the controller for the doclink.post webscript doclink.post is a webscript for creating a link of a document within a target destination
  * 
  * @author Ana Bozianu
  * @since 5.1
@@ -89,7 +89,6 @@ public class DocLinksDelete extends AbstractDocLink
         }
 
         model.put("error_details", errorDetails);
-        
 
         return model;
     }

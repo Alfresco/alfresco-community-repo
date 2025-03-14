@@ -25,6 +25,10 @@
  */
 package org.alfresco.repo.action.evaluator;
 
+import org.junit.Before;
+import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -37,9 +41,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.testing.category.NeverRunsTests;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Has tag evaluator unit test
@@ -56,18 +57,18 @@ public class HasTagEvaluatorTest extends BaseSpringTest
     private NodeRef rootNodeRef;
     private NodeRef nodeRef;
     private HasTagEvaluator evaluator;
-    
+
     private final static String ID = GUID.generate();
 
     @Before
     public void before() throws Exception
     {
-        this.nodeService = (NodeService)applicationContext.getBean("nodeService");
-        this.taggingService = (TaggingService)applicationContext.getBean("taggingService");
-        
+        this.nodeService = (NodeService) applicationContext.getBean("nodeService");
+        this.taggingService = (TaggingService) applicationContext.getBean("taggingService");
+
         // Create the store and get the root node
         this.testStoreRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-        this.rootNodeRef = this.nodeService.getRootNode(this.testStoreRef); 
+        this.rootNodeRef = this.nodeService.getRootNode(this.testStoreRef);
 
         // Create the node used for tests
         this.nodeRef = this.nodeService.createNode(
@@ -75,20 +76,20 @@ public class HasTagEvaluatorTest extends BaseSpringTest
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}testnode"),
                 ContentModel.TYPE_CONTENT).getChildRef();
-        
-        this.evaluator = (HasTagEvaluator)applicationContext.getBean(HasTagEvaluator.NAME);        
+
+        this.evaluator = (HasTagEvaluator) applicationContext.getBean(HasTagEvaluator.NAME);
         AuthenticationUtil.setFullyAuthenticatedUser("admin");
     }
-    
+
     public void testPass()
     {
-        taggingService.addTag(nodeRef, "testTag");        
+        taggingService.addTag(nodeRef, "testTag");
         ActionCondition condition = new ActionConditionImpl(ID, HasTagEvaluator.NAME, null);
         condition.setParameterValue(HasTagEvaluator.PARAM_TAG, "testTag");
         boolean value = this.evaluator.evaluate(condition, this.nodeRef);
         assertTrue("Tag should have been set", value);
     }
-    
+
     public void testFail()
     {
         ActionCondition condition = new ActionConditionImpl(ID, HasTagEvaluator.NAME, null);

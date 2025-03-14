@@ -44,7 +44,7 @@ public class AuthenticatedPersonDataGenerator extends AbstractDataGenerator
 {
     private PersonService personService;
     private NodeService nodeService;
-    
+
     /**
      * Set the service used to discover the user's person node
      */
@@ -52,7 +52,7 @@ public class AuthenticatedPersonDataGenerator extends AbstractDataGenerator
     {
         this.personService = personService;
     }
-    
+
     /**
      * Set the service to retrieve the user's full name
      */
@@ -70,7 +70,7 @@ public class AuthenticatedPersonDataGenerator extends AbstractDataGenerator
     }
 
     /**
-     * @return              Returns the full name of the currently-authenticated user
+     * @return Returns the full name of the currently-authenticated user
      */
     public Serializable getData() throws Throwable
     {
@@ -79,9 +79,9 @@ public class AuthenticatedPersonDataGenerator extends AbstractDataGenerator
         String fullName = null;
         if (personNodeRef != null && nodeService.exists(personNodeRef))
         {
-            String firstName = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_FIRSTNAME);
-            String lastName = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_LASTNAME);
-            
+            String firstName = (String) nodeService.getProperty(personNodeRef, ContentModel.PROP_FIRSTNAME);
+            String lastName = (String) nodeService.getProperty(personNodeRef, ContentModel.PROP_LASTNAME);
+
             fullName = ((firstName != null && firstName.length() > 0) ? firstName : "");
             if (lastName != null && lastName.length() > 0)
             {

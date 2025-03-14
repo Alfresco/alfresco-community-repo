@@ -43,8 +43,7 @@ public abstract class HierarchicalMethod extends WebDAVMethod
      * Default constructor
      */
     public HierarchicalMethod()
-    {
-    }
+    {}
 
     /**
      * Return the destination path
@@ -84,9 +83,8 @@ public abstract class HierarchicalMethod extends WebDAVMethod
         // path, if not then return an error
         getDAVHelper().checkDestinationURL(m_request, destURL);
 
-        
         m_strDestinationPath = getDAVHelper().getDestinationPath(getContextPath(), getServletPath(), destURL);
-        
+
         // Failed to fix the destination path, return an error
 
         if (m_strDestinationPath == null)

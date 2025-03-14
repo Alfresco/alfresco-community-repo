@@ -43,40 +43,41 @@ public class EnumParameterConstraint extends BaseParameterConstraint
 
     /** Enum clss */
     private Class<?> enumClass;
-    
+
     /**
      * Set the enum class name
      * 
-     * @param enumClassName enum class name
+     * @param enumClassName
+     *            enum class name
      */
     public void setEnumClassName(String enumClassName)
     {
         this.enumClassName = enumClassName;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.action.ParameterConstraint#getAllowableValues()
      */
     protected Map<String, String> getAllowableValuesImpl()
-    {                  
+    {
         // Get the enum class
         Class<?> enumClass = getEnumClass();
-                                           
+
         Object[] enumValues = enumClass.getEnumConstants();
         Map<String, String> allowableValues = new LinkedHashMap<String, String>(enumValues.length);
-        
+
         for (Object enumValue : enumValues)
         {
             // Look up the I18N value
             String displayLabel = getI18NLabel(enumValue.toString());
-            
+
             // Add to the map of allowed values
-            allowableValues.put(enumValue.toString(), displayLabel);                    
-        } 
-        
+            allowableValues.put(enumValue.toString(), displayLabel);
+        }
+
         return allowableValues;
-    }    
-    
+    }
+
     /**
      * Get the enum class
      * 
@@ -85,18 +86,18 @@ public class EnumParameterConstraint extends BaseParameterConstraint
     private Class<?> getEnumClass()
     {
         if (this.enumClass == null)
-        {        
+        {
             try
-            {   
+            {
                 // Check that a enum class name has specified
                 if (enumClassName == null || enumClassName.length() == 0)
                 {
                     throw new AlfrescoRuntimeException("No enum class has been defined");
                 }
-                
+
                 // Get the enum class
                 Class<?> enumClass = Class.forName(enumClassName);
-                
+
                 // Check that the class is an enum class
                 if (enumClass.isEnum() == true)
                 {

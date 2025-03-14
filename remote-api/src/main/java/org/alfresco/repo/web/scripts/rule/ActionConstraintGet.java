@@ -27,16 +27,16 @@ package org.alfresco.repo.web.scripts.rule;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.service.cmr.action.ParameterConstraint;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.service.cmr.action.ParameterConstraint;
 
 /**
  * @author unknown

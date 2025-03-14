@@ -72,14 +72,14 @@ public class RepositoryNodeRefResolver implements NodeRefResolver
     public NodeRef resolveNodeReference(String[] reference)
     {
         return repository.findNodeRef(NODE_REF_EXPRESSION,
-                                      reference);
+                reference);
     }
 
     @Override
     public NodeRef resolvePathReference(String[] reference)
     {
         return repository.findNodeRef(PATH_REF_EXPRESSION,
-                                      reference);
+                reference);
     }
 
     @Override
@@ -93,22 +93,22 @@ public class RepositoryNodeRefResolver implements NodeRefResolver
             theNodeRef = repository.getRootHome();
 
             List<ChildAssociationRef> rootChildren = nodeService
-                        .getChildAssocs(theNodeRef,
-                                        ContentModel.ASSOC_CHILDREN,
-                                        QName.createQName(reference[0],
-                                                          namespacePrefixResolver),
-                                        false);
+                    .getChildAssocs(theNodeRef,
+                            ContentModel.ASSOC_CHILDREN,
+                            QName.createQName(reference[0],
+                                    namespacePrefixResolver),
+                            false);
             if (rootChildren == null || rootChildren.isEmpty())
             {
-                // one more attempt : might be a contains assoc 
+                // one more attempt : might be a contains assoc
 
                 rootChildren = nodeService.getChildAssocs(theNodeRef,
-                                                          ContentModel.ASSOC_CONTAINS,
-                                                          QName.createQName(reference[0],
-                                                                            namespacePrefixResolver),
-                                                          false);
+                        ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(reference[0],
+                                namespacePrefixResolver),
+                        false);
             }
-            
+
             if (rootChildren == null || rootChildren.isEmpty())
             {
                 // one more attempt : might be a contains assoc though
@@ -123,11 +123,11 @@ public class RepositoryNodeRefResolver implements NodeRefResolver
             {
 
                 List<ChildAssociationRef> children = nodeService
-                            .getChildAssocs(theNodeRef,
-                                            ContentModel.ASSOC_CONTAINS,
-                                            QName.createQName(reference[i],
-                                                              namespacePrefixResolver),
-                                            false);
+                        .getChildAssocs(theNodeRef,
+                                ContentModel.ASSOC_CONTAINS,
+                                QName.createQName(reference[i],
+                                        namespacePrefixResolver),
+                                false);
                 if (children == null || children.isEmpty())
                 {
                     theNodeRef = null;
@@ -197,10 +197,10 @@ public class RepositoryNodeRefResolver implements NodeRefResolver
             {
                 String[] parent = new String[i];
                 System.arraycopy(reference,
-                                 0,
-                                 parent,
-                                 0,
-                                 i);
+                        0,
+                        parent,
+                        0,
+                        i);
                 parentNodeRef = resolvePathReference(parent);
                 if (parentNodeRef != null)
                 {
@@ -216,14 +216,14 @@ public class RepositoryNodeRefResolver implements NodeRefResolver
                 String toCreate = notFoundStack.pop();
                 final HashMap<QName, Serializable> newProperties = new HashMap<QName, Serializable>();
                 newProperties.put(ContentModel.PROP_NAME,
-                                  toCreate);
+                        toCreate);
                 ChildAssociationRef newAssoc = nodeService
-                            .createNode(parentNodeRef,
-                                        ContentModel.ASSOC_CONTAINS,
-                                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                                                          QName.createValidLocalName(toCreate)),
-                                        ContentModel.TYPE_FOLDER,
-                                        newProperties);
+                        .createNode(parentNodeRef,
+                                ContentModel.ASSOC_CONTAINS,
+                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                                        QName.createValidLocalName(toCreate)),
+                                ContentModel.TYPE_FOLDER,
+                                newProperties);
                 parentNodeRef = newAssoc.getChildRef();
             }
 
@@ -249,10 +249,10 @@ public class RepositoryNodeRefResolver implements NodeRefResolver
             {
                 String[] parent = new String[i];
                 System.arraycopy(reference,
-                                 0,
-                                 parent,
-                                 0,
-                                 i);
+                        0,
+                        parent,
+                        0,
+                        i);
                 parentNodeRef = resolveQNameReference(parent);
                 if (parentNodeRef != null)
                 {
@@ -275,7 +275,7 @@ public class RepositoryNodeRefResolver implements NodeRefResolver
             {
                 String stringQNameToCreate = notFoundStack.pop();
                 QName qNameToCreate = QName.createQName(stringQNameToCreate,
-                                                        namespacePrefixResolver);
+                        namespacePrefixResolver);
                 String nameToCreate;
                 if (!notFoundNameStack.isEmpty())
                 {
@@ -287,12 +287,12 @@ public class RepositoryNodeRefResolver implements NodeRefResolver
                 }
                 final HashMap<QName, Serializable> newProperties = new HashMap<QName, Serializable>();
                 newProperties.put(ContentModel.PROP_NAME,
-                                  nameToCreate);
+                        nameToCreate);
                 ChildAssociationRef newAssoc = nodeService.createNode(parentNodeRef,
-                                                                      ContentModel.ASSOC_CONTAINS,
-                                                                      qNameToCreate,
-                                                                      ContentModel.TYPE_FOLDER,
-                                                                      newProperties);
+                        ContentModel.ASSOC_CONTAINS,
+                        qNameToCreate,
+                        ContentModel.TYPE_FOLDER,
+                        newProperties);
                 parentNodeRef = newAssoc.getChildRef();
             }
 

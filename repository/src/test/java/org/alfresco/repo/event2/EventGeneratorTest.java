@@ -30,16 +30,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.MessageConsumer;
 import jakarta.jms.MessageListener;
 import jakarta.jms.Session;
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.event.v1.model.RepoEvent;
-import org.alfresco.service.cmr.repository.NodeRef;
+
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.advisory.DestinationSource;
@@ -50,6 +47,10 @@ import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.event.v1.model.RepoEvent;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
 {
@@ -71,8 +72,7 @@ public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
         MessageConsumer consumer = session.createConsumer(destination);
 
         receivedEvents = Collections.synchronizedList(new LinkedList<>());
-        consumer.setMessageListener(new MessageListener()
-        {
+        consumer.setMessageListener(new MessageListener() {
             @Override
             public void onMessage(Message message)
             {
@@ -92,7 +92,8 @@ public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
                 try
                 {
                     return objectMapper.readValue(json, RepoEvent.class);
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     e.printStackTrace();
                     return null;

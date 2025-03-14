@@ -11,15 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.cmis.CmisWrapper;
-import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.dsl.DSLAssertion;
-import org.alfresco.utility.exception.TestConfigurationException;
-import org.alfresco.utility.model.ContentModel;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FolderModel;
-import org.alfresco.utility.model.GroupModel;
-import org.alfresco.utility.model.UserModel;
 import org.apache.chemistry.opencmis.client.api.ChangeEvent;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
@@ -37,7 +28,6 @@ import org.apache.chemistry.opencmis.commons.data.Ace;
 import org.apache.chemistry.opencmis.commons.data.Acl;
 import org.apache.chemistry.opencmis.commons.data.CmisExtensionElement;
 import org.apache.chemistry.opencmis.commons.enums.Action;
-import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.enums.ChangeType;
 import org.apache.chemistry.opencmis.commons.enums.ExtensionLevel;
 import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
@@ -45,6 +35,16 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundExcept
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
 import org.apache.commons.lang3.StringUtils;
 import org.testng.Assert;
+
+import org.alfresco.cmis.CmisWrapper;
+import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.dsl.DSLAssertion;
+import org.alfresco.utility.exception.TestConfigurationException;
+import org.alfresco.utility.model.ContentModel;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.GroupModel;
+import org.alfresco.utility.model.UserModel;
 
 /**
  * DSL with all assertion available for {@link CmisWrapper}
@@ -62,16 +62,16 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     {
         return getProtocol();
     }
-    
+
     @Override
     public CmisWrapper existsInRepo()
     {
         STEP(String.format("CMIS: Assert that content '%s' exists in repository", cmisAPI().getLastResource()));
         Assert.assertTrue(!cmisAPI().withCMISUtil().getCmisObject(cmisAPI().getLastResource()).getId().isEmpty(),
-                    String.format("Content {%s} was found in repository", cmisAPI().getLastResource()));
+                String.format("Content {%s} was found in repository", cmisAPI().getLastResource()));
         return cmisAPI();
     }
-    
+
     @Override
     public CmisWrapper doesNotExistInRepo()
     {
@@ -93,8 +93,10 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify changes for a specific object from cmis log
      * 
-     * @param model {@link ContentModel}
-     * @param changeTypes {@link ChangeType}
+     * @param model
+     *            {@link ContentModel}
+     * @param changeTypes
+     *            {@link ChangeType}
      * @return
      * @throws Exception
      */
@@ -131,8 +133,10 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify that a specific object does not have changes from cmis log
      * 
-     * @param model {@link ContentModel}
-     * @param changeTypes {@link ChangeType}
+     * @param model
+     *            {@link ContentModel}
+     * @param changeTypes
+     *            {@link ChangeType}
      * @return
      * @throws Exception
      */
@@ -167,10 +171,7 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     }
 
     /**
-     * Check if the {@link #getLastResource()} has the list of {@link Action} Example:
-     * {code}
-     * .hasAllowableActions(Action.CAN_CREATE_FOLDER);
-     * {code}
+     * Check if the {@link #getLastResource()} has the list of {@link Action} Example: {code} .hasAllowableActions(Action.CAN_CREATE_FOLDER); {code}
      * 
      * @param actions
      * @return
@@ -187,8 +188,7 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     }
 
     /**
-     * Check if {@link #getLastResource()} object has actions returned
-     * from {@link org.apache.chemistry.opencmis.client.api.CmisObject#getAllowableActions()}
+     * Check if {@link #getLastResource()} object has actions returned from {@link org.apache.chemistry.opencmis.client.api.CmisObject#getAllowableActions()}
      * 
      * @param actions
      * @return
@@ -205,10 +205,7 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     }
 
     /**
-     * Check if the {@link #getLastResource()) does not have the list of {@link Action} Example:
-     * {code}
-     * .doesNotHaveAllowableActions(Action.CAN_CREATE_FOLDER);
-     * {code}
+     * Check if the {@link #getLastResource()) does not have the list of {@link Action} Example: {code} .doesNotHaveAllowableActions(Action.CAN_CREATE_FOLDER); {code}
      * 
      * @param actions
      * @return
@@ -227,7 +224,8 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify document content
      *
-     * @param content String expected content
+     * @param content
+     *            String expected content
      * @return
      * @throws Exception
      */
@@ -242,7 +240,8 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify document content contains specific details
      *
-     * @param content String expected content
+     * @param content
+     *            String expected content
      * @return
      * @throws Exception
      */
@@ -253,11 +252,12 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
                 String.format("The content of file %s - is the expected one", cmisAPI().getLastResource()));
         return cmisAPI();
     }
-    
+
     /**
      * Verify if current resource has the id given
      *
-     * @param id - expected object id
+     * @param id
+     *            - expected object id
      * @return
      */
     public CmisWrapper objectIdIs(String id)
@@ -271,8 +271,10 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify the value of the given property
      *
-     * @param property - the property id
-     * @param value - expected property value
+     * @param property
+     *            - the property id
+     * @param value
+     *            - expected property value
      * @return
      */
     public CmisWrapper contentPropertyHasValue(String property, String value)
@@ -282,7 +284,7 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
         Object propertyValue = objSource.getPropertyValue(property);
         if (propertyValue instanceof ArrayList)
         {
-            @SuppressWarnings({ "unchecked", "rawtypes" })
+            @SuppressWarnings({"unchecked", "rawtypes"})
             ArrayList<String> values = (ArrayList) propertyValue;
             Assert.assertEquals(values.get(0).toString(), value, "Property has value.");
         }
@@ -386,7 +388,8 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify document has version
      *
-     * @param version String expected version
+     * @param version
+     *            String expected version
      * @return
      * @throws Exception
      */
@@ -415,7 +418,8 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify base type id
      *
-     * @param baseTypeId String expected object type value
+     * @param baseTypeId
+     *            String expected object type value
      * @return
      * @throws Exception
      */
@@ -430,7 +434,8 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify object type id
      *
-     * @param objectTypeId String expected object type value
+     * @param objectTypeId
+     *            String expected object type value
      * @return
      * @throws Exception
      */
@@ -460,7 +465,7 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
         STEP(String.format("%s Verify if object %s has property %s ", CmisWrapper.STEP_PREFIX, cmisObject.getName(), propertyId));
         Property<?> property = cmisAPI().withCMISUtil().getProperty(propertyId);
         Object propValue = property.getValue();
-        if(propValue instanceof GregorianCalendar)
+        if (propValue instanceof GregorianCalendar)
         {
             Date date = (Date) value;
             long longDate = date.getTime();
@@ -479,10 +484,7 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     }
 
     /**
-     * Check if CMIS object contains a property.
-     * Example:
-     * ...assertObjectHasProperty("cmis:secondaryObjectTypeIds", "Secondary Object Type Ids","secondaryObjectTypeIds", "cmis:secondaryObjectTypeIds",
-     * "P:cm:titled", "P:sys:localized");
+     * Check if CMIS object contains a property. Example: ...assertObjectHasProperty("cmis:secondaryObjectTypeIds", "Secondary Object Type Ids","secondaryObjectTypeIds", "cmis:secondaryObjectTypeIds", "P:cm:titled", "P:sys:localized");
      * 
      * @param propertyId
      * @param displayName
@@ -594,8 +596,8 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
      */
     public CmisWrapper secondaryTypeIsAvailable(String secondaryTypeId)
     {
-        STEP(String.format("%s Verify if '%s' secondary type is available for '%s'", CmisWrapper.STEP_PREFIX, secondaryTypeId, 
-                    new File(cmisAPI().getLastResource()).getName()));
+        STEP(String.format("%s Verify if '%s' secondary type is available for '%s'", CmisWrapper.STEP_PREFIX, secondaryTypeId,
+                new File(cmisAPI().getLastResource()).getName()));
         Assert.assertTrue(isSecondaryTypeAvailable(secondaryTypeId), String.format("%s is available for %s", secondaryTypeId, cmisAPI().getLastResource()));
         return cmisAPI();
     }
@@ -617,7 +619,8 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify document content length
      * 
-     * @param contentLength String expected content length
+     * @param contentLength
+     *            String expected content length
      * @return
      * @throws Exception
      */
@@ -633,8 +636,10 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * e.g. assertFolderHasDescendant(1, file1) will verify if file1 is a direct descendant of {@link #getLastResource()}
      *
-     * @param depth {@link #getFolderDescendants(int)}
-     * @param contentModels {@link #getCmisObjectsFromContentModels(ContentModel...)}
+     * @param depth
+     *            {@link #getFolderDescendants(int)}
+     * @param contentModels
+     *            {@link #getCmisObjectsFromContentModels(ContentModel...)}
      */
     public void hasDescendants(int depth, ContentModel... contentModels)
     {
@@ -681,8 +686,10 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Depending on the specified depth, checks that all the contents from contentModels list are present in the current folder tree structure
      * 
-     * @param depth the depth of the tree to check, must be -1 or >= 1
-     * @param contentModels expected list of contents to be found in the tree
+     * @param depth
+     *            the depth of the tree to check, must be -1 or >= 1
+     * @param contentModels
+     *            expected list of contents to be found in the tree
      * @return
      */
     public CmisWrapper hasFolderTree(int depth, ContentModel... contentModels)
@@ -705,8 +712,10 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify the permission for a specific user from the last resource object
      * 
-     * @param userModel {@link UserModel} user to verify
-     * @param role {@link UserRole} user role to verify
+     * @param userModel
+     *            {@link UserModel} user to verify
+     * @param role
+     *            {@link UserRole} user role to verify
      * @return
      */
     public CmisWrapper permissionIsSetForUser(UserModel userModel, UserRole role)
@@ -721,8 +730,10 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify the permission for a specific group of users from the last resource object
      * 
-     * @param groupModel {@link GroupModel} group to verify
-     * @param role {@link UserRole} user role to verify
+     * @param groupModel
+     *            {@link GroupModel} group to verify
+     * @param role
+     *            {@link UserRole} user role to verify
      * @return
      */
     public CmisWrapper permissionIsSetForGrup(GroupModel groupModel, UserRole role)
@@ -757,8 +768,10 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify the permission for a specific user from the last resource object
      * 
-     * @param userModel {@link UserModel}
-     * @param permission to verify
+     * @param userModel
+     *            {@link UserModel}
+     * @param permission
+     *            to verify
      * @return
      */
     public CmisWrapper permissionIsSetForUser(UserModel userModel, String permission)
@@ -773,8 +786,10 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify that permission is not set for a specific user from the last resource object
      * 
-     * @param userModel {@link UserModel} user to verify
-     * @param role {@link UserRole} user role to verify
+     * @param userModel
+     *            {@link UserModel} user to verify
+     * @param role
+     *            {@link UserRole} user role to verify
      * @return
      */
     public CmisWrapper permissionIsNotSetForUser(UserModel userModel, UserRole role)
@@ -789,8 +804,10 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify that permission is not set for a specific user from the last resource object
      * 
-     * @param userModel {@link UserModel} user to verify
-     * @param permission to verify
+     * @param userModel
+     *            {@link UserModel} user to verify
+     * @param permission
+     *            to verify
      * @return
      */
     public CmisWrapper permissionIsNotSetForUser(UserModel userModel, String permission)
@@ -813,10 +830,10 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     }
 
     /**
-     * Verify that a specific folder(set by calling {@link org.alfresco.cmis.CmisWrapper#usingResource(ContentModel)})
-     * contains checked out documents
+     * Verify that a specific folder(set by calling {@link org.alfresco.cmis.CmisWrapper#usingResource(ContentModel)}) contains checked out documents
      * 
-     * @param contentModels checked out documents to verify
+     * @param contentModels
+     *            checked out documents to verify
      * @return
      */
     public CmisWrapper folderHasCheckedOutDocument(ContentModel... contentModels)
@@ -832,11 +849,12 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     }
 
     /**
-     * Verify that a specific folder(set by calling {@link org.alfresco.cmis.CmisWrapper#usingResource(ContentModel)})
-     * contains checked out documents in a specific order.
+     * Verify that a specific folder(set by calling {@link org.alfresco.cmis.CmisWrapper#usingResource(ContentModel)}) contains checked out documents in a specific order.
      * 
-     * @param context {@link OperationContext}
-     * @param contentModels documents to verify in the order returned by the {@link OperationContext}
+     * @param context
+     *            {@link OperationContext}
+     * @param contentModels
+     *            documents to verify in the order returned by the {@link OperationContext}
      * @return
      */
     public CmisWrapper folderHasCheckedOutDocument(OperationContext context, ContentModel... contentModels)
@@ -854,7 +872,8 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify checked out documents from {@link Session}
      * 
-     * @param contentModels documents to verify
+     * @param contentModels
+     *            documents to verify
      * @return
      */
     public CmisWrapper sessionHasCheckedOutDocument(ContentModel... contentModels)
@@ -872,8 +891,10 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify checked out documents from {@link Session} in a specific order set in {@link OperationContext}
      * 
-     * @param context {@link OperationContext}
-     * @param contentModels documents to verify
+     * @param context
+     *            {@link OperationContext}
+     * @param contentModels
+     *            documents to verify
      * @return
      */
     public CmisWrapper sessionHasCheckedOutDocument(OperationContext context, ContentModel... contentModels)
@@ -891,7 +912,8 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify that checked out documents are not found in {@link Session}
      * 
-     * @param contentModels documents to verify
+     * @param contentModels
+     *            documents to verify
      * @return
      */
     public CmisWrapper sessioDoesNotHaveCheckedOutDocument(ContentModel... contentModels)
@@ -981,7 +1003,8 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify if folder children exist in parent folder
      * 
-     * @param fileModel children files
+     * @param fileModel
+     *            children files
      * @return
      * @throws Exception
      */
@@ -1000,7 +1023,8 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify if file children exist in parent folder
      * 
-     * @param fileModel children files
+     * @param fileModel
+     *            children files
      * @return
      * @throws Exception
      */
@@ -1019,7 +1043,8 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify if file(s) children exist in parent folder
      *
-     * @param fileModels children files
+     * @param fileModels
+     *            children files
      * @return
      * @throws Exception
      */
@@ -1038,7 +1063,8 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify if folder(s) children exist in parent folder
      *
-     * @param folderModels children files
+     * @param folderModels
+     *            children files
      * @return
      * @throws Exception
      */
@@ -1058,7 +1084,8 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify the children(files and folders) from a parent folder
      * 
-     * @param contentModel children
+     * @param contentModel
+     *            children
      * @return
      * @throws Exception
      */
@@ -1079,8 +1106,7 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
         }
         return cmisAPI();
     }
-    
-    
+
     public CmisWrapper hasUniqueChildren(int numberOfChildren) throws Exception
     {
         STEP(String.format("%s Verify that current folder has %d unique children", CmisWrapper.STEP_PREFIX, numberOfChildren));
@@ -1089,16 +1115,17 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
         Set<String> documentIds = new HashSet<String>();
         for (ContentModel key : mapContents.keySet())
         {
-         documentIds.add(key.getName());
+            documentIds.add(key.getName());
         }
-        Assert.assertTrue(numberOfChildren==documentIds.size(), String.format("Current folder contains %d unique children, but expected is %d", documentIds.size(), numberOfChildren));
+        Assert.assertTrue(numberOfChildren == documentIds.size(), String.format("Current folder contains %d unique children, but expected is %d", documentIds.size(), numberOfChildren));
         return cmisAPI();
     }
 
     /**
      * Get check in comment for last document version
      * 
-     * @param comment to verify
+     * @param comment
+     *            to verify
      * @return
      */
     public CmisWrapper hasCheckInCommentLastVersion(String comment)
@@ -1113,8 +1140,10 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Get check in comment for a specific document version
      * 
-     * @param documentVersion version of document
-     * @param comment to verify
+     * @param documentVersion
+     *            version of document
+     * @param comment
+     *            to verify
      * @return
      */
     public CmisWrapper hasCheckInCommentForVersion(double documentVersion, String comment)
@@ -1131,7 +1160,8 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
     /**
      * Verify failed deleted objects after delete tree action
      * 
-     * @param nodeRef objects to verify
+     * @param nodeRef
+     *            objects to verify
      * @return
      */
     public CmisWrapper hasFailedDeletedObject(String nodeRef)

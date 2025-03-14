@@ -35,6 +35,5 @@ package org.alfresco.rm.rest.api.model;
  */
 public enum RMSiteCompliance
 {
-    STANDARD,
-    DOD5015
+    STANDARD, DOD5015
 }

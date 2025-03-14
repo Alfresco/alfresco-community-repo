@@ -47,16 +47,18 @@ import java.util.List;
 
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
+
 /**
  * Object that represents the spell check model response.
+ * 
  * @author Michael Suzuki
  *
  */
 public class SpellCheckModel extends TestModel implements IRestModel<SpellCheckModel>
 {
-    
+
     private String type;
-    
+
     private List<String> suggestions;
 
     public String getType()

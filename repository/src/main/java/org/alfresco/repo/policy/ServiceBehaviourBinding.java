@@ -42,25 +42,26 @@ public class ServiceBehaviourBinding implements BehaviourBinding
     /**
      * Construct
      * 
-     * @param service  the service
+     * @param service
+     *            the service
      */
-    /*package*/ ServiceBehaviourBinding(Object service)
+    /* package */ ServiceBehaviourBinding(Object service)
     {
         this.service = service;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.policy.BehaviourBinding#generaliseBinding()
-     */
+     * 
+     * @see org.alfresco.repo.policy.BehaviourBinding#generaliseBinding() */
     public BehaviourBinding generaliseBinding()
     {
         return null;
     }
-    
+
     /**
      * Gets the Service
      * 
-     * @return  the service
+     * @return the service
      */
     public Object getService()
     {
@@ -74,7 +75,7 @@ public class ServiceBehaviourBinding implements BehaviourBinding
         {
             return false;
         }
-        return service.equals(((ServiceBehaviourBinding)obj).service);
+        return service.equals(((ServiceBehaviourBinding) obj).service);
     }
 
     @Override

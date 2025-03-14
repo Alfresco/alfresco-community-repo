@@ -28,9 +28,11 @@ package org.alfresco.filesys.repo;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.util.List;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.filesys.alfresco.ExtendedDiskInterface;
 import org.alfresco.filesys.alfresco.RepositoryDiskInterface;
@@ -57,8 +59,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.FileFilterMode;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Content Disk Driver Command Executor
@@ -68,29 +68,28 @@ import org.apache.commons.logging.LogFactory;
 public class CommandExecutorImpl implements CommandExecutor
 {
     private static Log logger = LogFactory.getLog(CommandExecutorImpl.class);
-    
+
     // Services go here.
     private TransactionService transactionService;
     private RepositoryDiskInterface repositoryDiskInterface;
     private ExtendedDiskInterface diskInterface;
 
-    
     public void init()
     {
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "diskInterface", diskInterface);
-        PropertyCheck.mandatory(this, "repositoryDiskInterface", getRepositoryDiskInterface()); 
+        PropertyCheck.mandatory(this, "repositoryDiskInterface", getRepositoryDiskInterface());
     }
-        
+
     @Override
     public Object execute(final SrvSession sess, final TreeConnection tree, final Command command) throws IOException
     {
         TxnReadState readState = command.getTransactionRequired();
-        
+
         Object ret = null;
-        
+
         // No transaction required.
-        if(readState == TxnReadState.TXN_NONE)
+        if (readState == TxnReadState.TXN_NONE)
         {
             ret = executeInternal(sess, tree, command, null);
         }
@@ -98,15 +97,14 @@ public class CommandExecutorImpl implements CommandExecutor
         {
             // Yes a transaction is required.
             RetryingTransactionHelper helper = transactionService.getRetryingTransactionHelper();
-     
+
             boolean readOnly = readState == TxnReadState.TXN_READ_ONLY;
-        
-            RetryingTransactionCallback<Object> cb =  new RetryingTransactionCallback<Object>()
-            {
+
+            RetryingTransactionCallback<Object> cb = new RetryingTransactionCallback<Object>() {
                 /**
                  * Perform a set of commands as a unit of transactional work.
                  *
-                 * @return              Return the result of the unit of work
+                 * @return Return the result of the unit of work
                  * @throws IOException
                  */
                 public Object execute() throws IOException
@@ -122,33 +120,33 @@ public class CommandExecutorImpl implements CommandExecutor
                     }
                 }
             };
-        
+
             try
             {
                 ret = helper.doInTransaction(cb, readOnly);
             }
-            catch(PropagatingException pe)
+            catch (PropagatingException pe)
             {
-                if(command instanceof CompoundCommand)
+                if (command instanceof CompoundCommand)
                 {
-                    if(logger.isDebugEnabled())
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("error executing command :command" + command, pe);
                     }
-                    
-                    CompoundCommand c = (CompoundCommand)command;
+
+                    CompoundCommand c = (CompoundCommand) command;
                     // Error Callback Here ?
                     List<Command> commands = c.getPostErrorCommands();
-                
-                    if(commands != null)
+
+                    if (commands != null)
                     {
-                        for(Command c2 : commands)
+                        for (Command c2 : commands)
                         {
                             try
                             {
                                 executeInternal(sess, tree, c2, ret);
                             }
-                            catch(Throwable t)
+                            catch (Throwable t)
                             {
                                 logger.warn("caught and ignored exception from error handler", t);
                                 // Swallow exception from error handler.
@@ -156,39 +154,43 @@ public class CommandExecutorImpl implements CommandExecutor
                         }
                     }
                 }
-                
+
                 // Unwrap checked exceptions
                 throw (IOException) pe.getCause();
             }
         }
-        
+
         /**
          * execute post commit commands.
          */
-        if(command instanceof CompoundCommand)
+        if (command instanceof CompoundCommand)
         {
             logger.debug("post commit of compound command");
-            CompoundCommand c = (CompoundCommand)command;
+            CompoundCommand c = (CompoundCommand) command;
             List<Command> commands = c.getPostCommitCommands();
-            
-            if(commands != null)
+
+            if (commands != null)
             {
-                for(Command c2 : commands)
+                for (Command c2 : commands)
                 {
-                    // TODO - what about exceptions from post commit?             
+                    // TODO - what about exceptions from post commit?
                     executeInternal(sess, tree, c2, ret);
                 }
             }
         }
-        
+
         return ret;
     }
-    
+
     /**
-     * @param sess SrvSession
-     * @param tree TreeConnection
-     * @param command Command
-     * @param result Object
+     * @param sess
+     *            SrvSession
+     * @param tree
+     *            TreeConnection
+     * @param command
+     *            Command
+     * @param result
+     *            Object
      * @return Object
      * @throws IOException
      */
@@ -197,121 +199,116 @@ public class CommandExecutorImpl implements CommandExecutor
         FileFilterMode.setClient(ClientHelper.getClient(sess));
         try
         {
-            if(command instanceof CompoundCommand)
+            if (command instanceof CompoundCommand)
             {
-               Object ret = null;
-               logger.debug("compound command received");
-               CompoundCommand x = (CompoundCommand)command;
-                      
-               for(Command compoundPart : x.getCommands())
-               {
-                   logger.debug("running part of compound command");
-                   Object val = executeInternal(sess, tree, compoundPart, result);
-                   if(val != null)
-                   {
-                       // Return the value from the last command.
-                       ret = val;
-                   }
-               }
-               return ret;
+                Object ret = null;
+                logger.debug("compound command received");
+                CompoundCommand x = (CompoundCommand) command;
+
+                for (Command compoundPart : x.getCommands())
+                {
+                    logger.debug("running part of compound command");
+                    Object val = executeInternal(sess, tree, compoundPart, result);
+                    if (val != null)
+                    {
+                        // Return the value from the last command.
+                        ret = val;
+                    }
+                }
+                return ret;
             }
-            else if(command instanceof CreateFileCommand)
+            else if (command instanceof CreateFileCommand)
             {
                 logger.debug("create file command");
-                CreateFileCommand create = (CreateFileCommand)command;
+                CreateFileCommand create = (CreateFileCommand) command;
                 return repositoryDiskInterface.createFile(create.getRootNode(), create.getPath(), create.getAllocationSize(), create.isHidden());
             }
-            else if(command instanceof RestoreFileCommand)
+            else if (command instanceof RestoreFileCommand)
             {
                 logger.debug("restore file command");
-                RestoreFileCommand restore = (RestoreFileCommand)command;
+                RestoreFileCommand restore = (RestoreFileCommand) command;
                 return repositoryDiskInterface.restoreFile(sess, tree, restore.getRootNode(), restore.getPath(), restore.getAllocationSize(), restore.getOriginalNodeRef());
             }
-            else if(command instanceof DeleteFileCommand)
+            else if (command instanceof DeleteFileCommand)
             {
                 logger.debug("delete file command");
-                DeleteFileCommand delete = (DeleteFileCommand)command;
+                DeleteFileCommand delete = (DeleteFileCommand) command;
                 return repositoryDiskInterface.deleteFile2(sess, tree, delete.getRootNode(), delete.getPath());
             }
-            else if(command instanceof OpenFileCommand)
+            else if (command instanceof OpenFileCommand)
             {
                 logger.debug("open file command");
-                OpenFileCommand o = (OpenFileCommand)command;
-                
+                OpenFileCommand o = (OpenFileCommand) command;
+
                 OpenFileMode mode = o.getMode();
                 return repositoryDiskInterface.openFile(sess, tree, o.getRootNodeRef(), o.getPath(), mode, o.isTruncate());
-                
+
             }
-            else if(command instanceof CloseFileCommand)
+            else if (command instanceof CloseFileCommand)
             {
                 logger.debug("close file command");
-                CloseFileCommand c = (CloseFileCommand)command;
+                CloseFileCommand c = (CloseFileCommand) command;
                 return repositoryDiskInterface.closeFile(tree, c.getRootNodeRef(), c.getPath(), c.getNetworkFile());
             }
-            else if(command instanceof ReduceQuotaCommand)
+            else if (command instanceof ReduceQuotaCommand)
             {
                 logger.debug("reduceQuota file command");
-                ReduceQuotaCommand r = (ReduceQuotaCommand)command;
+                ReduceQuotaCommand r = (ReduceQuotaCommand) command;
                 repositoryDiskInterface.reduceQuota(sess, tree, r.getNetworkFile());
             }
-            else if(command instanceof RenameFileCommand)
+            else if (command instanceof RenameFileCommand)
             {
                 logger.debug("rename command");
-                RenameFileCommand rename = (RenameFileCommand)command;
-                
+                RenameFileCommand rename = (RenameFileCommand) command;
+
                 repositoryDiskInterface.renameFile(rename.getRootNode(), rename.getFromPath(), rename.getToPath(), rename.isSoft(), false);
             }
-            else if(command instanceof MoveFileCommand)
+            else if (command instanceof MoveFileCommand)
             {
                 logger.debug("move command");
-                MoveFileCommand move = (MoveFileCommand)command;
+                MoveFileCommand move = (MoveFileCommand) command;
                 repositoryDiskInterface.renameFile(move.getRootNode(), move.getFromPath(), move.getToPath(), false, move.isMoveAsSystem());
             }
-            else if(command instanceof CopyContentCommand)
+            else if (command instanceof CopyContentCommand)
             {
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Copy content command - copy content");
                 }
-                CopyContentCommand copy = (CopyContentCommand)command;
+                CopyContentCommand copy = (CopyContentCommand) command;
                 repositoryDiskInterface.copyContent(copy.getRootNode(), copy.getFromPath(), copy.getToPath());
             }
-            else if(command instanceof DoNothingCommand)
+            else if (command instanceof DoNothingCommand)
             {
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Do Nothing Command - doing nothing");
                 }
             }
-            else if(command instanceof ResultCallback)
+            else if (command instanceof ResultCallback)
             {
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Result Callback");
                 }
-                ResultCallback callback = (ResultCallback)command;
+                ResultCallback callback = (ResultCallback) command;
                 callback.execute(result);
             }
-            else if(command instanceof RemoveTempFileCommand)
+            else if (command instanceof RemoveTempFileCommand)
             {
-                RemoveTempFileCommand r = (RemoveTempFileCommand)command;
-                if(logger.isDebugEnabled())
+                RemoveTempFileCommand r = (RemoveTempFileCommand) command;
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Remove Temp File:" + r.getNetworkFile());
                 }
                 File file = r.getNetworkFile().getFile();
                 boolean isDeleted = file.delete();
-           
-                if(!isDeleted)
-                {          
-                    logger.debug("unable to delete temp file:" + r.getNetworkFile() + ", closed="+ r.getNetworkFile().isClosed());
- 
-                    /*
-                     * Unable to delete temporary file
-                     * Could be a bug with the file handle not being closed, but yourkit does not
-                     * find anything awry.
-                     * There are reported Windows JVM bugs such as 4715154 ... 
-                     */
+
+                if (!isDeleted)
+                {
+                    logger.debug("unable to delete temp file:" + r.getNetworkFile() + ", closed=" + r.getNetworkFile().isClosed());
+
+                    /* Unable to delete temporary file Could be a bug with the file handle not being closed, but yourkit does not find anything awry. There are reported Windows JVM bugs such as 4715154 ... */
                     FileOutputStream fos = new FileOutputStream(file);
                     FileChannel outChan = null;
                     try
@@ -325,32 +322,33 @@ public class CommandExecutorImpl implements CommandExecutor
                     }
                     finally
                     {
-                        if(outChan != null)
+                        if (outChan != null)
                         {
                             try
                             {
                                 outChan.close();
                             }
-                            catch(IOException e){}
+                            catch (IOException e)
+                            {}
                         }
                         fos.close();
                     }
                 }
-                              
+
             }
-            else if(command instanceof ReturnValueCommand)
+            else if (command instanceof ReturnValueCommand)
             {
-                ReturnValueCommand r = (ReturnValueCommand)command;
-                if(logger.isDebugEnabled())
+                ReturnValueCommand r = (ReturnValueCommand) command;
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Return value");
                 }
                 return r.getReturnValue();
             }
-            else if(command instanceof  RemoveNoContentFileOnError)
+            else if (command instanceof RemoveNoContentFileOnError)
             {
-                RemoveNoContentFileOnError r = (RemoveNoContentFileOnError)command;
-                if(logger.isDebugEnabled())
+                RemoveNoContentFileOnError r = (RemoveNoContentFileOnError) command;
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Remove no content file on error");
                 }
@@ -365,12 +363,10 @@ public class CommandExecutorImpl implements CommandExecutor
         return null;
     }
 
-
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
     }
-
 
     public TransactionService getTransactionService()
     {
@@ -386,7 +382,7 @@ public class CommandExecutorImpl implements CommandExecutor
     {
         return repositoryDiskInterface;
     }
-    
+
     public void setDiskInterface(ExtendedDiskInterface diskInterface)
     {
         this.diskInterface = diskInterface;
@@ -396,7 +392,7 @@ public class CommandExecutorImpl implements CommandExecutor
     {
         return diskInterface;
     }
-    
+
     /**
      * A wrapper for checked exceptions to be passed through the retrying transaction handler.
      */
@@ -405,12 +401,13 @@ public class CommandExecutorImpl implements CommandExecutor
         private static final long serialVersionUID = 1L;
 
         /**
-         * @param cause Throwable
+         * @param cause
+         *            Throwable
          */
         public PropagatingException(Throwable cause)
         {
             super(cause);
-        }        
+        }
     }
 
 }

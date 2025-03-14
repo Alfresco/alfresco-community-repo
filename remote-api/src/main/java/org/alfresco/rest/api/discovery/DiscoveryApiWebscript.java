@@ -25,6 +25,16 @@
  */
 package org.alfresco.rest.api.discovery;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.json.simple.JSONObject;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+
 import org.alfresco.rest.api.impl.directurl.RestApiDirectUrlConfig;
 import org.alfresco.rest.api.model.DiscoveryDetails;
 import org.alfresco.rest.api.model.ModulePackage;
@@ -47,15 +57,6 @@ import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.PropertyCheck;
-import org.json.simple.JSONObject;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.extensions.webscripts.AbstractWebScript;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Jamal Kaabi-Mofrad
@@ -155,23 +156,23 @@ public class DiscoveryApiWebscript extends AbstractWebScript implements Recogniz
     public RepositoryInfo getRepositoryInfo()
     {
         LicenseInfo licenseInfo = null;
-        if(descriptorService.getLicenseDescriptor() != null)
+        if (descriptorService.getLicenseDescriptor() != null)
         {
             licenseInfo = new LicenseInfo(descriptorService.getLicenseDescriptor());
         }
         Descriptor serverDescriptor = descriptorService.getServerDescriptor();
         return new RepositoryInfo()
-                    .setId(descriptorService.getCurrentRepositoryDescriptor().getId())
-                    .setEdition(serverDescriptor.getEdition())
-                    .setVersion(new VersionInfo(serverDescriptor))
-                    .setLicense(licenseInfo)
-                    .setModules(getModules())
-                    .setStatus(new StatusInfo()
-                                .setReadOnly(repoAdminService.getUsage().isReadOnly())
-                                .setAuditEnabled(auditService.isAuditEnabled())
-                                .setQuickShareEnabled(quickShareService.isQuickShareEnabled())
-                                .setThumbnailGenerationEnabled(thumbnailService.getThumbnailsEnabled())
-                                .setDirectAccessUrlEnabled(isContentDirectUrlEnabled()));
+                .setId(descriptorService.getCurrentRepositoryDescriptor().getId())
+                .setEdition(serverDescriptor.getEdition())
+                .setVersion(new VersionInfo(serverDescriptor))
+                .setLicense(licenseInfo)
+                .setModules(getModules())
+                .setStatus(new StatusInfo()
+                        .setReadOnly(repoAdminService.getUsage().isReadOnly())
+                        .setAuditEnabled(auditService.isAuditEnabled())
+                        .setQuickShareEnabled(quickShareService.isQuickShareEnabled())
+                        .setThumbnailGenerationEnabled(thumbnailService.getThumbnailsEnabled())
+                        .setDirectAccessUrlEnabled(isContentDirectUrlEnabled()));
     }
 
     private List<ModulePackage> getModules()

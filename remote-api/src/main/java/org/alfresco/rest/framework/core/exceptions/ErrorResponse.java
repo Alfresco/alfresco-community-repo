@@ -40,25 +40,25 @@ public class ErrorResponse
     private final int statusCode;
     private final String briefSummary;
     private final String stackTrace;
-    private final Map<String,Object> additionalState;
+    private final Map<String, Object> additionalState;
     private final String descriptionURL;
     private final String logId;
 
     public ErrorResponse(String errorKey, int statusCode, String briefSummary,
-                StackTraceElement[] stackTrace, Map<String,Object> additionalState)
+            StackTraceElement[] stackTrace, Map<String, Object> additionalState)
     {
         super();
         this.errorKey = errorKey;
         this.statusCode = statusCode;
         this.briefSummary = briefSummary;
         this.stackTrace = Arrays.toString(stackTrace);
-        this.additionalState = additionalState==null?null:Collections.unmodifiableMap(additionalState);
+        this.additionalState = additionalState == null ? null : Collections.unmodifiableMap(additionalState);
         this.descriptionURL = null;
         this.logId = null;
     }
 
     public ErrorResponse(String errorKey, int statusCode, String briefSummary,
-                         String stackMessage, String logId, Map<String,Object> additionalState, String descriptionURL)
+            String stackMessage, String logId, Map<String, Object> additionalState, String descriptionURL)
     {
         super();
         this.errorKey = errorKey;
@@ -66,7 +66,7 @@ public class ErrorResponse
         this.briefSummary = briefSummary;
         this.stackTrace = stackMessage;
         this.logId = logId;
-        this.additionalState = additionalState==null?null:Collections.unmodifiableMap(additionalState);
+        this.additionalState = additionalState == null ? null : Collections.unmodifiableMap(additionalState);
         this.descriptionURL = descriptionURL;
     }
 
@@ -100,7 +100,8 @@ public class ErrorResponse
         return this.additionalState;
     }
 
-    public String getLogId() {
+    public String getLogId()
+    {
         return logId;
     }
 
@@ -109,13 +110,12 @@ public class ErrorResponse
     {
         StringBuilder builder = new StringBuilder();
         builder.append("ErrorResponse [errorKey=").append(this.errorKey).append(", statusCode=")
-               .append(this.statusCode).append(", briefSummary=").append(this.briefSummary)
-               .append(", descriptionURL=").append(this.descriptionURL)
+                .append(this.statusCode).append(", briefSummary=").append(this.briefSummary)
+                .append(", descriptionURL=").append(this.descriptionURL)
                 .append(", logId=").append(this.logId)
-               .append(", stackTrace=").append(this.stackTrace).append(", additionalState=")
-               .append(this.additionalState).append("]");
+                .append(", stackTrace=").append(this.stackTrace).append(", additionalState=")
+                .append(this.additionalState).append("]");
         return builder.toString();
     }
-    
-    
+
 }

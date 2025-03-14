@@ -28,16 +28,17 @@ package org.alfresco.repo.web.scripts.comments;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.model.ForumModel;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.model.ForumModel;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * This class is the controller for the comment.delete web script.

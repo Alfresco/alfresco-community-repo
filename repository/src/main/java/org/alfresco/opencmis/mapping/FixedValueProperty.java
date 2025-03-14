@@ -43,10 +43,14 @@ public class FixedValueProperty extends AbstractProperty
     /**
      * Construct
      * 
-     * @param serviceRegistry ServiceRegistry
-     * @param connector CMISConnector
-     * @param propertyName String
-     * @param value Serializable
+     * @param serviceRegistry
+     *            ServiceRegistry
+     * @param connector
+     *            CMISConnector
+     * @param propertyName
+     *            String
+     * @param value
+     *            Serializable
      */
     public FixedValueProperty(ServiceRegistry serviceRegistry, CMISConnector connector, String propertyName,
             Serializable value)

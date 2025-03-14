@@ -37,7 +37,7 @@ import junit.framework.TestCase;
 public class MLTextTest extends TestCase
 {
     MLText mlText;
-    
+
     @Override
     protected void setUp()
     {

@@ -50,8 +50,7 @@ public class RestNodeAssociationModel extends TestModel implements IRestModel<Re
     private String id;
 
     /**
-     * The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
-     * The character . must not be used at the end of the name.
+     * The name must not contain spaces or the following special characters: * " < > \ / ? : and |. The character . must not be used at the end of the name.
      */
     @JsonProperty(required = true)
     private String name;
@@ -75,10 +74,10 @@ public class RestNodeAssociationModel extends TestModel implements IRestModel<Re
 
     @JsonProperty(required = true)
     private String createdAt;
-    
+
     @JsonProperty
     private String archivedAt;
-    
+
     @JsonProperty
     private RestByUserModel archivedByUser;
 
@@ -100,7 +99,7 @@ public class RestNodeAssociationModel extends TestModel implements IRestModel<Re
     private Object path;
 
     private Object permissions;
-    
+
     private RestNodeAssociationTypeModel association;
 
     public RestNodeAssociationTypeModel getAssociation()

@@ -47,18 +47,16 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Manage home folder creation by binding to events from the cm:person type.
- *  
- * @author Andy Hind,
- *         Alan Davis (support v1 and v2 HomeFolderProviders - code from
- *                     v1 HomeFolderProviders moved into HomeFolderManager).
+ * 
+ * @author Andy Hind, Alan Davis (support v1 and v2 HomeFolderProviders - code from v1 HomeFolderProviders moved into HomeFolderManager).
  */
 public class PortableHomeFolderManager implements HomeFolderManager
 {
-    private NodeService nodeService;   
+    private NodeService nodeService;
     private FileFolderService fileFolderService;
     private NamespaceService namespaceService;
     private SearchService searchService;
-    
+
     /**
      * A default provider
      */
@@ -79,10 +77,10 @@ public class PortableHomeFolderManager implements HomeFolderManager
      * Cache the result of the path look up.
      */
     // note: cache is tenant-aware (if using TransctionalCache impl)
-    
+
     private SimpleCache<String, NodeRef> singletonCache; // eg. for rootPathNodeRef
     private final String KEY_HOME_PATH_NODEREF = "key.homeFolder.rootPathNodeRef";
-    
+
     /**
      * Set the node service.
      */
@@ -108,7 +106,8 @@ public class PortableHomeFolderManager implements HomeFolderManager
     }
 
     /**
-     * @param searchService the searchService to set
+     * @param searchService
+     *            the searchService to set
      */
     public void setSearchService(SearchService searchService)
     {
@@ -123,7 +122,8 @@ public class PortableHomeFolderManager implements HomeFolderManager
     /**
      * Register a home folder provider.
      * 
-     * @param provider HomeFolderProvider
+     * @param provider
+     *            HomeFolderProvider
      */
     @SuppressWarnings("deprecation")
     public void addProvider(HomeFolderProvider provider)
@@ -134,13 +134,14 @@ public class PortableHomeFolderManager implements HomeFolderManager
     /**
      * Register a home folder provider.
      * 
-     * @param provider HomeFolderProvider2
+     * @param provider
+     *            HomeFolderProvider2
      */
     public void addProvider(HomeFolderProvider2 provider)
     {
         v2Providers.put(provider.getName(), provider);
     }
-    
+
     /**
      * Returns the version 1 HomeFolderProvider with the given name.
      */
@@ -149,7 +150,7 @@ public class PortableHomeFolderManager implements HomeFolderManager
     {
         return v1Providers.get(providerName);
     }
-    
+
     /**
      * Returns the version 2 HomeFolderProvider2 with the given name.
      */
@@ -160,7 +161,9 @@ public class PortableHomeFolderManager implements HomeFolderManager
 
     /**
      * Set the default home folder provider (user which none is specified or when one is not found)
-     * @param defaultProvider HomeFolderProvider2
+     * 
+     * @param defaultProvider
+     *            HomeFolderProvider2
      */
     public void setDefaultProvider(HomeFolderProvider2 defaultProvider)
     {
@@ -168,8 +171,8 @@ public class PortableHomeFolderManager implements HomeFolderManager
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.security.person.HomeFolderManager#makeHomeFolder(org.alfresco.service.cmr.repository.ChildAssociationRef)
-     */
+     * 
+     * @see org.alfresco.repo.security.person.HomeFolderManager#makeHomeFolder(org.alfresco.service.cmr.repository.ChildAssociationRef) */
     @SuppressWarnings("deprecation")
     @Override
     public void makeHomeFolder(final ChildAssociationRef childAssocRef)
@@ -178,7 +181,7 @@ public class PortableHomeFolderManager implements HomeFolderManager
         HomeFolderProvider v1Provider = null;
         String providerName = DefaultTypeConverter.INSTANCE.convert(
                 String.class, nodeService.getProperty(childAssocRef
-                .getChildRef(), ContentModel.PROP_HOME_FOLDER_PROVIDER));
+                        .getChildRef(), ContentModel.PROP_HOME_FOLDER_PROVIDER));
         if (providerName != null)
         {
             v2Provider = getHomeFolderProvider2(providerName);
@@ -203,7 +206,7 @@ public class PortableHomeFolderManager implements HomeFolderManager
             // v1 HomeFolderProvider in case it has been overridden
             if (v2Provider instanceof AbstractHomeFolderProvider.V2Adaptor)
             {
-                ((AbstractHomeFolderProvider.V2Adaptor)v2Provider).onCreateNode(childAssocRef);
+                ((AbstractHomeFolderProvider.V2Adaptor) v2Provider).onCreateNode(childAssocRef);
             }
             else
             {
@@ -220,7 +223,7 @@ public class PortableHomeFolderManager implements HomeFolderManager
     {
         // Get home folder
         HomeSpaceNodeRef homeFolder = provider.getHomeFolder(personNodeRef);
-        
+
         // If it exists
         if (homeFolder.getNodeRef() != null)
         {
@@ -240,8 +243,7 @@ public class PortableHomeFolderManager implements HomeFolderManager
             // If created..
             if (homeFolder.getStatus() == HomeSpaceNodeRef.Status.CREATED)
             {
-                PermissionsManager onCreatePermissionsManager =
-                    provider.getOnCreatePermissionsManager();
+                PermissionsManager onCreatePermissionsManager = provider.getOnCreatePermissionsManager();
                 if (onCreatePermissionsManager != null)
                 {
                     onCreatePermissionsManager.setPermissions(
@@ -250,8 +252,7 @@ public class PortableHomeFolderManager implements HomeFolderManager
             }
             else
             {
-                PermissionsManager onReferencePermissionsManager =
-                    provider.getOnReferencePermissionsManager();
+                PermissionsManager onReferencePermissionsManager = provider.getOnReferencePermissionsManager();
                 if (onReferencePermissionsManager != null)
                 {
                     onReferencePermissionsManager.setPermissions(
@@ -260,35 +261,34 @@ public class PortableHomeFolderManager implements HomeFolderManager
             }
         }
     }
-    
+
     private StoreRef getStoreRef(HomeFolderProvider2 provider)
     {
         // Could check to see if provider is a V2Adaptor to avoid
         // object creation, but there is little point.
         return new StoreRef(provider.getStoreUrl());
     }
-    
+
     /**
-     * Helper method for {@link HomeFolderProvider2#getHomeFolder} (so that it
-     * does not need its own NodeService) that returns a person property value.
+     * Helper method for {@link HomeFolderProvider2#getHomeFolder} (so that it does not need its own NodeService) that returns a person property value.
      */
     public String getPersonProperty(NodeRef person, QName name)
     {
         String value = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(person, name));
-        
-        if(value == null || value.length() == 0)
+
+        if (value == null || value.length() == 0)
         {
-            throw new PersonException("Can not create a home folder when the "+name+" property is null or empty");
+            throw new PersonException("Can not create a home folder when the " + name + " property is null or empty");
         }
         return value;
     }
-    
+
     void clearCaches(HomeFolderProvider2 provider)
     {
         String key = KEY_HOME_PATH_NODEREF + "." + provider.getName();
         singletonCache.remove(key);
     }
-    
+
     NodeRef getRootPathNodeRef(HomeFolderProvider2 provider)
     {
         String key = KEY_HOME_PATH_NODEREF + "." + provider.getName();
@@ -301,7 +301,7 @@ public class PortableHomeFolderManager implements HomeFolderManager
         }
         return rootPathNodeRef;
     }
-    
+
     /**
      * Utility method to resolve paths to nodes.
      */
@@ -319,18 +319,17 @@ public class PortableHomeFolderManager implements HomeFolderManager
     }
 
     /**
-     * Helper method for {@link HomeFolderProvider2#getHomeFolder(NodeRef)}
-     * implementations to return a {@link HomeSpaceNodeRef}
-     * @param referenceRootNode indicates that a reference to the root node
-     *        should be returned if the home folder property on the person
-     *        has not yet been set.
+     * Helper method for {@link HomeFolderProvider2#getHomeFolder(NodeRef)} implementations to return a {@link HomeSpaceNodeRef}
+     * 
+     * @param referenceRootNode
+     *            indicates that a reference to the root node should be returned if the home folder property on the person has not yet been set.
      */
     public HomeSpaceNodeRef getHomeFolder(HomeFolderProvider2 provider, NodeRef person, boolean referenceRootNode)
     {
         HomeSpaceNodeRef homeSpaceNodeRef = null;
         NodeRef existingHomeFolder = DefaultTypeConverter.INSTANCE.convert(
                 NodeRef.class, nodeService.getProperty(
-                person, ContentModel.PROP_HOMEFOLDER));
+                        person, ContentModel.PROP_HOMEFOLDER));
         if (existingHomeFolder != null)
         {
             homeSpaceNodeRef = new HomeSpaceNodeRef(existingHomeFolder,
@@ -358,16 +357,17 @@ public class PortableHomeFolderManager implements HomeFolderManager
     }
 
     /**
-     * Modifies (if required) the leaf folder name in the {@code homeFolderPath} by
-     * appending {@code "-N"} (where N is an integer starting with 1), so that a
-     * new folder will be created.
-     * @param root folder.
-     * @param homeFolderPath the full path. Only the final element is used.
+     * Modifies (if required) the leaf folder name in the {@code homeFolderPath} by appending {@code "-N"} (where N is an integer starting with 1), so that a new folder will be created.
+     * 
+     * @param root
+     *            folder.
+     * @param homeFolderPath
+     *            the full path. Only the final element is used.
      */
     public void modifyHomeFolderNameIfItExists(NodeRef root, List<String> homeFolderPath)
     {
         int n = 0;
-        int last = homeFolderPath.size()-1;
+        int last = homeFolderPath.size() - 1;
         String name = homeFolderPath.get(last);
         String homeFolderName = name;
         try
@@ -376,7 +376,7 @@ public class PortableHomeFolderManager implements HomeFolderManager
             {
                 if (n > 0)
                 {
-                    homeFolderName = name+'-'+n;
+                    homeFolderName = name + '-' + n;
                     homeFolderPath.set(last, homeFolderName);
                 }
                 n++;
@@ -387,7 +387,7 @@ public class PortableHomeFolderManager implements HomeFolderManager
             // Should not be thrown as call to resolveNamePath passes in false
         }
     }
-    
+
     /**
      * creates a tree of folder nodes based on the path elements provided.
      */
@@ -396,7 +396,7 @@ public class PortableHomeFolderManager implements HomeFolderManager
             FileFolderService fileFolderService)
     {
         NodeRef newParent = createNewParentIfRequired(root, homeFolderPath, fileFolderService);
-        String homeFolderName = homeFolderPath.get(homeFolderPath.size()-1);
+        String homeFolderName = homeFolderPath.get(homeFolderPath.size() - 1);
         FileInfo fileInfo;
         if (templateNodeRef == null)
         {
@@ -421,14 +421,14 @@ public class PortableHomeFolderManager implements HomeFolderManager
         }
         return fileInfo;
     }
-    
+
     private NodeRef createNewParentIfRequired(NodeRef root,
             List<String> homeFolderPath, FileFolderService fileFolderService)
     {
         if (homeFolderPath.size() > 1)
         {
             List<String> parentPath = new ArrayList<String>(homeFolderPath);
-            parentPath.remove(parentPath.size()-1);
+            parentPath.remove(parentPath.size() - 1);
             return FileFolderUtil.makeFolders(fileFolderService, root,
                     parentPath, ContentModel.TYPE_FOLDER).getNodeRef();
         }

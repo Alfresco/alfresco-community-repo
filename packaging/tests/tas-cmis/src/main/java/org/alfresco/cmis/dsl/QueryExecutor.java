@@ -16,6 +16,13 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.StreamSupport;
 
+import org.apache.chemistry.opencmis.client.api.ItemIterable;
+import org.apache.chemistry.opencmis.client.api.QueryResult;
+import org.apache.chemistry.opencmis.client.api.Session;
+import org.apache.chemistry.opencmis.commons.data.PropertyData;
+import org.slf4j.Logger;
+import org.testng.Assert;
+
 import org.alfresco.cmis.CmisWrapper;
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.data.provider.XMLTestData;
@@ -24,16 +31,9 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestModel;
-import org.apache.chemistry.opencmis.client.api.ItemIterable;
-import org.apache.chemistry.opencmis.client.api.QueryResult;
-import org.apache.chemistry.opencmis.client.api.Session;
-import org.apache.chemistry.opencmis.commons.data.PropertyData;
-import org.slf4j.Logger;
-import org.testng.Assert;
 
 /**
- * DSL for CMIS Queries
- * This will also handle execution of CMIS queries
+ * DSL for CMIS Queries This will also handle execution of CMIS queries
  */
 public class QueryExecutor
 {
@@ -70,7 +70,7 @@ public class QueryExecutor
     {
         STEP("Sending query " + currentQuery);
         results = StreamSupport.stream(executeQuery(currentQuery).spliterator(), false)
-                               .collect(toList());
+                .collect(toList());
         resultCount = results.size();
         STEP("Received results " + results.stream().map(this::resultToString).collect(toList()));
         return new QueryResultAssertion();
@@ -84,11 +84,11 @@ public class QueryExecutor
             return "null";
         }
         Optional<PropertyData<?>> idProperty = result.getProperties().stream()
-                                                     .filter(propertyData -> propertyData.getId().equals("cmis:objectId"))
-                                                     .findFirst();
+                .filter(propertyData -> propertyData.getId().equals("cmis:objectId"))
+                .findFirst();
         return idProperty.map(PropertyData::getValues)
-                         .map(values -> values.stream().map(Object::toString).collect(joining(",")))
-                         .orElse(result.getProperties().toString());
+                .map(values -> values.stream().map(Object::toString).collect(joining(",")))
+                .orElse(result.getProperties().toString());
     }
 
     private ItemIterable<QueryResult> executeQuery(String query)
@@ -147,8 +147,7 @@ public class QueryExecutor
     }
 
     /**
-     * if you have in your search 'SELECT * from cmis:document where workspace://SpacesStore/NODE_REF[site1] or workspace://SpacesStore/NODE_REF[site2]'
-     * and pass key="NODE_REF" this method will get "site1" and "site2" as values
+     * if you have in your search 'SELECT * from cmis:document where workspace://SpacesStore/NODE_REF[site1] or workspace://SpacesStore/NODE_REF[site2]' and pass key="NODE_REF" this method will get "site1" and "site2" as values
      *
      * @param key
      * @return

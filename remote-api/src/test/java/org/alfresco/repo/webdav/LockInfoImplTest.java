@@ -29,17 +29,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
-
 
 public class LockInfoImplTest
 {
@@ -47,69 +46,69 @@ public class LockInfoImplTest
     public void canSetTimeoutSeconds()
     {
         LockInfoImplEx lockInfo = new LockInfoImplEx();
-        
+
         // This should add 7 seconds (7000 millis) to the expiry date.
         lockInfo.setTimeoutSeconds(7);
-        
+
         // Check the new date.
         assertEquals(86407000, lockInfo.getExpires().getTime());
     }
-    
+
     @Test
     public void canSetTimeoutSecondsToInfinity()
     {
         LockInfoImplEx lockInfo = new LockInfoImplEx();
-        
+
         lockInfo.setTimeoutSeconds(WebDAV.TIMEOUT_INFINITY);
-        
+
         // Check the new date.
         assertNull(lockInfo.getExpires());
     }
-    
+
     @Test
     public void canSetTimeoutMinutes()
     {
         LockInfoImplEx lockInfo = new LockInfoImplEx();
-        
+
         // This should add 5 minutes to the expiry date.
         lockInfo.setTimeoutMinutes(5);
-        
+
         // Check the new date.
         assertEquals(86700000, lockInfo.getExpires().getTime());
     }
-    
+
     @Test
     public void canSetTimeoutMinutesToInfinity()
     {
         LockInfoImplEx lockInfo = new LockInfoImplEx();
-        
+
         lockInfo.setTimeoutMinutes(WebDAV.TIMEOUT_INFINITY);
-        
+
         // Check the new date.
         assertNull(lockInfo.getExpires());
     }
-    
+
     @Test
     public void canGetRemainingTimeoutSeconds()
     {
         LockInfoImplEx lockInfo = new LockInfoImplEx();
-        
+
         lockInfo.setTimeoutSeconds(7);
-        
+
         assertEquals(7, lockInfo.getRemainingTimeoutSeconds());
     }
-    
-    @Test(expected=IllegalStateException.class)
+
+    @Test(expected = IllegalStateException.class)
     public void cannotChangeSharedLockToExclusive()
     {
         LockInfoImpl lockInfo = new LockInfoImpl();
         lockInfo.addSharedLockToken("shared-token");
-        
+
         // Not allowed
         lockInfo.setExclusiveLockToken("token");
     }
-    
-    @Test(expected=IllegalStateException.class)
+
+    @Test(expected = IllegalStateException.class)
     public void cannotChangeExclusiveLockToShared()
     {
         LockInfoImpl lockInfo = new LockInfoImpl();
@@ -118,21 +117,21 @@ public class LockInfoImplTest
         // Not allowed
         lockInfo.addSharedLockToken("shared-token");
     }
-    
+
     public void canSetShared()
     {
         LockInfoImpl lockInfo = new LockInfoImpl();
         lockInfo.setExclusiveLockToken("exc-token");
-        
+
         assertEquals("exc-token", lockInfo.getExclusiveLockToken());
     }
-    
+
     public void canSetExclusive()
     {
         LockInfoImpl lockInfo = new LockInfoImpl();
         lockInfo.addSharedLockToken("shared1");
         lockInfo.addSharedLockToken("shared2");
-        
+
         assertEquals(2, lockInfo.getSharedLockTokens().size());
         assertTrue(lockInfo.getSharedLockTokens().contains("shared1"));
         assertTrue(lockInfo.getSharedLockTokens().contains("shared2"));
@@ -146,7 +145,7 @@ public class LockInfoImplTest
         lockInfo.setExclusiveLockToken("opaque-lock-token");
         lockInfo.setDepth(WebDAV.INFINITY);
         lockInfo.setScope(WebDAV.XML_EXCLUSIVE);
-        
+
         String json = lockInfo.toJSON();
         ObjectMapper objectMapper = new ObjectMapper();
         assertTrue("ADDINFO_WEBDAV_MARKER", json.startsWith(LockInfoImpl.ADDINFO_WEBDAV_MARKER));
@@ -155,7 +154,7 @@ public class LockInfoImplTest
         assertEquals("opaque-lock-token", parsed.getExclusiveLockToken());
         assertEquals(WebDAV.INFINITY, parsed.getDepth());
         assertEquals(WebDAV.XML_EXCLUSIVE, parsed.getScope());
-        
+
         // Shared lock
         lockInfo = new LockInfoImpl();
         lockInfo.addSharedLockToken("opaque-lock-token-1");
@@ -163,7 +162,7 @@ public class LockInfoImplTest
         lockInfo.addSharedLockToken("opaque-lock-token-3");
         lockInfo.setDepth(WebDAV.ZERO);
         lockInfo.setScope(WebDAV.XML_SHARED);
-        
+
         json = lockInfo.toJSON();
         assertTrue("ADDINFO_WEBDAV_MARKER", json.startsWith(LockInfoImpl.ADDINFO_WEBDAV_MARKER));
         json = json.substring(LockInfoImpl.ADDINFO_WEBDAV_MARKER.length() + 1);
@@ -172,11 +171,11 @@ public class LockInfoImplTest
         Iterator<String> tokenIt = sortedTokens.iterator();
         assertEquals("opaque-lock-token-1", tokenIt.next());
         assertEquals("opaque-lock-token-2", tokenIt.next());
-        assertEquals("opaque-lock-token-3", tokenIt.next());        
+        assertEquals("opaque-lock-token-3", tokenIt.next());
         assertEquals(WebDAV.ZERO, parsed.getDepth());
         assertEquals(WebDAV.XML_SHARED, parsed.getScope());
     }
-    
+
     @Test
     public void canParseJSON() throws JsonParseException, JsonMappingException, IOException
     {
@@ -185,14 +184,14 @@ public class LockInfoImplTest
         lockInfo.setExclusiveLockToken("opaque-lock-token");
         lockInfo.setDepth(WebDAV.INFINITY);
         lockInfo.setScope(WebDAV.XML_EXCLUSIVE);
-        
+
         String json = lockInfo.toJSON();
         // Execute the factory method we're testing
         LockInfo parsed = LockInfoImpl.fromJSON(json);
         assertEquals("opaque-lock-token", parsed.getExclusiveLockToken());
         assertEquals(WebDAV.INFINITY, parsed.getDepth());
         assertEquals(WebDAV.XML_EXCLUSIVE, parsed.getScope());
-        
+
         // Shared lock
         lockInfo = new LockInfoImpl();
         lockInfo.addSharedLockToken("opaque-lock-token-1");
@@ -200,7 +199,7 @@ public class LockInfoImplTest
         lockInfo.addSharedLockToken("opaque-lock-token-3");
         lockInfo.setDepth(WebDAV.ZERO);
         lockInfo.setScope(WebDAV.XML_SHARED);
-        
+
         json = lockInfo.toJSON();
         // Execute the factory method we're testing
         parsed = LockInfoImpl.fromJSON(json);
@@ -208,11 +207,11 @@ public class LockInfoImplTest
         Iterator<String> tokenIt = sortedTokens.iterator();
         assertEquals("opaque-lock-token-1", tokenIt.next());
         assertEquals("opaque-lock-token-2", tokenIt.next());
-        assertEquals("opaque-lock-token-3", tokenIt.next());        
+        assertEquals("opaque-lock-token-3", tokenIt.next());
         assertEquals(WebDAV.ZERO, parsed.getDepth());
         assertEquals(WebDAV.XML_SHARED, parsed.getScope());
     }
-    
+
     public static class LockInfoImplEx extends LockInfoImpl
     {
         public static final Date DATE_NOW = new Date(86400000);

@@ -33,6 +33,8 @@ package org.alfresco.repo.content.caching.quota;
 public interface UsageTracker
 {
     long getCurrentUsageBytes();
+
     void setCurrentUsageBytes(long newDiskUsage);
+
     long addUsageBytes(long sizeDelta);
 }

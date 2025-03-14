@@ -40,18 +40,18 @@ public class ImporterBootstrapViews implements InitializingBean
     // Dependencies
     private ImporterBootstrap importer;
     private List<Properties> bootstrapViews;
-    
 
     /**
      * Sets the importer
      * 
-     * @param importer ImporterBootstrap
+     * @param importer
+     *            ImporterBootstrap
      */
     public void setImporter(ImporterBootstrap importer)
     {
         this.importer = importer;
     }
-    
+
     /**
      * Sets the bootstrap views
      * 
@@ -61,7 +61,6 @@ public class ImporterBootstrapViews implements InitializingBean
         this.bootstrapViews = bootstrapViews;
     }
 
-    
     public void afterPropertiesSet() throws Exception
     {
         importer.addBootstrapViews(bootstrapViews);

@@ -45,12 +45,14 @@ public interface LockServicePolicies
     public interface BeforeLock extends ClassPolicy
     {
         static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeLock");
-          
+
         /**
          * Called before an attempt to lock the given node is made.
          * 
-         * @param nodeRef NodeRef
-         * @param lockType LockType
+         * @param nodeRef
+         *            NodeRef
+         * @param lockType
+         *            LockType
          */
         void beforeLock(NodeRef nodeRef, LockType lockType);
     }
@@ -65,7 +67,8 @@ public interface LockServicePolicies
         /**
          * Called before an attempt to unlock the given node is made.
          *
-         * @param nodeRef NodeRef
+         * @param nodeRef
+         *            NodeRef
          */
         void beforeUnlock(NodeRef nodeRef);
     }

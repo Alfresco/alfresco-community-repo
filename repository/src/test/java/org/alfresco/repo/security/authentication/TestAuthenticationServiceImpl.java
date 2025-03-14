@@ -74,7 +74,7 @@ public class TestAuthenticationServiceImpl implements MutableAuthenticationServi
         this.allowGuest = allowGuest;
     }
 
-    public TestAuthenticationServiceImpl(String domain, boolean allowCreate, boolean allowDelete, boolean allowUpdate,  boolean allowGuest,
+    public TestAuthenticationServiceImpl(String domain, boolean allowCreate, boolean allowDelete, boolean allowUpdate, boolean allowGuest,
             Map<String, String> users, Set<String> disabled)
     {
         this(domain, allowCreate, allowDelete, allowUpdate, allowGuest);
@@ -237,7 +237,7 @@ public class TestAuthenticationServiceImpl implements MutableAuthenticationServi
             throw new AuthenticationException("Guest access denied");
         }
     }
-    
+
     public boolean guestUserAuthenticationAllowed()
     {
         return allowGuest;
@@ -247,12 +247,12 @@ public class TestAuthenticationServiceImpl implements MutableAuthenticationServi
     {
         return userNamesAndPasswords.containsKey(userName);
     }
-        
+
     public boolean isAuthenticationMutable(String userName)
     {
         return authenticationExists(userName);
     }
-    
+
     public boolean isAuthenticationCreationAllowed()
     {
         return allowCreate;
@@ -336,7 +336,7 @@ public class TestAuthenticationServiceImpl implements MutableAuthenticationServi
         }
         return ticket;
     }
-    
+
     public String getNewTicket()
     {
         String currentUser = getCurrentUserName();

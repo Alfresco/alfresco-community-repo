@@ -46,22 +46,22 @@ public interface TransferManifestWriter
      * @param writer
      * @throws SAXException
      */
-    void startTransferManifest(Writer writer)  throws SAXException;
-    
+    void startTransferManifest(Writer writer) throws SAXException;
+
     /**
      * 
      * @param header
      * @throws SAXException
      */
-    void writeTransferManifestHeader(TransferManifestHeader header)  throws SAXException;
-    
+    void writeTransferManifestHeader(TransferManifestHeader header) throws SAXException;
+
     /**
      * 
      * @param node
      * @throws SAXException
      */
-    void writeTransferManifestNode(TransferManifestNode node)  throws SAXException;
-        
+    void writeTransferManifestNode(TransferManifestNode node) throws SAXException;
+
     /**
      * 
      * @throws SAXException

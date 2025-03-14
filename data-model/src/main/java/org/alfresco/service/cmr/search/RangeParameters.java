@@ -28,10 +28,10 @@ package org.alfresco.service.cmr.search;
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.api.AlfrescoPublicApi;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Parameters used for search range.
@@ -48,30 +48,33 @@ public class RangeParameters
     private final List<String> include;
     private final String label;
     private final List<String> excludeFilters;
-    
+
     /**
      * Constructor.
+     * 
      * @param field
      * @param minCount
      * @param start
      * @param end
      * @param gap
      * @param hardend
-     * @param other can have one of the following values: before,after,between,none
-     * @param include can have one of the following values: lower,upper,edge,outer,all
+     * @param other
+     *            can have one of the following values: before,after,between,none
+     * @param include
+     *            can have one of the following values: lower,upper,edge,outer,all
      * @param label
      * @param excludeFilters
      */
     @JsonCreator
     public RangeParameters(@JsonProperty("field") String field,
-                           @JsonProperty("start") String start, 
-                           @JsonProperty("end") String end, 
-                           @JsonProperty("gap") String gap,
-                           @JsonProperty("hardend") boolean hardend, 
-                           @JsonProperty("other")List<String> other,
-                           @JsonProperty("include")List<String> include,
-                           @JsonProperty("label") String label,
-                           @JsonProperty("excludeFilters")List<String> excludeFilters)
+            @JsonProperty("start") String start,
+            @JsonProperty("end") String end,
+            @JsonProperty("gap") String gap,
+            @JsonProperty("hardend") boolean hardend,
+            @JsonProperty("other") List<String> other,
+            @JsonProperty("include") List<String> include,
+            @JsonProperty("label") String label,
+            @JsonProperty("excludeFilters") List<String> excludeFilters)
     {
         super();
         this.field = field;
@@ -79,101 +82,108 @@ public class RangeParameters
         this.end = end;
         this.gap = gap;
         this.hardend = hardend;
-        this.other = other == null? Collections.emptyList():other;
-        this.include = include == null? Collections.emptyList():include;
+        this.other = other == null ? Collections.emptyList() : other;
+        this.include = include == null ? Collections.emptyList() : include;
         this.label = label;
-        this.excludeFilters = excludeFilters == null? Collections.emptyList():excludeFilters;
+        this.excludeFilters = excludeFilters == null ? Collections.emptyList() : excludeFilters;
     }
-    
+
     public String getField()
     {
         return field;
     }
+
     public String getStart()
     {
         return start;
     }
-    public String getEnd() 
+
+    public String getEnd()
     {
         return end;
     }
-    public String getGap() 
+
+    public String getGap()
     {
         return gap;
     }
-    public boolean isHardend() 
+
+    public boolean isHardend()
     {
         return hardend;
     }
+
     public List<String> getOther()
     {
         return other;
     }
-    public List<String> getInclude() 
+
+    public List<String> getInclude()
     {
         return include;
     }
+
     public String getLabel()
     {
         return label;
     }
 
-    public List<String> getExcludeFilters() 
+    public List<String> getExcludeFilters()
     {
         return excludeFilters;
     }
-    
+
     public String getRangeFirstBucketStartInclusive()
     {
-        if(include != null && !include.isEmpty())
+        if (include != null && !include.isEmpty())
         {
-            for(String startInc : include)
+            for (String startInc : include)
             {
                 switch (startInc)
                 {
-                    case "before":
-                        break;
-                    case "edge":
-                        return "[";
-                    case "lower":
-                        return "[";
-                    default:
+                case "before":
+                    break;
+                case "edge":
+                    return "[";
+                case "lower":
+                    return "[";
+                default:
                 }
             }
             return "<";
         }
         return "[";
     }
+
     public String getRangeFirstBucketEndInclusive()
     {
-        if(include != null && !include.isEmpty())
+        if (include != null && !include.isEmpty())
         {
-            for(String startInc : include)
+            for (String startInc : include)
             {
                 switch (startInc)
                 {
-                    case "upper":
+                case "upper":
+                    return "]";
+                case "outer":
+                    if (other != null && (other.contains("before") || other.contains("after")))
+                    {
                         return "]";
-                    case "outer":
-                        if(other != null && (other.contains("before") || other.contains("after")))
-                        {
-                            return "]";
-                        }
-                        break;
-                    default:
-                        break;
+                    }
+                    break;
+                default:
+                    break;
                 }
             }
         }
         return ">";
     }
-    
 
     public String getRangeBucketStartInclusive()
     {
-        if(include != null && !include.isEmpty())
+        if (include != null && !include.isEmpty())
         {
-            for(String key : include)
+            for (String key : include)
             {
                 switch (key)
                 {
@@ -187,11 +197,12 @@ public class RangeParameters
         }
         return "[";
     }
+
     public String getRangeBucketEndInclusive()
     {
-        if(include != null && !include.isEmpty())
+        if (include != null && !include.isEmpty())
         {
-            for(String key : include)
+            for (String key : include)
             {
                 switch (key)
                 {
@@ -207,18 +218,18 @@ public class RangeParameters
 
     public String getRangeLastBucketEndInclusive()
     {
-        if(include != null && !include.isEmpty())
+        if (include != null && !include.isEmpty())
         {
-            for(String key : include)
+            for (String key : include)
             {
                 switch (key)
                 {
-                    case "edge":
-                        return "]";
-                    case "upper":
-                        return "]";
-                    default:
-                        break;
+                case "edge":
+                    return "]";
+                case "upper":
+                    return "]";
+                default:
+                    break;
                 }
             }
             return ">";

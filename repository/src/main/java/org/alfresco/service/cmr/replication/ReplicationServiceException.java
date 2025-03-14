@@ -39,21 +39,24 @@ public class ReplicationServiceException extends AlfrescoRuntimeException
     /**
      * Constructs a Replication Service Exception with the specified message.
      * 
-     * @param message 	the message string
+     * @param message
+     *            the message string
      */
-    public ReplicationServiceException(String message) 
+    public ReplicationServiceException(String message)
     {
-       super(message);
+        super(message);
     }
 
     /**
      * Constructs a Replication Service Exception with the specified message and source exception.
      * 
-     * @param message   the message string
-     * @param source	the source exception
+     * @param message
+     *            the message string
+     * @param source
+     *            the source exception
      */
-	 public ReplicationServiceException(String message, Throwable source) 
+    public ReplicationServiceException(String message, Throwable source)
     {
-       super(message, source);
+        super(message, source);
     }
 }

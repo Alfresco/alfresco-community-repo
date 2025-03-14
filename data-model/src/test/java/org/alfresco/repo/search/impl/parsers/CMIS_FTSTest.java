@@ -31,7 +31,6 @@ import java.io.InputStream;
 import java.util.List;
 
 import junit.framework.TestCase;
-
 import org.antlr.gunit.GrammarInfo;
 import org.antlr.gunit.gUnitLexer;
 import org.antlr.gunit.gUnitParser;
@@ -60,21 +59,20 @@ public class CMIS_FTSTest extends TestCase
         super.setUp();
 
     }
-    
+
     public void testLexer() throws IOException, RecognitionException
     {
         ClassLoader cl = CMIS_FTSTest.class.getClassLoader();
         InputStream modelStream = cl.getResourceAsStream("org/alfresco/repo/search/impl/parsers/cmis_fts_test.gunit");
 
         CharStream input = new ANTLRInputStream(modelStream);
-        
-        
+
         gUnitExecutor executer = new gUnitExecutor(parse(input), "FTS");
-        
-        System.out.print(executer.execTest());  // unit test result
-        
-        assertEquals("Failures ", 0, executer.failures.size()); 
-        assertEquals("Invalids ", 0, executer.invalids.size()); 
+
+        System.out.print(executer.execTest()); // unit test result
+
+        assertEquals("Failures ", 0, executer.failures.size());
+        assertEquals("Invalids ", 0, executer.invalids.size());
     }
 
     public void testLexerOutput() throws IOException
@@ -83,13 +81,13 @@ public class CMIS_FTSTest extends TestCase
         CharStream input = new ANTLRInputStream(new ByteArrayInputStream(str.getBytes("UTF-8")));
         FTSLexer lexer = new FTSLexer(input);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-        for(CommonToken token : (List<CommonToken>)tokenStream.getTokens())
+        for (CommonToken token : (List<CommonToken>) tokenStream.getTokens())
         {
             System.out.println(token.toString());
         }
-        
+
     }
-    
+
     private GrammarInfo parse(CharStream input) throws RecognitionException
     {
         gUnitLexer lexer = new gUnitLexer(input);
@@ -101,5 +99,4 @@ public class CMIS_FTSTest extends TestCase
         return grammarInfo;
     }
 
-    
 }

@@ -28,20 +28,19 @@ package org.alfresco.repo.transaction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.transaction.UserTransaction;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
- * Tests integration between our <tt>UserTransaction</tt> implementation and
- * our <tt>TransactionManager</tt>.
+ * Tests integration between our <tt>UserTransaction</tt> implementation and our <tt>TransactionManager</tt>.
  *
  * @see org.alfresco.util.transaction.SpringAwareUserTransaction
  *
@@ -128,28 +127,31 @@ public class AlfrescoTransactionSupportTest extends BaseSpringTest
         final List<String> strings = new ArrayList<String>(1);
 
         // anonymous inner class to test it
-        TransactionListener listener = new TransactionListener()
-        {
+        TransactionListener listener = new TransactionListener() {
             @Override
             public void flush()
             {
                 strings.add("flush");
             }
+
             @Override
             public void beforeCommit(boolean readOnly)
             {
                 strings.add("beforeCommit");
             }
+
             @Override
             public void beforeCompletion()
             {
                 strings.add("beforeCompletion");
             }
+
             @Override
             public void afterCommit()
             {
                 strings.add("afterCommit");
             }
+
             @Override
             public void afterRollback()
             {
@@ -177,23 +179,25 @@ public class AlfrescoTransactionSupportTest extends BaseSpringTest
         final List<String> strings = new ArrayList<String>(1);
 
         // anonymous inner class to test it
-        org.alfresco.util.transaction.TransactionListener listener = new org.alfresco.util.transaction.TransactionListener()
-        {
+        org.alfresco.util.transaction.TransactionListener listener = new org.alfresco.util.transaction.TransactionListener() {
             @Override
             public void beforeCommit(boolean readOnly)
             {
                 strings.add("beforeCommit");
             }
+
             @Override
             public void beforeCompletion()
             {
                 strings.add("beforeCompletion");
             }
+
             @Override
             public void afterCommit()
             {
                 strings.add("afterCommit");
             }
+
             @Override
             public void afterRollback()
             {
@@ -216,9 +220,7 @@ public class AlfrescoTransactionSupportTest extends BaseSpringTest
     }
 
     /**
-     * Tests the condition whereby a listener can cause failure by attempting to bind itself to
-     * the transaction in the pre-commit callback.  This is caused by the listener set being
-     * modified during calls to the listeners.
+     * Tests the condition whereby a listener can cause failure by attempting to bind itself to the transaction in the pre-commit callback. This is caused by the listener set being modified during calls to the listeners.
      */
     @Test
     public void testPreCommitListenerBinding() throws Exception
@@ -233,20 +235,19 @@ public class AlfrescoTransactionSupportTest extends BaseSpringTest
         testList.add(afterCommitInner);
         testList.add(afterCommitOuter);
 
-        final TransactionListener listener = new TransactionListenerAdapter()
-        {
+        final TransactionListener listener = new TransactionListenerAdapter() {
             @Override
             public int hashCode()
             {
                 // force this listener to be first in the bound set
                 return 100;
             }
+
             @Override
             public void beforeCommit(boolean readOnly)
             {
                 testList.remove(beforeCommit);
-                TransactionListener postCommitListener = new TransactionListenerAdapter()
-                {
+                TransactionListener postCommitListener = new TransactionListenerAdapter() {
                     @Override
                     public void afterCommit()
                     {
@@ -256,14 +257,14 @@ public class AlfrescoTransactionSupportTest extends BaseSpringTest
                 // register bogus on the transaction
                 AlfrescoTransactionSupport.bindListener(postCommitListener);
             }
+
             @Override
             public void afterCommit()
             {
                 testList.remove(afterCommitOuter);
             }
         };
-        final TransactionListener dummyListener = new TransactionListenerAdapter()
-        {
+        final TransactionListener dummyListener = new TransactionListenerAdapter() {
             @Override
             public int hashCode()
             {
@@ -272,8 +273,7 @@ public class AlfrescoTransactionSupportTest extends BaseSpringTest
             }
         };
         // start a transaction
-        RetryingTransactionCallback<Object> bindWork = new RetryingTransactionCallback<Object>()
-        {
+        RetryingTransactionCallback<Object> bindWork = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Exception
             {
                 // just bind the listener to the transaction
@@ -293,8 +293,7 @@ public class AlfrescoTransactionSupportTest extends BaseSpringTest
     public void testReadWriteStateRetrieval() throws Exception
     {
         final TxnReadState[] postCommitReadState = new TxnReadState[1];
-        final TransactionListenerAdapter getReadStatePostCommit = new TransactionListenerAdapter()
-        {
+        final TransactionListenerAdapter getReadStatePostCommit = new TransactionListenerAdapter() {
             @Override
             public void afterCommit()
             {
@@ -308,8 +307,7 @@ public class AlfrescoTransactionSupportTest extends BaseSpringTest
             }
         };
 
-        RetryingTransactionCallback<TxnReadState> getReadStateWork = new RetryingTransactionCallback<TxnReadState>()
-        {
+        RetryingTransactionCallback<TxnReadState> getReadStateWork = new RetryingTransactionCallback<TxnReadState>() {
             public TxnReadState execute() throws Exception
             {
                 // Register to list to post-commit
@@ -351,8 +349,7 @@ public class AlfrescoTransactionSupportTest extends BaseSpringTest
     public void testResourceHelper() throws Exception
     {
         // start a transaction
-        RetryingTransactionCallback<Object> testWork = new RetryingTransactionCallback<Object>()
-        {
+        RetryingTransactionCallback<Object> testWork = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Exception
             {
                 // Check map access

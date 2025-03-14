@@ -22,6 +22,14 @@ package org.alfresco.repo.web.scripts.permission;
 
 import java.util.HashSet;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -40,13 +48,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONException;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
  * Test for RestAPI permission services
@@ -68,35 +69,35 @@ public class PermissionServiceTest extends BaseWebScriptTest
     private static final String USER_TWO = "USER_TWO_" + GUID.generate();
     private static final String USER_THREE = "USER_THREE_" + GUID.generate();
     private static final String URL_DOCLIB_PERMISSIONS = "/slingshot/doclib/permissions";
-    
+
     @Override
     protected void setUp() throws Exception
     {
         super.setUp();
-        
-        this.authenticationService = (MutableAuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
-        this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
-        this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
-        this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
-        this.permissionService = (PermissionService)getServer().getApplicationContext().getBean("PermissionService");
-        this.fileFolderService = (FileFolderService)getServer().getApplicationContext().getBean("FileFolderService");
-        this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
-        
+
+        this.authenticationService = (MutableAuthenticationService) getServer().getApplicationContext().getBean("AuthenticationService");
+        this.authenticationComponent = (AuthenticationComponent) getServer().getApplicationContext().getBean("authenticationComponent");
+        this.personService = (PersonService) getServer().getApplicationContext().getBean("PersonService");
+        this.nodeService = (NodeService) getServer().getApplicationContext().getBean("NodeService");
+        this.permissionService = (PermissionService) getServer().getApplicationContext().getBean("PermissionService");
+        this.fileFolderService = (FileFolderService) getServer().getApplicationContext().getBean("FileFolderService");
+        this.siteService = (SiteService) getServer().getApplicationContext().getBean("SiteService");
+
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         // Create users
         createUser(USER_ONE);
     }
-    
+
     @Override
     protected void tearDown() throws Exception
     {
         super.tearDown();
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
-        
+
         // Clear the users
-        deleteUser(USER_ONE);     
+        deleteUser(USER_ONE);
     }
-    
+
     /**
      * Test for MNT-11725
      */
@@ -109,17 +110,17 @@ public class PermissionServiceTest extends BaseWebScriptTest
         permissionService.setInheritParentPermissions(folderRef, false);
 
         authenticationComponent.setCurrentUser(USER_ONE);
-        
+
         // JSON fromat
-        //  {"permissions":
-        //  [{"authority":"userA",
-        //  "role":"Consumer"},
-        //  {"authority":"userA",
-        //  "role":"Coordinator",
-        //  "remove":true}],
-        //  "isInherited":true}
-        
-        /*  negative test, we are first deleting the coordinator role and then try to add consumer */
+        // {"permissions":
+        // [{"authority":"userA",
+        // "role":"Consumer"},
+        // {"authority":"userA",
+        // "role":"Coordinator",
+        // "remove":true}],
+        // "isInherited":true}
+
+        /* negative test, we are first deleting the coordinator role and then try to add consumer */
         JSONObject changePermission = new JSONObject();
         JSONArray permissions = new JSONArray();
         // First delete permission, then add
@@ -129,18 +130,18 @@ public class PermissionServiceTest extends BaseWebScriptTest
         JSONObject removePermission = new JSONObject();
         removePermission.put("authority", USER_ONE);
         removePermission.put("role", PermissionService.COORDINATOR);
-        removePermission.put("remove","true");
+        removePermission.put("remove", "true");
         permissions.put(removePermission);
         permissions.put(addPermission);
         changePermission.put("permissions", permissions);
         changePermission.put("isInherited", "true");
-        
+
         sendRequest(new PostRequest(URL_DOCLIB_PERMISSIONS +
                 "/" + StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getProtocol() +
                 "/" + StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getIdentifier() +
-                "/" + folderRef.getId(),  changePermission.toString(), "application/json"), Status.STATUS_INTERNAL_SERVER_ERROR);  
-        
-        /*  positive test  */
+                "/" + folderRef.getId(), changePermission.toString(), "application/json"), Status.STATUS_INTERNAL_SERVER_ERROR);
+
+        /* positive test */
         changePermission = new JSONObject();
         permissions = new JSONArray();
         // First add permission, then delete
@@ -150,53 +151,52 @@ public class PermissionServiceTest extends BaseWebScriptTest
         removePermission = new JSONObject();
         removePermission.put("authority", USER_ONE);
         removePermission.put("role", PermissionService.COORDINATOR);
-        removePermission.put("remove","true");
+        removePermission.put("remove", "true");
         permissions.put(addPermission);
         permissions.put(removePermission);
         changePermission.put("permissions", permissions);
         changePermission.put("isInherited", "true");
-        
+
         sendRequest(new PostRequest(URL_DOCLIB_PERMISSIONS +
                 "/" + StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getProtocol() +
                 "/" + StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getIdentifier() +
-                "/" + folderRef.getId(),  changePermission.toString(), "application/json"), Status.STATUS_OK);   
-        
+                "/" + folderRef.getId(), changePermission.toString(), "application/json"), Status.STATUS_OK);
+
         AccessStatus accessStatus = permissionService.hasPermission(folderRef, PermissionService.CONSUMER);
         assertTrue("The permission was not set correctly", accessStatus == AccessStatus.ALLOWED);
 
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         nodeService.deleteNode(folderRef);
     }
-    
+
     private void createUser(String userName)
     {
         if (this.authenticationService.authenticationExists(userName) == false)
         {
             this.authenticationService.createAuthentication(userName, "PWD".toCharArray());
-            
+
             PropertyMap properties = new PropertyMap(4);
             properties.put(ContentModel.PROP_USERNAME, userName);
             properties.put(ContentModel.PROP_FIRSTNAME, "firstName");
             properties.put(ContentModel.PROP_LASTNAME, "lastName");
             properties.put(ContentModel.PROP_EMAIL, "email@email.com");
             properties.put(ContentModel.PROP_JOBTITLE, "jobTitle");
-            
+
             this.personService.createPerson(properties);
         }
     }
-    
+
     private void deleteUser(String username)
     {
-       this.personService.deletePerson(username);
-       if(this.authenticationService.authenticationExists(username))
-       {
-          this.authenticationService.deleteAuthentication(username);
-       }
+        this.personService.deletePerson(username);
+        if (this.authenticationService.authenticationExists(username))
+        {
+            this.authenticationService.deleteAuthentication(username);
+        }
     }
 
     /**
-     * Test for MNT-15509 Grant or/and Deny the same permission on multiple ancestors of a
-     * file and check if the file has duplicate inherited permissions
+     * Test for MNT-15509 Grant or/and Deny the same permission on multiple ancestors of a file and check if the file has duplicate inherited permissions
      */
     public void testMultipleInheritedPermissions() throws Exception
     {
@@ -217,7 +217,7 @@ public class PermissionServiceTest extends BaseWebScriptTest
         permissionService.setPermission(folder1, USER_THREE, PermissionService.CONSUMER, false);
         permissionService.setInheritParentPermissions(folder1, true);
 
-        // Create Folder2 in Folder1 
+        // Create Folder2 in Folder1
         // Give USER_ONE COORDINATOR role to Folder2
         // Deny USER_TWO CONTRIBUTOR role to Folder2
         // Give USER_THREE CONSUMER role to Folder2
@@ -238,21 +238,22 @@ public class PermissionServiceTest extends BaseWebScriptTest
         // Get Folder3's inherited permissions
         Response response = sendRequest(
                 new GetRequest(URL_DOCLIB_PERMISSIONS + "/" + StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getProtocol() + "/"
-                        + StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getIdentifier() + "/" + folder3.getId()), Status.STATUS_OK);
-        
+                        + StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getIdentifier() + "/" + folder3.getId()),
+                Status.STATUS_OK);
+
         JSONObject jsonResponse = new JSONObject(response.getContentAsString());
-        
-        //Check if the request returns duplicate direct permissions
+
+        // Check if the request returns duplicate direct permissions
         HashSet<AccessPermission> directPermissions = new HashSet<>();
         JSONArray directPermissionsArray = jsonResponse.getJSONArray("direct");
         for (int i = 0; i < directPermissionsArray.length(); i++)
         {
             AccessPermission permission = new AccessPermission(directPermissionsArray.getJSONObject(i));
-            
+
             assertTrue(directPermissions.add(permission));
         }
-        
-        //used to check allow/deny permission inheritance
+
+        // used to check allow/deny permission inheritance
         AccessPermission denyPermissionInheritedTest = null;
         AccessPermission allowPermissionInheritedTest = null;
 
@@ -276,7 +277,7 @@ public class PermissionServiceTest extends BaseWebScriptTest
         // Check if on folder3 USER_TWO inherits DENY for CONTRIBUTOR role from
         // folder 2 although on folder 1 was ALLOW
         assertNull(denyPermissionInheritedTest);
-        
+
         // Check if on folder3 USER_THREE inherits ALLOW for CONSUMER role from
         // folder 2 although on folder 1 was DENY
         assertNotNull(allowPermissionInheritedTest);

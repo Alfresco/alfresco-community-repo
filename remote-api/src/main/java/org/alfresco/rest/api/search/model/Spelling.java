@@ -38,10 +38,11 @@ public class Spelling
     private final String query;
 
     @JsonCreator
-    public Spelling(@JsonProperty("query")     String query)
+    public Spelling(@JsonProperty("query") String query)
     {
         this.query = query;
     }
+
     public String getQuery()
     {
         return query;

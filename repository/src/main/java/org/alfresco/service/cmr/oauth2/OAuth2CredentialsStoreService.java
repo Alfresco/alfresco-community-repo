@@ -39,40 +39,40 @@ import org.alfresco.service.cmr.remoteticket.NoSuchSystemException;
 public interface OAuth2CredentialsStoreService
 {
 
-    @Auditable(parameters = { "remoteSystemId" })
+    @Auditable(parameters = {"remoteSystemId"})
     public abstract OAuth2CredentialsInfo storePersonalOAuth2Credentials(String remoteSystemId,
-                String accessToken, String refreshToken, Date expiresAt, Date issuedAt)
-                throws NoSuchSystemException;
+            String accessToken, String refreshToken, Date expiresAt, Date issuedAt)
+            throws NoSuchSystemException;
 
-    @Auditable(parameters = { "remoteSystemId" })
+    @Auditable(parameters = {"remoteSystemId"})
     public abstract OAuth2CredentialsInfo storeSharedOAuth2Credentials(String remoteSystemId,
-                String accessToken, String refreshToken, Date expiresAt, Date issuedAt)
-                throws NoSuchSystemException;
+            String accessToken, String refreshToken, Date expiresAt, Date issuedAt)
+            throws NoSuchSystemException;
 
-    @Auditable(parameters = { "remoteSystemId" })
+    @Auditable(parameters = {"remoteSystemId"})
     public abstract OAuth2CredentialsInfo getPersonalOAuth2Credentials(String remoteSystemId)
-                throws NoSuchSystemException;
+            throws NoSuchSystemException;
 
-    @Auditable(parameters = { "remoteSystemId" })
+    @Auditable(parameters = {"remoteSystemId"})
     public abstract OAuth2CredentialsInfo updateSharedOAuth2Credentials(
-                OAuth2CredentialsInfo exisitingCredentials, String remoteSystemId,
-                String accessToken, String refreshToken, Date expiresAt, Date issuedAt)
-                throws NoSuchSystemException;
+            OAuth2CredentialsInfo exisitingCredentials, String remoteSystemId,
+            String accessToken, String refreshToken, Date expiresAt, Date issuedAt)
+            throws NoSuchSystemException;
 
-    @Auditable(parameters = { "remoteSystemId" })
+    @Auditable(parameters = {"remoteSystemId"})
     public abstract List<OAuth2CredentialsInfo> listSharedOAuth2Credentials(String remoteSystemId)
-                throws NoSuchSystemException;
+            throws NoSuchSystemException;
 
-    @Auditable(parameters = { "remoteSystemId" })
+    @Auditable(parameters = {"remoteSystemId"})
     public abstract boolean deletePersonalOAuth2Credentials(String remoteSystemId)
-                throws NoSuchSystemException;
+            throws NoSuchSystemException;
 
-    @Auditable(parameters = { "remoteSystemId" })
+    @Auditable(parameters = {"remoteSystemId"})
     public abstract boolean deleteSharedOAuth2Credentials(String remoteSystemId,
-                OAuth2CredentialsInfo credentials) throws NoSuchSystemException;
+            OAuth2CredentialsInfo credentials) throws NoSuchSystemException;
 
-    @Auditable(parameters = { "remoteSystemId" })
+    @Auditable(parameters = {"remoteSystemId"})
     public abstract OAuth2CredentialsInfo updateCredentialsAuthenticationSucceeded(
-                boolean succeeded, OAuth2CredentialsInfo credentials);
+            boolean succeeded, OAuth2CredentialsInfo credentials);
 
 }

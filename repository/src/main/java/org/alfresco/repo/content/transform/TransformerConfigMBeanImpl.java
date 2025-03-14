@@ -31,8 +31,7 @@ import java.util.List;
 import org.alfresco.service.cmr.repository.MimetypeService;
 
 /**
- * Implements the JMX interface for monitoring Content Transformer configuration
- * and statistics.
+ * Implements the JMX interface for monitoring Content Transformer configuration and statistics.
  * 
  * @author Alan Davis
  */
@@ -43,7 +42,7 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
     private MimetypeService mimetypeService;
     private LogEntries transformerLog;
     private LogEntries transformerDebugLog;
-    
+
     public void setTransformerDebug(AdminUiTransformerDebug transformerDebug)
     {
         this.transformerDebug = transformerDebug;
@@ -68,10 +67,10 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
     public String[] getExtensionsAndMimetypes()
     {
         List<String> extensionsAndMimetypes = new ArrayList<String>();
-        for (String mimetype: mimetypeService.getMimetypes(null))
+        for (String mimetype : mimetypeService.getMimetypes(null))
         {
             String extension = mimetypeService.getExtension(mimetype);
-            extensionsAndMimetypes.add(extension+" - "+mimetype);
+            extensionsAndMimetypes.add(extension + " - " + mimetype);
         }
         return extensionsAndMimetypes.toArray(new String[extensionsAndMimetypes.size()]);
     }
@@ -95,16 +94,16 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
     {
         String[] entries = transformerLog.getEntries(n);
         return entries.length == 0
-                ? new String[] {NO_TRANSFORMATIONS_TO_REPORT}
+                ? new String[]{NO_TRANSFORMATIONS_TO_REPORT}
                 : entries;
     }
-    
+
     @Override
     public String[] getTransformationDebugLog(int n)
     {
         String[] entries = transformerDebugLog.getEntries(n);
         return entries.length == 0
-                ? new String[] {NO_TRANSFORMATIONS_TO_REPORT}
+                ? new String[]{NO_TRANSFORMATIONS_TO_REPORT}
                 : entries;
     }
 
@@ -120,7 +119,7 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
             return e.getMessage();
         }
     }
-    
+
     @Override
     public String[] getTestFileExtensionsAndMimetypes()
     {
@@ -128,8 +127,7 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
     }
 
     /**
-     * Changes the default JConsole parameter value "String" (and the zero length
-     * String) to null and forces other values to lower case.
+     * Changes the default JConsole parameter value "String" (and the zero length String) to null and forces other values to lower case.
      */
     private String nullDefaultLowerParam(String parameter)
     {
@@ -140,10 +138,9 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
         }
         return parameter;
     }
-    
+
     /**
-     * Changes the default JConsole parameter value "String" (and the zero length
-     * String) to null.
+     * Changes the default JConsole parameter value "String" (and the zero length String) to null.
      */
     private String nullDefaultParam(String parameter)
     {
@@ -157,7 +154,7 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
     @Override
     public String help()
     {
-        return  "getTransformationDebugLog(n)\n" +
+        return "getTransformationDebugLog(n)\n" +
                 "   Lists the latest entries in the transformation debug log.\n" +
                 "   - n the number of entries to include. If blank all available entries are listed\n" +
                 "\n" +

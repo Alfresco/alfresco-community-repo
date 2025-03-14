@@ -53,37 +53,39 @@ public class CheckOutActionExecuter extends ActionExecuterAbstractBase
      * The version operations service
      */
     private CheckOutCheckInService cociService;
-    
+
     /**
      * The node service
      */
     private NodeService nodeService;
-    
+
     /**
      * Set the node service
      * 
-     * @param nodeService  the node service
+     * @param nodeService
+     *            the node service
      */
-    public void setNodeService(NodeService nodeService) 
+    public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Set the coci service
      * 
-     * @param cociService  the coci service
+     * @param cociService
+     *            the coci service
      */
-    public void setCociService(CheckOutCheckInService cociService) 
+    public void setCociService(CheckOutCheckInService cociService)
     {
         this.cociService = cociService;
     }
-    
+
     /**
      * Add the parameter defintions
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_FOLDER, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));
         paramList.add(new ParameterDefinitionImpl(PARAM_ASSOC_TYPE_QNAME, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_ASSOC_TYPE_QNAME)));
@@ -96,14 +98,14 @@ public class CheckOutActionExecuter extends ActionExecuterAbstractBase
     public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {
         if (this.nodeService.exists(actionedUponNodeRef) == true &&
-            this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY) == false &&
-            isApplicableType(actionedUponNodeRef) == true)
+                this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY) == false &&
+                isApplicableType(actionedUponNodeRef) == true)
         {
             // Get the destination details
-            NodeRef destinationParent = (NodeRef)ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
-            QName destinationAssocTypeQName = (QName)ruleAction.getParameterValue(PARAM_ASSOC_TYPE_QNAME);
-            QName destinationAssocQName = (QName)ruleAction.getParameterValue(PARAM_ASSOC_QNAME);
-            
+            NodeRef destinationParent = (NodeRef) ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
+            QName destinationAssocTypeQName = (QName) ruleAction.getParameterValue(PARAM_ASSOC_TYPE_QNAME);
+            QName destinationAssocQName = (QName) ruleAction.getParameterValue(PARAM_ASSOC_QNAME);
+
             if (destinationParent == null || destinationAssocTypeQName == null || destinationAssocQName == null)
             {
                 // Check the node out to the current location
@@ -113,9 +115,9 @@ public class CheckOutActionExecuter extends ActionExecuterAbstractBase
             {
                 // Check the node out to the specified location
                 this.cociService.checkout(
-                        actionedUponNodeRef, 
-                        destinationParent, 
-                        destinationAssocTypeQName, 
+                        actionedUponNodeRef,
+                        destinationParent,
+                        destinationAssocTypeQName,
                         destinationAssocQName);
             }
         }

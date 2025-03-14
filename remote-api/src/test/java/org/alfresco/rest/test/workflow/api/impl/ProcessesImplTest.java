@@ -30,9 +30,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
+
+import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.workflow.WorkflowModel;
@@ -54,13 +60,6 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-
-import junit.framework.TestCase;
 
 /**
  * Test for {@link ProcessesImpl} class
@@ -79,19 +78,15 @@ public class ProcessesImplTest extends TestCase implements RecognizedParamsExtra
         CONFIG_LOCATIONS[index++] = "classpath:alfresco/web-scripts-application-context.xml";
     }
 
-
     private static final int ACTIVE_WORKFLOWS_INITIAL_AMOUNT = 25;
-
 
     private static final String PROCESSES_BEAN_NAME = "processes";
 
     private static final String DESIRED_WORKFLOW_ID_PREFIX = "activiti$activitiReview";
 
-
     private static final String QUERY_STATUS_ACTIVE = "(status=active)";
-    
-    private static final String QUERY_WORKFLOWDESCRIPTION_MATCHES = "(variables/bpm_workflowDescription MATCHES ('%s'))";
 
+    private static final String QUERY_WORKFLOWDESCRIPTION_MATCHES = "(variables/bpm_workflowDescription MATCHES ('%s'))";
 
     private ApplicationContext applicationContext;
 
@@ -101,9 +96,7 @@ public class ProcessesImplTest extends TestCase implements RecognizedParamsExtra
 
     private Processes processes;
 
-
     private UserTransaction transaction;
-
 
     @Before
     public void setUp() throws Exception
@@ -137,7 +130,7 @@ public class ProcessesImplTest extends TestCase implements RecognizedParamsExtra
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
         parameters.put(WorkflowModel.ASSOC_ASSIGNEE, (Serializable) Collections.singletonList(assignee));
         parameters.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, "Test workflow api calls review and approve"); // MNT-14631
-        //parameters.put(WorkflowModel.ASSOC_PACKAGE, workflowService.createPackage(null));
+        // parameters.put(WorkflowModel.ASSOC_PACKAGE, workflowService.createPackage(null));
 
         workflowService.startWorkflow(neededDefinition.getId(), parameters);
     }
@@ -186,54 +179,54 @@ public class ProcessesImplTest extends TestCase implements RecognizedParamsExtra
         CollectionWithPagingInfo<ProcessInfo> actualProcesses = queryActiveProcessesAndAssertResult(5, ACTIVE_WORKFLOWS_INITIAL_AMOUNT);
         assertFalse(actualProcesses.hasMoreItems());
     }
-    
+
     @Test
     public void testHasMoreFalseAsPerMnt13567() throws Exception
     {
         CollectionWithPagingInfo<ProcessInfo> actualProcesses = queryActiveProcessesAndAssertResult(ACTIVE_WORKFLOWS_INITIAL_AMOUNT, ACTIVE_WORKFLOWS_INITIAL_AMOUNT);
         assertFalse(actualProcesses.hasMoreItems());
-        
+
         actualProcesses = queryActiveProcessesAndAssertResult(ACTIVE_WORKFLOWS_INITIAL_AMOUNT + 1, ACTIVE_WORKFLOWS_INITIAL_AMOUNT);
         assertFalse(actualProcesses.hasMoreItems());
     }
 
     @Test
     public void testGetProcessesMatchesIgnoreCase()
-    {       
+    {
         CollectionWithPagingInfo<ProcessInfo> result = queryMatchesProcesses("(?i)test workflow api calls review and approve");
 
         assertNotNull(result);
         assertNotNull(result.getCollection());
-        assertTrue(result.getTotalItems() > 0 );
+        assertTrue(result.getTotalItems() > 0);
     }
-    
+
     @Test
     public void testGetProcessesMatchesIgnoreCaseNoResults()
     {
         // the tests are always run on PostgreSQL only
-//        Dialect dialect = (Dialect) applicationContext.getBean("dialect");
-//        if (dialect instanceof AlfrescoSQLServerDialect)
-//        {
-            // REPO-1104: we do not run this test on MS SQL server because it will fail 
-            // until the Activiti defect related to REPO-1104 will be fixed
-            // this test could fail on other DBs where the LIKE operator behaves as case insensitive
-//            return;
-//        }
+        // Dialect dialect = (Dialect) applicationContext.getBean("dialect");
+        // if (dialect instanceof AlfrescoSQLServerDialect)
+        // {
+        // REPO-1104: we do not run this test on MS SQL server because it will fail
+        // until the Activiti defect related to REPO-1104 will be fixed
+        // this test could fail on other DBs where the LIKE operator behaves as case insensitive
+        // return;
+        // }
         CollectionWithPagingInfo<ProcessInfo> result = queryMatchesProcesses("test workflow api calls review and approve");
 
         assertNotNull(result);
         assertNotNull(result.getCollection());
-        assertTrue(result.getTotalItems() == 0 );
+        assertTrue(result.getTotalItems() == 0);
     }
-    
+
     private CollectionWithPagingInfo<ProcessInfo> queryMatchesProcesses(String matchesString)
     {
         Query query = getWhereClause(String.format(QUERY_WORKFLOWDESCRIPTION_MATCHES, matchesString));
         Parameters parameters = Params.valueOf(new RecognizedParams(null, Paging.valueOf(0, ACTIVE_WORKFLOWS_INITIAL_AMOUNT), null, null, null, null, query, null, false), null, null, null);
-        
+
         return processes.getProcesses(parameters);
     }
-    
+
     private CollectionWithPagingInfo<ProcessInfo> queryActiveProcessesAndAssertResult(int skipCount, int maxItems)
     {
         Query query = getWhereClause(QUERY_STATUS_ACTIVE);

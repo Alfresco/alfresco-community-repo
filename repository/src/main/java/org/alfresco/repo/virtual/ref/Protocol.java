@@ -32,13 +32,9 @@ import java.util.ArrayList;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * A {@link Reference} model element that defines the type of the referred
- * artefact and the virtualization process that was applied when creating a
- * reference.<br>
- * Protocols define the semantics of all elements of a reference. Protocol
- * implementations add syntactic processing methods.<br>
- * The high level semantic functionality of a protocol is implemented with
- * {@link ProtocolMethod}s.
+ * A {@link Reference} model element that defines the type of the referred artefact and the virtualization process that was applied when creating a reference.<br>
+ * Protocols define the semantics of all elements of a reference. Protocol implementations add syntactic processing methods.<br>
+ * The high level semantic functionality of a protocol is implemented with {@link ProtocolMethod}s.
  * 
  * @author Bogdan Horje
  */
@@ -67,25 +63,25 @@ public class Protocol implements Serializable
     public Reference replaceParameter(Reference reference, int index, String stringParameter)
     {
         return replaceParameter(reference,
-                                index,
-                                new StringParameter(stringParameter));
+                index,
+                new StringParameter(stringParameter));
     }
 
     public Reference replaceParameter(Reference reference, int index, Parameter parameter)
     {
         ArrayList<Parameter> parameters = new ArrayList<Parameter>(reference.getParameters());
         parameters.set(index,
-                       parameter);
+                parameter);
         return new Reference(reference.getEncoding(),
-                             reference.getProtocol(),
-                             reference.getResource(),
-                             parameters);
+                reference.getProtocol(),
+                reference.getResource(),
+                parameters);
     }
 
     public Reference addParameter(Reference reference, Resource resource)
     {
         return addParameter(reference,
-                            new ResourceParameter(resource));
+                new ResourceParameter(resource));
     }
 
     public Reference addParameter(Reference reference, Parameter parameter)
@@ -93,18 +89,14 @@ public class Protocol implements Serializable
         ArrayList<Parameter> parameters = new ArrayList<Parameter>(reference.getParameters());
         parameters.add(parameter);
         return new Reference(reference.getEncoding(),
-                             reference.getProtocol(),
-                             reference.getResource(),
-                             parameters);
+                reference.getProtocol(),
+                reference.getResource(),
+                parameters);
     }
 
     /**
-     * {@link ProtocolMethod} double-dispatch/visitor protocol type selector.
-     * Subclasses should override this method to select the appropriate type
-     * bound method.<br>
-     * This particular implementation calls the default
-     * {@link ProtocolMethod#execute(Protocol, Reference)} default method
-     * implementation.
+     * {@link ProtocolMethod} double-dispatch/visitor protocol type selector. Subclasses should override this method to select the appropriate type bound method.<br>
+     * This particular implementation calls the default {@link ProtocolMethod#execute(Protocol, Reference)} default method implementation.
      * 
      * @param method
      * @param reference
@@ -114,7 +106,7 @@ public class Protocol implements Serializable
     public <R> R dispatch(ProtocolMethod<R> method, Reference reference) throws ProtocolMethodException
     {
         return method.execute(this,
-                              reference);
+                reference);
     }
 
     @Override
@@ -124,14 +116,11 @@ public class Protocol implements Serializable
     }
 
     /**
-     * {@link Protocol} delegate of
-     * {@link Reference#propagateNodeRefMutations(NodeRef)}
+     * {@link Protocol} delegate of {@link Reference#propagateNodeRefMutations(NodeRef)}
      * 
      * @param mutatedNodeRef
      * @param reference
-     * @return a mutated version of the given {@link Reference} corresponding to
-     *         the given mutated node or the given {@link Reference} if no
-     *         mutations are detected
+     * @return a mutated version of the given {@link Reference} corresponding to the given mutated node or the given {@link Reference} if no mutations are detected
      */
     public Reference propagateNodeRefMutations(NodeRef mutatedNodeRef, Reference reference)
     {

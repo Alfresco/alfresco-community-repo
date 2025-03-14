@@ -43,11 +43,11 @@ public class GetPeopleCannedQueryParams
     private NodeRef parentRef;
     private List<QName> filterProps = Collections.emptyList();
     private String pattern = null;
-    
+
     private boolean includeAdministrators;
     private Set<QName> inclusiveAspects;
     private Set<QName> exclusiveAspects;
-    
+
     public GetPeopleCannedQueryParams(
             NodeRef parentRef,
             List<QName> filterProps,
@@ -57,43 +57,46 @@ public class GetPeopleCannedQueryParams
             boolean includeAdministrators)
     {
         this.parentRef = parentRef;
-        if (filterProps != null) { this.filterProps = filterProps; }
-        
+        if (filterProps != null)
+        {
+            this.filterProps = filterProps;
+        }
+
         this.pattern = pattern;
-        
+
         this.inclusiveAspects = inclusiveAspects;
         this.exclusiveAspects = exclusiveAspects;
         this.includeAdministrators = includeAdministrators;
     }
-    
+
     public NodeRef getParentRef()
     {
         return parentRef;
     }
-    
+
     public List<QName> getFilterProps()
     {
         return filterProps;
     }
-    
+
     public String getPattern()
     {
         return pattern;
     }
-    
+
     public boolean getIncludeAdministrators()
     {
         return includeAdministrators;
     }
-    
+
     public Set<QName> getInclusiveAspects()
     {
         return inclusiveAspects;
     }
-    
+
     public Set<QName> getExclusiveAspects()
     {
         return exclusiveAspects;
     }
-    
+
 }

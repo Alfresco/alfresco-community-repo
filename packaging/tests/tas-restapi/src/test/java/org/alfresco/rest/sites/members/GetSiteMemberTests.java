@@ -1,5 +1,9 @@
 package org.alfresco.rest.sites.members;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;
@@ -11,9 +15,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * @author iulia.cojocea
@@ -28,13 +29,13 @@ public class GetSiteMemberTests extends RestTest
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws DataPreparationException
     {
-        adminUser = dataUser.getAdminUser();        
+        adminUser = dataUser.getAdminUser();
         publicSiteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
         moderatedSiteModel = dataSite.usingUser(adminUser).createModeratedRandomSite();
         privateSiteModel = dataSite.usingUser(adminUser).createPrivateRandomSite();
         usersWithRoles = dataUser.addUsersWithRolesToSite(publicSiteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
                 UserRole.SiteContributor);
-        
+
         consumer = dataUser.createRandomTestUser();
         manager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
         collaborator = usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator);
@@ -47,70 +48,70 @@ public class GetSiteMemberTests extends RestTest
         dataUser.addUserToSite(manager, privateSiteModel, UserRole.SiteManager);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.SANITY,
             description = "Verify user with Manager role gets site member and status code is OK (200)")
     public void getSiteMemberWithManagerRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMember(consumer)
-                    .assertThat().field("id").is(consumer.getUsername())
-                    .and().field("role").is(consumer.getUserRole());
+                .assertThat().field("id").is(consumer.getUsername())
+                .and().field("role").is(consumer.getUserRole());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Collaborator role gets site member and gets status code OK (200)")
     public void getSiteMemberWithCollaboratorRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMember(consumer)
-                    .and().field("id").is(consumer.getUsername())
-                    .and().field("role").is(consumer.getUserRole());
+                .and().field("id").is(consumer.getUsername())
+                .and().field("role").is(consumer.getUserRole());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Contributor role gets site member and gets status code OK (200)")
     public void getSiteMemberWithContributorRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMember(consumer)
-                  .and().field("id").is(consumer.getUsername())
-                  .and().field("role").is(consumer.getUserRole());
+                .and().field("id").is(consumer.getUsername())
+                .and().field("role").is(consumer.getUserRole());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Consumer role gets site member and gets status code OK (200)")
     public void getSiteMemberWithConsumerRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMember(consumer)
-                    .and().field("id").is(consumer.getUsername())
-                    .and().field("role").is(consumer.getUserRole());
+                .and().field("id").is(consumer.getUsername())
+                .and().field("role").is(consumer.getUserRole());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with admin user gets site member and gets status code OK (200)")
     public void getSiteMemberWithAdminUser() throws Exception
     {
         restClient.authenticateUser(adminUser);
         restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMember(consumer)
-                    .and().field("id").is(consumer.getUsername())
-                    .and().field("role").is(consumer.getUserRole());
+                .and().field("id").is(consumer.getUsername())
+                .and().field("role").is(consumer.getUserRole());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.SANITY,
             description = "Failed authentication get site member call returns status code 401")
-//    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
+    // @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
     public void unauthenticatedUserIsNotAuthorizedToRetrieveSiteMember() throws JsonToModelConversionException, Exception
     {
         UserModel inexistentUser = new UserModel("inexistent user", "inexistent password");
@@ -119,8 +120,8 @@ public class GetSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Manager role doesn't get a site member of inexistent site and status code is Not Found (404)")
     public void getSiteMemberOfInexistentSite() throws Exception
     {
@@ -132,8 +133,8 @@ public class GetSiteMemberTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, consumer.getUsername(), invalidSite.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Manager role doesn't get non site member of inexistent site and status code is Not Found (404)")
     public void getSiteMemberForNonSiteMember() throws Exception
     {
@@ -145,8 +146,8 @@ public class GetSiteMemberTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, nonMember.getUsername(), publicSiteModel.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Manager role doesn't get not existing site member and status code is Not Found (404)")
     public void getSiteMemberForInexistentSiteMember() throws Exception
     {
@@ -158,8 +159,8 @@ public class GetSiteMemberTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, inexistentUser.getUsername()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Manager role can get site member using \"-me-\" in place of personId")
     public void getSiteMemberUsingMeForPersonId() throws Exception
     {
@@ -172,8 +173,8 @@ public class GetSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Manager role gets site member with Manager role and status code is OK (200)")
     public void getSiteManagerMemberWithManagerRole() throws Exception
     {
@@ -187,8 +188,8 @@ public class GetSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Collaborator role gets site member with Manager role and status code is OK (200)")
     public void getSiteManagerMemberWithCollaboratorRole() throws Exception
     {
@@ -199,8 +200,8 @@ public class GetSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Consumer role gets site member with Manager role and status code is OK (200)")
     public void getSiteManagerMemberWithConsumerRole() throws Exception
     {
@@ -211,8 +212,8 @@ public class GetSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Contributor role gets site member with Manager role and status code is OK (200)")
     public void getSiteManagerMemberWithContributorRole() throws Exception
     {
@@ -223,8 +224,8 @@ public class GetSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Contributor role gets admin site member and status code is OK (200)")
     public void getSiteAdminManagerMember() throws Exception
     {
@@ -235,8 +236,8 @@ public class GetSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Collaborator role gets site member with Contributor role and status code is OK (200)")
     public void getSiteContributorMemberWithCollaboratorRole() throws Exception
     {
@@ -246,8 +247,8 @@ public class GetSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Contributor role gets site member with Collaborator role and status code is OK (200)")
     public void getSiteCollaboratorMemberWithContributorRole() throws Exception
     {
@@ -257,8 +258,8 @@ public class GetSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Collaborator role gets admin role and status code is OK (200)")
     public void getAdminWithCollaboratorRole() throws Exception
     {
@@ -268,8 +269,8 @@ public class GetSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Collaborator role gets site member with Consumer role and status code is OK (200)")
     public void getSiteConsumerMemberWithCollaboratorRole() throws Exception
     {
@@ -279,8 +280,8 @@ public class GetSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user gets site member of private site and status code is OK (200)")
     public void getSiteMemberOfPrivateSite() throws Exception
     {
@@ -290,10 +291,11 @@ public class GetSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify not joined user is not is not able to get site member of private site and status code is 404")
-    public void regularUserIsNotAbleToGetSiteMemberOfPrivateSite() throws Exception {
+    public void regularUserIsNotAbleToGetSiteMemberOfPrivateSite() throws Exception
+    {
         UserModel regularUser = dataUser.createRandomTestUser();
 
         restClient.authenticateUser(regularUser).withCoreAPI().usingSite(privateSiteModel).getSiteMember(consumer);
@@ -301,9 +303,9 @@ public class GetSiteMemberTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, consumer.getUsername(), privateSiteModel.getTitle()));
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify admin is not able to get from site a user that created a member request that was not accepted yet")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
     public void adminIsNotAbleToGetFromSiteANonExistingMember() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -317,8 +319,8 @@ public class GetSiteMemberTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user gets site creator and status code is OK (200)")
     public void getSiteCreator() throws Exception
     {
@@ -331,8 +333,8 @@ public class GetSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Consumer role can get site member using \"-me-\" in place of personId")
     public void getSiteMemberOfPrivateSiteUsingMeForPersonId() throws Exception
     {
@@ -344,8 +346,8 @@ public class GetSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user gets site member of moderated site and status code is OK (200)")
     public void getSiteMemberOfModeratedSite() throws Exception
     {
@@ -355,8 +357,8 @@ public class GetSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify not joined user gets site member of moderated site and status code is OK (200)")
     public void regularUserIsAbleToGetSiteMemberOfModeratedSite() throws Exception
     {
@@ -366,9 +368,9 @@ public class GetSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site member request with properties parameter returns status code 200 and parameter is applied")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get site member request with properties parameter returns status code 200 and parameter is applied")
     public void getSiteMemberUsingPropertiesParameter() throws Exception
     {
         restClient.authenticateUser(manager)

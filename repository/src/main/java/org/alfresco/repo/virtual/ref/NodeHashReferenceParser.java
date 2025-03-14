@@ -29,8 +29,7 @@ package org.alfresco.repo.virtual.ref;
 import org.alfresco.repo.virtual.ref.ReferenceParser.Cursor;
 
 /**
- * Custom parser for hash encoded strings of {@link Reference}s having the
- * protocol set to {@link NodeProtocol}.
+ * Custom parser for hash encoded strings of {@link Reference}s having the protocol set to {@link NodeProtocol}.
  */
 public class NodeHashReferenceParser extends ProtocolHashParser
 {
@@ -48,7 +47,7 @@ public class NodeHashReferenceParser extends ProtocolHashParser
         if (!NODE_PROTOCOL_CODE.equals(cursor.currentToken()))
         {
             throw new ReferenceParseException("Node token \"" + NODE_PROTOCOL_CODE + "\" expected instead of \""
-                        + cursor.currentToken() + "\"");
+                    + cursor.currentToken() + "\"");
         }
         cursor.i++;
 
@@ -57,8 +56,8 @@ public class NodeHashReferenceParser extends ProtocolHashParser
         Reference parentReference = referenceParser.parse(cursor);
 
         return NodeProtocol.newReference(Encodings.HASH.encoding,
-                                         resource,
-                                         parentReference);
+                resource,
+                parentReference);
 
     }
 

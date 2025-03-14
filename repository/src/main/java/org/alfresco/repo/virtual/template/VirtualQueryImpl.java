@@ -30,6 +30,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -47,8 +50,6 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class VirtualQueryImpl implements VirtualQuery
 {
@@ -87,15 +88,13 @@ public class VirtualQueryImpl implements VirtualQuery
     }
 
     /**
-     * @deprecated will be replaced by
-     *             {@link #perform(ActualEnvironment, VirtualQueryConstraint,Reference)}
-     *             once complex constrains are implemented
+     * @deprecated will be replaced by {@link #perform(ActualEnvironment, VirtualQueryConstraint,Reference)} once complex constrains are implemented
      */
     @Override
     public PagingResults<Reference> perform(ActualEnvironment environment, boolean files, boolean folders,
-                String pattern, Set<QName> searchTypeQNames, Set<QName> ignoreTypeQNames, Set<QName> ignoreAspectQNames,
-                List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest, Reference parentReference)
-                throws VirtualizationException
+            String pattern, Set<QName> searchTypeQNames, Set<QName> ignoreTypeQNames, Set<QName> ignoreAspectQNames,
+            List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest, Reference parentReference)
+            throws VirtualizationException
     {
 
         if (!files && !folders)
@@ -106,42 +105,42 @@ public class VirtualQueryImpl implements VirtualQuery
             }
 
             return asPagingResults(environment,
-                                   pagingRequest,
-                                   new EmptyResultSet(),
-                                   parentReference);
+                    pagingRequest,
+                    new EmptyResultSet(),
+                    parentReference);
 
         }
         else
         {
             VirtualQueryConstraint constraint = BasicConstraint.INSTANCE;
             constraint = new FilesFoldersConstraint(constraint,
-                                                    files,
-                                                    folders);
-            if(pattern != null){
+                    files,
+                    folders);
+            if (pattern != null)
+            {
                 constraint = new NamePatternPropertyValueConstraint(constraint,
-                                            ContentModel.PROP_NAME,
-                                            pattern,
-                                            environment.getNamespacePrefixResolver());
+                        ContentModel.PROP_NAME,
+                        pattern,
+                        environment.getNamespacePrefixResolver());
             }
             constraint = new IgnoreConstraint(constraint,
-                                              ignoreTypeQNames,
-                                              ignoreAspectQNames);
+                    ignoreTypeQNames,
+                    ignoreAspectQNames);
             constraint = new PagingRequestConstraint(constraint,
-                                                     pagingRequest);
+                    pagingRequest);
             constraint = new SortConstraint(constraint,
-                                            sortProps);
+                    sortProps);
 
             return perform(environment,
-                           constraint,
-                           null,
-                           parentReference);
+                    constraint,
+                    null,
+                    parentReference);
         }
 
     }
 
     /**
-     * @deprecated will be replaced by {@link VirtualQueryConstraint}s once
-     *             complex constrains are implemented
+     * @deprecated will be replaced by {@link VirtualQueryConstraint}s once complex constrains are implemented
      */
     private String filter(String language, String query, boolean files, boolean folders) throws VirtualizationException
     {
@@ -163,7 +162,7 @@ public class VirtualQueryImpl implements VirtualQuery
             else
             {
                 throw new VirtualizationException("Disjunctive file-folder filters are only supported on "
-                            + SearchService.LANGUAGE_FTS_ALFRESCO + " virtual query language.");
+                        + SearchService.LANGUAGE_FTS_ALFRESCO + " virtual query language.");
             }
 
         }
@@ -172,14 +171,14 @@ public class VirtualQueryImpl implements VirtualQuery
     }
 
     private PagingResults<Reference> asPagingResults(ActualEnvironment environment, PagingRequest pagingRequest,
-                ResultSet result, Reference parentReference) throws ActualEnvironmentException
+            ResultSet result, Reference parentReference) throws ActualEnvironmentException
     {
         final List<Reference> page = new LinkedList<Reference>();
 
         for (ResultSetRow row : result)
         {
             page.add(NodeProtocol.newReference(row.getNodeRef(),
-                                               parentReference));
+                    parentReference));
         }
 
         final boolean hasMore = result.hasMore();
@@ -206,9 +205,8 @@ public class VirtualQueryImpl implements VirtualQuery
         }
         final int totlaSecond = !hasMore ? (int) result.getNumberFound() : (int) (start + result.getNumberFound() + 1);
         final Pair<Integer, Integer> total = new Pair<Integer, Integer>(totalFirst,
-                                                                        totlaSecond);
-        return new PagingResults<Reference>()
-        {
+                totlaSecond);
+        return new PagingResults<Reference>() {
 
             @Override
             public List<Reference> getPage()
@@ -239,7 +237,7 @@ public class VirtualQueryImpl implements VirtualQuery
     }
 
     private SearchParameters createSearchParameters(boolean files, boolean folders, PagingRequest pagingRequest)
-                throws VirtualizationException
+            throws VirtualizationException
     {
         SearchParameters searchParameters = new SearchParameters();
 
@@ -253,9 +251,9 @@ public class VirtualQueryImpl implements VirtualQuery
         }
         searchParameters.setLanguage(language);
         searchParameters.setQuery(filter(language,
-                                         query,
-                                         files,
-                                         folders));
+                query,
+                files,
+                folders));
         searchParameters.setQueryConsistency(QueryConsistency.TRANSACTIONAL_IF_POSSIBLE);
 
         if (pagingRequest != null)
@@ -269,18 +267,18 @@ public class VirtualQueryImpl implements VirtualQuery
 
     @Override
     public PagingResults<Reference> perform(ActualEnvironment environment, VirtualQueryConstraint constraint,
-                PagingRequest pagingRequest, Reference parentReference) throws VirtualizationException
+            PagingRequest pagingRequest, Reference parentReference) throws VirtualizationException
     {
         VirtualQueryConstraint theConstraint = constraint;
 
         if (pagingRequest != null)
         {
             theConstraint = new PagingRequestConstraint(theConstraint,
-                                                        pagingRequest);
+                    pagingRequest);
         }
 
         SearchParameters searchParameters = theConstraint.apply(environment,
-                                                                this);
+                this);
 
         ResultSet result = environment.query(searchParameters);
 
@@ -290,9 +288,9 @@ public class VirtualQueryImpl implements VirtualQuery
         }
 
         return asPagingResults(environment,
-                               pagingRequest,
-                               result,
-                               parentReference);
+                pagingRequest,
+                result,
+                parentReference);
     }
 
 }

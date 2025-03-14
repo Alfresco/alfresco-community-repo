@@ -36,7 +36,7 @@ import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAct
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
 
-@EntityResource(name="action-constraints", title = "Action parameter constraints")
+@EntityResource(name = "action-constraints", title = "Action parameter constraints")
 @Experimental
 public class ActionConstraintsEntityResource implements EntityResourceAction.ReadById<ActionParameterConstraint>
 {

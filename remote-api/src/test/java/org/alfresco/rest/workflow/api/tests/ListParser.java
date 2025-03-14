@@ -30,10 +30,11 @@ import static org.junit.Assert.assertNotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
-import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+
+import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
+import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 
 public abstract class ListParser<T>
 {
@@ -42,16 +43,16 @@ public abstract class ListParser<T>
     {
         List<T> entries = new ArrayList<T>();
 
-        JSONObject jsonList = (JSONObject)jsonResponse.get("list");
+        JSONObject jsonList = (JSONObject) jsonResponse.get("list");
         assertNotNull(jsonList);
 
-        JSONArray jsonEntries = (JSONArray)jsonList.get("entries");
+        JSONArray jsonEntries = (JSONArray) jsonList.get("entries");
         assertNotNull(jsonEntries);
 
-        for(int i = 0; i < jsonEntries.size(); i++)
+        for (int i = 0; i < jsonEntries.size(); i++)
         {
-            JSONObject jsonEntry = (JSONObject)jsonEntries.get(i);
-            JSONObject entry = (JSONObject)jsonEntry.get("entry");
+            JSONObject jsonEntry = (JSONObject) jsonEntries.get(i);
+            JSONObject entry = (JSONObject) jsonEntry.get("entry");
             entries.add(parseEntry(entry));
         }
 

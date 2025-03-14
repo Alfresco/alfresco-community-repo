@@ -31,6 +31,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.action.executer.MailActionExecuter;
@@ -58,10 +63,6 @@ import org.alfresco.service.cmr.subscriptions.SubscriptionItemTypeEnum;
 import org.alfresco.service.cmr.subscriptions.SubscriptionService;
 import org.alfresco.service.cmr.subscriptions.SubscriptionsDisabledException;
 import org.alfresco.service.namespace.NamespaceService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class SubscriptionServiceImpl implements SubscriptionService
 {
@@ -81,14 +82,14 @@ public class SubscriptionServiceImpl implements SubscriptionService
     private static final String USER_USERNAME = "userUserName";
     private static final String FOLLOWING_COUNT = "followingCount";
     private static final String FOLLOWER_COUNT = "followerCount";
-    
+
     private static final String SUBSCRIBER_FIRSTNAME = "subscriberFirstName";
     private static final String SUBSCRIBER_LASTNAME = "subscriberLastName";
     private static final String SUBSCRIBER_USERNAME = "subscriberUserName";
     private static final String NODE = "node";
-    
+
     private static final String TENANT_DOMAIN = "tenantDomain";
-    
+
     protected SubscriptionsDAO subscriptionsDAO;
     protected NodeService nodeService;
     protected PersonService personService;
@@ -100,7 +101,7 @@ public class SubscriptionServiceImpl implements SubscriptionService
     protected FileFolderService fileFolderService;
 
     protected boolean active;
-    
+
     private RepositoryLocation followingEmailTemplateLocation;
 
     /**
@@ -179,13 +180,12 @@ public class SubscriptionServiceImpl implements SubscriptionService
     {
         this.active = active;
     }
-    
+
     public void setFollowingEmailTemplateLocation(RepositoryLocation followingEmailTemplateLocation)
     {
         this.followingEmailTemplateLocation = followingEmailTemplateLocation;
     }
-    
-    
+
     @Override
     public PagingSubscriptionResults getSubscriptions(String userId, SubscriptionItemTypeEnum type,
             PagingRequest pagingRequest)
@@ -225,7 +225,8 @@ public class SubscriptionServiceImpl implements SubscriptionService
                         nodeService.getProperty(subscriberNode, ContentModel.PROP_LASTNAME));
                 activityData.put(NODE, node.toString());
                 activityDataJSON = activityData.toString();
-            } catch (JSONException je)
+            }
+            catch (JSONException je)
             {
                 // log error, subsume exception
                 logger.error("Failed to get activity data: " + je);
@@ -310,7 +311,8 @@ public class SubscriptionServiceImpl implements SubscriptionService
 
                 activityService.postActivity(ActivityType.SUBSCRIPTIONS_FOLLOW, null, ACTIVITY_TOOL, activityDataJSON);
 
-            } catch (JSONException je)
+            }
+            catch (JSONException je)
             {
                 // log error, subsume exception
                 logger.error("Failed to get activity data: " + je);
@@ -319,7 +321,8 @@ public class SubscriptionServiceImpl implements SubscriptionService
             try
             {
                 sendFollowingMail(userId, userToFollow);
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 // log error, subsume exception
                 logger.error("Failed to send following email: " + e);
@@ -514,29 +517,29 @@ public class SubscriptionServiceImpl implements SubscriptionService
         try
         {
             model.put(FOLLOWING_COUNT, getFollowingCount(userId));
-        } catch (Exception e)
-        {
         }
+        catch (Exception e)
+        {}
         model.put(FOLLOWER_COUNT, -1);
         try
         {
             model.put(FOLLOWER_COUNT, getFollowersCount(userId));
-        } catch (Exception e)
-        {
         }
-        
+        catch (Exception e)
+        {}
+
         // Add tenant, if in context of tenant
         String tenantDomain = TenantUtil.getCurrentDomain();
         if (tenantDomain != null)
         {
             model.put(TENANT_DOMAIN, tenantDomain);
         }
-        
+
         Action mail = actionService.createAction(MailActionExecuter.NAME);
-        
+
         mail.setParameterValue(MailActionExecuter.PARAM_TO, emailAddress);
         mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "subscription.notification.email.subject");
-        mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT_PARAMS, new Object[] {followerFullName});
+        mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT_PARAMS, new Object[]{followerFullName});
         mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, templateNodeRef);
         mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) model);
         mail.setParameterValue(MailActionExecuter.PARAM_IGNORE_SEND_FAILURE, true);
@@ -545,19 +548,18 @@ public class SubscriptionServiceImpl implements SubscriptionService
     }
 
     /**
-     * Returns the NodeRef of the email template or <code>null</code> if the
-     * template coudln't be found.
+     * Returns the NodeRef of the email template or <code>null</code> if the template coudln't be found.
      */
     protected String getEmailTemplateRef()
     {
         String locationType = followingEmailTemplateLocation.getQueryLanguage();
-        
+
         if (locationType.equals(SearchService.LANGUAGE_XPATH))
         {
             // Find the following email template
             StoreRef store = followingEmailTemplateLocation.getStoreRef();
             String xpath = followingEmailTemplateLocation.getPath();
-            
+
             try
             {
                 NodeRef rootNodeRef = nodeService.getRootNode(store);
@@ -566,7 +568,7 @@ public class SubscriptionServiceImpl implements SubscriptionService
                 {
                     logger.error("Found too many email templates using: " + xpath);
                     nodeRefs = Collections.singletonList(nodeRefs.get(0));
-                } 
+                }
                 else if (nodeRefs.size() == 0)
                 {
                     logger.error("Cannot find the email template using " + xpath);
@@ -574,12 +576,12 @@ public class SubscriptionServiceImpl implements SubscriptionService
                 }
                 // Now localise this
                 return fileFolderService.getLocalizedSibling(nodeRefs.get(0)).toString();
-            } 
+            }
             catch (SearcherException e)
             {
                 logger.error("Cannot find the email template!", e);
             }
-            
+
             return null;
         }
         else if (locationType.equals(RepositoryLocation.LANGUAGE_CLASSPATH))
@@ -588,7 +590,7 @@ public class SubscriptionServiceImpl implements SubscriptionService
         }
         else
         {
-            logger.error("Unsupported location type: "+locationType);
+            logger.error("Unsupported location type: " + locationType);
             return null;
         }
     }

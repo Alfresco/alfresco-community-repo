@@ -28,17 +28,16 @@ package org.alfresco.repo.security.authentication.external;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.security.cert.X509Certificate;
 import javax.security.auth.x500.X500Principal;
 import jakarta.servlet.http.HttpServletRequest;
+
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.repo.management.subsystems.AbstractChainedSubsystemTest;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager;
 import org.alfresco.util.ApplicationContextHelper;
-import org.springframework.context.ApplicationContext;
-
-import java.security.cert.X509Certificate;
-
 
 /**
  * @author dward
@@ -46,14 +45,14 @@ import java.security.cert.X509Certificate;
  */
 public class DefaultRemoteUserMapperTest extends AbstractChainedSubsystemTest
 {
-    
+
     ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     DefaultChildApplicationContextManager childApplicationContextManager;
-    ChildApplicationContextFactory childApplicationContextFactory;    
+    ChildApplicationContextFactory childApplicationContextFactory;
 
     /* (non-Javadoc)
-     * @see junit.framework.TestCase#setUp()
-     */
+     * 
+     * @see junit.framework.TestCase#setUp() */
     @Override
     protected void setUp() throws Exception
     {
@@ -62,11 +61,10 @@ public class DefaultRemoteUserMapperTest extends AbstractChainedSubsystemTest
         childApplicationContextManager.setProperty("chain", "external1:external");
         childApplicationContextFactory = getChildApplicationContextFactory(childApplicationContextManager, "external1");
     }
-    
-    
+
     /* (non-Javadoc)
-     * @see junit.framework.TestCase#tearDown()
-     */
+     * 
+     * @see junit.framework.TestCase#tearDown() */
     @Override
     protected void tearDown() throws Exception
     {
@@ -75,19 +73,18 @@ public class DefaultRemoteUserMapperTest extends AbstractChainedSubsystemTest
         childApplicationContextFactory = null;
     }
 
-
     public void testUnproxiedHeader() throws Exception
     {
         // Clear the proxy user name
         childApplicationContextFactory.stop();
         childApplicationContextFactory.setProperty("external.authentication.proxyUserName", "");
-        
+
         // Mock a request with a username in the header
         HttpServletRequest mockRequest = mock(HttpServletRequest.class);
         when(mockRequest.getHeader("X-Alfresco-Remote-User")).thenReturn("AdMiN");
         assertEquals("admin", ((RemoteUserMapper) childApplicationContextFactory.getApplicationContext().getBean(
                 "remoteUserMapper")).getRemoteUser(mockRequest));
-        
+
         // Mock an unauthenticated request
         when(mockRequest.getHeader("X-Alfresco-Remote-User")).thenReturn(null);
         assertNull(((RemoteUserMapper) childApplicationContextFactory.getApplicationContext().getBean(
@@ -99,7 +96,6 @@ public class DefaultRemoteUserMapperTest extends AbstractChainedSubsystemTest
                 "remoteUserMapper")).getRemoteUser(mockRequest));
     }
 
-    
     public void testProxiedHeader() throws Exception
     {
         // Set the proxy user name
@@ -133,8 +129,7 @@ public class DefaultRemoteUserMapperTest extends AbstractChainedSubsystemTest
     }
 
     /**
-     * MNT-13989
-     * Test simulates the extraction of subject distinguished name from a client SSL certificate
+     * MNT-13989 Test simulates the extraction of subject distinguished name from a client SSL certificate
      *
      * @throws Exception
      */
@@ -145,7 +140,7 @@ public class DefaultRemoteUserMapperTest extends AbstractChainedSubsystemTest
         childApplicationContextFactory.setProperty("external.authentication.proxyHeader", "X-Alfresco-Remote-User");
 
         X509Certificate cert = mock(X509Certificate.class);
-        X500Principal principal =  new X500Principal("CN=alfresco-system");
+        X500Principal principal = new X500Principal("CN=alfresco-system");
         when(cert.getSubjectX500Principal()).thenReturn(principal);
         X509Certificate[] certs = {cert};
         HttpServletRequest mockRequest = mock(HttpServletRequest.class);

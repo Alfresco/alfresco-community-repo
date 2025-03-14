@@ -35,6 +35,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.bootstrap.BootstrapImporterModuleComponent;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
@@ -54,13 +62,6 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.lang3.StringUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Role service implementation
@@ -69,7 +70,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @since 2.1
  */
 public class FilePlanRoleServiceImpl implements FilePlanRoleService,
-                                                RecordsManagementModel
+        RecordsManagementModel
 {
     /** Logger for the class. */
     private static final Logger LOGGER = LoggerFactory.getLogger(FilePlanRoleServiceImpl.class);
@@ -109,7 +110,8 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     private static final String CONFIG_NODEID = "rm_config_folder";
 
     /**
-     * @param capabilityService capability service
+     * @param capabilityService
+     *            capability service
      */
     public void setCapabilityService(CapabilityService capabilityService)
     {
@@ -117,7 +119,8 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     }
 
     /**
-     * @param authorityService  authority service
+     * @param authorityService
+     *            authority service
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
@@ -125,7 +128,8 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     }
 
     /**
-     * @param permissionService permission service
+     * @param permissionService
+     *            permission service
      */
     public void setPermissionService(PermissionService permissionService)
     {
@@ -133,7 +137,8 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     }
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -141,7 +146,8 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -164,7 +170,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     public void setupFilePlanRoles(final NodeRef filePlan)
     {
         // Do not execute behaviour if this has been created in the archive store
-        if(filePlan.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE))
+        if (filePlan.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE))
         {
             // This is not the spaces store - probably the archive store
             return;
@@ -172,13 +178,12 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
         if (nodeService.exists(filePlan))
         {
-            List<NodeRef> systemContainers = AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<List<NodeRef>>()
-            {
+            List<NodeRef> systemContainers = AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<List<NodeRef>>() {
                 public List<NodeRef> doWork()
                 {
                     List<NodeRef> systemContainers = new ArrayList<>(3);
 
-                    //In a multi tenant store we need to initialize the rm config if it has been done yet
+                    // In a multi tenant store we need to initialize the rm config if it has been done yet
                     NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID);
                     if (!nodeService.exists(nodeRef))
                     {
@@ -187,9 +192,9 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
                     // Create "all" role group for root node
                     String allRoles = authorityService.createAuthority(
-                    						AuthorityType.GROUP,
-                    						getAllRolesGroupShortName(filePlan),
-                    						I18NUtil.getMessage(MSG_ALL_ROLES),
+                            AuthorityType.GROUP,
+                            getAllRolesGroupShortName(filePlan),
+                            I18NUtil.getMessage(MSG_ALL_ROLES),
                             new HashSet<>(Arrays.asList(RMAuthority.ZONE_APP_RM)));
 
                     // Set the permissions
@@ -218,8 +223,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     @Override
     public void tearDownFilePlanRoles(final NodeRef filePlan)
     {
-        AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>() {
             public Object doWork()
             {
                 // cascade delete the 'all' roles group for the site
@@ -251,13 +255,14 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     /**
      * Bootstraps the default roles
      *
-     * @param filePlan          file plan
-     * @param systemContainers  system containers
+     * @param filePlan
+     *            file plan
+     * @param systemContainers
+     *            system containers
      */
     private void bootstrapDefaultRoles(final NodeRef filePlan, final List<NodeRef> systemContainers)
     {
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
             public Object doWork()
             {
                 try
@@ -267,7 +272,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                     {
                         // Load up the default roles from JSON
                         InputStream is = getClass().getClassLoader().getResourceAsStream(BOOTSTRAP_ROLE_JSON_LOCATION);
-                        if  (is == null)
+                        if (is == null)
                         {
                             throw new AlfrescoRuntimeException("Could not load default bootstrap roles configuration");
                         }
@@ -297,7 +302,6 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                         {
                             throw new AlfrescoRuntimeException("No name given to default bootstrap role.  Check json configuration file.");
                         }
-
 
                         // Get the role's display label
                         String displayLabel = name;
@@ -371,7 +375,8 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     /**
      * Helper method to check whether the current authority is a system role or not
      *
-     * @param roleAuthority The role to check
+     * @param roleAuthority
+     *            The role to check
      * @return Returns true if roleAuthority is a system role, false otherwise
      */
     private boolean isSystemRole(String roleAuthority)
@@ -404,8 +409,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     @Override
     public Set<Role> getRoles(final NodeRef rmRootNode, final boolean includeSystemRoles)
     {
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<Role>>()
-        {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<Role>>() {
             public Set<Role> doWork()
             {
                 Set<Role> result = new HashSet<>(13);
@@ -449,8 +453,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     @Override
     public Set<Role> getRolesByUser(final NodeRef rmRootNode, final String user, final boolean includeSystemRoles)
     {
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<Role>>()
-        {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<Role>>() {
             public Set<Role> doWork()
             {
                 Set<Role> result = new HashSet<>(13);
@@ -520,8 +523,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
      */
     public Role getRole(final NodeRef rmRootNode, final String role)
     {
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Role>()
-        {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Role>() {
             public Role doWork()
             {
                 Role result = null;
@@ -572,8 +574,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
      */
     public boolean existsRole(final NodeRef rmRootNode, final String role)
     {
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
-        {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>() {
             public Boolean doWork()
             {
                 String fullRoleName = authorityService.getName(AuthorityType.GROUP, getFullRoleName(role, rmRootNode));
@@ -588,7 +589,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService#hasRMAdminRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      *
-     * TODO .. change this to check a property of the role its self
+     *      TODO .. change this to check a property of the role its self
      */
     public boolean hasRMAdminRole(NodeRef rmRootNode, String user)
     {
@@ -615,8 +616,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
      */
     public Role createRole(final NodeRef filePlan, final String role, final String roleDisplayLabel, final Set<Capability> capabilities)
     {
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Role>()
-        {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Role>() {
             public Role doWork()
             {
                 String fullRoleName = getFullRoleName(role, filePlan);
@@ -650,7 +650,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 }
 
                 // TODO .. we should be creating a permission set containing all the capabilities and then assigning that
-                //         single permission group to the file plan .. would be tidier
+                // single permission group to the file plan .. would be tidier
 
                 // Assign the various capabilities to the group on the root records management node
                 if (capabilities != null)
@@ -666,15 +666,12 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
         }, AuthenticationUtil.getSystemUserName());
     }
 
-
-
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#updateRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String, java.util.Set)
      */
     public Role updateRole(final NodeRef rmRootNode, final String role, final String roleDisplayLabel, final Set<Capability> capabilities)
     {
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Role>()
-        {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Role>() {
             public Role doWork()
             {
                 if (!existsRole(rmRootNode, role))
@@ -721,8 +718,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
             throw new AlfrescoRuntimeException("'" + role + "' is a system role and cannot be deleted.");
         }
 
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
             public Void doWork()
             {
                 String roleAuthority = authorityService.getName(AuthorityType.GROUP, getFullRoleName(role, rmRootNode));
@@ -748,15 +744,17 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     /**
      * Gets all the authorities of a given type directly assigned to the given role in the file plan.
      *
-     * @param filePlan          file plan
-     * @param roleName          role name
-     * @param authorityType     authority type
-     * @return Set<String>      directly assigned authorities
+     * @param filePlan
+     *            file plan
+     * @param roleName
+     *            role name
+     * @param authorityType
+     *            authority type
+     * @return Set<String> directly assigned authorities
      */
     private Set<String> getAuthoritiesAssignedToRole(final NodeRef filePlan, final String roleName, final AuthorityType authorityType)
     {
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<String>>()
-        {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<String>>() {
             public Set<String> doWork()
             {
                 Role role = getRole(filePlan, roleName);
@@ -802,22 +800,21 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
      */
     public void assignRoleToAuthority(final NodeRef filePlan, final String role, final String authorityName)
     {
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
             public Void doWork()
             {
                 if (authorityService.authorityExists(authorityName) &&
-                    !getAllAssignedToRole(filePlan, role).contains(authorityName))
+                        !getAllAssignedToRole(filePlan, role).contains(authorityName))
                 {
                     String roleAuthority = authorityService.getName(AuthorityType.GROUP, getFullRoleName(role, filePlan));
                     try
                     {
-                    	authorityService.addAuthority(roleAuthority, authorityName);
+                        authorityService.addAuthority(roleAuthority, authorityName);
                     }
                     catch (DuplicateChildNodeNameException exception)
-                	{
-                    	// ignore, because the work has already been performed
-                	}
+                    {
+                        // ignore, because the work has already been performed
+                    }
                 }
                 return null;
 
@@ -831,8 +828,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     @Override
     public void unassignRoleFromAuthority(final NodeRef filePlan, final String role, final String authorityName)
     {
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
             public Void doWork()
             {
                 String roleAuthority = authorityService.getName(AuthorityType.GROUP, getFullRoleName(role, filePlan));

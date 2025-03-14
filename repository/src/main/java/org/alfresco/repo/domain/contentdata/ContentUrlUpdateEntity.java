@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.domain.contentdata;
 
-
 /**
  * Entity bean for updating the <b>alf_content_url</b> table.
  * 
@@ -37,20 +36,19 @@ public class ContentUrlUpdateEntity
     private Long id;
     private Long orphanTime;
     private Long oldOrphanTime;
-    
+
     public ContentUrlUpdateEntity()
-    {
-    }
-    
+    {}
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("ContentUrlUpdateEntity")
-          .append("[ ID=").append(id)
-          .append(", orphanTime=").append(orphanTime)
-          .append(", oldOrphanTime=").append(oldOrphanTime)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", orphanTime=").append(orphanTime)
+                .append(", oldOrphanTime=").append(oldOrphanTime)
+                .append("]");
         return sb.toString();
     }
 
@@ -82,4 +80,5 @@ public class ContentUrlUpdateEntity
     public void setOldOrphanTime(Long oldOrphanTime)
     {
         this.oldOrphanTime = oldOrphanTime;
-    }}
+    }
+}

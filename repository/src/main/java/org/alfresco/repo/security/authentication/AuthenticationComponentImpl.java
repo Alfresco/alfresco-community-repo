@@ -36,6 +36,8 @@ import net.sf.acegisecurity.AuthenticationManager;
 import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.context.ContextHolder;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.tenant.TenantContextHolder;
@@ -45,15 +47,13 @@ import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
 {
     private Log logger = LogFactory.getLog(getClass());
-    
+
     private MutableAuthenticationDao authenticationDao;
-    
+
     AuthenticationManager authenticationManager;
     CompositePasswordEncoder passwordEncoder;
 
@@ -65,7 +65,8 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
     /**
      * IOC
      * 
-     * @param authenticationManager AuthenticationManager
+     * @param authenticationManager
+     *            AuthenticationManager
      */
     public void setAuthenticationManager(AuthenticationManager authenticationManager)
     {
@@ -75,13 +76,14 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
     /**
      * IOC
      * 
-     * @param authenticationDao MutableAuthenticationDao
+     * @param authenticationDao
+     *            MutableAuthenticationDao
      */
     public void setAuthenticationDao(MutableAuthenticationDao authenticationDao)
     {
         this.authenticationDao = authenticationDao;
     }
-    
+
     public void setCompositePasswordEncoder(CompositePasswordEncoder passwordEncoder)
     {
         this.passwordEncoder = passwordEncoder;
@@ -102,31 +104,29 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
             Pair<String, String> userTenant = AuthenticationUtil.getUserTenant(userNameIn);
             final String userName = userTenant.getFirst();
             final String tenantDomain = userTenant.getSecond();
-            
+
             String normalized = getTransactionService().getRetryingTransactionHelper().doInTransaction(
-                    new RetryingTransactionCallback<String>()
-                    {
+                    new RetryingTransactionCallback<String>() {
                         public String execute() throws Throwable
                         {
-                            return TenantUtil.runAsSystemTenant(new TenantRunAsWork<String>()
-                            {
+                            return TenantUtil.runAsSystemTenant(new TenantRunAsWork<String>() {
                                 public String doWork() throws Exception
                                 {
                                     String normalized = getPersonService().getUserIdentifier(userName);
-                                    String finalUserName = normalized == null ? userName : normalized; 
+                                    String finalUserName = normalized == null ? userName : normalized;
                                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                                             finalUserName, new String(password));
                                     authenticationManager.authenticate(authentication);
-                                    
+
                                     // check whether the user's password requires re-hashing
                                     UserDetails userDetails = authenticationDao.loadUserByUsername(finalUserName);
                                     if (userDetails instanceof RepositoryAuthenticatedUser)
                                     {
-                                        List<String> hashIndicator = ((RepositoryAuthenticatedUser)userDetails).getHashIndicator();
-                                        
+                                        List<String> hashIndicator = ((RepositoryAuthenticatedUser) userDetails).getHashIndicator();
+
                                         if (hashIndicator != null && !hashIndicator.isEmpty())
                                         {
-                                            // if the encoding chain is longer than 1 (double hashed) or the 
+                                            // if the encoding chain is longer than 1 (double hashed) or the
                                             // current encoding is not the preferred encoding then re-generate
                                             if (hashIndicator.size() > 1 || !passwordEncoder.lastEncodingIsPreferred(hashIndicator))
                                             {
@@ -138,18 +138,18 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
                                                 if (logger.isDebugEnabled())
                                                 {
                                                     logger.debug("New hashed password for user '" + AuthenticationUtil.maskUsername(userName)
-                                                        + "' has been requested");
+                                                            + "' has been requested");
                                                 }
                                             }
                                         }
                                     }
-                                    
+
                                     return normalized;
                                 }
                             }, tenantDomain);
                         }
                     }, true);
-            
+
             if (normalized == null)
             {
                 setCurrentUser(userName, UserNameValidationMode.CHECK_AND_FIX);
@@ -158,7 +158,7 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
             {
                 setCurrentUser(normalized, UserNameValidationMode.NONE);
             }
-            
+
             TenantContextHolder.setTenantDomain(tenantDomain);
         }
         catch (TenantDisabledException tde)
@@ -210,7 +210,7 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
             return authenticationDao.loadUserByUsername(userName);
         }
     }
-    
+
     /**
      * Get the password hash from the DAO
      */
@@ -226,17 +226,16 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
     {
         throw new AlfrescoRuntimeException("Authentication via token not supported");
     }
-    
+
     @Override
     protected boolean implementationAllowsGuestLogin()
     {
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.security.authentication.AuthenticationComponent#getDefaultAdministratorUserNames()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.security.authentication.AuthenticationComponent#getDefaultAdministratorUserNames() */
     @Override
     public Set<String> getDefaultAdministratorUserNames()
     {

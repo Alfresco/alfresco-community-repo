@@ -29,8 +29,7 @@ import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
- * An exception thrown by {@link RetryingTransactionHelper} when its maxExecutionMs property is set and there isn't
- * enough capacity to execute / retry the transaction.
+ * An exception thrown by {@link RetryingTransactionHelper} when its maxExecutionMs property is set and there isn't enough capacity to execute / retry the transaction.
  * 
  * @author dward
  */
@@ -40,7 +39,8 @@ public class TooBusyException extends AlfrescoRuntimeException
     private static final long serialVersionUID = 1L;
 
     /**
-     * @param msgId String
+     * @param msgId
+     *            String
      */
     public TooBusyException(String msgId)
     {
@@ -48,8 +48,10 @@ public class TooBusyException extends AlfrescoRuntimeException
     }
 
     /**
-     * @param msgId String
-     * @param msgParams Object[]
+     * @param msgId
+     *            String
+     * @param msgParams
+     *            Object[]
      */
     public TooBusyException(String msgId, Object[] msgParams)
     {
@@ -57,8 +59,10 @@ public class TooBusyException extends AlfrescoRuntimeException
     }
 
     /**
-     * @param msgId String
-     * @param cause Throwable
+     * @param msgId
+     *            String
+     * @param cause
+     *            Throwable
      */
     public TooBusyException(String msgId, Throwable cause)
     {
@@ -66,9 +70,12 @@ public class TooBusyException extends AlfrescoRuntimeException
     }
 
     /**
-     * @param msgId String
-     * @param msgParams Object[]
-     * @param cause Throwable
+     * @param msgId
+     *            String
+     * @param msgParams
+     *            Object[]
+     * @param cause
+     *            Throwable
      */
     public TooBusyException(String msgId, Object[] msgParams, Throwable cause)
     {

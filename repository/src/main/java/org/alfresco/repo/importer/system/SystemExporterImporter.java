@@ -33,7 +33,6 @@ import org.alfresco.repo.admin.patch.AppliedPatch;
 import org.alfresco.repo.domain.patch.AppliedPatchDAO;
 import org.alfresco.service.cmr.repository.NodeService;
 
-
 /**
  * Exporter and Importer of Repository System Information
  * 
@@ -44,26 +43,27 @@ public class SystemExporterImporter
     // dependencies
     private NodeService nodeService;
     private AppliedPatchDAO appliedPatchDAO;
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setAppliedPatchDAO(AppliedPatchDAO appliedPatchDAO)
     {
         this.appliedPatchDAO = appliedPatchDAO;
     }
-    
+
     /**
      * Export Repository System Information
      * 
-     * @param exportStream  output stream to export to
+     * @param exportStream
+     *            output stream to export to
      */
     public void exportSystem(OutputStream exportStream)
     {
         SystemInfo systemInfo = new SystemInfo();
-        
+
         // capture applied patches
         List<AppliedPatch> patches = appliedPatchDAO.getAppliedPatches();
         for (AppliedPatch patch : patches)
@@ -82,20 +82,20 @@ public class SystemExporterImporter
             patchInfo.wasExecuted = patch.getWasExecuted();
             systemInfo.patches.add(patchInfo);
         }
-        
+
         systemInfo.toXML(exportStream);
     }
-    
-    
+
     /**
      * Import Repository System Information
      * 
-     * @param importStream  input stream to import from
+     * @param importStream
+     *            input stream to import from
      */
     public void importSystem(InputStream importStream)
     {
         SystemInfo systemInfo = SystemInfo.createSystemInfo(importStream);
-        
+
         // apply patch info
         for (PatchInfo patchInfo : systemInfo.patches)
         {

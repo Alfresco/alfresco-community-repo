@@ -26,12 +26,13 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.encryption.AlfrescoKeyStore;
 import org.alfresco.encryption.AlfrescoKeyStoreImpl;
 import org.alfresco.encryption.KeyResourceLoader;
 import org.alfresco.encryption.ssl.SSLEncryptionParameters;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class HttpClientConfig
 {
@@ -82,7 +83,7 @@ public class HttpClientConfig
 
     public void init()
     {
-        this.keyStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getKeyStoreParameters(),  keyResourceLoader);
+        this.keyStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getKeyStoreParameters(), keyResourceLoader);
         this.trustStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getTrustStoreParameters(), keyResourceLoader);
 
         config = retrieveConfig();
@@ -90,8 +91,7 @@ public class HttpClientConfig
     }
 
     /**
-     * Method used for retrieving HttpClient config from Global Properties
-     * that can also have values provided/overridden through System Properties
+     * Method used for retrieving HttpClient config from Global Properties that can also have values provided/overridden through System Properties
      *
      * @return map of properties
      */
@@ -100,12 +100,13 @@ public class HttpClientConfig
         Map<String, String> resultProperties = getHttpClientPropertiesForService(properties);
         Map<String, String> systemProperties = getHttpClientPropertiesForService(System.getProperties());
 
-        systemProperties.forEach((k, v) -> resultProperties.put(k, v)); //Override/Add to Global Properties results with values from System Properties
+        systemProperties.forEach((k, v) -> resultProperties.put(k, v)); // Override/Add to Global Properties results with values from System Properties
 
         return resultProperties;
     }
 
-    private Map<String, String> getHttpClientPropertiesForService(Properties properties) {
+    private Map<String, String> getHttpClientPropertiesForService(Properties properties)
+    {
         return properties.keySet().stream()
                 .filter(key -> key instanceof String)
                 .map(Object::toString)
@@ -118,8 +119,8 @@ public class HttpClientConfig
     private void checkUnsupportedProperties(Map<String, String> config)
     {
         config.keySet().stream()
-              .filter(propertyName -> !HttpClientPropertiesEnum.isPropertyNameSupported(propertyName))
-              .forEach(propertyName -> LOGGER.warn(String.format("For service [%s], an unsupported property [%s] is set", serviceName, propertyName)));
+                .filter(propertyName -> !HttpClientPropertiesEnum.isPropertyNameSupported(propertyName))
+                .forEach(propertyName -> LOGGER.warn(String.format("For service [%s], an unsupported property [%s] is set", serviceName, propertyName)));
     }
 
     private Optional<Integer> getIntegerProperty(HttpClientPropertiesEnum property)
@@ -178,13 +179,7 @@ public class HttpClientConfig
 
     private enum HttpClientPropertiesEnum
     {
-        CONNECTION_TIMEOUT("connectionTimeout"),
-        SOCKET_TIMEOUT("socketTimeout"),
-        CONNECTION_REQUEST_TIMEOUT("connectionRequestTimeout"),
-        MAX_TOTAL_CONNECTIONS("maxTotalConnections"),
-        MAX_HOST_CONNECTIONS("maxHostConnections"),
-        HOSTNAME_VERIFICATION_DISABLED("hostnameVerificationDisabled"),
-        MTLS_ENABLED("mTLSEnabled");
+        CONNECTION_TIMEOUT("connectionTimeout"), SOCKET_TIMEOUT("socketTimeout"), CONNECTION_REQUEST_TIMEOUT("connectionRequestTimeout"), MAX_TOTAL_CONNECTIONS("maxTotalConnections"), MAX_HOST_CONNECTIONS("maxHostConnections"), HOSTNAME_VERIFICATION_DISABLED("hostnameVerificationDisabled"), MTLS_ENABLED("mTLSEnabled");
 
         private final String name;
 
@@ -195,13 +190,16 @@ public class HttpClientConfig
 
         private static final List<String> supportedProperties = new ArrayList<>();
 
-        static {
-            for (HttpClientPropertiesEnum property : HttpClientPropertiesEnum.values()) {
+        static
+        {
+            for (HttpClientPropertiesEnum property : HttpClientPropertiesEnum.values())
+            {
                 supportedProperties.add(property.name);
             }
         }
 
-        public static boolean isPropertyNameSupported(String propertyName) {
+        public static boolean isPropertyNameSupported(String propertyName)
+        {
             return supportedProperties.contains(propertyName);
         }
     }

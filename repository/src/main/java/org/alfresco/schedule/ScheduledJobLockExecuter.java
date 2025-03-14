@@ -27,6 +27,11 @@ package org.alfresco.schedule;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.repo.lock.LockAcquisitionException;
@@ -34,23 +39,11 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.VmShutdownListener.VmShutdownException;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * This class encapsulates the {@link org.alfresco.repo.lock.JobLockService JobLockService}
- * usage in order to guarantee that a job is not executed
- * simultaneously in more than one node in a cluster. After instantiated passing
- * in constructor {@link org.alfresco.schedule.AbstractScheduledLockedJob job}
- * to be executed, as well as the name of the to be locked job and the
- * {@link org.alfresco.repo.lock.JobLockService JobLockService}, the execute
- * method of this class will execute the job taking care of all cluster aware lockings.
+ * This class encapsulates the {@link org.alfresco.repo.lock.JobLockService JobLockService} usage in order to guarantee that a job is not executed simultaneously in more than one node in a cluster. After instantiated passing in constructor {@link org.alfresco.schedule.AbstractScheduledLockedJob job} to be executed, as well as the name of the to be locked job and the {@link org.alfresco.repo.lock.JobLockService JobLockService}, the execute method of this class will execute the job taking care of all cluster aware lockings.
  * <p/>
- * This code is based on original code by Derek Hulley on
- * {@link org.alfresco.repo.content.cleanup.ContentStoreCleaner ContentStoreCleaner},
- * extracting the generic locking code in order to be reused and avoid code duplication.
+ * This code is based on original code by Derek Hulley on {@link org.alfresco.repo.content.cleanup.ContentStoreCleaner ContentStoreCleaner}, extracting the generic locking code in order to be reused and avoid code duplication.
  * 
  * @author Rui Fernandes
  * @since 4.1.5
@@ -67,9 +60,12 @@ public class ScheduledJobLockExecuter
     private final AbstractScheduledLockedJob job;
 
     /**
-     * @param jobLockService the {@link JobLockService JobLockService}
-     * @param name the name of the job to be used for the lock registry
-     * @param job the {@link AbstractScheduledLockedJob job} to be executed
+     * @param jobLockService
+     *            the {@link JobLockService JobLockService}
+     * @param name
+     *            the name of the job to be used for the lock registry
+     * @param job
+     *            the {@link AbstractScheduledLockedJob job} to be executed
      */
     public ScheduledJobLockExecuter(JobLockService jobLockService, String name, AbstractScheduledLockedJob job)
     {
@@ -79,11 +75,12 @@ public class ScheduledJobLockExecuter
     }
 
     /**
-     * It will execute the {@link AbstractScheduledLockedJob job} passed on
-     * instantiation taking care of all cluster aware lockings.
+     * It will execute the {@link AbstractScheduledLockedJob job} passed on instantiation taking care of all cluster aware lockings.
      * 
-     * @param jobContext the usual quartz job context
-     * @throws JobExecutionException        thrown if the job fails to execute
+     * @param jobContext
+     *            the usual quartz job context
+     * @throws JobExecutionException
+     *             thrown if the job fails to execute
      */
     public void execute(JobExecutionContext jobContext) throws JobExecutionException
     {

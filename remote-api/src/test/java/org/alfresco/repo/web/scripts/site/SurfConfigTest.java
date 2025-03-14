@@ -25,6 +25,15 @@
  */
 package org.alfresco.repo.web.scripts.site;
 
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+import org.json.JSONObject;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.PagingRequest;
@@ -41,14 +50,6 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
-import org.json.JSONObject;
-import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
-
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 /**
  * @author Jamal Kaabi-Mofrad
@@ -92,13 +93,13 @@ public class SurfConfigTest extends AbstractSiteServiceTest
         deleteUser(USER_TWO);
         deleteUser(USER_THREE);
 
-        //Delete the sites
+        // Delete the sites
         deleteSites();
 
         AuthenticationUtil.clearCurrentSecurityContext();
     }
 
-    //MNT-16371
+    // MNT-16371
     public void testSurfConfigPermissions() throws Exception
     {
         // Create a site as USER_ONE
@@ -112,11 +113,11 @@ public class SurfConfigTest extends AbstractSiteServiceTest
 
         // Make ADMRemoteStore to create the surf-config folder and the dashboard.xml file.
         sendRequest(new PostRequest(URL_ADM + "CREATE/alfresco/site-data/pages/site/" + shortName + "/dashboard.xml?s=sitestore",
-                    new JSONObject().toString(), "application/json"), 200);
+                new JSONObject().toString(), "application/json"), 200);
 
         // {siteName}/cm:surf-config/
         NodeRef surfConfigFolderRef = nodeService
-                    .getChildByName(siteService.getSite(shortName).getNodeRef(), ContentModel.ASSOC_CONTAINS, "surf-config");
+                .getChildByName(siteService.getSite(shortName).getNodeRef(), ContentModel.ASSOC_CONTAINS, "surf-config");
         assertEquals("surf-config", nodeService.getProperty(surfConfigFolderRef, ContentModel.PROP_NAME));
 
         String owner = (String) nodeService.getProperty(surfConfigFolderRef, ContentModel.PROP_OWNER);
@@ -135,7 +136,7 @@ public class SurfConfigTest extends AbstractSiteServiceTest
 
         // This is the method that finally gets called when ALF-21643 steps are followed.
         PagingResults<FileInfo> pageResults = fileFolderService
-                    .list(surfConfigFolderRef, true, true, null, null, null, new PagingRequest(CannedQueryPageDetails.DEFAULT_PAGE_SIZE));
+                .list(surfConfigFolderRef, true, true, null, null, null, new PagingRequest(CannedQueryPageDetails.DEFAULT_PAGE_SIZE));
         List<FileInfo> fileInfos = pageResults.getPage();
         assertNotNull(fileInfos);
         assertEquals(1, fileInfos.size());
@@ -150,7 +151,7 @@ public class SurfConfigTest extends AbstractSiteServiceTest
         membership.put("person", person);
         // Post the membership
         Response response = sendRequest(new PostRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, membership.toString(), "application/json"),
-                    200);
+                200);
         result = new JSONObject(response.getContentAsString());
         assertEquals(SiteModel.SITE_COLLABORATOR, result.get("role"));
         assertEquals(USER_TWO, result.getJSONObject("authority").get("userName"));
@@ -174,13 +175,13 @@ public class SurfConfigTest extends AbstractSiteServiceTest
         }
         catch (AccessDeniedException ex)
         {
-            //expected
+            // expected
         }
 
         // USER_THREE is a site manager so he is able to access the surf-config folder
         AuthenticationUtil.setFullyAuthenticatedUser(USER_THREE);
         pageResults = fileFolderService
-                    .list(surfConfigFolderRef, true, true, null, null, null, new PagingRequest(CannedQueryPageDetails.DEFAULT_PAGE_SIZE));
+                .list(surfConfigFolderRef, true, true, null, null, null, new PagingRequest(CannedQueryPageDetails.DEFAULT_PAGE_SIZE));
         fileInfos = pageResults.getPage();
         assertNotNull(fileInfos);
         assertEquals(1, fileInfos.size());
@@ -206,19 +207,19 @@ public class SurfConfigTest extends AbstractSiteServiceTest
         }
         catch (AccessDeniedException ex)
         {
-            //expected
+            // expected
         }
 
         // USER_ONE tries to access "{siteName}/cm:surf-config/pages" children
         try
         {
             fileFolderService.list(fileInfos.get(0).getNodeRef(), true, true, null, null, null,
-                        new PagingRequest(CannedQueryPageDetails.DEFAULT_PAGE_SIZE));
+                    new PagingRequest(CannedQueryPageDetails.DEFAULT_PAGE_SIZE));
             fail("USER_ONE is not the owner and he is no longer a site manager, so does not have the appropriate permissions to perform this operation");
         }
         catch (AccessDeniedException ex)
         {
-            //expected
+            // expected
         }
     }
 }

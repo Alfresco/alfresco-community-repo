@@ -29,10 +29,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import org.alfresco.repo.cache.MemoryCache;
-import org.alfresco.repo.cache.SimpleCache;
 import org.junit.Before;
 import org.junit.Test;
+
+import org.alfresco.repo.cache.MemoryCache;
+import org.alfresco.repo.cache.SimpleCache;
 
 /**
  * Tests for the {@link CMISAbstractDictionaryServiceTest} class.
@@ -46,12 +47,11 @@ public class CMISAbstractDictionaryServiceTest
     private SimpleCache<String, CMISDictionaryRegistry> cache;
     private boolean initCalled;
     private CMISDictionaryRegistry dictRegistry;
-    
+
     @Before
     public void setUp() throws Exception
     {
-        dictService = new CMISAbstractDictionaryService()
-        {
+        dictService = new CMISAbstractDictionaryService() {
             @Override
             protected CMISDictionaryRegistry getRegistry()
             {
@@ -60,17 +60,17 @@ public class CMISAbstractDictionaryServiceTest
                 return dictRegistry;
             }
 
-			@Override
-			protected DictionaryInitializer getCoreDictionaryInitializer()
-			{
-				return null;
-			}
+            @Override
+            protected DictionaryInitializer getCoreDictionaryInitializer()
+            {
+                return null;
+            }
 
-			@Override
-			protected DictionaryInitializer getTenantDictionaryInitializer()
-			{
-				return null;
-			}
+            @Override
+            protected DictionaryInitializer getTenantDictionaryInitializer()
+            {
+                return null;
+            }
         };
 
         dictRegistry = new CMISDictionaryRegistryImpl();
@@ -83,8 +83,8 @@ public class CMISAbstractDictionaryServiceTest
     public void canGetRegistryWhenInitNotYetCalled()
     {
         // Pre-conditions of test
-//        dictService.key_opencmis_dictionary_registry = null;
-//        assertNull(dictService.key_opencmis_dictionary_registry);
+        // dictService.key_opencmis_dictionary_registry = null;
+        // assertNull(dictService.key_opencmis_dictionary_registry);
         assertFalse(initCalled);
 
         CMISDictionaryRegistry registry = dictService.getRegistry();
@@ -92,13 +92,13 @@ public class CMISAbstractDictionaryServiceTest
         assertTrue("init() should have been called.", initCalled);
         assertSame(dictRegistry, registry);
     }
-    
+
     @Test
     public void canGetRegistryWhenInitAlreadyCalled()
     {
         // Pre-conditions of test
         dictService.getRegistry();
-//        assertNotNull(dictService.key_opencmis_dictionary_registry);
+        // assertNotNull(dictService.key_opencmis_dictionary_registry);
         assertTrue(initCalled);
 
         // Perform test

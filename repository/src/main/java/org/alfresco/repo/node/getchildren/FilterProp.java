@@ -38,6 +38,8 @@ import org.alfresco.service.namespace.QName;
 public interface FilterProp
 {
     public QName getPropName();
+
     public Serializable getPropVal();
+
     public FilterType getFilterType();
 }

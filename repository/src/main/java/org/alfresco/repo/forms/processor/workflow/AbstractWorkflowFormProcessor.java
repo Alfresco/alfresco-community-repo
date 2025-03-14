@@ -61,12 +61,12 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
     protected BehaviourFilter behaviourFilter;
 
     private ExtendedPropertyFieldProcessor extendedPropertyFieldProcessor;
-    
+
     @Override
     protected void populateForm(Form form, List<String> fields, FormCreationData data)
     {
         super.populateForm(form, fields, data);
-    
+
         // Add package actions to FormData.
         ContentModelItemData<?> itemData = (ContentModelItemData<?>) data.getItemData();
         addPropertyDataIfRequired(WorkflowModel.PROP_PACKAGE_ACTION_GROUP, form, itemData);
@@ -74,42 +74,42 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#internalPersist(java.lang.Object, org.alfresco.repo.forms.FormData)
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#internalPersist(java.lang.Object, org.alfresco.repo.forms.FormData) */
     @Override
     protected PersistType internalPersist(ItemType item, FormData data)
     {
         ContentModelFormPersister<PersistType> persister = makeFormPersister(item);
-        for (FieldData fieldData : data) 
+        for (FieldData fieldData : data)
         {
             persister.addField(fieldData);
         }
         return persister.persist();
     }
-    
+
     @Override
     protected List<Field> generateDefaultFields(FormCreationData data, List<String> fieldsToIgnore)
     {
-        if(extendedPropertyFieldProcessor != null)
+        if (extendedPropertyFieldProcessor != null)
         {
             // Use a custom field-builder, which allows multi-valued escapes
-            ExtendedFieldBuilder fieldBuilder = new ExtendedFieldBuilder(data, fieldProcessorRegistry, namespaceService, fieldsToIgnore, 
-                        extendedPropertyFieldProcessor);
+            ExtendedFieldBuilder fieldBuilder = new ExtendedFieldBuilder(data, fieldProcessorRegistry, namespaceService, fieldsToIgnore,
+                    extendedPropertyFieldProcessor);
             return fieldBuilder.buildDefaultFields();
         }
         return super.generateDefaultFields(data, fieldsToIgnore);
     }
-    
+
     @Override
     protected List<Field> generateSelectedFields(List<String> fields, FormCreationData data)
     {
-        if(extendedPropertyFieldProcessor != null) 
+        if (extendedPropertyFieldProcessor != null)
         {
             List<Field> fieldData = new ArrayList<Field>(fields.size());
             for (String fieldName : fields)
             {
                 Field field = null;
-                if(extendedPropertyFieldProcessor.isApplicableForField(fieldName))
+                if (extendedPropertyFieldProcessor.isApplicableForField(fieldName))
                 {
                     field = extendedPropertyFieldProcessor.generateField(fieldName, data);
                 }
@@ -119,7 +119,7 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
                 }
                 if (field == null)
                 {
-                    if (getLogger().isDebugEnabled()) 
+                    if (getLogger().isDebugEnabled())
                     {
                         String msg = "Ignoring unrecognised field \"" + fieldName + "\"";
                         getLogger().debug(msg);
@@ -132,38 +132,39 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
             }
             return fieldData;
         }
-        
+
         return super.generateSelectedFields(fields, data);
     }
-    
+
     /**
-     * @param workflowService the workflowService to set
+     * @param workflowService
+     *            the workflowService to set
      */
     public void setWorkflowService(WorkflowService workflowService)
     {
         this.workflowService = workflowService;
     }
-    
+
     /**
-     * @param behaviourFilter the behaviourFilter to set
+     * @param behaviourFilter
+     *            the behaviourFilter to set
      */
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
     }
-    
+
     /**
-     * @param extendedPropertyFieldProcessor the processor to set
+     * @param extendedPropertyFieldProcessor
+     *            the processor to set
      */
     public void setExtendedPropertyFieldProcessor(
-                ExtendedPropertyFieldProcessor extendedPropertyFieldProcessor)
+            ExtendedPropertyFieldProcessor extendedPropertyFieldProcessor)
     {
         this.extendedPropertyFieldProcessor = extendedPropertyFieldProcessor;
     }
-    
-    /*
-     * @see org.alfresco.repo.forms.processor.node.NodeFormProcessor#getTypedItem(org.alfresco.repo.forms.Item)
-     */
+
+    /* @see org.alfresco.repo.forms.processor.node.NodeFormProcessor#getTypedItem(org.alfresco.repo.forms.Item) */
     @Override
     protected ItemType getTypedItem(Item item)
     {
@@ -183,18 +184,18 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getDefaultIgnoredFields()
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getDefaultIgnoredFields() */
     @Override
     protected List<String> getDefaultIgnoredFields()
     {
         List<String> fields = super.getDefaultIgnoredFields();
-        
+
         if (fields == null)
         {
             fields = new ArrayList<String>(20);
         }
-        
+
         // ignore document related properties
         fields.add("cm:name");
         fields.add("cm:owner");
@@ -204,9 +205,9 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
         fields.add("cm:accessed");
         fields.add("cm:modified");
         fields.add("cm:created");
-        
+
         // ignore task properties that shouldn't be directly edited
-        fields.add("bpm:package"); 
+        fields.add("bpm:package");
         fields.add("bpm:pooledActors");
         fields.add("bpm:completedItems");
         fields.add("bpm:completionDate");
@@ -218,21 +219,23 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
         fields.add("bpm:packageItemActionGroup");
         fields.add("bpm:outcome");
         fields.add("bpm:taskId");
-        
+
         return fields;
     }
-    
+
     /**
-     * Returns an implementation of {@link ContentModelFormPersister} which is
-     * used to accumulate all the changes specified in the {@link Form} and then persist them.
+     * Returns an implementation of {@link ContentModelFormPersister} which is used to accumulate all the changes specified in the {@link Form} and then persist them.
      * 
-     * @param item ItemType
+     * @param item
+     *            ItemType
      */
     protected abstract ContentModelFormPersister<PersistType> makeFormPersister(ItemType item);
 
     /**
      * Returns the typed item.
-     * @param itemId the decoded item Id.
+     * 
+     * @param itemId
+     *            the decoded item Id.
      * @return ItemType
      */
     protected abstract ItemType getTypedItemForDecodedId(String itemId);

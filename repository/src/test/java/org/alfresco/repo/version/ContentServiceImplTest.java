@@ -29,6 +29,14 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.directurl.SystemWideDirectUrlConfig;
@@ -39,15 +47,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.transaction.annotation.Transactional;
-
 
 /**
  * Tests for getting content readers and writers.
@@ -65,7 +64,7 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
      */
     private final static String UPDATED_CONTENT = "This content has been updated with a new value.";
     private static final QName QNAME = ContentModel.PROP_CONTENT;
-    
+
     /**
      * The version content store
      */
@@ -81,12 +80,12 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
     public void before() throws Exception
     {
         super.before();
-        
+
         // Get the instance of the required content service
-        this.contentService = (ContentService)this.applicationContext.getBean("contentService");
+        this.contentService = (ContentService) this.applicationContext.getBean("contentService");
         this.contentStore = (ContentStore) ReflectionTestUtils.getField(contentService, "store");
     }
-    
+
     /**
      * Test getReader
      */
@@ -95,23 +94,23 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
     {
         // Create a new versionable node
         NodeRef versionableNode = createNewVersionableNode();
-        
+
         // Create a new version
         Version version = createVersion(versionableNode, this.versionProperties);
         NodeRef versionNodeRef = version.getFrozenStateNodeRef();
-		
+
         // Get the content reader for the frozen node
         ContentReader contentReader = this.contentService.getReader(versionNodeRef, ContentModel.PROP_CONTENT);
         assertNotNull(contentReader);
         assertEquals(TEST_CONTENT, contentReader.getContentString());
-        
+
         // Now update the content and verison again
         ContentWriter contentWriter = this.contentService.getWriter(versionableNode, ContentModel.PROP_CONTENT, true);
         assertNotNull(contentWriter);
-        contentWriter.putContent(UPDATED_CONTENT);        
+        contentWriter.putContent(UPDATED_CONTENT);
         Version version2 = createVersion(versionableNode, this.versionProperties);
         NodeRef version2NodeRef = version2.getFrozenStateNodeRef();
-		
+
         // Get the content reader for the new verisoned content
         ContentReader contentReader2 = this.contentService.getReader(version2NodeRef, ContentModel.PROP_CONTENT);
         assertNotNull(contentReader2);
@@ -126,10 +125,10 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
     {
         // Create a new versionable node
         NodeRef versionableNode = createNewVersionableNode();
-        
+
         // Create a new version
         Version version = createVersion(versionableNode, this.versionProperties);
-        
+
         // Get writer is not supported by the version content service
         try
         {

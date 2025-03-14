@@ -29,5 +29,5 @@ package org.alfresco.rm.rest.api.model;
 import java.util.Date;
 
 public record HoldBulkStatusEntry(String bulkStatusId, Date startTime, Date endTime, long processedItems, long errorsCount,
-                                  long totalItems, String lastError, String status, String cancellationReason, HoldBulkOperation holdBulkOperation) {
-}
+        long totalItems, String lastError, String status, String cancellationReason, HoldBulkOperation holdBulkOperation)
+{}

@@ -35,13 +35,12 @@ import org.alfresco.jlan.server.filesys.DiskInterface;
 public interface ExtendedDiskInterface extends DiskInterface
 {
     /**
-     * Register an independently created device context object for this instance of the shared device. Useful, e.g. when
-     * context singleton configuration managed by a container.
+     * Register an independently created device context object for this instance of the shared device. Useful, e.g. when context singleton configuration managed by a container.
      * 
      * @param ctx
      *            the device context
      * @exception DeviceContextException
      */
     public void registerContext(DeviceContext ctx) throws DeviceContextException;
-    
+
 }

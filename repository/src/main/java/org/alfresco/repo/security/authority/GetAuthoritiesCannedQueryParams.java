@@ -27,7 +27,6 @@ package org.alfresco.repo.security.authority;
 
 import org.alfresco.service.cmr.security.AuthorityType;
 
-
 /**
  * GetAuthorities CQ parameters - for query context and filtering
  *
@@ -38,11 +37,11 @@ public class GetAuthoritiesCannedQueryParams extends AuthorityInfoEntity
 {
     private String displayNameFilter; // startsWith / ignoreCase (note: trailing * is implied)
     private AuthorityType type;
-    
+
     public GetAuthoritiesCannedQueryParams(AuthorityType type, Long typeQNameId, Long parentNodeId, Long authorityDisplayNameQNameId, String displayNameFilter)
     {
         super(parentNodeId, authorityDisplayNameQNameId, typeQNameId);
-        
+
         if ((displayNameFilter == null) || (displayNameFilter.equals("")) || (displayNameFilter.equals("*")))
         {
             // The wildcard means no filtering is needed on this property
@@ -53,20 +52,20 @@ public class GetAuthoritiesCannedQueryParams extends AuthorityInfoEntity
             if (displayNameFilter.endsWith("*"))
             {
                 // The trailing * is implicit
-                displayNameFilter = displayNameFilter.substring(0, displayNameFilter.length()-1);
+                displayNameFilter = displayNameFilter.substring(0, displayNameFilter.length() - 1);
             }
-            
+
             this.displayNameFilter = displayNameFilter.toLowerCase();
         }
-        
+
         this.type = type;
     }
-    
+
     public String getDisplayNameFilter()
     {
         return displayNameFilter;
     }
-    
+
     public AuthorityType getType()
     {
         return type;

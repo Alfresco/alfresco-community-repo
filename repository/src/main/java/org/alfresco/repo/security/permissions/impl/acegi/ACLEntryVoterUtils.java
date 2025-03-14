@@ -28,6 +28,9 @@ package org.alfresco.repo.security.permissions.impl.acegi;
 import java.util.Set;
 
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -36,9 +39,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 /**
  * Utility methods extracted from AclEntryVoter
@@ -50,17 +50,18 @@ final class ACLEntryVoterUtils
     private static final Logger LOG = LoggerFactory.getLogger(ACLEntryVoterUtils.class);
 
     private ACLEntryVoterUtils()
-    {
-    }
-
+    {}
 
     /**
      * Gets NodeRef for testObject based on inferred type
      *
-     * @param testObject                Tested object to work on
-     * @param nodeService               Node service to perform checks on refs
-     * @return                          NodeRef for testObject or null if (testObject is null or StoreRef from testObject does not exist in the provided NodeService)
-     * @throws ACLEntryVoterException   if testObject is not null and not one of a NodeRef or ChildAssociationRef types
+     * @param testObject
+     *            Tested object to work on
+     * @param nodeService
+     *            Node service to perform checks on refs
+     * @return NodeRef for testObject or null if (testObject is null or StoreRef from testObject does not exist in the provided NodeService)
+     * @throws ACLEntryVoterException
+     *             if testObject is not null and not one of a NodeRef or ChildAssociationRef types
      */
     static NodeRef getNodeRef(Object testObject, NodeService nodeService)
     {
@@ -122,19 +123,23 @@ final class ACLEntryVoterUtils
         throw new ACLEntryVoterException("The specified parameter is not a NodeRef or ChildAssociationRef");
     }
 
-
     /**
      * Checks if tested NodeRef instance is abstained or denied based on set of QNames to abstain and
      *
-     * @param requiredPermissionReference           Required permissions
-     * @param testNodeRef                           NodeRef to be verified
-     * @param abstainForClassQNames                 Set of QNames to abstain
-     * @param nodeService                           Node service to perform checks on tested NodeRef
-     * @param permissionService                     Permission service to check for required permissions
-     * @return                                      null if testNodeRef is not abstained or denied, otherwise returns appropriate status.
+     * @param requiredPermissionReference
+     *            Required permissions
+     * @param testNodeRef
+     *            NodeRef to be verified
+     * @param abstainForClassQNames
+     *            Set of QNames to abstain
+     * @param nodeService
+     *            Node service to perform checks on tested NodeRef
+     * @param permissionService
+     *            Permission service to check for required permissions
+     * @return null if testNodeRef is not abstained or denied, otherwise returns appropriate status.
      */
     static Integer shouldAbstainOrDeny(SimplePermissionReference requiredPermissionReference, NodeRef testNodeRef, Set<QName> abstainForClassQNames,
-                                        NodeService nodeService, PermissionService permissionService)
+            NodeService nodeService, PermissionService permissionService)
     {
         if (testNodeRef == null)
         {

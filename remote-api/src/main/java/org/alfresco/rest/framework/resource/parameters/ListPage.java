@@ -26,18 +26,19 @@
 
 package org.alfresco.rest.framework.resource.parameters;
 
-import org.alfresco.query.PagingResults;
-import org.alfresco.rest.framework.resource.SerializablePagedCollection;
-import org.alfresco.util.Pair;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.alfresco.query.PagingResults;
+import org.alfresco.rest.framework.resource.SerializablePagedCollection;
+import org.alfresco.util.Pair;
+
 /**
  * List page with paging information.
  *
- * @param <E> - list element type
+ * @param <E>
+ *            - list element type
  */
 public interface ListPage<E> extends List<E>, PagingResults<E>, SerializablePagedCollection<E>
 {
@@ -60,10 +61,13 @@ public interface ListPage<E> extends List<E>, PagingResults<E>, SerializablePage
     /**
      * Builds a collection with paging information.
      *
-     * @param list - the list that needs to be paged
-     * @param paging - paging request info
+     * @param list
+     *            - the list that needs to be paged
+     * @param paging
+     *            - paging request info
      * @return list page in {@link CollectionWithPagingInfo}
-     * @param <E> - list element type
+     * @param <E>
+     *            - list element type
      */
     static <E> CollectionWithPagingInfo<E> of(final List<? extends E> list, final Paging paging)
     {

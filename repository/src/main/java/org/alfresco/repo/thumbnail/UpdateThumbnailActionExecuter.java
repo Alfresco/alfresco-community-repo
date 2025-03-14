@@ -29,6 +29,9 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
@@ -43,13 +46,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Update thumbnail action executer.
  * 
- * NOTE:  This action is used to facilitate the async update of thumbnails.  It is not intended for general usage.
+ * NOTE: This action is used to facilitate the async update of thumbnails. It is not intended for general usage.
  * 
  * @author Roy Wetherall
  * @author Neil McErlean
@@ -65,27 +66,28 @@ public class UpdateThumbnailActionExecuter extends ActionExecuterAbstractBase
 
     /** Rendition Service */
     private RenditionService renditionService;
-    
+
     /** Thumbnail Service */
     private ThumbnailService thumbnailService;
-    
+
     /** Node Service */
     private NodeService nodeService;
-    
+
     // Size limitations indexed by mime type for thumbnail creation
-    private HashMap<String,Long> mimetypeMaxSourceSizeKBytes;
+    private HashMap<String, Long> mimetypeMaxSourceSizeKBytes;
 
     /** Action name and parameters */
     public static final String NAME = "update-thumbnail";
     public static final String PARAM_CONTENT_PROPERTY = "content-property";
     public static final String PARAM_THUMBNAIL_NODE = "thumbnail-node";
-    
+
     /**
      * Injects the rendition service.
      * 
-     * @param renditionService the rendition service.
+     * @param renditionService
+     *            the rendition service.
      */
-    public void setRenditionService(RenditionService renditionService) 
+    public void setRenditionService(RenditionService renditionService)
     {
         this.renditionService = renditionService;
     }
@@ -93,35 +95,41 @@ public class UpdateThumbnailActionExecuter extends ActionExecuterAbstractBase
     /**
      * Set the thumbnail service
      * 
-     * @param thumbnailService  the thumbnail service
+     * @param thumbnailService
+     *            the thumbnail service
      */
     public void setThumbnailService(ThumbnailService thumbnailService)
     {
         this.thumbnailService = thumbnailService;
     }
-    
+
     /**
      * Set the node service
      * 
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Set the maximum size for each mimetype above which thumbnails are not created.
-     * @param mimetypeMaxSourceSizeKBytes map of mimetypes to max source sizes.
+     * 
+     * @param mimetypeMaxSourceSizeKBytes
+     *            map of mimetypes to max source sizes.
      */
     public void setMimetypeMaxSourceSizeKBytes(HashMap<String, Long> mimetypeMaxSourceSizeKBytes)
     {
         this.mimetypeMaxSourceSizeKBytes = mimetypeMaxSourceSizeKBytes;
     }
-    
+
     /**
      * Enable thumbnail creation at all regardless of mimetype.
-     * @param generateThumbnails a {@code false} value turns off all thumbnail creation.
+     * 
+     * @param generateThumbnails
+     *            a {@code false} value turns off all thumbnail creation.
      * @deprecated Use {@link ThumbnailServiceImpl#setThumbnailsEnabled(boolean)} instead.
      */
     public void setGenerateThumbnails(boolean generateThumbnails)
@@ -129,12 +137,12 @@ public class UpdateThumbnailActionExecuter extends ActionExecuterAbstractBase
         if (logger.isDebugEnabled())
         {
             logger.debug("Thumbnail generation is " +
-                         (generateThumbnails ? "enabled" : "disabled") +
-                         "via deprecated method in " + this.getClass().getSimpleName());
+                    (generateThumbnails ? "enabled" : "disabled") +
+                    "via deprecated method in " + this.getClass().getSimpleName());
         }
         this.thumbnailService.setThumbnailsEnabled(generateThumbnails);
     }
-    
+
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -150,21 +158,21 @@ public class UpdateThumbnailActionExecuter extends ActionExecuterAbstractBase
             }
             return;
         }
-        
+
         // Get the thumbnail
-        NodeRef thumbnailNodeRef = (NodeRef)action.getParameterValue(PARAM_THUMBNAIL_NODE);
+        NodeRef thumbnailNodeRef = (NodeRef) action.getParameterValue(PARAM_THUMBNAIL_NODE);
         if (thumbnailNodeRef == null)
         {
             thumbnailNodeRef = actionedUponNodeRef;
         }
-        
+
         if (this.nodeService.exists(thumbnailNodeRef) == true &&
                 renditionService.isRendition(thumbnailNodeRef))
-        {            
+        {
             // Get the thumbnail Name
             ChildAssociationRef parent = renditionService.getSourceNode(thumbnailNodeRef);
             String thumbnailName = parent.getQName().getLocalName();
-            
+
             // Get the details of the thumbnail
             ThumbnailRegistry registry = this.thumbnailService.getThumbnailRegistry();
             ThumbnailDefinition details = registry.getThumbnailDefinition(thumbnailName);
@@ -172,14 +180,14 @@ public class UpdateThumbnailActionExecuter extends ActionExecuterAbstractBase
             {
                 throw new AlfrescoRuntimeException("The thumbnail name '" + thumbnailName + "' is not registered");
             }
-            
+
             // Get the content property
-            QName contentProperty = (QName)action.getParameterValue(PARAM_CONTENT_PROPERTY);
+            QName contentProperty = (QName) action.getParameterValue(PARAM_CONTENT_PROPERTY);
             if (contentProperty == null)
             {
                 contentProperty = ContentModel.PROP_CONTENT;
             }
-            
+
             Serializable contentProp = nodeService.getProperty(actionedUponNodeRef, contentProperty);
             if (contentProp == null)
             {
@@ -187,18 +195,18 @@ public class UpdateThumbnailActionExecuter extends ActionExecuterAbstractBase
                 return;
             }
 
-            if(contentProp instanceof ContentData)
+            if (contentProp instanceof ContentData)
             {
-                ContentData content = (ContentData)contentProp;
+                ContentData content = (ContentData) contentProp;
                 String mimetype = content.getMimetype();
                 if (mimetypeMaxSourceSizeKBytes != null)
                 {
                     Long maxSourceSizeKBytes = mimetypeMaxSourceSizeKBytes.get(mimetype);
-                    if (maxSourceSizeKBytes != null && maxSourceSizeKBytes >= 0 && maxSourceSizeKBytes < (content.getSize()/1024L))
+                    if (maxSourceSizeKBytes != null && maxSourceSizeKBytes >= 0 && maxSourceSizeKBytes < (content.getSize() / 1024L))
                     {
                         logger.debug("Unable to create thumbnail '" + details.getName() + "' for " +
-                                mimetype + " as content is too large ("+(content.getSize()/1024L)+"K > "+maxSourceSizeKBytes+"K)");
-                        return; //avoid transform
+                                mimetype + " as content is too large (" + (content.getSize() / 1024L) + "K > " + maxSourceSizeKBytes + "K)");
+                        return; // avoid transform
                     }
                 }
             }

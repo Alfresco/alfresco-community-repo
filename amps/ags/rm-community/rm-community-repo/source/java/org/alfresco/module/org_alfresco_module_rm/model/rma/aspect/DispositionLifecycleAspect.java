@@ -48,18 +48,17 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  * @since 2.2
  */
-@BehaviourBean
-(
-   defaultType = "rma:dispositionLifecycle"
-)
+@BehaviourBean(
+        defaultType = "rma:dispositionLifecycle")
 public class DispositionLifecycleAspect extends BaseBehaviourBean
-                                        implements NodeServicePolicies.OnAddAspectPolicy
+        implements NodeServicePolicies.OnAddAspectPolicy
 {
     /** disposition service */
     protected DispositionService dispositionService;
 
     /**
-     * @param dispositionService    disposition service
+     * @param dispositionService
+     *            disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -69,11 +68,9 @@ public class DispositionLifecycleAspect extends BaseBehaviourBean
     /**
      * Copy callback for disposition lifecycle
      */
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            policy = "alf:getCopyCallback"
-    )
+            policy = "alf:getCopyCallback")
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
         return new DoNothingCopyBehaviourCallback();
@@ -83,17 +80,14 @@ public class DispositionLifecycleAspect extends BaseBehaviourBean
      * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            notificationFrequency = NotificationFrequency.EVERY_EVENT
-    )
+            notificationFrequency = NotificationFrequency.EVERY_EVENT)
     public void onAddAspect(final NodeRef nodeRef, final QName aspect)
     {
         if (nodeService.exists(nodeRef))
         {
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
                 @Override
                 public Void doWork()
                 {

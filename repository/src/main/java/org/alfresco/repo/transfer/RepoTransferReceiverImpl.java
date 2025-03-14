@@ -42,9 +42,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.util.FileCopyUtils;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
@@ -95,9 +98,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.util.FileCopyUtils;
 
 /**
  * The Repo Transfer Receiver is the "Back-End" for transfer subsystem.
@@ -113,11 +113,11 @@ import org.springframework.util.FileCopyUtils;
  * @author brian
  */
 public class RepoTransferReceiverImpl implements TransferReceiver,
-    NodeServicePolicies.OnCreateChildAssociationPolicy,
-    NodeServicePolicies.BeforeDeleteNodePolicy,
-    NodeServicePolicies.OnRestoreNodePolicy,
-    NodeServicePolicies.OnMoveNodePolicy,
-    ContentServicePolicies.OnContentUpdatePolicy
+        NodeServicePolicies.OnCreateChildAssociationPolicy,
+        NodeServicePolicies.BeforeDeleteNodePolicy,
+        NodeServicePolicies.OnRestoreNodePolicy,
+        NodeServicePolicies.OnMoveNodePolicy,
+        ContentServicePolicies.OnContentUpdatePolicy
 {
     /**
      * This embedded class is used to push requests for asynchronous commits onto a different thread
@@ -139,13 +139,11 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
 
         public void run()
         {
-            RunAsWork<Object> actionRunAs = new RunAsWork<Object>()
-            {
+            RunAsWork<Object> actionRunAs = new RunAsWork<Object>() {
                 public Object doWork() throws Exception
                 {
                     return transactionService.getRetryingTransactionHelper().doInTransaction(
-                            new RetryingTransactionCallback<Object>()
-                            {
+                            new RetryingTransactionCallback<Object>() {
                                 public Object execute()
                                 {
                                     commit(transferId);
@@ -199,12 +197,12 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     private JobLockService jobLockService;
     private TransferVersionChecker transferVersionChecker;
     private NamespaceService namespaceService;
-    
+
     // note: cache is tenant-aware (if using TransctionalCache impl)
     private SimpleCache<String, NodeRef> singletonCache; // eg. for transfer temp folder nodeRef
     private final String KEY_TRANSFER_TEMP_NODEREF = "key.transferTempFolder.noderef"; // where temp files are stored
     private final String KEY_INBOUND_TRANSFER_RECORDS_NODEREF = "key.inboundTransferRecordsFolder.noderef"; // where the destination side transfer report is generated
-    
+
     private ClassPolicyDelegate<BeforeStartInboundTransferPolicy> beforeStartInboundTransferDelegate;
     private ClassPolicyDelegate<OnStartInboundTransferPolicy> onStartInboundTransferDelegate;
     private ClassPolicyDelegate<OnEndInboundTransferPolicy> onEndInboundTransferDelegate;
@@ -232,8 +230,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     private long lockRetryWait = 100;
 
     /**
-     * How long in mS to keep the lock before giving up and ending the transfer,
-     * possibly the client has terminated?
+     * How long in mS to keep the lock before giving up and ending the transfer, possibly the client has terminated?
      */
     private long lockTimeOut = 3600000;
 
@@ -325,13 +322,9 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
                 new JavaBehaviour(this, "onCopyAlien", NotificationFrequency.EVERY_EVENT));
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      *
-     * @see
-     * org.alfresco.repo.web.scripts.transfer.TransferReceiver#getStagingFolder(org.alfresco.service.cmr.repository.
-     * NodeRef)
-     */
+     * @see org.alfresco.repo.web.scripts.transfer.TransferReceiver#getStagingFolder(org.alfresco.service.cmr.repository. NodeRef) */
     public File getStagingFolder(String transferId)
     {
         if (transferId == null)
@@ -347,7 +340,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
             if (!tempFolder.mkdirs())
             {
                 tempFolder = null;
-                throw new TransferException(MSG_FAILED_TO_CREATE_STAGING_FOLDER, new Object[] { transferId });
+                throw new TransferException(MSG_FAILED_TO_CREATE_STAGING_FOLDER, new Object[]{transferId});
             }
         }
         return tempFolder;
@@ -371,8 +364,8 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
             }
             else
             {
-                throw new TransferException(MSG_TRANSFER_TEMP_FOLDER_NOT_FOUND, new Object[] { transferId,
-                        transferTempFolderPath });
+                throw new TransferException(MSG_TRANSFER_TEMP_FOLDER_NOT_FOUND, new Object[]{transferId,
+                        transferTempFolderPath});
             }
         }
 
@@ -401,11 +394,9 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
 
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      *
-     * @see org.alfresco.repo.web.scripts.transfer.TransferReceiver#start()
-     */
+     * @see org.alfresco.repo.web.scripts.transfer.TransferReceiver#start() */
     public String start(String fromRepositoryId, boolean transferToSelf, TransferVersion fromVersion)
     {
         log.debug("Start transfer");
@@ -420,9 +411,9 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
          */
         TransferVersion toVersion = getVersion();
 
-        if(!getTransferVersionChecker().checkTransferVersions(fromVersion, toVersion))
+        if (!getTransferVersionChecker().checkTransferVersions(fromVersion, toVersion))
         {
-            throw new TransferException(MSG_INCOMPATIBLE_VERSIONS, new Object[] {"None", fromVersion, toVersion});
+            throw new TransferException(MSG_INCOMPATIBLE_VERSIONS, new Object[]{"None", fromVersion, toVersion});
         }
 
         /**
@@ -435,8 +426,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
 
         try
         {
-            TransferServicePolicies.BeforeStartInboundTransferPolicy beforeStartPolicy =
-                beforeStartInboundTransferDelegate.get(TransferModel.TYPE_TRANSFER_RECORD);
+            TransferServicePolicies.BeforeStartInboundTransferPolicy beforeStartPolicy = beforeStartInboundTransferDelegate.get(TransferModel.TYPE_TRANSFER_RECORD);
             beforeStartPolicy.beforeStartInboundTransfer();
 
             lock.makeLock();
@@ -454,22 +444,20 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
                 RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
 
                 transferId = txHelper.doInTransaction(
-                    new RetryingTransactionHelper.RetryingTransactionCallback<String>()
-                        {
+                        new RetryingTransactionHelper.RetryingTransactionCallback<String>() {
                             public String execute() throws Throwable
-                        {
-                            final NodeRef relatedTransferRecord = createTransferRecord();
-                            String transferId = relatedTransferRecord.toString();
-                            getTempFolder(transferId);
-                            getStagingFolder(transferId);
+                            {
+                                final NodeRef relatedTransferRecord = createTransferRecord();
+                                String transferId = relatedTransferRecord.toString();
+                                getTempFolder(transferId);
+                                getStagingFolder(transferId);
 
-                            TransferServicePolicies.OnStartInboundTransferPolicy onStartPolicy =
-                                onStartInboundTransferDelegate.get(TransferModel.TYPE_TRANSFER_RECORD);
-                            onStartPolicy.onStartInboundTransfer(transferId);
+                                TransferServicePolicies.OnStartInboundTransferPolicy onStartPolicy = onStartInboundTransferDelegate.get(TransferModel.TYPE_TRANSFER_RECORD);
+                                onStartPolicy.onStartInboundTransfer(transferId);
 
-                            return transferId;
-                        }
-                    }, false, true);
+                                return transferId;
+                            }
+                        }, false, true);
             }
             catch (Exception e)
             {
@@ -519,7 +507,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
             else
             {
                 throw new TransferException(MSG_INBOUND_TRANSFER_FOLDER_NOT_FOUND,
-                        new Object[] { inboundTransferRecordsPath });
+                        new Object[]{inboundTransferRecordsPath});
             }
         }
 
@@ -548,17 +536,14 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
      *
      * This is the last chance to clean up.
      *
-     * @param transferId String
+     * @param transferId
+     *            String
      */
     private void timeout(final String transferId)
     {
         log.info("Inbound Transfer has timed out transferId:" + transferId);
-        /*
-         * There is no transaction or authentication context in this method since it is called via a
-         * timer thread.
-         */
+        /* There is no transaction or authentication context in this method since it is called via a timer thread. */
         final RetryingTransactionCallback<Void> timeoutCB = new RetryingTransactionCallback<Void>() {
-
 
             public Void execute() throws Throwable
             {
@@ -568,12 +553,11 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
                 {
                     log.warn("Inbound Transfer Lock Timeout - transferId:" + transferId);
                     /**
-                     * Did not get out of PRE_COMMIT.   The client has probably "gone away" after calling
-                     * "start", but before calling commit, cancel or error.
+                     * Did not get out of PRE_COMMIT. The client has probably "gone away" after calling "start", but before calling commit, cancel or error.
                      */
                     locks.remove(transferId);
                     removeTempFolders(transferId);
-                    Object[] msgParams = { transferId };
+                    Object[] msgParams = {transferId};
                     getProgressMonitor().logException(transferId, "transfer timeout", new TransferException(MSG_LOCK_TIMED_OUT, msgParams));
                     getProgressMonitor().updateStatus(transferId, TransferProgress.Status.ERROR);
                 }
@@ -581,15 +565,14 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
                 {
                     // We got beyond PRE_COMMIT, therefore leave the clean up to either
                     // commit, cancel or error command, since there may still be "in-flight"
-                    // transfer in another thread.   Although why, in that case, are we here?
+                    // transfer in another thread. Although why, in that case, are we here?
                     log.warn("Inbound Transfer Lock Timeout - already past PRE-COMMIT - do no cleanup transferId:" + transferId);
                 }
                 return null;
             }
         };
 
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String>()
-        {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String>() {
             public String doWork() throws Exception
             {
                 transactionService.getRetryingTransactionHelper().doInTransaction(timeoutCB, false, true);
@@ -598,11 +581,9 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         }, AuthenticationUtil.getSystemUserName());
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      *
-     * @see org.alfresco.repo.web.scripts.transfer.TransferReceiver#end(org.alfresco.service.cmr.repository.NodeRef)
-     */
+     * @see org.alfresco.repo.web.scripts.transfer.TransferReceiver#end(org.alfresco.service.cmr.repository.NodeRef) */
     public void end(final String transferId)
     {
         if (log.isDebugEnabled())
@@ -617,7 +598,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         try
         {
             Lock lock = locks.get(transferId);
-            if(lock != null)
+            if (lock != null)
             {
                 log.debug("releasing lock:" + lock.lockToken);
                 lock.releaseLock();
@@ -626,8 +607,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
 
             removeTempFolders(transferId);
 
-
-            //Fire the OnEndInboundTransfer policy
+            // Fire the OnEndInboundTransfer policy
             Set<NodeRef> createdNodes = Collections.emptySet();
             Set<NodeRef> updatedNodes = Collections.emptySet();
             Set<NodeRef> deletedNodes = Collections.emptySet();
@@ -638,8 +618,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
                 updatedNodes = new HashSet<NodeRef>(changesRecord.getUpdatedNodes());
                 deletedNodes = new HashSet<NodeRef>(changesRecord.getDeletedNodes());
             }
-            TransferServicePolicies.OnEndInboundTransferPolicy onEndPolicy =
-                onEndInboundTransferDelegate.get(TransferModel.TYPE_TRANSFER_RECORD);
+            TransferServicePolicies.OnEndInboundTransferPolicy onEndPolicy = onEndInboundTransferDelegate.get(TransferModel.TYPE_TRANSFER_RECORD);
             onEndPolicy.onEndInboundTransfer(transferId, createdNodes, updatedNodes, deletedNodes);
         }
         catch (TransferException ex)
@@ -648,7 +627,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         }
         catch (Exception ex)
         {
-            throw new TransferException(MSG_ERROR_WHILE_ENDING_TRANSFER, new Object[] {transferId}, ex);
+            throw new TransferException(MSG_ERROR_WHILE_ENDING_TRANSFER, new Object[]{transferId}, ex);
         }
     }
 
@@ -665,7 +644,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         catch (Exception ex)
         {
             log.warn("Failed to delete temp store node for transfer id " + transferId +
-                "\nTemp store noderef = " + tempStoreNode);
+                    "\nTemp store noderef = " + tempStoreNode);
         }
 
         File stagingFolder = null;
@@ -677,13 +656,12 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
             deleteFile(stagingFolder);
             log.debug("Staging folder deleted");
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             log.warn("Failed to delete staging folder for transfer id " + transferId +
-                "\nStaging folder = " + stagingFolder.toString());
+                    "\nStaging folder = " + stagingFolder.toString());
         }
     }
-
 
     public void cancel(String transferId) throws TransferException
     {
@@ -712,7 +690,8 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     }
 
     /**
-     * @param file File
+     * @param file
+     *            File
      */
     private void deleteFile(File file)
     {
@@ -738,9 +717,9 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         }
 
         Lock lock = locks.get(transferId);
-        if(lock != null)
+        if (lock != null)
         {
-            if(lock.isActive())
+            if (lock.isActive())
             {
                 lock.suspendLockTimeout();
                 return lock;
@@ -841,7 +820,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
             /**
              * Error somewhere in the action service?
              */
-            //TODO consider whether the methods in this class should be retried/retryable..
+            // TODO consider whether the methods in this class should be retried/retryable..
 
             // need to re-enable the lock timeout otherwise we will hold the lock forever...
             lock.enableLockTimeout();
@@ -877,8 +856,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
             /* lock is going to be released */ checkLock(transferId);
             progressMonitor.updateStatus(transferId, Status.COMMITTING);
 
-            RetryingTransactionHelper.RetryingTransactionCallback<Object> commitWork = new RetryingTransactionCallback<Object>()
-            {
+            RetryingTransactionHelper.RetryingTransactionCallback<Object> commitWork = new RetryingTransactionCallback<Object>() {
                 public Object execute() throws Throwable
                 {
                     AlfrescoTransactionSupport.bindListener(new TransferCommitTransactionListener(transferId,
@@ -904,7 +882,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
                         {
                             XMLTransferManifestReader reader = new XMLTransferManifestReader(processor);
 
-                            //behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                            // behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
                             behaviourFilter.disableBehaviour();
                             if (processor instanceof TransferSummaryAware)
                             {
@@ -974,7 +952,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         }
         finally
         {
-            if(rulesEnabled)
+            if (rulesEnabled)
             {
                 /**
                  * Turn rules back on if we turned them off earlier.
@@ -1028,12 +1006,12 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     {
         this.tenantService = tenantService;
     }
-    
+
     public void setSingletonCache(SimpleCache<String, NodeRef> singletonCache)
     {
         this.singletonCache = singletonCache;
     }
-    
+
     /**
      * @param transferLockFolderPath
      *            the transferLockFolderPath to set
@@ -1121,6 +1099,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
 
     /**
      * Set the ruleService
+     * 
      * @param ruleService
      *            the ruleService to set
      */
@@ -1131,6 +1110,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
 
     /**
      * Get the rule service
+     * 
      * @return the rule service
      */
     public RuleService getRuleService()
@@ -1211,11 +1191,9 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     }
 
     /**
-     * When a new node is created as a child of a Transferred or Alien node then
-     * the new node needs to be marked as an alien.
+     * When a new node is created as a child of a Transferred or Alien node then the new node needs to be marked as an alien.
      * <p>
-     * Then the tree needs to be walked upwards to mark all parent
-     * transferred nodes as alien.
+     * Then the tree needs to be walked upwards to mark all parent transferred nodes as alien.
      */
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef,
             boolean isNewNode)
@@ -1239,8 +1217,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     }
 
     /**
-     * When a transferred node is restored it may be a new invader or it may no
-     * longer be an invader.
+     * When a transferred node is restored it may be a new invader or it may no longer be an invader.
      * <p>
      * Walk the tree checking the invasion status!
      */
@@ -1252,8 +1229,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     }
 
     /**
-     * When an alien node is moved it may un-invade its old location and invade a new
-     * location.   The node may also cease to be alien.
+     * When an alien node is moved it may un-invade its old location and invade a new location. The node may also cease to be alien.
      */
     public void onMoveNode(ChildAssociationRef oldChildAssocRef,
             ChildAssociationRef newChildAssocRef)
@@ -1266,15 +1242,15 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         NodeRef oldParentRef = oldChildAssocRef.getParentRef();
         NodeRef newParentRef = newChildAssocRef.getParentRef();
 
-        if(newParentRef.equals(oldParentRef))
+        if (newParentRef.equals(oldParentRef))
         {
             log.debug("old parent and new parent are the same - this is a rename, do nothing");
         }
         else
         {
-            if(log.isDebugEnabled())
+            if (log.isDebugEnabled())
             {
-                log.debug("moving node from oldParentRef:" + oldParentRef +" to:" + newParentRef);
+                log.debug("moving node from oldParentRef:" + oldParentRef + " to:" + newParentRef);
             }
             alienProcessor.beforeDeleteAlien(newChildAssocRef.getChildRef(), oldChildAssocRef);
             alienProcessor.afterMoveAlien(newChildAssocRef);
@@ -1282,7 +1258,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     }
 
     /**
-     * When a transferred node is copied,  don't copy the transferred aspect.
+     * When a transferred node is copied, don't copy the transferred aspect.
      */
     public CopyBehaviourCallback onCopyTransferred(QName classRef,
             CopyDetails copyDetails)
@@ -1291,7 +1267,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     }
 
     /**
-     * When an alien node is copied,  don't copy the alien aspect.
+     * When an alien node is copied, don't copy the alien aspect.
      */
     public CopyBehaviourCallback onCopyAlien(QName classRef,
             CopyDetails copyDetails)
@@ -1310,7 +1286,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         private static final CopyBehaviourCallback INSTANCE = new TransferredAspectCopyBehaviourCallback();
 
         /**
-         * @return          Returns an empty map
+         * @return Returns an empty map
          */
         @Override
         public Map<QName, Serializable> getCopyProperties(
@@ -1322,12 +1298,12 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         /**
          * Don't copy the transferred aspect.
          *
-         * @return          Returns <tt>true</tt> always
+         * @return Returns <tt>true</tt> always
          */
         @Override
         public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
         {
-            if(classQName.equals(TransferModel.ASPECT_TRANSFERRED))
+            if (classQName.equals(TransferModel.ASPECT_TRANSFERRED))
             {
                 return false;
             }
@@ -1349,7 +1325,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         private static final CopyBehaviourCallback INSTANCE = new AlienAspectCopyBehaviourCallback();
 
         /**
-         * @return          Returns an empty map
+         * @return Returns an empty map
          */
         @Override
         public Map<QName, Serializable> getCopyProperties(
@@ -1361,12 +1337,12 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         /**
          * Don't copy the transferred aspect.
          *
-         * @return          Returns <tt>true</tt> always
+         * @return Returns <tt>true</tt> always
          */
         @Override
         public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
         {
-            if(classQName.equals(TransferModel.ASPECT_ALIEN))
+            if (classQName.equals(TransferModel.ASPECT_ALIEN))
             {
                 return false;
             }
@@ -1376,7 +1352,6 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
             }
         }
     }
-
 
     public void setDescriptorService(DescriptorService descriptorService)
     {
@@ -1402,10 +1377,10 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
         /**
-         *  On update of a transferred node remove the from content from property.
+         * On update of a transferred node remove the from content from property.
          */
         log.debug("on content update called:" + nodeRef);
-        if(newContent)
+        if (newContent)
         {
             log.debug("new content remove PROP_FROM_CONTENT from node:" + nodeRef);
             nodeService.setProperty(nodeRef, TransferModel.PROP_FROM_CONTENT, null);
@@ -1502,7 +1477,6 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
             this.lockQName = lockQName;
         }
 
-
         /**
          * Make the lock - called on main thread
          *
@@ -1510,7 +1484,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
          */
         public synchronized void makeLock()
         {
-            if(log.isDebugEnabled())
+            if (log.isDebugEnabled())
             {
                 log.debug("makeLock" + lockQName);
             }
@@ -1522,7 +1496,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
 
             if (log.isDebugEnabled())
             {
-                log.debug("lock taken: name" + lockQName + " token:" +lockToken);
+                log.debug("lock taken: name" + lockQName + " token:" + lockToken);
                 log.debug("register lock callback, target lock refresh time :" + getLockRefreshTime());
             }
             getJobLockService().refreshLock(lockToken, lockQName, getLockRefreshTime(), this);
@@ -1536,7 +1510,9 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
          * Check that the lock is still active
          *
          * Called on main transfer thread as transfer proceeds.
-         * @throws TransferException (Lock timeout)
+         * 
+         * @throws TransferException
+         *             (Lock timeout)
          */
         public synchronized void suspendLockTimeout()
         {
@@ -1557,7 +1533,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         {
             long now = System.currentTimeMillis();
             // Update lastActive to 1S boundary
-            if(now > lastActive + 1000L)
+            if (now > lastActive + 1000L)
             {
                 lastActive = now;
                 log.debug("start waiting : lastActive:" + lastActive);
@@ -1573,7 +1549,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
          */
         public synchronized void releaseLock()
         {
-            if(log.isDebugEnabled())
+            if (log.isDebugEnabled())
             {
                 log.debug("transfer service about to releaseLock : " + lockQName);
             }
@@ -1593,18 +1569,18 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         {
             long now = System.currentTimeMillis();
 
-            if(active)
+            if (active)
             {
-                if(!processing)
+                if (!processing)
                 {
-                    if(now > lastActive + getLockTimeOut())
+                    if (now > lastActive + getLockTimeOut())
                     {
                         return false;
                     }
                 }
             }
 
-            if(log.isDebugEnabled())
+            if (log.isDebugEnabled())
             {
                 log.debug("transfer service callback isActive: " + active);
             }
@@ -1618,7 +1594,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         @Override
         public synchronized void lockReleased()
         {
-            if(active)
+            if (active)
             {
                 active = false;
                 log.info("transfer service: lock has timed out, timeout :" + lockQName);
@@ -1628,23 +1604,22 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     }
 
     /**
-     * Check Whether transfer is allowed from the specified repository.
-     * Called prior to "begin".
+     * Check Whether transfer is allowed from the specified repository. Called prior to "begin".
      */
 
     private void checkTransfer(String fromRepository, boolean transferToSelf)
     {
-        if(log.isDebugEnabled())
+        if (log.isDebugEnabled())
         {
-            log.debug("checkTransfer fromRepository:" + fromRepository + ", transferToSelf:" + transferToSelf );
+            log.debug("checkTransfer fromRepository:" + fromRepository + ", transferToSelf:" + transferToSelf);
         }
         final String localRepositoryId = descriptorService.getCurrentRepositoryDescriptor().getId();
 
-        if(!transferToSelf)
+        if (!transferToSelf)
         {
-            if(fromRepository != null)
+            if (fromRepository != null)
             {
-                if(fromRepository.equalsIgnoreCase(localRepositoryId))
+                if (fromRepository.equalsIgnoreCase(localRepositoryId))
                 {
                     throw new TransferException(MSG_TRANSFER_TO_SELF);
                 }
@@ -1676,6 +1651,6 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
 
     public void setTransferRootNode(String rootFileSystem)
     {
-        //just ignore, no relevant for transferring on file system
+        // just ignore, no relevant for transferring on file system
     }
 }

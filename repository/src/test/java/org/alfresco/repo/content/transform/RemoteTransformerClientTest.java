@@ -25,11 +25,18 @@
  */
 package org.alfresco.repo.content.transform;
 
-import org.alfresco.httpclient.HttpClientConfig;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.util.Pair;
-import org.alfresco.util.testing.category.NeverRunsTests;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.util.AssertionErrors.assertTrue;
+
+import java.io.IOException;
+
 import org.apache.commons.logging.Log;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -44,17 +51,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
-import java.io.IOException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.util.AssertionErrors.assertTrue;
+import org.alfresco.httpclient.HttpClientConfig;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.util.Pair;
+import org.alfresco.util.testing.category.NeverRunsTests;
 
 /**
  * Tests the retry mechanism in the RemoteTransformerClient.
@@ -69,18 +70,29 @@ public class RemoteTransformerClientTest
 {
     public static final int STARTUP_RETRY_PERIOD_SECONDS = 2;
 
-    @Mock private ContentReader mockReader;
-    @Mock private ContentWriter mockWriter;
-    @Mock private Log mockLogger;
-    @Mock private CloseableHttpResponse mockHttpResponse;
-    @Mock private HttpEntity mockRequestEntity;
-    @Mock private HttpEntity mockResponseEntity;
-    @Mock private Header mockResponseContentType;
-    @Mock private Header mockResponseContentEncoding;
-    @Mock private StatusLine mockStatusLine;
-    @Mock private HttpEntity mockReqEntity;
+    @Mock
+    private ContentReader mockReader;
+    @Mock
+    private ContentWriter mockWriter;
+    @Mock
+    private Log mockLogger;
+    @Mock
+    private CloseableHttpResponse mockHttpResponse;
+    @Mock
+    private HttpEntity mockRequestEntity;
+    @Mock
+    private HttpEntity mockResponseEntity;
+    @Mock
+    private Header mockResponseContentType;
+    @Mock
+    private Header mockResponseContentEncoding;
+    @Mock
+    private StatusLine mockStatusLine;
+    @Mock
+    private HttpEntity mockReqEntity;
 
-    @Spy private RemoteTransformerClient remoteTransformerClient = new RemoteTransformerClient("TRANSFORMER", "http://localhost:1234/test", new HttpClientConfig());
+    @Spy
+    private RemoteTransformerClient remoteTransformerClient = new RemoteTransformerClient("TRANSFORMER", "http://localhost:1234/test", new HttpClientConfig());
 
     private String sourceMimetype = "application/msword";
     private String sourceExtension = "doc";
@@ -97,20 +109,20 @@ public class RemoteTransformerClientTest
         doReturn(mockHttpResponse).when(remoteTransformerClient).execute(any(), any(HttpGet.class));
         doReturn(mockHttpResponse).when(remoteTransformerClient).execute(any(), any(HttpPost.class));
         doReturn(mockRequestEntity).when(remoteTransformerClient).getRequestEntity(any(), any(),
-                any(), any(), anyLong(), any(), any());//,
+                any(), any(), anyLong(), any(), any());// ,
 
         when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
         when(mockHttpResponse.getEntity()).thenReturn(mockResponseEntity);
         when(mockStatusLine.getStatusCode()).thenReturn(200);
 
-//        when(mockResponseEntity.getContentLength()).thenReturn(1024L);
-//        when(mockResponseEntity.getContentType()).thenReturn(mockResponseContentType);
-//        when(mockResponseEntity.getContentEncoding()).thenReturn(mockResponseContentEncoding);
-//        long responseContentLength = resEntity.getContentLength();
-//        Header responseContentType = resEntity.getContentType();
-//        Header responseContentEncoding = resEntity.getContentEncoding();
+        // when(mockResponseEntity.getContentLength()).thenReturn(1024L);
+        // when(mockResponseEntity.getContentType()).thenReturn(mockResponseContentType);
+        // when(mockResponseEntity.getContentEncoding()).thenReturn(mockResponseContentEncoding);
+        // long responseContentLength = resEntity.getContentLength();
+        // Header responseContentType = resEntity.getContentType();
+        // Header responseContentEncoding = resEntity.getContentEncoding();
 
-//        when(mockInputStream.)
+        // when(mockInputStream.)
 
     }
 
@@ -146,7 +158,7 @@ public class RemoteTransformerClientTest
         int i = msg.indexOf(' ');
         if (i > 0)
         {
-            msg = msg.substring(i+1);
+            msg = msg.substring(i + 1);
         }
         return msg;
     }
@@ -228,7 +240,7 @@ public class RemoteTransformerClientTest
 
         // Mock a normal response from the /version request. It will not be made until the end of the wait period
         doReturn(mockHttpResponse).when(remoteTransformerClient).execute(any(), any(HttpGet.class));
-        Thread.sleep(STARTUP_RETRY_PERIOD_SECONDS*1000);
+        Thread.sleep(STARTUP_RETRY_PERIOD_SECONDS * 1000);
         available = remoteTransformerClient.check(mockLogger);
         assertTrue("No failure so should result in true", available.getFirst());
 
@@ -236,7 +248,7 @@ public class RemoteTransformerClientTest
         doThrow(IOException.class).when(remoteTransformerClient).execute(any(), any(HttpGet.class));
         available = remoteTransformerClient.check(mockLogger);
         assertTrue("Should return true as it has before", available.getFirst());
-        }
+    }
 
     protected void assertTransformerBecomesAvailableAgainAfterFailure() throws InterruptedException, IOException
     {
@@ -244,7 +256,7 @@ public class RemoteTransformerClientTest
 
         // ------------- If the transformer takes a long time to start, the request will fail again even after the wait period
 
-        Thread.sleep(STARTUP_RETRY_PERIOD_SECONDS*1000);
+        Thread.sleep(STARTUP_RETRY_PERIOD_SECONDS * 1000);
         Pair<Boolean, String> available = remoteTransformerClient.check(mockLogger);
         assertFalse("Any failure should result in false", available.getFirst());
         assertFalse(remoteTransformerClient.isAvailable());
@@ -259,14 +271,14 @@ public class RemoteTransformerClientTest
         assertTrue("During the wait period null should be returned", available.getSecond() == null);
         assertFalse(remoteTransformerClient.isAvailable());
 
-        // Sleep for a bit,  but not long enough.
+        // Sleep for a bit, but not long enough.
         Thread.sleep(1000);
         available = remoteTransformerClient.check(mockLogger);
         assertTrue("During the wait period null should be returned", available.getFirst() == null);
         assertFalse(remoteTransformerClient.isAvailable());
 
         // Wait until the end of the period.
-        Thread.sleep((STARTUP_RETRY_PERIOD_SECONDS-1)*1000);
+        Thread.sleep((STARTUP_RETRY_PERIOD_SECONDS - 1) * 1000);
 
         // ------------- After the wait period
 

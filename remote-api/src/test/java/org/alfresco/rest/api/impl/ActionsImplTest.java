@@ -26,7 +26,6 @@
 
 package org.alfresco.rest.api.impl;
 
-import static org.alfresco.rest.api.impl.ActionsImpl.CONSTRAINT_NOT_EXISTS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,7 +33,15 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
+import static org.alfresco.rest.api.impl.ActionsImpl.CONSTRAINT_NOT_EXISTS;
+
 import java.util.Map;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import org.alfresco.repo.action.constraint.FolderContentsParameterConstraint;
 import org.alfresco.rest.api.impl.rules.ActionParameterConverter;
@@ -43,11 +50,6 @@ import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ParameterConstraint;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ActionsImplTest
@@ -77,7 +79,7 @@ public class ActionsImplTest
         final ParameterConstraint testConstraint = createTestConstraint(name, values);
         given(actionServiceMock.getParameterConstraint(name)).willReturn(testConstraint);
 
-        //when
+        // when
         final ActionParameterConstraint actualConstraint = objectUnderTest.getActionConstraint(name);
 
         then(parametersMock).shouldHaveNoInteractions();
@@ -104,7 +106,7 @@ public class ActionsImplTest
         given(actionServiceMock.getParameterConstraint(name)).willReturn(testConstraint);
         given(parameterConverterMock.convertParamFromServiceModel(any())).willReturn(dummyNodeId);
 
-        //when
+        // when
         final ActionParameterConstraint actualConstraint = objectUnderTest.getActionConstraint(name);
 
         then(parametersMock).shouldHaveNoInteractions();
@@ -124,7 +126,7 @@ public class ActionsImplTest
         final String name = "name";
         given(actionServiceMock.getParameterConstraint(name)).willReturn(null);
 
-        //when
+        // when
         assertThatExceptionOfType(NotFoundException.class).isThrownBy(() -> objectUnderTest.getActionConstraint(name))
                 .withMessageContaining(String.format(CONSTRAINT_NOT_EXISTS, name));
 
@@ -135,8 +137,7 @@ public class ActionsImplTest
 
     private ParameterConstraint createTestConstraint(final String name, final Map<String, String> values)
     {
-        return new ParameterConstraint()
-        {
+        return new ParameterConstraint() {
             @Override
             public String getName()
             {

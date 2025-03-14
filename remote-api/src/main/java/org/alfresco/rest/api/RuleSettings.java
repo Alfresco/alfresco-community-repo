@@ -37,8 +37,10 @@ public interface RuleSettings
     /**
      * Get the rule setting with the given key.
      *
-     * @param folderId Folder node ID
-     * @param ruleSettingKey Rule setting key
+     * @param folderId
+     *            Folder node ID
+     * @param ruleSettingKey
+     *            Rule setting key
      * @return {@link RuleSetting} The retrieved rule setting object.
      */
     RuleSetting getRuleSetting(String folderId, String ruleSettingKey);
@@ -46,8 +48,10 @@ public interface RuleSettings
     /**
      * Set the rule setting against the specified folder.
      *
-     * @param folderId The folder to update.
-     * @param ruleSetting The new rule setting.
+     * @param folderId
+     *            The folder to update.
+     * @param ruleSetting
+     *            The new rule setting.
      * @return The updated rule setting object.
      */
     RuleSetting setRuleSetting(String folderId, RuleSetting ruleSetting);

@@ -31,18 +31,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.AbstractTransformationSourceOptions;
 
 /**
  * Paged content conversion options to specify a page number range.
  * <p>
  * The page numbering index starts with 1.
  * <p>
- * If only the start page number is specified transformers should attempt
- * a page range from that page number to the end if possible.
+ * If only the start page number is specified transformers should attempt a page range from that page number to the end if possible.
  * <p>
- * If only an end page number is specified transformers should attempt
- * a page range from the start to that page if possible.
+ * If only an end page number is specified transformers should attempt a page range from the start to that page if possible.
  * 
  * @author Ray Gauss II
  */
@@ -52,10 +49,10 @@ public class PagedSourceOptions extends AbstractTransformationSourceOptions
 
     /** The start of the page range in the source document */
     private Integer startPageNumber;
-    
+
     /** The end of the page range in the source document */
     private Integer endPageNumber;
-    
+
     protected static List<String> getDefaultApplicableMimetypes()
     {
         List<String> defaults = new ArrayList<String>(17);
@@ -79,13 +76,13 @@ public class PagedSourceOptions extends AbstractTransformationSourceOptions
         defaults.add(MimetypeMap.MIMETYPE_WORDPERFECT);
         return defaults;
     }
-    
+
     public PagedSourceOptions()
     {
         super();
         setApplicableMimetypes(PagedSourceOptions.getDefaultApplicableMimetypes());
     }
-    
+
     /**
      * Gets the page number to start from in the source document
      * 
@@ -95,11 +92,12 @@ public class PagedSourceOptions extends AbstractTransformationSourceOptions
     {
         return startPageNumber;
     }
-    
+
     /**
      * Sets the page number to start from in the source document
      * 
-     * @param startPageNumber the start page number
+     * @param startPageNumber
+     *            the start page number
      */
     public void setStartPageNumber(Integer startPageNumber)
     {
@@ -119,7 +117,8 @@ public class PagedSourceOptions extends AbstractTransformationSourceOptions
     /**
      * Sets the page number to end at in the source document
      * 
-     * @param endPageNumber the end page number
+     * @param endPageNumber
+     *            the end page number
      */
     public void setEndPageNumber(Integer endPageNumber)
     {
@@ -145,25 +144,26 @@ public class PagedSourceOptions extends AbstractTransformationSourceOptions
         }
         return null;
     }
-    
+
     /**
      * Gets paged source options which specify just the first page.
      * 
      * @return the page one source options
      */
-    public static PagedSourceOptions getPage1Instance() {
+    public static PagedSourceOptions getPage1Instance()
+    {
         PagedSourceOptions sourceOptions = new PagedSourceOptions();
         sourceOptions.setStartPageNumber(PAGE_1);
         sourceOptions.setEndPageNumber(PAGE_1);
         return sourceOptions;
     }
-    
+
     @Override
     public TransformationSourceOptionsSerializer getSerializer()
     {
         return PagedSourceOptions.createSerializerInstance();
     }
-    
+
     /**
      * Creates an instance of the options serializer
      * 
@@ -173,7 +173,7 @@ public class PagedSourceOptions extends AbstractTransformationSourceOptions
     {
         return (new PagedSourceOptions()).new PagedSourceOptionsSerializer();
     }
-    
+
     /**
      * Serializer for paged source options
      */
@@ -181,13 +181,13 @@ public class PagedSourceOptions extends AbstractTransformationSourceOptions
     {
         public static final String PARAM_SOURCE_START_PAGE = "source_start_page";
         public static final String PARAM_SOURCE_END_PAGE = "source_end_page";
-        
+
         @Override
         public TransformationSourceOptions deserialize(SerializedTransformationOptionsAccessor serializedOptions)
         {
             int startPageNumber = serializedOptions.getIntegerParam(PARAM_SOURCE_START_PAGE, 1);
             int endPageNumber = serializedOptions.getIntegerParam(PARAM_SOURCE_END_PAGE, 1);
-            
+
             PagedSourceOptions sourceOptions = new PagedSourceOptions();
             sourceOptions.setStartPageNumber(startPageNumber);
             sourceOptions.setEndPageNumber(endPageNumber);
@@ -195,7 +195,7 @@ public class PagedSourceOptions extends AbstractTransformationSourceOptions
         }
 
         @Override
-        public void serialize(TransformationSourceOptions sourceOptions, 
+        public void serialize(TransformationSourceOptions sourceOptions,
                 Map<String, Serializable> parameters)
         {
             if (parameters == null || sourceOptions == null)
@@ -211,6 +211,6 @@ public class PagedSourceOptions extends AbstractTransformationSourceOptions
     @Override
     public String toString()
     {
-        return "PagedSourceOptions {"+startPageNumber+", "+endPageNumber+"}";
+        return "PagedSourceOptions {" + startPageNumber + ", " + endPageNumber + "}";
     }
 }

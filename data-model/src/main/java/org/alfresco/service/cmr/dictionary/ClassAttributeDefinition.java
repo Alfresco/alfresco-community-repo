@@ -38,29 +38,29 @@ import org.alfresco.service.namespace.QName;
 public interface ClassAttributeDefinition
 {
     /**
-     * @return  defining model
+     * @return defining model
      */
     public ModelDefinition getModel();
-    
+
     /**
-     * @return  the qualified name
+     * @return the qualified name
      */
     public QName getName();
 
     /**
-     * @return the human-readable title 
+     * @return the human-readable title
      */
     public String getTitle(MessageLookup messageLookup);
-    
+
     /**
-     * @return the human-readable description 
+     * @return the human-readable description
      */
     public String getDescription(MessageLookup messageLookup);
-    
+
     /**
      * Is this association or property maintained by the Repository?
      * 
-     * @return true => system maintained, false => client may maintain 
+     * @return true => system maintained, false => client may maintain
      */
     public boolean isProtected();
 

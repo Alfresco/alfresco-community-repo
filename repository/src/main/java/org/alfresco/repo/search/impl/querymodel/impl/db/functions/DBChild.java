@@ -53,11 +53,10 @@ import org.alfresco.service.namespace.QName;
 public class DBChild extends Child implements DBQueryBuilderComponent
 {
     DBQueryBuilderComponent builderSupport;
-    
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported() */
     @Override
     public boolean isSupported()
     {
@@ -65,28 +64,28 @@ public class DBChild extends Child implements DBQueryBuilderComponent
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace.NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace.NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO) */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors, Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
-       
+
         Argument argument = functionArgs.get(ARG_PARENT);
         String id = (String) argument.getValue(functionContext);
         argument = functionArgs.get(ARG_SELECTOR);
-        if(argument != null)
+        if (argument != null)
         {
             String selector = (String) argument.getValue(functionContext);
-            if(!selectors.contains(selector))
+            if (!selectors.contains(selector))
             {
-                throw new QueryModelException("Unkown selector "+selector); 
+                throw new QueryModelException("Unkown selector " + selector);
             }
         }
         else
         {
-            if(selectors.size() > 1)
+            if (selectors.size() > 1)
             {
-                throw new QueryModelException("Selector must be specified for child constraint (IN_FOLDER) and join"); 
+                throw new QueryModelException("Selector must be specified for child constraint (IN_FOLDER) and join");
             }
         }
         ParentSupport parentSupport = new ParentSupport();
@@ -95,25 +94,24 @@ public class DBChild extends Child implements DBQueryBuilderComponent
         builderSupport = parentSupport;
     }
 
-
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildJoins(java.util.Map, java.util.List)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildJoins(java.util.Map, java.util.List) */
     @Override
     public void buildJoins(Map<QName, DBQueryBuilderJoinCommand> singleJoins, List<DBQueryBuilderJoinCommand> multiJoins)
     {
         builderSupport.buildJoins(singleJoins, multiJoins);
-        
+
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildPredicateCommands(java.util.List)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildPredicateCommands(java.util.List) */
     @Override
     public void buildPredicateCommands(List<DBQueryBuilderPredicatePartCommand> predicatePartCommands)
     {
         builderSupport.buildPredicateCommands(predicatePartCommands);
-        
+
     }
 
 }

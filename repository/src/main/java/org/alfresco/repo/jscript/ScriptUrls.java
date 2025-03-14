@@ -42,8 +42,7 @@ public class ScriptUrls implements Serializable
 
     public UrlResolver getAlfresco()
     {
-        return new UrlResolver()
-        {
+        return new UrlResolver() {
             private static final long serialVersionUID = -3325783930102513154L;
 
             public String getContext()
@@ -70,8 +69,7 @@ public class ScriptUrls implements Serializable
 
     public UrlResolver getShare()
     {
-        return new UrlResolver()
-        {
+        return new UrlResolver() {
             private static final long serialVersionUID = -5853699981548697768L;
 
             public String getContext()

@@ -30,9 +30,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.TestCase;
+import org.junit.Test;
 
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.junit.Test;
 
 public class ReferenceTest extends TestCase
 {
@@ -45,8 +45,8 @@ public class ReferenceTest extends TestCase
     private static final String TEST_NODE_REF_1 = "workspace://SpacesStore/vpdmFuaWxsYTpjbGFzc3BhdGg6L29yZy9hbGZyZXNjby9yZXBvL3ZpcnR1YWwvbm9kZS92YW5pbGxhLmpzOnM6LzAxIENvcnJlc3BvbmRlbmNlOnI6cmVwb3NpdG9yeTpub2RlOndvcmtzcGFjZTpTcGFjZXNTdG9yZTo2NWM2NjliMS00N2IzLTQzMmUtYjk0Zi1lZmU4YTcyYWEyMjA6cjpjbGFzc3BhdGg6L29yZy9hbGZyZXNjby9yZXBvL3ZpcnR1YWwvbm9kZS9jbGFpbXNEZW1vLmpzb24";
 
     private static final Reference TEST_REFERENCE = new Reference(Encodings.PLAIN.encoding,
-                                                                  Protocols.VIRTUAL.protocol,
-                                                                  new ClasspathResource(TEST_CLASSPATH));
+            Protocols.VIRTUAL.protocol,
+            new ClasspathResource(TEST_CLASSPATH));
 
     @Test
     public void testToNodeRef() throws Exception
@@ -54,7 +54,7 @@ public class ReferenceTest extends TestCase
         Reference r = new PlainReferenceParser().parse(TEST_PLAIN_REFERENCE);
         NodeRef nodeRef = r.toNodeRef();
         assertEquals(new NodeRef(TEST_NODE_REF),
-                     nodeRef);
+                nodeRef);
     }
 
     @Test
@@ -64,20 +64,19 @@ public class ReferenceTest extends TestCase
         Reference expectedReference = TEST_REFERENCE;
 
         assertEquals(expectedReference,
-                     r);
+                r);
 
         String expected = "vanilla:classpath:/org/alfresco/repo/virtual/node/vanilla.js:s:/01 Correspondence:r:repository:node:workspace:SpacesStore:65c669b1-47b3-432e-b94f-efe8a72aa220:r:classpath:/org/alfresco/repo/virtual/node/claimsDemo.json";
         Reference fromNodeRef = Reference.fromNodeRef(new NodeRef(TEST_NODE_REF_1));
         assertNotNull(fromNodeRef);
         assertEquals(expected,
-                     fromNodeRef.toString());
+                fromNodeRef.toString());
     }
 
     @Test
     public void testExecute() throws Exception
     {
-        boolean sccess = TEST_REFERENCE.execute(new ProtocolMethod<Boolean>()
-        {
+        boolean sccess = TEST_REFERENCE.execute(new ProtocolMethod<Boolean>() {
 
             @Override
             public Boolean execute(VanillaProtocol vanillaProtocol, Reference reference) throws ProtocolMethodException
@@ -108,7 +107,7 @@ public class ReferenceTest extends TestCase
         });
 
         assertTrue("Invalid method execution result!",
-                   sccess);
+                sccess);
     }
 
     @Test
@@ -116,7 +115,7 @@ public class ReferenceTest extends TestCase
     {
         Reference r = TEST_REFERENCE;
         assertEquals(TEST_PLAIN_REFERENCE,
-                     r.encode());
+                r.encode());
     }
 
     @Test
@@ -125,35 +124,35 @@ public class ReferenceTest extends TestCase
         assertTrue(TEST_REFERENCE.equals(TEST_REFERENCE));
         assertFalse(TEST_REFERENCE.equals(null));
         Reference testResourceReplica = new Reference(Encodings.PLAIN.encoding,
-                                                      Protocols.VIRTUAL.protocol,
-                                                      new ClasspathResource(TEST_CLASSPATH));
+                Protocols.VIRTUAL.protocol,
+                new ClasspathResource(TEST_CLASSPATH));
 
         assertTrue(TEST_REFERENCE.equals(testResourceReplica));
         Reference nullResRef = new Reference(Encodings.PLAIN.encoding,
-                                             Protocols.VIRTUAL.protocol,
-                                             null);
+                Protocols.VIRTUAL.protocol,
+                null);
         Reference nullResRefReplica = new Reference(Encodings.PLAIN.encoding,
-                                                    Protocols.VIRTUAL.protocol,
-                                                    null);
+                Protocols.VIRTUAL.protocol,
+                null);
         assertFalse(TEST_REFERENCE.equals(nullResRef));
         assertFalse(nullResRef.equals(TEST_REFERENCE));
         assertTrue(nullResRef.equals(nullResRefReplica));
 
         List<Parameter> params1 = Arrays.<Parameter> asList(new StringParameter("P1"));
         List<Parameter> params2 = Arrays.<Parameter> asList(new StringParameter("P1"),
-                                                            new StringParameter("P2"));
+                new StringParameter("P2"));
         Reference testParams1Ref = new Reference(Encodings.PLAIN.encoding,
-                                                 Protocols.VIRTUAL.protocol,
-                                                 new ClasspathResource(TEST_CLASSPATH),
-                                                 params1);
+                Protocols.VIRTUAL.protocol,
+                new ClasspathResource(TEST_CLASSPATH),
+                params1);
         Reference testParams1RefReplica = new Reference(Encodings.PLAIN.encoding,
-                                                        Protocols.VIRTUAL.protocol,
-                                                        new ClasspathResource(TEST_CLASSPATH),
-                                                        params1);
+                Protocols.VIRTUAL.protocol,
+                new ClasspathResource(TEST_CLASSPATH),
+                params1);
         Reference testParams2Ref = new Reference(Encodings.PLAIN.encoding,
-                                                 Protocols.VIRTUAL.protocol,
-                                                 new ClasspathResource(TEST_CLASSPATH),
-                                                 params2);
+                Protocols.VIRTUAL.protocol,
+                new ClasspathResource(TEST_CLASSPATH),
+                params2);
         assertTrue(testParams1Ref.equals(testParams1RefReplica));
         assertFalse(testParams2Ref.equals(testParams1Ref));
     }

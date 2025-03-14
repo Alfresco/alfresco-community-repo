@@ -31,6 +31,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 
 public class NodeRefSerializer extends StdSerializer<NodeRef>
@@ -42,9 +43,9 @@ public class NodeRefSerializer extends StdSerializer<NodeRef>
 
     @Override
     public void serialize(NodeRef nodeRef, JsonGenerator jgen, SerializerProvider provider)
-                throws IOException, JsonGenerationException
+            throws IOException, JsonGenerationException
     {
-    	jgen.writeString(nodeRef.getId());
+        jgen.writeString(nodeRef.getId());
     }
 
 }

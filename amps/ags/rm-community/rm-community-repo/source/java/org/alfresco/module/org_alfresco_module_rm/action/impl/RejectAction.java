@@ -57,9 +57,9 @@ public class RejectAction extends RMActionExecuterAbstractBase
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         if (getNodeService().exists(actionedUponNodeRef) &&
-            !getNodeService().hasAspect(actionedUponNodeRef, ASPECT_DECLARED_RECORD) &&
-            !getFreezeService().isFrozen(actionedUponNodeRef) &&
-            getNodeService().getProperty(actionedUponNodeRef, PROP_RECORD_ORIGINATING_LOCATION) != null)
+                !getNodeService().hasAspect(actionedUponNodeRef, ASPECT_DECLARED_RECORD) &&
+                !getFreezeService().isFrozen(actionedUponNodeRef) &&
+                getNodeService().getProperty(actionedUponNodeRef, PROP_RECORD_ORIGINATING_LOCATION) != null)
         {
             getRecordService().rejectRecord(actionedUponNodeRef, (String) action.getParameterValue(PARAM_REASON));
         }

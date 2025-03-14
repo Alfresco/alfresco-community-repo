@@ -25,10 +25,11 @@
  */
 package org.alfresco.rest.framework.jacksonextensions;
 
+import java.io.IOException;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
-import java.io.IOException;
 
 /**
  * Rest Api string deserializer that ensures that empty strings are treated as null strings.
@@ -45,7 +46,7 @@ public class RestApiStringDeserializer extends StringDeserializer
     {
         String ret = super.deserialize(p, ctxt);
         // Return null for empty string
-        if(ret != null && ret.length() == 0)
+        if (ret != null && ret.length() == 0)
         {
             ret = null;
         }

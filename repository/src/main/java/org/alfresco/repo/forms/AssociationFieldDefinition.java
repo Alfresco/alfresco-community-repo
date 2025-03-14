@@ -26,31 +26,36 @@
 package org.alfresco.repo.forms;
 
 /**
- * An association field definition that can represent a source->target association
- * or a target->source association.
+ * An association field definition that can represent a source->target association or a target->source association.
  *
  * @author Gavin Cornwell
  */
 public class AssociationFieldDefinition extends FieldDefinition
 {
-    public enum Direction { SOURCE, TARGET }
-    
+    public enum Direction
+    {
+        SOURCE, TARGET
+    }
+
     protected String endpointType;
-    protected Direction endpointDirection; 
+    protected Direction endpointDirection;
     protected boolean endpointMandatory = false;
     protected boolean endpointMany = false;
-    
+
     /**
      * Default constructor
      * 
-     * @param name The name of the association
-     * @param endpointType The type of the item at the end of the association
-     * @param endpointDirection The direction the association is going
+     * @param name
+     *            The name of the association
+     * @param endpointType
+     *            The type of the item at the end of the association
+     * @param endpointDirection
+     *            The direction the association is going
      */
     public AssociationFieldDefinition(String name, String endpointType, Direction endpointDirection)
     {
         super(name);
-        
+
         this.endpointType = endpointType;
         this.endpointDirection = endpointDirection;
     }
@@ -64,15 +69,13 @@ public class AssociationFieldDefinition extends FieldDefinition
     {
         return this.endpointType;
     }
-    
+
     /**
      * Returns the direction the association is going.
      * <p>
-     * <code>Direction.TARGET</code> means the endpoint is the target
-     * and the field is the source.
+     * <code>Direction.TARGET</code> means the endpoint is the target and the field is the source.
      * <p>
-     * <code>Direction.SOURCE</code> means the endpoint is the source
-     * and the field is the target.
+     * <code>Direction.SOURCE</code> means the endpoint is the source and the field is the target.
      * 
      * @return Direction.TARGET or Direction.SOURCE
      */
@@ -90,11 +93,12 @@ public class AssociationFieldDefinition extends FieldDefinition
     {
         return this.endpointMandatory;
     }
-    
+
     /**
      * Sets whether the target is mandatory
      * 
-     * @param endpointMandatory true if a target has to be selected
+     * @param endpointMandatory
+     *            true if a target has to be selected
      */
     public void setEndpointMandatory(boolean endpointMandatory)
     {
@@ -102,7 +106,7 @@ public class AssociationFieldDefinition extends FieldDefinition
     }
 
     /**
-     * Determines if multiple targets can be selected 
+     * Determines if multiple targets can be selected
      * 
      * @return true if multiple targets can be selected
      */
@@ -110,20 +114,19 @@ public class AssociationFieldDefinition extends FieldDefinition
     {
         return this.endpointMany;
     }
-    
+
     /**
-     * Sets whether multiple targets can be selected 
+     * Sets whether multiple targets can be selected
      * 
-     * @param endpointMany true if multiple targets can be selected
+     * @param endpointMany
+     *            true if multiple targets can be selected
      */
     public void setEndpointMany(boolean endpointMany)
     {
         this.endpointMany = endpointMany;
     }
-    
-    /*
-     * @see java.lang.Object#toString()
-     */
+
+    /* @see java.lang.Object#toString() */
     @Override
     public String toString()
     {

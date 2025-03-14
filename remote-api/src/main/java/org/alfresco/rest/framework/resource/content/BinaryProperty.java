@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.util.Locale;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.alfresco.service.cmr.repository.ContentReader;
 
 /**
@@ -42,16 +43,19 @@ import org.alfresco.service.cmr.repository.ContentReader;
 public class BinaryProperty implements ContentInfo, Serializable
 {
     private static final long serialVersionUID = 7392073427641063968L;
-    
+
     private final String mimeType;
     private final String encoding;
     private final long length;
     private final Locale locale;
-    
+
     /**
      * Sets the content length to zero, Locale to null, no stream and no caching
-     * @param mimeType String
-     * @param encoding String
+     * 
+     * @param mimeType
+     *            String
+     * @param encoding
+     *            String
      */
     public BinaryProperty(String mimeType, String encoding)
     {
@@ -61,10 +65,12 @@ public class BinaryProperty implements ContentInfo, Serializable
         this.length = 0;
         this.locale = null;
     }
-    
+
     /**
      * This is the preferred constructor to use. Takes the properties from content reader that it needs.
-     * @param reader ContentReader
+     * 
+     * @param reader
+     *            ContentReader
      */
     public BinaryProperty(ContentReader reader)
     {
@@ -74,13 +80,18 @@ public class BinaryProperty implements ContentInfo, Serializable
         this.length = reader.getSize();
         this.locale = reader.getLocale();
     }
-    
+
     /**
      * Sets no stream and no caching
-     * @param mimeType String
-     * @param encoding String
-     * @param length long
-     * @param locale Locale
+     * 
+     * @param mimeType
+     *            String
+     * @param encoding
+     *            String
+     * @param length
+     *            long
+     * @param locale
+     *            Locale
      */
     public BinaryProperty(String mimeType, String encoding, long length, Locale locale)
     {
@@ -95,22 +106,21 @@ public class BinaryProperty implements ContentInfo, Serializable
     {
         return this.mimeType;
     }
-    
+
     @JsonIgnore
     public String getEncoding()
     {
         return this.encoding;
     }
-    
+
     /**
-     * Used for serialization.  If the length is unknown then this method returns null
-     * and is therefore not serialized.
+     * Used for serialization. If the length is unknown then this method returns null and is therefore not serialized.
      * 
      * @return Long size - null if unknown.
      */
     public Long getSizeInBytes()
     {
-        return this.length>0?this.length:null;
+        return this.length > 0 ? this.length : null;
     }
 
     @JsonIgnore
@@ -118,10 +128,11 @@ public class BinaryProperty implements ContentInfo, Serializable
     {
         return this.length;
     }
+
     @JsonIgnore
     public Locale getLocale()
     {
         return this.locale;
     }
-   
+
 }

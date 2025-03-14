@@ -42,9 +42,12 @@ public interface RuleSets
     /**
      * Get rule sets for a folder.
      *
-     * @param folderNodeId Folder node ID
-     * @param paging {@link Paging} information
-     * @param includes List of fields to include in the rule set
+     * @param folderNodeId
+     *            Folder node ID
+     * @param paging
+     *            {@link Paging} information
+     * @param includes
+     *            List of fields to include in the rule set
      * @return {@link CollectionWithPagingInfo} containing a list page of rule sets
      */
     CollectionWithPagingInfo<RuleSet> getRuleSets(String folderNodeId, List<String> includes, Paging paging);
@@ -52,9 +55,12 @@ public interface RuleSets
     /**
      * Get the rule set with the given ID and check associations with the folder node.
      *
-     * @param folderNodeId Folder node ID
-     * @param ruleSetId Rule set ID
-     * @param includes List of fields to include in the rule set
+     * @param folderNodeId
+     *            Folder node ID
+     * @param ruleSetId
+     *            Rule set ID
+     * @param includes
+     *            List of fields to include in the rule set
      * @return {@link RuleSet} definition
      */
     RuleSet getRuleSetById(String folderNodeId, String ruleSetId, List<String> includes);
@@ -62,9 +68,12 @@ public interface RuleSets
     /**
      * Update a rule set - for example to reorder the rules within it.
      *
-     * @param folderNodeId Folder node ID
-     * @param ruleSet The updated rule set.
-     * @param includes List of fields to include in the response.
+     * @param folderNodeId
+     *            Folder node ID
+     * @param ruleSet
+     *            The updated rule set.
+     * @param includes
+     *            List of fields to include in the response.
      * @return The updated rule set from the server.
      */
     RuleSet updateRuleSet(String folderNodeId, RuleSet ruleSet, List<String> includes);

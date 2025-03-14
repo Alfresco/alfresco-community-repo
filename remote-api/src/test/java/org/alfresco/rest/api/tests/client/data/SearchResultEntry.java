@@ -35,8 +35,7 @@ public class SearchResultEntry
     Float score;
 
     public SearchResultEntry()
-    {
-    }
+    {}
 
     public void setScore(Float score)
     {
@@ -48,7 +47,7 @@ public class SearchResultEntry
         return score;
     }
 
-    //In future highlighting.
+    // In future highlighting.
 
     public void expected(Object o)
     {

@@ -27,6 +27,8 @@
 package org.alfresco.repo.workflow.activiti;
 
 import org.activiti.engine.ProcessEngine;
+import org.springframework.beans.factory.FactoryBean;
+
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authority.AuthorityDAO;
@@ -46,7 +48,6 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.beans.factory.FactoryBean;
 
 /**
  * @author Nick Smith
@@ -65,16 +66,16 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
     private NodeService nodeService;
     private PersonService personService;
     private Repository repositoryHelper;
-    
+
     private ProcessEngine processEngine;
-    
+
     private String engineId;
     private boolean deployWorkflowsInTenant;
     private boolean retentionHistoricProcessInstance;
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public ActivitiWorkflowManager getObject() throws Exception
     {
@@ -94,17 +95,17 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
         DefaultWorkflowPropertyHandler defaultPropertyHandler = new DefaultWorkflowPropertyHandler();
         defaultPropertyHandler.setMessageService(messageService);
         defaultPropertyHandler.setNodeConverter(nodeConverter);
-        
+
         WorkflowQNameConverter qNameConverter = new WorkflowQNameConverter(namespaceService);
         WorkflowPropertyHandlerRegistry handlerRegistry = new WorkflowPropertyHandlerRegistry(defaultPropertyHandler, qNameConverter);
-        
+
         WorkflowAuthorityManager authorityManager = new WorkflowAuthorityManager(authorityDAO);
         QName defaultStartTaskType = WorkflowModel.TYPE_ACTIVTI_START_TASK;
         WorkflowObjectFactory factory = new WorkflowObjectFactory(qNameConverter, tenantService, messageService, dictionaryService, engineId, defaultStartTaskType);
-        ActivitiUtil activitiUtil = new ActivitiUtil(processEngine, deployWorkflowsInTenant,retentionHistoricProcessInstance);
+        ActivitiUtil activitiUtil = new ActivitiUtil(processEngine, deployWorkflowsInTenant, retentionHistoricProcessInstance);
         ActivitiPropertyConverter propertyConverter = new ActivitiPropertyConverter(activitiUtil, factory, handlerRegistry, authorityManager, messageService, nodeConverter);
         ActivitiTypeConverter typeConverter = new ActivitiTypeConverter(processEngine, factory, propertyConverter, deployWorkflowsInTenant);
-        
+
         ActivitiWorkflowEngine workflowEngine = instantiateWorkflowEngine();
         workflowEngine.setActivitiUtil(activitiUtil);
         workflowEngine.setAuthorityManager(authorityManager);
@@ -130,7 +131,8 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
     }
 
     /**
-     * @param tenantService the tenantService to set
+     * @param tenantService
+     *            the tenantService to set
      */
     public void setTenantService(TenantService tenantService)
     {
@@ -138,7 +140,8 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
     }
 
     /**
-     * @param messageService the messageService to set
+     * @param messageService
+     *            the messageService to set
      */
     public void setMessageService(MessageService messageService)
     {
@@ -146,16 +149,17 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
     }
 
     /**
-     * @param serviceRegistry the serviceRegistry to set
+     * @param serviceRegistry
+     *            the serviceRegistry to set
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
     }
 
-
     /**
-     * @param bpmEngineRegistry the bpmEngineRegistry to set
+     * @param bpmEngineRegistry
+     *            the bpmEngineRegistry to set
      */
     public void setBPMEngineRegistry(BPMEngineRegistry bpmEngineRegistry)
     {
@@ -163,7 +167,8 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
     }
 
     /**
-     * @param processEngine the processEngine to set
+     * @param processEngine
+     *            the processEngine to set
      */
     public void setProcessEngine(ProcessEngine processEngine)
     {
@@ -171,7 +176,8 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
     }
 
     /**
-     * @param engineId the engineId to set
+     * @param engineId
+     *            the engineId to set
      */
     public void setEngineId(String engineId)
     {
@@ -179,13 +185,14 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
     }
 
     /**
-     * @param repositoryHelper the repositoryHelper to set
+     * @param repositoryHelper
+     *            the repositoryHelper to set
      */
     public void setRepositoryHelper(Repository repositoryHelper)
     {
         this.repositoryHelper = repositoryHelper;
     }
-    
+
     /**
      * @param authorityDAO
      *            the authorityDAO to set
@@ -196,8 +203,8 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public Class<? extends ActivitiWorkflowManager> getObjectType()
     {
@@ -205,46 +212,50 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public boolean isSingleton()
     {
         return true;
     }
-    
+
     /**
-     * @param namespaceService the namespaceService to set
+     * @param namespaceService
+     *            the namespaceService to set
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
-     * @param dictionaryService the dictionaryService to set
+     * @param dictionaryService
+     *            the dictionaryService to set
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
-     * @param nodeService the nodeService to set
+     * @param nodeService
+     *            the nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
-     * @param personService the personService to set
+     * @param personService
+     *            the personService to set
      */
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
     }
-    
+
     /**
      * @param deployWorkflowsInTenant
      *            wether or not to deploy workflows in multi-tenant context.
@@ -253,10 +264,10 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
     {
         this.deployWorkflowsInTenant = deployWorkflowsInTenant;
     }
-    
-    /** 
+
+    /**
      * @param retentionHistoricProcessInstance
-     *         whether or not to retain the process instance
+     *            whether or not to retain the process instance
      */
     public void setRetentionHistoricProcessInstance(boolean retentionHistoricProcessInstance)
     {

@@ -29,9 +29,9 @@ package org.alfresco.repo.virtual.ref;
 import java.util.List;
 
 import org.alfresco.util.Pair;
+
 /**
- * Custom stringifier for hash encoded strings of {@link Reference}s having the
- * protocol set to {@link VirtualProtocol}.
+ * Custom stringifier for hash encoded strings of {@link Reference}s having the protocol set to {@link VirtualProtocol}.
  */
 public class VirtualHashStringifier extends ProtocolHashStringifier
 {
@@ -42,7 +42,7 @@ public class VirtualHashStringifier extends ProtocolHashStringifier
     public VirtualHashStringifier(HashStore classpathHashStore, Stringifier referenceDispatcher)
     {
         super(classpathHashStore,
-              referenceDispatcher);
+                referenceDispatcher);
     }
 
     /**
@@ -56,7 +56,7 @@ public class VirtualHashStringifier extends ProtocolHashStringifier
         if (!Protocols.VIRTUAL.protocol.equals(protocol))
         {
             throw new ReferenceEncodingException("Unsupported protocol " + protocol + "."
-                        + Protocols.VIRTUAL.protocol.name + " exoected ");
+                    + Protocols.VIRTUAL.protocol.name + " exoected ");
         }
 
         return VIRTUAL_PROTOCOL_CODE + "-" + stringifyVirtualReference(reference);
@@ -70,7 +70,7 @@ public class VirtualHashStringifier extends ProtocolHashStringifier
         List<Parameter> parameters = reference.getParameters();
 
         ResourceParameter actualNodeParameter = (ResourceParameter) parameters
-                    .get(VirtualProtocol.ACTUAL_NODE_LOCATION_PARAM_INDEX);
+                .get(VirtualProtocol.ACTUAL_NODE_LOCATION_PARAM_INDEX);
         Resource actualNodeResource = actualNodeParameter.getValue();
         String actualNodeResourceString = actualNodeResource.stringify(this);
 
@@ -109,18 +109,18 @@ public class VirtualHashStringifier extends ProtocolHashStringifier
             stringifiedPath.append(nonHashed);
         }
 
-//        String delimitedPathString;
-//        if ("/".equals(pathString.trim()))
-//        {
-//            delimitedPathString = "";
-//        }
-//        else
-//        {
-//            delimitedPathString = pathString.replace('/',
-//                                                     '-');
-//        }
+        // String delimitedPathString;
+        // if ("/".equals(pathString.trim()))
+        // {
+        // delimitedPathString = "";
+        // }
+        // else
+        // {
+        // delimitedPathString = pathString.replace('/',
+        // '-');
+        // }
 
-        String parametersString = actualNodeResourceString +"-"+ stringifiedPath.toString();
+        String parametersString = actualNodeResourceString + "-" + stringifiedPath.toString();
 
         return resourceString + "-" + parametersString;
     }

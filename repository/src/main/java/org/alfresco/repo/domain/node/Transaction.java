@@ -34,8 +34,8 @@ package org.alfresco.repo.domain.node;
 public interface Transaction
 {
     public Long getId();
-    
+
     public String getChangeTxnId();
-    
+
     public Long getCommitTimeMs();
 }

@@ -26,17 +26,22 @@
 package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
-import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
-import static org.alfresco.utility.report.log.Step.STEP;
+
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
+import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
+import static org.alfresco.utility.report.log.Step.STEP;
+
 import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
@@ -44,8 +49,6 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Tests for GET /nodes/{nodeId}/rule-sets/{ruleSetId}/rules and GET /nodes/{nodeId}/rule-sets/{ruleSetId}/rules/{ruleId}.
@@ -80,7 +83,7 @@ public class GetRulesTests extends RulesRestTest
     }
 
     /** Check we can get an empty list of rules. */
-    @Test(groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void getEmptyRulesList()
     {
         STEP("Create a folder in existing site");
@@ -98,7 +101,7 @@ public class GetRulesTests extends RulesRestTest
      * <p>
      * Also check that the isShared field is not returned when not requested.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void getRulesList()
     {
         STEP("Get the rules that apply to the folder");
@@ -106,15 +109,14 @@ public class GetRulesTests extends RulesRestTest
 
         restClient.assertStatusCodeIs(OK);
         rules.assertThat().entriesListCountIs(createdRules.size());
-        IntStream.range(0, createdRules.size()).forEach(i ->
-                rules.getEntries().get(i).onModel()
-                     .assertThat().field("id").is(createdRules.get(i).getId())
-                     .assertThat().field("name").is(createdRules.get(i).getName())
-                     .assertThat().field("isShared").isNull());
+        IntStream.range(0, createdRules.size()).forEach(i -> rules.getEntries().get(i).onModel()
+                .assertThat().field("id").is(createdRules.get(i).getId())
+                .assertThat().field("name").is(createdRules.get(i).getName())
+                .assertThat().field("isShared").isNull());
     }
 
     /** Check we get a 404 if trying to load rules for a folder that doesn't exist. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void getRulesForNonExistentFolder()
     {
         STEP("Try to load rules for a non-existent folder.");
@@ -125,7 +127,7 @@ public class GetRulesTests extends RulesRestTest
     }
 
     /** Check we get a 404 if trying to load rules with a rule set id that doesn't exist. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void getRulesFromNonExistentRuleSet()
     {
         STEP("Create a folder in existing site");
@@ -136,25 +138,24 @@ public class GetRulesTests extends RulesRestTest
     }
 
     /** Check we can get all the rules for a folder along with the extra "include" and "other" fields. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void getRulesListWithIncludedFields()
     {
         STEP("Get the rules that apply to the folder");
         RestRuleModelsCollection rules = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                                                   .include("isShared")
-                                                   .getListOfRules();
+                .include("isShared")
+                .getListOfRules();
 
         rules.assertThat().entriesListCountIs(createdRules.size());
-        IntStream.range(0, createdRules.size()).forEach(i ->
-                rules.getEntries().get(i).onModel()
-                     .assertThat().field("isShared").isNotNull()
-                        .assertThat().field("description").isNull()
-                        .assertThat().field("isEnabled").is(true)
-                        .assertThat().field("isInheritable").is(false)
-                        .assertThat().field("isAsynchronous").is(false)
-                        .assertThat().field("errorScript").isNull()
-                        .assertThat().field("isShared").is(false)
-                        .assertThat().field("triggers").is("[inbound]"));
+        IntStream.range(0, createdRules.size()).forEach(i -> rules.getEntries().get(i).onModel()
+                .assertThat().field("isShared").isNotNull()
+                .assertThat().field("description").isNull()
+                .assertThat().field("isEnabled").is(true)
+                .assertThat().field("isInheritable").is(false)
+                .assertThat().field("isAsynchronous").is(false)
+                .assertThat().field("errorScript").isNull()
+                .assertThat().field("isShared").is(false)
+                .assertThat().field("triggers").is("[inbound]"));
     }
 
     /**
@@ -162,7 +163,7 @@ public class GetRulesTests extends RulesRestTest
      * <p>
      * Also check that the isShared field is not returned when not requested.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void getSingleRule()
     {
         STEP("Load a particular rule");
@@ -171,12 +172,12 @@ public class GetRulesTests extends RulesRestTest
         restClient.assertStatusCodeIs(OK);
 
         rule.assertThat().field("id").is(createdRuleA.getId())
-            .assertThat().field("name").is(createdRuleA.getName())
-            .assertThat().field("isShared").isNull();
+                .assertThat().field("name").is(createdRuleA.getName())
+                .assertThat().field("isShared").isNull();
     }
 
     /** Check we can get rule's other fields */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void getRulesOtherFieldsModified()
     {
         STEP("Create a rule with all other fields default values modified");
@@ -198,7 +199,7 @@ public class GetRulesTests extends RulesRestTest
     }
 
     /** Check we can get rule's "other" fields */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void getRulesDefaultFields()
     {
         STEP("Create a rule with all other fields default values");
@@ -220,7 +221,7 @@ public class GetRulesTests extends RulesRestTest
     }
 
     /** Check we get a 404 if trying to load a rule from a folder that doesn't exist. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void getSingleRuleFromNonExistentFolder()
     {
         STEP("Try to load a rule from a non-existent folder.");
@@ -231,7 +232,7 @@ public class GetRulesTests extends RulesRestTest
     }
 
     /** Check we get a 404 if trying to load a rule with a rule set id that doesn't exist. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void getSingleRuleFromNonExistentRuleSet()
     {
         STEP("Create a folder in existing site");
@@ -242,7 +243,7 @@ public class GetRulesTests extends RulesRestTest
     }
 
     /** Check we get a 404 if trying to load an existing rule providing a wrong but existing folder */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void getSingleRuleFromWrongFolder()
     {
         STEP("Create a folder in existing site");
@@ -253,13 +254,13 @@ public class GetRulesTests extends RulesRestTest
     }
 
     /** Check we can get a rule by its id along with any included fields. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void getSingleRuleWithIncludedFields()
     {
         STEP("Load a particular rule");
         RestRuleModel rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                                       .include("isShared")
-                                       .getSingleRule(createdRuleA.getId());
+                .include("isShared")
+                .getSingleRule(createdRuleA.getId());
 
         rule.assertThat().field("isShared").isNotNull();
     }
@@ -279,8 +280,8 @@ public class GetRulesTests extends RulesRestTest
         restClient.authenticateUser(user).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet().getListOfRules();
 
         restClient.assertLastError()
-                  .statusCodeIs(FORBIDDEN)
-                  .containsSummary("Cannot read from this node");
+                .statusCodeIs(FORBIDDEN)
+                .containsSummary("Cannot read from this node");
     }
 
     /** Check that a user with only read permission can view the folder rules. */
@@ -324,11 +325,11 @@ public class GetRulesTests extends RulesRestTest
         STEP("Assert that actions are returned as expected from the GET endpoint");
         restClient.assertStatusCodeIs(OK);
         getRuleBody.assertThat().field(ACTIONS).contains("actionDefinitionId=copy")
-                   .assertThat().field(ACTIONS).contains("destination-folder=" + rulesUtils.getCopyDestinationFolder().getNodeRef())
-                   .assertThat().field(ACTIONS).contains("deep-copy=true")
-                   .assertThat().field(ACTIONS).contains("actionDefinitionId=check-out")
-                   .assertThat().field(ACTIONS).contains("destination-folder=" + rulesUtils.getCheckOutDestinationFolder().getNodeRef())
-                   .assertThat().field(ACTIONS).contains("assoc-name=cm:checkout");
+                .assertThat().field(ACTIONS).contains("destination-folder=" + rulesUtils.getCopyDestinationFolder().getNodeRef())
+                .assertThat().field(ACTIONS).contains("deep-copy=true")
+                .assertThat().field(ACTIONS).contains("actionDefinitionId=check-out")
+                .assertThat().field(ACTIONS).contains("destination-folder=" + rulesUtils.getCheckOutDestinationFolder().getNodeRef())
+                .assertThat().field(ACTIONS).contains("assoc-name=cm:checkout");
     }
 
     /**
@@ -352,10 +353,10 @@ public class GetRulesTests extends RulesRestTest
         STEP("Assert that conditions are retrieved using the GET endpoint");
         restClient.assertStatusCodeIs(OK);
         getRuleBody.assertThat().field(CONDITIONS).contains("comparator=ends")
-                   .assertThat().field(CONDITIONS).contains("field=cm:creator")
-                   .assertThat().field(CONDITIONS).contains("parameter=ski")
-                   .assertThat().field(CONDITIONS).contains("comparator=begins")
-                   .assertThat().field(CONDITIONS).contains("field=cm:modelVersion")
-                   .assertThat().field(CONDITIONS).contains("parameter=1.");
+                .assertThat().field(CONDITIONS).contains("field=cm:creator")
+                .assertThat().field(CONDITIONS).contains("parameter=ski")
+                .assertThat().field(CONDITIONS).contains("comparator=begins")
+                .assertThat().field(CONDITIONS).contains("field=cm:modelVersion")
+                .assertThat().field(CONDITIONS).contains("parameter=1.");
     }
 }

@@ -29,6 +29,14 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.metrics.rest.RestMetricsReporter;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -55,22 +63,11 @@ import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.tools.ResponseWriter;
 import org.alfresco.service.cmr.repository.ArchivedIOException;
 import org.alfresco.service.cmr.repository.ContentIOException;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
-import org.springframework.http.HttpMethod;
 
 /**
  * Webscript that handles the request for and execution of a Resource
  * 
- * 1) Finds a resource
- * 2) Extracts params
- * 3) Executes params on a resource
- * 4) Post processes the response to add embeds or projected relationship
- * 5) Renders the response
+ * 1) Finds a resource 2) Extracts params 3) Executes params on a resource 4) Post processes the response to add embeds or projected relationship 5) Renders the response
  * 
  * @author Gethin James
  * @author janv
@@ -94,19 +91,18 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
     public void execute(final Api api, final WebScriptRequest req, final WebScriptResponse res) throws IOException
     {
         long startTime = System.currentTimeMillis();
-        
+
         try
         {
             final Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-            final ResourceWithMetadata resource = locator.locateResource(api,templateVars, httpMethod);
-            final boolean isReadOnly = HttpMethod.GET==httpMethod;
+            final ResourceWithMetadata resource = locator.locateResource(api, templateVars, httpMethod);
+            final boolean isReadOnly = HttpMethod.GET == httpMethod;
 
             // MNT-20308 - allow write transactions for authentication api
             RetryingTransactionHelper transHelper = getTransactionHelper(resource.getMetaData().getApi().getName());
 
             // encapsulate script within transaction
-            RetryingTransactionHelper.RetryingTransactionCallback<Object> work = new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
-            {
+            RetryingTransactionHelper.RetryingTransactionCallback<Object> work = new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
                 @Override
                 public Object execute() throws Throwable
                 {
@@ -117,10 +113,10 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
                 }
             };
 
-            //This execution usually takes place in a Retrying Transaction (see subclasses)
+            // This execution usually takes place in a Retrying Transaction (see subclasses)
             final Object toSerialize = transHelper.doInTransaction(work, isReadOnly, true);
 
-            //Outside the transaction.
+            // Outside the transaction.
             if (toSerialize != null)
             {
                 if (toSerialize instanceof BinaryResource)
@@ -145,8 +141,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
                     {
                         String networkTenantDomain = TenantUtil.getCurrentDomain();
 
-                        TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Void>()
-                        {
+                        TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Void>() {
                             public Void doWork() throws Exception
                             {
                                 streamResponse(req, res, (BinaryResource) toSerialize);
@@ -170,7 +165,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
         {
             handleContentIOException(res, req, cioe);
         }
-        catch (AlfrescoRuntimeException | ApiException | WebScriptException xception )
+        catch (AlfrescoRuntimeException | ApiException | WebScriptException xception)
         {
             renderException(xception, res, req, assistant);
         }
@@ -188,14 +183,13 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
     {
         final String entityCollectionName = ResourceInspector.findEntityCollectionNameName(resource.getMetaData());
         final ResourceOperation operation = resource.getMetaData().getOperation(getHttpMethod());
-        final WithResponse callBack = new WithResponse(operation.getSuccessStatus(), DEFAULT_JSON_CONTENT,CACHE_NEVER);
+        final WithResponse callBack = new WithResponse(operation.getSuccessStatus(), DEFAULT_JSON_CONTENT, CACHE_NEVER);
 
         // MNT-20308 - allow write transactions for authentication api
         RetryingTransactionHelper transHelper = getTransactionHelper(resource.getMetaData().getApi().getName());
 
         Object toReturn = transHelper.doInTransaction(
-                new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
-                {
+                new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
                     @Override
                     public Object execute() throws Throwable
                     {
@@ -203,12 +197,12 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
                         Object result = executeAction(resource, params, callBack);
                         if (result instanceof BinaryResource)
                         {
-                            return result; //don't postprocess it.
+                            return result; // don't postprocess it.
                         }
-        return helper.processAdditionsToTheResponse(res, resource.getMetaData().getApi(), entityCollectionName, params, result);
+                        return helper.processAdditionsToTheResponse(res, resource.getMetaData().getApi(), entityCollectionName, params, result);
                     }
                 }, isReadOnly, false);
-        setResponse(res,callBack);
+        setResponse(res, callBack);
         return toReturn;
     }
 

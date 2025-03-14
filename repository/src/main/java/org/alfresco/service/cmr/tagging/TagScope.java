@@ -39,12 +39,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface TagScope
 {
     NodeRef getNodeRef();
-    
+
     List<TagDetails> getTags();
-    
+
     List<TagDetails> getTags(int topN);
-    
+
     TagDetails getTag(String tag);
-    
+
     boolean isTagInScope(String tag);
 }

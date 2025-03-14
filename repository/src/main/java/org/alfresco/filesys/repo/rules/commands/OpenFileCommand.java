@@ -25,8 +25,6 @@
  */
 package org.alfresco.filesys.repo.rules.commands;
 
-import java.util.List;
-
 import org.alfresco.filesys.repo.OpenFileMode;
 import org.alfresco.filesys.repo.rules.Command;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
@@ -42,7 +40,7 @@ public class OpenFileCommand implements Command
     private boolean truncate = false;
     private String path;
     private NodeRef rootNode;
-    
+
     /**
      * 
      * @param name
@@ -64,22 +62,22 @@ public class OpenFileCommand implements Command
     {
         return name;
     }
-    
+
     public String getPath()
     {
         return path;
     }
-    
+
     public NodeRef getRootNodeRef()
     {
         return rootNode;
     }
-    
+
     public OpenFileMode getMode()
     {
         return mode;
     }
-    
+
     public boolean isTruncate()
     {
         return truncate;

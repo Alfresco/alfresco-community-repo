@@ -26,14 +26,6 @@
 
 package org.alfresco.rest.api.tests.util;
 
-
-
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
-import org.apache.commons.httpclient.params.HttpMethodParams;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -43,6 +35,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.httpclient.methods.multipart.FilePart;
+import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
+import org.apache.commons.httpclient.methods.multipart.Part;
+import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.apache.commons.httpclient.params.HttpMethodParams;
 
 /**
  * <i><b>multipart/form-data</b></i> builder.
@@ -66,8 +64,7 @@ public class MultiPartBuilder
     private Map<String, String> properties = Collections.emptyMap();
 
     private MultiPartBuilder()
-    {
-    }
+    {}
 
     private MultiPartBuilder(MultiPartBuilder that)
     {
@@ -176,7 +173,7 @@ public class MultiPartBuilder
 
     private String getCommaSeparated(List<String> names)
     {
-        if (! names.isEmpty())
+        if (!names.isEmpty())
         {
             StringBuilder sb = new StringBuilder(names.size() * 2);
             for (String str : names)

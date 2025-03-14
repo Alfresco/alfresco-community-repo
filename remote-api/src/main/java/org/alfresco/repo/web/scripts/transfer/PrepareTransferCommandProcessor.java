@@ -27,11 +27,8 @@
 package org.alfresco.repo.web.scripts.transfer;
 
 import java.io.StringWriter;
-
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.alfresco.service.cmr.transfer.TransferException;
-import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Status;
@@ -41,6 +38,9 @@ import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
 import org.springframework.extensions.webscripts.json.JSONWriter;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
 
+import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.cmr.transfer.TransferReceiver;
+
 /**
  * 
  * @author mrogers
@@ -49,22 +49,19 @@ import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest
 public class PrepareTransferCommandProcessor implements CommandProcessor
 {
     private static final String MSG_CAUGHT_UNEXPECTED_EXCEPTION = "transfer_service.receiver.caught_unexpected_exception";
-    
+
     private static Log logger = LogFactory.getLog(PrepareTransferCommandProcessor.class);
 
     private TransferReceiver receiver;
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.web.scripts.transfer.CommandProcessor#process(org.alfresco .web.scripts.WebScriptRequest,
-     * org.alfresco.web.scripts.WebScriptResponse)
-     */
+     * @see org.alfresco.repo.web.scripts.transfer.CommandProcessor#process(org.alfresco .web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse) */
     public int process(WebScriptRequest req, WebScriptResponse resp)
     {
         String transferRecordId = null;
 
-        //Read the transfer id from the request
+        // Read the transfer id from the request
         // Unwrap to a WebScriptServletRequest if we have one
         WebScriptServletRequest webScriptServletRequest = null;
         WebScriptRequest current = req;
@@ -83,12 +80,11 @@ public class PrepareTransferCommandProcessor implements CommandProcessor
             {
                 current = null;
             }
-        }
-        while (current != null);
+        } while (current != null);
         HttpServletRequest servletRequest = webScriptServletRequest.getHttpServletRequest();
         String transferId = servletRequest.getParameter("transferId");
 
-        if (transferId == null) 
+        if (transferId == null)
         {
             logger.debug("transferId is missing");
             resp.setStatus(Status.STATUS_BAD_REQUEST);
@@ -118,7 +114,7 @@ public class PrepareTransferCommandProcessor implements CommandProcessor
             logger.debug("prepared transferId: " + transferId);
 
             return Status.STATUS_OK;
-        } 
+        }
         catch (Exception ex)
         {
             logger.debug("in exception handler", ex);
@@ -132,12 +128,12 @@ public class PrepareTransferCommandProcessor implements CommandProcessor
     }
 
     /**
-     * @param receiver the receiver to set
+     * @param receiver
+     *            the receiver to set
      */
     public void setReceiver(TransferReceiver receiver)
     {
         this.receiver = receiver;
     }
 
-    
 }

@@ -29,11 +29,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.JSONtoFmModel;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
+
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.JSONtoFmModel;
 
 /**
  * Activity Feed DAO
@@ -49,7 +50,7 @@ public class ActivityFeedEntity
     public static final String KEY_ACTIVITY_FEED_SITE = "siteNetwork";
     public static final String KEY_ACTIVITY_FEED_TYPE = "activityType";
     public static final String KEY_ACTIVITY_FEED_SUMMARY = "activitySummary";
-    
+
     private Long id; // internal DB-generated id
     private String activityType;
     private String activitySummary;
@@ -61,33 +62,32 @@ public class ActivityFeedEntity
     private Date postDate;
     private Date feedDate; // for debug
     private long postId; // for debug - not an explicit FK constraint, could be used to implement re-generate
-    
 
     public Long getId()
     {
         return id;
     }
-    
+
     public void setId(Long id)
     {
         this.id = id;
     }
-    
+
     public String getActivitySummary()
     {
         return activitySummary;
     }
-    
+
     public void setActivitySummary(String summary)
     {
         this.activitySummary = summary;
     }
-    
+
     public String getFeedUserId()
     {
         return feedUserId;
     }
-    
+
     public void setFeedUserId(String userid)
     {
         if (userid != null && userid.length() > 0)
@@ -95,39 +95,40 @@ public class ActivityFeedEntity
             this.feedUserId = userid;
         }
     }
-    
+
     public String getPostUserId()
     {
         return postUserId;
     }
-    
+
     public void setPostUserId(String userid)
     {
         this.postUserId = userid;
     }
-    
-    public String getSiteNetwork() 
+
+    public String getSiteNetwork()
     {
         return siteNetwork;
     }
-    
-    public void setSiteNetwork(String siteNetwork) 
+
+    public void setSiteNetwork(String siteNetwork)
     {
         if (siteNetwork != null && siteNetwork.length() > 0)
         {
             this.siteNetwork = siteNetwork;
         }
     }
-	
+
     public String getActivityType()
     {
         return activityType;
     }
+
     public void setActivityType(String activityType)
     {
         this.activityType = activityType;
     }
-    
+
     public Date getPostDate()
     {
         return postDate;
@@ -137,7 +138,7 @@ public class ActivityFeedEntity
     {
         this.postDate = postDate;
     }
-    
+
     public long getPostId()
     {
         return postId;
@@ -147,7 +148,7 @@ public class ActivityFeedEntity
     {
         this.postId = postId;
     }
-    
+
     public Date getFeedDate()
     {
         return feedDate;
@@ -177,41 +178,47 @@ public class ActivityFeedEntity
     {
         this.appTool = appTool;
     }
-    
+
     public String getJSONString() throws JSONException
     {
         JSONObject jo = new JSONObject();
-        
+
         jo.put(KEY_ACTIVITY_FEED_ID, id);
-        
+
         jo.put(KEY_ACTIVITY_FEED_POST_USERID, postUserId);
         if (postUserAvatarNodeRef != null)
         {
             jo.put(KEY_ACTIVITY_FEED_POST_USER_AVATAR_NODE, postUserAvatarNodeRef.toString());
         }
         jo.put(KEY_ACTIVITY_FEED_POST_DATE, ISO8601DateFormat.format(postDate));
-        
-        if (getFeedUserId() != null) { jo.put(KEY_ACTIVITY_FEED_USERID, getFeedUserId()); } // eg. site feed
+
+        if (getFeedUserId() != null)
+        {
+            jo.put(KEY_ACTIVITY_FEED_USERID, getFeedUserId());
+        } // eg. site feed
         jo.put(KEY_ACTIVITY_FEED_SITE, siteNetwork);
         jo.put(KEY_ACTIVITY_FEED_TYPE, getActivityType());
         jo.put(KEY_ACTIVITY_FEED_SUMMARY, getActivitySummary());
-        
+
         return jo.toString();
     }
-    
+
     public Map<String, Object> getModel() throws JSONException
     {
         Map<String, Object> map = new HashMap<String, Object>();
-        
+
         map.put(KEY_ACTIVITY_FEED_ID, id);
-        
+
         map.put(KEY_ACTIVITY_FEED_POST_USERID, getPostUserId());
         map.put(KEY_ACTIVITY_FEED_POST_DATE, getPostDate());
-        
-        if (getFeedUserId() != null) { map.put(KEY_ACTIVITY_FEED_USERID, getFeedUserId()); } // eg. site feed
+
+        if (getFeedUserId() != null)
+        {
+            map.put(KEY_ACTIVITY_FEED_USERID, getFeedUserId());
+        } // eg. site feed
         map.put(KEY_ACTIVITY_FEED_SITE, getSiteNetwork());
         map.put(KEY_ACTIVITY_FEED_TYPE, getActivityType());
-        
+
         if (getActivitySummary() != null)
         {
             map.put(KEY_ACTIVITY_FEED_SUMMARY, JSONtoFmModel.convertJSONObjectToMap(getActivitySummary()));
@@ -220,10 +227,10 @@ public class ActivityFeedEntity
         {
             map.put(KEY_ACTIVITY_FEED_SUMMARY, getActivitySummary());
         }
-        
+
         return map;
     }
-    
+
     // for debug only
     public String toString()
     {

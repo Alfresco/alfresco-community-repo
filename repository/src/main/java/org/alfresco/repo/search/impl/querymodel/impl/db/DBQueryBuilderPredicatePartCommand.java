@@ -42,13 +42,13 @@ public class DBQueryBuilderPredicatePartCommand
     Object[] values;
 
     String alias;
-    
+
     QName qName;
-    
+
     DBQueryBuilderJoinCommandType joinCommandType;
 
     LuceneFunction function;
-    
+
     Long qnameId;
 
     /**
@@ -60,13 +60,14 @@ public class DBQueryBuilderPredicatePartCommand
     }
 
     /**
-     * @param qnameId the qnameId to set
+     * @param qnameId
+     *            the qnameId to set
      */
     public void setQnameId(Long qnameId)
     {
         this.qnameId = qnameId;
     }
-    
+
     /**
      * @return the joinCommandType
      */
@@ -76,7 +77,8 @@ public class DBQueryBuilderPredicatePartCommand
     }
 
     /**
-     * @param joinCommandType the joinCommandType to set
+     * @param joinCommandType
+     *            the joinCommandType to set
      */
     public void setJoinCommandType(DBQueryBuilderJoinCommandType joinCommandType)
     {
@@ -92,7 +94,8 @@ public class DBQueryBuilderPredicatePartCommand
     }
 
     /**
-     * @param type the type to set
+     * @param type
+     *            the type to set
      */
     public void setType(DBQueryBuilderPredicatePartCommandType type)
     {
@@ -108,7 +111,8 @@ public class DBQueryBuilderPredicatePartCommand
     }
 
     /**
-     * @param fieldName the fieldName to set
+     * @param fieldName
+     *            the fieldName to set
      */
     public void setFieldName(String fieldName)
     {
@@ -124,7 +128,8 @@ public class DBQueryBuilderPredicatePartCommand
     }
 
     /**
-     * @param value the value to set
+     * @param value
+     *            the value to set
      */
     public void setValue(Object value)
     {
@@ -140,7 +145,8 @@ public class DBQueryBuilderPredicatePartCommand
     }
 
     /**
-     * @param values the values to set
+     * @param values
+     *            the values to set
      */
     public void setValues(Object[] values)
     {
@@ -156,7 +162,8 @@ public class DBQueryBuilderPredicatePartCommand
     }
 
     /**
-     * @param alias the joinAlias to set
+     * @param alias
+     *            the joinAlias to set
      */
     public void setAlias(String alias)
     {
@@ -182,7 +189,8 @@ public class DBQueryBuilderPredicatePartCommand
     }
 
     /**
-     * @param function the function to set
+     * @param function
+     *            the function to set
      */
     public void setFunction(LuceneFunction function)
     {
@@ -191,24 +199,24 @@ public class DBQueryBuilderPredicatePartCommand
 
     public String getFieldAndFunction()
     {
-        if(function != null)
+        if (function != null)
         {
-            if(function == LuceneFunction.LOWER)
+            if (function == LuceneFunction.LOWER)
             {
-                return "LOWER( "+alias +"." +fieldName+") ";
+                return "LOWER( " + alias + "." + fieldName + ") ";
             }
-            else if(function == LuceneFunction.UPPER)
+            else if (function == LuceneFunction.UPPER)
             {
-                return "UPPER( "+alias +"." +fieldName+") ";
+                return "UPPER( " + alias + "." + fieldName + ") ";
             }
             else
             {
-                return alias +"." +fieldName;
+                return alias + "." + fieldName;
             }
         }
         else
         {
-            return alias +"." +fieldName;
+            return alias + "." + fieldName;
         }
     }
 }

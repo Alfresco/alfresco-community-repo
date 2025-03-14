@@ -30,6 +30,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ObjectStorageProps;
 import org.alfresco.repo.download.DownloadModel;
@@ -48,8 +51,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -69,7 +70,7 @@ public class DownloadsImpl implements Downloads
     private int archiveCheckLimit;
     public static final String DEFAULT_ARCHIVE_NAME = "archive.zip";
     public static final String DEFAULT_ARCHIVE_EXTENSION = ".zip";
-    public static final String [] CLOUD_CONNECTOR_MODULES = {"org_alfresco_integrations_AzureConnector", "org_alfresco_integrations_S3Connector"};
+    public static final String[] CLOUD_CONNECTOR_MODULES = {"org_alfresco_integrations_AzureConnector", "org_alfresco_integrations_S3Connector"};
 
     public void setDownloadService(DownloadService downloadService)
     {
@@ -94,7 +95,7 @@ public class DownloadsImpl implements Downloads
     public void setNodes(Nodes nodes)
     {
         this.nodes = nodes;
-    }    
+    }
 
     public void setPermissionService(PermissionService permissionService)
     {
@@ -110,21 +111,19 @@ public class DownloadsImpl implements Downloads
     public Download createDownloadNode(Download download)
     {
         checkEmptyNodeIds(download);
-        
+
         checkDuplicateNodeId(download);
-        
+
         NodeRef[] zipContentNodeRefs = validateAndGetNodeRefs(download);
-        
+
         checkNodeIdsReadPermission(zipContentNodeRefs);
-        
+
         checkArchiveStatus(zipContentNodeRefs, archiveCheckLimit);
 
         NodeRef zipNodeRef = downloadService.createDownload(zipContentNodeRefs, true);
-        
-        String archiveName = zipContentNodeRefs.length > 1 ?
-                                 DEFAULT_ARCHIVE_NAME : 
-                                 nodeService.getProperty(zipContentNodeRefs[0], ContentModel.PROP_NAME) + DEFAULT_ARCHIVE_EXTENSION;
-        
+
+        String archiveName = zipContentNodeRefs.length > 1 ? DEFAULT_ARCHIVE_NAME : nodeService.getProperty(zipContentNodeRefs[0], ContentModel.PROP_NAME) + DEFAULT_ARCHIVE_EXTENSION;
+
         nodeService.setProperty(zipNodeRef, ContentModel.PROP_NAME, archiveName);
         Download downloadInfo = getStatus(zipNodeRef);
         return downloadInfo;
@@ -134,9 +133,9 @@ public class DownloadsImpl implements Downloads
     public Download getDownloadStatus(String downloadNodeId)
     {
         NodeRef downloadNodeRef = nodes.validateNode(downloadNodeId);
-        
+
         checkIsDownloadNodeType(downloadNodeRef);
-        
+
         Download downloadInfo = getStatus(downloadNodeRef);
         return downloadInfo;
     }
@@ -146,22 +145,23 @@ public class DownloadsImpl implements Downloads
     {
         NodeRef downloadNodeRef = nodes.validateNode(downloadNodeId);
         checkIsDownloadNodeType(downloadNodeRef);
-        
+
         downloadService.cancelDownload(downloadNodeRef);
-    }    
+    }
 
     protected NodeRef[] validateAndGetNodeRefs(Download download)
     {
         return download.getNodeIds().stream()
-                                    .map(nodeRef -> nodes.validateNode(nodeRef))
-                                    .toArray(NodeRef[]::new);
+                .map(nodeRef -> nodes.validateNode(nodeRef))
+                .toArray(NodeRef[]::new);
     }
 
     protected void checkNodeIdsReadPermission(NodeRef[] zipContentNodeRefs)
     {
         for (NodeRef nodeRef : zipContentNodeRefs)
         {
-            if (permissionService.hasReadPermission(nodeRef).equals(AccessStatus.DENIED)){
+            if (permissionService.hasReadPermission(nodeRef).equals(AccessStatus.DENIED))
+            {
                 throw new PermissionDeniedException();
             }
         }
@@ -169,7 +169,8 @@ public class DownloadsImpl implements Downloads
 
     protected void checkDuplicateNodeId(Download download)
     {
-        if(download.getNodeIds().size() != new HashSet<String>(download.getNodeIds()).size()){
+        if (download.getNodeIds().size() != new HashSet<String>(download.getNodeIds()).size())
+        {
             throw new InvalidArgumentException("Cannot specify the same nodeId twice");
         }
     }
@@ -181,15 +182,16 @@ public class DownloadsImpl implements Downloads
             throw new InvalidArgumentException("Cannot create an archive with 0 entries.");
         }
     }
-    
+
     protected void checkIsDownloadNodeType(NodeRef downloadNodeRef)
     {
         QName nodeIdType = this.nodeService.getType(downloadNodeRef);
-        
-        if(!nodeIdType.equals(DownloadModel.TYPE_DOWNLOAD)){ 
-            throw new InvalidArgumentException("Please specify the nodeId of a download node."); 
+
+        if (!nodeIdType.equals(DownloadModel.TYPE_DOWNLOAD))
+        {
+            throw new InvalidArgumentException("Please specify the nodeId of a download node.");
         }
-    }    
+    }
 
     private Download getStatus(NodeRef downloadNodeRef)
     {
@@ -205,58 +207,55 @@ public class DownloadsImpl implements Downloads
     }
 
     /**
-     * Checks the supplied nodes for any content that is archived.
-     * Any folders will be expanded and their children checked.
-     * A limit can be applied to prevent large sized requests preventing the asynchronous call to start.
+     * Checks the supplied nodes for any content that is archived. Any folders will be expanded and their children checked. A limit can be applied to prevent large sized requests preventing the asynchronous call to start.
      * 
      * @param nodeRefs
-     * @param checkLimit The maximum number of nodes to check, set to -1 for no limit
+     * @param checkLimit
+     *            The maximum number of nodes to check, set to -1 for no limit
      * @see #checkArchiveStatus(NodeRef[], int, Set)
      */
     protected void checkArchiveStatus(NodeRef[] nodeRefs, int checkLimit)
     {
-        if (canCheckArchived()) 
+        if (canCheckArchived())
         {
             checkArchiveStatus(nodeRefs, checkLimit, null);
         }
     }
 
     /**
-     * Checks the supplied nodes for any content that is archived.
-     * Any folders will be expanded and their children checked.
-     * A limit can be applied to prevent large sized requests preventing the asynchronous call to start.
-     * The cache is used to prevent duplication of checks, as it is possible to provide a folder and its contents as 
-     * separate nodes in the download request.
+     * Checks the supplied nodes for any content that is archived. Any folders will be expanded and their children checked. A limit can be applied to prevent large sized requests preventing the asynchronous call to start. The cache is used to prevent duplication of checks, as it is possible to provide a folder and its contents as separate nodes in the download request.
      * 
      * @param nodeRefs
-     * @param checkLimit The maximum number of nodes to check, set to -1 for no limit
-     * @param cache Tracks nodes that we have already checked, if null an empty cache will be created
+     * @param checkLimit
+     *            The maximum number of nodes to check, set to -1 for no limit
+     * @param cache
+     *            Tracks nodes that we have already checked, if null an empty cache will be created
      */
     private void checkArchiveStatus(NodeRef[] nodeRefs, int checkLimit, Set<NodeRef> cache)
     {
         // Create the cache for recursive calls.
-        if (cache == null) 
+        if (cache == null)
         {
             cache = new HashSet<NodeRef>();
         }
 
         Set<NodeRef> folders = new HashSet<NodeRef>();
-        for (NodeRef nodeRef : nodeRefs) 
+        for (NodeRef nodeRef : nodeRefs)
         {
             // We hit the number of nodes we want to check.
-            if (cache.size() == checkLimit) 
+            if (cache.size() == checkLimit)
             {
                 if (logger.isInfoEnabled())
                 {
                     logger.info(
-                        String.format(
-                                "Maximum check of %d reached for archived content. No more checks will be performed and download will still be created.",
-                                checkLimit));
+                            String.format(
+                                    "Maximum check of %d reached for archived content. No more checks will be performed and download will still be created.",
+                                    checkLimit));
                 }
                 return;
             }
             // Already checked this node, we can skip.
-            if (cache.contains(nodeRef)) 
+            if (cache.contains(nodeRef))
             {
                 continue;
             }
@@ -265,7 +264,7 @@ public class DownloadsImpl implements Downloads
             if (qName.equals(ContentModel.TYPE_FOLDER))
             {
                 // We'll check the child nodes at the end in case there are other nodes in this loop that is archived.
-                folders.add(nodeRef); 
+                folders.add(nodeRef);
             }
             else if (qName.equals(ContentModel.TYPE_CONTENT))
             {
@@ -279,17 +278,17 @@ public class DownloadsImpl implements Downloads
         }
 
         // We re-run the folder contents at the end in case we hit content that is archived in the first loop and can stop early.
-        for (NodeRef nodeRef : folders) 
+        for (NodeRef nodeRef : folders)
         {
             NodeRef[] childRefs = nodeService.getChildAssocs(nodeRef).stream()
-                                                                     .map(childAssoc -> childAssoc.getChildRef())
-                                                                     .toArray(NodeRef[]::new);
+                    .map(childAssoc -> childAssoc.getChildRef())
+                    .toArray(NodeRef[]::new);
             checkArchiveStatus(childRefs, checkLimit, cache); // We'll keep going until we have no more folders in children.
         }
     }
 
     protected boolean canCheckArchived()
     {
-        return Arrays.stream(CLOUD_CONNECTOR_MODULES).anyMatch(m-> moduleService.getModule(m) != null);
+        return Arrays.stream(CLOUD_CONNECTOR_MODULES).anyMatch(m -> moduleService.getModule(m) != null);
     }
 }

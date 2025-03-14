@@ -26,11 +26,15 @@
 
 package org.alfresco.rest.categories;
 
-import static org.alfresco.utility.data.RandomData.getRandomName;
-import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertTrue;
+
+import static org.alfresco.utility.data.RandomData.getRandomName;
+import static org.alfresco.utility.report.log.Step.STEP;
+
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.model.RestCategoryLinkBodyModel;
@@ -41,8 +45,6 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class CategoriesPathTests extends CategoriesRestTest
 {
@@ -76,7 +78,7 @@ public class CategoriesPathTests extends CategoriesRestTest
     /**
      * Verify path for a category got by ID.
      */
-    @Test(groups = { TestGroup.REST_API })
+    @Test(groups = {TestGroup.REST_API})
     public void testGetCategoryById_includePath()
     {
         STEP("Get category and verify if path is a general path for categories");
@@ -94,7 +96,7 @@ public class CategoriesPathTests extends CategoriesRestTest
     /**
      * Verify path for category.
      */
-    @Test(groups = { TestGroup.REST_API })
+    @Test(groups = {TestGroup.REST_API})
     public void testGetCategories_includePath()
     {
         STEP("Get few categories and verify its paths");
@@ -114,7 +116,7 @@ public class CategoriesPathTests extends CategoriesRestTest
     /**
      * Verify path for child category.
      */
-    @Test(groups = { TestGroup.REST_API })
+    @Test(groups = {TestGroup.REST_API})
     public void testGetChildCategory_includePath()
     {
         STEP("Create parent and child categories");
@@ -137,7 +139,7 @@ public class CategoriesPathTests extends CategoriesRestTest
     /**
      * Create category and verify that it has a path.
      */
-    @Test(groups = { TestGroup.REST_API })
+    @Test(groups = {TestGroup.REST_API})
     public void testCreateCategory_includingPath()
     {
         STEP("Create a category under root and verify if path is a general path for categories");
@@ -158,7 +160,7 @@ public class CategoriesPathTests extends CategoriesRestTest
     /**
      * Update category and verify that it has a path.
      */
-    @Test(groups = { TestGroup.REST_API })
+    @Test(groups = {TestGroup.REST_API})
     public void testUpdateCategory_includePath()
     {
         STEP("Update linked category and verify if path is a general path for categories");
@@ -178,7 +180,7 @@ public class CategoriesPathTests extends CategoriesRestTest
     /**
      * Link node to categories and verify that they have path.
      */
-    @Test(groups = { TestGroup.REST_API })
+    @Test(groups = {TestGroup.REST_API})
     public void testLinkNodeToCategories_includePath()
     {
         STEP("Link node to categories and verify if path is a general path");
@@ -197,7 +199,7 @@ public class CategoriesPathTests extends CategoriesRestTest
     /**
      * List categories for given node and verify that they have a path.
      */
-    @Test(groups = { TestGroup.REST_API })
+    @Test(groups = {TestGroup.REST_API})
     public void testListCategoriesForNode_includePath()
     {
         STEP("Link file to category");

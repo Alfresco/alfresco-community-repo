@@ -37,8 +37,8 @@ import org.alfresco.repo.forms.processor.FieldProcessorRegistry;
 public class ContentModelFieldProcessorRegistry extends FieldProcessorRegistry
 {
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.FieldProcessorRegistry#getKey(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.FieldProcessorRegistry#getKey(java.lang.String) */
     @Override
     protected String getKey(String fieldName)
     {
@@ -47,15 +47,15 @@ public class ContentModelFieldProcessorRegistry extends FieldProcessorRegistry
         {
             return parts[0];
         }
-        else 
+        else
         {
             return null;
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.FieldProcessorRegistry#useDefaultProcessor(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.FieldProcessorRegistry#useDefaultProcessor(java.lang.String) */
     @Override
     protected boolean useDefaultProcessor(String fieldName)
     {

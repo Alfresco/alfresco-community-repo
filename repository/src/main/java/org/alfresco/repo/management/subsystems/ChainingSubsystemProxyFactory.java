@@ -37,12 +37,7 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 
 /**
- * A factory bean, used in conjunction with {@link ChildApplicationContextManager} allowing selected interfaces to be
- * proxied to a chain of child application contexts. To decide the target of a particular method call, the returned
- * proxy will search the application context chain in sequence and use the first one that has a bean of the required
- * name or type that doesn't implement the {@link org.alfresco.repo.management.subsystems.ActivateableBean} interface or whose whose
- * {@link ActivateableBean#isActive()} method returns <code>true</code>. This allows certain functions of a chained
- * subsystem (e.g. CIFS authentication, SSO) to be targeted to specific members of the chain.
+ * A factory bean, used in conjunction with {@link ChildApplicationContextManager} allowing selected interfaces to be proxied to a chain of child application contexts. To decide the target of a particular method call, the returned proxy will search the application context chain in sequence and use the first one that has a bean of the required name or type that doesn't implement the {@link org.alfresco.repo.management.subsystems.ActivateableBean} interface or whose whose {@link ActivateableBean#isActive()} method returns <code>true</code>. This allows certain functions of a chained subsystem (e.g. CIFS authentication, SSO) to be targeted to specific members of the chain.
  */
 public class ChainingSubsystemProxyFactory extends ProxyFactoryBean
 {
@@ -62,8 +57,7 @@ public class ChainingSubsystemProxyFactory extends ProxyFactoryBean
      */
     public ChainingSubsystemProxyFactory()
     {
-        addAdvisor(new DefaultPointcutAdvisor(new MethodInterceptor()
-        {
+        addAdvisor(new DefaultPointcutAdvisor(new MethodInterceptor() {
             public Object invoke(MethodInvocation mi) throws Throwable
             {
                 Method method = mi.getMethod();
@@ -150,10 +144,9 @@ public class ChainingSubsystemProxyFactory extends ProxyFactoryBean
         }));
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.aop.framework.AdvisedSupport#setInterfaces(java.lang.Class[])
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.springframework.aop.framework.AdvisedSupport#setInterfaces(java.lang.Class[]) */
     @SuppressWarnings("rawtypes")
     @Override
     public void setInterfaces(Class... interfaces)
@@ -175,8 +168,7 @@ public class ChainingSubsystemProxyFactory extends ProxyFactoryBean
     }
 
     /**
-     * Sets an optional bean name to target all calls to in the source application context. If not set, an appropriate
-     * bean is looked up based on method class.
+     * Sets an optional bean name to target all calls to in the source application context. If not set, an appropriate bean is looked up based on method class.
      * 
      * @param sourceBeanName
      *            the sourceBeanName to set
@@ -187,8 +179,7 @@ public class ChainingSubsystemProxyFactory extends ProxyFactoryBean
     }
 
     /**
-     * Sets the default target for method calls, when a suitable target cannot be found in the application context
-     * chain.
+     * Sets the default target for method calls, when a suitable target cannot be found in the application context chain.
      * 
      * @param defaultTarget
      *            the defaultTarget to set

@@ -36,6 +36,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import freemarker.ext.dom.NodeModel;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.xml.sax.InputSource;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParams;
@@ -46,7 +51,6 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -61,21 +65,13 @@ import org.alfresco.service.namespace.QNameMap;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.UrlUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.xml.sax.InputSource;
-
-import freemarker.ext.dom.NodeModel;
 
 /**
- * Node class specific for use by Template pages that support Bean objects as part of the model.
- * The default template engine FreeMarker can use these objects and they are provided to support it.
- * A single method is completely freemarker specific - getXmlNodeModel()
+ * Node class specific for use by Template pages that support Bean objects as part of the model. The default template engine FreeMarker can use these objects and they are provided to support it. A single method is completely freemarker specific - getXmlNodeModel()
  * <p>
  * The class exposes Node properties, children as dynamically populated maps and lists.
  * <p>
- * Various helper methods are provided to access common and useful node variables such
- * as the content url and type information. 
+ * Various helper methods are provided to access common and useful node variables such as the content url and type information.
  * <p>
  * See <a href="http://wiki.alfresco.com/wiki/Template_Guide">Template_Guide</a>
  * 
@@ -84,15 +80,15 @@ import freemarker.ext.dom.NodeModel;
 public class TemplateNode extends BasePermissionsNode implements NamespacePrefixResolverProvider
 {
     private static final long serialVersionUID = 1234390333739034171L;
-    
+
     private static Log logger = LogFactory.getLog(TemplateNode.class);
-    
+
     /** Target associations from this node */
     private Map<String, List<TemplateNode>> targetAssocs = null;
-    
+
     /** Source associations to this node */
     private Map<String, List<TemplateNode>> sourceAssocs = null;
-    
+
     /** The child associations from this node */
     private Map<String, List<TemplateNode>> childAssocs = null;
 
@@ -108,19 +104,21 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
     private TemplateNode parent = null;
     private ChildAssociationRef primaryParentAssoc = null;
     private Boolean isCategory = null;
-    
+
     private PropertyConverter propertyConverter = new TemplatePropertyConverter();
-    
-    
+
     // ------------------------------------------------------------------------------
-    // Construction 
-    
+    // Construction
+
     /**
      * Constructor
      * 
-     * @param nodeRef       The NodeRef this Node wrapper represents
-     * @param services      The ServiceRegistry the TemplateNode can use to access services
-     * @param resolver      Image resolver to use to retrieve icons
+     * @param nodeRef
+     *            The NodeRef this Node wrapper represents
+     * @param services
+     *            The ServiceRegistry the TemplateNode can use to access services
+     * @param resolver
+     *            Image resolver to use to retrieve icons
      */
     public TemplateNode(NodeRef nodeRef, ServiceRegistry services, TemplateImageResolver resolver)
     {
@@ -128,24 +126,23 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
         {
             throw new IllegalArgumentException("NodeRef must be supplied.");
         }
-      
+
         if (services == null)
         {
             throw new IllegalArgumentException("The ServiceRegistry must be supplied.");
         }
-        
+
         this.nodeRef = nodeRef;
         this.id = nodeRef.getId();
         this.services = services;
         this.imageResolver = resolver;
-        
+
         this.properties = new QNameMap<String, Serializable>(this);
     }
-    
-    
+
     // ------------------------------------------------------------------------------
     // TemplateNodeRef contract implementation
-    
+
     /**
      * @return The GUID for the node
      */
@@ -153,23 +150,23 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
     {
         return this.id;
     }
-    
+
     /**
-     * @return  the store type for the node
+     * @return the store type for the node
      */
     public String getStoreType()
     {
         return this.nodeRef.getStoreRef().getProtocol();
     }
-    
+
     /**
-     * @return  the store id for the node
+     * @return the store id for the node
      */
     public String getStoreId()
     {
         return this.nodeRef.getStoreRef().getIdentifier();
     }
-    
+
     /**
      * @return Returns the NodeRef this Node object represents
      */
@@ -177,7 +174,7 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
     {
         return this.nodeRef;
     }
-    
+
     /**
      * @return <code>true</code> if this node still exists
      */
@@ -185,7 +182,7 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
     {
         return this.services.getNodeService().exists(this.nodeRef);
     }
-    
+
     /**
      * @return <code>true</code> if this node is a working copy
      */
@@ -203,7 +200,7 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
         {
             this.type = this.services.getNodeService().getType(this.nodeRef);
         }
-        
+
         return type;
     }
 
@@ -235,8 +232,8 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
         if (this.name == null)
         {
             // try and get the name from the properties first
-            this.name = (String)getProperties().get("cm:name");
-            
+            this.name = (String) getProperties().get("cm:name");
+
             // if we didn't find it as a property get the name from the association name
             if (this.name == null)
             {
@@ -251,14 +248,13 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
                 }
             }
         }
-        
+
         return this.name;
     }
-    
-    
+
     // ------------------------------------------------------------------------------
     // TemplateProperties contract implementation
-    
+
     /**
      * @return All the properties known about this node.
      */
@@ -267,26 +263,25 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
         if (this.propsRetrieved == false)
         {
             Map<QName, Serializable> props = this.services.getNodeService().getProperties(this.nodeRef);
-            
+
             for (QName qname : props.keySet())
             {
                 Serializable value = this.propertyConverter.convertProperty(
                         props.get(qname), qname, this.services, getImageResolver());
                 this.properties.put(qname.toString(), value);
             }
-            
+
             this.propsRetrieved = true;
         }
-        
+
         return this.properties;
     }
-    
-    
+
     // ------------------------------------------------------------------------------
     // Repository Node API
-    
+
     /**
-     * @return Target associations for this Node. As a Map of assoc name to a List of TemplateNodes. 
+     * @return Target associations for this Node. As a Map of assoc name to a List of TemplateNodes.
      */
     public Map<String, List<TemplateNode>> getAssocs()
     {
@@ -304,20 +299,20 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
                     nodes = new ArrayList<TemplateNode>(4);
                     this.targetAssocs.put(ref.getTypeQName().toString(), nodes);
                 }
-                nodes.add( new TemplateNode(ref.getTargetRef(), this.services, this.imageResolver) );
+                nodes.add(new TemplateNode(ref.getTargetRef(), this.services, this.imageResolver));
             }
         }
-        
+
         return this.targetAssocs;
     }
-    
+
     public Map<String, List<TemplateNode>> getAssociations()
     {
         return getAssocs();
     }
-    
+
     /**
-     * @return Source associations for this Node. As a Map of assoc name to a List of TemplateNodes. 
+     * @return Source associations for this Node. As a Map of assoc name to a List of TemplateNodes.
      */
     public Map<String, List<TemplateNode>> getSourceAssocs()
     {
@@ -335,20 +330,20 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
                     nodes = new ArrayList<TemplateNode>(4);
                     this.sourceAssocs.put(ref.getTypeQName().toString(), nodes);
                 }
-                nodes.add( new TemplateNode(ref.getSourceRef(), this.services, this.imageResolver) );
+                nodes.add(new TemplateNode(ref.getSourceRef(), this.services, this.imageResolver));
             }
         }
-        
+
         return this.sourceAssocs;
     }
-    
+
     public Map<String, List<TemplateNode>> getSourceAssociations()
     {
         return getSourceAssocs();
     }
-    
+
     /**
-     * @return The child associations for this Node. As a Map of assoc name to a List of TemplateNodes. 
+     * @return The child associations for this Node. As a Map of assoc name to a List of TemplateNodes.
      */
     public Map<String, List<TemplateNode>> getChildAssocs()
     {
@@ -366,18 +361,18 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
                     nodes = new ArrayList<TemplateNode>(4);
                     this.childAssocs.put(ref.getTypeQName().toString(), nodes);
                 }
-                nodes.add( new TemplateNode(ref.getChildRef(), this.services, this.imageResolver) );
+                nodes.add(new TemplateNode(ref.getChildRef(), this.services, this.imageResolver));
             }
         }
-        
+
         return this.childAssocs;
     }
-    
+
     public Map<String, List<TemplateNode>> getChildAssociations()
     {
         return getChildAssocs();
     }
-    
+
     /**
      * @return The list of children of this Node that match a specific object type.
      */
@@ -390,26 +385,26 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
         for (ChildAssociationRef ref : refs)
         {
             String qname = ref.getTypeQName().toString();
-            nodes.add( new TemplateNode(ref.getChildRef(), this.services, this.imageResolver) );
+            nodes.add(new TemplateNode(ref.getChildRef(), this.services, this.imageResolver));
         }
         return nodes;
     }
-    
+
     /**
      * @return true if the node is currently locked
      */
     public boolean getIsLocked()
     {
         boolean locked = false;
-        
+
         if (getAspects().contains(ContentModel.ASPECT_LOCKABLE))
         {
             locked = this.services.getLockService().isLocked(this.nodeRef);
         }
-        
+
         return locked;
     }
-    
+
     /**
      * @return true if the node is a Category instance
      */
@@ -423,7 +418,7 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
 
         return isCategory.booleanValue();
     }
-    
+
     /**
      * @return the primary parent node
      */
@@ -438,10 +433,10 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
                 parent = new TemplateNode(parentRef, this.services, this.imageResolver);
             }
         }
-        
+
         return parent;
     }
-    
+
     /**
      * @return the primary parent association so we can access the association QName and association type QName.
      */
@@ -453,15 +448,15 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
         }
         return primaryParentAssoc;
     }
-    
+
     /**
      * @return a list of objects representing the version history of this node.
-     *         @see VersionHistoryNode
+     * @see VersionHistoryNode
      */
     public List<VersionHistoryNode> getVersionHistory()
     {
-        List<VersionHistoryNode> records = Collections.<VersionHistoryNode>emptyList();
-        
+        List<VersionHistoryNode> records = Collections.<VersionHistoryNode> emptyList();
+
         if (this.getAspects().contains(ContentModel.ASPECT_VERSIONABLE))
         {
             VersionHistory history = this.services.getVersionService().getVersionHistory(this.nodeRef);
@@ -472,20 +467,19 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
                 {
                     // create a wrapper for the version information
                     VersionHistoryNode record = new VersionHistoryNode(version, this, this.services);
-                    
+
                     // add the client side version to the list
                     records.add(record);
                 }
             }
         }
-        
+
         return records;
     }
-    
-    
+
     // ------------------------------------------------------------------------------
-    // Node Helper API 
-    
+    // Node Helper API
+
     /**
      * @return FreeMarker NodeModel for the XML content of this node, or null if no parsable XML found
      */
@@ -499,15 +493,14 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
         {
             if (logger.isDebugEnabled())
                 logger.debug(err.getMessage(), err);
-            
+
             return null;
         }
     }
-    
-    
+
     // ------------------------------------------------------------------------------
     // Search API
-    
+
     /**
      * @return A map capable of returning the TemplateNode at the specified Path as a child of this node.
      */
@@ -515,34 +508,31 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
     {
         return new NamePathResultsMap(this, this.services);
     }
-    
+
     /**
-     * @return A map capable of returning a List of TemplateNode objects from an XPath query
-     *         as children of this node.
+     * @return A map capable of returning a List of TemplateNode objects from an XPath query as children of this node.
      */
     public Map getChildrenByXPath()
     {
         return new XPathResultsMap(this, this.services);
     }
-    
+
     /**
-     * @return A map capable of returning a List of TemplateNode objects from an NodeRef to a Saved Search
-     *         object. The Saved Search is executed and the resulting nodes supplied as a sequence.
+     * @return A map capable of returning a List of TemplateNode objects from an NodeRef to a Saved Search object. The Saved Search is executed and the resulting nodes supplied as a sequence.
      */
     public Map getChildrenBySavedSearch()
     {
         return new SavedSearchResultsMap(this, this.services);
     }
-    
+
     /**
-     * @return A map capable of returning a List of TemplateNode objects from an NodeRef to a Lucene search
-     *         string. The Saved Search is executed and the resulting nodes supplied as a sequence.
+     * @return A map capable of returning a List of TemplateNode objects from an NodeRef to a Lucene search string. The Saved Search is executed and the resulting nodes supplied as a sequence.
      */
     public Map getChildrenByLuceneSearch()
     {
         return new LuceneSearchResultsMap(this, this.services);
     }
-    
+
     /**
      * @return A map capable of returning a TemplateNode for a single specified NodeRef reference.
      */
@@ -550,20 +540,19 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
     {
         return new NodeSearchResultsMap(this, this.services);
     }
-    
+
     // ------------------------------------------------------------------------------
     // Audit API
-    
+
     /**
      * @return a list of AuditInfo objects describing the Audit Trail for this node instance
      */
     public List<TemplateAuditInfo> getAuditTrail()
     {
         final List<TemplateAuditInfo> result = new ArrayList<TemplateAuditInfo>();
-        
+
         // create the callback for auditQuery method
-        final AuditQueryCallback callback = new AuditQueryCallback()
-        {
+        final AuditQueryCallback callback = new AuditQueryCallback() {
             public boolean valuesRequired()
             {
                 return true;
@@ -583,13 +572,12 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
             }
         };
 
-        // resolve the path of the node 
-        final String nodePath = ISO9075.decode(services.getNodeService().getPath(this.nodeRef).toPrefixString(services.getNamespaceService())); 
+        // resolve the path of the node
+        final String nodePath = ISO9075.decode(services.getNodeService().getPath(this.nodeRef).toPrefixString(services.getNamespaceService()));
 
         // run as admin user to allow everyone to see audit information
         // (new 3.4 API doesn't allow this by default)
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Object>() {
             public Object doWork() throws Exception
             {
                 String applicationName = "alfresco-access";
@@ -613,10 +601,9 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
                 return null;
             }
         }, AuthenticationUtil.getAdminUserName());
-        
+
         // sort audit entries by time of generation
-        Collections.sort(result, new Comparator<TemplateAuditInfo>()
-        {
+        Collections.sort(result, new Comparator<TemplateAuditInfo>() {
             public int compare(TemplateAuditInfo o1, TemplateAuditInfo o2)
             {
                 return o1.getDate().compareTo(o2.getDate());
@@ -624,10 +611,10 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
         });
         return result;
     }
-    
+
     // ------------------------------------------------------------------------------
-    // Misc helpers 
-    
+    // Misc helpers
+
     /**
      * @return the image resolver instance used by this node
      */
@@ -635,11 +622,12 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
     {
         return this.imageResolver;
     }
-    
+
     /**
      * Helper to create a QName from either a fully qualified or short-name QName string
      * 
-     * @param s    Fully qualified or short-name QName string
+     * @param s
+     *            Fully qualified or short-name QName string
      * 
      * @return QName
      */
@@ -656,13 +644,12 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
         }
         return qname;
     }
-    
+
     /**
-     * This method returns a URL string which resolves to an Alfresco Share view of this node.
-     * Note that in order for this method to return meaningful data, the {@link SysAdminParams sysAdminParams}
-     * bean must have been configured.
+     * This method returns a URL string which resolves to an Alfresco Share view of this node. Note that in order for this method to return meaningful data, the {@link SysAdminParams sysAdminParams} bean must have been configured.
      * <p/>
      * Currently this method only produces valid URls for documents and not for folders.
+     * 
      * @see SysAdminParamsImpl#setAlfrescoHost(String)
      * @see SysAdminParamsImpl#setShareHost(String)
      */
@@ -670,29 +657,28 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
     {
         // TODO URLs for the repo server.
         // TODO URLs for folders
-        
+
         String siteShortName = services.getSiteService().getSiteShortName(getNodeRef());
-        
+
         String baseUrl = UrlUtil.getShareUrl(services.getSysAdminParams());
-        
+
         StringBuilder result = new StringBuilder();
         result.append(baseUrl)
-              .append("/page/");
+                .append("/page/");
         if (siteShortName != null)
         {
             result.append("site/").append(siteShortName).append("/");
         }
-        
+
         result.append("document-details?nodeRef=")
-              .append(getNodeRef());
-        
+                .append(getNodeRef());
+
         return result.toString();
     }
-    
-    
+
     // ------------------------------------------------------------------------------
     // Inner classes
-    
+
     public NamespacePrefixResolver getNamespacePrefixResolver()
     {
         return this.services.getNamespaceService();
@@ -711,7 +697,7 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
             {
                 // ContentData object properties are converted to TemplateContentData objects
                 // so the content and other properties of those objects can be accessed
-                return new TemplateContentData((ContentData)value, name);
+                return new TemplateContentData((ContentData) value, name);
             }
             else
             {
@@ -719,7 +705,7 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
             }
         }
     }
-    
+
     public class TemplateAuditInfo
     {
         private String applicationName;
@@ -754,7 +740,7 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
         {
             return this.values.get("/alfresco-access/transaction/action").toString();
         }
-        
+
         public Map<String, Serializable> getValues()
         {
             return this.values;

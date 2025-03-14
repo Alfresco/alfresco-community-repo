@@ -47,12 +47,12 @@ import org.alfresco.service.namespace.QName;
  * @author Andy
  *
  */
-public class DBFTSFuzzyTerm extends FTSFuzzyTerm  implements DBQueryBuilderComponent
+public class DBFTSFuzzyTerm extends FTSFuzzyTerm implements DBQueryBuilderComponent
 {
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported() */
     @Override
     public boolean isSupported()
     {
@@ -60,18 +60,18 @@ public class DBFTSFuzzyTerm extends FTSFuzzyTerm  implements DBQueryBuilderCompo
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace.NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO, java.util.Set, java.util.Map, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace.NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO, java.util.Set, java.util.Map, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext) */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
             Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
-        throw new QueryModelException("Fuzzy term is unsupported");      
+        throw new QueryModelException("Fuzzy term is unsupported");
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildJoins(java.util.Map, java.util.List)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildJoins(java.util.Map, java.util.List) */
     @Override
     public void buildJoins(Map<QName, DBQueryBuilderJoinCommand> singleJoins, List<DBQueryBuilderJoinCommand> multiJoins)
     {
@@ -79,8 +79,8 @@ public class DBFTSFuzzyTerm extends FTSFuzzyTerm  implements DBQueryBuilderCompo
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildPredicateCommands(java.util.List)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildPredicateCommands(java.util.List) */
     @Override
     public void buildPredicateCommands(List<DBQueryBuilderPredicatePartCommand> predicatePartCommands)
     {

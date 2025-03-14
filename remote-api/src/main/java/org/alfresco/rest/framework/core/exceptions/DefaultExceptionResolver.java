@@ -37,7 +37,7 @@ public class DefaultExceptionResolver implements ExceptionResolver<Exception>
     public static final String STACK_MESSAGE_ID = "framework.no.stacktrace";
     public static final String ERROR_URL = "https://api-explorer.alfresco.com";
     public static final String DEFAULT_MESSAGE_ID = "framework.exception.ApiDefault";
-    
+
     @Override
     public ErrorResponse resolveException(Exception ex)
     {

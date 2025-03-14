@@ -30,6 +30,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -37,10 +41,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
 {
@@ -56,36 +56,34 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
     public void testSimpleJsonPostRequest() throws IOException, JSONException
     {
         // Retrieve and store the original property value.
-        Serializable originalDescription =
-            nodeService.getProperty(referencingDocNodeRef, ContentModel.PROP_DESCRIPTION);
+        Serializable originalDescription = nodeService.getProperty(referencingDocNodeRef, ContentModel.PROP_DESCRIPTION);
         assertEquals(TEST_FORM_DESCRIPTION, originalDescription);
-        
+
         // get the original mimetype
         String originalMimetype = null;
-        ContentData content = (ContentData)this.nodeService.getProperty(referencingDocNodeRef, ContentModel.PROP_CONTENT);
+        ContentData content = (ContentData) this.nodeService.getProperty(referencingDocNodeRef, ContentModel.PROP_CONTENT);
         if (content != null)
         {
             originalMimetype = content.getMimetype();
         }
-        
+
         // Construct some JSON to represent a new value.
         JSONObject jsonPostData = new JSONObject();
         final String proposedNewDescription = "Modified Description";
         jsonPostData.put(PROP_CM_DESCRIPTION, proposedNewDescription);
         jsonPostData.put(PROP_MIMETYPE, MimetypeMap.MIMETYPE_HTML);
-        
+
         // Submit the JSON request.
         String jsonPostString = jsonPostData.toString();
         sendRequest(new PostRequest(referencingNodeUpdateUrl, jsonPostString, APPLICATION_JSON), 200);
 
         // The nodeService should give us the modified property.
-        Serializable modifiedDescription =
-            nodeService.getProperty(referencingDocNodeRef, ContentModel.PROP_DESCRIPTION);
+        Serializable modifiedDescription = nodeService.getProperty(referencingDocNodeRef, ContentModel.PROP_DESCRIPTION);
         assertEquals(proposedNewDescription, modifiedDescription);
-        
+
         // get the modified mimetype
         String modifiedMimetype = null;
-        content = (ContentData)this.nodeService.getProperty(referencingDocNodeRef, ContentModel.PROP_CONTENT);
+        content = (ContentData) this.nodeService.getProperty(referencingDocNodeRef, ContentModel.PROP_CONTENT);
         if (content != null)
         {
             modifiedMimetype = content.getMimetype();
@@ -93,20 +91,11 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
         assertEquals(MimetypeMap.MIMETYPE_HTML, modifiedMimetype);
 
         // The Rest API should also give us the modified property.
-        /*
-        Response response = sendRequest(new GetRequest(referencingNodeUpdateUrl), 200);
-        JSONObject jsonGetResponse = new JSONObject(response.getContentAsString());
-        JSONObject jsonDataObj = (JSONObject)jsonGetResponse.get("data");
-        assertNotNull(jsonDataObj);
-
-        JSONObject formData = (JSONObject)jsonDataObj.get("formData");
-        assertNotNull(formData);
-        String retrievedValue = (String)formData.get(PROP_CM_DESCRIPTION);
-        assertEquals(modifiedDescription, retrievedValue);
-        String retrievedMimetype = (String)formData.get(PROP_MIMETYPE);
-        assertEquals(MimetypeMap.MIMETYPE_HTML, modifiedMimetype);*/
+        /* Response response = sendRequest(new GetRequest(referencingNodeUpdateUrl), 200); JSONObject jsonGetResponse = new JSONObject(response.getContentAsString()); JSONObject jsonDataObj = (JSONObject)jsonGetResponse.get("data"); assertNotNull(jsonDataObj);
+         * 
+         * JSONObject formData = (JSONObject)jsonDataObj.get("formData"); assertNotNull(formData); String retrievedValue = (String)formData.get(PROP_CM_DESCRIPTION); assertEquals(modifiedDescription, retrievedValue); String retrievedMimetype = (String)formData.get(PROP_MIMETYPE); assertEquals(MimetypeMap.MIMETYPE_HTML, modifiedMimetype); */
     }
-    
+
     /**
      * This test method attempts to add new associations between existing nodes.
      */
@@ -114,7 +103,7 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
     {
         List<NodeRef> associatedNodes;
         checkOriginalAssocsBeforeChanges();
-        
+
         // Add three additional associations
         JSONObject jsonPostData = new JSONObject();
         String assocsToAdd = associatedDoc_C + "," + associatedDoc_D + "," + associatedDoc_E;
@@ -139,30 +128,19 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
         assertTrue(associatedNodes.contains(associatedDoc_C));
         assertTrue(associatedNodes.contains(associatedDoc_D));
         assertTrue(associatedNodes.contains(associatedDoc_E));
-        
-        // The Rest API should also give us the modified assocs.
-        /*Response response = sendRequest(new GetRequest(referencingNodeUpdateUrl), 200);
-        String jsonRspString = response.getContentAsString();
-        JSONObject jsonGetResponse = new JSONObject(jsonRspString);
-        JSONObject jsonData = (JSONObject)jsonGetResponse.get("data");
-        assertNotNull(jsonData);
 
-        JSONObject jsonFormData = (JSONObject)jsonData.get("formData");
-        assertNotNull(jsonFormData);
-        
-        String jsonAssocs = (String)jsonFormData.get(ASSOC_CM_REFERENCES);
-        
-        // We expect exactly 5 assocs on the test node
-        assertEquals(5, jsonAssocs.split(",").length);
-        for (AssociationRef assocRef : modifiedAssocs)
-        {
-            assertTrue(jsonAssocs.contains(assocRef.getTargetRef().toString()));
-        }*/
+        // The Rest API should also give us the modified assocs.
+        /* Response response = sendRequest(new GetRequest(referencingNodeUpdateUrl), 200); String jsonRspString = response.getContentAsString(); JSONObject jsonGetResponse = new JSONObject(jsonRspString); JSONObject jsonData = (JSONObject)jsonGetResponse.get("data"); assertNotNull(jsonData);
+         * 
+         * JSONObject jsonFormData = (JSONObject)jsonData.get("formData"); assertNotNull(jsonFormData);
+         * 
+         * String jsonAssocs = (String)jsonFormData.get(ASSOC_CM_REFERENCES);
+         * 
+         * // We expect exactly 5 assocs on the test node assertEquals(5, jsonAssocs.split(",").length); for (AssociationRef assocRef : modifiedAssocs) { assertTrue(jsonAssocs.contains(assocRef.getTargetRef().toString())); } */
     }
 
     /**
-     * This test method attempts to remove an existing association between two existing
-     * nodes.
+     * This test method attempts to remove an existing association between two existing nodes.
      */
     public void testRemoveAssociationsFromNode() throws Exception
     {
@@ -189,31 +167,19 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
         }
 
         assertTrue(associatedNodes.contains(associatedDoc_A));
-        
-        // The Rest API should also give us the modified assocs.
-        /*Response response = sendRequest(new GetRequest(referencingNodeUpdateUrl), 200);
-        String jsonRspString = response.getContentAsString();
-        JSONObject jsonGetResponse = new JSONObject(jsonRspString);
-        JSONObject jsonData = (JSONObject)jsonGetResponse.get("data");
-        assertNotNull(jsonData);
 
-        JSONObject jsonFormData = (JSONObject)jsonData.get("formData");
-        assertNotNull(jsonFormData);
-        
-        String jsonAssocs = (String)jsonFormData.get(ASSOC_CM_REFERENCES);
-        
-        // We expect exactly 1 assoc on the test node
-        assertEquals(1, jsonAssocs.split(",").length);
-        for (AssociationRef assocRef : modifiedAssocs)
-        {
-            assertTrue(jsonAssocs.contains(assocRef.getTargetRef().toString()));
-        }*/
+        // The Rest API should also give us the modified assocs.
+        /* Response response = sendRequest(new GetRequest(referencingNodeUpdateUrl), 200); String jsonRspString = response.getContentAsString(); JSONObject jsonGetResponse = new JSONObject(jsonRspString); JSONObject jsonData = (JSONObject)jsonGetResponse.get("data"); assertNotNull(jsonData);
+         * 
+         * JSONObject jsonFormData = (JSONObject)jsonData.get("formData"); assertNotNull(jsonFormData);
+         * 
+         * String jsonAssocs = (String)jsonFormData.get(ASSOC_CM_REFERENCES);
+         * 
+         * // We expect exactly 1 assoc on the test node assertEquals(1, jsonAssocs.split(",").length); for (AssociationRef assocRef : modifiedAssocs) { assertTrue(jsonAssocs.contains(assocRef.getTargetRef().toString())); } */
     }
 
     /**
-     * This test method attempts to add the same association twice. This attempt will
-     * not succeed, but the test case is to confirm that there is no exception thrown
-     * back across the REST API.
+     * This test method attempts to add the same association twice. This attempt will not succeed, but the test case is to confirm that there is no exception thrown back across the REST API.
      */
     public void testAddAssocThatAlreadyExists() throws Exception
     {
@@ -230,11 +196,9 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
         // Try to add the same association again
         sendRequest(new PostRequest(referencingNodeUpdateUrl, jsonPostString, APPLICATION_JSON), 200);
     }
-    
+
     /**
-     * This test method attempts to remove an association that does not exist. This
-     * attempt will not succeed, but the test case is to confirm that there is no
-     * exception thrown back across the REST API.
+     * This test method attempts to remove an association that does not exist. This attempt will not succeed, but the test case is to confirm that there is no exception thrown back across the REST API.
      */
     public void testRemoveAssocThatDoesNotExist() throws Exception
     {
@@ -256,7 +220,7 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
     {
         List<NodeRef> associatedNodes;
         checkOriginalChildAssocsBeforeChanges();
-        
+
         // Add three additional associations
         JSONObject jsonPostData = new JSONObject();
         String assocsToAdd = childDoc_C + "," + childDoc_D + "," + childDoc_E;
@@ -281,33 +245,21 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
         assertTrue(associatedNodes.contains(childDoc_C));
         assertTrue(associatedNodes.contains(childDoc_D));
         assertTrue(associatedNodes.contains(childDoc_E));
-        
-        // The Rest API should also give us the modified assocs.
-        /*Response response = sendRequest(new GetRequest(containingNodeUpdateUrl), 200);
-        String jsonRspString = response.getContentAsString();
-        
-        JSONObject jsonGetResponse = new JSONObject(jsonRspString);
-        JSONObject jsonData = (JSONObject)jsonGetResponse.get("data");
-        assertNotNull(jsonData);
 
-        JSONObject jsonFormData = (JSONObject)jsonData.get("formData");
-        assertNotNull(jsonFormData);
-        
-        String jsonAssocs = (String)jsonFormData.get(ASSOC_SYS_CHILDREN);
-        
-        // We expect exactly 5 assocs on the test node
-        assertEquals(5, jsonAssocs.split(",").length);
-        for (ChildAssociationRef assocRef : modifiedAssocs)
-        {
-            String childNodeRef = assocRef.getChildRef().toString();
-            assertTrue(jsonAssocs.contains(childNodeRef));
-            assertTrue(NodeRef.isNodeRef(childNodeRef));
-        }*/
+        // The Rest API should also give us the modified assocs.
+        /* Response response = sendRequest(new GetRequest(containingNodeUpdateUrl), 200); String jsonRspString = response.getContentAsString();
+         * 
+         * JSONObject jsonGetResponse = new JSONObject(jsonRspString); JSONObject jsonData = (JSONObject)jsonGetResponse.get("data"); assertNotNull(jsonData);
+         * 
+         * JSONObject jsonFormData = (JSONObject)jsonData.get("formData"); assertNotNull(jsonFormData);
+         * 
+         * String jsonAssocs = (String)jsonFormData.get(ASSOC_SYS_CHILDREN);
+         * 
+         * // We expect exactly 5 assocs on the test node assertEquals(5, jsonAssocs.split(",").length); for (ChildAssociationRef assocRef : modifiedAssocs) { String childNodeRef = assocRef.getChildRef().toString(); assertTrue(jsonAssocs.contains(childNodeRef)); assertTrue(NodeRef.isNodeRef(childNodeRef)); } */
     }
-    
+
     /**
-     * This test method attempts to remove an existing child association between two
-     * existing nodes.
+     * This test method attempts to remove an existing child association between two existing nodes.
      */
     public void testRemoveChildAssociationsFromNode() throws Exception
     {
@@ -334,31 +286,19 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
         }
 
         assertTrue(associatedNodes.contains(childDoc_A));
-        
-        // The Rest API should also give us the modified assocs.
-        /*Response response = sendRequest(new GetRequest(containingNodeUpdateUrl), 200);
-        String jsonRspString = response.getContentAsString();
-        JSONObject jsonGetResponse = new JSONObject(jsonRspString);
-        JSONObject jsonData = (JSONObject)jsonGetResponse.get("data");
-        assertNotNull(jsonData);
 
-        JSONObject jsonFormData = (JSONObject)jsonData.get("formData");
-        assertNotNull(jsonFormData);
-        
-        String jsonAssocs = (String)jsonFormData.get(ASSOC_SYS_CHILDREN);
-        
-        // We expect exactly 1 assoc on the test node
-        assertEquals(1, jsonAssocs.split(",").length);
-        for (ChildAssociationRef assocRef : modifiedAssocs)
-        {
-            assertTrue(jsonAssocs.contains(assocRef.getChildRef().toString()));
-        }*/
+        // The Rest API should also give us the modified assocs.
+        /* Response response = sendRequest(new GetRequest(containingNodeUpdateUrl), 200); String jsonRspString = response.getContentAsString(); JSONObject jsonGetResponse = new JSONObject(jsonRspString); JSONObject jsonData = (JSONObject)jsonGetResponse.get("data"); assertNotNull(jsonData);
+         * 
+         * JSONObject jsonFormData = (JSONObject)jsonData.get("formData"); assertNotNull(jsonFormData);
+         * 
+         * String jsonAssocs = (String)jsonFormData.get(ASSOC_SYS_CHILDREN);
+         * 
+         * // We expect exactly 1 assoc on the test node assertEquals(1, jsonAssocs.split(",").length); for (ChildAssociationRef assocRef : modifiedAssocs) { assertTrue(jsonAssocs.contains(assocRef.getChildRef().toString())); } */
     }
 
     /**
-     * This test method attempts to add the same child association twice. This attempt
-     * will not succeed, but the test case is to confirm that there is no exception thrown
-     * back across the REST API.
+     * This test method attempts to add the same child association twice. This attempt will not succeed, but the test case is to confirm that there is no exception thrown back across the REST API.
      */
     public void testAddChildAssocThatAlreadyExists() throws Exception
     {
@@ -375,11 +315,9 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
         // Try to add the same child association again
         sendRequest(new PostRequest(referencingNodeUpdateUrl, jsonPostString, APPLICATION_JSON), 200);
     }
-    
+
     /**
-     * This test method attempts to remove a child association that does not exist. This
-     * attempt will not succeed, but the test case is to confirm that there is no
-     * exception thrown back across the REST API.
+     * This test method attempts to remove a child association that does not exist. This attempt will not succeed, but the test case is to confirm that there is no exception thrown back across the REST API.
      */
     public void testRemoveChildAssocThatDoesNotExist() throws Exception
     {
@@ -394,7 +332,6 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
         sendRequest(new PostRequest(referencingNodeUpdateUrl, jsonPostString, APPLICATION_JSON), 200);
     }
 
-
     private void checkOriginalAssocsBeforeChanges()
     {
         List<AssociationRef> originalAssocs = nodeService.getTargetAssocs(referencingDocNodeRef, RegexQNamePattern.MATCH_ALL);
@@ -403,7 +340,7 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
         List<NodeRef> associatedNodes = new ArrayList<NodeRef>(2);
         associatedNodes.add(originalAssocs.get(0).getTargetRef());
         associatedNodes.add(originalAssocs.get(1).getTargetRef());
-        
+
         assertTrue(associatedNodes.contains(associatedDoc_A));
         assertTrue(associatedNodes.contains(associatedDoc_B));
     }
@@ -416,7 +353,7 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
         List<NodeRef> associatedNodes = new ArrayList<NodeRef>(2);
         associatedNodes.add(originalChildAssocs.get(0).getChildRef());
         associatedNodes.add(originalChildAssocs.get(1).getChildRef());
-        
+
         assertTrue(associatedNodes.contains(childDoc_A));
         assertTrue(associatedNodes.contains(childDoc_B));
     }

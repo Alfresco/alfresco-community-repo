@@ -54,7 +54,7 @@ public class RecordsManagementEventServiceImplTest extends BaseRMTestCase implem
         super.setUp();
 
         // Get the service required in the tests
-        this.transactionHelper = (RetryingTransactionHelper)this.applicationContext.getBean("retryingTransactionHelper");
+        this.transactionHelper = (RetryingTransactionHelper) this.applicationContext.getBean("retryingTransactionHelper");
 
         // Set the current security context as admin
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
@@ -62,8 +62,7 @@ public class RecordsManagementEventServiceImplTest extends BaseRMTestCase implem
 
     public void testGetEventTypes()
     {
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 List<RecordsManagementEventType> eventTypes = rmEventService.getEventTypes();
@@ -79,8 +78,7 @@ public class RecordsManagementEventServiceImplTest extends BaseRMTestCase implem
 
     public void testGetEvents()
     {
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 List<RecordsManagementEvent> events = rmEventService.getEvents();
@@ -96,8 +94,7 @@ public class RecordsManagementEventServiceImplTest extends BaseRMTestCase implem
 
     public void testAddRemoveEvents()
     {
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 List<RecordsManagementEvent> events = rmEventService.getEvents();

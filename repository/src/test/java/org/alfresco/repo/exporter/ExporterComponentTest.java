@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.exporter;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -33,12 +34,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.io.BufferedReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -46,6 +46,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.transaction.annotation.Transactional;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.ACPImportPackageHandler;
@@ -68,7 +75,6 @@ import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.ImportPackageHandler;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
-
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
@@ -78,13 +84,6 @@ import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.debug.NodeStoreInspector;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.extensions.surf.util.InputStreamContent;
-import org.springframework.transaction.annotation.Transactional;
 
 @Category({OwnJVMTestsCategory.class, LuceneTests.class})
 @Transactional
@@ -104,15 +103,15 @@ public class ExporterComponentTest extends BaseSpringTest
     private MutableAuthenticationService authenticationService;
     private Locale contentLocaleToRestore;
     private Locale localeToRestore;
-    
+
     @Before
     public void before() throws Exception
     {
-        nodeService = (NodeService)applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName());
-        exporterService = (ExporterService)applicationContext.getBean("exporterComponent");
-        importerService = (ImporterService)applicationContext.getBean("importerComponent");
+        nodeService = (NodeService) applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName());
+        exporterService = (ExporterService) applicationContext.getBean("exporterComponent");
+        importerService = (ImporterService) applicationContext.getBean("importerComponent");
         fileFolderService = (FileFolderService) applicationContext.getBean("fileFolderService");
-        categoryService = (CategoryService) applicationContext.getBean("categoryService");     
+        categoryService = (CategoryService) applicationContext.getBean("categoryService");
         transactionService = (TransactionService) applicationContext.getBean("transactionService");
         permissionService = (PermissionServiceSPI) applicationContext.getBean("permissionService");
         contentService = (ContentService) applicationContext.getBean("contentService");
@@ -135,7 +134,7 @@ public class ExporterComponentTest extends BaseSpringTest
 
     @Test
     public void testExport()
-        throws Exception
+            throws Exception
     {
         TestProgress testProgress = new TestProgress();
         Location location = new Location(storeRef);
@@ -143,12 +142,12 @@ public class ExporterComponentTest extends BaseSpringTest
         // import
         InputStream test = getClass().getClassLoader().getResourceAsStream("org/alfresco/repo/importer/importercomponent_test.xml");
         InputStreamReader testReader = new InputStreamReader(test, "UTF-8");
-        importerService.importView(testReader, location, null, null);        
-        
+        importerService.importView(testReader, location, null, null);
+
         dumpNodeStore(Locale.ENGLISH);
         dumpNodeStore(Locale.FRENCH);
         dumpNodeStore(Locale.GERMAN);
-        
+
         // now export
         location.setPath("/system");
         File tempFile = TempFileProvider.createTempFile("xmlexporttest", ".xml");
@@ -164,7 +163,6 @@ public class ExporterComponentTest extends BaseSpringTest
         acpHandler.setExportAsFolders(true);
         exporterService.exportView(acpHandler, parameters, testProgress);
         output.close();
-
 
     }
 
@@ -213,17 +211,21 @@ public class ExporterComponentTest extends BaseSpringTest
 
         Enumeration<? extends ZipEntry> entries = zipFile.entries();
         int numberOfExportedNodes = 0;
-        while(entries.hasMoreElements()){
+        while (entries.hasMoreElements())
+        {
             ZipEntry entry = entries.nextElement();
             InputStream stream = zipFile.getInputStream(entry);
             try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                    stream, StandardCharsets.UTF_8));) {
+                    stream, StandardCharsets.UTF_8));)
+            {
 
                 String line;
 
-                while ((line = br.readLine()) != null) {
+                while ((line = br.readLine()) != null)
+                {
 
-                    if(line.contains(testFile)){
+                    if (line.contains(testFile))
+                    {
                         numberOfExportedNodes++;
                     }
                 }
@@ -242,115 +244,110 @@ public class ExporterComponentTest extends BaseSpringTest
     }
 
     /**
-     * Round-trip of export then import will result in the imported content having the same categories
-     * assigned to it as for the exported content -- provided the source and destination stores are the same.
+     * Round-trip of export then import will result in the imported content having the same categories assigned to it as for the exported content -- provided the source and destination stores are the same.
      */
     @SuppressWarnings("unchecked")
     @Category(RedundantTests.class)
     @Test
     public void testRoundTripKeepsCategoriesWhenWithinSameStore() throws Exception
-    {   
+    {
         // Use a store ref that has the bootstrapped categories
         StoreRef storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
         NodeRef rootNode = nodeService.getRootNode(storeRef);
-        
+
         ChildAssociationRef contentChildAssocRef = createContentWithCategories(storeRef, rootNode);
-        
+
         // Export/import
         File acpFile = exportContent(contentChildAssocRef.getParentRef());
         FileInfo importFolderFileInfo = importContent(acpFile, rootNode);
-        
+
         // Check categories
         NodeRef importedFileNode = fileFolderService.searchSimple(importFolderFileInfo.getNodeRef(), "test.txt");
         assertNotNull("Couldn't find imported file: test.txt", importedFileNode);
         assertTrue(nodeService.hasAspect(importedFileNode, ContentModel.ASPECT_GEN_CLASSIFIABLE));
-        List<NodeRef> importedFileCategories = (List<NodeRef>)
-            nodeService.getProperty(importedFileNode, ContentModel.PROP_CATEGORIES);
+        List<NodeRef> importedFileCategories = (List<NodeRef>) nodeService.getProperty(importedFileNode, ContentModel.PROP_CATEGORIES);
         assertCategoriesEqual(importedFileCategories,
-                    "Regions",
-                    "Software Document Classification");
+                "Regions",
+                "Software Document Classification");
     }
-    
+
     /**
-     * If the source and destination stores are not the same, then a round-trip of export then import
-     * will result in the imported content not having the categories assigned to it that were present
-     * on the exported content.
+     * If the source and destination stores are not the same, then a round-trip of export then import will result in the imported content not having the categories assigned to it that were present on the exported content.
      */
     @SuppressWarnings("unchecked")
     @Category(RedundantTests.class)
     @Test
     public void testRoundTripLosesCategoriesImportingToDifferentStore() throws Exception
-    {   
+    {
         // Use a store ref that has the bootstrapped categories
         StoreRef storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
         NodeRef rootNode = nodeService.getRootNode(storeRef);
-        
+
         ChildAssociationRef contentChildAssocRef = createContentWithCategories(storeRef, rootNode);
-        
+
         // Export
         File acpFile = exportContent(contentChildAssocRef.getParentRef());
         // Import - destination store is different from export store.
         NodeRef destRootNode = nodeService.getRootNode(this.storeRef);
         FileInfo importFolderFileInfo = importContent(acpFile, destRootNode);
-        
+
         // Check categories
         NodeRef importedFileNode = fileFolderService.searchSimple(importFolderFileInfo.getNodeRef(), "test.txt");
         assertNotNull("Couldn't find imported file: test.txt", importedFileNode);
         assertTrue(nodeService.hasAspect(importedFileNode, ContentModel.ASPECT_GEN_CLASSIFIABLE));
-        List<NodeRef> importedFileCategories = (List<NodeRef>)
-            nodeService.getProperty(importedFileNode, ContentModel.PROP_CATEGORIES);
+        List<NodeRef> importedFileCategories = (List<NodeRef>) nodeService.getProperty(importedFileNode, ContentModel.PROP_CATEGORIES);
         assertEquals("No categories should have been imported for the content", 0, importedFileCategories.size());
     }
-    
+
     @Test
     public void testMLText() throws Exception
     {
-	    NodeRef rootNode = nodeService.getRootNode(storeRef);
-	    NodeRef folderNodeRef = nodeService.createNode(
-	            rootNode,
-	            ContentModel.ASSOC_CHILDREN,
-	            ContentModel.ASSOC_CHILDREN,
-	            ContentModel.TYPE_FOLDER).getChildRef();
-	    
-	    FileInfo exportFolder = fileFolderService.create(folderNodeRef, "export", ContentModel.TYPE_FOLDER);
-	    FileInfo content = fileFolderService.create(exportFolder.getNodeRef(), "file", ContentModel.TYPE_CONTENT);
-	    MLText title = new MLText();
-	    title.addValue(Locale.ENGLISH, null);
-	    title.addValue(Locale.FRENCH, "bonjour");
-	    nodeService.setProperty(content.getNodeRef(), ContentModel.PROP_TITLE, title);
-	    nodeService.setProperty(content.getNodeRef(), ContentModel.PROP_NAME, "file");
-	    
-	    FileInfo importFolder = fileFolderService.create(folderNodeRef, "import", ContentModel.TYPE_FOLDER);
-	
-	    // export
-	    File acpFile = exportContent(exportFolder.getNodeRef());
-	
-	    // import
-	    FileInfo importFolderFileInfo = importContent(acpFile, importFolder.getNodeRef());
-	    assertNotNull(importFolderFileInfo);
-	    NodeRef importedFileNode = fileFolderService.searchSimple(importFolderFileInfo.getNodeRef(), "file");
-	    assertNotNull("Couldn't find imported file: file", importedFileNode);
-	    
-    	Locale currentLocale = I18NUtil.getContentLocale();
-    	try
-    	{
-        	I18NUtil.setContentLocale(Locale.ENGLISH);
+        NodeRef rootNode = nodeService.getRootNode(storeRef);
+        NodeRef folderNodeRef = nodeService.createNode(
+                rootNode,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_FOLDER).getChildRef();
 
-		    String importedTitle = (String)nodeService.getProperty(importedFileNode, ContentModel.PROP_TITLE);
-		    assertNull(importedTitle);
-	        
-        	I18NUtil.setContentLocale(Locale.FRENCH);
+        FileInfo exportFolder = fileFolderService.create(folderNodeRef, "export", ContentModel.TYPE_FOLDER);
+        FileInfo content = fileFolderService.create(exportFolder.getNodeRef(), "file", ContentModel.TYPE_CONTENT);
+        MLText title = new MLText();
+        title.addValue(Locale.ENGLISH, null);
+        title.addValue(Locale.FRENCH, "bonjour");
+        nodeService.setProperty(content.getNodeRef(), ContentModel.PROP_TITLE, title);
+        nodeService.setProperty(content.getNodeRef(), ContentModel.PROP_NAME, "file");
 
-		    importedTitle = (String)nodeService.getProperty(importedFileNode, ContentModel.PROP_TITLE);
-		    assertNotNull(importedTitle);
-	        assertEquals("bonjour", importedTitle);
-    	}
-    	finally
-    	{
-        	I18NUtil.setContentLocale(currentLocale);
-    	}
+        FileInfo importFolder = fileFolderService.create(folderNodeRef, "import", ContentModel.TYPE_FOLDER);
+
+        // export
+        File acpFile = exportContent(exportFolder.getNodeRef());
+
+        // import
+        FileInfo importFolderFileInfo = importContent(acpFile, importFolder.getNodeRef());
+        assertNotNull(importFolderFileInfo);
+        NodeRef importedFileNode = fileFolderService.searchSimple(importFolderFileInfo.getNodeRef(), "file");
+        assertNotNull("Couldn't find imported file: file", importedFileNode);
+
+        Locale currentLocale = I18NUtil.getContentLocale();
+        try
+        {
+            I18NUtil.setContentLocale(Locale.ENGLISH);
+
+            String importedTitle = (String) nodeService.getProperty(importedFileNode, ContentModel.PROP_TITLE);
+            assertNull(importedTitle);
+
+            I18NUtil.setContentLocale(Locale.FRENCH);
+
+            importedTitle = (String) nodeService.getProperty(importedFileNode, ContentModel.PROP_TITLE);
+            assertNotNull(importedTitle);
+            assertEquals("bonjour", importedTitle);
+        }
+        finally
+        {
+            I18NUtil.setContentLocale(currentLocale);
+        }
     }
-    
+
     @Test
     public void testMNT12504() throws Exception
     {
@@ -391,7 +388,7 @@ public class ExporterComponentTest extends BaseSpringTest
         ExporterCrawlerParameters crawlerParameters = new ExporterCrawlerParameters();
         crawlerParameters.setExportFrom(new Location(folder));
         crawlerParameters.setCrawlSelf(true);
-        crawlerParameters.setExcludeAspects(new QName[] { ContentModel.ASPECT_WORKING_COPY });
+        crawlerParameters.setExcludeAspects(new QName[]{ContentModel.ASPECT_WORKING_COPY});
 
         File acpFile = TempFileProvider.createTempFile("alf", ACPExportPackageHandler.ACP_EXTENSION);
         ACPExportPackageHandler acpHandler = new ACPExportPackageHandler(new FileOutputStream(acpFile), new File("test"), new File("test"), null);
@@ -418,20 +415,21 @@ public class ExporterComponentTest extends BaseSpringTest
     }
 
     /**
-     * @param nodeRef nodeRef
+     * @param nodeRef
+     *            nodeRef
      * @return File
      * @throws FileNotFoundException
      * @throws IOException
      */
     private File exportContent(NodeRef nodeRef)
-                throws FileNotFoundException, IOException
+            throws FileNotFoundException, IOException
     {
         TestProgress testProgress = new TestProgress();
         Location location = new Location(nodeRef);
         ExporterCrawlerParameters parameters = new ExporterCrawlerParameters();
         parameters.setExportFrom(location);
         File acpFile = TempFileProvider.createTempFile("category-export-test", ACPExportPackageHandler.ACP_EXTENSION);
-        System.out.println("Exporting to file: " + acpFile.getAbsolutePath());        
+        System.out.println("Exporting to file: " + acpFile.getAbsolutePath());
         File dataFile = new File("test-data-file");
         File contentDir = new File("test-content-dir");
         OutputStream fos = new FileOutputStream(acpFile);
@@ -444,38 +442,38 @@ public class ExporterComponentTest extends BaseSpringTest
     }
 
     /**
-     * @param storeRef StoreRef
-     * @param rootNode NodeRef
+     * @param storeRef
+     *            StoreRef
+     * @param rootNode
+     *            NodeRef
      * @return ChildAssociationRef
      */
     private ChildAssociationRef createContentWithCategories(StoreRef storeRef, NodeRef rootNode)
-    {   
-        Collection<ChildAssociationRef> assocRefs = categoryService.
-            getRootCategories(storeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE);
+    {
+        Collection<ChildAssociationRef> assocRefs = categoryService.getRootCategories(storeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE);
         assertTrue("Pre-condition failure: not enough categories", assocRefs.size() >= 2);
         Iterator<ChildAssociationRef> it = assocRefs.iterator();
         NodeRef softwareDocCategoryNode = it.next().getChildRef();
         it.next(); // skip one
-        NodeRef regionsCategoryNode = it.next().getChildRef();        
-        
-        
+        NodeRef regionsCategoryNode = it.next().getChildRef();
+
         // Create a content node to categorise
         FileInfo exportFileInfo = fileFolderService.create(rootNode, "Export Folder", ContentModel.TYPE_FOLDER);
-        Map<QName, Serializable> properties = Collections.singletonMap(ContentModel.PROP_NAME, (Serializable)"test.txt");
+        Map<QName, Serializable> properties = Collections.singletonMap(ContentModel.PROP_NAME, (Serializable) "test.txt");
         ChildAssociationRef contentChildAssocRef = nodeService.createNode(
-                    exportFileInfo.getNodeRef(),
-                    ContentModel.ASSOC_CHILDREN,
-                    ContentModel.ASSOC_CHILDREN,
-                    ContentModel.TYPE_CONTENT,
-                    properties);
-        
+                exportFileInfo.getNodeRef(),
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_CONTENT,
+                properties);
+
         NodeRef contentNodeRef = contentChildAssocRef.getChildRef();
 
         // Attach categories
         ArrayList<NodeRef> categories = new ArrayList<NodeRef>(2);
         categories.add(softwareDocCategoryNode);
         categories.add(regionsCategoryNode);
-        if(!nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE))
+        if (!nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE))
         {
             HashMap<QName, Serializable> props = new HashMap<QName, Serializable>();
             props.put(ContentModel.PROP_CATEGORIES, categories);
@@ -487,10 +485,12 @@ public class ExporterComponentTest extends BaseSpringTest
         }
         return contentChildAssocRef;
     }
-    
+
     /**
-     * @param acpFile File
-     * @param destRootNode NodeRef
+     * @param acpFile
+     *            File
+     * @param destRootNode
+     *            NodeRef
      * @return FileInfo
      */
     private FileInfo importContent(File acpFile, NodeRef destRootNode)
@@ -504,7 +504,7 @@ public class ExporterComponentTest extends BaseSpringTest
     private void assertCategoriesEqual(List<NodeRef> categories, String... expectedCategoryNames)
     {
         assertEquals("Number of categories is not as expected.", expectedCategoryNames.length, categories.size());
-        
+
         List<String> categoryNames = new ArrayList<String>(10);
         for (NodeRef nodeRef : categories)
         {
@@ -513,24 +513,23 @@ public class ExporterComponentTest extends BaseSpringTest
         }
         // Sort, to give deterministic test results
         Collections.sort(categoryNames);
-        
+
         for (int i = 0; i < expectedCategoryNames.length; i++)
         {
             assertEquals(expectedCategoryNames[i], categoryNames.get(i));
         }
     }
-    
-    
+
     private void dumpNodeStore(Locale locale)
     {
-     
+
         System.out.println(locale.getDisplayLanguage() + " LOCALE: ");
         I18NUtil.setLocale(locale);
         System.out.println(NodeStoreInspector.dumpNodeStore((NodeService) applicationContext.getBean("NodeService"), storeRef));
     }
-    
+
     private static class TestProgress
-        implements Exporter
+            implements Exporter
     {
 
         public void start(ExporterContext exportNodeRef)
@@ -540,12 +539,12 @@ public class ExporterComponentTest extends BaseSpringTest
 
         public void startNamespace(String prefix, String uri)
         {
-//            System.out.println("TestProgress: start namespace prefix = " + prefix + " uri = " + uri);
+            // System.out.println("TestProgress: start namespace prefix = " + prefix + " uri = " + uri);
         }
 
         public void endNamespace(String prefix)
         {
-//            System.out.println("TestProgress: end namespace prefix = " + prefix);
+            // System.out.println("TestProgress: end namespace prefix = " + prefix);
         }
 
         public void startNode(NodeRef nodeRef)
@@ -555,62 +554,62 @@ public class ExporterComponentTest extends BaseSpringTest
 
         public void endNode(NodeRef nodeRef)
         {
-//            System.out.println("TestProgress: end node " + nodeRef);
+            // System.out.println("TestProgress: end node " + nodeRef);
         }
 
         public void startAspect(NodeRef nodeRef, QName aspect)
         {
-//            System.out.println("TestProgress: start aspect " + aspect);
+            // System.out.println("TestProgress: start aspect " + aspect);
         }
 
         public void endAspect(NodeRef nodeRef, QName aspect)
         {
-//            System.out.println("TestProgress: end aspect " + aspect);
+            // System.out.println("TestProgress: end aspect " + aspect);
         }
 
         public void startProperty(NodeRef nodeRef, QName property)
         {
-//            System.out.println("TestProgress: start property " + property);
+            // System.out.println("TestProgress: start property " + property);
         }
 
         public void endProperty(NodeRef nodeRef, QName property)
         {
-//            System.out.println("TestProgress: end property " + property);
+            // System.out.println("TestProgress: end property " + property);
         }
 
         public void startValueCollection(NodeRef nodeRef, QName property)
         {
-//          System.out.println("TestProgress: start value collection: node " + nodeRef + " , property " + property);
+            // System.out.println("TestProgress: start value collection: node " + nodeRef + " , property " + property);
         }
 
         public void endValueCollection(NodeRef nodeRef, QName property)
         {
-//          System.out.println("TestProgress: end value collection: node " + nodeRef + " , property " + property);
+            // System.out.println("TestProgress: end value collection: node " + nodeRef + " , property " + property);
         }
-        
+
         public void value(NodeRef nodeRef, QName property, Object value, int index)
         {
-//            System.out.println("TestProgress: single value " + value);
+            // System.out.println("TestProgress: single value " + value);
         }
 
         public void content(NodeRef nodeRef, QName property, InputStream content, ContentData contentData, int index)
         {
-//            System.out.println("TestProgress: content stream ");
+            // System.out.println("TestProgress: content stream ");
         }
 
         public void startAssoc(NodeRef nodeRef, QName assoc)
         {
-//            System.out.println("TestProgress: start association " + assocDef.getName());
+            // System.out.println("TestProgress: start association " + assocDef.getName());
         }
 
         public void endAssoc(NodeRef nodeRef, QName assoc)
         {
-//            System.out.println("TestProgress: end association " + assocDef.getName());
+            // System.out.println("TestProgress: end association " + assocDef.getName());
         }
 
         public void warning(String warning)
         {
-            System.out.println("TestProgress: warning " + warning);   
+            System.out.println("TestProgress: warning " + warning);
         }
 
         public void end()
@@ -620,69 +619,69 @@ public class ExporterComponentTest extends BaseSpringTest
 
         public void startProperties(NodeRef nodeRef)
         {
-//            System.out.println("TestProgress: startProperties: " + nodeRef);
+            // System.out.println("TestProgress: startProperties: " + nodeRef);
         }
 
         public void endProperties(NodeRef nodeRef)
         {
-//            System.out.println("TestProgress: endProperties: " + nodeRef);
+            // System.out.println("TestProgress: endProperties: " + nodeRef);
         }
 
         public void startAspects(NodeRef nodeRef)
         {
-//          System.out.println("TestProgress: startAspects: " + nodeRef);
+            // System.out.println("TestProgress: startAspects: " + nodeRef);
         }
 
         public void endAspects(NodeRef nodeRef)
         {
-//          System.out.println("TestProgress: endAspects: " + nodeRef);
+            // System.out.println("TestProgress: endAspects: " + nodeRef);
         }
 
         public void startAssocs(NodeRef nodeRef)
         {
-//          System.out.println("TestProgress: startAssocs: " + nodeRef);
+            // System.out.println("TestProgress: startAssocs: " + nodeRef);
         }
 
         public void endAssocs(NodeRef nodeRef)
         {
-//          System.out.println("TestProgress: endAssocs: " + nodeRef);
+            // System.out.println("TestProgress: endAssocs: " + nodeRef);
         }
 
         public void startACL(NodeRef nodeRef)
         {
-//          System.out.println("TestProgress: startACL: " + nodeRef);
+            // System.out.println("TestProgress: startACL: " + nodeRef);
         }
 
         public void permission(NodeRef nodeRef, AccessPermission permission)
         {
-//          System.out.println("TestProgress: permission: " + permission);
+            // System.out.println("TestProgress: permission: " + permission);
         }
 
         public void endACL(NodeRef nodeRef)
         {
-//          System.out.println("TestProgress: endACL: " + nodeRef);
+            // System.out.println("TestProgress: endACL: " + nodeRef);
         }
 
         public void startReference(NodeRef nodeRef, QName childName)
         {
-//          System.out.println("TestProgress: startReference: " + nodeRef);
+            // System.out.println("TestProgress: startReference: " + nodeRef);
         }
 
         public void endReference(NodeRef nodeRef)
         {
-//          System.out.println("TestProgress: endReference: " + nodeRef);
+            // System.out.println("TestProgress: endReference: " + nodeRef);
         }
 
         public void endValueMLText(NodeRef nodeRef)
         {
-//             System.out.println("TestProgress: end MLValue.");            
+            // System.out.println("TestProgress: end MLValue.");
         }
 
         public void startValueMLText(NodeRef nodeRef, Locale locale, boolean isNull)
         {
-//             System.out.println("TestProgress: start MLValue for locale: " + locale);            
+            // System.out.println("TestProgress: start MLValue for locale: " + locale);
         }
 
     }
-    
+
 }

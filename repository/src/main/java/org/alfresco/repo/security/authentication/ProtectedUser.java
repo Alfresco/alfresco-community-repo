@@ -28,13 +28,12 @@ package org.alfresco.repo.security.authentication;
 import java.io.Serializable;
 
 /**
- * An object to hold information about unsuccessful logins.
- * It is used for brute force attack mitigation in {@link AuthenticationServiceImpl}
+ * An object to hold information about unsuccessful logins. It is used for brute force attack mitigation in {@link AuthenticationServiceImpl}
  *
  * @since 5.2.0
  * @author amukha
  */
-/*package*/ class ProtectedUser implements Serializable
+/* package */ class ProtectedUser implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
@@ -44,26 +43,26 @@ import java.io.Serializable;
     /** time stamp of last unsuccessful login attempt */
     private long timeStamp;
 
-    /*package*/ ProtectedUser(String userId)
+    /* package */ ProtectedUser(String userId)
     {
         this.userId = userId;
         this.numLogins = 1;
         this.timeStamp = System.currentTimeMillis();
     }
 
-    /*package*/ ProtectedUser(String userId, long numLogins)
+    /* package */ ProtectedUser(String userId, long numLogins)
     {
         this.userId = userId;
         this.numLogins = numLogins;
         this.timeStamp = System.currentTimeMillis();
     }
 
-    /*package*/ long getNumLogins()
+    /* package */ long getNumLogins()
     {
         return numLogins;
     }
 
-    /*package*/ long getTimeStamp()
+    /* package */ long getTimeStamp()
     {
         return timeStamp;
     }
@@ -81,13 +80,17 @@ import java.io.Serializable;
     @Override
     public boolean equals(Object o)
     {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         ProtectedUser that = (ProtectedUser) o;
 
-        if (numLogins != that.numLogins) return false;
-        if (timeStamp != that.timeStamp) return false;
+        if (numLogins != that.numLogins)
+            return false;
+        if (timeStamp != that.timeStamp)
+            return false;
         return userId.equals(that.userId);
     }
 

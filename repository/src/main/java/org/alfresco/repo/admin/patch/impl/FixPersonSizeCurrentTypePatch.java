@@ -25,13 +25,13 @@
  */
 package org.alfresco.repo.admin.patch.impl;
 
-import org.alfresco.repo.admin.patch.AbstractPatch;
-import org.alfresco.repo.domain.patch.PatchDAO;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+import org.alfresco.repo.admin.patch.AbstractPatch;
+import org.alfresco.repo.domain.patch.PatchDAO;
+
 /**
- * A patch to update the 'actual_type_n' and 'persisted_type_n' of {http://www.alfresco.org/model/content/1.0}sizeCurrent
- * property to be Long (3).
+ * A patch to update the 'actual_type_n' and 'persisted_type_n' of {http://www.alfresco.org/model/content/1.0}sizeCurrent property to be Long (3).
  * <p>
  * 
  * @author Viachaslau Tsikhanovich

@@ -26,13 +26,12 @@
 package org.alfresco.repo.management.subsystems;
 
 /**
- * ChildApplicationContextFactory extension used to identify the type of the content store subsystem, encrypted or unecrypted.
- * See {@link CryptodocSwitchableApplicationContextFactory} for how is used.
+ * ChildApplicationContextFactory extension used to identify the type of the content store subsystem, encrypted or unecrypted. See {@link CryptodocSwitchableApplicationContextFactory} for how is used.
  */
 public class EncryptedContentStoreChildApplicationContextFactory extends ChildApplicationContextFactory
 {
     private boolean encryptedContent;
-    
+
     public boolean isEncryptedContent()
     {
         return encryptedContent;

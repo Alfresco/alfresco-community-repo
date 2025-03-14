@@ -32,5 +32,5 @@ package org.alfresco.repo.cache;
  */
 public interface RefreshableCacheListener extends org.alfresco.util.cache.RefreshableCacheListener
 {
-   
+
 }

@@ -30,7 +30,7 @@ public class KeysReport
 {
     private List<String> keysChanged;
     private List<String> keysUnchanged;
-    
+
     public KeysReport(List<String> keysChanged, List<String> keysUnchanged)
     {
         super();

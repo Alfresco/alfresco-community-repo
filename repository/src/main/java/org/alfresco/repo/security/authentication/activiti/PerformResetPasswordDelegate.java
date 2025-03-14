@@ -32,7 +32,7 @@ import org.activiti.engine.delegate.JavaDelegate;
 /**
  * @deprecated from 7.1.0
  * 
- * This {@link JavaDelegate activiti delegate} is executed when a user resets his/her password.
+ *             This {@link JavaDelegate activiti delegate} is executed when a user resets his/her password.
  *
  * @author Jamal Kaabi-Mofrad
  * @since 5.2.1

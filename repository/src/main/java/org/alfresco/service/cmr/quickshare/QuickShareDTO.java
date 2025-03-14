@@ -44,7 +44,8 @@ public class QuickShareDTO implements Serializable
     /**
      * Default constructor
      * 
-     * @param sharedId The quick share id
+     * @param sharedId
+     *            The quick share id
      */
     public QuickShareDTO(String sharedId)
     {
@@ -60,11 +61,11 @@ public class QuickShareDTO implements Serializable
     /**
      * Copy constructor
      */
-    public QuickShareDTO(QuickShareDTO from) 
+    public QuickShareDTO(QuickShareDTO from)
     {
         this(from.getId(), from.getExpiresAt());
     }
-    
+
     /**
      * @return The share id
      */

@@ -46,13 +46,13 @@ import org.alfresco.service.namespace.QName;
  */
 public class ExecuteScriptActionTest extends BaseRMTestCase
 {
-    
+
     @Override
     protected boolean isCollaborationSiteTest()
     {
         return true;
     }
-    
+
     public void testExecuteScript()
     {
 
@@ -69,8 +69,7 @@ public class ExecuteScriptActionTest extends BaseRMTestCase
 
         // Attempt to execute a script not in RM Scripts folder should fail
         doTestInTransaction(new FailureTest("Script outside proper Data Dictionary folder should not be executed",
-                IllegalStateException.class)
-        {
+                IllegalStateException.class) {
             public void run() throws Exception
             {
                 executeAction(invalidScriptRef, dmDocument);
@@ -78,8 +77,7 @@ public class ExecuteScriptActionTest extends BaseRMTestCase
         }, dmCollaborator);
 
         // Scripts in correct data dictionary folder should be executed
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -96,8 +94,7 @@ public class ExecuteScriptActionTest extends BaseRMTestCase
             }
         }, dmCollaborator);
 
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 // Set the name back to what it was
@@ -110,8 +107,7 @@ public class ExecuteScriptActionTest extends BaseRMTestCase
     private NodeRef addTempScript(final String scriptFileName, final String javaScript, final NodeRef parentRef)
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-        {
+        return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
 
@@ -140,8 +136,7 @@ public class ExecuteScriptActionTest extends BaseRMTestCase
     private NodeRef addTempScript(final String scriptFileName, final String javaScript)
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-        {
+        return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
 

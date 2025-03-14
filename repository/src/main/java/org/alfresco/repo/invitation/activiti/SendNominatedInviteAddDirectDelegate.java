@@ -28,11 +28,11 @@ package org.alfresco.repo.invitation.activiti;
 import java.util.Map;
 
 import org.activiti.engine.delegate.DelegateExecution;
+
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 
 /**
- * Activiti delegate that is executed when a invitation request has
- * been sent.
+ * Activiti delegate that is executed when a invitation request has been sent.
  *
  * @author Nick Smith
  * @author Frederik Heremans
@@ -41,10 +41,8 @@ import org.alfresco.repo.workflow.activiti.ActivitiConstants;
  */
 public class SendNominatedInviteAddDirectDelegate extends AbstractInvitationDelegate
 {
-    public static final String EMAIL_TEMPLATE_XPATH = 
-            "app:company_home/app:dictionary/app:email_templates/cm:invite/cm:invite-email-add-direct.html.ftl";
-    public static final String EMAIL_SUBJECT_KEY = 
-            "invitation.invitesender.emailAddDirect.subject";
+    public static final String EMAIL_TEMPLATE_XPATH = "app:company_home/app:dictionary/app:email_templates/cm:invite/cm:invite-email-add-direct.html.ftl";
+    public static final String EMAIL_SUBJECT_KEY = "invitation.invitesender.emailAddDirect.subject";
 
     @Override
     public void execute(DelegateExecution execution) throws Exception

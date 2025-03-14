@@ -36,8 +36,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteService;
 
 /**
- * This {@link NodeLocator} identifies the site in which the source node resides and returns the Document Library container for that site.
- * If no site can be found or the site does not have a Document Library then the Company Home is returned.
+ * This {@link NodeLocator} identifies the site in which the source node resides and returns the Document Library container for that site. If no site can be found or the site does not have a Document Library then the Company Home is returned.
  * 
  * @author Nick Smith
  * @since 4.0
@@ -48,13 +47,14 @@ public class DocLibNodeLocator extends AbstractNodeLocator
 
     private SiteService siteService;
     private Repository repositoryHelper;
-    
+
     /**
-     * Finds the site in which the source {@link NodeRef} resides and returns the Document Library container for that site.
-     * If no site can be found or the site does not have a Document Library then the Company Home is returned.
+     * Finds the site in which the source {@link NodeRef} resides and returns the Document Library container for that site. If no site can be found or the site does not have a Document Library then the Company Home is returned.
      * 
-     * @param source the starting point for locating the site Document Library.
-     * @param params Not used.
+     * @param source
+     *            the starting point for locating the site Document Library.
+     * @param params
+     *            Not used.
      * @return the Document Library or the Company Home.
      */
     @Override
@@ -78,8 +78,8 @@ public class DocLibNodeLocator extends AbstractNodeLocator
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public String getName()
     {
@@ -87,15 +87,17 @@ public class DocLibNodeLocator extends AbstractNodeLocator
     }
 
     /**
-     * @param siteService the siteService to set
+     * @param siteService
+     *            the siteService to set
      */
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
     }
-    
+
     /**
-     * @param repositoryHelper the repositoryHelper to set
+     * @param repositoryHelper
+     *            the repositoryHelper to set
      */
     public void setRepositoryHelper(Repository repositoryHelper)
     {

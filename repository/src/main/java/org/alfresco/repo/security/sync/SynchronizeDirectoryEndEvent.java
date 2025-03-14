@@ -34,19 +34,19 @@ package org.alfresco.repo.security.sync;
  */
 public class SynchronizeDirectoryEndEvent extends SynchronizeDirectoryEvent
 {
-   
+
     public SynchronizeDirectoryEndEvent(Object o, String zone)
     {
         super(o, zone);
-       
+
     }
-    
+
     public SynchronizeDirectoryEndEvent(Object o, String zone, Exception e)
     {
         super(o, zone);
-       
+
     }
-    
+
     /**
      * 
      */

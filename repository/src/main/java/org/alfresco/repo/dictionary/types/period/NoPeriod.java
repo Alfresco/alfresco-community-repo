@@ -27,7 +27,6 @@ package org.alfresco.repo.dictionary.types.period;
 
 import java.util.Date;
 
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.namespace.QName;
 
 /**

@@ -27,6 +27,8 @@ package org.alfresco.rest.requests.syncServiceAPI;
 
 import java.util.HashMap;
 
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
@@ -34,7 +36,6 @@ import org.alfresco.rest.model.RestSubscriberModel;
 import org.alfresco.rest.model.RestSubscriberModelCollection;
 import org.alfresco.rest.requests.ModelRequest;
 import org.alfresco.rest.requests.privateAPI.RestPrivateAPI;
-import org.springframework.http.HttpMethod;
 
 /**
  * Declares all Rest API under the /subscribers path
@@ -42,14 +43,15 @@ import org.springframework.http.HttpMethod;
  * @author Meenal Bhave
  */
 public class Subscribers extends ModelRequest<RestPrivateAPI>
-{   
+{
     public Subscribers(RestWrapper restWrapper)
     {
         super(restWrapper);
     }
 
     /**
-     * Get Subscription(s) using GET call on /subscribers    
+     * Get Subscription(s) using GET call on /subscribers
+     * 
      * @return {@link RestSubscriberModelCollection}
      */
     public RestSubscriberModelCollection getSubscribers()
@@ -60,7 +62,7 @@ public class Subscribers extends ModelRequest<RestPrivateAPI>
 
     /**
      * POST Create Device Subscription using POST call on /subscribers
-     *     
+     * 
      * @param deviceOS
      * @param clientVersion
      * @return {@link RestSubscriberModel}

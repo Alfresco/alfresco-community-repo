@@ -31,6 +31,9 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
@@ -38,13 +41,10 @@ import org.alfresco.repo.blog.cannedqueries.AbstractBlogPostsCannedQueryFactory.
 import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.security.permissions.impl.acegi.AbstractCannedQueryPermissions;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
-import org.alfresco.service.cmr.blog.BlogService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * This is a {@link CannedQuery} for the rather particular 'get my drafts and all published' blog-post query.
@@ -57,12 +57,12 @@ import org.apache.commons.logging.LogFactory;
 public class DraftsAndPublishedBlogPostsCannedQuery extends AbstractCannedQueryPermissions<BlogEntity>
 {
     private Log logger = LogFactory.getLog(getClass());
-    
+
     private static final String QUERY_NAMESPACE = "alfresco.query.blogs";
     private static final String QUERY_SELECT_GET_BLOGS = "select_GetBlogsCannedQuery";
-    
+
     private final CannedQueryDAO cannedQueryDAO;
-    
+
     public DraftsAndPublishedBlogPostsCannedQuery(
             CannedQueryDAO cannedQueryDAO,
             MethodSecurityBean<BlogEntity> methodSecurity,
@@ -71,35 +71,35 @@ public class DraftsAndPublishedBlogPostsCannedQuery extends AbstractCannedQueryP
         super(params, methodSecurity);
         this.cannedQueryDAO = cannedQueryDAO;
     }
-    
+
     @Override
     protected List<BlogEntity> queryAndFilter(CannedQueryParameters parameters)
     {
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
-        
+
         Object paramBeanObj = parameters.getParameterBean();
         if (paramBeanObj == null)
             throw new NullPointerException("Null GetBlogPosts query params");
-        
+
         DraftsAndPublishedBlogPostsCannedQueryParams paramBean = (DraftsAndPublishedBlogPostsCannedQueryParams) paramBeanObj;
         String requestedCreator = paramBean.getCmCreator();
         Date createdFromDate = paramBean.getCreatedFromDate();
         Date createdToDate = paramBean.getCreatedToDate();
-        
+
         // note: refer to SQL for specific DB filtering (eg.parent node and optionally blog integration aspect, etc)
         List<BlogEntity> results = cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_BLOGS, paramBean, 0, Integer.MAX_VALUE);
-        
+
         List<BlogEntity> filtered = new ArrayList<BlogEntity>(results.size());
         for (BlogEntity result : results)
         {
             // Is this next node in the list to be included in the results?
             boolean nextNodeIsAcceptable = true;
-            
+
             Date actualPublishedDate = DefaultTypeConverter.INSTANCE.convert(Date.class, result.getPublishedDate());
-            
+
             String actualCreator = result.getCreator();
             Date actualCreatedDate = DefaultTypeConverter.INSTANCE.convert(Date.class, result.getCreatedDate());
-            
+
             // Return all published Blog Posts
             if (actualPublishedDate != null)
             {
@@ -110,7 +110,7 @@ public class DraftsAndPublishedBlogPostsCannedQuery extends AbstractCannedQueryP
                 // We're relying on cm:published being null below i.e. we are dealing with draft blog posts.
                 if (requestedCreator != null)
                 {
-                    if (! requestedCreator.equals(actualCreator))
+                    if (!requestedCreator.equals(actualCreator))
                     {
                         nextNodeIsAcceptable = false;
                     }
@@ -120,7 +120,7 @@ public class DraftsAndPublishedBlogPostsCannedQuery extends AbstractCannedQueryP
                     nextNodeIsAcceptable = false;
                 }
             }
-            
+
             // Only return blogs created within the specified dates
             if ((createdFromDate != null) || (createdToDate != null))
             {
@@ -136,13 +136,13 @@ public class DraftsAndPublishedBlogPostsCannedQuery extends AbstractCannedQueryP
                     }
                 }
             }
-            
+
             if (nextNodeIsAcceptable)
             {
                 filtered.add(result);
             }
         }
-        
+
         List<Pair<? extends Object, SortOrder>> sortPairs = parameters.getSortDetails().getSortPairs();
         if (sortPairs != null && !sortPairs.isEmpty())
         {
@@ -150,7 +150,7 @@ public class DraftsAndPublishedBlogPostsCannedQuery extends AbstractCannedQueryP
             {
                 QName sortProperty = (QName) sortPair.getFirst();
                 Comparator<BlogEntity> comparator = new BlogEntityComparator(sortProperty);
-                
+
                 if (sortPair.getSecond() == SortOrder.DESCENDING)
                 {
                     comparator = Collections.reverseOrder(comparator);
@@ -158,15 +158,15 @@ public class DraftsAndPublishedBlogPostsCannedQuery extends AbstractCannedQueryP
                 Collections.sort(filtered, comparator);
             }
         }
-        
+
         if (start != null)
         {
-            logger.debug("Base query: "+filtered.size()+" in "+(System.currentTimeMillis()-start)+" msecs");
+            logger.debug("Base query: " + filtered.size() + " in " + (System.currentTimeMillis() - start) + " msecs");
         }
-        
+
         return filtered;
     }
-    
+
     @Override
     protected boolean isApplyPostQuerySorting()
     {

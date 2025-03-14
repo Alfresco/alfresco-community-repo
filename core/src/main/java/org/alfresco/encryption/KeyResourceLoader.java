@@ -32,19 +32,17 @@ import java.util.Properties;
 public interface KeyResourceLoader
 {
     /**
-     * Loads and returns an InputStream of the key store at the configured location.
-     * If the file cannot be found this method returns null.
+     * Loads and returns an InputStream of the key store at the configured location. If the file cannot be found this method returns null.
      * 
      * @return InputStream
      * @throws FileNotFoundException
      */
     public InputStream getKeyStore(String keyStoreLocation) throws FileNotFoundException;
-    
+
     /**
      * Loads key metadata from the configured passwords file location.
      * 
-     * Note that the passwords are not cached locally.
-     * If the file cannot be found this method returns null.
+     * Note that the passwords are not cached locally. If the file cannot be found this method returns null.
      * 
      * @return Properties
      * @throws IOException

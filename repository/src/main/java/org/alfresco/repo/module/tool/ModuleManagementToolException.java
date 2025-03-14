@@ -32,11 +32,11 @@ import org.alfresco.error.AlfrescoRuntimeException;
  * 
  * @author Roy Wetherall
  */
-public class ModuleManagementToolException extends AlfrescoRuntimeException 
+public class ModuleManagementToolException extends AlfrescoRuntimeException
 {
     /**
-	 * Serial version UID 
-	 */
+     * Serial version UID
+     */
     private static final long serialVersionUID = -4329693103965834085L;
 
     public ModuleManagementToolException(String msgId)

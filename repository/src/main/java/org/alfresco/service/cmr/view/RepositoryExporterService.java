@@ -28,10 +28,8 @@ package org.alfresco.service.cmr.view;
 import java.io.File;
 
 import org.alfresco.service.Auditable;
-import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-
 
 /**
  * Repository Export Service
@@ -46,7 +44,8 @@ public interface RepositoryExporterService
      * 
      * Each store is exported to its own temporary .acp file
      * 
-     * @param packageName package name prefix for export .acp files
+     * @param packageName
+     *            package name prefix for export .acp files
      * @return list of temporary export files
      */
     @Auditable(parameters = {"packageName"})
@@ -57,23 +56,26 @@ public interface RepositoryExporterService
      * 
      * Each store is exported to a file held in the Repository.
      * 
-     * @param repositoryDestination  location within Repository to hold .acp files
-     * @param packageName package name prefix for export .acp files
-     * @return  list of repository held export files
+     * @param repositoryDestination
+     *            location within Repository to hold .acp files
+     * @param packageName
+     *            package name prefix for export .acp files
+     * @return list of repository held export files
      */
     @Auditable(parameters = {"repositoryDestination", "packageName"})
     public RepositoryExportHandle[] export(NodeRef repositoryDestination, String packageName);
-    
+
     /**
      * Export complete Repository.
      * 
-     * @param directoryDestination  location within File System to hold .acp files
-     * @param packageName package name prefix for export .acp files
-     * @return  list of export files
+     * @param directoryDestination
+     *            location within File System to hold .acp files
+     * @param packageName
+     *            package name prefix for export .acp files
+     * @return list of export files
      */
     @Auditable(parameters = {"directoryDestination", "packageName"})
     public FileExportHandle[] export(File directoryDestination, String packageName);
-
 
     /**
      * General Export Handle
@@ -84,7 +86,7 @@ public interface RepositoryExporterService
     {
         public StoreRef storeRef;
         public String packageName;
-        public String mimeType; 
+        public String mimeType;
     }
 
     /**

@@ -36,7 +36,7 @@ package org.alfresco.rm.rest.api.model;
 public class RecordFolder extends RMNode
 {
     public static final String PARAM_IS_CLOSED = "isClosed";
-    
+
     private Boolean isClosed;
 
     public RecordFolder()

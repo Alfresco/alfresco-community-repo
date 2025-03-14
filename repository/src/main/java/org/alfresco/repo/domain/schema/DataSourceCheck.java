@@ -27,16 +27,16 @@ package org.alfresco.repo.domain.schema;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-
 import javax.sql.DataSource;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.domain.dialect.SQLServerDialect;
-import org.alfresco.repo.domain.dialect.Dialect;
-import org.alfresco.repo.domain.dialect.DialectFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.domain.dialect.Dialect;
+import org.alfresco.repo.domain.dialect.DialectFactory;
+import org.alfresco.repo.domain.dialect.SQLServerDialect;
 
 /**
  * Bean to log connection details and attempt to ensure that the connection is OK.
@@ -47,12 +47,11 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class DataSourceCheck
 {
     private static Log logger = LogFactory.getLog("org.alfresco.repo.admin");
-    
+
     private static final String MSG_DB_CONNECTION = "system.config_check.info.db_connection";
     private static final String MSG_DB_VERSION = "system.config_check.info.db_version";
     private static final String ERR_DB_CONNECTION = "system.config_check.err.db_connection";
-    private static final String ERR_WRONG_TRANSACTION_ISOLATION_SQL_SERVER =
-            "system.config_check.err.wrong_transaction_isolation_sql_server";
+    private static final String ERR_WRONG_TRANSACTION_ISOLATION_SQL_SERVER = "system.config_check.err.wrong_transaction_isolation_sql_server";
     /** The required transaction isolation */
     private static final int SQL_SERVER_TRANSACTION_ISOLATION = 4096;
 
@@ -84,7 +83,7 @@ public class DataSourceCheck
     public void init()
     {
         logger.info(I18NUtil.getMessage(MSG_DB_CONNECTION, dbUrl, dbUsername));
-        
+
         Connection con = null;
         try
         {
@@ -107,7 +106,7 @@ public class DataSourceCheck
                 {
                     throw new AlfrescoRuntimeException(
                             ERR_WRONG_TRANSACTION_ISOLATION_SQL_SERVER,
-                            new Object[] {transactionIsolation, SQL_SERVER_TRANSACTION_ISOLATION});
+                            new Object[]{transactionIsolation, SQL_SERVER_TRANSACTION_ISOLATION});
                 }
             }
         }
@@ -118,11 +117,16 @@ public class DataSourceCheck
         }
         catch (Exception e)
         {
-            throw new AlfrescoRuntimeException(ERR_DB_CONNECTION, new Object[] {e.getMessage()}, e);
+            throw new AlfrescoRuntimeException(ERR_DB_CONNECTION, new Object[]{e.getMessage()}, e);
         }
         finally
         {
-            try { con.close(); } catch (Exception e) {}
+            try
+            {
+                con.close();
+            }
+            catch (Exception e)
+            {}
         }
     }
 }

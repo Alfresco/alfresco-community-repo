@@ -30,7 +30,6 @@ import junit.framework.TestCase;
 import org.alfresco.repo.web.util.PagingCursor.Page;
 import org.alfresco.repo.web.util.PagingCursor.Rows;
 
-
 /**
  * Test Paged and Row Based Cursors
  * 
@@ -39,7 +38,7 @@ import org.alfresco.repo.web.util.PagingCursor.Rows;
 public class PagingCursorTest extends TestCase
 {
     protected PagingCursor pageCursor;
-    
+
     @Override
     protected void setUp() throws Exception
     {
@@ -55,7 +54,7 @@ public class PagingCursorTest extends TestCase
         pageCursor.setZeroBasedRow(false);
         assertFalse(pageCursor.isZeroBasedRow());
     }
-    
+
     public void testZeroRowsPageCursor()
     {
         Page page = pageCursor.createPageCursor(0, 10, 1);
@@ -237,21 +236,21 @@ public class PagingCursorTest extends TestCase
         Page page = pageCursor.createPageCursor(100, 10, 1);
         while (page.isInRange())
         {
-           for (long i = page.getStartRow(); i <= page.getEndRow(); i++)
-           {
-              coll[(int)i] = i;
-              count++;
-           }
-           page = pageCursor.createPageCursor(100, 10, page.getNextPage());
+            for (long i = page.getStartRow(); i <= page.getEndRow(); i++)
+            {
+                coll[(int) i] = i;
+                count++;
+            }
+            page = pageCursor.createPageCursor(100, 10, page.getNextPage());
         }
-        
+
         assertEquals(100, count);
         for (int test = 0; test < count; test++)
         {
             assertEquals(test, coll[test]);
         }
     }
-    
+
     public void testZeroRowsIndexCursor()
     {
         Rows rows = pageCursor.createRowsCursor(0, 10, 0);
@@ -324,19 +323,19 @@ public class PagingCursorTest extends TestCase
         Rows rows = pageCursor.createRowsCursor(100, 10, 0);
         while (rows.isInRange())
         {
-           for (long i = rows.getStartRow(); i <= rows.getEndRow(); i++)
-           {
-              coll[(int)i] = i;
-              count++;
-           }
-           rows = pageCursor.createRowsCursor(100, 10, rows.getNextSkipRows());
+            for (long i = rows.getStartRow(); i <= rows.getEndRow(); i++)
+            {
+                coll[(int) i] = i;
+                count++;
+            }
+            rows = pageCursor.createRowsCursor(100, 10, rows.getNextSkipRows());
         }
-        
+
         assertEquals(100, count);
         for (int test = 0; test < count; test++)
         {
             assertEquals(test, coll[test]);
         }
     }
-    
+
 }

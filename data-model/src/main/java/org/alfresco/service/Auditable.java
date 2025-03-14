@@ -54,16 +54,14 @@ public @interface Auditable
      * @return a String[] of parameter names, the default is an empty array.
      */
     String[] parameters() default {};
-    
+
     /**
-     * All method parameters are recorded by default.
-     * This can be used to stop a parameter being written to the audit log.
+     * All method parameters are recorded by default. This can be used to stop a parameter being written to the audit log.
      */
     boolean[] recordable() default {};
-    
+
     /**
-     * Return object are recorded by default.
-     * Setting this means they can never be recorded in the audit.
+     * Return object are recorded by default. Setting this means they can never be recorded in the audit.
      */
     boolean recordReturnedObject() default true;
 }

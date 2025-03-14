@@ -25,6 +25,12 @@
  */
 package org.alfresco.rest.api.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.PageDetails;
 import org.alfresco.query.PagingRequest;
@@ -32,12 +38,6 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.util.Pair;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * @author steveglover
@@ -84,8 +84,7 @@ public class Util
             page.add(element);
         }
 
-        return new PagingResults<T>()
-        {
+        return new PagingResults<T>() {
             @Override
             public List<T> getPage()
             {

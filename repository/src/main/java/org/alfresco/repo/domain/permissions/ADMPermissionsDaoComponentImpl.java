@@ -123,7 +123,7 @@ public class ADMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompon
                 {
                     // Check the primary parent to set inheritance
                     Long inheritsFrom = getACLDAO(nodeRef).getInheritedAcl(nodeRef);
-                    if(inheritsFrom != null)
+                    if (inheritsFrom != null)
                     {
                         inheritsFrom = aclDaoComponent.getInheritedAccessControlList(inheritsFrom);
                         getACLDAO(nodeRef).setAccessControlList(nodeRef, aclDaoComponent.getAcl(inheritsFrom));
@@ -136,7 +136,7 @@ public class ADMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompon
                     {
                         replaceWithCleanDefiningAcl(nodeRef, acl);
                     }
-                } 
+                }
                 else
                 {
                     replaceWithCleanDefiningAcl(nodeRef, acl);
@@ -157,10 +157,11 @@ public class ADMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompon
         }
     }
 
-
     /**
-     * @param nodeRef NodeRef
-     * @param acl Acl
+     * @param nodeRef
+     *            NodeRef
+     * @param acl
+     *            Acl
      */
     private void replaceWithCleanDefiningAcl(NodeRef nodeRef, Acl acl)
     {

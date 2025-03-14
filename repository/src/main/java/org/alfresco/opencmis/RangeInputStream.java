@@ -57,7 +57,8 @@ public class RangeInputStream extends InputStream
         {
             bytesRead++;
             return inputStream.read();
-        } else
+        }
+        else
         {
             return -1;
         }
@@ -72,11 +73,11 @@ public class RangeInputStream extends InputStream
     @Override
     public int read(byte[] b, int off, int len) throws IOException
     {
-        if(length - bytesRead == 0)
+        if (length - bytesRead == 0)
         {
             return -1;
         }
-        
+
         if (len > length - bytesRead)
         {
             len = (int) (length - bytesRead);

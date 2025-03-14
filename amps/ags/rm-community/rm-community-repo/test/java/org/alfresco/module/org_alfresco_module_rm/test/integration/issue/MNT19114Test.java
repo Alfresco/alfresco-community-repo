@@ -31,7 +31,6 @@ import static org.alfresco.util.GUID.generate;
 
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteVisibility;
 
 /**
@@ -51,14 +50,11 @@ public class MNT19114Test extends BaseRMTestCase
     }
 
     /**
-     * Given a RM site and two folder type children
-     * When creating a third folder type child as a Wiki page
-     * The page will be created and no exception will be thrown.
+     * Given a RM site and two folder type children When creating a third folder type child as a Wiki page The page will be created and no exception will be thrown.
      */
     public void testCreateWikiPageInRmSite() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             NodeRef wikiPage;
 
             public void given()

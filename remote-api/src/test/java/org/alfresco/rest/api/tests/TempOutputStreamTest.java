@@ -36,12 +36,13 @@ import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.alfresco.repo.content.ContentLimitViolationException;
-import org.alfresco.repo.web.scripts.TempOutputStream;
-import org.alfresco.util.TempFileProvider;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.util.StreamUtils;
+
+import org.alfresco.repo.content.ContentLimitViolationException;
+import org.alfresco.repo.web.scripts.TempOutputStream;
+import org.alfresco.util.TempFileProvider;
 
 /**
  * Tests basic {@link TempOutputStream} functionality
@@ -58,7 +59,7 @@ public class TempOutputStreamTest
     public void testInMemoryStream() throws IOException
     {
         Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory,
-            MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);
+                MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);
 
         File file = createTextFileWithRandomContent(MEMORY_THRESHOLD - 1024L);
         {

@@ -38,6 +38,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchParameters;
@@ -53,15 +63,6 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * RM search GET web script
@@ -110,7 +111,8 @@ public class RMSearchGet extends DeclarativeWebScript
     private ClassificationReasonsUtil classificationReasonsUtil;
 
     /**
-     * @param recordsManagementSearchService    records management search service
+     * @param recordsManagementSearchService
+     *            records management search service
      */
     public void setRecordsManagementSearchService(RecordsManagementSearchService recordsManagementSearchService)
     {
@@ -118,7 +120,8 @@ public class RMSearchGet extends DeclarativeWebScript
     }
 
     /**
-     * @param siteService   site service
+     * @param siteService
+     *            site service
      */
     public void setSiteService(SiteService siteService)
     {
@@ -126,7 +129,8 @@ public class RMSearchGet extends DeclarativeWebScript
     }
 
     /**
-     * @param namespaceService  namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -134,7 +138,8 @@ public class RMSearchGet extends DeclarativeWebScript
     }
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -142,7 +147,8 @@ public class RMSearchGet extends DeclarativeWebScript
     }
 
     /**
-     * @param dictionaryService dictionary service
+     * @param dictionaryService
+     *            dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -150,7 +156,8 @@ public class RMSearchGet extends DeclarativeWebScript
     }
 
     /**
-     * @param permissionService permission service
+     * @param permissionService
+     *            permission service
      */
     public void setPermissionService(PermissionService permissionService)
     {
@@ -158,7 +165,8 @@ public class RMSearchGet extends DeclarativeWebScript
     }
 
     /**
-     * @param recordCategoryUtil utility class for record categories
+     * @param recordCategoryUtil
+     *            utility class for record categories
      */
     public void setRecordCategoryUtil(RecordCategoryUtil recordCategoryUtil)
     {
@@ -171,16 +179,15 @@ public class RMSearchGet extends DeclarativeWebScript
     }
 
     /**
-     * @param personService person service
+     * @param personService
+     *            person service
      */
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
     }
 
-    /*
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
-     */
+    /* @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache) */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
@@ -209,15 +216,14 @@ public class RMSearchGet extends DeclarativeWebScript
             String filters = req.getParameter(PARAM_FILTERS);
             // TODO this is optional
 
-            //Replace any plain text reason ids with the appropriate node reference
-            if(query.contains(REASONS_KEY))
+            // Replace any plain text reason ids with the appropriate node reference
+            if (query.contains(REASONS_KEY))
             {
                 query = classificationReasonsUtil.replaceReasonWithNodeRef(query);
             }
 
             // Convert into a rm search parameter object
-            RecordsManagementSearchParameters searchParameters =
-                    SavedSearchDetailsCompatibility.createSearchParameters(filters, new String[]{",", "/"}, sortby, namespaceService);
+            RecordsManagementSearchParameters searchParameters = SavedSearchDetailsCompatibility.createSearchParameters(filters, new String[]{",", "/"}, sortby, namespaceService);
 
             // Set the max results
             String maxItems = req.getParameter(PARAM_MAX_ITEMS);
@@ -237,13 +243,13 @@ public class RMSearchGet extends DeclarativeWebScript
             for (Pair<NodeRef, NodeRef> pair : results)
             {
                 // FIXME: See RM-478
-                // TC 3-3  Create User Groups
+                // TC 3-3 Create User Groups
                 try
                 {
                     Item item = new Item(pair.getFirst(), pair.getSecond());
                     items.add(item);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     LOGGER.debug("Ignoring failed attempt to add item to search results.", e);
                 }
@@ -297,12 +303,12 @@ public class RMSearchGet extends DeclarativeWebScript
             }
 
             // Get parent node reference
-//            NodeRef parent = null;
-//            ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
-//            if (assoc != null)
-//            {
-//                parent = assoc.getParentRef();
-//            }
+            // NodeRef parent = null;
+            // ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
+            // if (assoc != null)
+            // {
+            // parent = assoc.getParentRef();
+            // }
 
             if (isContainer)
             {
@@ -314,10 +320,10 @@ public class RMSearchGet extends DeclarativeWebScript
                 {
                     if (pathElements.length > 5)
                     {
-                        this.parentFolder = (String)nodeService.getProperty(parent, ContentModel.PROP_NAME);
+                        this.parentFolder = (String) nodeService.getProperty(parent, ContentModel.PROP_NAME);
                     }
 
-                    pathElements = (String[])ArrayUtils.subarray(pathElements, 5, pathElements.length);
+                    pathElements = (String[]) ArrayUtils.subarray(pathElements, 5, pathElements.length);
                     String newPath = StringUtils.join(pathElements, "/");
                     StringBuilder relPath = new StringBuilder("/").append(newPath);
                     if (relPath.length() > 1)
@@ -327,7 +333,7 @@ public class RMSearchGet extends DeclarativeWebScript
                     relPath.append(getName());
                     try
                     {
-                        this.browseUrl = "documentlibrary?path=" + URLEncoder.encode(relPath.toString(), "UTF-8").replaceAll("\\+","%20");
+                        this.browseUrl = "documentlibrary?path=" + URLEncoder.encode(relPath.toString(), "UTF-8").replaceAll("\\+", "%20");
                     }
                     catch (UnsupportedEncodingException e)
                     {
@@ -338,17 +344,17 @@ public class RMSearchGet extends DeclarativeWebScript
             else
             {
                 // Get the document size
-                ContentData contentData = (ContentData)nodeProperties.get(ContentModel.PROP_CONTENT);
+                ContentData contentData = (ContentData) nodeProperties.get(ContentModel.PROP_CONTENT);
                 this.size = 0;
                 if (contentData != null)
                 {
-                    this.size = (int)contentData.getSize();
+                    this.size = (int) contentData.getSize();
                 }
 
                 // Set the document parent name
                 if (parent != null)
                 {
-                    this.parentFolder = (String)nodeService.getProperty(parent, ContentModel.PROP_NAME);
+                    this.parentFolder = (String) nodeService.getProperty(parent, ContentModel.PROP_NAME);
                 }
 
                 // Set the document browse URL
@@ -374,8 +380,8 @@ public class RMSearchGet extends DeclarativeWebScript
 
         private String getDisplayName(String userName)
         {
-            //Fix for RM-6834
-            if(userName.equals(SYSTEM))
+            // Fix for RM-6834
+            if (userName.equals(SYSTEM))
             {
                 return SYSTEM;
             }
@@ -388,8 +394,8 @@ public class RMSearchGet extends DeclarativeWebScript
                 {
                     StringBuilder displayName = new StringBuilder(128);
                     displayName.append(nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME))
-                               .append(" ")
-                               .append(nodeService.getProperty(person, ContentModel.PROP_LASTNAME));
+                            .append(" ")
+                            .append(nodeService.getProperty(person, ContentModel.PROP_LASTNAME));
                     result = displayName.toString();
                 }
                 else
@@ -414,27 +420,27 @@ public class RMSearchGet extends DeclarativeWebScript
 
         public String getName()
         {
-            return (String)nodeProperties.get(ContentModel.PROP_NAME);
+            return (String) nodeProperties.get(ContentModel.PROP_NAME);
         }
 
         public String getTitle()
         {
-            return (String)nodeProperties.get(ContentModel.PROP_TITLE);
+            return (String) nodeProperties.get(ContentModel.PROP_TITLE);
         }
 
         public String getDescription()
         {
-            return (String)nodeProperties.get(ContentModel.PROP_DESCRIPTION);
+            return (String) nodeProperties.get(ContentModel.PROP_DESCRIPTION);
         }
 
         public Date getModifiedOn()
         {
-            return (Date)nodeProperties.get(ContentModel.PROP_MODIFIED);
+            return (Date) nodeProperties.get(ContentModel.PROP_MODIFIED);
         }
 
         public String getModifiedByUser()
         {
-            return (String)nodeProperties.get(ContentModel.PROP_MODIFIER);
+            return (String) nodeProperties.get(ContentModel.PROP_MODIFIER);
         }
 
         public String getModifiedBy()
@@ -444,12 +450,12 @@ public class RMSearchGet extends DeclarativeWebScript
 
         public Date getCreatedOn()
         {
-            return (Date)nodeProperties.get(ContentModel.PROP_CREATED);
+            return (Date) nodeProperties.get(ContentModel.PROP_CREATED);
         }
 
         public String getCreatedByUser()
         {
-            return (String)nodeProperties.get(ContentModel.PROP_CREATOR);
+            return (String) nodeProperties.get(ContentModel.PROP_CREATOR);
         }
 
         public String getCreatedBy()
@@ -459,7 +465,7 @@ public class RMSearchGet extends DeclarativeWebScript
 
         public String getAuthor()
         {
-            return (String)nodeProperties.get(ContentModel.PROP_AUTHOR);
+            return (String) nodeProperties.get(ContentModel.PROP_AUTHOR);
         }
 
         public String getParentFolder()

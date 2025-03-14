@@ -52,7 +52,8 @@ public class RuleSet implements Serializable
     /**
      * Set list of the rules "owned" by this rule set
      * 
-     * @param rules the list of rules to set
+     * @param rules
+     *            the list of rules to set
      */
     public void setRules(List<RuleRef> rules)
     {
@@ -72,7 +73,8 @@ public class RuleSet implements Serializable
     /**
      * Set list of the rules inherited by this rule set from parent
      * 
-     * @param inheritedRules the list of inherited rules to set
+     * @param inheritedRules
+     *            the list of inherited rules to set
      */
     public void setInheritedRules(List<RuleRef> inheritedRules)
     {
@@ -92,7 +94,8 @@ public class RuleSet implements Serializable
     /**
      * Set the nodeRef to which this ruleset belongs
      * 
-     * @param rulesetNodeRef the ruleset nodeRef to set
+     * @param rulesetNodeRef
+     *            the ruleset nodeRef to set
      */
     public void setRulesetNodeRef(NodeRef rulesetNodeRef)
     {
@@ -110,9 +113,10 @@ public class RuleSet implements Serializable
     }
 
     /**
-     * Set the nodeRef to which this ruleset linked to 
+     * Set the nodeRef to which this ruleset linked to
      * 
-     * @param linkedToRuleSet the nodeRef to set
+     * @param linkedToRuleSet
+     *            the nodeRef to set
      */
     public void setLinkedToRuleSet(NodeRef linkedToRuleSet)
     {
@@ -132,7 +136,8 @@ public class RuleSet implements Serializable
     /**
      * Set the list of nodeRefs that link to this ruleset
      * 
-     * @param linkedFromRuleSets the list of nodeRefs to set
+     * @param linkedFromRuleSets
+     *            the list of nodeRefs to set
      */
     public void setLinkedFromRuleSets(List<NodeRef> linkedFromRuleSets)
     {

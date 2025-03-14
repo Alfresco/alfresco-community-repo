@@ -32,26 +32,20 @@
 
 package org.alfresco.rest.model;
 
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.utility.model.TestModel;
 
 /**
  * Base Path {@linkplain /alfresco/api/-default-/private/alfresco/versions/1}
  * 
- * @author Meenal Bhave
- * Example:
- * "repoInfo": {
- *                   "versionLabel": "5.2.2",
- *                   "edition": "Enterprise"
- *             }
+ * @author Meenal Bhave Example: "repoInfo": { "versionLabel": "5.2.2", "edition": "Enterprise" }
  */
 public class RestSyncServiceRepoInfoModel extends TestModel
 {
 
     public RestSyncServiceRepoInfoModel()
-    {
-    }
+    {}
 
     @JsonProperty(required = true)
     private String versionLabel;

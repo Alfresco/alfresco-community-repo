@@ -35,10 +35,10 @@ import org.alfresco.rest.workflow.api.model.ProcessDefinition;
 public interface ProcessDefinitions
 {
     public CollectionWithPagingInfo<ProcessDefinition> getProcessDefinitions(Parameters parameters);
-    
+
     public ProcessDefinition getProcessDefinition(String definitionId);
-    
+
     public BinaryResource getProcessDefinitionImage(String definitionId);
-    
+
     public CollectionWithPagingInfo<FormModelElement> getStartFormModel(String definitionId, Paging paging);
 }

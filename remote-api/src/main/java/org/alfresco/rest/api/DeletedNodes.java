@@ -45,6 +45,7 @@ public interface DeletedNodes
 {
     /**
      * Lists deleted nodes using a ArchivedNodesCannedQuery
+     * 
      * @param parameters
      * @return Collection of deleted Nodes
      */
@@ -52,9 +53,11 @@ public interface DeletedNodes
 
     /**
      * Gets a single deleted node by id.
+     * 
      * @param originalId
      * @param parameters
-     * @param fullnode Should we return the full representation of the minimal one?
+     * @param fullnode
+     *            Should we return the full representation of the minimal one?
      * @param mapUserInfo
      * @return a deleted node
      */
@@ -72,6 +75,7 @@ public interface DeletedNodes
 
     /**
      * Permanently delete the node.
+     * 
      * @param archivedId
      */
     void purgeArchivedNode(String archivedId);
@@ -104,9 +108,12 @@ public interface DeletedNodes
     /**
      * Gets a presigned URL to directly access content.
      *
-     * @param archivedId The node id for which to obtain the direct access {@code URL}
-     * @param renditionId The rendition id for which to obtain the direct access {@code URL}
-     * @param attachment {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}, {@code true} by default.
+     * @param archivedId
+     *            The node id for which to obtain the direct access {@code URL}
+     * @param renditionId
+     *            The rendition id for which to obtain the direct access {@code URL}
+     * @param attachment
+     *            {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}, {@code true} by default.
      * @return A direct access {@code URL} object for the content.
      */
     default DirectAccessUrl requestContentDirectUrl(String archivedId, String renditionId, boolean attachment)
@@ -115,10 +122,14 @@ public interface DeletedNodes
     }
 
     /**
-     * @param archivedId The node id for which to obtain the direct access {@code URL}
-     * @param renditionId The rendition id for which to obtain the direct access {@code URL}
-     * @param attachment {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}, {@code true} by default.
-     * @param validFor The time at which the direct access {@code URL} will expire.
+     * @param archivedId
+     *            The node id for which to obtain the direct access {@code URL}
+     * @param renditionId
+     *            The rendition id for which to obtain the direct access {@code URL}
+     * @param attachment
+     *            {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}, {@code true} by default.
+     * @param validFor
+     *            The time at which the direct access {@code URL} will expire.
      * @return A direct access {@code URL} object for the content.
      */
     default DirectAccessUrl requestContentDirectUrl(String archivedId, String renditionId, boolean attachment, Long validFor)
@@ -129,11 +140,16 @@ public interface DeletedNodes
     /**
      * Gets a presigned URL to directly access content.
      *
-     * @param archivedId The node id for which to obtain the direct access {@code URL}
-     * @param renditionId The rendition id for which to obtain the direct access {@code URL}
-     * @param attachment {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}, {@code true} by default.
-     * @param validFor The time at which the direct access {@code URL} will expire.
-     * @param fileName Optional overide for file name
+     * @param archivedId
+     *            The node id for which to obtain the direct access {@code URL}
+     * @param renditionId
+     *            The rendition id for which to obtain the direct access {@code URL}
+     * @param attachment
+     *            {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}, {@code true} by default.
+     * @param validFor
+     *            The time at which the direct access {@code URL} will expire.
+     * @param fileName
+     *            Optional overide for file name
      * @return A direct access {@code URL} object for the content.
      */
     DirectAccessUrl requestContentDirectUrl(String archivedId, String renditionId, boolean attachment, Long validFor, String fileName);

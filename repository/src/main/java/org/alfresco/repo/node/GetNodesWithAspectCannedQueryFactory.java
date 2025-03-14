@@ -42,8 +42,7 @@ import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 
 /**
- * GetNodesWithAspectCannedQuery canned query factory - to get paged list of
- *  Nodes with a given Aspect
+ * GetNodesWithAspectCannedQuery canned query factory - to get paged list of Nodes with a given Aspect
  * 
  * @author Nick Burch
  * @since 4.1
@@ -52,19 +51,19 @@ public class GetNodesWithAspectCannedQueryFactory extends AbstractCannedQueryFac
 {
     private NodeDAO nodeDAO;
     private TenantService tenantService;
-    
+
     private MethodSecurityBean<NodeRef> methodSecurity;
-    
+
     public void setNodeDAO(NodeDAO nodeDAO)
     {
         this.nodeDAO = nodeDAO;
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
-    }    
-    
+    }
+
     public void setMethodSecurity(MethodSecurityBean<NodeRef> methodSecurity)
     {
         this.methodSecurity = methodSecurity;
@@ -75,44 +74,46 @@ public class GetNodesWithAspectCannedQueryFactory extends AbstractCannedQueryFac
     {
         return (CannedQuery<NodeRef>) new GetNodesWithAspectCannedQuery(nodeDAO, tenantService, methodSecurity, parameters);
     }
-    
+
     /**
-     * Retrieve an unsorted instance of a {@link CannedQuery} based on parameters including 
-     * request for a total count (up to a given max)
+     * Retrieve an unsorted instance of a {@link CannedQuery} based on parameters including request for a total count (up to a given max)
      *
-     * @param storeRef           the store to search in, if requested
-     * @param aspectQNames       qnames of aspects to search for
-     * @param pagingRequest      skipCount, maxItems - optionally queryExecutionId and requestTotalCountMax
+     * @param storeRef
+     *            the store to search in, if requested
+     * @param aspectQNames
+     *            qnames of aspects to search for
+     * @param pagingRequest
+     *            skipCount, maxItems - optionally queryExecutionId and requestTotalCountMax
      * 
-     * @return                   an implementation that will execute the query
+     * @return an implementation that will execute the query
      */
     public CannedQuery<NodeRef> getCannedQuery(StoreRef storeRef, Set<QName> aspectQNames, PagingRequest pagingRequest)
     {
-        ParameterCheck.mandatory("aspectQNames",  aspectQNames);
+        ParameterCheck.mandatory("aspectQNames", aspectQNames);
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
-        
+
         int requestTotalCountMax = pagingRequest.getRequestTotalCountMax();
-        
+
         // specific query params - context (parent) and inclusive filters (child types, property values)
         GetNodesWithAspectCannedQueryParams paramBean = new GetNodesWithAspectCannedQueryParams(storeRef, aspectQNames);
 
         // page details
         CannedQueryPageDetails cqpd = new CannedQueryPageDetails(pagingRequest.getSkipCount(), pagingRequest.getMaxItems(), CannedQueryPageDetails.DEFAULT_PAGE_NUMBER, CannedQueryPageDetails.DEFAULT_PAGE_COUNT);
-        
+
         // no sort details - no sorting done
-        
+
         // create query params holder
         CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, null, requestTotalCountMax, pagingRequest.getQueryExecutionId());
-        
+
         // return canned query instance
         return getCannedQuery(params);
     }
-    
+
     @Override
     public void afterPropertiesSet() throws Exception
     {
         super.afterPropertiesSet();
-        
+
         PropertyCheck.mandatory(this, "tenantService", tenantService);
         PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);
         PropertyCheck.mandatory(this, "methodSecurityInterceptor", methodSecurity);

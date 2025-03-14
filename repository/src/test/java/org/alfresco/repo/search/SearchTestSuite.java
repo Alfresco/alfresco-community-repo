@@ -25,6 +25,10 @@
  */
 package org.alfresco.repo.search;
 
+import org.junit.experimental.categories.Categories;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+
 import org.alfresco.repo.search.impl.parsers.CMISTest;
 import org.alfresco.repo.search.impl.parsers.CMIS_FTSTest;
 import org.alfresco.repo.search.impl.parsers.FTSTest;
@@ -32,25 +36,21 @@ import org.alfresco.repo.search.impl.solr.SolrCategoryServiceImplTest;
 import org.alfresco.repo.search.impl.solr.SolrChildApplicationContextFactoryTest;
 import org.alfresco.repo.search.impl.solr.SolrSubsystemTest;
 import org.alfresco.util.NumericEncodingTest;
-import org.junit.experimental.categories.Categories;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
 
 @RunWith(Categories.class)
 @Suite.SuiteClasses({
-    MLAnaysisModeExpansionTest.class, 
-    QueryRegisterComponentTest.class,
-    SearcherComponentTest.class,
-    DocumentNavigatorTest.class,
-    NumericEncodingTest.class,
-    CMIS_FTSTest.class,
-    CMISTest.class,
-    FTSTest.class,
-    SolrChildApplicationContextFactoryTest.class,
-    SolrSubsystemTest.class,
-    SolrCategoryServiceImplTest.class
+        MLAnaysisModeExpansionTest.class,
+        QueryRegisterComponentTest.class,
+        SearcherComponentTest.class,
+        DocumentNavigatorTest.class,
+        NumericEncodingTest.class,
+        CMIS_FTSTest.class,
+        CMISTest.class,
+        FTSTest.class,
+        SolrChildApplicationContextFactoryTest.class,
+        SolrSubsystemTest.class,
+        SolrCategoryServiceImplTest.class
 })
 
 public class SearchTestSuite
-{
-}
+{}

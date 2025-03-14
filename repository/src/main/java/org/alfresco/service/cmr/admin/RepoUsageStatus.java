@@ -47,13 +47,13 @@ public class RepoUsageStatus
     {
         OK, WARN_ADMIN, WARN_ALL, LOCKED_DOWN
     }
-    
+
     private RepoUsage restrictions;
     private RepoUsage usage;
     private final RepoUsageLevel level;
     private final List<String> warnings;
     private final List<String> errors;
-    
+
     public RepoUsageStatus(
             RepoUsage restrictions, RepoUsage usage,
             RepoUsageLevel level, List<String> warnings, List<String> errors)
@@ -97,7 +97,7 @@ public class RepoUsageStatus
     }
 
     /**
-     * @return              Returns the current warning level
+     * @return Returns the current warning level
      */
     public RepoUsageLevel getLevel()
     {
@@ -105,7 +105,7 @@ public class RepoUsageStatus
     }
 
     /**
-     * @return              Returns any warnings generated
+     * @return Returns any warnings generated
      */
     public List<String> getWarnings()
     {
@@ -113,7 +113,7 @@ public class RepoUsageStatus
     }
 
     /**
-     * @return              Returns any errors generated
+     * @return Returns any errors generated
      */
     public List<String> getErrors()
     {

@@ -35,10 +35,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * A String name or qname path expression that resolves to a {@link NodeRef}.<br>
- * The given name or qname path is relative to a {@link NodeRefContext}
- * repository location. The default context is set to
- * {@link CompanyHomeContext#COMPANY_HOME_CONTEXT_NAME}. Other contexts can be
- * set using their name with {@link #setContext(String)}.<br>
+ * The given name or qname path is relative to a {@link NodeRefContext} repository location. The default context is set to {@link CompanyHomeContext#COMPANY_HOME_CONTEXT_NAME}. Other contexts can be set using their name with {@link #setContext(String)}.<br>
  * The set path is automatically detected and checked for consistency.
  */
 public class NodeRefPathExpression implements NodeRefExpression
@@ -62,13 +59,13 @@ public class NodeRefPathExpression implements NodeRefExpression
     public NodeRefPathExpression(NodeRefResolver resolver, Map<String, NodeRefContext> contexts)
     {
         this(resolver,
-             contexts,
-             CompanyHomeContext.COMPANY_HOME_CONTEXT_NAME,
-             null);
+                contexts,
+                CompanyHomeContext.COMPANY_HOME_CONTEXT_NAME,
+                null);
     }
 
     public NodeRefPathExpression(NodeRefResolver resolver, Map<String, NodeRefContext> contexts, String context,
-                String path)
+            String path)
     {
         super();
         this.resolver = resolver;
@@ -91,9 +88,10 @@ public class NodeRefPathExpression implements NodeRefExpression
      * Path setter.<br>
      * The type of path is automatically detected and checked for consistency.
      * 
-     * @param path the string path to be resolved later
-     * @throws AlfrescoRuntimeException if the given path is inconsistent (i.e.
-     *             a combination of qnames and names)
+     * @param path
+     *            the string path to be resolved later
+     * @throws AlfrescoRuntimeException
+     *             if the given path is inconsistent (i.e. a combination of qnames and names)
      */
     public void setPath(String path) throws AlfrescoRuntimeException
     {
@@ -143,7 +141,7 @@ public class NodeRefPathExpression implements NodeRefExpression
     {
         if (path == null || path.trim().length() == 0)
         {
-            return new String[] {};
+            return new String[]{};
         }
 
         String[] splitPath = path.split(PATH_DELIMITER);
@@ -168,10 +166,10 @@ public class NodeRefPathExpression implements NodeRefExpression
             if (noBlanksSplitPath.length > 0)
             {
                 System.arraycopy(splitPath,
-                                 0,
-                                 noBlanksSplitPath,
-                                 0,
-                                 noBlanksSplitPath.length);
+                        0,
+                        noBlanksSplitPath,
+                        0,
+                        noBlanksSplitPath.length);
             }
 
             splitPath = noBlanksSplitPath;
@@ -187,12 +185,12 @@ public class NodeRefPathExpression implements NodeRefExpression
         if (this.namePath != null)
         {
             return theContext.resolveNamePath(this.namePath,
-                                              resolver);
+                    resolver);
         }
         else
         {
             return theContext.resolveQNamePath(this.qNamePath,
-                                               resolver);
+                    resolver);
         }
     }
 
@@ -207,13 +205,13 @@ public class NodeRefPathExpression implements NodeRefExpression
             if (this.namePath != null)
             {
                 return theContext.createNamePath(this.namePath,
-                                                 resolver);
+                        resolver);
             }
             else
             {
                 return theContext.createQNamePath(this.qNamePath,
-                                                  this.createNamePath,
-                                                  resolver);
+                        this.createNamePath,
+                        resolver);
             }
 
         }

@@ -30,7 +30,6 @@ import java.io.Serializable;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.util.EqualsHelper;
 
-
 /**
  * Entity for <b>alf_acess_control_list</b> persistence.
  * 
@@ -39,9 +38,9 @@ import org.alfresco.util.EqualsHelper;
  */
 public class AclEntity implements Acl, Serializable
 {
-	private static final long serialVersionUID = 1L;
-	
-	private Long id;
+    private static final long serialVersionUID = 1L;
+
+    private Long id;
     private Long version;
     private String aclId;
     private boolean latest;
@@ -53,34 +52,33 @@ public class AclEntity implements Acl, Serializable
     private boolean isVersioned;
     private boolean requiresVersion;
     private Long aclChangeSet;
-    
+
     /**
      * Default constructor
      */
     public AclEntity()
-    {
-    }
-    
+    {}
+
     public Long getId()
     {
         return id;
     }
-    
+
     public void setId(Long id)
     {
         this.id = id;
     }
-    
+
     public Long getVersion()
     {
         return version;
     }
-    
+
     public void setVersion(Long version)
     {
         this.version = version;
     }
-    
+
     public void incrementVersion()
     {
         if (this.version >= Long.MAX_VALUE)
@@ -92,117 +90,117 @@ public class AclEntity implements Acl, Serializable
             this.version++;
         }
     }
-    
+
     public String getAclId()
     {
         return aclId;
     }
-    
+
     public void setAclId(String aclId)
     {
         this.aclId = aclId;
     }
-    
+
     public Boolean isLatest()
     {
         return latest;
     }
-    
+
     public void setLatest(boolean latest)
     {
         this.latest = latest;
     }
-    
+
     public Long getAclVersion()
     {
         return aclVersion;
     }
-    
+
     public void setAclVersion(Long aclVersion)
     {
         this.aclVersion = aclVersion;
     }
-    
+
     public Boolean getInherits()
     {
         return inherits;
     }
-    
+
     public void setInherits(boolean inherits)
     {
         this.inherits = inherits;
     }
-    
+
     public Long getInheritsFrom()
     {
         return inheritsFrom;
     }
-    
+
     public void setInheritsFrom(Long inheritsFrom)
     {
         this.inheritsFrom = inheritsFrom;
     }
-    
+
     public Integer getType()
     {
         return type;
     }
-    
+
     public void setType(Integer type)
     {
         this.type = type;
     }
-    
+
     public Long getInheritedAcl()
     {
         return inheritedAcl;
     }
-    
+
     public void setInheritedAcl(Long inheritedAcl)
     {
         this.inheritedAcl = inheritedAcl;
     }
-    
+
     public Boolean isVersioned()
     {
         return isVersioned;
     }
-    
+
     public void setVersioned(boolean isVersioned)
     {
         this.isVersioned = isVersioned;
     }
-    
+
     public Boolean getRequiresVersion()
     {
         return requiresVersion;
     }
-    
+
     public void setRequiresVersion(boolean requiresVersion)
     {
         this.requiresVersion = requiresVersion;
     }
-    
+
     public Long getAclChangeSetId()
     {
         return aclChangeSet;
     }
-    
+
     public void setAclChangeSetId(Long aclChangeSet)
     {
         this.aclChangeSet = aclChangeSet;
     }
-    
+
     public ACLType getAclType()
     {
         return ACLType.getACLTypeFromId(type);
     }
-    
+
     public void setAclType(ACLType type)
     {
         this.type = type.getId();
     }
-    
+
     @Override
     public int hashCode()
     {
@@ -231,25 +229,25 @@ public class AclEntity implements Acl, Serializable
             return false;
         }
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("AclEntity")
-          .append("[ ID=").append(id)
-          .append(", version=").append(version)
-          .append(", aclId=").append(aclId)
-          .append(", isLatest=").append(latest)
-          .append(", aclVersion=").append(aclVersion)
-          .append(", inherits=").append(inherits)
-          .append(", inheritsFrom=").append(inheritsFrom)
-          .append(", type=").append(type)
-          .append(", inheritedAcl=").append(inheritedAcl)
-          .append(", isVersioned=").append(isVersioned)
-          .append(", requiresVersion=").append(requiresVersion)
-          .append(", aclChangeSet=").append(aclChangeSet)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", version=").append(version)
+                .append(", aclId=").append(aclId)
+                .append(", isLatest=").append(latest)
+                .append(", aclVersion=").append(aclVersion)
+                .append(", inherits=").append(inherits)
+                .append(", inheritsFrom=").append(inheritsFrom)
+                .append(", type=").append(type)
+                .append(", inheritedAcl=").append(inheritedAcl)
+                .append(", isVersioned=").append(isVersioned)
+                .append(", requiresVersion=").append(requiresVersion)
+                .append(", aclChangeSet=").append(aclChangeSet)
+                .append("]");
         return sb.toString();
     }
 }

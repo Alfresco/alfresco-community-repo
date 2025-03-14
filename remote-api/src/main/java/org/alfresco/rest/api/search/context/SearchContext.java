@@ -43,7 +43,7 @@ public class SearchContext
     private final SearchQuery request;
 
     public SearchContext(long lastTxId, List<GenericFacetResponse> facets, List<FacetQueryContext> facetResults, List<FacetFieldContext> facetsFields, SpellCheckContext spellCheck,
-                SearchQuery request)
+            SearchQuery request)
     {
         this.spellCheck = spellCheck;
         this.request = request;

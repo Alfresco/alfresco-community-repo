@@ -29,6 +29,8 @@ import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
@@ -37,8 +39,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.subscriptions.PagingFollowingResults;
@@ -53,13 +53,11 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 @Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class SubscriptionServiceImplTest extends TestCase
 {
-    public static final String[] CONTEXTS = new String[] { "classpath:alfresco/application-context.xml", "classpath:test/alfresco/test-subscriptions-context.xml" };
+    public static final String[] CONTEXTS = new String[]{"classpath:alfresco/application-context.xml", "classpath:test/alfresco/test-subscriptions-context.xml"};
 
     public static final String USER_BOB = "bob" + GUID.generate();
     public static final String USER_TOM = "tom" + GUID.generate();
@@ -113,7 +111,8 @@ public class SubscriptionServiceImplTest extends TestCase
             if (txn.getStatus() == Status.STATUS_MARKED_ROLLBACK)
             {
                 txn.rollback();
-            } else
+            }
+            else
             {
                 txn.commit();
             }
@@ -235,8 +234,7 @@ public class SubscriptionServiceImplTest extends TestCase
 
         subscriptionService.follow(userId1, userId2);
 
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
             @Override
             public Object doWork() throws Exception
             {
@@ -245,8 +243,7 @@ public class SubscriptionServiceImplTest extends TestCase
             }
         }, userId1);
 
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
             @Override
             public Object doWork() throws Exception
             {
@@ -255,8 +252,7 @@ public class SubscriptionServiceImplTest extends TestCase
             }
         }, AuthenticationUtil.getAdminUserName());
 
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
             @Override
             public Object doWork() throws Exception
             {
@@ -264,7 +260,8 @@ public class SubscriptionServiceImplTest extends TestCase
                 {
                     subscriptionService.getFollowing(userId1, new PagingRequest(100000, null));
                     fail("Expected PrivateSubscriptionListException!");
-                } catch (PrivateSubscriptionListException psle)
+                }
+                catch (PrivateSubscriptionListException psle)
                 {
                     // expected
                 }

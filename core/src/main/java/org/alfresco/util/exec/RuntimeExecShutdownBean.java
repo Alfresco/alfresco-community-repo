@@ -21,23 +21,22 @@ package org.alfresco.util.exec;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
+import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
 
 /**
- * This bean executes a list of shutdown commands when either the VM shuts down
- * or the application context closes.  In both cases, the commands are only
- * executed if the application context was started.
+ * This bean executes a list of shutdown commands when either the VM shuts down or the application context closes. In both cases, the commands are only executed if the application context was started.
  * 
  * @author Derek Hulley
  */
 public class RuntimeExecShutdownBean extends AbstractLifecycleBean
 {
     private static Log logger = LogFactory.getLog(RuntimeExecShutdownBean.class);
-    
+
     /** the commands to execute on context closure or VM shutdown */
     private List<RuntimeExec> shutdownCommands;
     /** the registered shutdown hook */
@@ -55,10 +54,10 @@ public class RuntimeExecShutdownBean extends AbstractLifecycleBean
     }
 
     /**
-     * Set the commands to execute, in sequence, when the application context
-     * is initialized.
+     * Set the commands to execute, in sequence, when the application context is initialized.
      * 
-     * @param startupCommands list of commands
+     * @param startupCommands
+     *            list of commands
      */
     public void setShutdownCommands(List<RuntimeExec> startupCommands)
     {
@@ -88,7 +87,7 @@ public class RuntimeExecShutdownBean extends AbstractLifecycleBean
             logger.debug("Executed shutdown commands");
         }
     }
-    
+
     /**
      * The thread that will call the shutdown commands.
      * 
@@ -140,26 +139,12 @@ public class RuntimeExecShutdownBean extends AbstractLifecycleBean
                 // VM is already shutting down
             }
             shutdownHook = null;
-            
+
             if (logger.isDebugEnabled())
             {
                 logger.debug("Deregistered shutdown hook");
             }
         }
     }
-    
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

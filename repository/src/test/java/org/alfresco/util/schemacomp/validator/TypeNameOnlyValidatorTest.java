@@ -25,7 +25,14 @@
  */
 package org.alfresco.util.schemacomp.validator;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
+
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.dialect.SQLServerDialect;
 import org.alfresco.util.schemacomp.DiffContext;
@@ -33,19 +40,13 @@ import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.model.Column;
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.Index;
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 
 /**
  * Tests for the TypeNameOnlyValidator class.
  * 
  * @author sergei.shcherbovich
  */
-public class TypeNameOnlyValidatorTest 
+public class TypeNameOnlyValidatorTest
 {
     private TypeNameOnlyValidator validator;
     private DiffContext ctx;
@@ -58,7 +59,7 @@ public class TypeNameOnlyValidatorTest
         validationResults = new Results();
         ctx = new DiffContext(new SQLServerDialect(), validationResults, null, null);
     }
-    
+
     @Test
     public void validateOnlyColumnsTest()
     {
@@ -67,12 +68,12 @@ public class TypeNameOnlyValidatorTest
             validator.validate(null, new Index(null, null, new ArrayList<String>()), ctx);
             fail("TypeNameOnlyValidator should validate only Column");
         }
-        catch(AlfrescoRuntimeException e)
+        catch (AlfrescoRuntimeException e)
         {
             // should validate only Column
         }
     }
-    
+
     @Test
     public void validateColumnNamesTest()
     {
@@ -80,21 +81,21 @@ public class TypeNameOnlyValidatorTest
         assertValidation(column("nvarchar(1)"), column("nvarchar(2)"), false);
         // shouldn't fail
         assertValidation(column("numeric"), column("numeric"), false);
-        // should fail 
+        // should fail
         assertValidation(column("nvarchar(1)"), column("varchar(1)"), true);
         // shouldn't fail
         assertValidation(column("numeric() identity"), column("numeric() identity"), false);
     }
-    
+
     private void assertValidation(DbObject reference, DbObject target, boolean shouldFail)
     {
         int shouldFailInt = shouldFail ? 1 : 0;
         int beforeValidationResultsSize = validationResults.size();
-        
+
         validator.validate(reference, target, ctx);
         assertEquals(validationResults.size() - beforeValidationResultsSize, shouldFailInt);
     }
-    
+
     private Column column(String typeName)
     {
         return new Column(null, null, typeName, true);

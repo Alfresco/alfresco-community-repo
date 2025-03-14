@@ -27,6 +27,8 @@ package org.alfresco.rest.api.rules;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.RuleSettings;
 import org.alfresco.rest.api.model.rules.RuleSetting;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
@@ -37,16 +39,15 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Folder node rule settings (rule inheritance).
  */
 @Experimental
-@RelationshipResource (name = "rule-settings", entityResource = NodesEntityResource.class, title = "Folder rule settings")
+@RelationshipResource(name = "rule-settings", entityResource = NodesEntityResource.class, title = "Folder rule settings")
 public class NodeRuleSettingsRelation implements RelationshipResourceAction.ReadById<RuleSetting>,
-                                                 RelationshipResourceAction.Update<RuleSetting>,
-                                                 InitializingBean
+        RelationshipResourceAction.Update<RuleSetting>,
+        InitializingBean
 {
     private RuleSettings ruleSettings;
 
@@ -61,16 +62,18 @@ public class NodeRuleSettingsRelation implements RelationshipResourceAction.Read
      * <p>
      * - GET /nodes/{folderId}/rule-settings/{ruleSettingKey}
      *
-     * @param folderId The id of the folder.
-     * @param ruleSettingKey The setting to retrieve.
-     * @param parameters Unused.
+     * @param folderId
+     *            The id of the folder.
+     * @param ruleSettingKey
+     *            The setting to retrieve.
+     * @param parameters
+     *            Unused.
      * @return {@link RuleSetting} The current value of the setting.
      */
-    @WebApiDescription (
+    @WebApiDescription(
             title = "Get a folder node rule setting",
             description = "Returns the specified rule setting for the given folder",
-            successStatus = HttpServletResponse.SC_OK
-    )
+            successStatus = HttpServletResponse.SC_OK)
     @Override
     public RuleSetting readById(String folderId, String ruleSettingKey, Parameters parameters) throws RelationshipResourceNotFoundException
     {
@@ -82,16 +85,18 @@ public class NodeRuleSettingsRelation implements RelationshipResourceAction.Read
      * <p>
      * PUT /nodes/{folderId}/rule-settings/{ruleSettingKey}
      *
-     * @param folderId The id of the folder.
-     * @param ruleSetting The new value of the rule setting.
-     * @param parameters Unused.
+     * @param folderId
+     *            The id of the folder.
+     * @param ruleSetting
+     *            The new value of the rule setting.
+     * @param parameters
+     *            Unused.
      * @return The updated rule setting.
      */
-    @WebApiDescription (
+    @WebApiDescription(
             title = "Update folder node rule setting",
             description = "Update a rule setting for given node",
-            successStatus = HttpServletResponse.SC_OK
-    )
+            successStatus = HttpServletResponse.SC_OK)
     @Override
     public RuleSetting update(String folderId, RuleSetting ruleSetting, Parameters parameters)
     {

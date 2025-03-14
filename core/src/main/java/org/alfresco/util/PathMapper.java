@@ -30,7 +30,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * A component that maps source data paths to target data paths.
  * <p>
- * This class caches results and is thread-safe. 
+ * This class caches results and is thread-safe.
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -38,21 +38,21 @@ import org.apache.commons.logging.LogFactory;
 public class PathMapper
 {
     private static final Log logger = LogFactory.getLog(PathMapper.class);
-    
+
     private final ReentrantReadWriteLock.ReadLock readLock;
     private final ReentrantReadWriteLock.WriteLock writeLock;
-    
+
     private boolean locked;
     /**
      * Used to lookup path translations
      */
     private final Map<String, Set<String>> pathMaps;
     /**
-     * Cached fine-grained path translations (derived data) 
+     * Cached fine-grained path translations (derived data)
      */
     private final Map<String, Set<String>> derivedPathMaps;
     private final Map<String, Set<String>> derivedPathMapsPartial;
-    
+
     /**
      * Default constructor
      */
@@ -61,12 +61,12 @@ public class PathMapper
         ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
         readLock = lock.readLock();
         writeLock = lock.writeLock();
-        
+
         pathMaps = new HashMap<String, Set<String>>(37);
         derivedPathMaps = new HashMap<String, Set<String>>(127);
         derivedPathMapsPartial = new HashMap<String, Set<String>>(127);
     }
-    
+
     /**
      * Locks the instance against further modifications.
      */
@@ -101,12 +101,14 @@ public class PathMapper
             writeLock.unlock();
         }
     }
-    
+
     /**
      * Add a path mapping.
      * 
-     * @param sourcePath            the source path
-     * @param targetPath            the target path
+     * @param sourcePath
+     *            the source path
+     * @param targetPath
+     *            the target path
      */
     public void addPathMap(String sourcePath, String targetPath)
     {
@@ -137,13 +139,13 @@ public class PathMapper
             logger.debug("Added path map: " + sourcePath + " --> " + targetPath);
         }
     }
-    
+
     /**
-     * Gets the remapped paths for the given source path, excluding any derivative
-     * paths i.e. does exact path matching only.
+     * Gets the remapped paths for the given source path, excluding any derivative paths i.e. does exact path matching only.
      * 
-     * @param sourcePath            the source path
-     * @return                      Returns the target paths (never <tt>null</tt>)
+     * @param sourcePath
+     *            the source path
+     * @return Returns the target paths (never <tt>null</tt>)
      */
     public Set<String> getMappedPaths(String sourcePath)
     {
@@ -171,13 +173,13 @@ public class PathMapper
             writeLock.unlock();
         }
     }
-    
+
     /**
-     * Gets the remapped paths for the given source path, including any derivative
-     * paths i.e. does partial path matching.
+     * Gets the remapped paths for the given source path, including any derivative paths i.e. does partial path matching.
      * 
-     * @param sourcePath            the source path
-     * @return                      Returns the target paths (never <tt>null</tt>)
+     * @param sourcePath
+     *            the source path
+     * @return Returns the target paths (never <tt>null</tt>)
      */
     public Set<String> getMappedPathsWithPartialMatch(String sourcePath)
     {
@@ -205,7 +207,7 @@ public class PathMapper
             writeLock.unlock();
         }
     }
-    
+
     public boolean isEmpty()
     {
         readLock.lock();
@@ -218,7 +220,7 @@ public class PathMapper
             readLock.unlock();
         }
     }
-    
+
     private Set<String> updateMappedPaths(String sourcePath)
     {
         // Do a double-check
@@ -267,12 +269,12 @@ public class PathMapper
         {
             logger.debug(
                     "Cached path mapping: \n" +
-                    "   Source:  " + sourcePath + "\n" +
-                    "   Targets: " + targetPaths);
+                            "   Source:  " + sourcePath + "\n" +
+                            "   Targets: " + targetPaths);
         }
         return targetPaths;
     }
-    
+
     private Set<String> updateMappedPathsPartial(String sourcePath)
     {
         // Do a double-check
@@ -303,12 +305,12 @@ public class PathMapper
         {
             logger.debug(
                     "Cached path mapping (partial): \n" +
-                    "   Source:  " + sourcePath + "\n" +
-                    "   Targets: " + targetPaths);
+                            "   Source:  " + sourcePath + "\n" +
+                            "   Targets: " + targetPaths);
         }
         return targetPaths;
     }
-    
+
     public <V> Map<String, V> convertMap(Map<String, V> valueMap)
     {
         Map<String, V> resultMap = new HashMap<String, V>(valueMap.size() * 2 + 1);

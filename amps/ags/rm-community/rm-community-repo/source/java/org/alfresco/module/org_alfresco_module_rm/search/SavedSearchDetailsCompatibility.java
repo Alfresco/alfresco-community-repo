@@ -39,8 +39,7 @@ import org.alfresco.service.namespace.QName;
 /**
  * Compatibility class.
  *
- * Used to bridge between the old style of saved search passed and required by the UI and the new actual saved search details.
- * Eventually will be factored out as web scripts are brought up to date.
+ * Used to bridge between the old style of saved search passed and required by the UI and the new actual saved search details. Eventually will be factored out as web scripts are brought up to date.
  */
 // Not @AlfrescoPublicApi at the moment as it requires RecordsManagementSearchServiceImpl which is not public API.
 public class SavedSearchDetailsCompatibility implements RecordsManagementModel
@@ -56,8 +55,10 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
 
     /**
      * Retrieve the search from the parameter string
-     * @param params    parameter string
-     * @return String   search term
+     * 
+     * @param params
+     *            parameter string
+     * @return String search term
      */
     public static String getSearchFromParams(String params)
     {
@@ -163,11 +164,12 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
 
     /**
      * Constructor
+     * 
      * @param savedSearchDetails
      */
     public SavedSearchDetailsCompatibility(SavedSearchDetails savedSearchDetails,
-                                           NamespaceService namespaceService,
-                                           RecordsManagementSearchServiceImpl searchService)
+            NamespaceService namespaceService,
+            RecordsManagementSearchServiceImpl searchService)
     {
         this.savedSearchDetails = savedSearchDetails;
         this.namespaceService = namespaceService;
@@ -176,6 +178,7 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
 
     /**
      * Get the sort string from the saved search details
+     * 
      * @return
      */
     public String getSort()
@@ -184,7 +187,7 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
 
         for (SortItem entry : this.savedSearchDetails.getSearchParameters().getSortOrder())
         {
-            if (builder.length() !=0)
+            if (builder.length() != 0)
             {
                 builder.append(",");
             }
@@ -195,8 +198,8 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
                 order = "asc";
             }
             builder.append(entry.property.toPrefixString(this.namespaceService))
-                   .append("/")
-                   .append(order);
+                    .append("/")
+                    .append(order);
         }
 
         return builder.toString();
@@ -204,6 +207,7 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
 
     /**
      * Get the parameter string from the saved search details
+     * 
      * @return
      */
     public String getParams()
@@ -211,19 +215,20 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
         List<QName> includeContainerTypes = this.savedSearchDetails.getSearchParameters().getIncludedContainerTypes();
         StringBuilder builder = new StringBuilder(128);
         builder.append("terms=").append(this.savedSearchDetails.getSearch()).append("&")
-               .append("records=").append(this.savedSearchDetails.getSearchParameters().isIncludeRecords()).append("&")
-               .append("undeclared=").append(this.savedSearchDetails.getSearchParameters().isIncludeUndeclaredRecords()).append("&")
-               .append("vital=").append(this.savedSearchDetails.getSearchParameters().isIncludeVitalRecords()).append("&")
-               .append("folders=").append(this.savedSearchDetails.getSearchParameters().isIncludeRecordFolders()).append("&")
-               .append("frozen=").append(this.savedSearchDetails.getSearchParameters().isIncludeFrozen()).append("&")
-               .append("cutoff=").append(this.savedSearchDetails.getSearchParameters().isIncludeCutoff()).append("&")
-               .append("categories=").append(includeContainerTypes.contains(TYPE_RECORD_CATEGORY)).append("&")
-               .append("series=").append(false);
+                .append("records=").append(this.savedSearchDetails.getSearchParameters().isIncludeRecords()).append("&")
+                .append("undeclared=").append(this.savedSearchDetails.getSearchParameters().isIncludeUndeclaredRecords()).append("&")
+                .append("vital=").append(this.savedSearchDetails.getSearchParameters().isIncludeVitalRecords()).append("&")
+                .append("folders=").append(this.savedSearchDetails.getSearchParameters().isIncludeRecordFolders()).append("&")
+                .append("frozen=").append(this.savedSearchDetails.getSearchParameters().isIncludeFrozen()).append("&")
+                .append("cutoff=").append(this.savedSearchDetails.getSearchParameters().isIncludeCutoff()).append("&")
+                .append("categories=").append(includeContainerTypes.contains(TYPE_RECORD_CATEGORY)).append("&")
+                .append("series=").append(false);
         return builder.toString();
     }
 
     /**
      * Build the full query string
+     * 
      * @return
      */
     public String getQuery()

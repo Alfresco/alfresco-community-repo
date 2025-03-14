@@ -44,14 +44,12 @@ public class Encoding implements Serializable
     private static final long serialVersionUID = 1L;
 
     /**
-     * String encoding token - signals the beginning of a reference encoded with
-     * this encoding in given String.
+     * String encoding token - signals the beginning of a reference encoded with this encoding in given String.
      */
     public final Character token;
 
     /**
-     * <code>true</code> if {@link Reference}s encoded using this encoding 
-     * can be part of URLs.
+     * <code>true</code> if {@link Reference}s encoded using this encoding can be part of URLs.
      */
     public final boolean urlNative;
 

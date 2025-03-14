@@ -26,19 +26,17 @@
 
 package org.alfresco.repo.admin;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.StringContains.containsString;
-
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
-import junit.framework.TestCase;
 
-import org.alfresco.repo.model.filefolder.FileFolderPerformanceTester;
+import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import org.alfresco.repo.model.filefolder.FileFolderPerformanceTester;
 
 /**
  * @author Derek Hulley
@@ -51,11 +49,10 @@ public class Log4JHierarchyInitTest extends TestCase
     private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
 
     private static ApplicationContext ctx = new ClassPathXmlApplicationContext(
-                new String[] { "classpath:log4j/log4j-test-context.xml" });
+            new String[]{"classpath:log4j/log4j-test-context.xml"});
 
     public void setUp() throws Exception
-    {
-    }
+    {}
 
     public void testSetUp() throws Throwable
     {

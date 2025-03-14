@@ -32,8 +32,7 @@ import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.spi.JobStore;
 
 /**
- * A special Scheduler Factory that provides a Scheduler reference to JobStores implementing the {@link SchedulerAware}
- * interface.
+ * A special Scheduler Factory that provides a Scheduler reference to JobStores implementing the {@link SchedulerAware} interface.
  * 
  * @author dward
  */

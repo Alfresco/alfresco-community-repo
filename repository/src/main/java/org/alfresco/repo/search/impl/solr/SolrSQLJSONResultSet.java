@@ -29,8 +29,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.search.SimpleResultSetMetaData;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import org.alfresco.repo.search.SearchEngineResultMetadata;
+import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.LimitBy;
@@ -41,14 +47,10 @@ import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SpellCheckResult;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Pojo that parses and stores solr stream response.
+ * 
  * @author Michael Suzuki
  */
 public class SolrSQLJSONResultSet implements ResultSet, SearchEngineResultMetadata
@@ -62,7 +64,7 @@ public class SolrSQLJSONResultSet implements ResultSet, SearchEngineResultMetada
     ResultSet wrapped;
     private JSONArray docs;
     private long numberFound;
-    
+
     public SolrSQLJSONResultSet(JSONObject json, SearchParameters searchParameters)
     {
         try
@@ -70,15 +72,13 @@ public class SolrSQLJSONResultSet implements ResultSet, SearchEngineResultMetada
             solrResponse = ((JSONObject) json).toString();
             JSONObject res = (JSONObject) json.get("result-set");
             docs = (JSONArray) res.get("docs");
-            /*
-             * Check that there is no error, which is returned in the first object.
-             */
-            
+            /* Check that there is no error, which is returned in the first object. */
+
             JSONObject obj1 = docs.getJSONObject(0);
-            if(obj1.has(SOLR_STREAM_EXCEPTION)) 
+            if (obj1.has(SOLR_STREAM_EXCEPTION))
             {
-                String error =  obj1.get(SOLR_STREAM_EXCEPTION).toString();
-                if(error.equalsIgnoreCase("/sql handler only works in Solr Cloud mode"))
+                String error = obj1.get(SOLR_STREAM_EXCEPTION).toString();
+                if (error.equalsIgnoreCase("/sql handler only works in Solr Cloud mode"))
                 {
                     throw new RuntimeException("Unable to execute the query, this API requires InsightEngine.");
                 }
@@ -87,16 +87,16 @@ public class SolrSQLJSONResultSet implements ResultSet, SearchEngineResultMetada
                     throw new RuntimeException("Unable to execute the query, error caused by: " + error);
                 }
             }
-            //Check if it has an error
+            // Check if it has an error
             this.length = docs.length();
-            //Last element will contain the object that hold the solr response time.
-            JSONObject time = (JSONObject) docs.get(length -1);
+            // Last element will contain the object that hold the solr response time.
+            JSONObject time = (JSONObject) docs.get(length - 1);
             this.numberFound = length - 1;
             queryTime = Long.valueOf((Integer) time.get("RESPONSE_TIME"));
             // Were hard coding this as we have a hard limit of 1000 results, any more will not be readable.
-            this.resultSetMetaData = new SimpleResultSetMetaData(LimitBy.FINAL_SIZE, 
-                    PermissionEvaluationMode.EAGER, (SearchParameters)searchParameters);
-        } 
+            this.resultSetMetaData = new SimpleResultSetMetaData(LimitBy.FINAL_SIZE,
+                    PermissionEvaluationMode.EAGER, (SearchParameters) searchParameters);
+        }
         catch (JSONException e)
         {
             logger.info(e.getMessage());
@@ -178,63 +178,63 @@ public class SolrSQLJSONResultSet implements ResultSet, SearchEngineResultMetada
     @Override
     public boolean hasMore()
     {
-        //Hard coded to 1000 and o pagination.
+        // Hard coded to 1000 and o pagination.
         return false;
     }
 
     @Override
     public boolean setBulkFetch(boolean bulkFetch)
     {
-        //Not applicable.
+        // Not applicable.
         return false;
     }
 
     @Override
     public boolean getBulkFetch()
     {
-        //Not applicable.
+        // Not applicable.
         return false;
     }
 
     @Override
     public int setBulkFetchSize(int bulkFetchSize)
     {
-        //Not applicable.
+        // Not applicable.
         return 0;
     }
 
     @Override
     public int getBulkFetchSize()
     {
-        //Not applicable.
+        // Not applicable.
         return 0;
     }
 
     @Override
     public List<Pair<String, Integer>> getFieldFacet(String field)
     {
-        //Not applicable.
+        // Not applicable.
         return null;
     }
 
     @Override
     public Map<String, Integer> getFacetQueries()
     {
-        //Not applicable.
+        // Not applicable.
         return null;
     }
 
     @Override
     public Map<NodeRef, List<Pair<String, List<String>>>> getHighlighting()
     {
-        //Not applicable.
+        // Not applicable.
         return null;
     }
 
     @Override
     public SpellCheckResult getSpellCheckResult()
     {
-        //Not applicable.
+        // Not applicable.
         return null;
     }
 

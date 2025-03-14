@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.api.types;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.Types;
 import org.alfresco.rest.api.model.Type;
 import org.alfresco.rest.framework.resource.EntityResource;
@@ -33,7 +35,6 @@ import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAct
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 @EntityResource(name = "types", title = "types")
 public class TypeEntityResource implements EntityResourceAction.ReadById<Type>, EntityResourceAction.Read<Type>, InitializingBean

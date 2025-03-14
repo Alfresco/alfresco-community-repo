@@ -36,9 +36,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-
 import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ComparisonFailure;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.runners.MethodSorters;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -65,14 +73,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ComparisonFailure;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Integration test for HomeFolderProviderSynchronizer.
@@ -131,14 +131,13 @@ public class HomeFolderProviderSynchronizerTest
         personService.setCreateMissingPeople(true);
 
         // Create test home folder provider that gets its path from a property and the username
-        testHomeFolderProvider = new RegexHomeFolderProvider()
-        {
+        testHomeFolderProvider = new RegexHomeFolderProvider() {
             @Override
             public List<String> getHomeFolderPath(NodeRef person)
             {
                 String parentPath = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(person, PROP_PARENT_PATH));
-                String propPath = ((parentPath == null || parentPath.length() == 0) ? "" : parentPath+'/')+
-                                  homeFolderManager.getPersonProperty(person, ContentModel.PROP_USERNAME);
+                String propPath = ((parentPath == null || parentPath.length() == 0) ? "" : parentPath + '/') +
+                        homeFolderManager.getPersonProperty(person, ContentModel.PROP_USERNAME);
                 return Arrays.asList(propPath.split("/"));
             }
         };
@@ -148,9 +147,9 @@ public class HomeFolderProviderSynchronizerTest
         testHomeFolderProvider.setHomeFolderManager(homeFolderManager);
         testHomeFolderProvider.setRootPath(origRootPath);
         testHomeFolderProvider.setStoreUrl(storeUrl);
-        testHomeFolderProvider.setOnCreatePermissionsManager((PermissionsManager)applicationContext.getBean("defaultOnCreatePermissionsManager"));
-        testHomeFolderProvider.setOnCreatePermissionsManager((PermissionsManager)applicationContext.getBean("defaultOnCreatePermissionsManager"));
-        testHomeFolderProvider.setOnReferencePermissionsManager((PermissionsManager)applicationContext.getBean("defaultOnReferencePermissionsManager"));
+        testHomeFolderProvider.setOnCreatePermissionsManager((PermissionsManager) applicationContext.getBean("defaultOnCreatePermissionsManager"));
+        testHomeFolderProvider.setOnCreatePermissionsManager((PermissionsManager) applicationContext.getBean("defaultOnCreatePermissionsManager"));
+        testHomeFolderProvider.setOnReferencePermissionsManager((PermissionsManager) applicationContext.getBean("defaultOnReferencePermissionsManager"));
         testHomeFolderProviderName = testHomeFolderProvider.getName();
         homeFolderManager.addProvider(testHomeFolderProvider);
 
@@ -159,7 +158,7 @@ public class HomeFolderProviderSynchronizerTest
                 personService, fileFolderService, nodeService,
                 homeFolderManager, tenantAdminService);
     }
-    
+
     @Before
     public void setUp() throws Exception
     {
@@ -205,7 +204,7 @@ public class HomeFolderProviderSynchronizerTest
             catch (Exception e)
             {
                 if ((trans.getStatus() == Status.STATUS_ACTIVE) ||
-                    (trans.getStatus() == Status.STATUS_MARKED_ROLLBACK))
+                        (trans.getStatus() == Status.STATUS_MARKED_ROLLBACK))
                 {
                     trans.rollback();
                     trans = null;
@@ -213,8 +212,7 @@ public class HomeFolderProviderSynchronizerTest
             }
         }
 
-        RetryingTransactionCallback<Void> cleanup = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> cleanup = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -245,15 +243,14 @@ public class HomeFolderProviderSynchronizerTest
             final String domainUsername = tenantService.getBaseNameUser(username);
             String tenantDomain = tenantService.getUserDomain(username);
             boolean disabled = !TenantService.DEFAULT_DOMAIN.equals(tenantDomain) &&
-                               !tenantAdminService.isEnabledTenant(tenantDomain);
+                    !tenantAdminService.isEnabledTenant(tenantDomain);
             try
             {
                 if (disabled)
                 {
                     tenantAdminService.enableTenant(tenantDomain);
                 }
-                TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
-                {
+                TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>() {
                     public Object doWork() throws Exception
                     {
                         deleteUser(adminGuestUserHomeFolders, nodeRef, username, domainUsername);
@@ -280,13 +277,13 @@ public class HomeFolderProviderSynchronizerTest
         if (!domainUsername.equals("admin") && !domainUsername.equals("guest"))
         {
             personService.deletePerson(person);
-            System.out.println("deleted user "+username);
+            System.out.println("deleted user " + username);
         }
         else
         {
             NodeRef homeFolder = DefaultTypeConverter.INSTANCE.convert(
                     NodeRef.class, nodeService.getProperty(person,
-                    ContentModel.PROP_HOMEFOLDER));
+                            ContentModel.PROP_HOMEFOLDER));
             adminGuestUserHomeFolders.add(homeFolder);
         }
     }
@@ -296,23 +293,23 @@ public class HomeFolderProviderSynchronizerTest
         // Delete folders from under the home folder root path in case they have been left over
         // from another test. Admin and Guest home folder should not be under here, but lets
         // double check.
-        for (ChildAssociationRef childAssocs: nodeService.getChildAssocs(rootNodeRef))
+        for (ChildAssociationRef childAssocs : nodeService.getChildAssocs(rootNodeRef))
         {
             NodeRef nodeRef = childAssocs.getChildRef();
             if (!adminGuestUserHomeFolders.contains(nodeRef))
             {
-                System.out.println("TearDown remove '"+childAssocs.getQName().getLocalName()+
+                System.out.println("TearDown remove '" + childAssocs.getQName().getLocalName() +
                         "' from under the home folder root.");
                 nodeService.deleteNode(nodeRef);
             }
         }
     }
-    
+
     private NodeRef createUser(String parentPath, String username) throws Exception
     {
         return createUser(TenantService.DEFAULT_DOMAIN, parentPath, username);
     }
-        
+
     private NodeRef createUser(String parentPath,
             String username, String homeFolderProviderName, boolean createHomeDirectory) throws Exception
     {
@@ -324,14 +321,13 @@ public class HomeFolderProviderSynchronizerTest
     {
         return createUser(tenantDomain, parentPath, username, largeHomeFolderProviderName, true);
     }
-    
+
     private NodeRef createUser(String tenantDomain, final String parentPath,
             final String username, final String homeFolderProviderName,
             final boolean createHomeDirectory) throws Exception
     {
         final String domainUsername = tenantService.getDomainUser(username, tenantDomain);
-        return TenantUtil.runAsSystemTenant(new TenantRunAsWork<NodeRef>()
-        {
+        return TenantUtil.runAsSystemTenant(new TenantRunAsWork<NodeRef>() {
             public NodeRef doWork() throws Exception
             {
                 String firstName = username;
@@ -354,17 +350,17 @@ public class HomeFolderProviderSynchronizerTest
                 }
                 personService.setHomeFolderCreationEager(createHomeDirectory);
                 NodeRef person = personService.createPerson(properties);
-                assertNotNull("The person nodeRef for "+domainUsername+" should have been created", person);
+                assertNotNull("The person nodeRef for " + domainUsername + " should have been created", person);
                 NodeRef homeFolder = DefaultTypeConverter.INSTANCE.convert(
                         NodeRef.class, nodeService.getProperty(person,
-                        ContentModel.PROP_HOMEFOLDER));
+                                ContentModel.PROP_HOMEFOLDER));
                 if (createHomeDirectory && parentPath != null)
                 {
-                    assertNotNull("The homeFolder for "+domainUsername+" should have been created", homeFolder);
+                    assertNotNull("The homeFolder for " + domainUsername + " should have been created", homeFolder);
                 }
                 else
                 {
-                    assertNull("The homeFolder for "+domainUsername+" should NOT have been created", homeFolder);
+                    assertNull("The homeFolder for " + domainUsername + " should NOT have been created", homeFolder);
                 }
 
                 if (!testHomeFolderProviderName.equals(homeFolderProviderName))
@@ -376,21 +372,21 @@ public class HomeFolderProviderSynchronizerTest
                     else
                     {
                         nodeService.setProperty(person, ContentModel.PROP_HOME_FOLDER_PROVIDER,
-                                    homeFolderProviderName);
+                                homeFolderProviderName);
                     }
                 }
                 return person;
             }
         }, tenantDomain);
     }
-    
+
     private NodeRef createFolder(String path) throws Exception
     {
         NodeRef parent = rootNodeRef;
         if (path.length() > 0)
         {
             StringBuilder currentPath = new StringBuilder();
-            for (String pathElement: path.split("/"))
+            for (String pathElement : path.split("/"))
             {
                 if (currentPath.length() > 0)
                 {
@@ -406,7 +402,7 @@ public class HomeFolderProviderSynchronizerTest
                 }
                 else
                 {
-                    assertTrue("Expected "+currentPath+" to be a folder",
+                    assertTrue("Expected " + currentPath + " to be a folder",
                             fileFolderService.getFileInfo(nodeRef).isFolder());
                     parent = nodeRef;
                 }
@@ -414,7 +410,7 @@ public class HomeFolderProviderSynchronizerTest
         }
         return parent;
     }
-    
+
     private NodeRef createContent(String parentPath, String name) throws Exception
     {
         NodeRef parent = createFolder(parentPath);
@@ -430,23 +426,23 @@ public class HomeFolderProviderSynchronizerTest
                 propertyMap).getChildRef();
         ContentWriter writer = contentService.getWriter(content, ContentModel.TYPE_CONTENT, true);
         writer.putContent("The cat sat on the mat.");
-        
+
         // System.out.println(NodeStoreInspector.dumpNode(nodeService, rootNodeRef));
         return content;
     }
-    
+
     private String toPath(NodeRef root, NodeRef homeFolder)
     {
         if (root == null || homeFolder == null)
         {
             return null;
         }
-        
+
         if (root.equals(homeFolder))
         {
             return ".";
         }
-        
+
         Path rootPath = nodeService.getPath(root);
         Path homeFolderPath = nodeService.getPath(homeFolder);
         int rootSize = rootPath.size();
@@ -455,18 +451,18 @@ public class HomeFolderProviderSynchronizerTest
         {
             return null;
         }
-        
+
         StringBuilder sb = new StringBuilder("");
 
         // Check homeFolder is under root
-        for (int i=0; i < rootSize; i++)
+        for (int i = 0; i < rootSize; i++)
         {
             if (!rootPath.get(i).equals(homeFolderPath.get(i)))
             {
                 return null;
             }
         }
-        
+
         // Build up path of sub folders
         for (int i = rootSize; i < homeFolderSize; i++)
         {
@@ -484,17 +480,16 @@ public class HomeFolderProviderSynchronizerTest
         }
         return sb.toString();
     }
-    
+
     private void createTenant(final String tenantDomain)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Object>() {
             public Object doWork() throws Exception
             {
                 if (!tenantAdminService.existsTenant(tenantDomain))
                 {
                     tenantAdminService.createTenant(tenantDomain,
-                            ("admin "+tenantDomain).toCharArray(), null);
+                            ("admin " + tenantDomain).toCharArray(), null);
                 }
                 return null;
             }
@@ -515,8 +510,7 @@ public class HomeFolderProviderSynchronizerTest
     // even though it supports createStore(), so just disable them for now.
     private void deleteTenant(final String tenantDomain) throws Exception
     {
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Object>() {
             public Object doWork() throws Exception
             {
                 if (tenantAdminService.existsTenant(tenantDomain))
@@ -538,29 +532,28 @@ public class HomeFolderProviderSynchronizerTest
     {
         assertHomeFolderLocation(TenantService.DEFAULT_DOMAIN, username, expectedPath);
     }
-    
+
     private void assertHomeFolderLocation(String tenantDomain, final String username,
             final String expectedPath) throws Exception
     {
         try
         {
             final String domainUsername = tenantService.getDomainUser(username, tenantDomain);
-            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
-            {
+            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>() {
                 public NodeRef doWork() throws Exception
                 {
                     NodeRef person = personService.getPerson(domainUsername, false);
                     NodeRef homeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class,
                             nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER));
-                    
+
                     if (expectedPath != null)
                     {
-                        assertNotNull("User: "+domainUsername+" home folder should exist", homeFolder);
+                        assertNotNull("User: " + domainUsername + " home folder should exist", homeFolder);
                     }
-                    
+
                     NodeRef rootPath = homeFolderManager.getRootPathNodeRef(largeHomeFolderProvider);
                     String actualPath = toPath(rootPath, homeFolder);
-                    assertEquals("User: "+domainUsername+" home folder location", expectedPath, actualPath);
+                    assertEquals("User: " + domainUsername + " home folder location", expectedPath, actualPath);
                     return null;
                 }
             }, tenantDomain);
@@ -570,7 +563,7 @@ public class HomeFolderProviderSynchronizerTest
             final Throwable cause = e.getCause();
             if (cause instanceof ComparisonFailure || cause instanceof AssertionError)
             {
-                throw (ComparisonFailure)cause;
+                throw (ComparisonFailure) cause;
             }
             else
             {
@@ -578,12 +571,12 @@ public class HomeFolderProviderSynchronizerTest
             }
         }
     }
-    
+
     private boolean exists(String path) throws Exception
     {
         NodeRef parent = rootNodeRef;
         boolean exists = true;
-        for (String pathElement: path.split("/"))
+        for (String pathElement : path.split("/"))
         {
             NodeRef nodeRef = nodeService.getChildByName(parent,
                     ContentModel.ASSOC_CONTAINS, pathElement);
@@ -604,18 +597,18 @@ public class HomeFolderProviderSynchronizerTest
     {
         trans.commit();
         trans = null;
-        
+
         homeFolderProviderSynchronizer.onBootstrap(null);
-        
+
         trans = transactionService.getUserTransaction();
         trans.begin();
     }
-    
+
     @Test
     public void test01CorrectLocation() throws Exception
     {
         createUser("te", "tess");
-        
+
         moveUserHomeFolders();
 
         assertHomeFolderLocation("tess", "te/tess");
@@ -625,7 +618,7 @@ public class HomeFolderProviderSynchronizerTest
     public void test02CreateParentFolder() throws Exception
     {
         createUser("", "fred");
-        
+
         moveUserHomeFolders();
 
         assertHomeFolderLocation("fred", "fr/fred");
@@ -636,7 +629,7 @@ public class HomeFolderProviderSynchronizerTest
     {
         createUser("", "fred");
         homeFolderProviderSynchronizer.setEnabled("false");
-        
+
         moveUserHomeFolders();
 
         // If performed, the home folder will have been moved to fr/fred
@@ -650,13 +643,13 @@ public class HomeFolderProviderSynchronizerTest
     public void test04HomeFolderNotYetCreated() throws Exception
     {
         NodeRef person = createUser("", "fred", largeHomeFolderProviderName, false);
-        
+
         moveUserHomeFolders();
 
         NodeRef homeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class,
                 nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER));
         assertNull("The homeFolder should NOT have been created", homeFolder);
-        
+
         person = personService.getPerson("fred");
         homeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class,
                 nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER));
@@ -684,7 +677,7 @@ public class HomeFolderProviderSynchronizerTest
     {
         // i.e. there are no parent folders after the sync
         largeHomeFolderProvider.setPattern("");
-            
+
         createUser("fr", "fred");
 
         moveUserHomeFolders();
@@ -696,7 +689,7 @@ public class HomeFolderProviderSynchronizerTest
     public void test07RemoveEmptyParents() throws Exception
     {
         createUser("a/bb/ccc", "peter");
-        
+
         moveUserHomeFolders();
 
         assertHomeFolderLocation("peter", "pe/peter");
@@ -713,7 +706,7 @@ public class HomeFolderProviderSynchronizerTest
 
         assertHomeFolderLocation("peter", "pe/peter");
         assertTrue("Expected the empty parent 'a/bb/ccc' to still exist as global " +
-        		"property was set.", exists("a/bb/ccc"));
+                "property was set.", exists("a/bb/ccc"));
     }
 
     @Test
@@ -721,7 +714,7 @@ public class HomeFolderProviderSynchronizerTest
     {
         createUser("a/bb/ccc", "peter");
         createFolder("a/bb/ddd");
-        
+
         moveUserHomeFolders();
 
         assertHomeFolderLocation("peter", "pe/peter");
@@ -734,7 +727,7 @@ public class HomeFolderProviderSynchronizerTest
     {
         createUser("", "fred");
         createFolder("fr");
-        
+
         moveUserHomeFolders();
 
         assertHomeFolderLocation("fred", "fr/fred");
@@ -744,10 +737,10 @@ public class HomeFolderProviderSynchronizerTest
     public void test11PathAlreadyInUseByContent() throws Exception
     {
         System.out.println("testPathAlreadyInUseByContent: EXPECT TO SEE AN EXCEPTION IN THE LOG ======================== ");
-        
+
         createUser("", "fred");
         createContent("", "fr");
-        
+
         moveUserHomeFolders();
 
         assertHomeFolderLocation("fred", "fred"); // unchanged
@@ -759,19 +752,19 @@ public class HomeFolderProviderSynchronizerTest
     public void test12PathInUseByUser() throws Exception
     {
         // i.e. test clash between home folder names and parent folders
-        //      which requires a temporary folder to be created
+        // which requires a temporary folder to be created
         createUser("", "fr");
         createUser("", "fred");
         createUser("", "peter");
         createUser("", "pe");
-        
+
         moveUserHomeFolders();
 
         assertHomeFolderLocation("fr", "fr/fr");
         assertHomeFolderLocation("fred", "fr/fred");
         assertHomeFolderLocation("peter", "pe/peter");
         assertHomeFolderLocation("pe", "pe/pe");
-        
+
         assertFalse("The Temporary-1 folder should have been removed", exists("Temporary-1"));
     }
 
@@ -783,10 +776,10 @@ public class HomeFolderProviderSynchronizerTest
         createFolder("Temporary-1");
         createFolder("Temporary-2");
         createFolder("Temporary-3");
-        
+
         // Don't delete the temporary folder
         homeFolderProviderSynchronizer.setKeepEmptyParents("true");
-        
+
         moveUserHomeFolders();
 
         assertTrue("The existing Temporary-1 folder should still exist", exists("Temporary-1"));
@@ -799,15 +792,15 @@ public class HomeFolderProviderSynchronizerTest
     public void test14Exception() throws Exception
     {
         System.out.println("testException: EXPECT TO SEE AN EXCEPTION IN THE LOG ======================== ");
-        
+
         // Force the need for a temporary folder
         createUser("", "fr");
         createUser("", "fred");
-        
+
         // Use up all possible temporary folder names
-        for (int i=1; i<=100; i++)
+        for (int i = 1; i <= 100; i++)
         {
-            createFolder("Temporary-"+i);
+            createFolder("Temporary-" + i);
         }
 
         moveUserHomeFolders();
@@ -830,13 +823,13 @@ public class HomeFolderProviderSynchronizerTest
 
         assertHomeFolderLocation("fred", "fr/fred");
         assertHomeFolderLocation("tess", "root/a/b/c/tess");
-   }
-    
+    }
+
     @Test
     public void test16PathNotUnderRoot() throws Exception
     {
         System.out.println("-------------- testPathNotUnderRoot --------------");
-        
+
         createUser("a/b/c", "fred");
 
         createFolder("root");
@@ -849,12 +842,12 @@ public class HomeFolderProviderSynchronizerTest
 
         assertHomeFolderLocation("fred", "fr/fred");
     }
-    
+
     @Test
     public void test17PathIsRoot() throws Exception
     {
         System.out.println("-------------- testPathIsRoot --------------");
-        
+
         createUser("", "fred");
 
         createFolder("root");
@@ -867,12 +860,12 @@ public class HomeFolderProviderSynchronizerTest
 
         assertHomeFolderLocation("fred", ".");
     }
-    
+
     @Test
     public void test18PathIsAboveRoot() throws Exception
     {
         System.out.println("-------------- testPathIsAboveRoot --------------");
-        
+
         createUser("", "fred");
 
         createFolder("fred/under1/under2");
@@ -889,7 +882,7 @@ public class HomeFolderProviderSynchronizerTest
         largeHomeFolderProvider.setRootPath(origRootPath);
         assertHomeFolderLocation("fred", "fred");
     }
-    
+
     @Test
     public void test19MultipleUsers() throws Exception
     {
@@ -898,18 +891,18 @@ public class HomeFolderProviderSynchronizerTest
 
         // Use a value larger than the batch size of 20 and log every 100.
         int userCount = 110;
-        for (int i=1; i<=userCount; i++)
+        for (int i = 1; i <= userCount; i++)
         {
-            String name = "f"+i+"red";
+            String name = "f" + i + "red";
             createUser("", name);
         }
-        
+
         moveUserHomeFolders();
 
-        for (int i=1; i<=userCount; i++) 
+        for (int i = 1; i <= userCount; i++)
         {
-            String name = "f"+i+"red";
-            assertHomeFolderLocation(name, name.substring(0,2)+'/'+name);
+            String name = "f" + i + "red";
+            assertHomeFolderLocation(name, name.substring(0, 2) + '/' + name);
         }
     }
 
@@ -919,7 +912,7 @@ public class HomeFolderProviderSynchronizerTest
         NodeRef person = createUser("a/b/c", "fred");
         moveUserHomeFolders();
         assertHomeFolderLocation("fred", "fr/fred");
-        
+
         homeFolderProviderSynchronizer.setOverrideHomeFolderProviderName(
                 testHomeFolderProviderName);
         moveUserHomeFolders();
@@ -927,7 +920,7 @@ public class HomeFolderProviderSynchronizerTest
         assertHomeFolderLocation("fred", "a/b/c/fred");
         String providerName = (String) nodeService.getProperty(person,
                 ContentModel.PROP_HOME_FOLDER_PROVIDER);
-        assertEquals(testHomeFolderProviderName , providerName);
+        assertEquals(testHomeFolderProviderName, providerName);
     }
 
     @Test
@@ -936,7 +929,7 @@ public class HomeFolderProviderSynchronizerTest
         createUser("a/b/c", "fred", null, true);
         homeFolderProviderSynchronizer.setOverrideHomeFolderProviderName(
                 largeHomeFolderProviderName);
-        
+
         moveUserHomeFolders();
 
         assertHomeFolderLocation("fred", "fr/fred"); // unchanged
@@ -944,19 +937,17 @@ public class HomeFolderProviderSynchronizerTest
                 "root was unknown, because the original home folder provider was not set.",
                 exists("a/b/c"));
     }
-    
+
     @Test
     @SuppressWarnings("deprecation")
     public void test22Version1HomeFolderProvider() throws Exception
     {
         // Should just log a message to say it can't do anything
         final String name = "v1Provider";
-        HomeFolderProvider v1Provider = new HomeFolderProvider()
-        {
+        HomeFolderProvider v1Provider = new HomeFolderProvider() {
             @Override
             public void onCreateNode(ChildAssociationRef childAssocRef)
-            {
-            }
+            {}
 
             @Override
             public String getName()
@@ -967,13 +958,13 @@ public class HomeFolderProviderSynchronizerTest
         homeFolderManager.addProvider(v1Provider);
 
         createUser("a/b/c", "fred");
-        
+
         homeFolderProviderSynchronizer.setOverrideHomeFolderProviderName(name);
         moveUserHomeFolders();
 
         assertHomeFolderLocation("fred", "a/b/c/fred");
     }
-    
+
     @Test
     @SuppressWarnings("deprecation")
     public void test23ExtendsAbstractHomeFolderProvider() throws Exception
@@ -992,13 +983,13 @@ public class HomeFolderProviderSynchronizerTest
         v1Provider.afterPropertiesSet();
 
         createUser("a/b/c", "fred");
-        
+
         homeFolderProviderSynchronizer.setOverrideHomeFolderProviderName(name);
         moveUserHomeFolders();
 
         assertHomeFolderLocation("fred", "fred");
     }
-    
+
     @Test
     public void test24TenantService() throws Exception
     {
@@ -1006,9 +997,9 @@ public class HomeFolderProviderSynchronizerTest
         if (tenantAdminService.isEnabled())
         {
             long time = System.currentTimeMillis();
-            final String tenant1 = time+".tenant1";
-            final String tenant2 = time+".tenant2";
- 
+            final String tenant1 = time + ".tenant1";
+            final String tenant2 = time + ".tenant2";
+
             createTenant(tenant1);
             createTenant(tenant2);
 
@@ -1019,11 +1010,11 @@ public class HomeFolderProviderSynchronizerTest
             moveUserHomeFolders();
 
             assertHomeFolderLocation("fred", "fr/fred");
-            assertHomeFolderLocation(tenant1, "fred", "fr/"+tenantService.getDomainUser("fred", tenant1));
-            assertHomeFolderLocation(tenant2, "fred", "fr/"+tenantService.getDomainUser("fred", tenant2));
+            assertHomeFolderLocation(tenant1, "fred", "fr/" + tenantService.getDomainUser("fred", tenant1));
+            assertHomeFolderLocation(tenant2, "fred", "fr/" + tenantService.getDomainUser("fred", tenant2));
         }
     }
-    
+
     // ALF-11535
     @Test
     public void test25ChangeParentFolderCase() throws Exception
@@ -1034,13 +1025,13 @@ public class HomeFolderProviderSynchronizerTest
         assertHomeFolderLocation("FRED", "FR/FRED");
         assertHomeFolderLocation("fred", "FR/FRED"); // Same user
     }
-    
+
     // ALF-11535
     @Test
     public void test26CaseSensitiveUsers() throws Exception
     {
         userNameMatcher.setUserNamesAreCaseSensitive(true);
-        
+
         // Users are processed in a sorted order (natural ordering).
         // The preferred parent folder structure of the first user
         // is used where there is a clash between users.
@@ -1050,7 +1041,7 @@ public class HomeFolderProviderSynchronizerTest
         createUser("TE", "TESS");
         createUser("TE", "Tess");
         createUser("Ab", "aBBY");
-        
+
         moveUserHomeFolders();
         assertHomeFolderLocation("Abby", "Ab/Abby");
         assertHomeFolderLocation("TESS", "TE/TESS");

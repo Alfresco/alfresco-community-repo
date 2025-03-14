@@ -34,7 +34,6 @@ import static org.alfresco.rest.api.model.rules.InclusionType.OWNED;
 import java.util.List;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.rest.api.impl.mapper.rules.RestRuleModelMapper;
 import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -61,8 +60,10 @@ public class RuleSetLoader
     /**
      * Load a rule set for the given node ref.
      *
-     * @param ruleSetNodeRef The rule set node.
-     * @param includes A list of fields to include.
+     * @param ruleSetNodeRef
+     *            The rule set node.
+     * @param includes
+     *            A list of fields to include.
      * @return The rule set object.
      */
     public RuleSet loadRuleSet(NodeRef ruleSetNodeRef, NodeRef folderNodeRef, List<String> includes)
@@ -87,8 +88,8 @@ public class RuleSetLoader
                 else
                 {
                     boolean linked = nodeService.getParentAssocs(ruleSetNodeRef)
-                                           .stream().map(ChildAssociationRef::getParentRef)
-                                           .anyMatch(folderNodeRef::equals);
+                            .stream().map(ChildAssociationRef::getParentRef)
+                            .anyMatch(folderNodeRef::equals);
                     ruleSet.setInclusionType(linked ? LINKED : INHERITED);
                 }
             }
@@ -134,26 +135,26 @@ public class RuleSetLoader
     /**
      * Check if any parents of the rule set node are not the owning folder.
      *
-     * @param ruleSetNodeRef The rule set node.
-     * @param parentRef The owning folder.
+     * @param ruleSetNodeRef
+     *            The rule set node.
+     * @param parentRef
+     *            The owning folder.
      * @return True if another folder links to the rule set.
      */
     private Boolean loadIsLinkedTo(NodeRef ruleSetNodeRef, NodeRef parentRef)
     {
-        return AuthenticationUtil.runAsSystem(() ->
-            nodeService.getParentAssocs(ruleSetNodeRef)
-                       .stream()
-                       .map(ChildAssociationRef::getParentRef)
-                       .anyMatch(folder -> !folder.equals(parentRef))
-        );
+        return AuthenticationUtil.runAsSystem(() -> nodeService.getParentAssocs(ruleSetNodeRef)
+                .stream()
+                .map(ChildAssociationRef::getParentRef)
+                .anyMatch(folder -> !folder.equals(parentRef)));
     }
 
     public List<String> loadRuleIds(NodeRef folderNodeRef)
     {
         return ruleService.getRules(folderNodeRef, false).stream()
-                          .map(org.alfresco.service.cmr.rule.Rule::getNodeRef)
-                          .map(NodeRef::getId)
-                          .collect(toList());
+                .map(org.alfresco.service.cmr.rule.Rule::getNodeRef)
+                .map(NodeRef::getId)
+                .collect(toList());
     }
 
     public void setNodeService(NodeService nodeService)

@@ -30,11 +30,11 @@ import java.util.Deque;
 
 import org.apache.commons.logging.Log;
 
-import org.alfresco.api.AlfrescoPublicApi;  
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
- * Implementation of a {@link Log} that logs messages to a structure accessible via
- * {@link TransformerConfigMBean#getTransformationLog(int)}.<p>
+ * Implementation of a {@link Log} that logs messages to a structure accessible via {@link TransformerConfigMBean#getTransformationLog(int)}.
+ * <p>
  * 
  * @author Alan Davis
  */
@@ -42,7 +42,8 @@ import org.alfresco.api.AlfrescoPublicApi;
 public class TransformerLog extends TransformerLogger<String>
 {
     /**
-     * {@inheritDoc}<p>
+     * {@inheritDoc}
+     * <p>
      * Returns 100 as this is currently held in memory.
      */
     @Override

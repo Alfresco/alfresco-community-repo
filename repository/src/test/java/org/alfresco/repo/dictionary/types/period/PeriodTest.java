@@ -31,6 +31,9 @@ import java.util.Calendar;
 import java.util.Date;
 
 import junit.framework.TestCase;
+import org.junit.FixMethodOrder;
+import org.junit.experimental.categories.Category;
+import org.junit.runners.MethodSorters;
 
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.Period;
@@ -38,9 +41,6 @@ import org.alfresco.service.cmr.repository.PeriodProvider;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.CachingDateFormat;
-import org.junit.FixMethodOrder;
-import org.junit.experimental.categories.Category;
-import org.junit.runners.MethodSorters;
 
 /**
  * Tests for period implementations - persistence and search is tested elsewhere
@@ -513,12 +513,12 @@ public class PeriodTest extends TestCase
     {
         assertTrue(Period.getProviderNames().contains(EndOfFinancialMonth.PERIOD_TYPE));
         Period period = new Period(EndOfFinancialMonth.PERIOD_TYPE);
-        
+
         PeriodProvider provider = Period.getProvider(EndOfFinancialMonth.PERIOD_TYPE);
         AbstractEndOfCalendarPeriodProvider instance = (AbstractEndOfCalendarPeriodProvider) provider;
         instance.setStartDayOfMonth(1);
         instance.setStartMonth(Calendar.JANUARY);
-        
+
         Date now = new Date();
         assertNotNull(period.getNextDate(now));
         Calendar calendar = Calendar.getInstance();
@@ -604,7 +604,7 @@ public class PeriodTest extends TestCase
         assertEquals(provider.getPeriodType(), EndOfFinancialQuarter.PERIOD_TYPE);
         assertEquals(DataTypeDefinition.INT, provider.getExpressionDataType());
         assertEquals("End Of Financial Quarter", provider.getDisplayLabel());
-        
+
         AbstractEndOfCalendarPeriodProvider instance = (AbstractEndOfCalendarPeriodProvider) provider;
         instance.setStartDayOfMonth(1);
         instance.setStartMonth(Calendar.JANUARY);
@@ -660,7 +660,7 @@ public class PeriodTest extends TestCase
         assertEquals(provider.getExpressionMutiplicity(), PeriodProvider.ExpressionMutiplicity.OPTIONAL);
         assertEquals(provider.getPeriodType(), EndOfFinancialYear.PERIOD_TYPE);
         assertEquals(DataTypeDefinition.INT, provider.getExpressionDataType());
-        
+
         AbstractEndOfCalendarPeriodProvider instance = (AbstractEndOfCalendarPeriodProvider) provider;
         instance.setStartDayOfMonth(6);
         instance.setStartMonth(Calendar.APRIL);
@@ -701,7 +701,7 @@ public class PeriodTest extends TestCase
         AbstractEndOfCalendarPeriodProvider instance = (AbstractEndOfCalendarPeriodProvider) provider;
         instance.setStartDayOfMonth(6);
         instance.setStartMonth(Calendar.APRIL);
-        
+
         SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
         Period period = new Period(EndOfFinancialQuarter.PERIOD_TYPE);
         Date date;
@@ -757,7 +757,7 @@ public class PeriodTest extends TestCase
         AbstractEndOfCalendarPeriodProvider instance = (AbstractEndOfCalendarPeriodProvider) provider;
         instance.setStartDayOfMonth(6);
         instance.setStartMonth(Calendar.APRIL);
-        
+
         SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
         Period period = new Period(EndOfFinancialMonth.PERIOD_TYPE);
         Date date;
@@ -767,56 +767,56 @@ public class PeriodTest extends TestCase
         assertEquals("2008-05-05T23:59:59.999", df.format(period.getNextDate(date)));
         date = df.parse("2008-05-05T23:59:59.999");
         assertEquals("2008-06-05T23:59:59.999", df.format(period.getNextDate(date)));
-        
+
         date = df.parse("2008-05-06T00:00:00.000");
         assertEquals("2008-06-05T23:59:59.999", df.format(period.getNextDate(date)));
         date = df.parse("2008-06-05T23:59:59.998");
         assertEquals("2008-06-05T23:59:59.999", df.format(period.getNextDate(date)));
         date = df.parse("2008-06-05T23:59:59.999");
         assertEquals("2008-07-05T23:59:59.999", df.format(period.getNextDate(date)));
-        
+
         date = df.parse("2008-06-06T00:00:00.000");
         assertEquals("2008-07-05T23:59:59.999", df.format(period.getNextDate(date)));
         date = df.parse("2008-07-05T23:59:59.998");
         assertEquals("2008-07-05T23:59:59.999", df.format(period.getNextDate(date)));
         date = df.parse("2008-07-05T23:59:59.999");
         assertEquals("2008-08-05T23:59:59.999", df.format(period.getNextDate(date)));
-        
+
         date = df.parse("2008-07-06T00:00:00.000");
         assertEquals("2008-08-05T23:59:59.999", df.format(period.getNextDate(date)));
         date = df.parse("2008-08-05T23:59:59.998");
         assertEquals("2008-08-05T23:59:59.999", df.format(period.getNextDate(date)));
         date = df.parse("2008-08-05T23:59:59.999");
         assertEquals("2008-09-05T23:59:59.999", df.format(period.getNextDate(date)));
-        
+
         date = df.parse("2008-08-06T00:00:00.000");
         assertEquals("2008-09-05T23:59:59.999", df.format(period.getNextDate(date)));
         date = df.parse("2008-09-05T23:59:59.998");
         assertEquals("2008-09-05T23:59:59.999", df.format(period.getNextDate(date)));
         date = df.parse("2008-09-05T23:59:59.999");
         assertEquals("2008-10-05T23:59:59.999", df.format(period.getNextDate(date)));
-        
+
         date = df.parse("2008-09-06T00:00:00.000");
         assertEquals("2008-10-05T23:59:59.999", df.format(period.getNextDate(date)));
         date = df.parse("2008-10-05T23:59:59.998");
         assertEquals("2008-10-05T23:59:59.999", df.format(period.getNextDate(date)));
         date = df.parse("2008-10-05T23:59:59.999");
         assertEquals("2008-11-05T23:59:59.999", df.format(period.getNextDate(date)));
-        
+
         date = df.parse("2008-10-06T00:00:00.000");
         assertEquals("2008-11-05T23:59:59.999", df.format(period.getNextDate(date)));
         date = df.parse("2008-11-05T23:59:59.998");
         assertEquals("2008-11-05T23:59:59.999", df.format(period.getNextDate(date)));
         date = df.parse("2008-11-05T23:59:59.999");
         assertEquals("2008-12-05T23:59:59.999", df.format(period.getNextDate(date)));
-        
+
         date = df.parse("2008-11-06T00:00:00.000");
         assertEquals("2008-12-05T23:59:59.999", df.format(period.getNextDate(date)));
         date = df.parse("2008-12-05T23:59:59.998");
         assertEquals("2008-12-05T23:59:59.999", df.format(period.getNextDate(date)));
         date = df.parse("2008-12-05T23:59:59.999");
         assertEquals("2009-01-05T23:59:59.999", df.format(period.getNextDate(date)));
-        
+
         date = df.parse("2008-12-06T00:00:00.000");
         assertEquals("2009-01-05T23:59:59.999", df.format(period.getNextDate(date)));
         date = df.parse("2009-01-05T23:59:59.998");
@@ -837,7 +837,7 @@ public class PeriodTest extends TestCase
         assertEquals("2009-03-05T23:59:59.999", df.format(period.getNextDate(date)));
         date = df.parse("2009-03-05T23:59:59.999");
         assertEquals("2009-04-05T23:59:59.999", df.format(period.getNextDate(date)));
-        
+
         date = df.parse("2009-03-06T00:00:00.000");
         assertEquals("2009-04-05T23:59:59.999", df.format(period.getNextDate(date)));
         date = df.parse("2009-04-05T23:59:59.998");
@@ -852,10 +852,11 @@ public class PeriodTest extends TestCase
         date = df.parse("2009-05-05T23:59:59.999");
         assertEquals("2009-06-05T23:59:59.999", df.format(period.getNextDate(date)));
     }
-    
+
     /**
      * Cron
-     * @throws ParseException 
+     * 
+     * @throws ParseException
      */
     public void test16Cron() throws ParseException
     {
@@ -865,19 +866,20 @@ public class PeriodTest extends TestCase
         assertEquals(provider.getPeriodType(), Cron.PERIOD_TYPE);
         assertEquals(DataTypeDefinition.TEXT, provider.getExpressionDataType());
         assertEquals("Cron Expression", provider.getDisplayLabel());
-        
+
         SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
         Period period = new Period(Cron.PERIOD_TYPE);
         Date date;
         date = df.parse("2009-06-02T00:00:00.000");
         assertEquals("2009-06-02T23:59:59.000", df.format(period.getNextDate(date)));
-        
-        period = new Period(Cron.PERIOD_TYPE+"|0 0 2 ? * 6#1"); // First Friday of month
+
+        period = new Period(Cron.PERIOD_TYPE + "|0 0 2 ? * 6#1"); // First Friday of month
         assertEquals("2009-06-05T02:00:00.000", df.format(period.getNextDate(date)));
     }
 
     /**
      * XMLDuration
+     * 
      * @throws ParseException
      */
     public void test17XMLDuration() throws ParseException
@@ -888,17 +890,17 @@ public class PeriodTest extends TestCase
         assertEquals(provider.getPeriodType(), XMLDuration.PERIOD_TYPE);
         assertEquals(DataTypeDefinition.TEXT, provider.getExpressionDataType());
         assertEquals("XML Duration", provider.getDisplayLabel());
-        
+
         SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
         Period period = new Period(XMLDuration.PERIOD_TYPE);
         Date date;
         date = df.parse("2009-06-02T01:02:03.004");
         assertEquals("2009-06-03T01:02:03.004", df.format(period.getNextDate(date)));
-        
-        period = new Period(XMLDuration.PERIOD_TYPE+"|P2Y6M5DT12H35M30.100S"); // First Friday of month
+
+        period = new Period(XMLDuration.PERIOD_TYPE + "|P2Y6M5DT12H35M30.100S"); // First Friday of month
         assertEquals("2011-12-07T13:37:33.104", df.format(period.getNextDate(date)));
     }
-    
+
     /**
      * Test a missing expression, ensure 1 is used as the default
      */

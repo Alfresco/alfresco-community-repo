@@ -72,27 +72,22 @@ public class DestroyContentTest extends BaseRMTestCase
     protected void initServices()
     {
         super.initServices();
-        contentStore = (ContentStore)applicationContext.getBean("fileContentStore");
-        contentCleanser = (TestContentCleanser)applicationContext.getBean(BEAN_NAME_CONTENT_CLEANSER);
-        eagerContentStoreCleaner = (EagerContentStoreCleaner)applicationContext.getBean("eagerContentStoreCleaner");
-        contentDestructionComponent = (ContentDestructionComponent)applicationContext.getBean("contentDestructionComponent");
-        renditionService = (RenditionService)applicationContext.getBean("renditionService");
+        contentStore = (ContentStore) applicationContext.getBean("fileContentStore");
+        contentCleanser = (TestContentCleanser) applicationContext.getBean(BEAN_NAME_CONTENT_CLEANSER);
+        eagerContentStoreCleaner = (EagerContentStoreCleaner) applicationContext.getBean("eagerContentStoreCleaner");
+        contentDestructionComponent = (ContentDestructionComponent) applicationContext.getBean("contentDestructionComponent");
+        renditionService = (RenditionService) applicationContext.getBean("renditionService");
 
         // set the test content store cleaner
         eagerContentStoreCleaner.setContentCleanser(contentCleanser);
     }
 
     /**
-     * Given that a record folder is eligible for destruction
-     * And record ghosting is applied
-     * When the record folder is destroyed
-     * Then the record folder and records are ghosted
-     * And the content is destroyed
+     * Given that a record folder is eligible for destruction And record ghosting is applied When the record folder is destroyed Then the record folder and records are ghosted And the content is destroyed
      */
     public void testRecordFolderDestroy() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef recordCategoryFolderLevel;
             private NodeRef destroyableFolder;
             private NodeRef subRecord;
@@ -102,11 +97,11 @@ public class DestroyContentTest extends BaseRMTestCase
                 // create destroyable record folder that contains a record
                 recordCategoryFolderLevel = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 utils.createBasicDispositionSchedule(
-                            recordCategoryFolderLevel,
-                            CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS,
-                            CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY,
-                            false,
-                            true);
+                        recordCategoryFolderLevel,
+                        CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS,
+                        CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY,
+                        false,
+                        true);
                 destroyableFolder = recordFolderService.createRecordFolder(recordCategoryFolderLevel, GUID.generate());
 
                 Map<QName, Serializable> props = new HashMap<>(1);
@@ -117,9 +112,7 @@ public class DestroyContentTest extends BaseRMTestCase
 
                 // Commented out, because Bamboo doesn't currently support rendition creation
                 // TODO figure out a way to create renditions that is supported on Bamboo
-                /*
-                renditionService.render(subRecord, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "medium"));
-                */
+                /* renditionService.render(subRecord, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "medium")); */
 
                 utils.completeRecord(subRecord);
                 utils.completeEvent(destroyableFolder, CommonRMTestUtils.DEFAULT_EVENT_NAME);
@@ -163,16 +156,11 @@ public class DestroyContentTest extends BaseRMTestCase
     }
 
     /**
-     * Given that a record is eligible for destruction
-     * And record ghosting is applied
-     * When the record is destroyed
-     * Then the record is ghosted
-     * And the content is destroyed
+     * Given that a record is eligible for destruction And record ghosting is applied When the record is destroyed Then the record is ghosted And the content is destroyed
      */
     public void testRecordDestroy() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef recordCategoryRecordLevel;
             private NodeRef recordFolder;
             private NodeRef destroyableRecord;
@@ -182,11 +170,11 @@ public class DestroyContentTest extends BaseRMTestCase
                 // create destroyable record
                 recordCategoryRecordLevel = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 utils.createBasicDispositionSchedule(
-                            recordCategoryRecordLevel,
-                            CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS,
-                            CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY,
-                            true,
-                            true);
+                        recordCategoryRecordLevel,
+                        CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS,
+                        CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY,
+                        true,
+                        true);
                 recordFolder = recordFolderService.createRecordFolder(recordCategoryRecordLevel, GUID.generate());
                 destroyableRecord = utils.createRecord(recordFolder, GUID.generate(), GUID.generate());
                 utils.completeRecord(destroyableRecord);
@@ -230,18 +218,11 @@ public class DestroyContentTest extends BaseRMTestCase
     }
 
     /**
-     * Given that a record is eligible for destruction
-     * And record ghosting is applied
-     * And cleansing is configured on
-     * When the record is destroyed
-     * Then the record is ghosted
-     * And the content is cleansed
-     * And then content is destroyed
+     * Given that a record is eligible for destruction And record ghosting is applied And cleansing is configured on When the record is destroyed Then the record is ghosted And the content is cleansed And then content is destroyed
      */
     public void testRecordDestroyAndCleanse() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef recordCategoryRecordLevel;
             private NodeRef recordFolder;
             private NodeRef destroyableRecord;
@@ -251,11 +232,11 @@ public class DestroyContentTest extends BaseRMTestCase
                 // create destroyable record
                 recordCategoryRecordLevel = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 utils.createBasicDispositionSchedule(
-                            recordCategoryRecordLevel,
-                            CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS,
-                            CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY,
-                            true,
-                            true);
+                        recordCategoryRecordLevel,
+                        CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS,
+                        CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY,
+                        true,
+                        true);
                 recordFolder = recordFolderService.createRecordFolder(recordCategoryRecordLevel, GUID.generate());
                 destroyableRecord = utils.createRecord(recordFolder, GUID.generate(), GUID.generate());
                 utils.completeRecord(destroyableRecord);
@@ -305,13 +286,11 @@ public class DestroyContentTest extends BaseRMTestCase
     }
 
     /**
-     * When a unclassified document (non-record) is deleted
-     * Then it is deleted but the the content is not immediately destroyed
+     * When a unclassified document (non-record) is deleted Then it is deleted but the the content is not immediately destroyed
      */
     public void testContentDelete() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef deleteableContent;
             private ContentData contentData;
 
@@ -325,7 +304,7 @@ public class DestroyContentTest extends BaseRMTestCase
                 writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
                 writer.putContent(GUID.generate());
 
-                contentData = (ContentData)nodeService.getProperty(deleteableContent, PROP_CONTENT);
+                contentData = (ContentData) nodeService.getProperty(deleteableContent, PROP_CONTENT);
 
                 // assert things are as we expect
                 assertNotNull(contentData);

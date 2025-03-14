@@ -29,12 +29,12 @@ package org.alfresco.module.org_alfresco_module_rm.test.util;
 
 import static org.junit.Assert.assertNotNull;
 
-import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Test utils class containing methods for managing user, groups and roles
@@ -48,7 +48,8 @@ public class UserAndGroupsUtils
     protected AuthorityService authorityService;
 
     /**
-     * @param applicationContext the application context
+     * @param applicationContext
+     *            the application context
      */
     public UserAndGroupsUtils(ApplicationContext applicationContext)
     {
@@ -59,8 +60,10 @@ public class UserAndGroupsUtils
     /**
      * Add a user to an RM role
      *
-     * @param userName the username of the user to add to the role
-     * @param role the role to add the user to
+     * @param userName
+     *            the username of the user to add to the role
+     * @param role
+     *            the role to add the user to
      */
     public void addUserToRole(NodeRef filePlan, String userName, RMRole role)
     {
@@ -79,11 +82,7 @@ public class UserAndGroupsUtils
      */
     public enum RMRole
     {
-        RM_ADMINISTRATOR("Administrator"),
-        RM_MANAGER("RecordsManager"),
-        RM_POWER_USER("PowerUser"),
-        RM_SECURITY_OFFICER("SecurityOfficer"),
-        RM_USER("User");
+        RM_ADMINISTRATOR("Administrator"), RM_MANAGER("RecordsManager"), RM_POWER_USER("PowerUser"), RM_SECURITY_OFFICER("SecurityOfficer"), RM_USER("User");
 
         private String groupName;
 

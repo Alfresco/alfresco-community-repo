@@ -33,7 +33,10 @@ package org.alfresco.repo.solr;
 public interface Transaction
 {
     public Long getId();
+
     public Long getCommitTimeMs();
+
     public int getUpdates();
+
     public int getDeletes();
 }

@@ -36,6 +36,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import org.json.JSONObject;
+import org.springframework.extensions.surf.util.Content;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.repo.nodelocator.CompanyHomeNodeLocator;
 import org.alfresco.repo.nodelocator.NodeLocatorService;
 import org.alfresco.repo.nodelocator.SharedHomeNodeLocator;
@@ -43,9 +47,6 @@ import org.alfresco.repo.nodelocator.SitesHomeNodeLocator;
 import org.alfresco.repo.nodelocator.UserHomeNodeLocator;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ISO8601DateFormat;
-import org.json.JSONObject;
-import org.springframework.extensions.surf.util.Content;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * @author Nick Smith
@@ -62,10 +63,10 @@ public class WebScriptUtil
     public static final String STORE_ID = "store_id";
     public static final String NODE_ID = "node_id";
 
-    //Date/Calendar Keys
-    public static final String DATE_TIME= "dateTime";
-    public static final String FORMAT= "format";
-    public static final String TIME_ZONE= "timeZone";
+    // Date/Calendar Keys
+    public static final String DATE_TIME = "dateTime";
+    public static final String FORMAT = "format";
+    public static final String TIME_ZONE = "timeZone";
     public static final String ISO8601 = "ISO8601";
 
     public static String getContent(WebScriptRequest request) throws IOException
@@ -89,17 +90,17 @@ public class WebScriptUtil
         model.put(FORMAT, ISO8601);
         return model;
     }
-    
+
     public static Calendar getCalendar(JSONObject json) throws ParseException
     {
         Date date = getDate(json);
-        if(date == null)
+        if (date == null)
         {
             return null;
         }
         Calendar calendar = Calendar.getInstance();
         String timeZone = json.optString(TIME_ZONE);
-        if(timeZone != null)
+        if (timeZone != null)
         {
             TimeZone zone = TimeZone.getTimeZone(timeZone);
             calendar.setTimeZone(zone);
@@ -107,27 +108,26 @@ public class WebScriptUtil
         calendar.setTime(date);
         return calendar;
     }
-    
+
     public static Date getDate(JSONObject json) throws ParseException
     {
-        if(json == null)
+        if (json == null)
         {
             return null;
         }
         String dateTime = json.optString(DATE_TIME);
-        if(dateTime == null)
+        if (dateTime == null)
         {
             return null;
         }
         String format = json.optString(FORMAT);
-        if(format!= null && ISO8601.equals(format) == false)
+        if (format != null && ISO8601.equals(format) == false)
         {
             SimpleDateFormat dateFormat = new SimpleDateFormat(format);
             return dateFormat.parse(dateTime);
         }
         return ISO8601DateFormat.parse(dateTime);
     }
-    
 
     public static Map<String, Object> createBaseModel(Map<String, Object> result)
     {
@@ -135,26 +135,25 @@ public class WebScriptUtil
         model.put(DATA_KEY, result);
         return model;
     }
-    
+
     public static Map<String, Object> createBaseModel(List<Map<String, Object>> results)
     {
         Map<String, Object> model = new HashMap<String, Object>();
         model.put(DATA_KEY, results);
         return model;
     }
-    
+
     public static NodeRef getNodeRef(Map<String, String> params)
     {
         String protocol = params.get(STORE_PROTOCOL);
-        String storeId= params.get(STORE_ID);
-        String nodeId= params.get(NODE_ID);
-        if(protocol == null || storeId == null || nodeId==null )
+        String storeId = params.get(STORE_ID);
+        String nodeId = params.get(NODE_ID);
+        if (protocol == null || storeId == null || nodeId == null)
         {
             return null;
         }
         return new NodeRef(protocol, storeId, nodeId);
     }
-
 
     public static NodeRef resolveNodeReference(String reference, NodeLocatorService nodeLocatorService)
     {

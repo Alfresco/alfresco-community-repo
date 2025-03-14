@@ -53,8 +53,7 @@ public class CustomModelProperty extends AbstractCommonDetails
     private List<CustomModelConstraint> constraints = Collections.emptyList();
 
     public CustomModelProperty()
-    {
-    }
+    {}
 
     public CustomModelProperty(PropertyDefinition propertyDefinition, MessageLookup messageLookup)
     {
@@ -194,20 +193,20 @@ public class CustomModelProperty extends AbstractCommonDetails
     {
         StringBuilder builder = new StringBuilder(612);
         builder.append("CustomModelProperty [name=").append(this.name)
-                    .append(", prefixedName=").append(this.prefixedName)
-                    .append(", title=").append(this.title)
-                    .append(", description=").append(this.description)
-                    .append(", dataType=").append(this.dataType)
-                    .append(", isMandatory=").append(this.isMandatory)
-                    .append(", isMandatoryEnforced=").append(this.isMandatoryEnforced)
-                    .append(", isMultiValued=").append(this.isMultiValued)
-                    .append(", defaultValue=").append(this.defaultValue)
-                    .append(", isIndexed=").append(this.isIndexed)
-                    .append(", facetable=").append(this.facetable)
-                    .append(", indexTokenisationMode=").append(this.indexTokenisationMode)
-                    .append(", constraintRefs=").append(this.constraintRefs)
-                    .append(", constraints=").append(this.constraints)
-                    .append(']');
+                .append(", prefixedName=").append(this.prefixedName)
+                .append(", title=").append(this.title)
+                .append(", description=").append(this.description)
+                .append(", dataType=").append(this.dataType)
+                .append(", isMandatory=").append(this.isMandatory)
+                .append(", isMandatoryEnforced=").append(this.isMandatoryEnforced)
+                .append(", isMultiValued=").append(this.isMultiValued)
+                .append(", defaultValue=").append(this.defaultValue)
+                .append(", isIndexed=").append(this.isIndexed)
+                .append(", facetable=").append(this.facetable)
+                .append(", indexTokenisationMode=").append(this.indexTokenisationMode)
+                .append(", constraintRefs=").append(this.constraintRefs)
+                .append(", constraints=").append(this.constraints)
+                .append(']');
         return builder.toString();
     }
 }

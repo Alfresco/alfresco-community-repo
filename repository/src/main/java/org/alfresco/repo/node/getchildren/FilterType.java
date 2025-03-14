@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.node.getchildren;
 
-
 /**
  * GetChildren - for property filtering
  *
@@ -33,5 +32,4 @@ package org.alfresco.repo.node.getchildren;
  * @since 4.0
  */
 public interface FilterType
-{
-}
+{}

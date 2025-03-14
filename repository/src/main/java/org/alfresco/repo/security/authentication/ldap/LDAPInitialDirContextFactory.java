@@ -26,7 +26,6 @@
 package org.alfresco.repo.security.authentication.ldap;
 
 import java.util.Map;
-
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 
@@ -45,85 +44,81 @@ public interface LDAPInitialDirContextFactory
      * 
      */
     public void setInitialDirContextEnvironment(Map<String, String> environment);
-    
+
     /**
-     * Use the environment properties and connect to the LDAP server, optionally configuring RFC 2696 paged results.
-     * Used to obtain read only access to the LDAP server.
+     * Use the environment properties and connect to the LDAP server, optionally configuring RFC 2696 paged results. Used to obtain read only access to the LDAP server.
      * 
      * @param pageSize
-     *            if a positive value, indicates that a LDAP v3 RFC 2696 paged results control should be used. The
-     *            results of a search operation should be returned by the LDAP server in batches of the specified size.
-     * @param diagnostic AuthenticationDiagnostic
+     *            if a positive value, indicates that a LDAP v3 RFC 2696 paged results control should be used. The results of a search operation should be returned by the LDAP server in batches of the specified size.
+     * @param diagnostic
+     *            AuthenticationDiagnostic
      * @return the default intial dir context
      * @throws AuthenticationException
      *             the authentication exception
      */
-    public InitialDirContext getDefaultIntialDirContext(int pageSize,  AuthenticationDiagnostic diagnostic) throws AuthenticationException;
-    
+    public InitialDirContext getDefaultIntialDirContext(int pageSize, AuthenticationDiagnostic diagnostic) throws AuthenticationException;
+
     /**
-     * Use the environment properties and connect to the LDAP server, optionally configuring RFC 2696 paged results.
-     * Used to obtain read only access to the LDAP server.
+     * Use the environment properties and connect to the LDAP server, optionally configuring RFC 2696 paged results. Used to obtain read only access to the LDAP server.
      * 
      * @param pageSize
-     *            if a positive value, indicates that a LDAP v3 RFC 2696 paged results control should be used. The
-     *            results of a search operation should be returned by the LDAP server in batches of the specified size.
+     *            if a positive value, indicates that a LDAP v3 RFC 2696 paged results control should be used. The results of a search operation should be returned by the LDAP server in batches of the specified size.
      * @return the default intial dir context
      * @throws AuthenticationException
      *             the authentication exception
      */
     public InitialDirContext getDefaultIntialDirContext(int pageSize) throws AuthenticationException;
-    
+
     /**
-     * Use the environment properties and connect to the LDAP server.
-     * Used to obtain read only access to the LDAP server.
+     * Use the environment properties and connect to the LDAP server. Used to obtain read only access to the LDAP server.
      * 
      * @return InitialDirContext
      * @throws AuthenticationException
      */
     public InitialDirContext getDefaultIntialDirContext() throws AuthenticationException;
-    
+
     /**
-     * Use the environment properties and connect to the LDAP server.
-     * Used to obtain read only access to the LDAP server.
+     * Use the environment properties and connect to the LDAP server. Used to obtain read only access to the LDAP server.
      * 
      * @return InitialDirContext
      * @throws AuthenticationException
      */
     public InitialDirContext getDefaultIntialDirContext(AuthenticationDiagnostic diagnostic) throws AuthenticationException;
-    
+
     /**
-     * Determines whether there is another page to fetch from the last search to be run in this context. Also prepares
-     * the request controls so that the appropriate cookie will be passed in the next search.
+     * Determines whether there is another page to fetch from the last search to be run in this context. Also prepares the request controls so that the appropriate cookie will be passed in the next search.
      * 
      * @param ctx
      *            the context
      * @param pageSize
-     *            if a positive value, indicates that a LDAP v3 RFC 2696 paged results control should be used. The
-     *            results of a search operation should be returned by the LDAP server in batches of the specified size.
+     *            if a positive value, indicates that a LDAP v3 RFC 2696 paged results control should be used. The results of a search operation should be returned by the LDAP server in batches of the specified size.
      * @return true, if is ready for next page
      */
-    public boolean hasNextPage(DirContext ctx, int pageSize);   
-    
-    /**
-     * Augment the connection environment with the identity and credentials and bind to the ldap server.
-     * Mainly used to validate a user's credentials during authentication. 
-     * 
-     * @param principal String
-     * @param credentials String
-     * @return InitialDirContext
-     * @throws AuthenticationException
-     */
-    public InitialDirContext getInitialDirContext(String principal, String credentials)  throws AuthenticationException;
+    public boolean hasNextPage(DirContext ctx, int pageSize);
 
     /**
-     * Augment the connection environment with the identity and credentials and bind to the ldap server.
-     * Mainly used to validate a user's credentials during authentication. 
+     * Augment the connection environment with the identity and credentials and bind to the ldap server. Mainly used to validate a user's credentials during authentication.
      * 
-     * @param principal String
-     * @param credentials String
-     * @param diagnostic AuthenticationDiagnostic
+     * @param principal
+     *            String
+     * @param credentials
+     *            String
      * @return InitialDirContext
      * @throws AuthenticationException
      */
-    public InitialDirContext getInitialDirContext(String principal, String credentials, AuthenticationDiagnostic diagnostic)  throws AuthenticationException;
+    public InitialDirContext getInitialDirContext(String principal, String credentials) throws AuthenticationException;
+
+    /**
+     * Augment the connection environment with the identity and credentials and bind to the ldap server. Mainly used to validate a user's credentials during authentication.
+     * 
+     * @param principal
+     *            String
+     * @param credentials
+     *            String
+     * @param diagnostic
+     *            AuthenticationDiagnostic
+     * @return InitialDirContext
+     * @throws AuthenticationException
+     */
+    public InitialDirContext getInitialDirContext(String principal, String credentials, AuthenticationDiagnostic diagnostic) throws AuthenticationException;
 }

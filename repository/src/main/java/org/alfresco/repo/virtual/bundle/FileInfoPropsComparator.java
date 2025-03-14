@@ -31,11 +31,12 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.AlfrescoCollator;
 import org.alfresco.util.Pair;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 public class FileInfoPropsComparator implements Comparator<FileInfo>
 {
@@ -55,8 +56,8 @@ public class FileInfoPropsComparator implements Comparator<FileInfo>
     public int compare(FileInfo n1, FileInfo n2)
     {
         return compareImpl(n1,
-                           n2,
-                           sortProps);
+                n2,
+                sortProps);
     }
 
     private int compareImpl(FileInfo node1In, FileInfo node2In, List<Pair<QName, Boolean>> sortProps)
@@ -92,9 +93,9 @@ public class FileInfoPropsComparator implements Comparator<FileInfo>
             if (pv2 == null && sortProps.size() > 1)
             {
                 return compareImpl(node1In,
-                                   node2In,
-                                   sortProps.subList(1,
-                                                     sortProps.size()));
+                        node2In,
+                        sortProps.subList(1,
+                                sortProps.size()));
             }
             else
             {
@@ -109,8 +110,8 @@ public class FileInfoPropsComparator implements Comparator<FileInfo>
         if (pv1 instanceof String)
         {
             result = collator.compare((String) pv1,
-                                      (String) pv2); // TODO: use collation keys
-                                                     // (re: performance)
+                    (String) pv2); // TODO: use collation keys
+                                   // (re: performance)
         }
         else if (pv1 instanceof Date)
         {
@@ -140,9 +141,9 @@ public class FileInfoPropsComparator implements Comparator<FileInfo>
         if ((result == 0) && (sortProps.size() > 1))
         {
             return compareImpl(node1In,
-                               node2In,
-                               sortProps.subList(1,
-                                                 sortProps.size()));
+                    node2In,
+                    sortProps.subList(1,
+                            sortProps.size()));
         }
 
         return result;

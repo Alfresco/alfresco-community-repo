@@ -25,8 +25,6 @@
  */
 package org.alfresco.rest.core;
 
-import static org.alfresco.utility.report.log.Step.STEP;
-
 import java.util.MissingFormatArgumentException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -71,7 +69,7 @@ public class RestRequest
      * @return
      */
     public static RestRequest simpleRequest(HttpMethod httpMethod, String path, String... pathParams)
-    {       
+    {
         return new RestRequest(httpMethod, path, pathParams);
     }
 
@@ -134,9 +132,7 @@ public class RestRequest
     /**
      * Add query parameters to the path if needed.
      * <p>
-     * e.g. For a path of "api/{fruit}" and params ["apple", "size=10", "colour=red"] then this will
-     * update the path to be "api/{fruit}?{param0}&{param1}" so that the tokens will be populated by
-     * RestAssured to make "api/apple?size=10&colour=red".
+     * e.g. For a path of "api/{fruit}" and params ["apple", "size=10", "colour=red"] then this will update the path to be "api/{fruit}?{param0}&{param1}" so that the tokens will be populated by RestAssured to make "api/apple?size=10&colour=red".
      */
     private void addQueryParamsIfNeeded()
     {
@@ -150,8 +146,8 @@ public class RestRequest
         {
             // Add the remaining parameters to the URL query.
             String queryParams = IntStream.range(0, pathParams.length - groupCount)
-                                          .mapToObj(index -> "{parameter" + index + "}")
-                                          .collect(Collectors.joining("&"));
+                    .mapToObj(index -> "{parameter" + index + "}")
+                    .collect(Collectors.joining("&"));
             path += (path.contains("?") ? "&" : "?") + queryParams;
         }
     }
@@ -168,32 +164,33 @@ public class RestRequest
 
     /**
      * {@inheritDoc}
-     * @throws MissingFormatArgumentException If there are not enough pathParams for the path.
+     * 
+     * @throws MissingFormatArgumentException
+     *             If there are not enough pathParams for the path.
      */
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder()
-                    .append("Request: ")
-                    .append(getHttpMethod())
-                    .append(" ")
-                    .append(RestAssured.baseURI)
-                    .append(":")
-                    .append(RestAssured.port)
-                    .append("/")
-                    .append(RestAssured.basePath)
-                    .append("/");
+                .append("Request: ")
+                .append(getHttpMethod())
+                .append(" ")
+                .append(RestAssured.baseURI)
+                .append(":")
+                .append(RestAssured.port)
+                .append("/")
+                .append(RestAssured.basePath)
+                .append("/");
 
         sb.append(constructPath());
-                
-        if(!getBody().isEmpty())
+
+        if (!getBody().isEmpty())
         {
             sb.append("\nbody:")
-              .append(getBody());
+                    .append(getBody());
         }
         sb.append("\n");
-        
-        
+
         return sb.toString();
     }
 
@@ -201,12 +198,13 @@ public class RestRequest
      * Populate the path with the pathParams.
      *
      * @return The path with tokens replaced with values.
-     * @throws MissingFormatArgumentException If there are not enough pathParams for the path.
+     * @throws MissingFormatArgumentException
+     *             If there are not enough pathParams for the path.
      */
     private String constructPath()
     {
         String getPathFormatted = getPath();
-        if(getPath().contains("{"))
+        if (getPath().contains("{"))
         {
             getPathFormatted = getPath().replaceAll(TOKEN_REGEX, "%s");
             getPathFormatted = String.format(getPathFormatted, getPathParams());

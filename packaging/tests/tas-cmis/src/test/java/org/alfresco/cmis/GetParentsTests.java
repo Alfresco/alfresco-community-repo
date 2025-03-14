@@ -1,5 +1,11 @@
 package org.alfresco.cmis;
 
+import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.FileModel;
@@ -8,15 +14,8 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisUnauthorizedException;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
 
 /**
  * Created by Claudia Agache on 10/5/2016.
@@ -45,9 +44,9 @@ public class GetParentsTests extends CmisTest
         testFile = FileModel.getRandomFileModel(FileType.MSWORD);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.SANITY,
             description = "Verify site manager is able to get file parents with CMIS")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = {TestGroup.SANITY, TestGroup.CMIS})
     public void siteManagerGetsFileParents() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite)
@@ -58,9 +57,9 @@ public class GetParentsTests extends CmisTest
                 .then().assertThat().hasParents(testFolder.getName(), parentFolder.getName());
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.SANITY,
             description = "Verify site manager is able to get folder parents with CMIS")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = {TestGroup.SANITY, TestGroup.CMIS})
     public void siteManagerGetsFolderParents() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite)
@@ -68,10 +67,10 @@ public class GetParentsTests extends CmisTest
                 .usingResource(parentFolder).createFolder(testFolder).and().assertThat().existsInRepo()
                 .then().assertThat().hasParents(parentFolder.getName());
     }
-    
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is NOT able to get parents for an inexistent folder with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisObjectNotFoundException.class})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisObjectNotFoundException.class})
     public void siteManagerCannotGetInexistentFolderParents() throws Exception
     {
         FolderModel inexistentFolder = FolderModel.getRandomFolderModel();
@@ -81,9 +80,9 @@ public class GetParentsTests extends CmisTest
                 .and().usingResource(inexistentFolder).assertThat().hasParents(parentFolder.getName());
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor is able to get folder parents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteContributorGetsFolderParentsCreatedBySelf() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingSite(testSite)
@@ -92,9 +91,9 @@ public class GetParentsTests extends CmisTest
                 .then().assertThat().hasParents(parentFolder.getName());
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor is able to get file parents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteContributorGetsFileParentsCreatedBySelf() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingSite(testSite)
@@ -103,9 +102,9 @@ public class GetParentsTests extends CmisTest
                 .assertThat().hasParents(parentFolder.getName());
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor is able to get folder parents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteContributorGetsFolderParentsCreatedByManager() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite)
@@ -116,9 +115,9 @@ public class GetParentsTests extends CmisTest
                 .assertThat().hasParents(parentFolder.getName());
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor is able to get file parents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteContributorGetsFileParentsCreatedByManager() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite)
@@ -130,9 +129,9 @@ public class GetParentsTests extends CmisTest
                 .assertThat().hasParents(testFolder.getName());
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site collaborator is able to get folder parents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteCollaboratorGetsFolderParentsCreatedBySelf() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).usingSite(testSite)
@@ -141,9 +140,9 @@ public class GetParentsTests extends CmisTest
                 .then().assertThat().hasParents(parentFolder.getName());
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site collaborator is able to get file parents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteCollaboratorGetsFileParentsCreatedBySelf() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).usingSite(testSite)
@@ -152,9 +151,9 @@ public class GetParentsTests extends CmisTest
                 .assertThat().hasParents(parentFolder.getName());
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site collaborator is able to get folder parents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteCollaboratorGetsFolderParentsCreatedByManager() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite)
@@ -165,9 +164,9 @@ public class GetParentsTests extends CmisTest
                 .assertThat().hasParents(parentFolder.getName());
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site collaborator is able to get file parents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteCollaboratorGetsFileParentsCreatedByManager() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite)
@@ -179,9 +178,9 @@ public class GetParentsTests extends CmisTest
                 .assertThat().hasParents(testFolder.getName());
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site consumer is able to get folder parents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteConsumerGetsFolderParents() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite)
@@ -192,9 +191,9 @@ public class GetParentsTests extends CmisTest
                 .assertThat().hasParents(parentFolder.getName());
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site consumer is able to get file parents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteConsumerGetsFileParents() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite)
@@ -206,9 +205,9 @@ public class GetParentsTests extends CmisTest
                 .assertThat().hasParents(testFolder.getName());
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify non site member for a private site is not able to get folder parents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberGetsFolderParentsFromPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
@@ -220,9 +219,9 @@ public class GetParentsTests extends CmisTest
                 .assertThat().hasParents(parentFolder.getName());
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify non site member for a private site is not able to get file parents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberGetsFileParentsFromPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
@@ -234,9 +233,9 @@ public class GetParentsTests extends CmisTest
                 .assertThat().hasParents(parentFolder.getName());
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify non site member for a moderated site is not able to get folder parents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberGetsFolderParentsFromModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingAdmin().createModeratedRandomSite();
@@ -248,9 +247,9 @@ public class GetParentsTests extends CmisTest
                 .assertThat().hasParents(parentFolder.getName());
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify non site member for a moderated site is not able to get file parents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberGetsFileParentsFromModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingAdmin().createModeratedRandomSite();

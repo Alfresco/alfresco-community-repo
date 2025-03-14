@@ -39,21 +39,23 @@ public class PublishExecutorRegistry
 {
     /** Map of publish executors */
     private Map<String, PublishExecutor> publishExectors = new HashMap<>(3);
-    
+
     /**
      * Register a publish executor
      * 
-     * @param publishExecutor   publish executor
+     * @param publishExecutor
+     *            publish executor
      */
     public void register(PublishExecutor publishExecutor)
     {
         publishExectors.put(publishExecutor.getName(), publishExecutor);
     }
-    
+
     /**
      * Get registered publish executor by name.
      * 
-     * @param name  name
+     * @param name
+     *            name
      * @return {@link PublishExecutor}]
      */
     public PublishExecutor get(String name)

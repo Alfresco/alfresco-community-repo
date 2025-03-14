@@ -28,6 +28,8 @@ package org.alfresco.repo.admin.patch.impl;
 import java.io.InputStream;
 import java.util.List;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ImporterBootstrap;
@@ -36,24 +38,23 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Updates show_audit.ftl file for upgrade from v3.3.5 to v3.4.x (ALF-13929)
+ * 
  * @author alex.malinovsky
  *
  */
-public class UpdateAuditTemplatePatch  extends AbstractPatch
+public class UpdateAuditTemplatePatch extends AbstractPatch
 {
     private static final String ERR_MULTIPLE_FOUND = "Multiple files for replacement were found";
     public static final String TEXT_CONTENT_MIMETYPE = "text/plain";
     private static final String MSG_CREATED = "patch.show.audit.success";
-    
+
     private ImporterBootstrap importerBootstrap;
     private ContentService contentService;
     private String copyPath;
     private String fileName;
-    
 
     public void setContentService(ContentService contentService)
     {
@@ -64,12 +65,12 @@ public class UpdateAuditTemplatePatch  extends AbstractPatch
     {
         this.copyPath = copyPath;
     }
-    
+
     public void setFileName(String fileName)
     {
         this.fileName = fileName;
     }
-    
+
     public void setImporterBootstrap(ImporterBootstrap importerBootstrap)
     {
         this.importerBootstrap = importerBootstrap;
@@ -90,8 +91,7 @@ public class UpdateAuditTemplatePatch  extends AbstractPatch
             makeCopy(results.get(0));
             return I18NUtil.getMessage(MSG_CREATED);
         }
-       
-        
+
         return null;
     }
 
@@ -105,8 +105,8 @@ public class UpdateAuditTemplatePatch  extends AbstractPatch
             writer.setMimetype(TEXT_CONTENT_MIMETYPE);
             writer.putContent(resource);
         }
-        else throw new PatchException("Resource '"+fileName+"' not found");
+        else
+            throw new PatchException("Resource '" + fileName + "' not found");
     }
-
 
 }

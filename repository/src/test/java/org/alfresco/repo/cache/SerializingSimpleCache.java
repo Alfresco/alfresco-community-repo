@@ -35,27 +35,26 @@ import java.util.Collection;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
- * {@link SimpleCache} implementation backed by a {@link DefaultSimpleCache} but forcing
- * object serialization in and out.  This is only useful for tests.
+ * {@link SimpleCache} implementation backed by a {@link DefaultSimpleCache} but forcing object serialization in and out. This is only useful for tests.
  * 
  * @author Derek Hulley
  * @since 4.2.3
  */
 public final class SerializingSimpleCache<K extends Serializable, V extends Serializable>
-    implements SimpleCache<K, V>, BeanNameAware
+        implements SimpleCache<K, V>, BeanNameAware
 {
     private SimpleCache<K, V> cache;
-    
+
     public SerializingSimpleCache(int maxItems, String cacheName)
     {
         cache = new DefaultSimpleCache<>(maxItems, cacheName);
     }
-    
+
     public SerializingSimpleCache()
     {
         cache = new DefaultSimpleCache<>();
     }
-    
+
     @SuppressWarnings("unchecked")
     private V serialize(V value)
     {
@@ -85,7 +84,7 @@ public final class SerializingSimpleCache<K extends Serializable, V extends Seri
             throw new RuntimeException("Failure to serialize/deserialize object: " + value, e);
         }
     }
-    
+
     @Override
     public boolean contains(K key)
     {
@@ -126,6 +125,5 @@ public final class SerializingSimpleCache<K extends Serializable, V extends Seri
 
     @Override
     public void setBeanName(String cacheName)
-    {
-    }
+    {}
 }

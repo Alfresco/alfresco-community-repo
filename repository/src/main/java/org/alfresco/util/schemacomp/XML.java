@@ -43,12 +43,12 @@ public abstract class XML
     public static final String EL_FOREIGN_KEYS = "foreignkeys";
     public static final String EL_INDEX = Index.class.getSimpleName().toLowerCase();
     public static final String EL_INDEXES = "indexes";
-    public static final String EL_SEQUENCE = Sequence.class.getSimpleName().toLowerCase();    
+    public static final String EL_SEQUENCE = Sequence.class.getSimpleName().toLowerCase();
     public static final String EL_TYPE = "type";
     public static final String EL_NULLABLE = "nullable";
     public static final String EL_AUTOINCREMENT = "autoincrement";
     public static final String EL_COLUMN_NAME = "columnname";
-    public static final String EL_COLUMN_NAMES = "columnnames";    
+    public static final String EL_COLUMN_NAMES = "columnnames";
     public static final String EL_LOCAL_COLUMN = "localcolumn";
     public static final String EL_TARGET_COLUMN = "targetcolumn";
     public static final String EL_TARGET_TABLE = "targettable";
@@ -57,7 +57,7 @@ public abstract class XML
     public static final String EL_OBJECTS = "objects";
     public static final String EL_PROPERTIES = "properties";
     public static final String EL_PROPERTY = "property";
-    
+
     public static final String ATTR_NAME = "name";
     public static final String ATTR_ORDER = "order";
     public static final String ATTR_UNIQUE = "unique";

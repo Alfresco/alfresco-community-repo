@@ -25,16 +25,16 @@
  */
 package org.alfresco.repo.module;
 
-import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.util.PropertyCheck;
+
 /**
- * Module component that logs a message on startup.  The log category
- * used will be the ID of the module that contains the component and the
- * name of the component itself.  For example:
+ * Module component that logs a message on startup. The log category used will be the ID of the module that contains the component and the name of the component itself. For example:
+ * 
  * <pre>
- * log4j.logger.org.alfresco.modules.MyModule.DumpMessageComponent=INFO
+ * log4j.logger.org.alfresco.modules.MyModule.DumpMessageComponent = INFO
  * </pre>
  * 
  * @author Derek Hulley
@@ -46,7 +46,7 @@ public class LoggerModuleComponent extends AbstractModuleComponent
     {
         INFO, WARN, ERROR;
     }
-    
+
     private LogLevel logLevel;
     private String message;
 
@@ -57,8 +57,9 @@ public class LoggerModuleComponent extends AbstractModuleComponent
 
     /**
      * Set the level at which the bean must log the message.
-     * @param logLevel      One of the {@code LogLevel} values.
-     *                      The default is {@code LogLevel#INFO}.
+     * 
+     * @param logLevel
+     *            One of the {@code LogLevel} values. The default is {@code LogLevel#INFO}.
      */
     public void setLogLevel(String logLevel)
     {
@@ -66,10 +67,10 @@ public class LoggerModuleComponent extends AbstractModuleComponent
     }
 
     /**
-     * Set the message that must be logged.  This can be a message string
-     * or an ID of an internationalized string.
+     * Set the message that must be logged. This can be a message string or an ID of an internationalized string.
      * 
-     * @param message       a message to log at the {@link #setLogLevel(String) log level}
+     * @param message
+     *            a message to log at the {@link #setLogLevel(String) log level}
      */
     public void setMessage(String message)
     {

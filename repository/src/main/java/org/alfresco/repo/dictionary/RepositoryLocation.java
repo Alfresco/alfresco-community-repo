@@ -43,7 +43,7 @@ public class RepositoryLocation
 
     /** Path */
     private String path = ""; // default
-    
+
     /** Search Language */
     private String queryLanguage = "xpath"; // default
 
@@ -53,29 +53,32 @@ public class RepositoryLocation
     /**
      */
     public RepositoryLocation()
-    {
-    }
-    
+    {}
+
     /**
      * Constructor
      * 
-     * @param storeRef       the store reference (e.g. 'workspace://SpacesStore' )
-     * @param path           the path (e.g. '/app:company_home/app:dictionary/app:models' )
-     * @param queryLanguage  the query language (e.g. 'xpath' or 'lucence')
+     * @param storeRef
+     *            the store reference (e.g. 'workspace://SpacesStore' )
+     * @param path
+     *            the path (e.g. '/app:company_home/app:dictionary/app:models' )
+     * @param queryLanguage
+     *            the query language (e.g. 'xpath' or 'lucence')
      */
     public RepositoryLocation(StoreRef storeRef, String path, String queryLanguage)
     {
         this.storeProtocol = storeRef.getProtocol();
         this.storeId = storeRef.getIdentifier();
         this.path = path;
-        
+
         setQueryLanguage(queryLanguage);
     }
 
-	/**
+    /**
      * Set the store protocol
      *
-     * @param storeProtocol     the store protocol
+     * @param storeProtocol
+     *            the store protocol
      */
     public void setStoreProtocol(String storeProtocol)
     {
@@ -85,7 +88,8 @@ public class RepositoryLocation
     /**
      * Set the store identifier
      *
-     * @param storeId       the store identifier
+     * @param storeId
+     *            the store identifier
      */
     public void setStoreId(String storeId)
     {
@@ -97,24 +101,26 @@ public class RepositoryLocation
      * 
      * Example path: /app:company_home/app:dictionary/app:models
      *
-     * @param path  the path
+     * @param path
+     *            the path
      */
     public void setPath(String path)
     {
         this.path = path;
     }
-    
+
     /**
      * Set the query language
      *
-     * @param queryLanguage  the search language
+     * @param queryLanguage
+     *            the search language
      */
     public void setQueryLanguage(String queryLanguage)
     {
-        if (queryLanguage.equals(SearchService.LANGUAGE_LUCENE) || 
-            queryLanguage.equals(SearchService.LANGUAGE_XPATH) || 
-            queryLanguage.equals(LANGUAGE_PATH) ||
-            queryLanguage.equals(LANGUAGE_CLASSPATH))
+        if (queryLanguage.equals(SearchService.LANGUAGE_LUCENE) ||
+                queryLanguage.equals(SearchService.LANGUAGE_XPATH) ||
+                queryLanguage.equals(LANGUAGE_PATH) ||
+                queryLanguage.equals(LANGUAGE_CLASSPATH))
         {
             this.queryLanguage = queryLanguage;
         }
@@ -127,23 +133,23 @@ public class RepositoryLocation
     /**
      * Get the store reference (note: should be ignored for classpath location)
      *
-     * @return  the store reference
+     * @return the store reference
      */
     public StoreRef getStoreRef()
     {
         return new StoreRef(this.storeProtocol, this.storeId);
     }
-    
+
     /**
      * Get the path
      *
-     * @return  the path
+     * @return the path
      */
     public String getPath()
     {
         return this.path;
     }
-    
+
     /**
      * Get the query language
      * 
@@ -157,43 +163,43 @@ public class RepositoryLocation
     /**
      * Get the Lucene query statement for models, based on the path
      *
-     * @return  the Lucene query statement
+     * @return the Lucene query statement
      */
     public String getLuceneQueryStatement(QName contentModelType)
     {
         String result = "+TYPE:\"" + contentModelType.toString() + "\"";
-        
-        if ((this.path != null) && (! this.path.equals("")))
+
+        if ((this.path != null) && (!this.path.equals("")))
         {
             result += " +PATH:\"" + this.path + "\"";
         }
-       
+
         return result;
     }
-    
+
     /**
      * Get the XPath query statement for models, based on the path
      *
-     * @return  the XPath query statement
+     * @return the XPath query statement
      */
     public String getXPathQueryStatement(QName prefixResolvedContentModelType)
     {
         String result = "/*[subtypeOf('" + prefixResolvedContentModelType.toPrefixString() + "')]"; // immediate children only
-        
-        if ((this.path != null) && (! this.path.equals("")))
+
+        if ((this.path != null) && (!this.path.equals("")))
         {
             result = this.path + result;
         }
-        
+
         return result;
     }
-    
+
     public String[] getPathElements()
     {
-        if ((this.path != null) && (! this.path.equals("")))
+        if ((this.path != null) && (!this.path.equals("")))
         {
             String pathToSplit = this.path;
-            
+
             while (pathToSplit.startsWith("/"))
             {
                 pathToSplit = pathToSplit.substring(1);

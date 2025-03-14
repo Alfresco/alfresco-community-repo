@@ -21,7 +21,7 @@ package org.alfresco.encryption;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.alfresco.error.AlfrescoRuntimeException;
+
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,6 +29,8 @@ import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AlfrescoKeyStoreTest
@@ -127,8 +129,7 @@ public class AlfrescoKeyStoreTest
     }
 
     /**
-     * Config via System props should be default, but if the metadata file location is set, it will be used instead.
-     * This is done to maintain backwards compatibility and simplify testing use cases.
+     * Config via System props should be default, but if the metadata file location is set, it will be used instead. This is done to maintain backwards compatibility and simplify testing use cases.
      */
     @Test(expected = AlfrescoRuntimeException.class)
     public void testConfigBothSystemAndFile()

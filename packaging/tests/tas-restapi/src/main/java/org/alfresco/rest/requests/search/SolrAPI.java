@@ -45,12 +45,12 @@ import java.util.List;
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
 import io.restassured.http.Headers;
+import org.springframework.http.HttpMethod;
 
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestTextResponse;
 import org.alfresco.rest.requests.ModelRequest;
-import org.springframework.http.HttpMethod;
 
 /**
  * Wrapper for solr API.
@@ -60,10 +60,10 @@ import org.springframework.http.HttpMethod;
 public class SolrAPI extends ModelRequest<SolrAPI>
 {
     public SolrAPI(RestWrapper restWrapper)
-    {  
+    {
         super(restWrapper);
         RestAssured.basePath = "solr/alfresco";
-        
+
         restWrapper.configureSolrEndPoint();
         restWrapper.configureRequestSpec().setBasePath(RestAssured.basePath);
     }
@@ -94,15 +94,18 @@ public class SolrAPI extends ModelRequest<SolrAPI>
 
     /**
      * Executes an action (like "delete") on SOLR alfresco core
-     * @param urlActionPath some action name (like "delete")
-     * @param queryBody parameters for the action
+     * 
+     * @param urlActionPath
+     *            some action name (like "delete")
+     * @param queryBody
+     *            parameters for the action
      */
     public RestTextResponse postAction(String urlActionPath, String queryBody)
     {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, queryBody, urlActionPath);
         return restWrapper.processTextResponse(request);
     }
-    
+
     public RestTextResponse getSelectQuery()
     {
         List<Header> headers = new ArrayList<Header>();

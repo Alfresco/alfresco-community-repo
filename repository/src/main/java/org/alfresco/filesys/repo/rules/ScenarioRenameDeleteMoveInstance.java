@@ -28,6 +28,9 @@ package org.alfresco.filesys.repo.rules;
 import java.util.ArrayList;
 import java.util.Date;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.filesys.repo.ResultCallback;
 import org.alfresco.filesys.repo.rules.commands.CloseFileCommand;
 import org.alfresco.filesys.repo.rules.commands.CompoundCommand;
@@ -42,28 +45,14 @@ import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * This is an instance of a rename, delete, move scenario triggered by a rename of a 
- * file matching a specified pattern.
+ * This is an instance of a rename, delete, move scenario triggered by a rename of a file matching a specified pattern.
  * <p>
- * a) Original file is renamed.   Typically with an obscure name.
- * b) Renamed file is deleted via delete command or via deleteOnClose flag and close operation.
- * c) Temp file is moved into original file location.
+ * a) Original file is renamed. Typically with an obscure name. b) Renamed file is deleted via delete command or via deleteOnClose flag and close operation. c) Temp file is moved into original file location.
  * 
  * <p>
- * If this filter is active then this is what happens.
- * a) Original file is renamed:
- *    - File is renamed.
- * b) Renamed file is deleted via delete command or via deleteOnClose flag and close operation: 
- *    - File is deleted.
- * c) Temp file is moved into original file location - Scenario fires 
- *    - Deleted file is restored.
- *    - Restored file is renamed to it's original name.
- *    - Content from file that must be moved is copied to restored file.
- *    - File that must be moved is deleted.
+ * If this filter is active then this is what happens. a) Original file is renamed: - File is renamed. b) Renamed file is deleted via delete command or via deleteOnClose flag and close operation: - File is deleted. c) Temp file is moved into original file location - Scenario fires - Deleted file is restored. - Restored file is renamed to it's original name. - Content from file that must be moved is copied to restored file. - File that must be moved is deleted.
  */
 public class ScenarioRenameDeleteMoveInstance implements ScenarioInstance
 {
@@ -98,7 +87,8 @@ public class ScenarioRenameDeleteMoveInstance implements ScenarioInstance
     /**
      * Evaluate the next operation
      * 
-     * @param operation Operation
+     * @param operation
+     *            Operation
      */
     public Command evaluate(Operation operation)
     {
@@ -281,8 +271,7 @@ public class ScenarioRenameDeleteMoveInstance implements ScenarioInstance
      */
     private ResultCallback newDeleteFileCallbackCommand()
     {
-        return new ResultCallback()
-        {
+        return new ResultCallback() {
             @Override
             public void execute(Object result)
             {

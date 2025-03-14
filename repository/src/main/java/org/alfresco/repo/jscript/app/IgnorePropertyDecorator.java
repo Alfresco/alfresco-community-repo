@@ -27,13 +27,13 @@ package org.alfresco.repo.jscript.app;
 
 import java.io.Serializable;
 
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.json.simple.JSONAware;
 
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
+
 /**
- * Ignores a given property and doesn't output anything in the decoration.  This means the property will not appear in the
- * resulting JSON.
+ * Ignores a given property and doesn't output anything in the decoration. This means the property will not appear in the resulting JSON.
  *
  * @author Roy Wetherall
  */

@@ -38,20 +38,20 @@ public class WorkflowException extends AlfrescoRuntimeException
 
     public WorkflowException(String msgId)
     {
-       super(msgId);
-    }
-    
-    public WorkflowException(String msgId, Throwable cause)
-    {
-       super(msgId, cause);
+        super(msgId);
     }
 
-    public WorkflowException(String msgId, Object ... args)
+    public WorkflowException(String msgId, Throwable cause)
+    {
+        super(msgId, cause);
+    }
+
+    public WorkflowException(String msgId, Object... args)
     {
         super(msgId, args);
     }
 
-    public WorkflowException(String msgId, Throwable cause, Object ... args)
+    public WorkflowException(String msgId, Throwable cause, Object... args)
     {
         super(msgId, args, cause);
     }

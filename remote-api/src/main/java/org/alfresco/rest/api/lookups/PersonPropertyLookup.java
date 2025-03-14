@@ -25,18 +25,17 @@
  */
 package org.alfresco.rest.api.lookups;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.service.ServiceRegistry;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 /**
- * Looks up information about a person.
- * Pass in a userId and the display name is returned.
+ * Looks up information about a person. Pass in a userId and the display name is returned.
  *
  * @author Gethin James
  */
@@ -50,7 +49,8 @@ public class PersonPropertyLookup implements PropertyLookup<String>
     {
         Map<String, UserInfo> mapUserInfo = TransactionalResourceHelper.getMap("PERSON_PROPERTY_LOOKUP_USER_INFO_CACHE");
         UserInfo user = Node.lookupUserInfo(propertyValue, mapUserInfo, serviceRegistry.getPersonService());
-        if (user != null) return user.getDisplayName();
+        if (user != null)
+            return user.getDisplayName();
         return null;
     }
 

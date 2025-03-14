@@ -26,17 +26,19 @@
 
 package org.alfresco.rest.categories;
 
-import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
+import static org.alfresco.utility.report.log.Step.STEP;
+
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.model.RestCategoryModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
-import org.testng.annotations.Test;
 
 public class DeleteCategoriesTests extends CategoriesRestTest
 {

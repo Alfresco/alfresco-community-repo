@@ -1,5 +1,9 @@
 package org.alfresco.rest.workflow.deployments;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestDeploymentModel;
@@ -9,9 +13,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Created by Claudia Agache on 1/30/2017.
@@ -28,9 +29,9 @@ public class GetDeploymentsFullTests extends RestTest
         restClient.authenticateUser(adminUserModel);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS}, executionType = ExecutionType.REGRESSION,
             description = "Verify Admin user gets non-network deployments with skipCount parameter applied using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION})
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION})
     public void getNonNetworkDeploymentsWithValidSkipCount() throws JsonToModelConversionException, Exception
     {
         deployments = restClient.withWorkflowAPI().getDeployments();
@@ -42,13 +43,13 @@ public class GetDeploymentsFullTests extends RestTest
         deploymentsWithSkipCount
                 .assertThat().entriesListDoesNotContain("name", firstDeployment.getName())
                 .assertThat().entriesListDoesNotContain("name", secondDeployment.getName())
-                .assertThat().entriesListCountIs(deployments.getEntries().size()-2);
+                .assertThat().entriesListCountIs(deployments.getEntries().size() - 2);
         deploymentsWithSkipCount.assertThat().paginationField("skipCount").is("2");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS}, executionType = ExecutionType.REGRESSION,
             description = "Verify Admin user doesn't get non-network deployments when negative skipCount parameter is applied using REST API and status code is 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION})
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION})
     public void getNonNetworkDeploymentsWithNegativeSkipCount() throws JsonToModelConversionException, Exception
     {
         restClient.withParams("skipCount=-1").withWorkflowAPI().getDeployments();
@@ -60,9 +61,9 @@ public class GetDeploymentsFullTests extends RestTest
                 .statusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS}, executionType = ExecutionType.REGRESSION,
             description = "Verify Admin user doesn't get non-network deployments when non numeric skipCount parameter is applied using REST API and status code is 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION})
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION})
     public void getNonNetworkDeploymentsWithNotNumericSkipCount() throws JsonToModelConversionException, Exception
     {
         restClient.withParams("skipCount=A").withWorkflowAPI().getDeployments();
@@ -70,10 +71,9 @@ public class GetDeploymentsFullTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.INVALID_SKIPCOUNT, "A"));
     }
 
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS}, executionType = ExecutionType.REGRESSION,
             description = "Verify Admin user gets non-network deployments with maxItems parameter applied using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION})
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION})
     public void getNonNetworkDeploymentsWithValidMaxItems() throws JsonToModelConversionException, Exception
     {
         deployments = restClient.withWorkflowAPI().getDeployments();
@@ -89,9 +89,9 @@ public class GetDeploymentsFullTests extends RestTest
         deploymentsWithMaxItems.assertThat().paginationField("maxItems").is("2");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS}, executionType = ExecutionType.REGRESSION,
             description = "Verify Admin user doesn't get non-network deployments when negative maxItems parameter is applied using REST API and status code is 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION})
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION})
     public void getNonNetworkDeploymentsWithNegativeMaxItems() throws JsonToModelConversionException, Exception
     {
         restClient.withParams("maxItems=-1").withWorkflowAPI().getDeployments();
@@ -103,9 +103,9 @@ public class GetDeploymentsFullTests extends RestTest
                 .statusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS}, executionType = ExecutionType.REGRESSION,
             description = "Verify Admin user doesn't get non-network deployments when non numeric maxItems parameter is applied using REST API and status code is 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION})
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION})
     public void getNonNetworkDeploymentsWithNotNumericMaxItems() throws JsonToModelConversionException, Exception
     {
         restClient.withParams("maxItems=A").withWorkflowAPI().getDeployments();
@@ -113,9 +113,9 @@ public class GetDeploymentsFullTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.INVALID_MAXITEMS, "A"));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS}, executionType = ExecutionType.REGRESSION,
             description = "Verify Admin user gets non-network deployments with properties parameter applied using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION})
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION})
     public void getNonNetworkDeploymentsWithValidProperties() throws JsonToModelConversionException, Exception
     {
         deployments = restClient.withParams("properties=name").withWorkflowAPI().getDeployments();
@@ -128,9 +128,9 @@ public class GetDeploymentsFullTests extends RestTest
                 .field("name").isNotEmpty();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS}, executionType = ExecutionType.REGRESSION,
             description = "Verify Admin user gets non-network deployments with non existing properties parameter applied using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION})
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION})
     public void getNonNetworkDeploymentsWithNonExistingProperties() throws JsonToModelConversionException, Exception
     {
         deployments = restClient.withParams("properties=TAS").withWorkflowAPI().getDeployments();

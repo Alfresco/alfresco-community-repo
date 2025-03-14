@@ -43,7 +43,7 @@ public class QueryEngineResults
     {
         this.results = results;
     }
-    
+
     public Map<Set<String>, ResultSet> getResults()
     {
         return results;

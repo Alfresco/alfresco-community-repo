@@ -27,6 +27,9 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
+import org.apache.chemistry.opencmis.commons.PropertyIds;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
+
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.repo.search.adaptor.AnalysisMode;
@@ -34,8 +37,6 @@ import org.alfresco.repo.search.adaptor.LuceneFunction;
 import org.alfresco.repo.search.adaptor.QueryParserAdaptor;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.apache.chemistry.opencmis.commons.PropertyIds;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
 
 /**
  * Lucene Builder for CMIS object type id property
@@ -45,11 +46,12 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentExcep
 public class ObjectTypeIdLuceneBuilder extends BaseLuceneBuilder
 {
     private CMISDictionaryService cmisDictionaryService;
-    
+
     /**
      * Construct
      * 
-     * @param cmisDictionaryService CMISDictionaryService
+     * @param cmisDictionaryService
+     *            CMISDictionaryService
      */
     public ObjectTypeIdLuceneBuilder(CMISDictionaryService cmisDictionaryService)
     {
@@ -73,7 +75,7 @@ public class ObjectTypeIdLuceneBuilder extends BaseLuceneBuilder
 
     @Override
     public <Q, S, E extends Throwable> Q buildLuceneEquality(QueryParserAdaptor<Q, S, E> lqpa, Serializable value, PredicateMode mode,
-                                                             LuceneFunction luceneFunction) throws E
+            LuceneFunction luceneFunction) throws E
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
@@ -92,7 +94,8 @@ public class ObjectTypeIdLuceneBuilder extends BaseLuceneBuilder
         if (not)
         {
             return lqpa.getMatchNoneQuery();
-        } else
+        }
+        else
         {
             return lqpa.getMatchAllQuery();
         }
@@ -100,14 +103,14 @@ public class ObjectTypeIdLuceneBuilder extends BaseLuceneBuilder
 
     @Override
     public <Q, S, E extends Throwable> Q buildLuceneGreaterThan(QueryParserAdaptor<Q, S, E> lqpa, Serializable value, PredicateMode mode,
-                                                                LuceneFunction luceneFunction) throws E
+            LuceneFunction luceneFunction) throws E
     {
         throw new CmisInvalidArgumentException("Property " + PropertyIds.OBJECT_TYPE_ID + " can not be used in a 'greater than' comparison");
     }
 
     @Override
     public <Q, S, E extends Throwable> Q buildLuceneGreaterThanOrEquals(QueryParserAdaptor<Q, S, E> lqpa, Serializable value, PredicateMode mode,
-                                                                        LuceneFunction luceneFunction) throws E
+            LuceneFunction luceneFunction) throws E
     {
         throw new CmisInvalidArgumentException("Property " + PropertyIds.OBJECT_TYPE_ID
                 + " can not be used in a 'greater than or equals' comparison");
@@ -115,21 +118,21 @@ public class ObjectTypeIdLuceneBuilder extends BaseLuceneBuilder
 
     @Override
     public <Q, S, E extends Throwable> Q buildLuceneInequality(QueryParserAdaptor<Q, S, E> lqpa, Serializable value, PredicateMode mode,
-                                                               LuceneFunction luceneFunction) throws E
+            LuceneFunction luceneFunction) throws E
     {
         return lqpa.getNegatedQuery(buildLuceneEquality(lqpa, value, mode, luceneFunction));
     }
 
     @Override
     public <Q, S, E extends Throwable> Q buildLuceneLessThan(QueryParserAdaptor<Q, S, E> lqpa, Serializable value, PredicateMode mode,
-                                                             LuceneFunction luceneFunction) throws E
+            LuceneFunction luceneFunction) throws E
     {
         throw new CmisInvalidArgumentException("Property " + PropertyIds.OBJECT_TYPE_ID + " can not be used in a 'less than' comparison");
     }
 
     @Override
     public <Q, S, E extends Throwable> Q buildLuceneLessThanOrEquals(QueryParserAdaptor<Q, S, E> lqpa, Serializable value, PredicateMode mode,
-                                                                     LuceneFunction luceneFunction) throws E
+            LuceneFunction luceneFunction) throws E
     {
         throw new CmisInvalidArgumentException("Property " + PropertyIds.OBJECT_TYPE_ID + " can not be used in a 'less than or equals' comparison");
     }
@@ -146,7 +149,7 @@ public class ObjectTypeIdLuceneBuilder extends BaseLuceneBuilder
         if (not)
         {
             q = lqpa.getNegatedQuery(q);
-        } 
+        }
         return q;
     }
 

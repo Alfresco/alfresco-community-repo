@@ -46,8 +46,7 @@ public class BaseLuceneBuilder implements CMISPropertyLuceneBuilder
      * 
      */
     protected BaseLuceneBuilder()
-    {
-    }
+    {}
 
     @Override
     public <Q, S, E extends Throwable> Q buildLuceneEquality(QueryParserAdaptor<Q, S, E> lqpa, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
@@ -77,11 +76,11 @@ public class BaseLuceneBuilder implements CMISPropertyLuceneBuilder
     public <Q, S, E extends Throwable> Q buildLuceneIn(QueryParserAdaptor<Q, S, E> lqpa, Collection<Serializable> values, Boolean not, PredicateMode mode) throws E
     {
         QueryParserExpressionAdaptor<Q, E> expressionAdaptor = lqpa.getExpressionAdaptor();
-        for(Serializable value : values)
+        for (Serializable value : values)
         {
             expressionAdaptor.addOptional(buildLuceneEquality(lqpa, value, mode, LuceneFunction.FIELD));
         }
-        if(not)
+        if (not)
         {
             return expressionAdaptor.getNegatedQuery();
         }

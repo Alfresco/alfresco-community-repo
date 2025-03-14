@@ -28,11 +28,10 @@ package org.alfresco.service.cmr.transfer;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * TransferEvents are produced by the Transfer service during an in flight 
- * transfer.
+ * TransferEvents are produced by the Transfer service during an in flight transfer.
  * 
  * <p>
- * The TransferCallback presents TransferEvents for processing. 
+ * The TransferCallback presents TransferEvents for processing.
  * 
  * @see TransferCallback
  * 

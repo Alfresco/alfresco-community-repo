@@ -30,8 +30,7 @@ import org.alfresco.repo.node.NodeServicePolicies;
 /**
  * Interface for home folder providers.
  * 
- * @deprecated 
- * Depreciated since 4.0. {@link HomeFolderProvider2} should now be used.
+ * @deprecated Depreciated since 4.0. {@link HomeFolderProvider2} should now be used.
  * 
  * @author Andy Hind
  */

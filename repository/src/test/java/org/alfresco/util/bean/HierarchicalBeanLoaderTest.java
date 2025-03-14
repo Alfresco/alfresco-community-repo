@@ -29,6 +29,7 @@ import java.util.AbstractCollection;
 import java.util.AbstractList;
 import java.util.Collection;
 import java.util.TreeSet;
+
 import junit.framework.TestCase;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -41,7 +42,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class HierarchicalBeanLoaderTest extends TestCase
 {
     private ClassPathXmlApplicationContext ctx;
-    
+
     private String getBean(Class<?> clazz, boolean setBeforeInit) throws Exception
     {
         if (setBeforeInit)
@@ -55,7 +56,7 @@ public class HierarchicalBeanLoaderTest extends TestCase
         }
         return (String) ctx.getBean("test.someString");
     }
-    
+
     public void tearDown()
     {
         try
@@ -63,28 +64,27 @@ public class HierarchicalBeanLoaderTest extends TestCase
             ctx.close();
         }
         catch (Throwable e)
-        {
-        }
+        {}
     }
-    
+
     public void testSuccess1() throws Throwable
     {
         String str = getBean(TreeSet.class, true);
         assertEquals("Bean value incorrect", "TreeSet", str);
     }
-    
+
     public void testSuccess2() throws Throwable
     {
         String str = getBean(AbstractList.class, true);
         assertEquals("Bean value incorrect", "AbstractList", str);
     }
-    
+
     public void testSuccess3() throws Throwable
     {
         String str = getBean(AbstractCollection.class, true);
         assertEquals("Bean value incorrect", "AbstractCollection", str);
     }
-    
+
     public void testFailure1() throws Throwable
     {
         try

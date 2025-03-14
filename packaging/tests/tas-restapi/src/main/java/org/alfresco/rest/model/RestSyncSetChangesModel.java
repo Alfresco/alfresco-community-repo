@@ -32,66 +32,21 @@
 
 package org.alfresco.rest.model;
 
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.utility.model.TestModel;
 
 /**
  * Base Path {@linkplain /alfresco/api/-default-/private/alfresco/versions/1}
  * 
- * @author Meenal Bhave
- * Example:
- * "changes": [
-    {
-        "conflict": false,
-        "skip": false,
-        "id": "1",
-        "username": "admin",
-        "type": "DELETE_REPOS",
-        "name": "2",
-        "toName": null,
-        "parentNodeIds": [
-            "1007f928-3d95-402f-a9ac-35300c66f3fa",
-            "02a172dd-3156-4443-a216-d11bcd082ccc",
-            "e1f3777a-4eb3-4e49-9e65-ec52dbf21032",
-            "859d721e-07b4-4b8f-8a9e-122d45a1f9bb",
-            "5c9b0f55-eb3a-48ba-8532-c2877548291e",
-            "c0a5ad7b-cf36-47f1-85a6-6c0aafe242df"
-            ],
-        "toParentNodeIds": [],
-        "path": "/Company Home/Sites/primary/documentLibrary/5/2",
-        "toPath": null,
-        "nodeId": "aa667a0c-03bb-44b8-a65c-bdc95a90a6ac",
-        "eventTimestamp": 1505838692779,
-        "checksum": "dummyChecksum",
-        "size": -1,
-        "nodeType": "cm:folder",
-        "nodeTimestamp": 1505838597992,
-        "error": false,
-        "aspects": [
-            "cm:titled",
-            "cm:auditable",
-            "sys:referenceable",
-            "sys:pendingDelete",
-            "sys:localized"
-            ],
-        "seqNo": 0,
-        "parentGroup": null,
-        "permission": null,
-        "async": false,
-        "authority": null,
-        "cascade": false
-        "folderChange": false
-    }
-    ]
+ * @author Meenal Bhave Example: "changes": [ { "conflict": false, "skip": false, "id": "1", "username": "admin", "type": "DELETE_REPOS", "name": "2", "toName": null, "parentNodeIds": [ "1007f928-3d95-402f-a9ac-35300c66f3fa", "02a172dd-3156-4443-a216-d11bcd082ccc", "e1f3777a-4eb3-4e49-9e65-ec52dbf21032", "859d721e-07b4-4b8f-8a9e-122d45a1f9bb", "5c9b0f55-eb3a-48ba-8532-c2877548291e", "c0a5ad7b-cf36-47f1-85a6-6c0aafe242df" ], "toParentNodeIds": [], "path": "/Company Home/Sites/primary/documentLibrary/5/2", "toPath": null, "nodeId": "aa667a0c-03bb-44b8-a65c-bdc95a90a6ac", "eventTimestamp": 1505838692779, "checksum": "dummyChecksum", "size": -1, "nodeType": "cm:folder", "nodeTimestamp": 1505838597992, "error": false, "aspects": [ "cm:titled", "cm:auditable", "sys:referenceable", "sys:pendingDelete", "sys:localized" ], "seqNo": 0, "parentGroup": null, "permission": null, "async": false, "authority": null, "cascade": false "folderChange": false } ]
  */
 
 public class RestSyncSetChangesModel extends TestModel
 {
 
     public RestSyncSetChangesModel()
-    {
-    }
+    {}
 
     @JsonProperty(required = true)
     private Boolean conflict;
@@ -167,17 +122,15 @@ public class RestSyncSetChangesModel extends TestModel
 
     @JsonProperty(required = true)
     private Boolean cascade;
-    
+
     @JsonProperty(required = true)
     private boolean recordFromCollabSite;
-    
+
     @JsonProperty(required = true)
     private int numberOfSecondaryAssocs;
 
     @JsonProperty(required = true)
     private boolean folderChange;
-    
-    
 
     public Boolean getConflict()
     {
@@ -324,11 +277,13 @@ public class RestSyncSetChangesModel extends TestModel
         this.numberOfSecondaryAssocs = numberOfSecondaryAssocs;
     }
 
-    public boolean isFolderChange() {
+    public boolean isFolderChange()
+    {
         return folderChange;
     }
 
-    public void setFolderChange(boolean folderChange) {
+    public void setFolderChange(boolean folderChange)
+    {
         this.folderChange = folderChange;
     }
 }

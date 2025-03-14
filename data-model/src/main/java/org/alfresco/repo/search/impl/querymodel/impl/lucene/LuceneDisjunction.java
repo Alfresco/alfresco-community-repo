@@ -50,13 +50,9 @@ public class LuceneDisjunction<Q, S, E extends Throwable> extends BaseDisjunctio
         super(constraints);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(java.lang.String,
-     *      java.util.Map, org.alfresco.repo.search.impl.querymodel.impl.lucene.QueryBuilderContext,
-     *      org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(java.lang.String, java.util.Map, org.alfresco.repo.search.impl.querymodel.impl.lucene.QueryBuilderContext, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext) */
     public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext)
             throws E
     {
@@ -83,7 +79,7 @@ public class LuceneDisjunction<Q, S, E extends Throwable> extends BaseDisjunctio
                         QueryParserExpressionAdaptor<Q, E> subExpressionBuilder = luceneContext.getLuceneQueryParserAdaptor().getExpressionAdaptor();
                         subExpressionBuilder.addRequired(luceneContext.getLuceneQueryParserAdaptor().getMatchAllNodesQuery());
                         subExpressionBuilder.addExcluded(constraintQuery);
-                        expressionBuilder.addOptional(subExpressionBuilder.getQuery(),  constraint.getBoost());
+                        expressionBuilder.addOptional(subExpressionBuilder.getQuery(), constraint.getBoost());
                         break;
                     }
                 }

@@ -38,9 +38,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.sync.events.types.Event;
-import org.alfresco.sync.events.types.UserManagementEvent;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
@@ -50,8 +51,6 @@ import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.repo.domain.permissions.AclDAO;
-import org.alfresco.sync.repo.events.EventPreparator;
-import org.alfresco.sync.repo.events.EventPublisher;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
@@ -102,6 +101,10 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.sync.events.types.Event;
+import org.alfresco.sync.events.types.UserManagementEvent;
+import org.alfresco.sync.repo.events.EventPreparator;
+import org.alfresco.sync.repo.events.EventPublisher;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ModelUtil;
@@ -109,18 +112,16 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.registry.NamedObjectRegistry;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class PersonServiceImpl extends TransactionListenerAdapter implements PersonService,
-                                                                             NodeServicePolicies.BeforeCreateNodePolicy,
-                                                                             NodeServicePolicies.OnCreateNodePolicy,
-                                                                             NodeServicePolicies.BeforeDeleteNodePolicy,
-                                                                             NodeServicePolicies.OnUpdatePropertiesPolicy
-                                                                             
+        NodeServicePolicies.BeforeCreateNodePolicy,
+        NodeServicePolicies.OnCreateNodePolicy,
+        NodeServicePolicies.BeforeDeleteNodePolicy,
+        NodeServicePolicies.OnUpdatePropertiesPolicy
+
 {
     private static Log logger = LogFactory.getLog(PersonServiceImpl.class);
-    
+
     static final String CANNED_QUERY_PEOPLE_LIST = "getPeopleCannedQueryFactory";
 
     private static final String DELETE = "DELETE";
@@ -159,25 +160,25 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     private boolean lastIsBest = true;
     private boolean includeAutoCreated = false;
     private EventPublisher eventPublisher;
-    
+
     private NamedObjectRegistry<CannedQueryFactory<NodeRef>> cannedQueryRegistry;
-    
+
     /** a transactionally-safe cache to be injected */
     private SimpleCache<String, Set<NodeRef>> personCache;
-    
+
     // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
     private SimpleCache<String, Object> singletonCache; // eg. for peopleContainerNodeRef
     private final String KEY_PEOPLECONTAINER_NODEREF = "key.peoplecontainer.noderef";
-    
+
     private UserNameMatcher userNameMatcher;
-    
+
     private JavaBehaviour beforeCreateNodeValidationBehaviour;
     private JavaBehaviour beforeDeleteNodeValidationBehaviour;
-    
+
     private boolean homeFolderCreationEager;
-    
+
     private boolean homeFolderCreationDisabled = false; // if true then home folders creation is disabled (ie. home folders are not created - neither eagerly nor lazily)
-    
+
     static
     {
         Set<QName> props = new HashSet<QName>();
@@ -231,28 +232,28 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 BeforeDeleteNodePolicy.QNAME,
                 ContentModel.TYPE_PERSON,
                 beforeDeleteNodeValidationBehaviour);
-        
+
         this.policyComponent.bindClassBehaviour(
                 OnCreateNodePolicy.QNAME,
                 ContentModel.TYPE_PERSON,
                 new JavaBehaviour(this, "onCreateNode"));
-        
+
         this.policyComponent.bindClassBehaviour(
                 BeforeDeleteNodePolicy.QNAME,
                 ContentModel.TYPE_PERSON,
                 new JavaBehaviour(this, "beforeDeleteNode"));
-        
+
         this.policyComponent.bindClassBehaviour(
                 OnUpdatePropertiesPolicy.QNAME,
                 ContentModel.TYPE_PERSON,
                 new JavaBehaviour(this, "onUpdateProperties"));
-        
+
         this.policyComponent.bindClassBehaviour(
                 OnUpdatePropertiesPolicy.QNAME,
                 ContentModel.TYPE_USER,
                 new JavaBehaviour(this, "onUpdatePropertiesUser"));
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -270,7 +271,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         this.authorityService = authorityService;
     }
-    
+
     public void setAuthenticationService(MutableAuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
@@ -295,22 +296,22 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         this.serviceRegistry = serviceRegistry;
     }
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-    
+
     public void setSingletonCache(SimpleCache<String, Object> singletonCache)
     {
         this.singletonCache = singletonCache;
     }
-    
+
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
@@ -320,17 +321,17 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         this.repoAdminService = repoAdminService;
     }
-    
+
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
+
     public void setStoreUrl(String storeUrl)
     {
         this.storeRef = new StoreRef(storeUrl);
     }
-    
+
     public void setUserNameMatcher(UserNameMatcher userNameMatcher)
     {
         this.userNameMatcher = userNameMatcher;
@@ -365,16 +366,15 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         this.homeFolderManager = homeFolderManager;
     }
-    
+
     /**
-     * Indicates if home folders should be created when the person
-     * is created or delayed until first accessed.
+     * Indicates if home folders should be created when the person is created or delayed until first accessed.
      */
     public void setHomeFolderCreationEager(boolean homeFolderCreationEager)
     {
         this.homeFolderCreationEager = homeFolderCreationEager;
     }
-    
+
     /**
      * Indicates if home folder creation should be disabled.
      */
@@ -382,7 +382,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         this.homeFolderCreationDisabled = homeFolderCreationDisabled;
     }
-    
+
     public void setAclDAO(AclDAO aclDao)
     {
         this.aclDao = aclDao;
@@ -392,7 +392,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         this.permissionsManager = permissionsManager;
     }
-    
+
     /**
      * Set the registry of {@link CannedQueryFactory canned queries}
      */
@@ -400,7 +400,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         this.cannedQueryRegistry = cannedQueryRegistry;
     }
-    
+
     /**
      * Set the username to person cache.
      */
@@ -408,7 +408,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         this.personCache = personCache;
     }
-    
+
     /**
      * Avoid injection issues: Look it up from the Service Registry as required
      */
@@ -416,7 +416,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         return serviceRegistry.getFileFolderService();
     }
-    
+
     /**
      * Avoid injection issues: Look it up from the Service Registry as required
      */
@@ -424,7 +424,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         return serviceRegistry.getNamespaceService();
     }
-    
+
     /**
      * Avoid injection issues: Look it up from the Service Registry as required
      */
@@ -432,7 +432,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         return serviceRegistry.getActionService();
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -440,7 +440,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         return getPerson(userName, true);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -455,19 +455,19 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             throw new NoSuchPersonException(personRef.toString());
         }
-        
-        String username  = (String)props.get(ContentModel.PROP_USERNAME);
+
+        String username = (String) props.get(ContentModel.PROP_USERNAME);
         if (username == null)
         {
             throw new NoSuchPersonException(personRef.toString());
         }
-        
-        return new PersonInfo(personRef, 
-                              username, 
-                              (String)props.get(ContentModel.PROP_FIRSTNAME),
-                              (String)props.get(ContentModel.PROP_LASTNAME));
+
+        return new PersonInfo(personRef,
+                username,
+                (String) props.get(ContentModel.PROP_FIRSTNAME),
+                (String) props.get(ContentModel.PROP_LASTNAME));
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -475,7 +475,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         return getPersonImpl(userName, false, false);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -483,8 +483,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         return getPersonImpl(userName, autoCreateHomeFolderAndMissingPersonIfAllowed, true);
     }
-    
-    
+
     private NodeRef getPersonImpl(
             final String userName,
             final boolean autoCreateHomeFolderAndMissingPersonIfAllowed,
@@ -503,13 +502,13 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             }
             return null;
         }
-        
+
         final NodeRef personNode = getPersonOrNullImpl(userName);
         if (personNode == null)
         {
             TxnReadState txnReadState = AlfrescoTransactionSupport.getTransactionReadState();
             if (autoCreateHomeFolderAndMissingPersonIfAllowed && createMissingPeople() &&
-                txnReadState == TxnReadState.TXN_READ_WRITE)
+                    txnReadState == TxnReadState.TXN_READ_WRITE)
             {
                 // We create missing people AND are in a read-write txn
                 return createMissingPersonAsSystem(userName, true);
@@ -528,7 +527,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         }
         return personNode;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -538,8 +537,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             return false;
         }
-        
-        NodeRef person = getPersonOrNullImpl(caseSensitiveUserName); 
+
+        NodeRef person = getPersonOrNullImpl(caseSensitiveUserName);
         if (person != null)
         {
             // re: THOR-293
@@ -547,7 +546,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         }
         return false;
     }
-    
+
     private NodeRef getPersonOrNullImpl(String searchUserName)
     {
         Set<NodeRef> allRefs = getFromCache(searchUserName);
@@ -559,18 +558,18 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             {
                 peopleContainer = getPeopleContainer();
             }
-            catch(InvalidStoreRefException isre)
+            catch (InvalidStoreRefException isre)
             {
                 return null;
             }
-            
+
             List<ChildAssociationRef> childRefs = nodeService.getChildAssocs(
                     peopleContainer,
                     ContentModel.ASSOC_CHILDREN,
                     getChildNameLower(searchUserName),
                     false);
             allRefs = new LinkedHashSet<NodeRef>(childRefs.size() * 2);
-            
+
             for (ChildAssociationRef childRef : childRefs)
             {
                 NodeRef nodeRef = childRef.getChildRef();
@@ -578,7 +577,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             }
             addToCache = true;
         }
-        
+
         List<NodeRef> refs = new ArrayList<NodeRef>(allRefs.size());
         Set<NodeRef> nodesToRemoveFromCache = new HashSet<NodeRef>();
         for (NodeRef nodeRef : allRefs)
@@ -611,7 +610,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         else if (refs.size() == 1)
         {
             returnRef = refs.get(0);
-            
+
             if (addToCache)
             {
                 // Don't bother caching unless we get a result that doesn't need duplicate processing
@@ -685,18 +684,17 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             // Nothing to do
             return;
         }
-        
-        RetryingTransactionCallback<Object> processDuplicateWork = new RetryingTransactionCallback<Object>()
-        {
+
+        RetryingTransactionCallback<Object> processDuplicateWork = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 if (duplicateMode.equalsIgnoreCase(SPLIT))
                 {
-                        logger.info("Splitting " + postTxnDuplicates.size() + " duplicate person objects.");
+                    logger.info("Splitting " + postTxnDuplicates.size() + " duplicate person objects.");
                     // Allow UIDs to be updated in this transaction
                     AlfrescoTransactionSupport.bindResource(KEY_ALLOW_UID_UPDATE, Boolean.TRUE);
                     split(postTxnDuplicates);
-                        logger.info("Split " + postTxnDuplicates.size() + " duplicate person objects.");
+                    logger.info("Split " + postTxnDuplicates.size() + " duplicate person objects.");
                 }
                 else if (duplicateMode.equalsIgnoreCase(DELETE))
                 {
@@ -710,7 +708,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                         logger.debug("Duplicate person objects exist");
                     }
                 }
-                
+
                 // Done
                 return null;
             }
@@ -804,7 +802,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
         return true;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -812,7 +810,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         return createMissingPeople;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -820,7 +818,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         return mutableProperties;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -828,7 +826,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         setPersonProperties(userName, properties, true);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -851,7 +849,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             // Must create the home folder first as a property holds its location.
             if (autoCreateHomeFolder)
             {
-                makeHomeFolderIfRequired(personNode);                
+                makeHomeFolderIfRequired(personNode);
             }
             String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(personNode, ContentModel.PROP_USERNAME));
             String suggestedUserName;
@@ -872,7 +870,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
         nodeService.setProperties(personNode, update);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -880,11 +878,10 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         return true;
     }
-    
+
     private NodeRef createMissingPersonAsSystem(final String userName, final boolean autoCreateHomeFolder)
     {
-        return AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<NodeRef>()
-        {
+        return AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<NodeRef>() {
             @Override
             public NodeRef doWork() throws Exception
             {
@@ -902,7 +899,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             }
         });
     }
-    
+
     private void makeHomeFolderIfRequired(NodeRef person)
     {
         if ((person != null) && (homeFolderCreationDisabled == false))
@@ -917,11 +914,10 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
                 {
                     // We can be in a read-only transaction, so force a new transaction
-                    // Note that the transaction will *always* be in read-only mode if the server read-only veto is there 
+                    // Note that the transaction will *always* be in read-only mode if the server read-only veto is there
                     requiresNew = true;
                 }
-                txnHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-                {
+                txnHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
                     public Object execute() throws Throwable
                     {
                         makeHomeFolderAsSystem(ref);
@@ -931,11 +927,10 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             }
         }
     }
-    
+
     private void makeHomeFolderAsSystem(final ChildAssociationRef childAssocRef)
     {
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
             @Override
             public Object doWork() throws Exception
             {
@@ -960,7 +955,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
         return properties;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -968,7 +963,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         return createPerson(properties, authorityService.getDefaultZones());
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -980,10 +975,10 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             throw new IllegalArgumentException("No username specified when creating the person.");
         }
-        
+
         if (EqualsHelper.nullSafeEquals(userName, AuthenticationUtil.getSystemUserName()))
         {
-            throw new AlfrescoRuntimeException("The built-in authority '" + AuthenticationUtil.getSystemUserName()  + "' is a user, but not a Person (i.e. it does not have a profile).");
+            throw new AlfrescoRuntimeException("The built-in authority '" + AuthenticationUtil.getSystemUserName() + "' is a user, but not a Person (i.e. it does not have a profile).");
         }
 
         AuthorityType authorityType = AuthorityType.getAuthorityType(userName);
@@ -998,28 +993,28 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             throw new AlfrescoRuntimeException("Person '" + userName + "' already exists.");
         }
-        
+
         properties.put(ContentModel.PROP_USERNAME, userName);
         properties.put(ContentModel.PROP_SIZE_CURRENT, 0L);
-        
+
         NodeRef personRef = null;
         try
         {
             beforeCreateNodeValidationBehaviour.disable();
-            
+
             personRef = nodeService.createNode(
                     getPeopleContainer(),
                     ContentModel.ASSOC_CHILDREN,
                     getChildNameLower(userName), // Lowercase:
-                    ContentModel.TYPE_PERSON, properties).getChildRef();         
+                    ContentModel.TYPE_PERSON, properties).getChildRef();
         }
         finally
         {
             beforeCreateNodeValidationBehaviour.enable();
         }
-        
+
         checkIfPersonShouldBeDisabledAndSetAspect(personRef, properties);
-        
+
         if (zones != null)
         {
             for (String zone : zones)
@@ -1029,14 +1024,14 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 nodeService.addChild(authorityService.getOrCreateZone(zone), personRef, ContentModel.ASSOC_IN_ZONE, QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, userName, namespacePrefixResolver));
             }
         }
-        
+
         removeFromCache(userName, false);
-        
+
         publishEvent("user.create", this.nodeService.getProperties(personRef));
-        
+
         return personRef;
     }
-    
+
     private void checkIfPersonShouldBeDisabledAndSetAspect(NodeRef person, Map<QName, Serializable> properties)
     {
         if (properties.get(ContentModel.PROP_ENABLED) != null)
@@ -1064,56 +1059,56 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         // Get the details of our user, or fail trying
         NodeRef noderef = getPerson(userName, false);
-        Map<QName,Serializable> userProps = nodeService.getProperties(noderef);
-        
+        Map<QName, Serializable> userProps = nodeService.getProperties(noderef);
+
         // Do they have an email set? We can't email them if not...
         String email = null;
         if (userProps.containsKey(ContentModel.PROP_EMAIL))
         {
-            email = (String)userProps.get(ContentModel.PROP_EMAIL);
+            email = (String) userProps.get(ContentModel.PROP_EMAIL);
         }
-        
+
         if (email == null || email.length() == 0)
         {
             if (logger.isInfoEnabled())
             {
                 logger.info("Not sending new user notification to " + userName + " as no email address found");
             }
-            
+
             return;
         }
-        
+
         // We need a freemarker model, so turn the QNames into
-        //  something a bit more freemarker friendly
-        Map<String,Serializable> model = buildEmailTemplateModel(userProps);
+        // something a bit more freemarker friendly
+        Map<String, Serializable> model = buildEmailTemplateModel(userProps);
         model.put("password", password); // Not stored on the person
-        
+
         // Set the details of the person sending the email into the model
         NodeRef creatorNR = getPerson(AuthenticationUtil.getFullyAuthenticatedUser());
-        Map<QName,Serializable> creatorProps = nodeService.getProperties(creatorNR);
-        Map<String,Serializable> creator = buildEmailTemplateModel(creatorProps);
-        model.put("creator", (Serializable)creator);
-        
+        Map<QName, Serializable> creatorProps = nodeService.getProperties(creatorNR);
+        Map<String, Serializable> creator = buildEmailTemplateModel(creatorProps);
+        model.put("creator", (Serializable) creator);
+
         // Set share information into the model
         String productName = ModelUtil.getProductName(repoAdminService);
         model.put(TemplateService.KEY_PRODUCT_NAME, productName);
-        
+
         // Set the details for the action
-        Map<String,Serializable> actionParams = new HashMap<String, Serializable>();
-        actionParams.put(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable)model);
+        Map<String, Serializable> actionParams = new HashMap<String, Serializable>();
+        actionParams.put(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) model);
         actionParams.put(MailActionExecuter.PARAM_TO, email);
         actionParams.put(MailActionExecuter.PARAM_FROM, creatorProps.get(ContentModel.PROP_EMAIL));
         actionParams.put(MailActionExecuter.PARAM_SUBJECT, "invitation.notification.person.email.subject");
-        actionParams.put(MailActionExecuter.PARAM_SUBJECT_PARAMS, new Object[] {productName});
-        
+        actionParams.put(MailActionExecuter.PARAM_SUBJECT_PARAMS, new Object[]{productName});
+
         // Pick the appropriate localised template
         actionParams.put(MailActionExecuter.PARAM_TEMPLATE, getNotifyEmailTemplateNodeRef());
-        
+
         // Ask for the email to be sent asynchronously
         Action mailAction = getActionService().createAction(MailActionExecuter.NAME, actionParams);
         getActionService().executeAction(mailAction, noderef, false, true);
     }
-    
+
     /**
      * Finds the email template and then attempts to find a localized version
      */
@@ -1149,10 +1144,10 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             throw new InvitationException("Cannot find the email template!", e);
         }
     }
-    
-    private Map<String,Serializable> buildEmailTemplateModel(Map<QName,Serializable> props)
+
+    private Map<String, Serializable> buildEmailTemplateModel(Map<QName, Serializable> props)
     {
-        Map<String,Serializable> model = new HashMap<String, Serializable>((int)(props.size()*1.5));
+        Map<String, Serializable> model = new HashMap<String, Serializable>((int) (props.size() * 1.5));
         for (QName qname : props.keySet())
         {
             model.put(qname.getLocalName(), props.get(qname));
@@ -1160,42 +1155,42 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         }
         return model;
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public NodeRef getPeopleContainer()
     {
-        NodeRef peopleNodeRef = (NodeRef)singletonCache.get(KEY_PEOPLECONTAINER_NODEREF);
+        NodeRef peopleNodeRef = (NodeRef) singletonCache.get(KEY_PEOPLECONTAINER_NODEREF);
         if (peopleNodeRef == null)
         {
             NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
             List<ChildAssociationRef> children = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL,
                     QName.createQName(SYSTEM_FOLDER_SHORT_QNAME, namespacePrefixResolver), false);
-            
+
             if (children.size() == 0)
             {
                 throw new AlfrescoRuntimeException("Required people system path not found: "
                         + SYSTEM_FOLDER_SHORT_QNAME);
             }
-            
+
             NodeRef systemNodeRef = children.get(0).getChildRef();
-            
+
             children = nodeService.getChildAssocs(systemNodeRef, RegexQNamePattern.MATCH_ALL, QName.createQName(
                     PEOPLE_FOLDER_SHORT_QNAME, namespacePrefixResolver), false);
-            
+
             if (children.size() == 0)
             {
                 throw new AlfrescoRuntimeException("Required people system path not found: "
                         + PEOPLE_FOLDER_SHORT_QNAME);
             }
-            
+
             peopleNodeRef = children.get(0).getChildRef();
             singletonCache.put(KEY_PEOPLECONTAINER_NODEREF, peopleNodeRef);
         }
         return peopleNodeRef;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -1207,12 +1202,12 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             return;
         }
-        
+
         NodeRef personRef = getPersonOrNullImpl(userName);
-        
+
         deletePersonAndAuthenticationImpl(userName, personRef);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -1222,16 +1217,16 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         if (typeQName.equals(ContentModel.TYPE_PERSON))
         {
             String userName = (String) this.nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
-            deletePersonAndAuthenticationImpl(userName, personRef);  
+            deletePersonAndAuthenticationImpl(userName, personRef);
         }
         else
         {
-            throw new AlfrescoRuntimeException("deletePerson: invalid type of node "+personRef+" (actual="+typeQName+", expected="+ContentModel.TYPE_PERSON+")");
+            throw new AlfrescoRuntimeException("deletePerson: invalid type of node " + personRef + " (actual=" + typeQName + ", expected=" + ContentModel.TYPE_PERSON + ")");
         }
     }
 
     /**
-     * {@inheritDoc} 
+     * {@inheritDoc}
      */
     public void deletePerson(NodeRef personRef, boolean deleteAuthentication)
     {
@@ -1250,11 +1245,10 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         }
         else
         {
-            throw new AlfrescoRuntimeException("deletePerson: invalid type of node "+personRef+" (actual="+typeQName+", expected="+ContentModel.TYPE_PERSON+")");
+            throw new AlfrescoRuntimeException("deletePerson: invalid type of node " + personRef + " (actual=" + typeQName + ", expected=" + ContentModel.TYPE_PERSON + ")");
         }
     }
-    
-    
+
     private void deletePersonAndAuthenticationImpl(String userName, NodeRef personRef)
     {
         if (userName != null)
@@ -1268,7 +1262,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             {
                 // Ignore this - externally authenticated user
             }
-            
+
             // Invalidate all that user's tickets
             try
             {
@@ -1278,14 +1272,14 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             {
                 // Ignore this
             }
-            
+
             // remove any user permissions
             permissionServiceSPI.deletePermissions(userName);
         }
-        
+
         deletePersonImpl(personRef);
     }
-    
+
     private void deletePersonImpl(NodeRef personRef)
     {
         // delete the person
@@ -1294,7 +1288,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             try
             {
                 beforeDeleteNodeValidationBehaviour.disable();
-                
+
                 nodeService.deleteNode(personRef);
             }
             finally
@@ -1303,7 +1297,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             }
         }
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -1319,7 +1313,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         }
         return refs;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -1327,30 +1321,30 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         return getPeople(pattern, filterStringProps, null, null, true, sortProps, pagingRequest);
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public PagingResults<PersonInfo> getPeople(String pattern, List<QName> filterStringProps, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects, boolean includeAdministraotrs, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
-        
+
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
-        
+
         CannedQueryResults<NodeRef> cqResults = null;
-        
+
         NodeRef contextNodeRef = getPeopleContainer();
-        
+
         // get canned query
-        GetPeopleCannedQueryFactory getPeopleCannedQueryFactory = (GetPeopleCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_PEOPLE_LIST);
-        
-        GetPeopleCannedQuery cq = (GetPeopleCannedQuery)getPeopleCannedQueryFactory.getCannedQuery(contextNodeRef, pattern, filterStringProps, inclusiveAspects, exclusiveAspects, includeAdministraotrs, sortProps, pagingRequest);
-        
+        GetPeopleCannedQueryFactory getPeopleCannedQueryFactory = (GetPeopleCannedQueryFactory) cannedQueryRegistry.getNamedObject(CANNED_QUERY_PEOPLE_LIST);
+
+        GetPeopleCannedQuery cq = (GetPeopleCannedQuery) getPeopleCannedQueryFactory.getCannedQuery(contextNodeRef, pattern, filterStringProps, inclusiveAspects, exclusiveAspects, includeAdministraotrs, sortProps, pagingRequest);
+
         // execute canned query
         cqResults = cq.execute();
-        
+
         final CannedQueryResults<NodeRef> results = cqResults;
-        
+
         boolean nonFinalHasMoreItems = results.hasMoreItems();
         List<NodeRef> nodeRefs;
         if (results.getPageCount() > 0)
@@ -1367,9 +1361,9 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             nodeRefs = Collections.emptyList();
         }
-        
+
         final boolean hasMoreItems = nonFinalHasMoreItems;
-        
+
         // set total count
         final Pair<Integer, Integer> totalCount;
         if (pagingRequest.getRequestTotalCountMax() > 0)
@@ -1380,54 +1374,56 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             totalCount = null;
         }
-        
+
         if (start != null)
         {
             int cnt = nodeRefs.size();
             int skipCount = pagingRequest.getSkipCount();
             int maxItems = pagingRequest.getMaxItems();
             int pageNum = (skipCount / maxItems) + 1;
-            
+
             if (logger.isDebugEnabled())
             {
                 logger.debug(
-                        "getPeople: "+cnt+" items in "+(System.currentTimeMillis()-start)+" msecs " +
-                                "[pageNum="+pageNum+",skip="+skipCount+",max="+maxItems+",hasMorePages="+hasMoreItems+
-                                ",totalCount="+totalCount+",pattern="+pattern+",filterStringProps="+filterStringProps+
-                                ",sortProps="+sortProps+"]");
+                        "getPeople: " + cnt + " items in " + (System.currentTimeMillis() - start) + " msecs " +
+                                "[pageNum=" + pageNum + ",skip=" + skipCount + ",max=" + maxItems + ",hasMorePages=" + hasMoreItems +
+                                ",totalCount=" + totalCount + ",pattern=" + pattern + ",filterStringProps=" + filterStringProps +
+                                ",sortProps=" + sortProps + "]");
             }
         }
-        
+
         final List<PersonInfo> personInfos = new ArrayList<PersonInfo>(nodeRefs.size());
         for (NodeRef nodeRef : nodeRefs)
         {
             if (nodeService.exists(nodeRef))
             {
                 Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
-                personInfos.add(new PersonInfo(nodeRef, 
-                                               (String)props.get(ContentModel.PROP_USERNAME), 
-                                               (String)props.get(ContentModel.PROP_FIRSTNAME),
-                                               (String)props.get(ContentModel.PROP_LASTNAME)));
+                personInfos.add(new PersonInfo(nodeRef,
+                        (String) props.get(ContentModel.PROP_USERNAME),
+                        (String) props.get(ContentModel.PROP_FIRSTNAME),
+                        (String) props.get(ContentModel.PROP_LASTNAME)));
             }
         }
-        
-        return new PagingResults<PersonInfo>()
-        {
+
+        return new PagingResults<PersonInfo>() {
             @Override
             public String getQueryExecutionId()
             {
                 return results.getQueryExecutionId();
             }
+
             @Override
             public List<PersonInfo> getPage()
             {
                 return personInfos;
             }
+
             @Override
             public boolean hasMoreItems()
             {
                 return hasMoreItems;
             }
+
             @Override
             public Pair<Integer, Integer> getTotalResultCount()
             {
@@ -1435,7 +1431,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             }
         };
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -1444,12 +1440,12 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     public PagingResults<PersonInfo> getPeople(List<Pair<QName, String>> stringPropFilters, boolean filterIgnoreCase, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
-        
+
         if (stringPropFilters == null)
         {
             return getPeople(null, null, sortProps, pagingRequest);
         }
-        
+
         String firstName = "";
         String lastName = "";
         String userName = "";
@@ -1487,7 +1483,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             searchStr = userName;
             useCQ = searchStr.split(" ").length == 1;
         }
-        
+
         PagingResults<PersonInfo> result = null;
         if (useCQ)
         {
@@ -1496,29 +1492,31 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             filterProps.add(ContentModel.PROP_LASTNAME);
             filterProps.add(ContentModel.PROP_USERNAME);
             sortProps = sortProps == null ? new ArrayList<Pair<QName, Boolean>>(1) : new ArrayList<Pair<QName, Boolean>>(sortProps);
-            sortProps.add(new Pair<QName, Boolean>(ContentModel.PROP_USERNAME, true)); 
+            sortProps.add(new Pair<QName, Boolean>(ContentModel.PROP_USERNAME, true));
             result = getPeople(searchStr, filterProps, sortProps, pagingRequest);
-            
-            // Fall back to FTS if no results. For case:  First Name: Gerard, Last Name: Perez Winkler
+
+            // Fall back to FTS if no results. For case: First Name: Gerard, Last Name: Perez Winkler
             if (result.getPage().size() == 0)
             {
                 result = null;
             }
         }
-        
+
         if (result == null)
         {
             result = getPeopleFts(searchStr, pagingRequest);
         }
-        
+
         return result;
     }
-    
+
     /**
      * Get paged list of people optionally filtered and/or sorted using FTS
      * 
-     * @param pattern - String to search
-     * @param pagingRequest PagingRequest
+     * @param pattern
+     *            - String to search
+     * @param pagingRequest
+     *            PagingRequest
      * @return PagingResults<PersonInfo>
      */
     private PagingResults<PersonInfo> getPeopleFts(String pattern, PagingRequest pagingRequest)
@@ -1554,7 +1552,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             nodeRefs = Collections.emptyList();
         }
-        
+
         final boolean hasMoreItems = nonFinalHasMoreItems;
 
         // set total count
@@ -1568,23 +1566,23 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             totalCount = null;
         }
-        
+
         if (start != null)
         {
             int cnt = nodeRefs.size();
             int skipCount = pagingRequest.getSkipCount();
             int maxItems = pagingRequest.getMaxItems();
             int pageNum = (skipCount / maxItems) + 1;
-            
+
             if (logger.isDebugEnabled())
             {
                 logger.debug(
                         "getPeople: " + cnt + " items in " + (System.currentTimeMillis() - start) + " msecs " +
-                        "[pageNum=" + pageNum + ",skip=" + skipCount + ",max="+ maxItems + ",hasMorePages=" + hasMoreItems +
-                        ",totalCount=" + totalCount + ",pattern=" + pattern + "]");
+                                "[pageNum=" + pageNum + ",skip=" + skipCount + ",max=" + maxItems + ",hasMorePages=" + hasMoreItems +
+                                ",totalCount=" + totalCount + ",pattern=" + pattern + "]");
             }
         }
-        
+
         final List<PersonInfo> personInfos = new ArrayList<PersonInfo>(nodeRefs.size());
         for (NodeRef nodeRef : nodeRefs)
         {
@@ -1592,9 +1590,9 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             {
                 Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
                 personInfos.add(new PersonInfo(nodeRef,
-                                (String)props.get(ContentModel.PROP_USERNAME),
-                                (String) props.get(ContentModel.PROP_FIRSTNAME),
-                                (String) props.get(ContentModel.PROP_LASTNAME)));
+                        (String) props.get(ContentModel.PROP_USERNAME),
+                        (String) props.get(ContentModel.PROP_FIRSTNAME),
+                        (String) props.get(ContentModel.PROP_LASTNAME)));
             }
             catch (InvalidNodeRefException e)
             {
@@ -1602,8 +1600,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             }
         }
 
-        return new PagingResults<PersonInfo>()
-        {
+        return new PagingResults<PersonInfo>() {
             @Override
             public String getQueryExecutionId()
             {
@@ -1630,7 +1627,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             }
         };
     }
-    
+
     private List<NodeRef> getPeopleFtsList(String pattern, PagingRequest pagingRequest) throws Throwable
     {
         // Think this code is based on org.alfresco.repo.jscript.People.getPeopleImplSearch(String, StringTokenizer, int, int)
@@ -1731,7 +1728,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
         return people;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -1742,7 +1739,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             throw new IllegalArgumentException("Only 1000 results are allowed but got a request for " + count + ". Use getPeople.");
         }
-        
+
         // check that given property key is defined for content model type 'cm:person'
         // and throw exception if it isn't
         if (this.dictionaryService.getProperty(ContentModel.TYPE_PERSON, propertyKey) == null)
@@ -1750,20 +1747,20 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             throw new AlfrescoRuntimeException("Property '" + propertyKey + "' is not defined " + "for content model type cm:person");
         }
         if (!propertyKey.equals(ContentModel.PROP_FIRSTNAME) &&
-            !propertyKey.equals(ContentModel.PROP_LASTNAME) &&
-            !propertyKey.equals(ContentModel.PROP_USERNAME))
+                !propertyKey.equals(ContentModel.PROP_LASTNAME) &&
+                !propertyKey.equals(ContentModel.PROP_USERNAME))
         {
-            logger.warn("PersonService.getPeopleFilteredByProperty() is being called to find people by "+propertyKey+
+            logger.warn("PersonService.getPeopleFilteredByProperty() is being called to find people by " + propertyKey +
                     ". Only PROP_FIRSTNAME, PROP_LASTNAME, PROP_USERNAME are now used in the search, so fewer nodes may " +
-                    "be returned than expected of there are more than "+count+" users in total.");
+                    "be returned than expected of there are more than " + count + " users in total.");
         }
-        
+
         List<Pair<QName, String>> filterProps = new ArrayList<Pair<QName, String>>(1);
-        filterProps.add(new Pair<QName, String>(propertyKey, (String)propertyValue));
-        
+        filterProps.add(new Pair<QName, String>(propertyKey, (String) propertyValue));
+
         PagingRequest pagingRequest = new PagingRequest(count, null);
         List<PersonInfo> personInfos = getPeople(filterProps, true, null, pagingRequest).getPage();
-        
+
         Set<NodeRef> refs = new HashSet<NodeRef>(personInfos.size());
         for (PersonInfo personInfo : personInfos)
         {
@@ -1774,19 +1771,19 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 refs.add(nodeRef);
             }
         }
-        
+
         return refs;
     }
 
     // Policies
-    
+
     /**
      * {@inheritDoc}
      */
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         NodeRef personRef = childAssocRef.getChildRef();
-        
+
         String userName = (String) this.nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
 
         if (getPeopleContainer().equals(childAssocRef.getParentRef()))
@@ -1797,33 +1794,33 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 {
                     if (userName.indexOf(illegalCharacter) != -1)
                     {
-                        throw new IllegalArgumentException("Person name contains characters that are not permitted: "+userName.charAt(userName.indexOf(illegalCharacter)));
+                        throw new IllegalArgumentException("Person name contains characters that are not permitted: " + userName.charAt(userName.indexOf(illegalCharacter)));
                     }
                 }
             }
 
-            // The value is stale.  However, we have already made the data change and
+            // The value is stale. However, we have already made the data change and
             // therefore do not need to lock the removal from further changes.
             removeFromCache(userName, false);
         }
-        
+
         permissionsManager.setPermissions(personRef, userName, userName);
-        
+
         // Make sure there is an authority entry - with a DB constraint for uniqueness
         // aclDao.createAuthority(username);
-        
+
         if ((homeFolderCreationEager) && (homeFolderCreationDisabled == false))
         {
             makeHomeFolderAsSystem(childAssocRef);
         }
 
     }
-    
+
     private QName getChildNameLower(String userName)
     {
         return QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, userName.toLowerCase(), namespacePrefixResolver);
     }
-    
+
     public void beforeCreateNode(
             NodeRef parentRef,
             QName assocTypeQName,
@@ -1832,7 +1829,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         // NOOP
     }
-    
+
     public void beforeCreateNodeValidation(
             NodeRef parentRef,
             QName assocTypeQName,
@@ -1845,10 +1842,10 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         }
         else
         {
-            logger.info("Person node is not being created under the people container (actual="+parentRef+", expected="+getPeopleContainer()+")");
+            logger.info("Person node is not being created under the people container (actual=" + parentRef + ", expected=" + getPeopleContainer() + ")");
         }
     }
-    
+
     public void beforeDeleteNode(NodeRef nodeRef)
     {
         String userName = (String) this.nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
@@ -1856,7 +1853,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             throw new AlfrescoRuntimeException("The " + userName + " user cannot be deleted.");
         }
-        
+
         NodeRef parentRef = null;
         ChildAssociationRef parentAssocRef = nodeService.getPrimaryParent(nodeRef);
         if (parentAssocRef != null)
@@ -1866,14 +1863,14 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             {
                 // Remove the cache entry.
                 // Note that the associated node has not been deleted and is therefore still
-                // visible to any other code that attempts to see it.  We therefore need to
+                // visible to any other code that attempts to see it. We therefore need to
                 // prevent the value from being added back before the node is actually
                 // deleted.
                 removeFromCache(userName, true);
             }
         }
     }
-    
+
     public void beforeDeleteNodeValidation(NodeRef nodeRef)
     {
         NodeRef parentRef = null;
@@ -1882,25 +1879,24 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             parentRef = parentAssocRef.getParentRef();
         }
-        
+
         if (getPeopleContainer().equals(parentRef))
         {
             throw new AlfrescoRuntimeException("beforeDeleteNode: use PersonService to delete person");
         }
         else
         {
-            logger.info("Person node that is being deleted is not under the parent people container (actual="+parentRef+", expected="+getPeopleContainer()+")");
+            logger.info("Person node that is being deleted is not under the parent people container (actual=" + parentRef + ", expected=" + getPeopleContainer() + ")");
         }
     }
-    
+
     private Set<NodeRef> getFromCache(String userName)
     {
         return this.personCache.get(userName.toLowerCase());
     }
 
     /**
-     * Put a value into the {@link #setPersonCache(SimpleCache) personCache}, optionally
-     * locking the value against any changes.
+     * Put a value into the {@link #setPersonCache(SimpleCache) personCache}, optionally locking the value against any changes.
      */
     private void putToCache(String userName, Set<NodeRef> refs, boolean lock)
     {
@@ -1912,10 +1908,9 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             personCacheTxn.lockValue(key);
         }
     }
-    
+
     /**
-     * Remove a value from the {@link #setPersonCache(SimpleCache) personCache}, optionally
-     * locking the value against any changes.
+     * Remove a value from the {@link #setPersonCache(SimpleCache) personCache}, optionally locking the value against any changes.
      */
     private void removeFromCache(String userName, boolean lock)
     {
@@ -1983,7 +1978,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             }
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -1993,10 +1988,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     }
 
     /**
-     * When a uid is changed we need to create an alias for the old uid so permissions are not broken. This can happen
-     * when an already existing user is updated via LDAP e.g. migration to LDAP, or when a user is auto created and then
-     * updated by LDAP This is probably less likely after 3.2 and sync on missing person See
-     * https://issues.alfresco.com/jira/browse/ETWOTWO-389 (non-Javadoc)
+     * When a uid is changed we need to create an alias for the old uid so permissions are not broken. This can happen when an already existing user is updated via LDAP e.g. migration to LDAP, or when a user is auto created and then updated by LDAP This is probably less likely after 3.2 and sync on missing person See https://issues.alfresco.com/jira/browse/ETWOTWO-389 (non-Javadoc)
      */
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
@@ -2017,12 +2009,12 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                     // Fix any ACLs
                     aclDao.renameAuthority(uidBefore, uidAfter);
                 }
-                
+
                 // Fix primary association local name
                 QName newAssocQName = getChildNameLower(uidAfter);
                 ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
                 nodeService.moveNode(nodeRef, assoc.getParentRef(), assoc.getTypeQName(), newAssocQName);
-                
+
                 // Fix other non-case sensitive parent associations
                 QName oldAssocQName = QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, uidBefore, namespacePrefixResolver);
                 newAssocQName = QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, uidAfter, namespacePrefixResolver);
@@ -2034,9 +2026,9 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                         nodeService.addChild(parent.getParentRef(), parent.getChildRef(), parent.getTypeQName(), newAssocQName);
                     }
                 }
-                
+
                 // Fix cache
-                // We are going to be pessimistic here.  Even though the properties have changed and
+                // We are going to be pessimistic here. Even though the properties have changed and
                 // should always be seen correctly by other policy listeners, we are not entirely sure
                 // that there won't be some sort of corruption i.e. the behaviour was pessimistic before
                 // this change so I'm leaving it that way.
@@ -2047,61 +2039,64 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 throw new UnsupportedOperationException("The user name on a person can not be changed");
             }
         }
-        
-        
-        if(validUserUpdateEvent(before, after))
+
+        if (validUserUpdateEvent(before, after))
         {
-        	publishEvent("user.update", after);
+            publishEvent("user.update", after);
         }
-      
+
     }
-    
+
     /**
-     * Determine if the updated properties constitute a valid user update.
-     * Currently we only check for updates to the user firstname, lastname
+     * Determine if the updated properties constitute a valid user update. Currently we only check for updates to the user firstname, lastname
      * 
-     * @param before Map<QName, Serializable>
-     * @param after Map<QName, Serializable>
+     * @param before
+     *            Map<QName, Serializable>
+     * @param after
+     *            Map<QName, Serializable>
      * @return boolean
      */
     private boolean validUserUpdateEvent(Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-    	final String firstnameBefore = (String)before.get(ContentModel.PROP_FIRSTNAME);
-        final String lastnameBefore  = (String)before.get(ContentModel.PROP_LASTNAME);
-        final String firstnameAfter  = (String)after.get(ContentModel.PROP_FIRSTNAME);
-        final String lastnameAfter   = (String)after.get(ContentModel.PROP_LASTNAME);
-        
+        final String firstnameBefore = (String) before.get(ContentModel.PROP_FIRSTNAME);
+        final String lastnameBefore = (String) before.get(ContentModel.PROP_LASTNAME);
+        final String firstnameAfter = (String) after.get(ContentModel.PROP_FIRSTNAME);
+        final String lastnameAfter = (String) after.get(ContentModel.PROP_LASTNAME);
+
         boolean updatedFirstName = !EqualsHelper.nullSafeEquals(firstnameBefore, firstnameAfter);
-        boolean updatedLastName  = !EqualsHelper.nullSafeEquals(lastnameBefore, lastnameAfter);
-        
+        boolean updatedLastName = !EqualsHelper.nullSafeEquals(lastnameBefore, lastnameAfter);
+
         return updatedFirstName || updatedLastName;
     }
-    
+
     /**
      * Publish new user event
      * 
-     * @param eventType String
-     * @param properties Map<QName, Serializable>
+     * @param eventType
+     *            String
+     * @param properties
+     *            Map<QName, Serializable>
      */
-    private void publishEvent(String eventType,  Map<QName, Serializable> properties)
+    private void publishEvent(String eventType, Map<QName, Serializable> properties)
     {
-    	if(properties == null)	return;
-    	
-   	 	final String managedUsername  = (String)properties.get(ContentModel.PROP_USERNAME);
-        final String managedFirstname = (String)properties.get(ContentModel.PROP_FIRSTNAME);
-        final String managedLastname  = (String)properties.get(ContentModel.PROP_LASTNAME);
-        final String eventTType 	  = eventType;
-        
-        eventPublisher.publishEvent(new EventPreparator(){
+        if (properties == null)
+            return;
+
+        final String managedUsername = (String) properties.get(ContentModel.PROP_USERNAME);
+        final String managedFirstname = (String) properties.get(ContentModel.PROP_FIRSTNAME);
+        final String managedLastname = (String) properties.get(ContentModel.PROP_LASTNAME);
+        final String eventTType = eventType;
+
+        eventPublisher.publishEvent(new EventPreparator() {
             @Override
             public Event prepareEvent(String user, String networkId, String transactionId)
-            {         
-            	return new UserManagementEvent(eventTType , transactionId, networkId,new Date().getTime(), 
-            			user, managedUsername,managedFirstname,managedLastname);
+            {
+                return new UserManagementEvent(eventTType, transactionId, networkId, new Date().getTime(),
+                        user, managedUsername, managedFirstname, managedLastname);
             }
         });
     }
-    
+
     /**
      * Track the {@link ContentModel#PROP_ENABLED enabled/disabled} flag on {@link ContentModel#TYPE_USER <b>cm:user</b>}.
      */
@@ -2120,7 +2115,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             // Don't attempt to maintain enabled/disabled flag
             return;
         }
-        
+
         // Check the enabled/disabled flag
         Boolean enabled = (Boolean) after.get(ContentModel.PROP_ENABLED);
         if (enabled == null || enabled.booleanValue())
@@ -2131,38 +2126,35 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             nodeService.addAspect(personNodeRef, ContentModel.ASPECT_PERSON_DISABLED, null);
         }
-        
+
         // Do post-commit user counting, if required
         Set<String> usersCreated = TransactionalResourceHelper.getSet(KEY_USERS_CREATED);
         usersCreated.add(userName);
         AlfrescoTransactionSupport.bindListener(this);
     }
-    
+
     public int countPeople()
     {
         NodeRef peopleContainer = getPeopleContainer();
         return nodeService.countChildAssocs(peopleContainer, true);
     }
-    
+
     /**
-     * Helper for when creating new users and people:
-     * Updates the supplied username with any required tenant
-     *  details, and ensures that the tenant domains match.
-     * If Multi-Tenant is disabled, returns the same username.
+     * Helper for when creating new users and people: Updates the supplied username with any required tenant details, and ensures that the tenant domains match. If Multi-Tenant is disabled, returns the same username.
      */
-    public static String updateUsernameForTenancy(String username, TenantService tenantService) 
+    public static String updateUsernameForTenancy(String username, TenantService tenantService)
             throws TenantDomainMismatchException
     {
-        if(! tenantService.isEnabled())
+        if (!tenantService.isEnabled())
         {
             // Nothing to do if not using multi tenant
             return username;
         }
-        
+
         String currentDomain = tenantService.getCurrentUserDomain();
-        if (! currentDomain.equals(TenantService.DEFAULT_DOMAIN))
+        if (!currentDomain.equals(TenantService.DEFAULT_DOMAIN))
         {
-            if (! tenantService.isTenantUser(username))
+            if (!tenantService.isTenantUser(username))
             {
                 // force domain onto the end of the username
                 username = tenantService.getDomainUser(username, currentDomain);
@@ -2177,12 +2169,12 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         }
         return username;
     }
-    
+
     @Override
     public boolean isEnabled(String userName)
     {
         NodeRef noderef = getPerson(userName, false);
-        
+
         for (QName aspectName : nodeService.getAspects(noderef))
         {
             if (ContentModel.ASPECT_PERSON_DISABLED.isMatch(aspectName))

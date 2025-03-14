@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.model;
 
 import java.util.List;
+
 /**
  * Represents the node definition.
  *
@@ -33,9 +34,9 @@ import java.util.List;
  */
 public class ClassDefinition
 {
-    
-    List <PropertyDefinition> properties;
-    
+
+    List<PropertyDefinition> properties;
+
     public List<PropertyDefinition> getProperties()
     {
         return properties;
@@ -45,5 +46,5 @@ public class ClassDefinition
     {
         this.properties = properties;
     }
-    
+
 }

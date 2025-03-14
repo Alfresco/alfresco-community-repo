@@ -40,5 +40,4 @@ import org.alfresco.service.cmr.action.ActionConditionDefinition;
  */
 @AlfrescoPublicApi
 public interface RecordsManagementActionConditionDefinition extends ActionConditionDefinition
-{
-}
+{}

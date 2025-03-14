@@ -29,32 +29,33 @@ package org.alfresco.repo.transfer.report;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.service.cmr.transfer.TransferEvent;
-import org.alfresco.service.cmr.transfer.TransferEventBegin;
-import org.alfresco.service.cmr.transfer.TransferEventEndState;
-import org.alfresco.service.cmr.transfer.TransferEventEnterState;
-import org.alfresco.service.cmr.transfer.TransferEventReport;
-import org.alfresco.service.cmr.transfer.TransferEventSendingContent;
-import org.alfresco.service.cmr.transfer.TransferEventCommittingStatus;
-import org.alfresco.service.cmr.transfer.TransferEventCancelled;
-import org.alfresco.service.cmr.transfer.TransferEventError;
-import org.alfresco.service.cmr.transfer.TransferEventSentContent;
-import org.alfresco.service.cmr.transfer.TransferEventSuccess;
-
-import org.alfresco.service.cmr.transfer.TransferEventSendingSnapshot;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.xml.sax.helpers.AttributesImpl;
 
+import org.alfresco.service.cmr.transfer.TransferEvent;
+import org.alfresco.service.cmr.transfer.TransferEventBegin;
+import org.alfresco.service.cmr.transfer.TransferEventCancelled;
+import org.alfresco.service.cmr.transfer.TransferEventCommittingStatus;
+import org.alfresco.service.cmr.transfer.TransferEventEndState;
+import org.alfresco.service.cmr.transfer.TransferEventEnterState;
+import org.alfresco.service.cmr.transfer.TransferEventError;
+import org.alfresco.service.cmr.transfer.TransferEventReport;
+import org.alfresco.service.cmr.transfer.TransferEventSendingContent;
+import org.alfresco.service.cmr.transfer.TransferEventSendingSnapshot;
+import org.alfresco.service.cmr.transfer.TransferEventSentContent;
+import org.alfresco.service.cmr.transfer.TransferEventSuccess;
+
 /**
- * The XMLTransferEventFormatterFactory returns formatters for the various client side TransferEvents. 
+ * The XMLTransferEventFormatterFactory returns formatters for the various client side TransferEvents.
  * 
  * The main entry point for this class is the static method getFormatter();
+ * 
  * @author mrogers
  *
  */
 public class XMLTransferEventFormatterFactory
 {
-    
+
     private static XMLTransferEventFormatter defaultFormatter = new XMLTransferEventFormatter() {
 
         @Override
@@ -77,14 +78,14 @@ public class XMLTransferEventFormatterFactory
             return event.getMessage();
         }
     };
-    
+
     private static XMLTransferEventFormatter eventEnterStateFormatter = new XMLTransferEventFormatter() {
 
         @Override
         public AttributesImpl getAttributes(TransferEvent event)
         {
-            TransferEventEnterState s = (TransferEventEnterState)event;
-            
+            TransferEventEnterState s = (TransferEventEnterState) event;
+
             AttributesImpl attributes = new AttributesImpl();
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "date", "date", "dateTime", ISO8601DateFormat.format(event.getTime()));
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "state", "state", "string", s.getTransferState().toString());
@@ -104,13 +105,13 @@ public class XMLTransferEventFormatterFactory
             return event.getMessage();
         }
     };
-    
+
     private static XMLTransferEventFormatter eventReportFormatter = new XMLTransferEventFormatter() {
 
         @Override
         public AttributesImpl getAttributes(TransferEvent event)
         {
-            TransferEventReport s = (TransferEventReport)event;
+            TransferEventReport s = (TransferEventReport) event;
             AttributesImpl attributes = new AttributesImpl();
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "date", "date", "dateTime", ISO8601DateFormat.format(event.getTime()));
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "nodeRef", "nodeRef", "string", s.getNodeRef().toString());
@@ -130,13 +131,13 @@ public class XMLTransferEventFormatterFactory
             return null;
         }
     };
-    
+
     private static XMLTransferEventFormatter eventSendingContentFormatter = new XMLTransferEventFormatter() {
 
         @Override
         public AttributesImpl getAttributes(TransferEvent event)
         {
-            TransferEventSendingContent s = (TransferEventSendingContent)event;
+            TransferEventSendingContent s = (TransferEventSendingContent) event;
             AttributesImpl attributes = new AttributesImpl();
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "date", "date", "dateTime", ISO8601DateFormat.format(event.getTime()));
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "position", "position", "string", String.valueOf(s.getPosition()));
@@ -157,13 +158,13 @@ public class XMLTransferEventFormatterFactory
             return null;
         }
     };
-    
+
     private static XMLTransferEventFormatter eventSendingSnapshotFormatter = new XMLTransferEventFormatter() {
 
         @Override
         public AttributesImpl getAttributes(TransferEvent event)
         {
-            TransferEventSendingSnapshot s = (TransferEventSendingSnapshot)event;
+            TransferEventSendingSnapshot s = (TransferEventSendingSnapshot) event;
             AttributesImpl attributes = new AttributesImpl();
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "date", "date", "dateTime", ISO8601DateFormat.format(event.getTime()));
             return attributes;
@@ -181,13 +182,13 @@ public class XMLTransferEventFormatterFactory
             return null;
         }
     };
-    
+
     private static XMLTransferEventFormatter eventBeginFormatter = new XMLTransferEventFormatter() {
 
         @Override
         public AttributesImpl getAttributes(TransferEvent event)
         {
-            TransferEventBegin s = (TransferEventBegin)event;
+            TransferEventBegin s = (TransferEventBegin) event;
             AttributesImpl attributes = new AttributesImpl();
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "date", "date", "dateTime", ISO8601DateFormat.format(event.getTime()));
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "transferId", "transferId", "string", s.getTransferId());
@@ -206,13 +207,13 @@ public class XMLTransferEventFormatterFactory
             return event.getMessage();
         }
     };
-        
+
     private static XMLTransferEventFormatter eventEndStateFormatter = new XMLTransferEventFormatter() {
 
         @Override
         public AttributesImpl getAttributes(TransferEvent event)
         {
-            TransferEventEndState s = (TransferEventEndState)event;
+            TransferEventEndState s = (TransferEventEndState) event;
             AttributesImpl attributes = new AttributesImpl();
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "date", "date", "dateTime", ISO8601DateFormat.format(event.getTime()));
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "state", "state", "string", s.getTransferState().toString());
@@ -231,13 +232,13 @@ public class XMLTransferEventFormatterFactory
             return null;
         }
     };
-    
-    private static XMLTransferEventFormatter eventCommittingStatus  = new XMLTransferEventFormatter() {
+
+    private static XMLTransferEventFormatter eventCommittingStatus = new XMLTransferEventFormatter() {
 
         @Override
         public AttributesImpl getAttributes(TransferEvent event)
         {
-            TransferEventCommittingStatus s = (TransferEventCommittingStatus)event;
+            TransferEventCommittingStatus s = (TransferEventCommittingStatus) event;
             AttributesImpl attributes = new AttributesImpl();
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "date", "date", "dateTime", ISO8601DateFormat.format(event.getTime()));
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "position", "position", "string", String.valueOf(s.getPosition()));
@@ -257,13 +258,13 @@ public class XMLTransferEventFormatterFactory
             return event.getMessage();
         }
     };
-    
-    private static XMLTransferEventFormatter eventCancelled  = new XMLTransferEventFormatter() {
+
+    private static XMLTransferEventFormatter eventCancelled = new XMLTransferEventFormatter() {
 
         @Override
         public AttributesImpl getAttributes(TransferEvent event)
         {
-            TransferEventCancelled s = (TransferEventCancelled)event;
+            TransferEventCancelled s = (TransferEventCancelled) event;
             AttributesImpl attributes = new AttributesImpl();
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "date", "date", "dateTime", ISO8601DateFormat.format(event.getTime()));
             return attributes;
@@ -281,13 +282,13 @@ public class XMLTransferEventFormatterFactory
             return event.getMessage();
         }
     };
-    
-    private static XMLTransferEventFormatter eventSuccess  = new XMLTransferEventFormatter() {
+
+    private static XMLTransferEventFormatter eventSuccess = new XMLTransferEventFormatter() {
 
         @Override
         public AttributesImpl getAttributes(TransferEvent event)
         {
-            TransferEventSuccess s = (TransferEventSuccess)event;
+            TransferEventSuccess s = (TransferEventSuccess) event;
             AttributesImpl attributes = new AttributesImpl();
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "date", "date", "dateTime", ISO8601DateFormat.format(event.getTime()));
             return attributes;
@@ -305,13 +306,13 @@ public class XMLTransferEventFormatterFactory
             return event.getMessage();
         }
     };
-    
-    private static XMLTransferEventFormatter eventSentContent  = new XMLTransferEventFormatter() {
+
+    private static XMLTransferEventFormatter eventSentContent = new XMLTransferEventFormatter() {
 
         @Override
         public AttributesImpl getAttributes(TransferEvent event)
         {
-            TransferEventSentContent s = (TransferEventSentContent)event;
+            TransferEventSentContent s = (TransferEventSentContent) event;
             AttributesImpl attributes = new AttributesImpl();
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "date", "date", "dateTime", ISO8601DateFormat.format(event.getTime()));
             return attributes;
@@ -329,13 +330,13 @@ public class XMLTransferEventFormatterFactory
             return event.getMessage();
         }
     };
-    
-    private static XMLTransferEventFormatter eventError  = new XMLTransferEventFormatter() {
+
+    private static XMLTransferEventFormatter eventError = new XMLTransferEventFormatter() {
 
         @Override
         public AttributesImpl getAttributes(TransferEvent event)
         {
-            TransferEventError s = (TransferEventError)event;
+            TransferEventError s = (TransferEventError) event;
             AttributesImpl attributes = new AttributesImpl();
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "date", "date", "dateTime", ISO8601DateFormat.format(event.getTime()));
             return attributes;
@@ -350,14 +351,13 @@ public class XMLTransferEventFormatterFactory
         @Override
         public String getMessage(TransferEvent event)
         {
-            TransferEventError s = (TransferEventError)event;
+            TransferEventError s = (TransferEventError) event;
             return s.getException().getMessage();
         }
     };
 
-    
     protected static Map<Class<?>, XMLTransferEventFormatter> formatters;
-    
+
     static
     {
         formatters = new HashMap<Class<?>, XMLTransferEventFormatter>(29);
@@ -373,13 +373,13 @@ public class XMLTransferEventFormatterFactory
         formatters.put(TransferEventSuccess.class, eventSuccess);
         formatters.put(TransferEventSentContent.class, eventSentContent);
     }
-    
+
     public static XMLTransferEventFormatter getFormatter(TransferEvent event)
     {
-        
+
         XMLTransferEventFormatter formatter = formatters.get(event.getClass());
-        
-        if(formatter == null)
+
+        if (formatter == null)
         {
             return defaultFormatter;
         }
@@ -388,6 +388,5 @@ public class XMLTransferEventFormatterFactory
             return formatter;
         }
     }
-    
 
 }

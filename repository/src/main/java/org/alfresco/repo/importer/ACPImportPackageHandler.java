@@ -34,11 +34,11 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 
-import org.alfresco.service.cmr.view.ImportPackageHandler;
-import org.alfresco.service.cmr.view.ImporterException;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 
+import org.alfresco.service.cmr.view.ImportPackageHandler;
+import org.alfresco.service.cmr.view.ImporterException;
 
 /**
  * Handler for importing Repository content from zip package file
@@ -46,20 +46,21 @@ import org.apache.commons.compress.archivers.zip.ZipFile;
  * @author David Caruana
  */
 public class ACPImportPackageHandler
-    implements ImportPackageHandler
+        implements ImportPackageHandler
 {
-	public final static String DEFAULT_ENCODING = "UTF-8";
-	
+    public final static String DEFAULT_ENCODING = "UTF-8";
+
     protected File file;
     protected ZipFile zipFile;
     protected String dataFileEncoding;
-    
 
     /**
      * Constuct Handler
      * 
-     * @param zipFile  source file
-     * @param dataFileEncoding  encoding of file
+     * @param zipFile
+     *            source file
+     * @param dataFileEncoding
+     *            encoding of file
      */
     public ACPImportPackageHandler(File zipFile, String dataFileEncoding)
     {
@@ -68,40 +69,40 @@ public class ACPImportPackageHandler
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ImportPackageHandler#startImport()
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.ImportPackageHandler#startImport() */
     public void startImport()
     {
         log("Importing from zip file " + file.getAbsolutePath());
         try
         {
             // NOTE: This encoding allows us to workaround bug...
-            //       http://bugs.sun.com/bugdatabase/view_bug.do;:WuuT?bug_id=4820807
+            // http://bugs.sun.com/bugdatabase/view_bug.do;:WuuT?bug_id=4820807
             zipFile = new ZipFile(file, "UTF-8");
         }
-        catch(IOException e)
+        catch (IOException e)
         {
             throw new ImporterException("Failed to read zip file due to " + e.getMessage(), e);
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ImportPackageHandler#getDataStream()
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.ImportPackageHandler#getDataStream() */
     public Reader getDataStream()
     {
         try
         {
             // find xml meta-data file
             ZipArchiveEntry xmlMetaDataEntry = null;
-            
+
             // TODO: First, locate xml meta-data file by name
-            
+
             // Scan the zip entries one by one (the slow approach)
             Enumeration entries = zipFile.getEntries();
-            while(entries.hasMoreElements())
+            while (entries.hasMoreElements())
             {
-                ZipArchiveEntry entry = (ZipArchiveEntry)entries.nextElement();
+                ZipArchiveEntry entry = (ZipArchiveEntry) entries.nextElement();
                 if (!entry.isDirectory())
                 {
                     // Locate xml file in root of .acp
@@ -122,32 +123,32 @@ public class ACPImportPackageHandler
             {
                 throw new ImporterException("Failed to find xml meta-data file within .acp package");
             }
-            
+
             // open the meta-data xml file
             InputStream dataStream = zipFile.getInputStream(xmlMetaDataEntry);
             Reader inputReader = (dataFileEncoding == null) ? new InputStreamReader(dataStream, DEFAULT_ENCODING) : new InputStreamReader(dataStream, dataFileEncoding);
             return new BufferedReader(inputReader);
         }
-        catch(UnsupportedEncodingException e)
+        catch (UnsupportedEncodingException e)
         {
             throw new ImporterException("Encoding " + dataFileEncoding + " is not supported");
         }
-        catch(IOException e)
+        catch (IOException e)
         {
             throw new ImporterException("Failed to open xml meta-data file within .acp package due to " + e.getMessage());
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ImportStreamHandler#importStream(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.ImportStreamHandler#importStream(java.lang.String) */
     public InputStream importStream(String content)
     {
         ZipArchiveEntry zipEntry = zipFile.getEntry(content);
         if (zipEntry == null)
         {
             // Note: for some reason, when modifying a zip archive the path seperator changes
-            // TODO: Need to investigate further as to why and whether this workaround is enough 
+            // TODO: Need to investigate further as to why and whether this workaround is enough
             content = content.replace('\\', '/');
             zipEntry = zipFile.getEntry(content);
             if (zipEntry == null)
@@ -155,7 +156,7 @@ public class ACPImportPackageHandler
                 throw new ImporterException("Failed to find content " + content + " within zip package");
             }
         }
-        
+
         try
         {
             return zipFile.getInputStream(zipEntry);
@@ -165,10 +166,10 @@ public class ACPImportPackageHandler
             throw new ImporterException("Failed to open content " + content + " within zip package due to " + e.getMessage(), e);
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ImportPackageHandler#endImport()
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.ImportPackageHandler#endImport() */
     public void endImport()
     {
         if (zipFile != null)
@@ -183,15 +184,14 @@ public class ACPImportPackageHandler
             }
         }
     }
-    
+
     /**
      * Log Import Message
      * 
-     * @param message  message to log
+     * @param message
+     *            message to log
      */
     protected void log(String message)
-    {
-    }
-    
-}
+    {}
 
+}

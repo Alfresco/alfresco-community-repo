@@ -43,7 +43,8 @@ public class RecordsManagementActionResult
     /**
      * Constructor.
      *
-     * @param value result value
+     * @param value
+     *            result value
      */
     public RecordsManagementActionResult(Object value)
     {
@@ -51,7 +52,7 @@ public class RecordsManagementActionResult
     }
 
     /**
-     * @return  result value
+     * @return result value
      */
     public Object getValue()
     {

@@ -35,8 +35,7 @@ import org.alfresco.util.FileNameValidator;
 /**
  * Creates home folders directly under the root path, based on the username of the user.
  * 
- * @deprecated 
- * Depreciated since 4.0. {@link UsernameHomeFolderProvider} should now be used.
+ * @deprecated Depreciated since 4.0. {@link UsernameHomeFolderProvider} should now be used.
  * 
  * @author Andy Hind
  */

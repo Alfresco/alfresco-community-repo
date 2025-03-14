@@ -40,20 +40,20 @@ import org.alfresco.jlan.smb.server.disk.JavaNetworkFile;
  * 
  * @author mrogers
  */
-public class TempNetworkFile extends JavaNetworkFile 
-    implements NetworkFileStateInterface,
-    NetworkFileLegacyReferenceCount
+public class TempNetworkFile extends JavaNetworkFile
+        implements NetworkFileStateInterface,
+        NetworkFileLegacyReferenceCount
 {
     private boolean changed = false;
     boolean modificationDateSetDirectly = false;
-    
- 
-    
+
     /**
      * Create a new temporary file with no existing content.
      * 
-     * @param file the underlying File
-     * @param netPath where in the repo this file is going.
+     * @param file
+     *            the underlying File
+     * @param netPath
+     *            where in the repo this file is going.
      */
     public TempNetworkFile(File file, String netPath)
     {
@@ -62,12 +62,16 @@ public class TempNetworkFile extends JavaNetworkFile
         setAttributes(FileAttribute.NTNormal);
         setClosed(false);
     }
-    
+
     /**
      * A new temporary network file with some existing content.
-     * @param file File
-     * @param netPath String
-     * @param existingContent Reader
+     * 
+     * @param file
+     *            File
+     * @param netPath
+     *            String
+     * @param existingContent
+     *            Reader
      */
     public TempNetworkFile(File file, String netPath, Reader existingContent)
     {
@@ -76,43 +80,44 @@ public class TempNetworkFile extends JavaNetworkFile
         setAttributes(FileAttribute.NTNormal);
         setClosed(false);
     }
-    
+
     /**
      * Access to the underlying file.
+     * 
      * @return the file.
      */
     public File getFile()
     {
         return m_file;
-    } 
-    
+    }
+
     public String toString()
     {
         return "TempNetworkFile:" + getFullName() + " path: " + m_file.getAbsolutePath();
     }
-    
+
     @Override
     public int readFile(byte[] buf, int len, int pos, long fileOff)
-    throws java.io.IOException
+            throws java.io.IOException
     {
-        if(fileState != null)
+        if (fileState != null)
         {
             fileState.updateAccessDateTime();
         }
         return super.readFile(buf, len, pos, fileOff);
     }
-    
+
     @Override
     public void writeFile(byte[] buf, int len, int pos) throws IOException
     {
         changed = true;
 
         super.writeFile(buf, len, pos);
-        
+
         long size = m_io.length();
-             
+
         setFileSize(size);
-        if(fileState != null)
+        if (fileState != null)
         {
             fileState.updateModifyDateTime();
             fileState.updateAccessDateTime();
@@ -120,18 +125,18 @@ public class TempNetworkFile extends JavaNetworkFile
             fileState.setAllocationSize((size + 512L) & 0xFFFFFFFFFFFFFE00L);
         }
     }
-    
+
     @Override
     public void writeFile(byte[] buffer, int length, int position, long fileOffset)
-    throws IOException
+            throws IOException
     {
         changed = true;
-        
+
         super.writeFile(buffer, length, position, fileOffset);
-        
+
         long size = m_io.length();
         setFileSize(size);
-        if(fileState != null)
+        if (fileState != null)
         {
             fileState.updateModifyDateTime();
             fileState.updateAccessDateTime();
@@ -139,19 +144,19 @@ public class TempNetworkFile extends JavaNetworkFile
             fileState.setAllocationSize((size + 512L) & 0xFFFFFFFFFFFFFE00L);
         }
     }
-    
+
     @Override
     public void truncateFile(long size) throws IOException
     {
         super.truncateFile(size);
-        
-        if(size == 0)
+
+        if (size == 0)
         {
             changed = true;
         }
-        
+
         setFileSize(size);
-        if(fileState != null)
+        if (fileState != null)
         {
             fileState.updateModifyDateTime();
             fileState.updateAccessDateTime();
@@ -159,7 +164,7 @@ public class TempNetworkFile extends JavaNetworkFile
             fileState.setAllocationSize((size + 512L) & 0xFFFFFFFFFFFFFE00L);
         }
     }
-    
+
     // For JLAN file state lock manager
     public void setFileState(FileState fileState)
     {
@@ -171,16 +176,17 @@ public class TempNetworkFile extends JavaNetworkFile
     {
         return fileState;
     }
-    
+
     /**
      * Tell JLAN it needs to call disk.closeFile rather than short cutting.
+     * 
      * @return boolean
      */
-    public boolean allowsOpenCloseViaNetworkFile() {
+    public boolean allowsOpenCloseViaNetworkFile()
+    {
         return false;
     }
-    
-    
+
     public void setChanged(boolean changed)
     {
         this.changed = changed;
@@ -190,48 +196,50 @@ public class TempNetworkFile extends JavaNetworkFile
     {
         return changed;
     }
-    
+
     public boolean isModificationDateSetDirectly()
     {
         return modificationDateSetDirectly;
     }
-    
-    public void setModificationDateSetDirectly(boolean  modificationDateSetDirectly)
+
+    public void setModificationDateSetDirectly(boolean modificationDateSetDirectly)
     {
-        this.modificationDateSetDirectly =  modificationDateSetDirectly;
+        this.modificationDateSetDirectly = modificationDateSetDirectly;
     }
 
     private int legacyOpenCount = 0;
-    
+
     /**
      * Increment the legacy file open count
      * 
      * @return int
      */
-    public synchronized final int incrementLegacyOpenCount() {
+    public synchronized final int incrementLegacyOpenCount()
+    {
         legacyOpenCount++;
         return legacyOpenCount;
     }
-    
+
     /**
      * Decrement the legacy file open count
      * 
      * @return int
      */
-    public synchronized final int decrementLagacyOpenCount() {
+    public synchronized final int decrementLagacyOpenCount()
+    {
         legacyOpenCount--;
         return legacyOpenCount;
     }
-    
+
     /**
      * Return the legacy open file count
      * 
      * @return int
      */
-    public final int getLegacyOpenCount() {
+    public final int getLegacyOpenCount()
+    {
         return legacyOpenCount;
     }
-
 
     private FileState fileState;
 }

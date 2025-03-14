@@ -27,7 +27,6 @@ package org.alfresco.repo.web.scripts.bean;
 
 import java.io.IOException;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.json.JSONException;
@@ -43,8 +42,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class LoginPost extends AbstractLoginBean
 {
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
-     */
+     * 
+     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse) */
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
         // Extract user and password from JSON POST
@@ -53,9 +52,9 @@ public class LoginPost extends AbstractLoginBean
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Missing POST body.");
         }
-        
+
         // TODO accept xml type.
-        
+
         // extract username and password from JSON object
         JSONObject json;
         try
@@ -78,14 +77,14 @@ public class LoginPost extends AbstractLoginBean
             {
                 return login(username, password);
             }
-            catch(WebScriptException e)
+            catch (WebScriptException e)
             {
                 status.setCode(e.getStatus());
                 status.setMessage(e.getMessage());
                 status.setRedirect(true);
                 return null;
             }
-        } 
+        }
         catch (JSONException jErr)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,

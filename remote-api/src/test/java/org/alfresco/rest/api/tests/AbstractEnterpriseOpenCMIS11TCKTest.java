@@ -27,12 +27,6 @@ package org.alfresco.rest.api.tests;
 
 import java.util.Map;
 
-import org.alfresco.opencmis.tck.tests.query.QueryForObjectCustom;
-import org.alfresco.opencmis.tck.tests.query.QueryInFolderTestCustom;
-import org.alfresco.opencmis.tck.tests.query.QueryLikeTestCustom;
-import org.alfresco.util.testing.category.IntermittentlyFailingTests;
-import org.alfresco.util.testing.category.LuceneTests;
-import org.alfresco.util.testing.category.RedundantTests;
 import org.apache.chemistry.opencmis.tck.impl.AbstractSessionTestGroup;
 import org.apache.chemistry.opencmis.tck.impl.JUnitHelper;
 import org.apache.chemistry.opencmis.tck.tests.control.ControlTestGroup;
@@ -61,6 +55,13 @@ import org.apache.chemistry.opencmis.tck.tests.versioning.VersioningSmokeTest;
 import org.apache.chemistry.opencmis.tck.tests.versioning.VersioningStateCreateTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import org.alfresco.opencmis.tck.tests.query.QueryForObjectCustom;
+import org.alfresco.opencmis.tck.tests.query.QueryInFolderTestCustom;
+import org.alfresco.opencmis.tck.tests.query.QueryLikeTestCustom;
+import org.alfresco.util.testing.category.IntermittentlyFailingTests;
+import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 
 public abstract class AbstractEnterpriseOpenCMIS11TCKTest extends AbstractEnterpriseOpenCMISTCKTest
 {
@@ -107,7 +108,7 @@ public abstract class AbstractEnterpriseOpenCMIS11TCKTest extends AbstractEnterp
         OverrideQueryTestGroup queryTestGroup = new OverrideQueryTestGroup();
         JUnitHelper.run(queryTestGroup);
     }
-    
+
     class OverrideVersioningTestGroup extends AbstractSessionTestGroup
     {
         @Override
@@ -122,10 +123,10 @@ public abstract class AbstractEnterpriseOpenCMIS11TCKTest extends AbstractEnterp
             addTest(new VersionDeleteTest());
             addTest(new VersioningStateCreateTest());
             // relies on Solr being available
-//            addTest(new CheckedOutTest());
+            // addTest(new CheckedOutTest());
         }
     }
-       
+
     class OverrideCRUDTestGroup extends AbstractSessionTestGroup
     {
         @Override
@@ -168,7 +169,7 @@ public abstract class AbstractEnterpriseOpenCMIS11TCKTest extends AbstractEnterp
 
             addTest(new QuerySmokeTest());
             // The test fails on Lucene see MNT-11223
-//            addTest(new QueryRootFolderTest());
+            // addTest(new QueryRootFolderTest());
             addTest(new QueryForObjectCustom());
             addTest(new QueryLikeTestCustom());
             addTest(new QueryInFolderTestCustom());

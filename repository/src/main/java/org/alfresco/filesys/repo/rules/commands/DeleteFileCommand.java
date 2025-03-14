@@ -34,16 +34,19 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class DeleteFileCommand implements Command
 {
-  private String name;
-  private NodeRef rootNode;
-  private String path;
-    
-  /**
-   * 
-   * @param name name of file
-   * @param rootNode root node
-   * @param path full path of file
-   */
+    private String name;
+    private NodeRef rootNode;
+    private String path;
+
+    /**
+     * 
+     * @param name
+     *            name of file
+     * @param rootNode
+     *            root node
+     * @param path
+     *            full path of file
+     */
     public DeleteFileCommand(String name, NodeRef rootNode, String path)
     {
         this.name = name;
@@ -55,12 +58,12 @@ public class DeleteFileCommand implements Command
     {
         return name;
     }
-    
+
     public NodeRef getRootNode()
     {
         return rootNode;
     }
-    
+
     public String getPath()
     {
         return path;

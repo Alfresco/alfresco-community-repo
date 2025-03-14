@@ -51,6 +51,7 @@ public interface RMSites extends Sites
 
     /**
      * Gets RM site
+     * 
      * @param siteId
      * @return
      */
@@ -58,6 +59,7 @@ public interface RMSites extends Sites
 
     /**
      * Updates RM site
+     * 
      * @param siteId
      * @param site
      * @param parameters

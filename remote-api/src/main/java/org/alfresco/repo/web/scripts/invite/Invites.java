@@ -30,6 +30,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.repo.invitation.InvitationSearchCriteriaImpl;
 import org.alfresco.repo.invitation.site.InviteInfo;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -48,24 +53,15 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Web Script which returns pending Site invitations matching at least one of
  * 
- * (1a) inviter (inviter user name). i.e. pending invitations which have been
- * sent by that inviter, but which have not been responded to (accepted or
- * rejected) by the invitee, and have not been cancelled by that inviter
+ * (1a) inviter (inviter user name). i.e. pending invitations which have been sent by that inviter, but which have not been responded to (accepted or rejected) by the invitee, and have not been cancelled by that inviter
  * 
- * (1b) invitee (invitee user name), i.e. pending invitations which have not
- * been accepted or rejected yet by that inviter
+ * (1b) invitee (invitee user name), i.e. pending invitations which have not been accepted or rejected yet by that inviter
  * 
- * (1c) site (site short name), i.e. pending invitations sent out to join that
- * Site. If only the site is given, then all pending invites are returned,
- * irrespective of who the inviters or invitees are
+ * (1c) site (site short name), i.e. pending invitations sent out to join that Site. If only the site is given, then all pending invites are returned, irrespective of who the inviters or invitees are
  * 
  * or
  * 
@@ -102,34 +98,29 @@ public class Invites extends DeclarativeWebScript
         this.workflowService = workflowService;
     }
 
-    public void setServiceRegistry(ServiceRegistry serviceRegistry) 
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
     }
-    
-    public void setSiteService(SiteService siteService) 
+
+    public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
     }
-    
-    public void setInvitationService(InvitationService invitationService) 
+
+    public void setInvitationService(InvitationService invitationService)
     {
         this.invitationService = invitationService;
     }
-    
-    public InvitationService getInvitationService() 
+
+    public InvitationService getInvitationService()
     {
         return invitationService;
     }
-    
-    /*
-     * (non-Javadoc)
+
+    /* (non-Javadoc)
      * 
-     * @see
-     * org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco
-     * .web.scripts.WebScriptRequest,
-     * org.alfresco.web.scripts.WebScriptResponse)
-     */
+     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco .web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse) */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req,
             Status status)
@@ -180,7 +171,7 @@ public class Invites extends DeclarativeWebScript
                     "At least one of the following URL request parameters must be provided in URL "
                             + "'inviterUserName', 'inviteeUserName', 'siteShortName' or 'inviteId'");
         }
-        
+
         // InviteInfo List to place onto model
         List<InviteInfo> inviteInfoList = new ArrayList<InviteInfo>();
 
@@ -190,9 +181,9 @@ public class Invites extends DeclarativeWebScript
         // query properties
         if (inviteIdProvided)
         {
-            NominatedInvitation invitation = (NominatedInvitation)invitationService.getInvitation(inviteId);
-                Map<String, SiteInfo> siteInfoCache = new HashMap<String, SiteInfo>(2);
-        	inviteInfoList.add(toInviteInfo(siteInfoCache, invitation));
+            NominatedInvitation invitation = (NominatedInvitation) invitationService.getInvitation(inviteId);
+            Map<String, SiteInfo> siteInfoCache = new HashMap<String, SiteInfo>(2);
+            inviteInfoList.add(toInviteInfo(siteInfoCache, invitation));
         }
         else
         // 'inviteId' has not been provided, so create the query properties from
@@ -204,10 +195,9 @@ public class Invites extends DeclarativeWebScript
         // properties will be set
         // at this point
         {
-            InvitationSearchCriteriaImpl criteria = new InvitationSearchCriteriaImpl();  
+            InvitationSearchCriteriaImpl criteria = new InvitationSearchCriteriaImpl();
             criteria.setInvitationType(InvitationSearchCriteria.InvitationType.NOMINATED);
             criteria.setResourceType(Invitation.ResourceType.WEB_SITE);
-
 
             if (inviterUserNameProvided)
             {
@@ -221,8 +211,8 @@ public class Invites extends DeclarativeWebScript
             {
                 criteria.setResourceName(siteShortName);
             }
-            
-            //MNT-9905 Pending Invites created by one site manager aren't visible to other site managers
+
+            // MNT-9905 Pending Invites created by one site manager aren't visible to other site managers
             String currentUser = AuthenticationUtil.getRunAsUser();
             List<Invitation> invitations;
 
@@ -230,8 +220,7 @@ public class Invites extends DeclarativeWebScript
             {
                 final InvitationSearchCriteriaImpl crit = criteria;
 
-                RunAsWork<List<Invitation>> runAsSystem = new RunAsWork<List<Invitation>>()
-                {
+                RunAsWork<List<Invitation>> runAsSystem = new RunAsWork<List<Invitation>>() {
                     @Override
                     public List<Invitation> doWork() throws Exception
                     {
@@ -264,9 +253,7 @@ public class Invites extends DeclarativeWebScript
 
         return model;
     }
-    
 
-    
     private InviteInfo toInviteInfo(Map<String, SiteInfo> siteInfoCache, final NominatedInvitation invitation)
     {
         // get the site info
@@ -278,31 +265,30 @@ public class Invites extends DeclarativeWebScript
             siteInfoCache.put(resourceName, siteInfo);
         }
         String invitationStatus = InviteInfo.INVITATION_STATUS_PENDING;
-        
+
         TemplateNode inviterPerson = getPersonIfAllowed(invitation.getInviterUserName());
-        
+
         // fetch the person node for the invitee
         TemplateNode inviteePerson = getPersonIfAllowed(invitation.getInviteeUserName());
-        
-        InviteInfo ret = new InviteInfo(invitationStatus, 
-                    invitation.getInviterUserName(), 
-                    inviterPerson,
-                    invitation.getInviteeUserName(), 
-                    inviteePerson, 
-                    invitation.getRoleName(),
-                    invitation.getResourceName(), 
-                    siteInfo, 
-                    invitation.getSentInviteDate(),
-                    invitation.getInviteId());
-         
-         return ret;
+
+        InviteInfo ret = new InviteInfo(invitationStatus,
+                invitation.getInviterUserName(),
+                inviterPerson,
+                invitation.getInviteeUserName(),
+                inviteePerson,
+                invitation.getRoleName(),
+                invitation.getResourceName(),
+                siteInfo,
+                invitation.getSentInviteDate(),
+                invitation.getInviteId());
+
+        return ret;
     }
-    
+
     private TemplateNode getPersonIfAllowed(final String userName)
     {
         final PersonService personService = serviceRegistry.getPersonService();
-        NodeRef inviterRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-        {
+        NodeRef inviterRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
             public NodeRef doWork() throws Exception
             {
                 if (!personService.personExists(userName))

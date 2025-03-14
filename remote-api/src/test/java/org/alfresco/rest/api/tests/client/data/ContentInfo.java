@@ -42,38 +42,45 @@ public class ContentInfo
     private String encoding;
 
     public ContentInfo()
-    {
-    }
+    {}
 
-    public String getMimeType() {
+    public String getMimeType()
+    {
         return mimeType;
     }
 
-    public void setMimeType(String mimeType) {
+    public void setMimeType(String mimeType)
+    {
         this.mimeType = mimeType;
     }
 
-    public String getMimeTypeName() {
+    public String getMimeTypeName()
+    {
         return mimeTypeName;
     }
 
-    public void setMimeTypeName(String mimeTypeName) {
+    public void setMimeTypeName(String mimeTypeName)
+    {
         this.mimeTypeName = mimeTypeName;
     }
 
-    public Long getSizeInBytes() {
+    public Long getSizeInBytes()
+    {
         return sizeInBytes;
     }
 
-    public void setSizeInBytes(Long sizeInBytes) {
+    public void setSizeInBytes(Long sizeInBytes)
+    {
         this.sizeInBytes = sizeInBytes;
     }
 
-    public String getEncoding() {
+    public String getEncoding()
+    {
         return encoding;
     }
 
-    public void setEncoding(String encoding) {
+    public void setEncoding(String encoding)
+    {
         this.encoding = encoding;
     }
 
@@ -94,10 +101,10 @@ public class ContentInfo
     {
         final StringBuilder sb = new StringBuilder(150);
         sb.append("ContentInfo [mimeType=").append(mimeType)
-                    .append(", mimeTypeName=").append(mimeTypeName)
-                    .append(", sizeInBytes=").append(sizeInBytes)
-                    .append(", encoding=").append(encoding)
-                    .append(']');
+                .append(", mimeTypeName=").append(mimeTypeName)
+                .append(", sizeInBytes=").append(sizeInBytes)
+                .append(", encoding=").append(encoding)
+                .append(']');
         return sb.toString();
     }
 }

@@ -31,8 +31,7 @@ import org.alfresco.repo.virtual.VirtualizationException;
 import org.alfresco.service.cmr.search.SearchParameters;
 
 /**
- * Specifies the constraint to be applied to queries given in the
- * virtual folder template.
+ * Specifies the constraint to be applied to queries given in the virtual folder template.
  *
  * @author Bogdan Horje
  */
@@ -46,5 +45,5 @@ public interface VirtualQueryConstraint
      * @throws VirtualizationException
      */
     SearchParameters apply(ActualEnvironment environment, VirtualQuery query)
-                throws VirtualizationException;
+            throws VirtualizationException;
 }

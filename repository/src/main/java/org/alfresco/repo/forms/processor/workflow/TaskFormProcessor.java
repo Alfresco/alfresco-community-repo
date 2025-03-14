@@ -34,6 +34,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.processor.FieldProcessorRegistry;
 import org.alfresco.repo.forms.processor.node.ContentModelItemData;
@@ -49,9 +53,6 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * FormProcessor implementation for workflow tasks.
@@ -66,14 +67,12 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
 
     protected AuthenticationService authenticationService;
     protected PersonService personService;
-    
+
     // Constructor for Spring
     public TaskFormProcessor()
     {
         super();
     }
-    
-    
 
     // Constructor for tests.
     public TaskFormProcessor(WorkflowService workflowService, NamespaceService namespaceService,
@@ -91,25 +90,27 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     /**
      * Sets the authentication service
      * 
-     * @param authenticationService The AuthenticationService instance
+     * @param authenticationService
+     *            The AuthenticationService instance
      */
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
     }
-    
+
     /**
      * Sets the person service
      * 
-     * @param personService The PersonService instance
+     * @param personService
+     *            The PersonService instance
      */
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
     }
-    
+
     /**
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
     @Override
     protected WorkflowTask getTypedItemForDecodedId(String itemId)
@@ -125,7 +126,7 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
 
     /**
      * {@inheritDoc}
-      */
+     */
     @Override
     protected String getItemType(WorkflowTask item)
     {
@@ -135,7 +136,7 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
 
     /**
      * {@inheritDoc}
-      */
+     */
     @Override
     protected String getItemURI(WorkflowTask item)
     {
@@ -144,7 +145,7 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
 
     /**
      * {@inheritDoc}
-      */
+     */
     @Override
     protected Log getLogger()
     {
@@ -181,7 +182,8 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     }
 
     /**
-     * @param task WorkflowTask
+     * @param task
+     *            WorkflowTask
      * @return Object
      */
     private Object getPackageItemValues(WorkflowTask task)
@@ -194,12 +196,12 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
         }
         return results;
     }
-    
+
     private String getMessageValue(WorkflowTask task)
     {
         String message = I18NUtil.getMessage(MessageFieldProcessor.MSG_VALUE_NONE);
-        
-        String description = (String)task.getProperties().get(WorkflowModel.PROP_DESCRIPTION);
+
+        String description = (String) task.getProperties().get(WorkflowModel.PROP_DESCRIPTION);
         if (description != null)
         {
             String taskTitle = task.getTitle();
@@ -208,26 +210,26 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
                 message = description;
             }
         }
-        
+
         return message;
     }
-    
+
     private String getTaskOwnerValue(WorkflowTask task)
     {
-        String owner = (String)task.getProperties().get(ContentModel.PROP_OWNER);
-        
+        String owner = (String) task.getProperties().get(ContentModel.PROP_OWNER);
+
         if (owner == null || owner.length() == 0)
         {
             return null;
         }
-        
+
         return buildTaskOwnerString(owner);
     }
-    
+
     private String buildTaskOwnerString(String ownerUsername)
     {
         StringBuilder builder = new StringBuilder(ownerUsername);
-        
+
         // get the person node
         NodeRef ownerNodeRef = null;
         try
@@ -238,31 +240,29 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
         {
             // just return the username if the user doesn't exist
         }
-        
+
         if (ownerNodeRef != null)
         {
             Map<QName, Serializable> personProps = this.nodeService.getProperties(ownerNodeRef);
-            
+
             builder.append("|");
-            builder.append(personProps.containsKey(ContentModel.PROP_FIRSTNAME) ? 
-                        personProps.get(ContentModel.PROP_FIRSTNAME) : "");
+            builder.append(personProps.containsKey(ContentModel.PROP_FIRSTNAME) ? personProps.get(ContentModel.PROP_FIRSTNAME) : "");
             builder.append("|");
-            builder.append(personProps.containsKey(ContentModel.PROP_LASTNAME) ? 
-                        personProps.get(ContentModel.PROP_LASTNAME) : "");
+            builder.append(personProps.containsKey(ContentModel.PROP_LASTNAME) ? personProps.get(ContentModel.PROP_LASTNAME) : "");
         }
-        
+
         return builder.toString();
     }
 
     private String getTransitionValues(WorkflowTask item)
     {
         WorkflowTransition[] transitions = item.getDefinition().getNode().getTransitions();
-        
+
         if (transitions == null || transitions.length == 0)
         {
             return "";
         }
-        
+
         return buildTransitionString(item, transitions);
     }
 
@@ -281,7 +281,7 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
                 builder.append(",");
             }
         }
-        builder.deleteCharAt(builder.length()-1);
+        builder.deleteCharAt(builder.length() - 1);
         return builder.toString();
     }
 
@@ -295,22 +295,22 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
             {
                 return (List<String>) hiddenValues;
             }
-            else if (hiddenValues instanceof String && ((String)hiddenValues).length() > 0)
+            else if (hiddenValues instanceof String && ((String) hiddenValues).length() > 0)
             {
-                return Arrays.asList(((String)hiddenValues).split(","));
+                return Arrays.asList(((String) hiddenValues).split(","));
             }
         }
         return Collections.emptyList();
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.workflow.AbstractWorkflowFormProcessor#makeFormPersister(java.lang.Object)
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.workflow.AbstractWorkflowFormProcessor#makeFormPersister(java.lang.Object) */
     @Override
     protected ContentModelFormPersister<WorkflowTask> makeFormPersister(WorkflowTask item)
     {
         ContentModelItemData<WorkflowTask> itemData = makeItemData(item);
-        return new TaskFormPersister(itemData, namespaceService, dictionaryService, 
-                    workflowService, nodeService, authenticationService, behaviourFilter, LOGGER);
+        return new TaskFormPersister(itemData, namespaceService, dictionaryService,
+                workflowService, nodeService, authenticationService, behaviourFilter, LOGGER);
     }
 }

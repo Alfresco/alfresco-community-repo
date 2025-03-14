@@ -25,19 +25,7 @@
  */
 package org.alfresco.repo.rendition2;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.testing.category.NeverRunsTests;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.beans.factory.annotation.Autowired;
+import static org.alfresco.model.ContentModel.PROP_CONTENT;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,7 +35,18 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static org.alfresco.model.ContentModel.PROP_CONTENT;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.testing.category.NeverRunsTests;
 
 /**
  * Integration tests for {@link LocalSynchronousTransformClient}
@@ -102,10 +101,9 @@ public class LocalSynchronousTransformClientIntegrationTest extends AbstractRend
     {
         Collection<Callable<Void>> transforms = new ArrayList<>();
         ExecutorService executorService = Executors.newWorkStealingPool(10);
-        for (int i=0; i<50; i++)
+        for (int i = 0; i < 50; i++)
         {
-            Callable<Void> callable = () ->
-            {
+            Callable<Void> callable = () -> {
                 checkTransform("quick.txt", "text/plain", Collections.emptyMap(), true);
                 return null;
             };
@@ -164,8 +162,7 @@ public class LocalSynchronousTransformClientIntegrationTest extends AbstractRend
     {
         if (expectedToPass)
         {
-            RenditionDefinition2 renditionDefinition =
-                    renditionDefinitionRegistry2.getRenditionDefinition(renditionDefinitionName);
+            RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(renditionDefinitionName);
             String targetMimetype = renditionDefinition.getTargetMimetype();
             Map<String, String> actualOptions = renditionDefinition.getTransformOptions();
 
@@ -177,8 +174,7 @@ public class LocalSynchronousTransformClientIntegrationTest extends AbstractRend
     {
         if (expectedToPass)
         {
-            NodeRef sourceNode = transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                    createContentNodeFromQuickFile(testFileName));
+            NodeRef sourceNode = transactionService.getRetryingTransactionHelper().doInTransaction(() -> createContentNodeFromQuickFile(testFileName));
             ContentReader reader = contentService.getReader(sourceNode, PROP_CONTENT);
             ContentWriter writer = contentService.getTempWriter();
             writer.setMimetype(targetMimetype);

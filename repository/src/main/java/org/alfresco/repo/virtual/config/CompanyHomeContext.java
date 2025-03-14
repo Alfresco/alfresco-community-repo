@@ -30,8 +30,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
- * A {@link NodeRefContext} that solves a name path relative to the Alfresco
- * company home node.
+ * A {@link NodeRefContext} that solves a name path relative to the Alfresco company home node.
  */
 public class CompanyHomeContext implements NodeRefContext
 {
@@ -69,10 +68,10 @@ public class CompanyHomeContext implements NodeRefContext
         if (namePath.length > 0)
         {
             System.arraycopy(namePath,
-                             0,
-                             companyHomeRealtiveRef,
-                             3,
-                             namePath.length);
+                    0,
+                    companyHomeRealtiveRef,
+                    3,
+                    namePath.length);
         }
         return companyHomeRealtiveRef;
     }
@@ -97,10 +96,10 @@ public class CompanyHomeContext implements NodeRefContext
         if (qNamePath.length > 0)
         {
             System.arraycopy(qNamePath,
-                             0,
-                             companyHomeRealtiveRef,
-                             1,
-                             qNamePath.length);
+                    0,
+                    companyHomeRealtiveRef,
+                    1,
+                    qNamePath.length);
         }
         return companyHomeRealtiveRef;
     }
@@ -117,7 +116,7 @@ public class CompanyHomeContext implements NodeRefContext
     {
         String[] relativeQNamePath = createRelativeQNamePath(qNamePath);
         return resolver.createQNamePath(relativeQNamePath,
-                                        names);
+                names);
     }
 
     @Override

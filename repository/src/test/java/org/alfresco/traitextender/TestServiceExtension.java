@@ -36,6 +36,6 @@ public class TestServiceExtension extends TestService
     @Override
     public String publicServiceMethod3(String s)
     {
-        return "x"+super.publicServiceMethod3(s);
+        return "x" + super.publicServiceMethod3(s);
     }
 }

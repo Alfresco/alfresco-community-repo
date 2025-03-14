@@ -27,10 +27,11 @@
 
 package org.alfresco.repo.web.scripts.dictionary;
 
-import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
 
 /**
  * Util class for dictionary web services

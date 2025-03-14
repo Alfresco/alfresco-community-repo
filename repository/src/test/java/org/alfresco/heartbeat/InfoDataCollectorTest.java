@@ -37,6 +37,11 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import javax.sql.DataSource;
+import jakarta.servlet.ServletContext;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
@@ -45,11 +50,6 @@ import org.alfresco.repo.deployment.DeploymentMethodProvider;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.repo.descriptor.DescriptorServiceImpl.BaseDescriptor;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
-import org.junit.Before;
-import org.junit.Test;
-
-import jakarta.servlet.ServletContext;
-import javax.sql.DataSource;
 
 /**
  * @author eknizat
@@ -84,7 +84,6 @@ public class InfoDataCollectorTest
         when(mockDataSource.getConnection()).thenReturn(mockCon);
         when(mockCon.getMetaData()).thenReturn(mockDatabaseMetaData);
 
-
         when(spyDescriptor.getId()).thenReturn("mock_id");
         when(mockServerDescriptorDAO.getDescriptor()).thenReturn(spyDescriptor);
         when(mockDescriptorDAO.getDescriptor()).thenReturn(spyDescriptor);
@@ -103,7 +102,7 @@ public class InfoDataCollectorTest
     @Test
     public void testHBDataFields()
     {
-        mockVersionDetails("6","0","0","");
+        mockVersionDetails("6", "0", "0", "");
         collectedData = infoCollector.collectData();
         HBData repoInfo = grabDataByCollectorId(infoCollector.getCollectorId());
         assertNotNull("Repository info data missing.", repoInfo);
@@ -122,8 +121,8 @@ public class InfoDataCollectorTest
     @Test
     public void testInfoDataIsCollected()
     {
-        mockVersionDetails("5","1","2",".4");
-        mockDatabaseMetaData("PostgreSQL","10.1","PostgreSQL JDBC Driver","42.2.5");
+        mockVersionDetails("5", "1", "2", ".4");
+        mockDatabaseMetaData("PostgreSQL", "10.1", "PostgreSQL JDBC Driver", "42.2.5");
         collectedData = infoCollector.collectData();
 
         HBData repoInfo = grabDataByCollectorId(infoCollector.getCollectorId());
@@ -143,33 +142,33 @@ public class InfoDataCollectorTest
         assertEquals("2", version.get("patch"));
         assertEquals("4", version.get("hotfix"));
 
-        // No need to mock the system properties, just check if they are collected 
-        assertNotNull("Check if data is collected", data.get("osVendor") );
-        assertNotNull("Check if data is collected", data.get("osVersion") );
-        assertNotNull("Check if data is collected", data.get("osArch") );
-        assertNotNull("Check if data is collected", data.get("javaVendor") );
-        assertNotNull("Check if data is collected", data.get("javaVersion") );
-        assertNotNull("Check if data is collected", data.get("userLanguage") );
-        assertNotNull("Check if data is collected", data.get("userTimezone") );
-        assertNotNull("Check if data is collected", data.get("userUTCOffset") );
-        
-        assertEquals("Apache Tomcat/7.0.47", data.get("serverInfo") );
-                
+        // No need to mock the system properties, just check if they are collected
+        assertNotNull("Check if data is collected", data.get("osVendor"));
+        assertNotNull("Check if data is collected", data.get("osVersion"));
+        assertNotNull("Check if data is collected", data.get("osArch"));
+        assertNotNull("Check if data is collected", data.get("javaVendor"));
+        assertNotNull("Check if data is collected", data.get("javaVersion"));
+        assertNotNull("Check if data is collected", data.get("userLanguage"));
+        assertNotNull("Check if data is collected", data.get("userTimezone"));
+        assertNotNull("Check if data is collected", data.get("userUTCOffset"));
+
+        assertEquals("Apache Tomcat/7.0.47", data.get("serverInfo"));
+
         assertTrue(data.containsKey("db"));
         Map<String, Object> db = (Map<String, Object>) data.get("db");
         assertEquals("PostgreSQL", db.get("vendor"));
         assertEquals("10.1", db.get("version"));
         assertEquals("PostgreSQL JDBC Driver", db.get("driverName"));
         assertEquals("42.2.5", db.get("driverVersion"));
-        
+
     }
-    
+
     @Test
     public void testInfoDataIsCollectedHotfixNoDot()
     {
-        mockVersionDetails("5","1","2","4");
+        mockVersionDetails("5", "1", "2", "4");
         collectedData = infoCollector.collectData();
-        
+
         HBData repoInfo = grabDataByCollectorId(infoCollector.getCollectorId());
         assertNotNull("Repository info data missing.", repoInfo);
 
@@ -190,9 +189,9 @@ public class InfoDataCollectorTest
     @Test
     public void testInfoDataIsCollectedNoHotfix()
     {
-        mockVersionDetails("5","1","2","");
+        mockVersionDetails("5", "1", "2", "");
         collectedData = infoCollector.collectData();
-        
+
         HBData repoInfo = grabDataByCollectorId(infoCollector.getCollectorId());
         assertNotNull("Repository info data missing.", repoInfo);
 

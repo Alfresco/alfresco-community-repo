@@ -55,8 +55,7 @@ public class TypeIndexFilter extends AbstractIndexFilter
     public void init()
     {
         super.init();
-        initIgnoringPathsByCriterion(typesForIgnoringPathsString, typesForIgnoringPaths, new DefinitionExistChecker()
-        {
+        initIgnoringPathsByCriterion(typesForIgnoringPathsString, typesForIgnoringPaths, new DefinitionExistChecker() {
             @Override
             public boolean isDefinitionExists(QName qName)
             {

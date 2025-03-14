@@ -29,15 +29,16 @@ import java.util.Collections;
 import java.util.Random;
 import java.util.Set;
 
+import org.junit.experimental.categories.Category;
+
 import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.impl.AbstractPermissionTest;
-import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.repo.security.permissions.impl.RequiredPermission.On;
+import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.junit.experimental.categories.Category;
 
 @Category(OwnJVMTestsCategory.class)
 public class PermissionModelTest extends AbstractPermissionTest
@@ -191,8 +192,7 @@ public class PermissionModelTest extends AbstractPermissionTest
             try
             {
                 System.out.println("Start " + this.getName());
-                RetryingTransactionCallback<Void> queryPermissionModel = new RetryingTransactionCallback<Void>()
-                {
+                RetryingTransactionCallback<Void> queryPermissionModel = new RetryingTransactionCallback<Void>() {
                     public Void execute() throws Throwable
                     {
                         Random random = new Random();
@@ -233,23 +233,22 @@ public class PermissionModelTest extends AbstractPermissionTest
                     waiter.join();
                 }
                 catch (InterruptedException e)
-                {
-                }
+                {}
             }
         }
 
     }
-    
+
     public void testNulls()
     {
         permissionModelDAO.getRequiredPermissions(null, QName.createQName("sys", "base", namespacePrefixResolver), Collections.<QName> emptySet(), On.NODE);
         permissionModelDAO.getRequiredPermissions(SimplePermissionReference.getPermissionReference(QName.createQName("sys", "base",
-                namespacePrefixResolver), "Read"),null, Collections.<QName> emptySet(), On.NODE);
+                namespacePrefixResolver), "Read"), null, Collections.<QName> emptySet(), On.NODE);
         permissionModelDAO.getRequiredPermissions(null, null, Collections.<QName> emptySet(), On.NODE);
-        
+
         permissionModelDAO.getGranteePermissions(null);
 
         permissionModelDAO.getGlobalPermissionEntries().contains(null);
-       
+
     }
 }

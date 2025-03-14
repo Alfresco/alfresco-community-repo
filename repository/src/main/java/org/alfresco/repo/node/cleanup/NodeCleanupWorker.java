@@ -36,10 +36,9 @@ import java.util.List;
 public interface NodeCleanupWorker
 {
     /**
-     * Perform some work to clean up data.  All errors must be handled and converted
-     * to error messages.
+     * Perform some work to clean up data. All errors must be handled and converted to error messages.
      * 
-     * @return              Returns a list of informational messages.
+     * @return Returns a list of informational messages.
      */
     List<String> doClean();
 }

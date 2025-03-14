@@ -50,8 +50,7 @@ public class SecurityControlSetting
      * Empty constructor needed for the REST API
      */
     public SecurityControlSetting()
-    {
-    }
+    {}
 
     /**
      * Constructor
@@ -75,7 +74,8 @@ public class SecurityControlSetting
     /**
      * Sets the setting key
      *
-     * @param key The property key to set
+     * @param key
+     *            The property key to set
      */
     public void setKey(String key)
     {
@@ -95,7 +95,8 @@ public class SecurityControlSetting
     /**
      * Sets the setting value
      *
-     * @param value The setting value
+     * @param value
+     *            The setting value
      */
     public void setValue(Object value)
     {
@@ -136,6 +137,7 @@ public class SecurityControlSetting
         result = 31 * result + value.hashCode();
         return result;
     }
+
     /**
      * toString implementation for the property
      */

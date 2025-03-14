@@ -33,11 +33,9 @@ import java.util.Set;
 
 /**
  * Spring context {@link NodeRefPathExpression} factory bean.<br>
- * It creates {@link NodeRefPathExpression} instances configured with the
- * spring context defined {@link NodeRefResolver} and the given set of spring
- * configured {@link NodeRefContext}s.
+ * It creates {@link NodeRefPathExpression} instances configured with the spring context defined {@link NodeRefResolver} and the given set of spring configured {@link NodeRefContext}s.
  */
-public class NodeRefPathExpressionFactory 
+public class NodeRefPathExpressionFactory
 {
     private Map<String, NodeRefContext> contextsMap = Collections.emptyMap();
 
@@ -55,14 +53,14 @@ public class NodeRefPathExpressionFactory
         for (NodeRefContext nodeRefContext : nodeRefContexts)
         {
             this.contextsMap.put(nodeRefContext.getContextName(),
-                                 nodeRefContext);
+                    nodeRefContext);
         }
     }
 
     public NodeRefPathExpression createInstance()
     {
         return new NodeRefPathExpression(resolver,
-                                           this.contextsMap);
+                this.contextsMap);
     }
 
 }

@@ -34,6 +34,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestActionConstraintDataModel;
@@ -51,8 +54,6 @@ import org.alfresco.utility.data.DataUserAIS;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class RulesTestsUtils
@@ -105,10 +106,14 @@ public class RulesTestsUtils
     /**
      * Get the constraint value for a given action parameter label.
      *
-     * @param user The user to use to obtain the information.
-     * @param actionId The id of the action definition.
-     * @param paramId The id of the parameter for the action.
-     * @param constraintLabel The label of the desired value of the parameter.
+     * @param user
+     *            The user to use to obtain the information.
+     * @param actionId
+     *            The id of the action definition.
+     * @param paramId
+     *            The id of the parameter for the action.
+     * @param constraintLabel
+     *            The label of the desired value of the parameter.
      * @return The value to use for the parameter.
      */
     public String findConstraintValue(UserModel user, String actionId, String paramId, String constraintLabel)
@@ -121,9 +126,12 @@ public class RulesTestsUtils
     /**
      * Get all constraint values for a given action parameter.
      *
-     * @param user The user to use to obtain the information.
-     * @param actionId The id of the action definition.
-     * @param paramId The id of the parameter for the action.
+     * @param user
+     *            The user to use to obtain the information.
+     * @param actionId
+     *            The id of the action definition.
+     * @param paramId
+     *            The id of the parameter for the action.
      * @return The value to use for the parameter.
      */
     public RestActionConstraintModel getConstraintsForActionParam(UserModel user, String actionId, String paramId)
@@ -191,7 +199,8 @@ public class RulesTestsUtils
     /**
      * Create a rule model filled with custom constant values.
      *
-     * @param actions - rule's actions.
+     * @param actions
+     *            - rule's actions.
      * @return The created rule model.
      */
     public RestRuleModel createRuleModelWithModifiedValues(List<RestActionBodyExecTemplateModel> actions)
@@ -228,8 +237,10 @@ public class RulesTestsUtils
     /**
      * Create a rule model.
      *
-     * @param name The name for the rule.
-     * @param actions Rule's actions.
+     * @param name
+     *            The name for the rule.
+     * @param actions
+     *            Rule's actions.
      * @return The created rule model.
      */
     public RestRuleModel createRuleModel(String name, List<RestActionBodyExecTemplateModel> actions)
@@ -275,30 +286,25 @@ public class RulesTestsUtils
     public RestCompositeConditionDefinitionModel createVariousConditions()
     {
         return createCompositeCondition(List.of(
-            createCompositeCondition(!INVERTED, List.of(
-                createSimpleCondition("cm:created", "less_than", "2022-09-01T12:59:00.000+02:00"),
-                createSimpleCondition("cm:creator", "ends", "ski"),
-                createSimpleCondition("size", "greater_than", "90000000"),
-                createSimpleCondition("mimetype", "equals", "video/3gpp"),
-                createSimpleCondition("encoding", "equals", "utf-8"),
-                createSimpleCondition("type", "equals", "cm:folder"),
-                createSimpleCondition("tag", "equals", "uat")
-            )),
-            createCompositeCondition(INVERTED, List.of(
-                createSimpleCondition("aspect", "equals", AUDIO_ASPECT),
-                createSimpleCondition("cm:modelVersion", "begins", "1.")
-            ))
-        ));
+                createCompositeCondition(!INVERTED, List.of(
+                        createSimpleCondition("cm:created", "less_than", "2022-09-01T12:59:00.000+02:00"),
+                        createSimpleCondition("cm:creator", "ends", "ski"),
+                        createSimpleCondition("size", "greater_than", "90000000"),
+                        createSimpleCondition("mimetype", "equals", "video/3gpp"),
+                        createSimpleCondition("encoding", "equals", "utf-8"),
+                        createSimpleCondition("type", "equals", "cm:folder"),
+                        createSimpleCondition("tag", "equals", "uat"))),
+                createCompositeCondition(INVERTED, List.of(
+                        createSimpleCondition("aspect", "equals", AUDIO_ASPECT),
+                        createSimpleCondition("cm:modelVersion", "begins", "1.")))));
     }
 
     public RestRuleModel createRuleWithVariousActions()
     {
-        final Map<String, Serializable> copyParams =
-                Map.of("destination-folder", getCopyDestinationFolder().getNodeRef(), "deep-copy", true);
+        final Map<String, Serializable> copyParams = Map.of("destination-folder", getCopyDestinationFolder().getNodeRef(), "deep-copy", true);
         final RestActionBodyExecTemplateModel copyAction = createCustomActionModel(COPY_ACTION, copyParams);
-        final Map<String, Serializable> checkOutParams =
-                Map.of("destination-folder", getCheckOutDestinationFolder().getNodeRef(), "assoc-name", "cm:checkout",
-                        "assoc-type", "cm:contains");
+        final Map<String, Serializable> checkOutParams = Map.of("destination-folder", getCheckOutDestinationFolder().getNodeRef(), "assoc-name", "cm:checkout",
+                "assoc-type", "cm:contains");
         final RestActionBodyExecTemplateModel checkOutAction = createCustomActionModel("check-out", checkOutParams);
         // The counter action takes no parameters, so check we can omit the "params" entry.
         final RestActionBodyExecTemplateModel counterAction = createCustomActionModel("counter", null);
@@ -333,7 +339,7 @@ public class RulesTestsUtils
     }
 
     public RestCompositeConditionDefinitionModel createCompositeCondition(boolean inverted,
-        List<RestSimpleConditionDefinitionModel> simpleConditions)
+            List<RestSimpleConditionDefinitionModel> simpleConditions)
     {
         return createCompositeCondition(AND, inverted, null, simpleConditions);
     }
@@ -352,7 +358,7 @@ public class RulesTestsUtils
     }
 
     private RestCompositeConditionDefinitionModel createCompositeCondition(String booleanMode, boolean inverted,
-        List<RestCompositeConditionDefinitionModel> compositeConditions, List<RestSimpleConditionDefinitionModel> simpleConditions)
+            List<RestCompositeConditionDefinitionModel> compositeConditions, List<RestSimpleConditionDefinitionModel> simpleConditions)
     {
         RestCompositeConditionDefinitionModel compositeCondition = new RestCompositeConditionDefinitionModel();
         compositeCondition.setBooleanMode(booleanMode);
@@ -377,13 +383,13 @@ public class RulesTestsUtils
             this.node = node;
         }
 
-        public NodeAssertion containsAspects(String ...expectedAspects)
+        public NodeAssertion containsAspects(String... expectedAspects)
         {
             Arrays.stream(expectedAspects).forEach(aspect -> node.assertThat().field("aspectNames").contains(aspect));
             return this;
         }
 
-        public NodeAssertion notContainsAspects(String ...unexpectedAspects)
+        public NodeAssertion notContainsAspects(String... unexpectedAspects)
         {
             Arrays.stream(unexpectedAspects).forEach(aspect -> node.assertThat().field("aspectNames").notContains(aspect));
             return this;

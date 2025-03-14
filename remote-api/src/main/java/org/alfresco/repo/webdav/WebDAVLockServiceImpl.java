@@ -28,8 +28,10 @@ package org.alfresco.repo.webdav;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import jakarta.servlet.http.HttpSession;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.lock.mem.Lifetime;
@@ -45,13 +47,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * <p>
- * WebDAVLockService is used to manage file locks for WebDAV and Sharepoint protocol. It ensures a lock never persists
- * for more than 24 hours, and also ensures locks are timed out on session timeout.
+ * WebDAVLockService is used to manage file locks for WebDAV and Sharepoint protocol. It ensures a lock never persists for more than 24 hours, and also ensures locks are timed out on session timeout.
  * 
  * @author Pavel.Yurkevich
  */
@@ -61,9 +60,9 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
     private static final String LOCKED_RESOURCES = "_webdavLockedResources";
 
     private static Log logger = LogFactory.getLog(WebDAVLockServiceImpl.class);
-    
+
     private static ThreadLocal<HttpSession> currentSession = new ThreadLocal<HttpSession>();
-    
+
     private LockService lockService;
     private NodeService nodeService;
     private TransactionService transactionService;
@@ -72,7 +71,8 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
     /**
      * Set the LockService
      * 
-     * @param lockService LockService
+     * @param lockService
+     *            LockService
      */
     public void setLockService(LockService lockService)
     {
@@ -82,7 +82,8 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
     /**
      * Set the NodeService
      * 
-     * @param nodeService NodeService
+     * @param nodeService
+     *            NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -92,7 +93,8 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
     /**
      * Set the TransactionService
      * 
-     * @param transactionService TransactionService
+     * @param transactionService
+     *            TransactionService
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -102,17 +104,19 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
     /**
      * Set the CheckOutCheckInService
      * 
-     * @param checkOutCheckInService CheckOutCheckInService
+     * @param checkOutCheckInService
+     *            CheckOutCheckInService
      */
     public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
     {
         this.checkOutCheckInService = checkOutCheckInService;
     }
-    
+
     /**
      * Caches current session to the thread local variable
      * 
-     * @param session HttpSession
+     * @param session
+     *            HttpSession
      */
     @Override
     public void setCurrentSession(HttpSession session)
@@ -151,14 +155,12 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
                 final NodeRef nodeRef = lockedResource.getSecond();
 
                 // there are some document that should be forcibly unlocked
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     @Override
                     public Void doWork() throws Exception
                     {
                         return transactionService.getRetryingTransactionHelper().doInTransaction(
-                                new RetryingTransactionCallback<Void>()
-                                {
+                                new RetryingTransactionCallback<Void>() {
                                     @Override
                                     public Void execute() throws Throwable
                                     {
@@ -172,7 +174,7 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
 
                                             // check the lock status of document
                                             LockStatus lockStatus = lockService.getLockStatus(nodeRef);
-                                            
+
                                             // check if document was checked out
                                             boolean hasWorkingCopy = checkOutCheckInService.getWorkingCopy(nodeRef) != null;
                                             boolean isWorkingCopy = nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY);
@@ -213,7 +215,7 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
                                         }
                                         else
                                         {
-                                            // document no longer exists in repo 
+                                            // document no longer exists in repo
                                             if (logger.isDebugEnabled())
                                             {
                                                 logger.debug("Skip lock releasing for an unexisting node: " + nodeRef);
@@ -236,18 +238,21 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
         }
     }
 
-    public void lock(NodeRef nodeRef, LockInfo lockInfo) {
+    public void lock(NodeRef nodeRef, LockInfo lockInfo)
+    {
         int timeout = (int) lockInfo.getRemainingTimeoutSeconds();
         lock(nodeRef, lockInfo, timeout);
     }
 
     /**
-     * Shared method for webdav/vti protocols to lock node. If node is locked for more than 24 hours it is automatically added
-     * to the current session locked resources list.
+     * Shared method for webdav/vti protocols to lock node. If node is locked for more than 24 hours it is automatically added to the current session locked resources list.
      *
-     * @param nodeRef the node to lock
-     * @param userName userName
-     * @param timeout the number of seconds before the locks expires
+     * @param nodeRef
+     *            the node to lock
+     * @param userName
+     *            userName
+     * @param timeout
+     *            the number of seconds before the locks expires
      */
     @Override
     public void lock(NodeRef nodeRef, String userName, int timeout)
@@ -275,15 +280,18 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
         }
     }
 
-    private void validateLockTimeout(int timeout) {
-        if (timeout != WebDAV.TIMEOUT_INFINITY && timeout == LockService.TIMEOUT_INFINITY) {
+    private void validateLockTimeout(int timeout)
+    {
+        if (timeout != WebDAV.TIMEOUT_INFINITY && timeout == LockService.TIMEOUT_INFINITY)
+        {
             throw new IllegalArgumentException("Timeout == " + LockService.TIMEOUT_INFINITY +
                     " is treated as permanence for locks. For maximum allowed timeout set " + WebDAV.TIMEOUT_INFINITY);
         }
     }
 
-    private void lockInner(NodeRef nodeRef, LockInfo lockInfo, int timeout) {
-        //Update/set true expiry date of a lock to be used in additional information
+    private void lockInner(NodeRef nodeRef, LockInfo lockInfo, int timeout)
+    {
+        // Update/set true expiry date of a lock to be used in additional information
         lockInfo.setTimeoutSeconds(timeout);
 
         // TODO: lock children according to depth? lock type?
@@ -296,7 +304,8 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
         }
     }
 
-    private void performLockSessionBehavior(NodeRef nodeRef) {
+    private void performLockSessionBehavior(NodeRef nodeRef)
+    {
         HttpSession session = currentSession.get();
 
         if (session == null)
@@ -315,12 +324,12 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
             logger.debug(nodeRef + " was added to the session " + session.getId() + " for post expiration processing.");
         }
     }
-    
+
     /**
-     * Shared method for webdav/vti to unlock node. Unlocked node is automatically removed from
-     * current sessions's locked resources list.
+     * Shared method for webdav/vti to unlock node. Unlocked node is automatically removed from current sessions's locked resources list.
      * 
-     * @param nodeRef the node to lock
+     * @param nodeRef
+     *            the node to lock
      */
     @Override
     public void unlock(NodeRef nodeRef)
@@ -350,14 +359,15 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
             logger.debug(nodeRef + " was removed from the session " + session.getId());
         }
     }
-    
+
     /**
      * Gets the lock status for the node reference relative to the current user.
      * 
      * @see LockService#getLockStatus(org.alfresco.service.cmr.repository.NodeRef, String)
      * 
-     * @param nodeRef    the node reference
-     * @return           the lock status
+     * @param nodeRef
+     *            the node reference
+     * @return the lock status
      */
     @Override
     public LockInfo getLockInfo(NodeRef nodeRef)
@@ -367,7 +377,7 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
         if (lockState != null)
         {
             String additionalInfo = lockState.getAdditionalInfo();
-            
+
             try
             {
                 lockInfo = LockInfoImpl.fromJSON(additionalInfo);
@@ -384,7 +394,8 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
     }
 
     /**
-     * Determines if the node is locked AND it's not a WRITE_LOCK for the current user.<p>
+     * Determines if the node is locked AND it's not a WRITE_LOCK for the current user.
+     * <p>
      *
      * @return true if the node is locked AND it's not a WRITE_LOCK for the current user
      */
@@ -396,9 +407,12 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
     /**
      * Add the given <code>object</code> to the session list that is stored in session under <code>listName</code> attribute
      * 
-     * @param session the session 
-     * @param listName the list name (session attribute name)
-     * @param object the object to store in session list
+     * @param session
+     *            the session
+     * @param listName
+     *            the list name (session attribute name)
+     * @param object
+     *            the object to store in session list
      */
     @SuppressWarnings("unchecked")
     private static final void storeObjectInSessionList(HttpSession session, String listName, Object object)
@@ -428,9 +442,12 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
     /**
      * Removes the given <code>object</code> from the session list that is stored in session under <code>listName</code> attribute
      * 
-     * @param session the session 
-     * @param listName the list name (session attribute name)
-     * @param object the object to store in session list
+     * @param session
+     *            the session
+     * @param listName
+     *            the list name (session attribute name)
+     * @param object
+     *            the object to store in session list
      * 
      * @return <tt>true</tt> if session list contained the specified element, otherwise <tt>false</tt>
      */
@@ -454,20 +471,23 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
             return list.remove(object);
         }
     }
-    
+
     /**
      * Create a new lock
      * 
-     * @param nodeRef NodeRef
-     * @param userName String
-     * @param createExclusive boolean
+     * @param nodeRef
+     *            NodeRef
+     * @param userName
+     *            String
+     * @param createExclusive
+     *            boolean
      */
     private LockInfo createLock(NodeRef nodeRef, String userName, boolean createExclusive)
     {
         String lockToken = WebDAV.makeLockToken(nodeRef, userName);
 
         LockInfo lockInfo = new LockInfoImpl();
-        
+
         if (createExclusive)
         {
             lockInfo.setExclusiveLockToken(lockToken);
@@ -486,10 +506,10 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
         if (!currentUser.equals(userName))
         {
             throw new IllegalStateException("Node is being locked for user " + userName +
-                        " by (different/current) user " + currentUser);
+                    " by (different/current) user " + currentUser);
         }
-        
+
         return lockInfo;
     }
-    
+
 }

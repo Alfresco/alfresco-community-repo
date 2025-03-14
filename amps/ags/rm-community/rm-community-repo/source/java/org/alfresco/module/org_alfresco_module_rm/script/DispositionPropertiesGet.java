@@ -33,17 +33,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.util.StringUtils;
+
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.util.StringUtils;
 
 /**
  * @author Roy Wetherall
@@ -57,7 +58,8 @@ public class DispositionPropertiesGet extends DeclarativeWebScript
     /**
      * Sets the disposition service
      *
-     * @param dispositionService    the disposition service
+     * @param dispositionService
+     *            the disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -67,7 +69,8 @@ public class DispositionPropertiesGet extends DeclarativeWebScript
     /**
      * Sets the NamespaceService instance
      *
-     * @param namespaceService The NamespaceService instance
+     * @param namespaceService
+     *            The NamespaceService instance
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -77,16 +80,15 @@ public class DispositionPropertiesGet extends DeclarativeWebScript
     /**
      * Sets the DictionaryService instance
      *
-     * @param dictionaryService The DictionaryService instance
+     * @param dictionaryService
+     *            The DictionaryService instance
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
 
-    /*
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
-     */
+    /* @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache) */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {

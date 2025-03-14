@@ -26,16 +26,21 @@
 
 package org.alfresco.rest.categories;
 
-import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
-import jakarta.json.Json;
+import static org.alfresco.utility.report.log.Step.STEP;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import jakarta.json.Json;
+
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.model.RestCategoryLinkBodyModel;
@@ -48,9 +53,6 @@ import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
 
 public class ListCategoriesForNodeTests extends CategoriesRestTest
 {
@@ -81,7 +83,7 @@ public class ListCategoriesForNodeTests extends CategoriesRestTest
     /**
      * Get one linked category using file
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testListSingleCategoryForNode_usingFile()
     {
         STEP("Link file to category");
@@ -99,7 +101,7 @@ public class ListCategoriesForNodeTests extends CategoriesRestTest
     /**
      * Get one linked category using folder
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testListSingleCategoryForNode_usingFolder()
     {
         STEP("Link folder to category");
@@ -117,7 +119,7 @@ public class ListCategoriesForNodeTests extends CategoriesRestTest
     /**
      * Get multiple linked categories using file
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testListMultipleCategoriesForNode_usingFile()
     {
         STEP("Create multiple categories under root");
@@ -125,27 +127,24 @@ public class ListCategoriesForNodeTests extends CategoriesRestTest
 
         STEP("Link file to created categories");
         final List<RestCategoryLinkBodyModel> categoryLinkModels = createdCategories.stream()
-            .map(RestCategoryModel::getId)
-            .map(this::createCategoryLinkModelWithId)
-            .collect(Collectors.toList());
+                .map(RestCategoryModel::getId)
+                .map(this::createCategoryLinkModelWithId)
+                .collect(Collectors.toList());
         final List<RestCategoryModel> createdCategoryLinks = restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategories(
-            categoryLinkModels
-        ).getEntries();
+                categoryLinkModels).getEntries();
 
         STEP("Get categories which are linked from file and compare them to created category links");
         final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(file).getLinkedCategories();
 
         restClient.assertStatusCodeIs(OK);
         linkedCategories.assertThat().entriesListCountIs(createdCategoryLinks.size());
-        IntStream.range(0, createdCategoryLinks.size()).forEach(i ->
-            linkedCategories.getEntries().get(i).onModel().assertThat().isEqualTo(createdCategoryLinks.get(i).onModel())
-        );
+        IntStream.range(0, createdCategoryLinks.size()).forEach(i -> linkedCategories.getEntries().get(i).onModel().assertThat().isEqualTo(createdCategoryLinks.get(i).onModel()));
     }
 
     /**
      * Try to get linked categories for content which is not linked to any category
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testListCategoriesForNode_withoutLinkedCategories()
     {
         STEP("Try to get linked categories and expect empty list");
@@ -158,7 +157,7 @@ public class ListCategoriesForNodeTests extends CategoriesRestTest
     /**
      * Try to get linked categories using non-existing node and expect 404 (Not Found)
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testListCategoriesForNode_usingNonExistingNodeAndExpect404()
     {
         STEP("Try to get linked categories for non-existing node and expect 404");
@@ -172,7 +171,7 @@ public class ListCategoriesForNodeTests extends CategoriesRestTest
     /**
      * Try to get multiple linked categories as user without read permission and expect 403 (Forbidden)
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testListCategoriesForNode_asUserWithoutReadPermissionAndExpect403()
     {
         STEP("Link content to category");
@@ -192,7 +191,7 @@ public class ListCategoriesForNodeTests extends CategoriesRestTest
     /**
      * Try to get linked categories using tag instead of a content and expect 422 (Unprocessable Entity)
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testListCategoriesForNode_usingTagInsteadOfContentAndExpect422()
     {
         STEP("Add tag to file");
@@ -209,12 +208,12 @@ public class ListCategoriesForNodeTests extends CategoriesRestTest
     {
         final String putPermissionsBody = Json.createObjectBuilder().add("permissions",
                 Json.createObjectBuilder()
-                    .add("isInheritanceEnabled", true)
-                    .add("locallySet", Json.createObjectBuilder()
-                        .add("authorityId", username)
-                        .add("name", role)
-                        .add("accessStatus", "DENIED")))
-            .build().toString();
+                        .add("isInheritanceEnabled", true)
+                        .add("locallySet", Json.createObjectBuilder()
+                                .add("authorityId", username)
+                                .add("name", role)
+                                .add("accessStatus", "DENIED")))
+                .build().toString();
         restClient.authenticateUser(user).withCoreAPI().usingNode(file).updateNode(putPermissionsBody);
     }
 }

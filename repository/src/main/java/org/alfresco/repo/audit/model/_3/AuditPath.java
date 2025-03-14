@@ -34,11 +34,12 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for AuditPath complex type.
+ * <p>
+ * Java class for AuditPath complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType name="AuditPath">
@@ -58,15 +59,15 @@ import jakarta.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuditPath", propOrder = {
-    "recordValue",
-    "generateValue",
-    "auditPath"
+        "recordValue",
+        "generateValue",
+        "auditPath"
 })
 @XmlSeeAlso({
-    Application.class
+        Application.class
 })
 public class AuditPath
-    extends KeyedAuditDefinition
+        extends KeyedAuditDefinition
 {
 
     @XmlElement(name = "RecordValue")
@@ -80,26 +81,25 @@ public class AuditPath
      * Gets the value of the recordValue property.
      * 
      * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the recordValue property.
+     * This accessor method returns a reference to the live list, not a snapshot. Therefore any modification you make to the returned list will be present inside the JAXB object. This is why there is not a <CODE>set</CODE> method for the recordValue property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
+     * 
      * <pre>
-     *    getRecordValue().add(newItem);
+     * getRecordValue().add(newItem);
      * </pre>
      * 
      * 
      * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link RecordValue }
+     * Objects of the following type(s) are allowed in the list {@link RecordValue }
      * 
      * 
      */
-    public List<RecordValue> getRecordValue() {
-        if (recordValue == null) {
+    public List<RecordValue> getRecordValue()
+    {
+        if (recordValue == null)
+        {
             recordValue = new ArrayList<RecordValue>();
         }
         return this.recordValue;
@@ -109,26 +109,25 @@ public class AuditPath
      * Gets the value of the generateValue property.
      * 
      * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the generateValue property.
+     * This accessor method returns a reference to the live list, not a snapshot. Therefore any modification you make to the returned list will be present inside the JAXB object. This is why there is not a <CODE>set</CODE> method for the generateValue property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
+     * 
      * <pre>
-     *    getGenerateValue().add(newItem);
+     * getGenerateValue().add(newItem);
      * </pre>
      * 
      * 
      * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link GenerateValue }
+     * Objects of the following type(s) are allowed in the list {@link GenerateValue }
      * 
      * 
      */
-    public List<GenerateValue> getGenerateValue() {
-        if (generateValue == null) {
+    public List<GenerateValue> getGenerateValue()
+    {
+        if (generateValue == null)
+        {
             generateValue = new ArrayList<GenerateValue>();
         }
         return this.generateValue;
@@ -138,26 +137,25 @@ public class AuditPath
      * Gets the value of the auditPath property.
      * 
      * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the auditPath property.
+     * This accessor method returns a reference to the live list, not a snapshot. Therefore any modification you make to the returned list will be present inside the JAXB object. This is why there is not a <CODE>set</CODE> method for the auditPath property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
+     * 
      * <pre>
-     *    getAuditPath().add(newItem);
+     * getAuditPath().add(newItem);
      * </pre>
      * 
      * 
      * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link AuditPath }
+     * Objects of the following type(s) are allowed in the list {@link AuditPath }
      * 
      * 
      */
-    public List<AuditPath> getAuditPath() {
-        if (auditPath == null) {
+    public List<AuditPath> getAuditPath()
+    {
+        if (auditPath == null)
+        {
             auditPath = new ArrayList<AuditPath>();
         }
         return this.auditPath;

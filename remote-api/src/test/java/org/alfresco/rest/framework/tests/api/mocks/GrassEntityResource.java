@@ -25,6 +25,10 @@
  */
 package org.alfresco.rest.framework.tests.api.mocks;
 
+import java.util.List;
+
+import org.springframework.extensions.webscripts.Status;
+
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiNoAuth;
@@ -34,42 +38,42 @@ import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
-import org.springframework.extensions.webscripts.Status;
 
-import java.util.List;
-
-@EntityResource(name = "grass", title="Grass")
-public class GrassEntityResource implements EntityResourceAction.ReadById<Grass>, EntityResourceAction.Create<Grass>, EntityResourceAction.Delete, EntityResourceAction.DeleteSet {
+@EntityResource(name = "grass", title = "Grass")
+public class GrassEntityResource implements EntityResourceAction.ReadById<Grass>, EntityResourceAction.Create<Grass>, EntityResourceAction.Delete, EntityResourceAction.DeleteSet
+{
 
     @Override
     @WebApiDescription(title = "Gets grass by id")
-    @WebApiParam(name = "justone", title = "Only 1 param and its required.",required=true)
+    @WebApiParam(name = "justone", title = "Only 1 param and its required.", required = true)
     public Grass readById(String id, Parameters parameters)
     {
         return new Grass(id);
     }
 
     @Operation("cut")
-    @WebApiDescription(title = "Cut the grass",successStatus = Status.STATUS_NOT_IMPLEMENTED)
-    public String cutLawn(String id, Void notused, Parameters parameters, WithResponse withResponse) {
+    @WebApiDescription(title = "Cut the grass", successStatus = Status.STATUS_NOT_IMPLEMENTED)
+    public String cutLawn(String id, Void notused, Parameters parameters, WithResponse withResponse)
+    {
         return "All done";
     }
 
     @Operation("grow")
-    @WebApiDescription(title = "Grow the grass",successStatus = Status.STATUS_ACCEPTED)
-    @WebApiParam(name = "Grass", title = "The grass.",required=true, kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
-    public String growTheLawn(String id, Grass grass, Parameters parameters, WithResponse withResponse) {
+    @WebApiDescription(title = "Grow the grass", successStatus = Status.STATUS_ACCEPTED)
+    @WebApiParam(name = "Grass", title = "The grass.", required = true, kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
+    public String growTheLawn(String id, Grass grass, Parameters parameters, WithResponse withResponse)
+    {
         return "Growing well";
     }
 
     @Override
     @WebApiDescription(title = "Create some grass")
-    @WebApiParam(name = "entity", title = "The grass.", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT, required=false, allowMultiple = false)
+    @WebApiParam(name = "entity", title = "The grass.", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT, required = false, allowMultiple = false)
     public List<Grass> create(List<Grass> entity, Parameters parameters)
     {
         return entity;
     }
-    
+
     @Override
     public void delete(String id, Parameters parameters)
     {
@@ -84,8 +88,9 @@ public class GrassEntityResource implements EntityResourceAction.ReadById<Grass>
 
     @Operation("cut-noAuth")
     @WebApiNoAuth
-    @WebApiDescription(title = "Cut the grass",successStatus = Status.STATUS_NOT_IMPLEMENTED)
-    public String cutLawnWithoutAuth(String id, Void notused, Parameters parameters, WithResponse withResponse) {
+    @WebApiDescription(title = "Cut the grass", successStatus = Status.STATUS_NOT_IMPLEMENTED)
+    public String cutLawnWithoutAuth(String id, Void notused, Parameters parameters, WithResponse withResponse)
+    {
         return "All done without Auth";
     }
 }

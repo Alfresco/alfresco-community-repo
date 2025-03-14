@@ -26,35 +26,30 @@
 package org.alfresco.repo.search.impl.solr;
 
 import java.io.UnsupportedEncodingException;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
+
+import org.apache.commons.codec.net.URLCodec;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.params.HttpClientParams;
+import org.springframework.beans.factory.BeanFactory;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.repo.search.QueryParserException;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.Pair;
 import org.alfresco.util.shard.ExplicitShardingPolicy;
-import org.apache.commons.codec.net.URLCodec;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.params.HttpClientParams;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * @author Andy
  */
 public class ExplicitSolrStoreMappingWrapper implements SolrStoreMappingWrapper
 {
-    
+
     private HttpClientFactory httpClientFactory;
 
-    private LinkedHashSet<HttpClientAndBaseUrl> httpClientsAndBaseURLs = new LinkedHashSet<HttpClientAndBaseUrl>();  
+    private LinkedHashSet<HttpClientAndBaseUrl> httpClientsAndBaseURLs = new LinkedHashSet<HttpClientAndBaseUrl>();
 
     private ExplicitShardingPolicy policy;
 
@@ -73,15 +68,15 @@ public class ExplicitSolrStoreMappingWrapper implements SolrStoreMappingWrapper
 
     public void init()
     {
-        httpClientFactory = (HttpClientFactory)beanFactory.getBean(wrapped.getHttpClientFactory());
+        httpClientFactory = (HttpClientFactory) beanFactory.getBean(wrapped.getHttpClientFactory());
         random = new Random(123);
 
         if ((wrapped.getNodes() == null) || (wrapped.getNodes().length == 0))
         {
             HttpClient httpClient = httpClientFactory.getHttpClient();
             HttpClientParams params = httpClient.getParams();
-            //params.setBooleanParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, true);
-            //httpClient.getState().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials("admin", "admin"));
+            // params.setBooleanParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, true);
+            // httpClient.getState().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials("admin", "admin"));
             httpClientsAndBaseURLs.add(new HttpClientAndBaseUrl(httpClient, wrapped.getBaseUrl()));
         }
         else
@@ -185,9 +180,6 @@ public class ExplicitSolrStoreMappingWrapper implements SolrStoreMappingWrapper
 
     }
 
-  
-
-    
     public boolean isSharded()
     {
         return wrapped.getNumShards() > 1;
@@ -201,7 +193,7 @@ public class ExplicitSolrStoreMappingWrapper implements SolrStoreMappingWrapper
             throw new AlfrescoRuntimeException("Invalid shard configuration: shard = "
                     + wrapped.getNumShards() + "   reoplicationFactor = " + wrapped.getReplicationFactor() + " with node count = " + httpClientsAndBaseURLs.size());
         }
-        
+
         return getShards2();
     }
 
@@ -217,13 +209,13 @@ public class ExplicitSolrStoreMappingWrapper implements SolrStoreMappingWrapper
                 int position = random.nextInt(wrapped.getReplicationFactor());
                 List<Integer> nodeInstances = policy.getNodeInstancesForShardId(shard);
                 Integer nodeId = nodeInstances.get(position);
-                
+
                 if (builder.length() > 0)
                 {
                     builder.append(',');
                 }
-                HttpClientAndBaseUrl httpClientAndBaseUrl = httpClientsAndBaseURLs.toArray(new HttpClientAndBaseUrl[0])[nodeId-1];
-                builder.append(encoder.encode(httpClientAndBaseUrl.getProtocol() +  "://", "UTF-8"));
+                HttpClientAndBaseUrl httpClientAndBaseUrl = httpClientsAndBaseURLs.toArray(new HttpClientAndBaseUrl[0])[nodeId - 1];
+                builder.append(encoder.encode(httpClientAndBaseUrl.getProtocol() + "://", "UTF-8"));
                 builder.append(encoder.encode(httpClientAndBaseUrl.getHost(), "UTF-8"));
                 builder.append(':');
                 builder.append(encoder.encode("" + httpClientAndBaseUrl.getPort(), "UTF-8"));
@@ -236,7 +228,8 @@ public class ExplicitSolrStoreMappingWrapper implements SolrStoreMappingWrapper
                     builder.append(encoder.encode("/" + httpClientAndBaseUrl.getBaseUrl(), "UTF-8"));
                 }
 
-                if (isSharded()) builder.append('-').append(shard);
+                if (isSharded())
+                    builder.append('-').append(shard);
 
             }
             return builder.toString();
@@ -288,11 +281,9 @@ public class ExplicitSolrStoreMappingWrapper implements SolrStoreMappingWrapper
             return httpClient.getHostConfiguration().getProtocol().getScheme();
         }
 
-
-        /*
-         * (non-Javadoc)
-         * @see java.lang.Object#hashCode()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see java.lang.Object#hashCode() */
         @Override
         public int hashCode()
         {
@@ -304,10 +295,9 @@ public class ExplicitSolrStoreMappingWrapper implements SolrStoreMappingWrapper
             return result;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see java.lang.Object#equals(java.lang.Object)
-         */
+        /* (non-Javadoc)
+         * 
+         * @see java.lang.Object#equals(java.lang.Object) */
         @Override
         public boolean equals(Object obj)
         {
@@ -337,10 +327,9 @@ public class ExplicitSolrStoreMappingWrapper implements SolrStoreMappingWrapper
             return true;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see java.lang.Object#toString()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see java.lang.Object#toString() */
         @Override
         public String toString()
         {
@@ -360,13 +349,13 @@ public class ExplicitSolrStoreMappingWrapper implements SolrStoreMappingWrapper
             throw new AlfrescoRuntimeException("Invalid shard configuration: shard = "
                     + wrapped.getNumShards() + "   reoplicationFactor = " + wrapped.getReplicationFactor() + " with node count = " + httpClientsAndBaseURLs.size());
         }
-        
+
         int shard = random.nextInt(wrapped.getNumShards());
-        int position =  random.nextInt(wrapped.getReplicationFactor());
+        int position = random.nextInt(wrapped.getReplicationFactor());
         List<Integer> nodeInstances = policy.getNodeInstancesForShardId(shard);
-        Integer nodeId = nodeInstances.get(position);         
-        HttpClientAndBaseUrl httpClientAndBaseUrl = httpClientsAndBaseURLs.toArray(new HttpClientAndBaseUrl[0])[nodeId-1];
-        return new Pair<>(httpClientAndBaseUrl.httpClient, isSharded() ? httpClientAndBaseUrl.baseUrl+"-"+shard : httpClientAndBaseUrl.baseUrl);
+        Integer nodeId = nodeInstances.get(position);
+        HttpClientAndBaseUrl httpClientAndBaseUrl = httpClientsAndBaseURLs.toArray(new HttpClientAndBaseUrl[0])[nodeId - 1];
+        return new Pair<>(httpClientAndBaseUrl.httpClient, isSharded() ? httpClientAndBaseUrl.baseUrl + "-" + shard : httpClientAndBaseUrl.baseUrl);
     }
-    
+
 }

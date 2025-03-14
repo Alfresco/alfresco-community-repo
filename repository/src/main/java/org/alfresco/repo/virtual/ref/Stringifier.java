@@ -30,8 +30,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * A {@link Reference} abstract tree visitor designed to produce custom string
- * representations.
+ * A {@link Reference} abstract tree visitor designed to produce custom string representations.
  * 
  * @author Bogdan Horje
  */

@@ -52,7 +52,7 @@ public class RestAbstractClassModel extends TestModel implements IRestModel<Rest
     public Boolean includedInSupertypeQuery = null;
     public List<String> mandatoryAspects = null;
     public List<RestClassAssociationModel> associations = null;
-    public List <RestPropertyDefinitionModel> properties = null;
+    public List<RestPropertyDefinitionModel> properties = null;
 
     @JsonProperty(value = "model")
     public RestClassModel modelInfo;
@@ -77,7 +77,8 @@ public class RestAbstractClassModel extends TestModel implements IRestModel<Rest
         this.title = title;
     }
 
-    public String getDescription() {
+    public String getDescription()
+    {
         return description;
     }
 
@@ -146,7 +147,8 @@ public class RestAbstractClassModel extends TestModel implements IRestModel<Rest
         this.associations = associations;
     }
 
-    public List<RestPropertyDefinitionModel> getProperties() {
+    public List<RestPropertyDefinitionModel> getProperties()
+    {
         return properties;
     }
 

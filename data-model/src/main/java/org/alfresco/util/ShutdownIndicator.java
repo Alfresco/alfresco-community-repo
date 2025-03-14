@@ -33,9 +33,7 @@ import org.springframework.context.event.ApplicationContextEvent;
 import org.springframework.context.event.ContextClosedEvent;
 
 /**
- * Listens to ApplicationEvents to provide a simple {@link #isShuttingDown()} method, so callers don't need to be
- * Spring beans or listen to these events themselves. Intended for use by code that wishes to avoid ERROR log messages
- * on shutdown.
+ * Listens to ApplicationEvents to provide a simple {@link #isShuttingDown()} method, so callers don't need to be Spring beans or listen to these events themselves. Intended for use by code that wishes to avoid ERROR log messages on shutdown.
  *
  * @author adavis
  */

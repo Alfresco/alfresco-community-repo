@@ -39,9 +39,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface LockStore
 {
     LockState get(NodeRef nodeRef);
+
     void set(NodeRef nodeRef, LockState lockState);
+
     public Set<NodeRef> getNodes();
-    
+
     /**
      * WARNING: only use in test code - unsafe method for production use.
      * 

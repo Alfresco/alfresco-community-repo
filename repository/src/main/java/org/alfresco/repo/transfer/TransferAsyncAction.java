@@ -29,6 +29,9 @@ package org.alfresco.repo.transfer;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -36,8 +39,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.transfer.TransferCallback;
 import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.transfer.TransferService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * 
@@ -71,8 +72,7 @@ public class TransferAsyncAction extends ActionExecuterAbstractBase
 
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-    {
-    }
+    {}
 
     public void setTransferService(TransferService transferService)
     {

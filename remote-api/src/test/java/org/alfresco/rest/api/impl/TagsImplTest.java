@@ -27,9 +27,6 @@ package org.alfresco.rest.api.impl;
 
 import static java.util.stream.Collectors.toList;
 
-import static org.alfresco.rest.api.impl.TagsImpl.NOT_A_VALID_TAG;
-import static org.alfresco.rest.api.impl.TagsImpl.NO_PERMISSION_TO_MANAGE_A_TAG;
-import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertEquals;
@@ -40,12 +37,23 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
+import static org.alfresco.rest.api.impl.TagsImpl.NOT_A_VALID_TAG;
+import static org.alfresco.rest.api.impl.TagsImpl.NO_PERMISSION_TO_MANAGE_A_TAG;
+import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
@@ -71,12 +79,6 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TypeConstraint;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TagsImplTest
@@ -89,7 +91,6 @@ public class TagsImplTest
     private static final String CONTENT_NODE_ID = "content-node-id";
     private static final NodeRef CONTENT_NODE_REF = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, CONTENT_NODE_ID);
     private static final String PARAM_INCLUDE_COUNT = "count";
-
 
     private final RecognizedParamsExtractor queryExtractor = new RecognizedParamsExtractor() {};
 
@@ -132,7 +133,7 @@ public class TagsImplTest
         given(parametersMock.getSorting()).willReturn(new ArrayList<>());
         given(parametersMock.getInclude()).willReturn(new ArrayList<>());
 
-        //given(taggingServiceMock.getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(), any(), isNull(), isNull())).willReturn(List.of(new Pair<>(TAG_NODE_REF, null)));
+        // given(taggingServiceMock.getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(), any(), isNull(), isNull())).willReturn(List.of(new Pair<>(TAG_NODE_REF, null)));
         given(taggingServiceMock.getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(), any(), isNull(), isNull())).willReturn(Map.of(TAG_NODE_REF, 0L));
         given(nodeServiceMock.getProperty(any(NodeRef.class), eq(ContentModel.PROP_NAME))).willReturn("tag-dummy-name");
 
@@ -158,8 +159,8 @@ public class TagsImplTest
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
         final List<Tag> expectedTags = createTagsWithNodeRefs(List.of(TAG_NAME)).stream()
-            .peek(tag -> tag.setCount(0L))
-            .collect(toList());
+                .peek(tag -> tag.setCount(0L))
+                .collect(toList());
         assertEquals(expectedTags, actualTags.getCollection());
     }
 
@@ -184,7 +185,7 @@ public class TagsImplTest
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
         final List<Tag> expectedTags = List.of(Tag.builder().tag("tagA").nodeRef(tagNodeA).count(5L).create(),
-                                               Tag.builder().tag("tagB").nodeRef(tagNodeB).count(0L).create());
+                Tag.builder().tag("tagB").nodeRef(tagNodeB).count(0L).create());
         assertEquals(expectedTags, actualTags.getCollection());
     }
 
@@ -209,12 +210,12 @@ public class TagsImplTest
         given(nodeServiceMock.getProperty(tagNodeB, ContentModel.PROP_NAME)).willReturn("tagb");
         given(nodeServiceMock.getProperty(tagNodeC, ContentModel.PROP_NAME)).willReturn("tagc");
 
-        //when
+        // when
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
         final List<Tag> expectedTags = List.of(Tag.builder().tag("tagb").nodeRef(tagNodeB).count(0L).create(),
-                                               Tag.builder().tag("tagc").nodeRef(tagNodeC).count(2L).create(),
-                                               Tag.builder().tag("taga").nodeRef(tagNodeA).count(5L).create());
+                Tag.builder().tag("tagc").nodeRef(tagNodeC).count(2L).create(),
+                Tag.builder().tag("taga").nodeRef(tagNodeA).count(5L).create());
         assertEquals(expectedTags, actualTags.getCollection());
     }
 
@@ -239,12 +240,12 @@ public class TagsImplTest
         given(nodeServiceMock.getProperty(tagNodeB, ContentModel.PROP_NAME)).willReturn("tagb");
         given(nodeServiceMock.getProperty(tagNodeC, ContentModel.PROP_NAME)).willReturn("tagc");
 
-        //when
+        // when
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
         final List<Tag> expectedTags = List.of(Tag.builder().tag("taga").nodeRef(tagNodeA).count(5L).create(),
-                                               Tag.builder().tag("tagc").nodeRef(tagNodeC).count(2L).create(),
-                                               Tag.builder().tag("tagb").nodeRef(tagNodeB).count(0L).create());
+                Tag.builder().tag("tagc").nodeRef(tagNodeC).count(2L).create(),
+                Tag.builder().tag("tagb").nodeRef(tagNodeB).count(0L).create());
         assertEquals(expectedTags, actualTags.getCollection());
     }
 
@@ -269,12 +270,12 @@ public class TagsImplTest
         given(nodeServiceMock.getProperty(tagBanana, ContentModel.PROP_NAME)).willReturn("banana");
         given(nodeServiceMock.getProperty(tagCoconut, ContentModel.PROP_NAME)).willReturn("coconut");
 
-        //when
+        // when
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
         final List<Tag> expectedTags = List.of(Tag.builder().tag("apple").nodeRef(tagApple).create(),
-                                               Tag.builder().tag("banana").nodeRef(tagBanana).create(),
-                                               Tag.builder().tag("coconut").nodeRef(tagCoconut).create());
+                Tag.builder().tag("banana").nodeRef(tagBanana).create(),
+                Tag.builder().tag("coconut").nodeRef(tagCoconut).create());
         assertEquals(expectedTags, actualTags.getCollection());
     }
 
@@ -299,12 +300,12 @@ public class TagsImplTest
         given(nodeServiceMock.getProperty(tagBanana, ContentModel.PROP_NAME)).willReturn("banana");
         given(nodeServiceMock.getProperty(tagCoconut, ContentModel.PROP_NAME)).willReturn("coconut");
 
-        //when
+        // when
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
         final List<Tag> expectedTags = List.of(Tag.builder().tag("coconut").nodeRef(tagCoconut).create(),
-                                               Tag.builder().tag("banana").nodeRef(tagBanana).create(),
-                                               Tag.builder().tag("apple").nodeRef(tagApple).create());
+                Tag.builder().tag("banana").nodeRef(tagBanana).create(),
+                Tag.builder().tag("apple").nodeRef(tagApple).create());
         assertEquals(expectedTags, actualTags.getCollection());
     }
 
@@ -316,7 +317,7 @@ public class TagsImplTest
         given(parametersMock.getSorting()).willReturn(new ArrayList<>());
         given(parametersMock.getInclude()).willReturn(new ArrayList<>());
 
-        //when
+        // when
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
         then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), eq(new ArrayList<>()), any(), eq(Set.of("expectedname")), isNull());
@@ -332,10 +333,10 @@ public class TagsImplTest
         given(parametersMock.getSorting()).willReturn(new ArrayList<>());
         given(parametersMock.getInclude()).willReturn(new ArrayList<>());
 
-        //when
+        // when
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
-        then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE),any(), any(), eq(Set.of("expectedname1", "expectedname2")), isNull());
+        then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(), any(), eq(Set.of("expectedname1", "expectedname2")), isNull());
         then(taggingServiceMock).shouldHaveNoMoreInteractions();
         assertThat(actualTags).isNotNull();
     }
@@ -348,7 +349,7 @@ public class TagsImplTest
         given(parametersMock.getSorting()).willReturn(new ArrayList<>());
         given(parametersMock.getInclude()).willReturn(new ArrayList<>());
 
-        //when
+        // when
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
         then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(), any(), isNull(), eq(Set.of("expectedname*")));
@@ -363,7 +364,7 @@ public class TagsImplTest
         given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(tag=expectedName AND tag IN (expectedName1, expectedName2))"));
         given(parametersMock.getSorting()).willReturn(new ArrayList<>());
 
-        //when
+        // when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock));
 
         then(taggingServiceMock).shouldHaveNoInteractions();
@@ -377,7 +378,7 @@ public class TagsImplTest
         given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(tag BETWEEN ('expectedName', 'expectedName2'))"));
         given(parametersMock.getSorting()).willReturn(new ArrayList<>());
 
-        //when
+        // when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock));
 
         then(taggingServiceMock).shouldHaveNoInteractions();
@@ -391,7 +392,7 @@ public class TagsImplTest
         given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(NOT tag=expectedName)"));
         given(parametersMock.getSorting()).willReturn(new ArrayList<>());
 
-        //when
+        // when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock));
 
         then(taggingServiceMock).shouldHaveNoInteractions();
@@ -401,7 +402,7 @@ public class TagsImplTest
     @Test
     public void testDeleteTagById()
     {
-        //when
+        // when
         objectUnderTest.deleteTagById(STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);
 
         then(authorityServiceMock).should().hasAdminAuthority();
@@ -420,7 +421,7 @@ public class TagsImplTest
     {
         given(authorityServiceMock.hasAdminAuthority()).willReturn(false);
 
-        //when
+        // when
         assertThrows(PermissionDeniedException.class, () -> objectUnderTest.deleteTagById(STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID));
 
         then(authorityServiceMock).should().hasAdminAuthority();
@@ -434,7 +435,7 @@ public class TagsImplTest
     @Test
     public void testDeleteTagById_nonExistentTag()
     {
-        //when
+        // when
         assertThrows(EntityNotFoundException.class, () -> objectUnderTest.deleteTagById(STORE_REF_WORKSPACE_SPACESSTORE, "dummy-id"));
 
         then(authorityServiceMock).should().hasAdminAuthority();
@@ -453,7 +454,7 @@ public class TagsImplTest
         final List<Tag> tagsToCreate = createTags(tagNames);
         given(taggingServiceMock.createTags(any(), any())).willAnswer(invocation -> createTagAndNodeRefPairs(invocation.getArgument(1)));
 
-        //when
+        // when
         final List<Tag> actualCreatedTags = objectUnderTest.createTags(tagsToCreate, parametersMock);
 
         then(authorityServiceMock).should().hasAdminAuthority();
@@ -462,8 +463,8 @@ public class TagsImplTest
         then(taggingServiceMock).shouldHaveNoMoreInteractions();
         final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames);
         assertThat(actualCreatedTags)
-            .isNotNull().usingRecursiveComparison()
-            .isEqualTo(expectedTags);
+                .isNotNull().usingRecursiveComparison()
+                .isEqualTo(expectedTags);
     }
 
     @Test
@@ -471,51 +472,51 @@ public class TagsImplTest
     {
         given(authorityServiceMock.hasAdminAuthority()).willReturn(false);
 
-        //when
+        // when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.createTags(List.of(createTag(TAG_NAME)), parametersMock));
 
         then(authorityServiceMock).should().hasAdminAuthority();
         then(authorityServiceMock).shouldHaveNoMoreInteractions();
         then(taggingServiceMock).shouldHaveNoInteractions();
         assertThat(actualException)
-            .isInstanceOf(PermissionDeniedException.class)
-            .hasMessageContaining(NO_PERMISSION_TO_MANAGE_A_TAG);
+                .isInstanceOf(PermissionDeniedException.class)
+                .hasMessageContaining(NO_PERMISSION_TO_MANAGE_A_TAG);
     }
 
     @Test
     public void testCreateTags_passingNullInsteadList()
     {
-        //when
+        // when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.createTags(null, parametersMock));
 
         then(taggingServiceMock).shouldHaveNoInteractions();
         assertThat(actualException)
-            .isInstanceOf(InvalidArgumentException.class)
-            .hasMessageContaining(NOT_A_VALID_TAG);
+                .isInstanceOf(InvalidArgumentException.class)
+                .hasMessageContaining(NOT_A_VALID_TAG);
     }
 
     @Test
     public void testCreateTags_passingEmptyList()
     {
-        //when
+        // when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.createTags(Collections.emptyList(), parametersMock));
 
         then(taggingServiceMock).shouldHaveNoInteractions();
         assertThat(actualException)
-            .isInstanceOf(InvalidArgumentException.class)
-            .hasMessageContaining(NOT_A_VALID_TAG);
+                .isInstanceOf(InvalidArgumentException.class)
+                .hasMessageContaining(NOT_A_VALID_TAG);
     }
 
     @Test
     public void testCreateTags_passingListOfNulls()
     {
-        //when
+        // when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.createTags(Collections.singletonList(null), parametersMock));
 
         then(taggingServiceMock).shouldHaveNoInteractions();
         assertThat(actualException)
-            .isInstanceOf(InvalidArgumentException.class)
-            .hasMessageContaining(NOT_A_VALID_TAG);
+                .isInstanceOf(InvalidArgumentException.class)
+                .hasMessageContaining(NOT_A_VALID_TAG);
     }
 
     @Test
@@ -523,7 +524,7 @@ public class TagsImplTest
     {
         given(taggingServiceMock.createTags(any(), any())).willThrow(new DuplicateChildNodeNameException(null, null, TAG_NAME, null));
 
-        //when
+        // when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.createTags(List.of(createTag(TAG_NAME)), parametersMock));
 
         then(taggingServiceMock).should().createTags(STORE_REF_WORKSPACE_SPACESSTORE, List.of(TAG_NAME));
@@ -538,14 +539,14 @@ public class TagsImplTest
         final List<Tag> tagsToCreate = createTags(tagNames);
         given(taggingServiceMock.createTags(any(), any())).willAnswer(invocation -> createTagAndNodeRefPairs(invocation.getArgument(1)));
 
-        //when
+        // when
         final List<Tag> actualCreatedTags = objectUnderTest.createTags(tagsToCreate, parametersMock);
 
         then(taggingServiceMock).should().createTags(STORE_REF_WORKSPACE_SPACESSTORE, List.of(TAG_NAME));
         final List<Tag> expectedTags = List.of(createTagWithNodeRef(TAG_NAME));
         assertThat(actualCreatedTags)
-            .isNotNull()
-            .isEqualTo(expectedTags);
+                .isNotNull()
+                .isEqualTo(expectedTags);
     }
 
     @Test
@@ -556,15 +557,15 @@ public class TagsImplTest
         given(taggingServiceMock.createTags(any(), any())).willAnswer(invocation -> createTagAndNodeRefPairs(invocation.getArgument(1)));
         given(parametersMock.getInclude()).willReturn(List.of("count"));
 
-        //when
+        // when
         final List<Tag> actualCreatedTags = objectUnderTest.createTags(tagsToCreate, parametersMock);
 
         final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames).stream()
-            .peek(tag -> tag.setCount(0L))
-            .collect(toList());
+                .peek(tag -> tag.setCount(0L))
+                .collect(toList());
         assertThat(actualCreatedTags)
-            .isNotNull()
-            .isEqualTo(expectedTags);
+                .isNotNull()
+                .isEqualTo(expectedTags);
     }
 
     @Test(expected = EntityNotFoundException.class)
@@ -635,7 +636,7 @@ public class TagsImplTest
         assertEquals(actual.getCollection(), tags);
     }
 
-    @Test (expected = InvalidArgumentException.class)
+    @Test(expected = InvalidArgumentException.class)
     public void testGetTagsFromInvalidNode()
     {
         given(nodesMock.validateOrLookupNode(CONTENT_NODE_ID)).willThrow(new InvalidArgumentException());
@@ -693,8 +694,8 @@ public class TagsImplTest
     private static List<Pair<String, NodeRef>> createTagAndNodeRefPairs(final List<String> tagNames)
     {
         return tagNames.stream()
-            .map(tagName -> createPair(tagName, new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID.concat("-").concat(tagName))))
-            .collect(toList());
+                .map(tagName -> createPair(tagName, new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID.concat("-").concat(tagName))))
+                .collect(toList());
     }
 
     private static Pair<String, NodeRef> createPair(final String tagName, final NodeRef nodeRef)
@@ -715,15 +716,15 @@ public class TagsImplTest
     private static Tag createTag(final String tagName)
     {
         return Tag.builder()
-            .tag(tagName)
-            .create();
+                .tag(tagName)
+                .create();
     }
 
     private static Tag createTagWithNodeRef(final String tagName)
     {
         return Tag.builder()
-            .nodeRef(new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID.concat("-").concat(tagName)))
-            .tag(tagName)
-            .create();
+                .nodeRef(new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID.concat("-").concat(tagName)))
+                .tag(tagName)
+                .create();
     }
 }

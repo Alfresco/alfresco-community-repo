@@ -26,8 +26,6 @@
 
 package org.alfresco.repo.invitation.site;
 
-import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarResourceName;
-
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
@@ -68,7 +66,7 @@ public abstract class InviteSender
     protected final RepoAdminService repoAdminService;
     protected final NamespaceService namespaceService;
     protected final SysAdminParams sysAdminParams;
-    
+
     public InviteSender(ServiceRegistry services, Repository repository, MessageService messageService)
     {
         this.actionService = services.getActionService();
@@ -83,22 +81,26 @@ public abstract class InviteSender
         this.messageService = messageService;
         this.sysAdminParams = services.getSysAdminParams();
     }
-    
+
     /**
      * Sends an invitation email.
      * 
-     * @param emailTemplateXpath the XPath to the email template in the repository
-     * @param emailSubjectKey the subject of the email
-     * @param properties A Map containing the properties needed to send the email.
+     * @param emailTemplateXpath
+     *            the XPath to the email template in the repository
+     * @param emailSubjectKey
+     *            the subject of the email
+     * @param properties
+     *            A Map containing the properties needed to send the email.
      */
     public abstract void sendMail(String emailTemplateXpath, String emailSubjectKey, Map<String, String> properties);
-    
+
     protected abstract Map<String, Serializable> buildMailTextModel(Map<String, String> properties);
-    
+
     protected abstract List<String> getRequiredProperties();
 
     /**
-     * @param properties Map<String, String>
+     * @param properties
+     *            Map<String, String>
      */
     protected void checkProperties(Map<String, String> properties)
     {
@@ -113,11 +115,11 @@ public abstract class InviteSender
 
     protected NodeRef getEmailTemplateNodeRef(String emailTemplateXPath)
     {
-        List<NodeRef> nodeRefs = searchService.selectNodes(repository.getRootHome(), 
-                    emailTemplateXPath, null, 
-                    this.namespaceService, false);
-        
-        if (nodeRefs.size() == 1) 
+        List<NodeRef> nodeRefs = searchService.selectNodes(repository.getRootHome(),
+                emailTemplateXPath, null,
+                this.namespaceService, false);
+
+        if (nodeRefs.size() == 1)
         {
             // Now localise this
             NodeRef base = nodeRefs.get(0);
@@ -147,5 +149,5 @@ public abstract class InviteSender
     }
 
     protected abstract String getWorkflowPropForSiteName();
-    
+
 }

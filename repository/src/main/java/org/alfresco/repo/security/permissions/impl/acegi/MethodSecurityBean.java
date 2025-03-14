@@ -31,18 +31,18 @@ import java.util.Collection;
 
 import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.ConfigAttributeDefinition;
-
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.security.permissions.PermissionCheckCollection.PermissionCheckCollectionMixin;
-import org.alfresco.util.PropertyCheck;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.security.permissions.PermissionCheckCollection.PermissionCheckCollectionMixin;
+import org.alfresco.util.PropertyCheck;
+
 /**
- * Support to simulate interceptor-driven permissions. 
+ * Support to simulate interceptor-driven permissions.
  * 
  * @author janv, Derek Hulley
  * @since 4.0
@@ -50,7 +50,7 @@ import org.springframework.beans.factory.InitializingBean;
 public class MethodSecurityBean<R> implements InitializingBean
 {
     private Log logger = LogFactory.getLog(MethodSecurityBean.class);
-    
+
     private MethodInterceptor methodInterceptor;
     private MethodSecurityInterceptor methodSecurityInterceptor;
     private Class<?> service;
@@ -58,12 +58,11 @@ public class MethodSecurityBean<R> implements InitializingBean
     private ConfigAttributeDefinition cad;
 
     /**
-     * Default constructor.  Use setter methods for initialization.
+     * Default constructor. Use setter methods for initialization.
      */
     public MethodSecurityBean()
-    {
-    }
-    
+    {}
+
     /**
      * Helper constructor to supply necessary values
      */
@@ -73,9 +72,10 @@ public class MethodSecurityBean<R> implements InitializingBean
         this.service = service;
         this.methodName = methodName;
     }
-    
+
     /**
-     * @param methodInterceptor         an method interceptor, ideally a MethodSecurityInterceptor
+     * @param methodInterceptor
+     *            an method interceptor, ideally a MethodSecurityInterceptor
      */
     public void setMethodSecurityInterceptor(MethodInterceptor methodInterceptor)
     {
@@ -104,7 +104,7 @@ public class MethodSecurityBean<R> implements InitializingBean
         PropertyCheck.mandatory(this, "methodInterceptor", methodInterceptor);
         PropertyCheck.mandatory(this, "service", service);
         PropertyCheck.mandatory(this, "methodName", methodName);
-        
+
         // Get the method from the service
         Method method = null;
         for (Method m : service.getMethods())
@@ -117,15 +117,15 @@ public class MethodSecurityBean<R> implements InitializingBean
                 break;
             }
         }
-        
+
         if (method == null)
         {
             throw new AlfrescoRuntimeException(
                     "Method not found: \n" +
-                    "   Interface: " + service.getClass() + "\n" +
-                    "   Method:    " + methodName);
+                            "   Interface: " + service.getClass() + "\n" +
+                            "   Method:    " + methodName);
         }
-        
+
         if (!(methodInterceptor instanceof MethodSecurityInterceptor))
         {
             // It is not an interceptor that applies security, so just ignore
@@ -142,7 +142,7 @@ public class MethodSecurityBean<R> implements InitializingBean
             // Null means there are no applicable permissions
         }
     }
-    
+
     /**
      * @see PermissionCheckCollectionMixin#create(Collection, int, long, int)
      */
@@ -153,7 +153,7 @@ public class MethodSecurityBean<R> implements InitializingBean
     {
         return applyPermissions(toCheck, authentication, targetResultCount, Long.MAX_VALUE, Integer.MAX_VALUE);
     }
-    
+
     /**
      * @see PermissionCheckCollectionMixin#create(Collection, int, long, int)
      */
@@ -188,45 +188,45 @@ public class MethodSecurityBean<R> implements InitializingBean
         }
         return ret;
     }
-    
+
     /**
      * Helper to provide method for permissions interceptor
      */
-    class InternalMethodInvocation implements MethodInvocation 
+    class InternalMethodInvocation implements MethodInvocation
     {
         Method method;
-        
-        public InternalMethodInvocation(Method method) 
+
+        public InternalMethodInvocation(Method method)
         {
             this.method = method;
         }
-        
-        protected InternalMethodInvocation() 
+
+        protected InternalMethodInvocation()
         {
             throw new UnsupportedOperationException();
         }
-        
-        public Object[] getArguments() 
+
+        public Object[] getArguments()
         {
             throw new UnsupportedOperationException();
         }
-        
-        public Method getMethod() 
+
+        public Method getMethod()
         {
             return this.method;
         }
-        
-        public AccessibleObject getStaticPart() 
+
+        public AccessibleObject getStaticPart()
         {
             throw new UnsupportedOperationException();
         }
-        
-        public Object getThis() 
+
+        public Object getThis()
         {
             throw new UnsupportedOperationException();
         }
-        
-        public Object proceed() throws Throwable 
+
+        public Object proceed() throws Throwable
         {
             throw new UnsupportedOperationException();
         }

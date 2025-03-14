@@ -34,6 +34,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -46,10 +51,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.XMLUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
 /**
  * @author Brian Remmington
@@ -62,7 +63,7 @@ import org.xml.sax.SAXException;
 public class XSLTFunctions
 {
     private static final Log log = LogFactory.getLog(XSLTFunctions.class);
-    
+
     private FileFolderService fileService;
     private ContentService contentService;
     private NodeService nodeService;
@@ -70,8 +71,7 @@ public class XSLTFunctions
     private DictionaryService dictionaryService;
 
     public XSLTFunctions()
-    {
-    }
+    {}
 
     public Document parseXMLDocument(final NodeRef root, String repoPath) throws IOException, SAXException,
             FileNotFoundException
@@ -114,7 +114,8 @@ public class XSLTFunctions
     }
 
     /**
-     * @param repoPath String
+     * @param repoPath
+     *            String
      * @return String[]
      */
     private String[] breakDownPath(String repoPath)
@@ -128,8 +129,7 @@ public class XSLTFunctions
     }
 
     /**
-     * Encodes invalid HTML characters. (Fix for ETWOTWO-504 issue) This code was adopted from WebDAVHelper.encodeHTML()
-     * method with some restrictions.
+     * Encodes invalid HTML characters. (Fix for ETWOTWO-504 issue) This code was adopted from WebDAVHelper.encodeHTML() method with some restrictions.
      * 
      * @see "press-release.xsl" for pattern
      * 
@@ -241,7 +241,8 @@ public class XSLTFunctions
     }
 
     /**
-     * @param fileService the fileService to set
+     * @param fileService
+     *            the fileService to set
      */
     public void setFileService(FileFolderService fileService)
     {
@@ -249,7 +250,8 @@ public class XSLTFunctions
     }
 
     /**
-     * @param contentService the contentService to set
+     * @param contentService
+     *            the contentService to set
      */
     public void setContentService(ContentService contentService)
     {
@@ -257,7 +259,8 @@ public class XSLTFunctions
     }
 
     /**
-     * @param nodeService the nodeService to set
+     * @param nodeService
+     *            the nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -265,7 +268,8 @@ public class XSLTFunctions
     }
 
     /**
-     * @param namespaceService the namespaceService to set
+     * @param namespaceService
+     *            the namespaceService to set
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -273,7 +277,8 @@ public class XSLTFunctions
     }
 
     /**
-     * @param dictionaryService the dictionaryService to set
+     * @param dictionaryService
+     *            the dictionaryService to set
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {

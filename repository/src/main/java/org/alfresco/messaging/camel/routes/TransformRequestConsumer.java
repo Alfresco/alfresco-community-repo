@@ -25,6 +25,9 @@
  */
 package org.alfresco.messaging.camel.routes;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.commons.logging.Log;
@@ -33,9 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Listener for transform request events.
@@ -51,8 +51,7 @@ public class TransformRequestConsumer extends RouteBuilder
     public String sourceQueue;
 
     @Autowired
-    @Qualifier("transformRequestProcessor")
-    private Processor processor;
+    @Qualifier("transformRequestProcessor") private Processor processor;
 
     // Not restricted for now, should be restricted after performance tests.
     private ExecutorService executorService = Executors.newCachedThreadPool();
@@ -72,7 +71,8 @@ public class TransformRequestConsumer extends RouteBuilder
         this.processor = processor;
     }
 
-    @Override public void configure()
+    @Override
+    public void configure()
     {
         if (logger.isDebugEnabled())
         {

@@ -42,25 +42,22 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Class containing behaviour for the multilingual empty translation aspect.
- * An empty translation is a document's properties translation. This kind of node
- * doesn't have a content.  
- *  
+ * Class containing behaviour for the multilingual empty translation aspect. An empty translation is a document's properties translation. This kind of node doesn't have a content.
+ * 
  * {@link ContentModel#ASPECT_MULTILINGUAL_EMPTY_TRANSLATION ml empty document aspect}
  *
  * @author Yannick Pignot
  */
-public class EmptyTranslationAspect implements 
+public class EmptyTranslationAspect implements
         CopyServicePolicies.OnCopyNodePolicy,
         ContentServicePolicies.OnContentUpdatePolicy
 {
-    
-    //     Dependencies
+
+    // Dependencies
     private PolicyComponent policyComponent;
-    
+
     private NodeService nodeService;
-    
-    
+
     /**
      * Initialise the Multilingual Empty Translation Aspect
      * <p>
@@ -72,42 +69,43 @@ public class EmptyTranslationAspect implements
                 QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
                 ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION,
                 new JavaBehaviour(this, "getCopyCallback"));
-        
+
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onContentUpdate"), 
-                ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION, 
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onContentUpdate"),
+                ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION,
                 new JavaBehaviour(this, "onContentUpdate"));
     }
-    
+
     /**
-     * @param policyComponent the policy component to register behaviour with
+     * @param policyComponent
+     *            the policy component to register behaviour with
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
 
     /**
-     * @param nodeService the Node Service to set
+     * @param nodeService
+     *            the Node Service to set
      */
-    public void setNodeService(NodeService nodeService) 
+    public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
-    }   
+    }
 
     /**
      * Copy a <b>cm:mlEmptyTranslation</b> is not permit.
      */
-    public void onCopyNode(QName classRef, NodeRef sourceNodeRef, StoreRef destinationStoreRef, boolean copyToNewNode, PolicyScope copyDetails) 
+    public void onCopyNode(QName classRef, NodeRef sourceNodeRef, StoreRef destinationStoreRef, boolean copyToNewNode, PolicyScope copyDetails)
     {
         throw new IllegalStateException("It's impossible to copy an empty translation");
     }
 
-    /** 
-      * If a content is added to a <b>cm:mlEmptyTranslation</b>, remove this aspect. 
-      */
-    public void onContentUpdate(NodeRef nodeRef, boolean newContent) 
+    /**
+     * If a content is added to a <b>cm:mlEmptyTranslation</b>, remove this aspect.
+     */
+    public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
         if (newContent)
         {
@@ -115,11 +113,9 @@ public class EmptyTranslationAspect implements
             nodeService.removeAspect(nodeRef, ContentModel.ASPECT_TEMPORARY);
         }
     }
-    
+
     /**
-     * Extends the NO-OP copy behaviour to generate an exception if copied.  In other words,
-     * the presence of {@link ContentModel#ASPECT_MULTILINGUAL_EMPTY_TRANSLATION} should prevent
-     * a node from being copied; if this is not done by the copy client, it is enforced here. 
+     * Extends the NO-OP copy behaviour to generate an exception if copied. In other words, the presence of {@link ContentModel#ASPECT_MULTILINGUAL_EMPTY_TRANSLATION} should prevent a node from being copied; if this is not done by the copy client, it is enforced here.
      * 
      * @author Derek Hulley
      * @since 3.2
@@ -127,9 +123,10 @@ public class EmptyTranslationAspect implements
     private static class EmptyTranslationAspectCopyBehaviourCallback extends DoNothingCopyBehaviourCallback
     {
         private static final CopyBehaviourCallback INSTANCE = new EmptyTranslationAspectCopyBehaviourCallback();
-        
+
         /**
-         * @throws          IllegalStateException       always
+         * @throws IllegalStateException
+         *             always
          */
         @Override
         public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
@@ -138,9 +135,9 @@ public class EmptyTranslationAspect implements
                     "Nodes with " + ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION + " may not be copied");
         }
     }
-    
+
     /**
-     * @return              Returns CopyBehaviourCallback
+     * @return Returns CopyBehaviourCallback
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {

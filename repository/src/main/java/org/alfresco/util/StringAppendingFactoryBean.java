@@ -49,10 +49,9 @@ public class StringAppendingFactoryBean implements FactoryBean
         this.items = items;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.beans.factory.FactoryBean#getObject()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.springframework.beans.factory.FactoryBean#getObject() */
     public Object getObject() throws Exception
     {
         if (this.items == null)
@@ -67,19 +66,17 @@ public class StringAppendingFactoryBean implements FactoryBean
         return buff.toString();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.beans.factory.FactoryBean#getObjectType()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.springframework.beans.factory.FactoryBean#getObjectType() */
     public Class<?> getObjectType()
     {
         return String.class;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.beans.factory.FactoryBean#isSingleton()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.springframework.beans.factory.FactoryBean#isSingleton() */
     public boolean isSingleton()
     {
         return true;

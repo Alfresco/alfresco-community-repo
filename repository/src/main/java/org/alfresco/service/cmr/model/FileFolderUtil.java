@@ -47,41 +47,40 @@ import org.alfresco.service.namespace.QName;
 public class FileFolderUtil
 {
     /**
-     * Checks for the presence of, and creates as necessary, the folder
-     * structure in the provided path.
+     * Checks for the presence of, and creates as necessary, the folder structure in the provided path.
      * <p>
-     * An empty path list is not allowed as it would be impossible to
-     * necessarily return file info for the parent node - it might not be a
-     * folder node.
+     * An empty path list is not allowed as it would be impossible to necessarily return file info for the parent node - it might not be a folder node.
      * 
      * @param parentNodeRef
      *            the node under which the path will be created
      * @param pathElements
      *            the folder name path to create - may not be empty
      * @param folderTypeQName
-     *            the types of nodes to create. This must be a valid subtype of
-     *            {@link org.alfresco.model.ContentModel#TYPE_FOLDER they folder
-     *            type}.
+     *            the types of nodes to create. This must be a valid subtype of {@link org.alfresco.model.ContentModel#TYPE_FOLDER they folder type}.
      * @return Returns the info of the last folder in the path.
      */
     public static FileInfo makeFolders(FileFolderService service,
             NodeRef parentNodeRef, List<String> pathElements,
             QName folderTypeQName)
     {
-        return makeFolders(service, parentNodeRef,pathElements, folderTypeQName, null, null);
+        return makeFolders(service, parentNodeRef, pathElements, folderTypeQName, null, null);
     }
-    
+
     /**
      * Same as above, with option to disable parent behaviour(s) when creating sub-folder
      * 
-     * @param service FileFolderService
-     * @param parentNodeRef NodeRef
-     * @param folderTypeQName QName
-     * @param behaviourFilter BehaviourFilter
+     * @param service
+     *            FileFolderService
+     * @param parentNodeRef
+     *            NodeRef
+     * @param folderTypeQName
+     *            QName
+     * @param behaviourFilter
+     *            BehaviourFilter
      * @return FileInfo
      */
     public static FileInfo makeFolders(FileFolderService service, NodeRef parentNodeRef, List<String> pathElements,
-                QName folderTypeQName, BehaviourFilter behaviourFilter, Set<QName> parentBehavioursToDisable)
+            QName folderTypeQName, BehaviourFilter behaviourFilter, Set<QName> parentBehavioursToDisable)
     {
         validate(pathElements, service, folderTypeQName);
 
@@ -97,63 +96,64 @@ public class FileFolderUtil
         return fileInfo;
     }
 
-    
     /**
-     * Checks for the presence of, and creates as necessary, the folder
-     * structure in the provided paths with the following options:
+     * Checks for the presence of, and creates as necessary, the folder structure in the provided paths with the following options:
      * <ul>
      * <li>Option to disable parent behaviour(s) when creating sub-folder.</li>
      * <li>Each folder has the option to have its own set of aspects</li>
-     *</ul>
+     * </ul>
      * 
-     * @param service the FileFolderService object
-     * @param nodeService the NodeService object
-     * @param parentNodeRef the node under which the path will be created
-     * @param pathElementDetails the list of folder hierarchy where each folder
-     *            can have its own set of aspects - may not be empty
-     * @param folderTypeQName the types of nodes to create. This must be a valid
-     *            subtype of {@link org.alfresco.model.ContentModel#TYPE_FOLDER
-     *            they folder type}
-     * @param behaviourFilter the BehaviourFilter object
-     * @param parentBehavioursToDisable the set of behaviours that must be
-     *            disabled
+     * @param service
+     *            the FileFolderService object
+     * @param nodeService
+     *            the NodeService object
+     * @param parentNodeRef
+     *            the node under which the path will be created
+     * @param pathElementDetails
+     *            the list of folder hierarchy where each folder can have its own set of aspects - may not be empty
+     * @param folderTypeQName
+     *            the types of nodes to create. This must be a valid subtype of {@link org.alfresco.model.ContentModel#TYPE_FOLDER they folder type}
+     * @param behaviourFilter
+     *            the BehaviourFilter object
+     * @param parentBehavioursToDisable
+     *            the set of behaviours that must be disabled
      * @return Returns the {@code FileInfo} of the last folder in the path.
      */
     public static FileInfo makeFolders(FileFolderService service, NodeService nodeService, NodeRef parentNodeRef,
-                List<PathElementDetails> pathElementDetails, QName folderTypeQName, BehaviourFilter behaviourFilter,
-                Set<QName> parentBehavioursToDisable)
+            List<PathElementDetails> pathElementDetails, QName folderTypeQName, BehaviourFilter behaviourFilter,
+            Set<QName> parentBehavioursToDisable)
     {
         return makeFolders(service, nodeService, parentNodeRef, pathElementDetails, folderTypeQName, behaviourFilter, parentBehavioursToDisable, null);
     }
 
     /**
-     * Checks for the presence of, and creates as necessary, the folder
-     * structure in the provided paths with the following options:
+     * Checks for the presence of, and creates as necessary, the folder structure in the provided paths with the following options:
      * <ul>
      * <li>Option to disable parent behaviour(s) when creating sub-folder.</li>
      * <li>Each folder has the option to have its own set of aspects</li>
-     *</ul>
+     * </ul>
      *
-     * @param service the FileFolderService object
-     * @param nodeService the NodeService object
-     * @param parentNodeRef the node under which the path will be created
-     * @param pathElementDetails the list of folder hierarchy where each folder
-     *            can have its own set of aspects - may not be empty
-     * @param folderTypeQName the types of nodes to create. This must be a valid
-     *            subtype of {@link org.alfresco.model.ContentModel#TYPE_FOLDER
-     *            they folder type}
-     * @param behaviourFilter the BehaviourFilter object
-     * @param parentBehavioursToDisable the set of behaviours that must be
-     *            disabled
-     * @param allFoldersRefsInThePath (Optional) if an instance of a Set is provided,
-     *                                then it'd be populated with nodeRefs of all
-     *                                the folders that have been specified in the path
-     *                                elements details.({@code pathElementDetails}).
+     * @param service
+     *            the FileFolderService object
+     * @param nodeService
+     *            the NodeService object
+     * @param parentNodeRef
+     *            the node under which the path will be created
+     * @param pathElementDetails
+     *            the list of folder hierarchy where each folder can have its own set of aspects - may not be empty
+     * @param folderTypeQName
+     *            the types of nodes to create. This must be a valid subtype of {@link org.alfresco.model.ContentModel#TYPE_FOLDER they folder type}
+     * @param behaviourFilter
+     *            the BehaviourFilter object
+     * @param parentBehavioursToDisable
+     *            the set of behaviours that must be disabled
+     * @param allFoldersRefsInThePath
+     *            (Optional) if an instance of a Set is provided, then it'd be populated with nodeRefs of all the folders that have been specified in the path elements details.({@code pathElementDetails}).
      * @return Returns the {@code FileInfo} of the last folder in the path.
      */
     public static FileInfo makeFolders(FileFolderService service, NodeService nodeService, NodeRef parentNodeRef,
-                List<PathElementDetails> pathElementDetails, QName folderTypeQName, BehaviourFilter behaviourFilter,
-                Set<QName> parentBehavioursToDisable, Set<NodeRef> allFoldersRefsInThePath)
+            List<PathElementDetails> pathElementDetails, QName folderTypeQName, BehaviourFilter behaviourFilter,
+            Set<QName> parentBehavioursToDisable, Set<NodeRef> allFoldersRefsInThePath)
     {
         validate(pathElementDetails, service, folderTypeQName);
 
@@ -164,8 +164,8 @@ public class FileFolderUtil
             // does it exist?
             // Navigation should not check permissions
             NodeRef nodeRef = AuthenticationUtil.runAs(
-                        new SearchAsSystem(service, currentParentRef, pathElement.getFolderName()),
-                        AuthenticationUtil.getSystemUserName());
+                    new SearchAsSystem(service, currentParentRef, pathElement.getFolderName()),
+                    AuthenticationUtil.getSystemUserName());
 
             if (nodeRef == null)
             {
@@ -258,7 +258,7 @@ public class FileFolderUtil
         }
 
     }
-    
+
     /**
      * A simple POJO to hold information about the folder which will be created.
      * 

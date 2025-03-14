@@ -29,26 +29,23 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
- * Helper class to provide static and common access to the Spring
- * {@link org.springframework.context.ApplicationContext application context}.
+ * Helper class to provide static and common access to the Spring {@link org.springframework.context.ApplicationContext application context}.
  * <p>
- *     <strong>Deprecated.</strong> It is better to use Spring annotations to define the application context to use in tests,
- *     see {@code org.alfresco.util.BaseSpringTest}
+ * <strong>Deprecated.</strong> It is better to use Spring annotations to define the application context to use in tests, see {@code org.alfresco.util.BaseSpringTest}
  * </p>
+ * 
  * @author Derek Hulley
  */
 @Deprecated
 public class ApplicationContextHelper extends BaseApplicationContextHelper
-{   
+{
     /** location of required configuration files */
-    public static final String[] CONFIG_LOCATIONS = new String[] { "classpath:alfresco/application-context.xml" };
-    
+    public static final String[] CONFIG_LOCATIONS = new String[]{"classpath:alfresco/application-context.xml"};
+
     /**
-     * Provides a static, single instance of the default Alfresco application context.  This method can be
-     * called repeatedly.
+     * Provides a static, single instance of the default Alfresco application context. This method can be called repeatedly.
      * <p/>
-     * If the configuration requested differs from one used previously, then the previously-created
-     * context is shut down.
+     * If the configuration requested differs from one used previously, then the previously-created context is shut down.
      * 
      * @return Returns an application context for the default Alfresco configuration
      */
@@ -56,13 +53,11 @@ public class ApplicationContextHelper extends BaseApplicationContextHelper
     {
         return BaseApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
     }
-    
+
     /**
-     * Provides a static, single instance of an application context represented by the given
-     * array of config locations. This method can be called repeatedly.
+     * Provides a static, single instance of an application context represented by the given array of config locations. This method can be called repeatedly.
      * <p/>
-     * If the configuration requested differs from one used previously, then the previously-created
-     * context is shut down.
+     * If the configuration requested differs from one used previously, then the previously-created context is shut down.
      * 
      * @return Returns an application context for the given config locations
      */
@@ -70,13 +65,18 @@ public class ApplicationContextHelper extends BaseApplicationContextHelper
     {
         return BaseApplicationContextHelper.getApplicationContext(configLocations);
     }
-    
-    public static void main(String ... args)
+
+    public static void main(String... args)
     {
         ClassPathXmlApplicationContext ctx = (ClassPathXmlApplicationContext) getApplicationContext();
         synchronized (ctx)
         {
-            try { ctx.wait(10000L); } catch (Throwable e) {}
+            try
+            {
+                ctx.wait(10000L);
+            }
+            catch (Throwable e)
+            {}
         }
         ctx.close();
     }

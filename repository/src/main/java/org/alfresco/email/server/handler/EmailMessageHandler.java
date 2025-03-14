@@ -41,10 +41,14 @@ public interface EmailMessageHandler
     /**
      * Method invokes for processing email message.
      * 
-     * @param nodeRef Target node
-     * @param message Email message
-     * @exception EmailMessageException Exception is thrown if processing was failed
-     * @exception DuplicateChildNodeNameException Exception is thrown if node name is duplicate.
+     * @param nodeRef
+     *            Target node
+     * @param message
+     *            Email message
+     * @exception EmailMessageException
+     *                Exception is thrown if processing was failed
+     * @exception DuplicateChildNodeNameException
+     *                Exception is thrown if node name is duplicate.
      */
     void processMessage(NodeRef nodeRef, EmailMessage message);
 

@@ -1,5 +1,9 @@
 package org.alfresco.rest.workflow.processes.items;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestItemModel;
@@ -10,9 +14,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * @author iulia.cojocea
@@ -36,9 +37,9 @@ public class DeleteProcessItemSanityTests extends RestTest
         dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
     }
 
-    @TestRail(section = {TestGroup.REST_API,TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES}, executionType = ExecutionType.SANITY,
             description = "Delete existing process item")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY})
     public void deleteProcessItem() throws Exception
     {
         processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
@@ -51,9 +52,9 @@ public class DeleteProcessItemSanityTests extends RestTest
                 .assertThat().entriesListDoesNotContain("id", processItem.getId());
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES}, executionType = ExecutionType.SANITY,
             description = "Try to delete existing process item using invalid processId")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY})
     public void deleteProcessItemUsingInvalidProcessId() throws Exception
     {
         processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();

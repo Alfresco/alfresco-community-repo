@@ -1,11 +1,15 @@
 package org.alfresco.rest.tags;
 
-import static org.alfresco.utility.data.RandomData.getRandomName;
-import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
 
+import static org.alfresco.utility.data.RandomData.getRandomName;
+import static org.alfresco.utility.report.log.Step.STEP;
+
 import java.util.Set;
+
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.Test;
 
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestTagModel;
@@ -14,13 +18,6 @@ import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.Test;
-
-import java.util.Set;
-import java.util.stream.IntStream;
-
-import static org.alfresco.utility.report.log.Step.STEP;
 
 @Test(groups = {TestGroup.REQUIRE_SOLR})
 public class GetTagsTests extends TagsDataPrep
@@ -30,58 +27,58 @@ public class GetTagsTests extends TagsDataPrep
     private static final String FIELD_TAG = "tag";
     private static final String FIELD_COUNT = "count";
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role gets tags using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.SANITY, description = "Verify user with Manager role gets tags using REST API and status code is OK (200)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY})
     public void getTagsWithManagerRole()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("tag", documentTagValue)
-            .and().entriesListContains("tag", documentTagValue2);
+                .and().entriesListContains("tag", documentTagValue)
+                .and().entriesListContains("tag", documentTagValue2);
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify user with Collaborator role gets tags using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION, description = "Verify user with Collaborator role gets tags using REST API and status code is OK (200)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void getTagsWithCollaboratorRole()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("tag", documentTagValue)
-            .and().entriesListContains("tag", documentTagValue2);
+                .and().entriesListContains("tag", documentTagValue)
+                .and().entriesListContains("tag", documentTagValue2);
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify user with Contributor role gets tags using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION, description = "Verify user with Contributor role gets tags using REST API and status code is OK (200)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void getTagsWithContributorRole()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("tag", documentTagValue)
-            .and().entriesListContains("tag", documentTagValue2);
+                .and().entriesListContains("tag", documentTagValue)
+                .and().entriesListContains("tag", documentTagValue2);
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify user with Consumer role gets tags using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION, description = "Verify user with Consumer role gets tags using REST API and status code is OK (200)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void getTagsWithConsumerRole()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("tag", documentTagValue)
-            .and().entriesListContains("tag", documentTagValue2);
+                .and().entriesListContains("tag", documentTagValue)
+                .and().entriesListContains("tag", documentTagValue2);
     }
 
     /**
      * Include count in the query parameters and ensure count is as expected for returned tags.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void testGetTags_withIncludeCount()
     {
         STEP("Get tags including count filter and ensure count is as expected for returned tags");
@@ -103,7 +100,7 @@ public class GetTagsTests extends TagsDataPrep
     /**
      * Get tags and order results by count. Default sort order should be ascending
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void testGetTags_withOrderByCountDefaultOrderShouldBeAsc()
     {
         STEP("Get tags and order results by count. Default sort order should be ascending");
@@ -119,7 +116,7 @@ public class GetTagsTests extends TagsDataPrep
     /**
      * Get tags and order results by count in ascending order
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void testGetTags_withOrderByCountAsc()
     {
         STEP("Get tags and order results by count in ascending order");
@@ -135,7 +132,7 @@ public class GetTagsTests extends TagsDataPrep
     /**
      * Get tags and order results by count in descending order
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void testGetTags_withOrderByCountDesc()
     {
         STEP("Get tags and order results by count in descending order");
@@ -151,7 +148,7 @@ public class GetTagsTests extends TagsDataPrep
     /**
      * Get tags and order results by tag name. Default sort order should be ascending
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void testGetTags_withOrderByTagDefaultOrderShouldBeAsc()
     {
         STEP("Get tags and order results by tag name. Default sort order should be ascending");
@@ -167,7 +164,7 @@ public class GetTagsTests extends TagsDataPrep
     /**
      * Get tags and order results by tag name in ascending order
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void testGetTags_withOrderByTagAsc()
     {
         STEP("Get tags and order results by tag name in ascending order");
@@ -183,7 +180,7 @@ public class GetTagsTests extends TagsDataPrep
     /**
      * Get tags and order results by tag name in descending order
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void testGetTags_withOrderByTagDesc()
     {
         STEP("Get tags and order results by tag name in descending order");
@@ -199,7 +196,7 @@ public class GetTagsTests extends TagsDataPrep
     /**
      * Ensure that we get a 400 error when we request to order by count without also including the tag count.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void testGetTags_orderByCountWithoutIncludeCount()
     {
         restClient.authenticateUser(adminUserModel)
@@ -210,9 +207,9 @@ public class GetTagsTests extends TagsDataPrep
         restClient.assertStatusCodeIs(BAD_REQUEST);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Failed authentication get tags call returns status code 401 with Manager role")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
-//    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.SANITY, description = "Failed authentication get tags call returns status code 401 with Manager role")
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY})
+    // @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
     public void failedAuthenticationReturnsUnauthorizedStatus()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -224,27 +221,27 @@ public class GetTagsTests extends TagsDataPrep
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that if maxItems is invalid status code returned is 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void maxItemsInvalidValueTest()
     {
         restClient.authenticateUser(adminUserModel).withParams("maxItems=abc").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.INVALID_MAXITEMS, "abc"));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that if skipCount is invalid status code returned is 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void skipCountInvalidValueTest()
     {
         restClient.authenticateUser(adminUserModel).withParams("skipCount=abc").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.INVALID_SKIPCOUNT, "abc"));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that file tag is retrieved")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void fileTagIsRetrieved()
     {
         restClient.authenticateUser(adminUserModel);
@@ -255,9 +252,9 @@ public class GetTagsTests extends TagsDataPrep
                 .and().entriesListContains("tag", documentTagValue2);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that folder tag is retrieved")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void folderTagIsRetrieved()
     {
         restClient.authenticateUser(adminUserModel);
@@ -267,10 +264,10 @@ public class GetTagsTests extends TagsDataPrep
                 .and().entriesListContains("tag", folderTagValue);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify site Manager is able to get tags using properties parameter."
                     + "Check that properties filter is applied.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void siteManagerIsAbleToRetrieveTagsWithPropertiesParameter()
     {
         returnedCollection = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
@@ -282,9 +279,9 @@ public class GetTagsTests extends TagsDataPrep
                 .and().entriesListDoesNotContain("id");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "With admin get tags and use skipCount parameter. Check pagination")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void useSkipCountCheckPagination()
     {
         returnedCollection = restClient.authenticateUser(adminUserModel).withCoreAPI().getTags();
@@ -300,9 +297,9 @@ public class GetTagsTests extends TagsDataPrep
         tagsWithSkipCount.assertThat().paginationField("skipCount").is("2");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "With admin get tags and use maxItems parameter. Check pagination")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void useMaxItemsParameterCheckPagination()
     {
         returnedCollection = restClient.authenticateUser(adminUserModel).withCoreAPI().getTags();
@@ -319,9 +316,9 @@ public class GetTagsTests extends TagsDataPrep
         tagsWithMaxItems.assertThat().paginationField("maxItems").is("2");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "With manager get tags and use high skipCount parameter. Check pagination")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void useHighSkipCountCheckPagination()
     {
         returnedCollection = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
@@ -334,9 +331,9 @@ public class GetTagsTests extends TagsDataPrep
                 .and().field("skipCount").is(20000);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "With Collaborator user get tags and use maxItems with value zero. Check default error model schema")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void useMaxItemsWithValueZeroCheckDefaultErrorModelSchema()
     {
         returnedCollection = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
@@ -348,9 +345,9 @@ public class GetTagsTests extends TagsDataPrep
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "With Manager user delete tag. Check it is not retrieved anymore.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void checkThatDeletedTagIsNotRetrievedAnymore()
     {
         String removedTag = getRandomName("tag3");
@@ -369,118 +366,118 @@ public class GetTagsTests extends TagsDataPrep
     /**
      * Verify if exact name filter can be applied.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void testGetTags_withSingleNameFilter()
     {
         STEP("Get tags with names filter using EQUALS and expect one item in result");
         returnedCollection = restClient.authenticateUser(adminUserModel)
-            .withParams("where=(tag='" + documentTag.getTag() + "')")
-            .withCoreAPI()
-            .getTags();
+                .withParams("where=(tag='" + documentTag.getTag() + "')")
+                .withCoreAPI()
+                .getTags();
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entrySetMatches("tag", Set.of(documentTagValue));
+                .entrySetMatches("tag", Set.of(documentTagValue));
     }
 
     /**
      * Verify if multiple names can be applied as a filter.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void testGetTags_withTwoNameFilters()
     {
         STEP("Get tags with names filter using IN and expect two items in result");
         returnedCollection = restClient.authenticateUser(adminUserModel)
-            .withParams("where=(tag IN ('" + documentTag.getTag() + "', '" + folderTag.getTag() + "'))")
-            .withCoreAPI()
-            .getTags();
+                .withParams("where=(tag IN ('" + documentTag.getTag() + "', '" + folderTag.getTag() + "'))")
+                .withCoreAPI()
+                .getTags();
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entrySetMatches("tag", Set.of(documentTagValue, folderTagValue));
+                .entrySetMatches("tag", Set.of(documentTagValue, folderTagValue));
     }
 
     /**
      * Verify if alike name filter can be applied.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void testGetTags_whichNamesStartsWithOrphan()
     {
         STEP("Get tags with names filter using MATCHES and expect one item in result");
         returnedCollection = restClient.authenticateUser(adminUserModel)
-                                       .withParams("where=(tag MATCHES ('orphan*'))", "maxItems=10000")
-                                       .withCoreAPI()
-                                       .getTags();
+                .withParams("where=(tag MATCHES ('orphan*'))", "maxItems=10000")
+                .withCoreAPI()
+                .getTags();
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-                          .entrySetContains("tag", orphanTag.getTag());
+                .entrySetContains("tag", orphanTag.getTag());
     }
 
     /**
      * Verify that tags can be filtered by exact name and alike name at the same time.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void testGetTags_withExactNameAndAlikeFilters()
     {
         STEP("Get tags with names filter using EQUALS and MATCHES and expect four items in result");
         returnedCollection = restClient.authenticateUser(adminUserModel)
-            .withParams("where=(tag MATCHES ('*tag*'))", "maxItems=10000")
-            .withCoreAPI()
-            .getTags();
+                .withParams("where=(tag MATCHES ('*tag*'))", "maxItems=10000")
+                .withCoreAPI()
+                .getTags();
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entrySetContains("tag", documentTagValue, documentTagValue2, folderTagValue, orphanTag.getTag());
+                .entrySetContains("tag", documentTagValue, documentTagValue2, folderTagValue, orphanTag.getTag());
     }
 
     /**
      * Verify if multiple alike filters can be applied.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void testGetTags_withTwoAlikeFilters()
     {
         STEP("Get tags applying names filter using MATCHES twice and expect four items in result");
         returnedCollection = restClient.authenticateUser(adminUserModel)
-            .withParams("where=(tag MATCHES ('orphan*') OR tag MATCHES ('tag*'))", "maxItems=10000")
-            .withCoreAPI()
-            .getTags();
+                .withParams("where=(tag MATCHES ('orphan*') OR tag MATCHES ('tag*'))", "maxItems=10000")
+                .withCoreAPI()
+                .getTags();
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entrySetContains("tag", documentTagValue, documentTagValue2, folderTagValue, orphanTag.getTag());
+                .entrySetContains("tag", documentTagValue, documentTagValue2, folderTagValue, orphanTag.getTag());
     }
 
     /**
      * Verify that providing incorrect field name in where query will result with 400 (Bad Request).
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void testGetTags_withWrongWherePropertyNameAndExpect400()
     {
         STEP("Try to get tags with names filter using EQUALS and wrong property name and expect 400");
         returnedCollection = restClient.authenticateUser(adminUserModel)
-            .withParams("where=(name=gat)")
-            .withCoreAPI()
-            .getTags();
+                .withParams("where=(name=gat)")
+                .withCoreAPI()
+                .getTags();
 
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-            .assertLastError().containsSummary("Where query error: property with name: name is not expected");
+                .assertLastError().containsSummary("Where query error: property with name: name is not expected");
     }
 
     /**
      * Verify tht AND operator is not supported in where query and expect 400 (Bad Request).
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void testGetTags_queryAndOperatorNotSupported()
     {
         STEP("Try to get tags applying names filter using AND operator and expect 400");
         returnedCollection = restClient.authenticateUser(adminUserModel)
-            .withParams("where=(name=tag AND name IN ('tag-', 'gat'))")
-            .withCoreAPI()
-            .getTags();
+                .withParams("where=(name=tag AND name IN ('tag-', 'gat'))")
+                .withCoreAPI()
+                .getTags();
 
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-            .assertLastError().containsSummary("An invalid WHERE query was received. Unsupported Predicate");
+                .assertLastError().containsSummary("An invalid WHERE query was received. Unsupported Predicate");
     }
 
     /**

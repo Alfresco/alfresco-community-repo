@@ -62,44 +62,41 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
     private String tenantId;
     private Set<String> actionChain;
     private List<ActionCondition> actionConditions = new ArrayList<ActionCondition>();
-    
+
     /**
-     * When there is more than one instance of the
-     *  action executing, both with the same ID, 
-     *  which one is this?
-     * This crops up most often with persisted
-     *  actions, with two copies running, one on
-     *  each of two different target nodes.
+     * When there is more than one instance of the action executing, both with the same ID, which one is this? This crops up most often with persisted actions, with two copies running, one on each of two different target nodes.
      */
     private int executionInstance = -1;
-    
+
     /**
      * When the action started executing, or null if it hasn't yet.
      */
     private Date executionStartDate;
-    
+
     /**
      * When the action finished executing, or null if it hasn't yet.
      */
     private Date executionEndDate;
-    
+
     /**
      * The status of the action's execution
      */
     private ActionStatus executionStatus = ActionStatus.New;
-    
+
     /**
-     * Why the action failed to execute fully,
-     *  if exists.
+     * Why the action failed to execute fully, if exists.
      */
     private String executionFailureMessage;
 
     /**
      * Constructor
      * 
-     * @param nodeRef the action node reference (null if not saved)
-     * @param id the action id
-     * @param actionDefinitionName the name of the action definition
+     * @param nodeRef
+     *            the action node reference (null if not saved)
+     * @param id
+     *            the action id
+     * @param actionDefinitionName
+     *            the name of the action definition
      */
     public ActionImpl(NodeRef nodeRef, String id, String actionDefinitionName)
     {
@@ -109,10 +106,14 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
     /**
      * Constructor
      * 
-     * @param nodeRef the action node reference (null if not saved)
-     * @param id the action id
-     * @param actionDefinitionName the action definition name
-     * @param parameterValues the parameter values
+     * @param nodeRef
+     *            the action node reference (null if not saved)
+     * @param id
+     *            the action id
+     * @param actionDefinitionName
+     *            the action definition name
+     * @param parameterValues
+     *            the parameter values
      */
     public ActionImpl(NodeRef nodeRef, String id, String actionDefinitionName, Map<String, Serializable> parameterValues)
     {
@@ -232,7 +233,8 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
     /**
      * Set the created date
      * 
-     * @param createdDate the created date
+     * @param createdDate
+     *            the created date
      */
     public void setCreatedDate(Date createdDate)
     {
@@ -344,7 +346,8 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
     /**
      * Set the action chain
      * 
-     * @param actionChain the list of actions that lead to this action
+     * @param actionChain
+     *            the list of actions that lead to this action
      */
     public void setActionChain(Set<String> actionChain)
     {
@@ -365,7 +368,7 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
     {
         return this.runAsUserName;
     }
-    
+
     public String getTenantId()
     {
         return this.tenantId;
@@ -375,7 +378,7 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
     {
         this.runAsUserName = runAsUserName;
     }
-    
+
     public void setTenantId(String tenantId)
     {
         this.tenantId = tenantId;
@@ -390,87 +393,85 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
     /**
      * Set the node reference
      * 
-     * @param nodeRef the node reference
+     * @param nodeRef
+     *            the node reference
      */
     public void setNodeRef(NodeRef nodeRef)
     {
         this.nodeRef = nodeRef;
     }
-    
+
     @Override
     public void addParameterValues(Map<String, Serializable> values)
     {
         getParameterValues().putAll(values);
     }
-    
+
     /**
-     * When there is more than one instance of the
-     *  action executing, both with the same ID, 
-     *  which one is this?
-     * This crops up most often with persisted
-     *  actions, with two copies running, one on
-     *  each of two different target nodes.
+     * When there is more than one instance of the action executing, both with the same ID, which one is this? This crops up most often with persisted actions, with two copies running, one on each of two different target nodes.
      */
-    public int getExecutionInstance() 
+    public int getExecutionInstance()
     {
-       return executionInstance;
-    }
-    
-    /**
-     * Called by the ActionService when the action  begins running. 
-     */
-    public void setExecutionInstance(int instance) {
-       executionInstance = instance;
-    }
-    
-    public Date getExecutionStartDate() {
-       return executionStartDate;
+        return executionInstance;
     }
 
     /**
-     * Records the date when the action began execution,
-     *  normally called by the {@link org.alfresco.service.cmr.action.ActionService} when
-     *  it starts running the action.
+     * Called by the ActionService when the action begins running.
      */
-    public void setExecutionStartDate(Date startDate) {
-       this.executionStartDate = startDate;
+    public void setExecutionInstance(int instance)
+    {
+        executionInstance = instance;
     }
-    
-    public Date getExecutionEndDate() {
-       return executionEndDate;
+
+    public Date getExecutionStartDate()
+    {
+        return executionStartDate;
     }
 
     /**
-     * Records the date when the action finished execution,
-     *  normally called by the {@link org.alfresco.service.cmr.action.ActionService} when
-     *  the action completes or fails.
+     * Records the date when the action began execution, normally called by the {@link org.alfresco.service.cmr.action.ActionService} when it starts running the action.
      */
-    public void setExecutionEndDate(Date endDate) {
-       this.executionEndDate = endDate;
+    public void setExecutionStartDate(Date startDate)
+    {
+        this.executionStartDate = startDate;
     }
-    
-    public ActionStatus getExecutionStatus() {
-       return executionStatus;
+
+    public Date getExecutionEndDate()
+    {
+        return executionEndDate;
     }
 
     /**
-     * Updates the current execution status. This is 
-     *  normally called by the {@link org.alfresco.service.cmr.action.ActionService} as
-     *  it progresses the Action's execution.
+     * Records the date when the action finished execution, normally called by the {@link org.alfresco.service.cmr.action.ActionService} when the action completes or fails.
      */
-    public void setExecutionStatus(ActionStatus status) {
-       this.executionStatus = status;
+    public void setExecutionEndDate(Date endDate)
+    {
+        this.executionEndDate = endDate;
     }
-    
-    public String getExecutionFailureMessage() {
-       return executionFailureMessage;
+
+    public ActionStatus getExecutionStatus()
+    {
+        return executionStatus;
     }
 
     /**
-     * Records the message of the exception which caused the 
-     *  Action to fail, if any.
+     * Updates the current execution status. This is normally called by the {@link org.alfresco.service.cmr.action.ActionService} as it progresses the Action's execution.
      */
-    public void setExecutionFailureMessage(String message) {
-       this.executionFailureMessage = message;
+    public void setExecutionStatus(ActionStatus status)
+    {
+        this.executionStatus = status;
+    }
+
+    public String getExecutionFailureMessage()
+    {
+        return executionFailureMessage;
+    }
+
+    /**
+     * Records the message of the exception which caused the Action to fail, if any.
+     */
+    public void setExecutionFailureMessage(String message)
+    {
+        this.executionFailureMessage = message;
     }
 }

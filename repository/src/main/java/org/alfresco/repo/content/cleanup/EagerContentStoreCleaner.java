@@ -29,43 +29,35 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * This component is responsible cleaning up orphaned content.
  * <p/>
- * Clean-up happens at two levels.<p/>
- * <u><b>Eager cleanup:</b></u> (since 3.2)<p/>
- * If {@link #setEagerOrphanCleanup(boolean) eager cleanup} is activated, then this
- * component listens to all content property change events and recorded for post-transaction
- * processing.  All orphaned content is deleted from the registered store(s).  Note that
- * any {@link #setListeners(List) listeners} are called as normal; backup or scrubbing
- * procedures should be plugged in as listeners if this is required.
+ * Clean-up happens at two levels.
  * <p/>
- * <u><b>Lazy cleanup:</b></u><p/>
- * This is triggered by means of a {@link ContentStoreCleanupJob Quartz job}.  This is
- * a heavy-weight process that effectively compares the database metadata with the
- * content URLs controlled by the various stores.  Once again, the listeners are called
- * appropriately.
+ * <u><b>Eager cleanup:</b></u> (since 3.2)
  * <p/>
- * <u><b>How backup policies are affected:</b></u><p/>
- * When restoring the system from a backup, the type of restore required is dictated by
- * the cleanup policy being enforced.  If eager cleanup is active, the system must<br/>
- * (a) have a listeners configured to backup the deleted content
- *     e.g. {@link DeletedContentBackupCleanerListener}, or <br/>
- * (b) ensure consistent backups across the database and content stores: backup
- *     when the system is not running; use a DB-based content store.  This is the
- *     recommended route when running with eager cleanup.
+ * If {@link #setEagerOrphanCleanup(boolean) eager cleanup} is activated, then this component listens to all content property change events and recorded for post-transaction processing. All orphaned content is deleted from the registered store(s). Note that any {@link #setListeners(List) listeners} are called as normal; backup or scrubbing procedures should be plugged in as listeners if this is required.
  * <p/>
- * Lazy cleanup protects the content for a given period (e.g. 7 days) giving plenty of
- * time for a backup to be taken; this allows hot backup without needing metadata-content
- * consistency to be enforced.
+ * <u><b>Lazy cleanup:</b></u>
+ * <p/>
+ * This is triggered by means of a {@link ContentStoreCleanupJob Quartz job}. This is a heavy-weight process that effectively compares the database metadata with the content URLs controlled by the various stores. Once again, the listeners are called appropriately.
+ * <p/>
+ * <u><b>How backup policies are affected:</b></u>
+ * <p/>
+ * When restoring the system from a backup, the type of restore required is dictated by the cleanup policy being enforced. If eager cleanup is active, the system must<br/>
+ * (a) have a listeners configured to backup the deleted content e.g. {@link DeletedContentBackupCleanerListener}, or <br/>
+ * (b) ensure consistent backups across the database and content stores: backup when the system is not running; use a DB-based content store. This is the recommended route when running with eager cleanup.
+ * <p/>
+ * Lazy cleanup protects the content for a given period (e.g. 7 days) giving plenty of time for a backup to be taken; this allows hot backup without needing metadata-content consistency to be enforced.
  * 
  * @author Derek Hulley
  */
@@ -73,21 +65,23 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
 {
     /**
      * Content URLs to delete once the transaction commits.
+     * 
      * @see #afterCommit()
      */
     private static final String KEY_POST_COMMIT_DELETION_URLS = "ContentStoreCleaner.PostCommitDeletionUrls";
     /**
      * Content URLs to delete if the transaction rolls back.
+     * 
      * @see #afterRollback()
      */
     private static final String KEY_POST_ROLLBACK_DELETION_URLS = "ContentStoreCleaner.PostRollbackDeletionUrls";
-    
+
     private static Log logger = LogFactory.getLog(EagerContentStoreCleaner.class);
-    
+
     private boolean eagerOrphanCleanup;
     private List<ContentStore> stores;
     private List<ContentStoreCleanerListener> listeners;
-    
+
     public EagerContentStoreCleaner()
     {
         this.stores = new ArrayList<ContentStore>(0);
@@ -95,7 +89,8 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
     }
 
     /**
-     * @param eagerOrphanCleanup    <tt>true</tt> to enable this component, otherwise <tt>false</tt>
+     * @param eagerOrphanCleanup
+     *            <tt>true</tt> to enable this component, otherwise <tt>false</tt>
      */
     public void setEagerOrphanCleanup(boolean eagerOrphanCleanup)
     {
@@ -103,7 +98,8 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
     }
 
     /**
-     * @param stores the content stores to clean
+     * @param stores
+     *            the content stores to clean
      */
     public void setStores(List<ContentStore> stores)
     {
@@ -111,7 +107,8 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
     }
 
     /**
-     * @param listeners the listeners that can react to deletions
+     * @param listeners
+     *            the listeners that can react to deletions
      */
     public void setListeners(List<ContentStoreCleanerListener> listeners)
     {
@@ -125,7 +122,7 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
     {
         checkProperties();
     }
-    
+
     /**
      * Perform basic checks to ensure that the necessary dependencies were injected.
      */
@@ -133,7 +130,7 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
     {
         PropertyCheck.mandatory(this, "listeners", listeners);
     }
-    
+
     /**
      * Queues orphaned content for post-transaction removal
      */
@@ -148,14 +145,11 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
     /**
      * Queues orphaned content for post-transaction removal
      * <p/>
-     * <b>NB: </b>Any content registered <u>will</u> be deleted if the current transaction
-     *            commits and if 'eager' cleanup is turned on.
+     * <b>NB: </b>Any content registered <u>will</u> be deleted if the current transaction commits and if 'eager' cleanup is turned on.
      * <p/>
      * Note that listeners are not called for this process.
      * 
-     * @return  Returns <tt>true</tt> if the content was scheduled for post-transaction deletion.
-     *          If the return value is <tt>true</tt> then the calling code <b>must</b> delete
-     *          the row entry for the content URL provided <b>BEFORE THE TRANSACTION COMMITS!</b>
+     * @return Returns <tt>true</tt> if the content was scheduled for post-transaction deletion. If the return value is <tt>true</tt> then the calling code <b>must</b> delete the row entry for the content URL provided <b>BEFORE THE TRANSACTION COMMITS!</b>
      */
     public boolean registerOrphanedContentUrl(String contentUrl)
     {
@@ -165,16 +159,13 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
     /**
      * Queues orphaned content for post-transaction removal
      * <p/>
-     * <b>NB: </b>Any content registered <u>will</u> be deleted if the current transaction
-     *            commits and if 'eager' cleanup is turned on OR if 'force' is <tt>true</tt>.
+     * <b>NB: </b>Any content registered <u>will</u> be deleted if the current transaction commits and if 'eager' cleanup is turned on OR if 'force' is <tt>true</tt>.
      * <p/>
      * Note that listeners are not called for this process.
      * 
-     * @param force         <tt>true</tt> for force the post-commit URL deletion
-     *                      regardless of the setting {@link #setEagerOrphanCleanup(boolean)}.
-     * @return  Returns <tt>true</tt> if the content was scheduled for post-transaction deletion.
-     *          If the return value is <tt>true</tt> then the calling code <b>must</b> delete
-     *          the row entry for the content URL provided <b>BEFORE THE TRANSACTION COMMITS!</b>
+     * @param force
+     *            <tt>true</tt> for force the post-commit URL deletion regardless of the setting {@link #setEagerOrphanCleanup(boolean)}.
+     * @return Returns <tt>true</tt> if the content was scheduled for post-transaction deletion. If the return value is <tt>true</tt> then the calling code <b>must</b> delete the row entry for the content URL provided <b>BEFORE THE TRANSACTION COMMITS!</b>
      */
     public boolean registerOrphanedContentUrl(String contentUrl, boolean force)
     {
@@ -254,20 +245,21 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
             deleteFromStores(contentUrl, false);
         }
     }
-    
+
     /**
      * Delete the content URL from all stores
      * <p/>
      * Note that listeners <b>are</b> called for this process.
      * 
-     * @param contentUrl                the URL to delete
-     * @return                          Returns <tt>true</tt> if all deletes were successful
+     * @param contentUrl
+     *            the URL to delete
+     * @return Returns <tt>true</tt> if all deletes were successful
      */
     public boolean deleteFromStores(String contentUrl)
     {
         return deleteFromStores(contentUrl, true);
     }
-    
+
     private boolean deleteFromStores(String contentUrl, boolean callListeners)
     {
         int deleted = 0;
@@ -298,8 +290,8 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
                     {
                         logger.error(
                                 "Content deletion listener failed: \n" +
-                                "   URL:    " + contentUrl + "\n" +
-                                "   Source: " + store,
+                                        "   URL:    " + contentUrl + "\n" +
+                                        "   Source: " + store,
                                 e);
                     }
                 }
@@ -313,7 +305,7 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
         // Did we delete from all stores (non-existence is a delete, too)
         return deleted == stores.size();
     }
-    
+
     /**
      * Attempts to delete the URL from the store, catching and reporing errors.
      */
@@ -326,8 +318,8 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
             {
                 logger.error(
                         "Content deletion failed (no exception): \n" +
-                        "   URL:    " + contentUrl + "\n" +
-                        "   Source: " + store);
+                                "   URL:    " + contentUrl + "\n" +
+                                "   Source: " + store);
                 return false;
             }
             else
@@ -339,8 +331,8 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
         {
             logger.error(
                     "Content deletion failed: \n" +
-                    "   URL:    " + contentUrl + "\n" +
-                    "   Source: " + store,
+                            "   URL:    " + contentUrl + "\n" +
+                            "   Source: " + store,
                     e);
             return false;
         }

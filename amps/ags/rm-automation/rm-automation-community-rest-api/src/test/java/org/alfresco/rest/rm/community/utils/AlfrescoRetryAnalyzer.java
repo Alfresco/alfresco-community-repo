@@ -31,7 +31,8 @@ import org.testng.util.RetryAnalyzerCount;
 
 public class AlfrescoRetryAnalyzer extends RetryAnalyzerCount
 {
-    public AlfrescoRetryAnalyzer() {
+    public AlfrescoRetryAnalyzer()
+    {
         super();
         setCount(3);
     }

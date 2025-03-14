@@ -34,14 +34,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class RenameFileCommand implements Command
 {
-    
+
     private String from;
     private String to;
     private NodeRef rootNode;
     private String fromPath;
     private String toPath;
     private boolean isSoft = false;
-    
+
     public RenameFileCommand(String from, String to, NodeRef rootNode, String fromPath, String toPath)
     {
         this.from = from;
@@ -51,17 +51,15 @@ public class RenameFileCommand implements Command
         this.toPath = toPath;
     }
 
-    
     public String getFrom()
     {
         return from;
     }
-    
+
     public String getTo()
     {
         return to;
     }
-
 
     @Override
     public TxnReadState getTransactionRequired()
@@ -69,42 +67,36 @@ public class RenameFileCommand implements Command
         return TxnReadState.TXN_READ_WRITE;
     }
 
-
     public void setRootNode(NodeRef rootNode)
     {
         this.rootNode = rootNode;
     }
-
 
     public NodeRef getRootNode()
     {
         return rootNode;
     }
 
-
     public void setFromPath(String fromPath)
     {
         this.fromPath = fromPath;
     }
-
 
     public String getFromPath()
     {
         return fromPath;
     }
 
-
     public void setToPath(String toPath)
     {
         this.toPath = toPath;
     }
 
-
     public String getToPath()
     {
         return toPath;
     }
-    
+
     public boolean isSoft()
     {
         return isSoft;

@@ -40,9 +40,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Class containing behaviour for the multilingual multilingual container type.
- * A multilingual container type is fonctionally named '<b>Logical Document</b>'.
- * It links each translation of a semantical message together
+ * Class containing behaviour for the multilingual multilingual container type. A multilingual container type is fonctionally named '<b>Logical Document</b>'. It links each translation of a semantical message together
  *
  * {@link ContentModel#TYPE_MULTILINGUAL_CONTAINER multilingual container type}
  *
@@ -69,7 +67,8 @@ public class MLContainerType implements
     }
 
     /**
-     * @param policyComponent the policy component to register behaviour with
+     * @param policyComponent
+     *            the policy component to register behaviour with
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -77,7 +76,8 @@ public class MLContainerType implements
     }
 
     /**
-     * @param multilingualContentService the Multilingual Content Service to set
+     * @param multilingualContentService
+     *            the Multilingual Content Service to set
      */
     public void setMultilingualContentService(
             MultilingualContentService multilingualContentService)
@@ -86,7 +86,8 @@ public class MLContainerType implements
     }
 
     /**
-     * @param nodeService the Node Service to set
+     * @param nodeService
+     *            the Node Service to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -96,32 +97,31 @@ public class MLContainerType implements
     /**
      * The property <b>locale</b> of a <b>cm:mlContainer</b> represents the locale of the pivot translation.
      *
-     * Since the pivot must be an existing translation and the pivot can t be empty, some tests must be performed when
-     * the locale of the mlContainer is updated.
+     * Since the pivot must be an existing translation and the pivot can t be empty, some tests must be performed when the locale of the mlContainer is updated.
      */
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        Locale localeAfter  = (Locale) after.get(ContentModel.PROP_LOCALE);
+        Locale localeAfter = (Locale) after.get(ContentModel.PROP_LOCALE);
         Locale localeBefore = (Locale) before.get(ContentModel.PROP_LOCALE);
 
         if (localeAfter == null)
         {
             throw new IllegalArgumentException("The ML container cannot have a null locale.");
         }
-        
+
         // If the locale is changing, then ensure that the pivot translation is present and matches
         if (localeBefore != null && !localeAfter.equals(localeBefore))
         {
             Map<Locale, NodeRef> translations = multilingualContentService.getTranslations(nodeRef);
 
-            //get the new pivot translation
+            // get the new pivot translation
             NodeRef pivot = translations.get(localeAfter);
 
-            if(pivot == null)
+            if (pivot == null)
             {
                 throw new IllegalArgumentException("The pivot translation must be an existing translation");
             }
-            else if(nodeService.hasAspect(pivot, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+            else if (nodeService.hasAspect(pivot, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
             {
                 throw new IllegalArgumentException("The pivot translation can't be an empty translation");
             }

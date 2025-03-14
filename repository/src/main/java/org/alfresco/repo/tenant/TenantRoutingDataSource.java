@@ -28,13 +28,13 @@ package org.alfresco.repo.tenant;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.sql.DataSource;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
+
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 
 /**
  * Experimental
@@ -42,28 +42,28 @@ import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
  * @author janv
  * @since 4.2
  */
-public class TenantRoutingDataSource extends AbstractRoutingDataSource 
+public class TenantRoutingDataSource extends AbstractRoutingDataSource
 {
     Map<String, DataSource> tenantDataSources = new HashMap<String, DataSource>();
-    
+
     private BasicDataSource baseDataSource;
-    
+
     private TenantService tenantService;
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-    
+
     public void setBaseDataSource(BasicDataSource baseDataSource)
     {
         this.baseDataSource = baseDataSource;
     }
-    
+
     @Override
-    protected Object determineCurrentLookupKey() 
+    protected Object determineCurrentLookupKey()
     {
-        //return tenantService.getCurrentUserDomain(); // note: this is re-entrant if it checks whether tenant is enabled !
+        // return tenantService.getCurrentUserDomain(); // note: this is re-entrant if it checks whether tenant is enabled !
         String runAsUser = AuthenticationUtil.getRunAsUser();
         String tenantDomain = TenantService.DEFAULT_DOMAIN;
         if (runAsUser != null)
@@ -76,17 +76,17 @@ public class TenantRoutingDataSource extends AbstractRoutingDataSource
         }
         return tenantDomain;
     }
-    
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public void afterPropertiesSet()
     {
         ParameterCheck.mandatory("baseDataSource", baseDataSource);
         ParameterCheck.mandatory("tenantDataSources", tenantDataSources);
-        
+
         String dbUrl = baseDataSource.getUrl();
-        setTargetDataSources((Map)tenantDataSources);
-        
+        setTargetDataSources((Map) tenantDataSources);
+
         try
         {
             // default tenant
@@ -98,36 +98,33 @@ public class TenantRoutingDataSource extends AbstractRoutingDataSource
         {
             throw new RuntimeException(se);
         }
-        
-       
-        
+
         super.afterPropertiesSet();
     }
-    
+
     public synchronized void addTenantDataSource(String tenantDomain, String dbUrl) throws SQLException
     {
         String currentTenantDomain = tenantService.getCurrentUserDomain();
-        if (! TenantService.DEFAULT_DOMAIN.equals(currentTenantDomain))
+        if (!TenantService.DEFAULT_DOMAIN.equals(currentTenantDomain))
         {
-            throw new RuntimeException("Unexpected - should not be in context of a tenant ["+currentTenantDomain+"]");
+            throw new RuntimeException("Unexpected - should not be in context of a tenant [" + currentTenantDomain + "]");
         }
-        
+
         tenantDataSources.put(tenantDomain, new TenantBasicDataSource(baseDataSource, dbUrl, -1));
-        
+
         super.afterPropertiesSet(); // to update resolved data sources
     }
-    
+
     public synchronized void removeTenantDataSource(String tenantDomain) throws SQLException
     {
         String currentTenantDomain = tenantService.getCurrentUserDomain();
-        if (! TenantService.DEFAULT_DOMAIN.equals(currentTenantDomain))
+        if (!TenantService.DEFAULT_DOMAIN.equals(currentTenantDomain))
         {
-            throw new RuntimeException("Unexpected - should not be in context of a tenant ["+currentTenantDomain+"]");
+            throw new RuntimeException("Unexpected - should not be in context of a tenant [" + currentTenantDomain + "]");
         }
-        
+
         tenantDataSources.remove(tenantDomain);
-        
+
         super.afterPropertiesSet(); // to update resolved data sources
     }
 }
-

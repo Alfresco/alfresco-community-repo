@@ -26,6 +26,7 @@
 package org.alfresco.repo.event2;
 
 import static java.lang.Thread.sleep;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -44,13 +45,14 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import org.alfresco.repo.event.v1.model.RepoEvent;
 
 public class EnqueuingEventSenderUnitTest
 {
@@ -63,7 +65,7 @@ public class EnqueuingEventSenderUnitTest
     private Map<String, RepoEvent<?>> events;
 
     @Before
-    public void setup() 
+    public void setup()
     {
         bus = mock(Event2MessageProducer.class);
         enqueuePool = newThreadPool();
@@ -77,7 +79,7 @@ public class EnqueuingEventSenderUnitTest
     }
 
     @After
-    public void teardown() 
+    public void teardown()
     {
         enqueuePool.shutdown();
         dequeuePool.shutdown();
@@ -87,8 +89,7 @@ public class EnqueuingEventSenderUnitTest
     {
         recordedEvents = new CopyOnWriteArrayList<>();
 
-        Mockito.doAnswer(new Answer<Void>()
-        {
+        Mockito.doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable
             {
@@ -100,7 +101,7 @@ public class EnqueuingEventSenderUnitTest
     }
 
     @Test
-    public void shouldReceiveSingleQuickMessage() throws Exception 
+    public void shouldReceiveSingleQuickMessage() throws Exception
     {
         eventSender.accept(messageWithDelay("A", 55l));
 
@@ -111,9 +112,11 @@ public class EnqueuingEventSenderUnitTest
     }
 
     @Test
-    public void shouldNotReceiveEventsWhenMessageIsNull() throws Exception 
+    public void shouldNotReceiveEventsWhenMessageIsNull() throws Exception
     {
-        eventSender.accept(() -> { return null; });
+        eventSender.accept(() -> {
+            return null;
+        });
 
         sleep(150l);
 
@@ -121,7 +124,8 @@ public class EnqueuingEventSenderUnitTest
     }
 
     @Test
-    public void shouldReceiveMultipleMessagesPreservingOrderScenarioOne() throws Exception {
+    public void shouldReceiveMultipleMessagesPreservingOrderScenarioOne() throws Exception
+    {
         eventSender.accept(messageWithDelay("A", 0l));
         eventSender.accept(messageWithDelay("B", 100l));
         eventSender.accept(messageWithDelay("C", 200l));
@@ -153,7 +157,9 @@ public class EnqueuingEventSenderUnitTest
     public void shouldReceiveMultipleMessagesPreservingOrderEvenWhenMakerPoisoned() throws Exception
     {
         eventSender.accept(messageWithDelay("A", 300l));
-        eventSender.accept(() -> {throw new RuntimeException("Boom! (not to worry, this is a test)");});
+        eventSender.accept(() -> {
+            throw new RuntimeException("Boom! (not to worry, this is a test)");
+        });
         eventSender.accept(messageWithDelay("B", 55l));
         eventSender.accept(messageWithDelay("C", 0l));
 
@@ -164,7 +170,7 @@ public class EnqueuingEventSenderUnitTest
         assertEquals("B", recordedEvents.get(1).getId());
         assertEquals("C", recordedEvents.get(2).getId());
     }
-    
+
     @Test
     public void shouldReceiveMultipleMessagesPreservingOrderEvenWhenSenderPoisoned() throws Exception
     {
@@ -186,7 +192,9 @@ public class EnqueuingEventSenderUnitTest
     public void shouldReceiveMultipleMessagesPreservingOrderEvenWhenMakerPoisonedWithError() throws Exception
     {
         eventSender.accept(messageWithDelay("A", 300l));
-        eventSender.accept(() -> {throw new OutOfMemoryError("Boom! (not to worry, this is a test)");});
+        eventSender.accept(() -> {
+            throw new OutOfMemoryError("Boom! (not to worry, this is a test)");
+        });
         eventSender.accept(messageWithDelay("B", 55l));
         eventSender.accept(messageWithDelay("C", 0l));
 
@@ -197,7 +205,7 @@ public class EnqueuingEventSenderUnitTest
         assertEquals("B", recordedEvents.get(1).getId());
         assertEquals("C", recordedEvents.get(2).getId());
     }
-    
+
     @Test
     public void shouldReceiveMultipleMessagesPreservingOrderEvenWhenSenderPoisonedWithError() throws Exception
     {
@@ -217,8 +225,7 @@ public class EnqueuingEventSenderUnitTest
 
     private Callable<Optional<RepoEvent<?>>> messageWithDelay(String id, long delay)
     {
-        return new Callable<Optional<RepoEvent<?>>>()
-        {
+        return new Callable<Optional<RepoEvent<?>>>() {
             @Override
             public Optional<RepoEvent<?>> call() throws Exception
             {
@@ -236,13 +243,13 @@ public class EnqueuingEventSenderUnitTest
             }
         };
     }
-    
+
     private RepoEvent<?> newRepoEvent(String id)
     {
         RepoEvent<?> ev = events.get(id);
         if (ev != null)
             return ev;
-        
+
         ev = mock(RepoEvent.class);
         when(ev.getId()).thenReturn(id);
         when(ev.toString()).thenReturn(id);
@@ -251,15 +258,14 @@ public class EnqueuingEventSenderUnitTest
         return ev;
     }
 
-    public static ExecutorService newThreadPool() 
+    public static ExecutorService newThreadPool()
     {
         return new ThreadPoolExecutor(2, Integer.MAX_VALUE,
-                                      60L, TimeUnit.SECONDS,
-                                      new SynchronousQueue<Runnable>());
+                60L, TimeUnit.SECONDS,
+                new SynchronousQueue<Runnable>());
     }
 
-    public static final Executor SYNC_EXECUTOR_SAME_THREAD = new Executor()
-    {
+    public static final Executor SYNC_EXECUTOR_SAME_THREAD = new Executor() {
         @Override
         public void execute(Runnable command)
         {
@@ -267,8 +273,7 @@ public class EnqueuingEventSenderUnitTest
         }
     };
 
-    public static final Executor SYNC_EXECUTOR_NEW_THREAD = new Executor()
-    {
+    public static final Executor SYNC_EXECUTOR_NEW_THREAD = new Executor() {
         @Override
         public void execute(Runnable command)
         {

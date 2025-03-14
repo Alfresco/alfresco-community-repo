@@ -25,28 +25,29 @@
  */
 package org.alfresco.heartbeat;
 
+import java.util.*;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
-
-import java.util.*;
 
 /**
  * A collector of data related authorities. The AuthorityService encapsulates authorities granted to users.
  * <ul>
- *  <li>Collector ID: <b>acs.repository.usage.authorities</b></li>
- *  <li>Data:
- *      <ul>
- *          <li><b>numUsers:</b> Integer - The total number of users in the system. {@link AuthorityService#getAllAuthoritiesInZone(String, AuthorityType)}</li>
- *          <li><b>numGroups:</b> Integer - The total number of groups in the system. {@link AuthorityService#getAllAuthoritiesInZone(String, AuthorityType)}</li>
- *      </ul>
- *  </li>
+ * <li>Collector ID: <b>acs.repository.usage.authorities</b></li>
+ * <li>Data:
+ * <ul>
+ * <li><b>numUsers:</b> Integer - The total number of users in the system. {@link AuthorityService#getAllAuthoritiesInZone(String, AuthorityType)}</li>
+ * <li><b>numGroups:</b> Integer - The total number of groups in the system. {@link AuthorityService#getAllAuthoritiesInZone(String, AuthorityType)}</li>
+ * </ul>
+ * </li>
  * </ul>
  *
  * @author eknizat
@@ -64,7 +65,7 @@ public class AuthoritiesDataCollector extends HBBaseDataCollector implements Ini
     private AuthorityService authorityService;
 
     public AuthoritiesDataCollector(String collectorId, String collectorVersion, String cronExpression,
-                                    HeartBeatJobScheduler hbJobScheduler)
+            HeartBeatJobScheduler hbJobScheduler)
     {
         super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
     }

@@ -26,7 +26,12 @@
 
 package org.alfresco.repo.rendition.executer;
 
+import static org.alfresco.repo.rendition2.RenditionDefinition2.FLASH_VERSION;
+
 import java.util.Collection;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -35,21 +40,11 @@ import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.rendition.RenditionServiceException;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import static org.alfresco.repo.rendition2.RenditionDefinition2.FLASH_VERSION;
 
 /**
- * This class is the implementation of the {@link RenditionService}'s "reformat"
- * action/rendering. This action renders a piece of content in the specified
- * target MIME type. This is achieved using one of the standard transformers
- * within the {@link ContentService}.
+ * This class is the implementation of the {@link RenditionService}'s "reformat" action/rendering. This action renders a piece of content in the specified target MIME type. This is achieved using one of the standard transformers within the {@link ContentService}.
  * <P/>
- * Reformatting in this way is a simple conversion of one MIME type to another
- * MIME type, without any other changes to the content. Therefore there is no
- * support within this action for altering the content e.g. image
- * cropping/resizing.
+ * Reformatting in this way is a simple conversion of one MIME type to another MIME type, without any other changes to the content. Therefore there is no support within this action for altering the content e.g. image cropping/resizing.
  * 
  * @author Neil McErlean
  * @since 3.3
@@ -62,15 +57,11 @@ public class ReformatRenderingEngine extends AbstractTransformationRenderingEngi
     private static Log logger = LogFactory.getLog(ReformatRenderingEngine.class);
 
     /**
-     * This optional {@link String} parameter is only necessary when converting
-     * from pdf to Flash and is used to specify which Flash version to convert
-     * to.
+     * This optional {@link String} parameter is only necessary when converting from pdf to Flash and is used to specify which Flash version to convert to.
      */
     public static final String PARAM_FLASH_VERSION = FLASH_VERSION;
 
-    /*
-     * Action constants
-     */
+    /* Action constants */
     public static final String NAME = "reformat";
 
     @Override
@@ -97,22 +88,19 @@ public class ReformatRenderingEngine extends AbstractTransformationRenderingEngi
     {
         options.setSourceNodeRef(context.getSourceNode());
         options.setTargetNodeRef(context.getDestinationNode());
-        
+
         return super.getTransformOptionsImpl(options, context);
     }
 
-    /*
-     * @see org.alfresco.repo.rendition.executer.AbstractRenderingEngine#
-     * getParameterDefinitions()
-     */
+    /* @see org.alfresco.repo.rendition.executer.AbstractRenderingEngine# getParameterDefinitions() */
     @Override
     protected Collection<ParameterDefinition> getParameterDefinitions()
     {
         Collection<ParameterDefinition> paramList = super.getParameterDefinitions();
         paramList.add(new ParameterDefinitionImpl(PARAM_MIME_TYPE, DataTypeDefinition.TEXT, true,
-                    getParamDisplayLabel(PARAM_MIME_TYPE)));
+                getParamDisplayLabel(PARAM_MIME_TYPE)));
         paramList.add(new ParameterDefinitionImpl(PARAM_FLASH_VERSION, DataTypeDefinition.TEXT, false,
-                    getParamDisplayLabel(PARAM_FLASH_VERSION)));
+                getParamDisplayLabel(PARAM_FLASH_VERSION)));
         return paramList;
     }
 }

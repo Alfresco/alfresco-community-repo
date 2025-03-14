@@ -25,13 +25,13 @@
  */
 package org.alfresco.repo.site;
 
+import java.util.Comparator;
+import java.util.List;
+
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.query.CannedQuerySortDetails;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.util.Pair;
-
-import java.util.Comparator;
-import java.util.List;
 
 @AlfrescoPublicApi
 public class SiteGroupMembership extends AbstractSiteMembership
@@ -48,7 +48,6 @@ public class SiteGroupMembership extends AbstractSiteMembership
     {
         return displayName;
     }
-
 
     static int compareTo(List<Pair<? extends Object, CannedQuerySortDetails.SortOrder>> sortPairs, SiteGroupMembership o1, SiteGroupMembership o2)
     {
@@ -68,7 +67,7 @@ public class SiteGroupMembership extends AbstractSiteMembership
         if (siteRole == 0 && siteShortName == 0 && groupName == 0)
             return 0;
 
-        return SiteMembershipComparator.compareSiteGroupsBody(sortPairs, displayName1, displayName2,  siteRole1, siteRole2, groupName, siteRole , 0);
+        return SiteMembershipComparator.compareSiteGroupsBody(sortPairs, displayName1, displayName2, siteRole1, siteRole2, groupName, siteRole, 0);
     }
 
     static Comparator<SiteGroupMembership> getComparator(List<Pair<?, CannedQuerySortDetails.SortOrder>> sortPairs)

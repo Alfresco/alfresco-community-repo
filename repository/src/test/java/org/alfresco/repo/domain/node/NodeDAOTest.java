@@ -34,6 +34,9 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
@@ -53,14 +56,11 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.testing.category.DBTests;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.junit.Assert;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Additional tests for the Node DAO.
  * 
- * @see NodeDAO 
+ * @see NodeDAO
  * 
  * @author Derek Hulley
  * @since 3.4
@@ -73,7 +73,8 @@ public class NodeDAOTest extends TestCase
     private TransactionService transactionService;
     private RetryingTransactionHelper txnHelper;
     private NodeDAO nodeDAO;
-    private SimpleCache<Serializable, ValueHolder<Node>> rootNodesCache;    
+    private SimpleCache<Serializable, ValueHolder<Node>> rootNodesCache;
+
     @SuppressWarnings("unchecked")
     @Override
     public void setUp()
@@ -84,14 +85,14 @@ public class NodeDAOTest extends TestCase
         txnHelper.setMinRetryWaitMs(10);
         txnHelper.setRetryWaitIncrementMs(10);
         txnHelper.setMaxRetryWaitMs(50);
-        
+
         nodeDAO = (NodeDAO) ctx.getBean("nodeDAO");
         rootNodesCache = (SimpleCache<Serializable, ValueHolder<Node>>) ctx.getBean("node.rootNodesSharedCache");
     }
-    
+
     public void testTransaction() throws Throwable
     {
-        final boolean[] newTxn = new boolean[] {false};
+        final boolean[] newTxn = new boolean[]{false};
         RetryingTransactionCallback<Pair<Long, Long>> getTxnIdCallback = () -> {
             Long currentTransactionId = nodeDAO.getCurrentTransactionId(newTxn[0]);
             Long currentTransactionCommitTime = nodeDAO.getCurrentTransactionCommitTime();
@@ -127,12 +128,11 @@ public class NodeDAOTest extends TestCase
         assertNotNull("Txn ID should be present by forcing it", txnId2);
         assertNotNull("Txn commit time should be present by forcing it", commitTime2);
     }
-    
+
     public void testSelectNodePropertiesByTypes() throws Exception
     {
         final Set<QName> qnames = Collections.singleton(ContentModel.PROP_NAME);
-        RetryingTransactionCallback<List<NodePropertyEntity>> callback = new RetryingTransactionCallback<List<NodePropertyEntity>>()
-        {
+        RetryingTransactionCallback<List<NodePropertyEntity>> callback = new RetryingTransactionCallback<List<NodePropertyEntity>>() {
             public List<NodePropertyEntity> execute() throws Throwable
             {
                 return nodeDAO.selectNodePropertiesByTypes(qnames);
@@ -147,14 +147,13 @@ public class NodeDAOTest extends TestCase
         String value = prop.getValue().getStringValue();
         assertNotNull(value);
     }
-    
+
     public void testSelectNodePropertiesByDataType() throws Exception
     {
         // Prepare the bits that repeat the actual query
         final AtomicLong min = new AtomicLong(0L);
         final AtomicLong max = new AtomicLong(0L);
-        RetryingTransactionCallback<List<NodePropertyEntity>> callback = new RetryingTransactionCallback<List<NodePropertyEntity>>()
-        {
+        RetryingTransactionCallback<List<NodePropertyEntity>> callback = new RetryingTransactionCallback<List<NodePropertyEntity>>() {
             public List<NodePropertyEntity> execute() throws Throwable
             {
                 long minNodeId = min.get();
@@ -162,21 +161,21 @@ public class NodeDAOTest extends TestCase
                 return nodeDAO.selectNodePropertiesByDataType(DataTypeDefinition.TEXT, minNodeId, maxNodeId);
             }
         };
-        
+
         // Get the current max node id
         Long minNodeId = nodeDAO.getMinNodeId();
         if (minNodeId == null)
         {
-            return;                 // there are no nodes!
+            return; // there are no nodes!
         }
-        Long maxNodeId = nodeDAO.getMaxNodeId();            // won't be null at this point as we have a min
+        Long maxNodeId = nodeDAO.getMaxNodeId(); // won't be null at this point as we have a min
         min.set(minNodeId.longValue());
-        
+
         // Iterate across all nodes in the system
         while (min.longValue() <= maxNodeId.longValue())
         {
-            max.set(min.get() + 1000L);                     // 1K increments
-            
+            max.set(min.get() + 1000L); // 1K increments
+
             // Get the properties
             List<NodePropertyEntity> props = txnHelper.doInTransaction(callback, true);
             for (NodePropertyEntity prop : props)
@@ -193,50 +192,48 @@ public class NodeDAOTest extends TestCase
                 assertNotNull(value);
                 // This all checks out
             }
-            
+
             // Shift the window up
             min.set(max.get());
         }
     }
-    
+
     public void testGetNodeIdsIntervalForType() throws Exception
     {
         // Different calls with equivalent parameters should return the same values
         Pair<Long, Long> interval1 = getNodeIdsInterval(0L, System.currentTimeMillis());
         Pair<Long, Long> interval2 = getNodeIdsInterval(null, System.currentTimeMillis());
         Pair<Long, Long> interval3 = getNodeIdsInterval(null, null);
-        
+
         assertEquals(interval1.getFirst(), interval2.getFirst());
         assertEquals(interval2.getFirst(), interval3.getFirst());
-        
+
         assertEquals(interval1.getSecond(), interval2.getSecond());
         assertEquals(interval2.getSecond(), interval3.getSecond());
     }
-    
+
     private Pair<Long, Long> getNodeIdsInterval(final Long minTxnTime, final Long maxTxnTime)
     {
-        RetryingTransactionCallback<Pair<Long, Long>> callback = new RetryingTransactionCallback<Pair<Long, Long>>()
-        {
+        RetryingTransactionCallback<Pair<Long, Long>> callback = new RetryingTransactionCallback<Pair<Long, Long>>() {
             public Pair<Long, Long> execute() throws Throwable
             {
                 return nodeDAO.getNodeIdsIntervalForType(ContentModel.TYPE_FOLDER, minTxnTime, maxTxnTime);
             }
         };
-        
+
         return txnHelper.doInTransaction(callback, true);
     }
-    
+
     public void testSelectChildAssocsWithoutNodeAssocsOfTypes()
     {
         final StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
         final Long parentId = nodeDAO.getRootNode(storeRef).getFirst();
-        
+
         final AtomicLong min = new AtomicLong(0L);
         final AtomicLong max = new AtomicLong(0L);
         final Set<QName> typeAssocsToExclude = Collections.singleton(QName.createQName("noType"));
-        
-        RetryingTransactionCallback<List<Node>> callback = new RetryingTransactionCallback<List<Node>>()
-        {
+
+        RetryingTransactionCallback<List<Node>> callback = new RetryingTransactionCallback<List<Node>>() {
             public List<Node> execute() throws Throwable
             {
                 long minNodeId = min.get();
@@ -244,19 +241,19 @@ public class NodeDAOTest extends TestCase
                 return nodeDAO.selectChildAssocsWithoutNodeAssocsOfTypes(parentId, minNodeId, maxNodeId, typeAssocsToExclude);
             }
         };
-        
+
         // Get the current node range
         Pair<Long, Long> nodeRange = getNodeIdsInterval(0L, System.currentTimeMillis());
-                
+
         Long minNodeId = nodeRange.getFirst();
         Long maxNodeId = nodeRange.getSecond();
-        
+
         min.set(minNodeId.longValue());
 
         // Iterate across the nodes in the [minNodeId, maxNodeId] interval
         while (min.longValue() <= maxNodeId.longValue())
         {
-            max.set(min.get() + 100L);  // 100 increments
+            max.set(min.get() + 100L); // 100 increments
             // Get the nodes
             List<Node> nodes = txnHelper.doInTransaction(callback, true);
             for (Node node : nodes)
@@ -271,19 +268,17 @@ public class NodeDAOTest extends TestCase
             min.set(max.get());
         }
     }
-    
+
     public void testGetNodesWithAspects() throws Throwable
     {
-        final NodeRefQueryCallback callback = new NodeRefQueryCallback()
-        {
+        final NodeRefQueryCallback callback = new NodeRefQueryCallback() {
             public boolean handle(Pair<Long, NodeRef> nodePair)
             {
                 // Don't need more
                 return false;
             }
         };
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -295,7 +290,7 @@ public class NodeDAOTest extends TestCase
             }
         }, true);
     }
-    
+
     public void testGetMinMaxNodeId() throws Exception
     {
         Long minNodeId = nodeDAO.getMinNodeId();
@@ -305,13 +300,13 @@ public class NodeDAOTest extends TestCase
         assertNotNull(maxNodeId);
         assertTrue(maxNodeId.longValue() > minNodeId.longValue());
     }
-    
+
     public void testGetPrimaryChildAcls() throws Throwable
     {
         List<NodeIdAndAclId> acls = nodeDAO.getPrimaryChildrenAcls(1L);
         assertNotNull("Null list", acls);
     }
-    
+
     public void testGetStoreId() throws Throwable
     {
         // Get all stores
@@ -325,7 +320,7 @@ public class NodeDAOTest extends TestCase
             assertEquals("Store pair did not match. ", storePair, checkStorePair);
         }
     }
-    
+
     public void testCacheNodes() throws Throwable
     {
         Long minNodeId = nodeDAO.getMinNodeId();
@@ -334,8 +329,7 @@ public class NodeDAOTest extends TestCase
         {
             nodeIds.add(Long.valueOf(minNodeId.longValue() + i));
         }
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 nodeDAO.cacheNodesById(nodeIds);
@@ -344,7 +338,7 @@ public class NodeDAOTest extends TestCase
         };
         txnHelper.doInTransaction(callback, true);
     }
-    
+
     /**
      * Ensure that the {@link NodeEntity} values cached as root nodes are valid instances.
      * <p/>
@@ -368,12 +362,12 @@ public class NodeDAOTest extends TestCase
         for (Serializable key : keys)
         {
             NodeEntity node = (NodeEntity) TransactionalCache.getSharedCacheValue(rootNodesCache, key);
-            
+
             // Create a good value
             NodeEntity clonedNode = (NodeEntity) node.clone();
             // Run equals and hashcode
             node.hashCode();
-            Assert.assertEquals(node, clonedNode);          // Does NPE check implicitly
+            Assert.assertEquals(node, clonedNode); // Does NPE check implicitly
         }
     }
 
@@ -381,28 +375,28 @@ public class NodeDAOTest extends TestCase
     {
         Long fromNodeId = nodeDAO.getMinNodeId();
         Long toNodeId = nodeDAO.getMaxNodeId();
-        
+
         Long minTxCommitTime = nodeDAO.getMinTxnCommitTime();
-        
+
         Long minTxCommitTimeInRange = nodeDAO.getMinTxInNodeIdRange(fromNodeId, toNodeId);
         assertEquals(minTxCommitTime, minTxCommitTimeInRange);
     }
-    
+
     public void testGetMaxTxInNodeIdRange()
     {
         Long fromNodeId = nodeDAO.getMinNodeId();
         Long toNodeId = nodeDAO.getMaxNodeId();
-        
+
         Long maxTxCommitTime = nodeDAO.getMaxTxnCommitTime();
-        
+
         Long maxTxCommitTimeInRange = nodeDAO.getMaxTxInNodeIdRange(fromNodeId, toNodeId);
         assertEquals(maxTxCommitTime, maxTxCommitTimeInRange);
     }
-    
+
     public void testGetNextTxCommitTime()
     {
         Long fromCommitTime = nodeDAO.getMinTxnCommitTime();
-        
+
         Long nextTxnCommitTime = nodeDAO.getNextTxCommitTime(fromCommitTime);
         assertTrue(nextTxnCommitTime >= fromCommitTime);
     }

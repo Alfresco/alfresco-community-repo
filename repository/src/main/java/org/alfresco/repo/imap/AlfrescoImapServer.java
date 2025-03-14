@@ -27,13 +27,9 @@ package org.alfresco.repo.imap;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.Date;
 import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
 
 import com.icegreen.greenmail.Managers;
 import com.icegreen.greenmail.imap.ImapHostManager;
@@ -41,9 +37,10 @@ import com.icegreen.greenmail.imap.ImapServer;
 import com.icegreen.greenmail.user.UserManager;
 import com.icegreen.greenmail.util.DummySSLServerSocketFactory;
 import com.icegreen.greenmail.util.ServerSetup;
-
-import javax.net.ssl.SSLServerSocketFactory;
-import javax.net.ssl.SSLServerSocket;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * @author Mike Shavnev
@@ -52,38 +49,36 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
 {
     private class SecureImapServer extends ImapServer
     {
-        
+
         public SecureImapServer(ServerSetup setup, Managers managers, AtomicReference<Exception> serverOpeningExceptionRef)
         {
-            super(setup, managers,serverOpeningExceptionRef);
+            super(setup, managers, serverOpeningExceptionRef);
         }
 
         /**
-         * Use Java's default SSL Server SocketFactory
-         * controlled via System Properties 
-         * -Djavax.net.ssl.keyStore=mySrvKeystore 
-         * -Djavax.net.ssl.keyStorePassword=123456 
+         * Use Java's default SSL Server SocketFactory controlled via System Properties -Djavax.net.ssl.keyStore=mySrvKeystore -Djavax.net.ssl.keyStorePassword=123456
          */
         // MER - also consider using SSLContext
-        protected synchronized ServerSocket openServerSocket() throws IOException {
+        protected synchronized ServerSocket openServerSocket() throws IOException
+        {
             ServerSocket ret;
-            if (setup.isSecure()) 
+            if (setup.isSecure())
             {
                 try
                 {
                     ret = (SSLServerSocket) SSLServerSocketFactory.getDefault().createServerSocket(
-                    setup.getPort(), 0, bindTo);
-                } 
+                            setup.getPort(), 0, bindTo);
+                }
                 catch (IOException e)
                 {
-                    if(logger.isErrorEnabled())
+                    if (logger.isErrorEnabled())
                     {
                         logger.error("Unable to open socket bindTo:" + bindTo + "port " + setup.getPort(), e);
                     }
                     throw e;
                 }
-            } 
-            else 
+            }
+            else
             {
                 try
                 {
@@ -91,7 +86,7 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
                 }
                 catch (IOException e)
                 {
-                    if(logger.isErrorEnabled())
+                    if (logger.isErrorEnabled())
                     {
                         logger.error("Unable to open socket bindTo:" + bindTo + "port " + setup.getPort(), e);
                     }
@@ -101,35 +96,36 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
             return ret;
         }
     }
-    
+
     private class DefaultImapServer extends ImapServer
     {
-        
+
         public DefaultImapServer(ServerSetup setup, Managers managers, AtomicReference<Exception> serverOpeningExceptionRef)
         {
             super(setup, managers, serverOpeningExceptionRef);
         }
 
-        // same behavior as in overridden method, just added exception logging 
-        protected synchronized ServerSocket openServerSocket() throws IOException {
+        // same behavior as in overridden method, just added exception logging
+        protected synchronized ServerSocket openServerSocket() throws IOException
+        {
             ServerSocket ret;
-            if (setup.isSecure()) 
+            if (setup.isSecure())
             {
                 try
                 {
                     ret = (SSLServerSocket) DummySSLServerSocketFactory.getDefault().createServerSocket(
-                    setup.getPort(), 0, bindTo);
-                } 
+                            setup.getPort(), 0, bindTo);
+                }
                 catch (IOException e)
                 {
-                    if(logger.isErrorEnabled())
+                    if (logger.isErrorEnabled())
                     {
                         logger.error("Unable to open socket bindTo:" + bindTo + " port " + setup.getPort(), e);
                     }
                     throw e;
                 }
-            } 
-            else 
+            }
+            else
             {
                 try
                 {
@@ -137,7 +133,7 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
                 }
                 catch (IOException e)
                 {
-                    if(logger.isErrorEnabled())
+                    if (logger.isErrorEnabled())
                     {
                         logger.error("Unable to open socket bindTo:" + bindTo + " port " + setup.getPort(), e);
                     }
@@ -157,20 +153,19 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
     private int securePort = 993;
     private boolean imapsEnabled = false;
     private boolean imapEnabled = true;
-    
+
     private String host = "0.0.0.0";
 
     private UserManager imapUserManager;
     private ImapService imapService;
-    
+
     private boolean imapServerEnabled;
-    
-    
+
     public void setImapServerEnabled(boolean imapServerEnabled)
     {
         this.imapServerEnabled = imapServerEnabled;
     }
-    
+
     public boolean isImapServerEnabled()
     {
         return imapServerEnabled;
@@ -185,12 +180,12 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
     {
         this.host = host;
     }
-    
+
     public int getPort()
     {
         return port;
     }
-    
+
     public void setSecurePort(int securePort)
     {
         this.securePort = securePort;
@@ -215,7 +210,7 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
     {
         this.imapUserManager = imapUserManager;
     }
-    
+
     protected void onBootstrap(ApplicationEvent event)
     {
         if (imapServerEnabled)
@@ -236,13 +231,12 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
         shutdown();
 
     }
-    
+
     public void startup()
     {
-        if(serverImpl == null)
+        if (serverImpl == null)
         {
-            final Managers imapManagers = new Managers()
-            {
+            final Managers imapManagers = new Managers() {
                 // We create a new Host Manager instance per session to allow for session state tracking
                 public ImapHostManager getImapHostManager()
                 {
@@ -254,8 +248,8 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
                     return imapUserManager;
                 }
             };
-            
-            if(isImapEnabled())
+
+            if (isImapEnabled())
             {
                 AtomicReference<Exception> serverOpeningExceptionRef = new AtomicReference<Exception>();
                 serverImpl = new DefaultImapServer(new ServerSetup(port, host, ServerSetup.PROTOCOL_IMAP), imapManagers, serverOpeningExceptionRef);
@@ -267,16 +261,16 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
                     logger.info("IMAP service started on host:port " + host + ":" + this.port);
                 }
             }
-            if(isImapsEnabled())
+            if (isImapsEnabled())
             {
                 AtomicReference<Exception> serverOpeningExceptionRef = new AtomicReference<Exception>();
                 secureServerImpl = new SecureImapServer(new ServerSetup(securePort, host, ServerSetup.PROTOCOL_IMAPS), imapManagers, serverOpeningExceptionRef);
-                secureServerImpl.startService(null);   
+                secureServerImpl.startService(null);
                 checkForOpeningExceptions(serverOpeningExceptionRef);
-                
+
                 if (logger.isInfoEnabled())
                 {
-                    logger.info("IMAPS service started on host:port " + host + ":" + this.securePort );
+                    logger.info("IMAPS service started on host:port " + host + ":" + this.securePort);
                 }
             }
 
@@ -289,20 +283,22 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
             }
         }
     }
-    
+
     public void checkForOpeningExceptions(AtomicReference<Exception> serverOpeningExceptionRef)
     {
-        synchronized (serverOpeningExceptionRef) 
+        synchronized (serverOpeningExceptionRef)
         {
-            try 
+            try
             {
-                //wait for openServerSocket() method to finish 
+                // wait for openServerSocket() method to finish
                 serverOpeningExceptionRef.wait();
                 if (serverOpeningExceptionRef.get() != null)
                 {
                     throw new RuntimeException(serverOpeningExceptionRef.get());
                 }
-            } catch (InterruptedException e) {
+            }
+            catch (InterruptedException e)
+            {
                 if (logger.isDebugEnabled())
                 {
                     logger.debug(e.getMessage(), e);
@@ -310,7 +306,7 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
             }
         }
     }
-    
+
     public void shutdown()
     {
         if (serverImpl != null)
@@ -321,9 +317,9 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
             }
             serverImpl.stopService(null);
         }
-        
+
         if (secureServerImpl != null)
-        {   
+        {
             if (logger.isDebugEnabled())
             {
                 logger.debug("IMAPS service stopping.");

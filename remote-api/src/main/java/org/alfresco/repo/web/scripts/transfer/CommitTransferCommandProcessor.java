@@ -27,11 +27,8 @@
 package org.alfresco.repo.web.scripts.transfer;
 
 import java.io.StringWriter;
-
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.alfresco.service.cmr.transfer.TransferException;
-import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Status;
@@ -41,9 +38,11 @@ import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
 import org.springframework.extensions.webscripts.json.JSONWriter;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
 
+import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.cmr.transfer.TransferReceiver;
+
 /**
- * This command processor is used to record the start a transfer. No other transfer can be started after this command
- * has executed until the started transfer terminates.
+ * This command processor is used to record the start a transfer. No other transfer can be started after this command has executed until the started transfer terminates.
  * 
  * @author brian
  * 
@@ -51,21 +50,18 @@ import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest
 public class CommitTransferCommandProcessor implements CommandProcessor
 {
     private static final String MSG_CAUGHT_UNEXPECTED_EXCEPTION = "transfer_service.receiver.caught_unexpected_exception";
-    
+
     private static Log logger = LogFactory.getLog(CommitTransferCommandProcessor.class);
 
     private TransferReceiver receiver;
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.web.scripts.transfer.CommandProcessor#process(org.alfresco .web.scripts.WebScriptRequest,
-     * org.alfresco.web.scripts.WebScriptResponse)
-     */
+     * @see org.alfresco.repo.web.scripts.transfer.CommandProcessor#process(org.alfresco .web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse) */
     public int process(WebScriptRequest req, WebScriptResponse resp)
-    {   
+    {
 
-        //Read the transfer id from the request
+        // Read the transfer id from the request
         // Unwrap to a WebScriptServletRequest if we have one
         WebScriptServletRequest webScriptServletRequest = null;
         WebScriptRequest current = req;
@@ -84,9 +80,8 @@ public class CommitTransferCommandProcessor implements CommandProcessor
             {
                 current = null;
             }
-        }
-        while (current != null);
-        
+        } while (current != null);
+
         HttpServletRequest servletRequest = webScriptServletRequest.getHttpServletRequest();
         String transferId = servletRequest.getParameter("transferId");
 
@@ -96,9 +91,9 @@ public class CommitTransferCommandProcessor implements CommandProcessor
             resp.setStatus(Status.STATUS_BAD_REQUEST);
             return Status.STATUS_BAD_REQUEST;
         }
-        
+
         try
-        {   
+        {
             receiver.commitAsync(transferId);
 
             // return the unique transfer id (the lock id)
@@ -108,19 +103,19 @@ public class CommitTransferCommandProcessor implements CommandProcessor
             jsonWriter.writeValue("transferId", transferId);
             jsonWriter.endObject();
             String response = stringWriter.toString();
-            
+
             resp.setContentType("application/json");
             resp.setContentEncoding("UTF-8");
             int length = response.getBytes("UTF-8").length;
             resp.addHeader("Content-Length", "" + length);
             resp.setStatus(Status.STATUS_OK);
             resp.getWriter().write(response);
-            
+
             return Status.STATUS_OK;
-        } 
+        }
         catch (Exception ex)
         {
-            if (logger.isDebugEnabled()) 
+            if (logger.isDebugEnabled())
             {
                 logger.debug("caught exception :" + ex.toString(), ex);
             }
@@ -133,12 +128,12 @@ public class CommitTransferCommandProcessor implements CommandProcessor
     }
 
     /**
-     * @param receiver the receiver to set
+     * @param receiver
+     *            the receiver to set
      */
     public void setReceiver(TransferReceiver receiver)
     {
         this.receiver = receiver;
     }
 
-    
 }

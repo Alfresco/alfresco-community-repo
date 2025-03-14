@@ -31,11 +31,12 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for RecordValue complex type.
+ * <p>
+ * Java class for RecordValue complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType name="RecordValue">
@@ -54,7 +55,7 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "RecordValue")
 public class RecordValue
-    extends KeyedAuditDefinition
+        extends KeyedAuditDefinition
 {
 
     @XmlAttribute(required = true)
@@ -67,12 +68,11 @@ public class RecordValue
     /**
      * Gets the value of the dataExtractor property.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     * @return possible object is {@link String }
+     * 
      */
-    public String getDataExtractor() {
+    public String getDataExtractor()
+    {
         return dataExtractor;
     }
 
@@ -80,23 +80,22 @@ public class RecordValue
      * Sets the value of the dataExtractor property.
      * 
      * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *            allowed object is {@link String }
+     * 
      */
-    public void setDataExtractor(String value) {
+    public void setDataExtractor(String value)
+    {
         this.dataExtractor = value;
     }
 
     /**
      * Gets the value of the dataSource property.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     * @return possible object is {@link String }
+     * 
      */
-    public String getDataSource() {
+    public String getDataSource()
+    {
         return dataSource;
     }
 
@@ -104,23 +103,22 @@ public class RecordValue
      * Sets the value of the dataSource property.
      * 
      * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *            allowed object is {@link String }
+     * 
      */
-    public void setDataSource(String value) {
+    public void setDataSource(String value)
+    {
         this.dataSource = value;
     }
 
     /**
      * Gets the value of the dataTrigger property.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     * @return possible object is {@link String }
+     * 
      */
-    public String getDataTrigger() {
+    public String getDataTrigger()
+    {
         return dataTrigger;
     }
 
@@ -128,11 +126,11 @@ public class RecordValue
      * Sets the value of the dataTrigger property.
      * 
      * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *            allowed object is {@link String }
+     * 
      */
-    public void setDataTrigger(String value) {
+    public void setDataTrigger(String value)
+    {
         this.dataTrigger = value;
     }
 

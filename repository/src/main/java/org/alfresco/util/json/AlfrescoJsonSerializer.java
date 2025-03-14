@@ -32,13 +32,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
+
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * @author Nick Smith
@@ -60,8 +61,14 @@ public class AlfrescoJsonSerializer
 
     public Object getJsonValue(Object value) throws JSONException
     {
-        if (value instanceof Date) { return getJsonDate((Date) value); }
-        if (value instanceof QName) { return getJsonQName((QName) value); }
+        if (value instanceof Date)
+        {
+            return getJsonDate((Date) value);
+        }
+        if (value instanceof QName)
+        {
+            return getJsonQName((QName) value);
+        }
         if (value instanceof NodeRef)
         {
             return value.toString();
@@ -70,7 +77,10 @@ public class AlfrescoJsonSerializer
         {
             return getJsonArray((Collection<?>) value);
         }
-        else if (value instanceof Map<?, ?>) { return getJsonObject((Map<?, ?>) value); }
+        else if (value instanceof Map<?, ?>)
+        {
+            return getJsonObject((Map<?, ?>) value);
+        }
         return value;
     }
 
@@ -88,7 +98,10 @@ public class AlfrescoJsonSerializer
 
     private String getJsonKey(Object key)
     {
-        if (key instanceof QName) { return getJsonQName((QName) key); }
+        if (key instanceof QName)
+        {
+            return getJsonQName((QName) key);
+        }
         return key.toString();
     }
 

@@ -35,11 +35,12 @@ import static org.alfresco.rest.core.JsonBodyGenerator.arrayToJson;
 
 import java.util.List;
 
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
-import org.springframework.http.HttpMethod;
 
 public class FolderRules extends ModelRequest<FolderRules>
 {
@@ -68,6 +69,7 @@ public class FolderRules extends ModelRequest<FolderRules>
 
     /**
      * Gets a list of rules for the folder node using GET call on "nodes/{nodeId}/rule-sets/{ruleSetId}/rules"
+     * 
      * @return
      */
     public RestRuleModelsCollection getListOfRules()
@@ -78,6 +80,7 @@ public class FolderRules extends ModelRequest<FolderRules>
 
     /**
      * Gets a single rule definition for the folder node using GET call on "nodes/{nodeId}/rule-sets/{ruleSetId}/rules/{ruleId}"
+     * 
      * @return
      */
     public RestRuleModel getSingleRule(String ruleId)
@@ -89,7 +92,8 @@ public class FolderRules extends ModelRequest<FolderRules>
     /**
      * Create several rules.
      *
-     * @param ruleModels The list of rules.
+     * @param ruleModels
+     *            The list of rules.
      * @return The same list of rules with some data populated by the repository.
      */
     public RestRuleModelsCollection createListOfRules(List<RestRuleModel> ruleModels)
@@ -101,7 +105,8 @@ public class FolderRules extends ModelRequest<FolderRules>
     /**
      * Create a single rule.
      *
-     * @param ruleModel The rule to create.
+     * @param ruleModel
+     *            The rule to create.
      * @return The created rule with some data populated by the repository.
      */
     public RestRuleModel createSingleRule(RestRuleModel ruleModel)
@@ -113,8 +118,10 @@ public class FolderRules extends ModelRequest<FolderRules>
     /**
      * Update a rule.
      *
-     * @param ruleId The id of the rule to update.
-     * @param ruleModel The updated rule definition.
+     * @param ruleId
+     *            The id of the rule to update.
+     * @param ruleModel
+     *            The updated rule definition.
      * @return The updated rule with some data populated by the repository.
      */
     public RestRuleModel updateRule(String ruleId, RestRuleModel ruleModel)
@@ -125,7 +132,9 @@ public class FolderRules extends ModelRequest<FolderRules>
 
     /**
      * Deletes a rule definition for the folder node using DELETE call on "nodes/{nodeId}/rule-sets/{ruleSetId}/rules/{ruleId}"
-     * @param ruleId The id of the rule to delete.
+     * 
+     * @param ruleId
+     *            The id of the rule to delete.
      * @return void
      */
     public void deleteRule(String ruleId)

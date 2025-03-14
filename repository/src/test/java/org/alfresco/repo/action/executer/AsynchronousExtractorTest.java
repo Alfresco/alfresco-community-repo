@@ -25,6 +25,45 @@
  */
 package org.alfresco.repo.action.executer;
 
+import static java.util.Arrays.asList;
+
+import static org.alfresco.model.ContentModel.PROP_CONTENT;
+import static org.alfresco.model.ContentModel.PROP_CREATED;
+import static org.alfresco.model.ContentModel.PROP_CREATOR;
+import static org.alfresco.model.ContentModel.PROP_MODIFIED;
+import static org.alfresco.model.ContentModel.PROP_MODIFIER;
+import static org.alfresco.model.ContentModel.PROP_TITLE;
+import static org.alfresco.repo.rendition2.RenditionService2Impl.SOURCE_HAS_NO_CONTENT;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.StringJoiner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import jakarta.transaction.HeuristicMixedException;
+import jakarta.transaction.HeuristicRollbackException;
+import jakarta.transaction.NotSupportedException;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.UserTransaction;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.content.MimetypeMap;
@@ -61,49 +100,9 @@ import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.transform.registry.TransformServiceRegistry;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import jakarta.transaction.HeuristicMixedException;
-import jakarta.transaction.HeuristicRollbackException;
-import jakarta.transaction.NotSupportedException;
-import jakarta.transaction.RollbackException;
-import jakarta.transaction.SystemException;
-import jakarta.transaction.UserTransaction;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import static java.util.Arrays.asList;
-import static org.alfresco.model.ContentModel.PROP_CONTENT;
-import static org.alfresco.model.ContentModel.PROP_CREATED;
-import static org.alfresco.model.ContentModel.PROP_CREATOR;
-import static org.alfresco.model.ContentModel.PROP_MODIFIED;
-import static org.alfresco.model.ContentModel.PROP_MODIFIER;
-import static org.alfresco.model.ContentModel.PROP_TITLE;
-import static org.alfresco.repo.rendition2.RenditionService2Impl.SOURCE_HAS_NO_CONTENT;
 
 /**
- * Tests the asynchronous extract and embed of metadata. This is normally performed in a T-Engine, but in this test
- * class is mocked using a separate Thread that returns well known values. What makes the AsynchronousExtractor
- * different from other {@link AbstractMappingMetadataExtracter} sub classes is that the calling Thread does not
- * do the work of updating properties or the content, as the T-Engine will reply at some later point.
+ * Tests the asynchronous extract and embed of metadata. This is normally performed in a T-Engine, but in this test class is mocked using a separate Thread that returns well known values. What makes the AsynchronousExtractor different from other {@link AbstractMappingMetadataExtracter} sub classes is that the calling Thread does not do the work of updating properties or the content, as the T-Engine will reply at some later point.
  *
  * @author adavis
  */
@@ -155,12 +154,10 @@ public class AsynchronousExtractorTest extends BaseSpringTest
 
         private boolean finished;
 
-        TransformClient mockTransformClient = new TransformClient()
-        {
+        TransformClient mockTransformClient = new TransformClient() {
             @Override
             public void checkSupported(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String sourceMimetype, long sourceSizeInBytes, String contentUrl)
-            {
-            }
+            {}
 
             @Override
             public void transform(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String user, int sourceContentHashCode)
@@ -173,10 +170,10 @@ public class AsynchronousExtractorTest extends BaseSpringTest
         /**
          * Creates an AsynchronousExtractor that simulates a extract or embed.
          *
-         * @param mockResult      if specified indicates a value was returned. The result is read as a resource from
-         *                        the classpath.
-         * @param changedHashcode if specified indicates that the source node content changed or was deleted between
-         *                        the request to extract or embed and the response.
+         * @param mockResult
+         *            if specified indicates a value was returned. The result is read as a resource from the classpath.
+         * @param changedHashcode
+         *            if specified indicates that the source node content changed or was deleted between the request to extract or embed and the response.
          */
         TestAsynchronousExtractor(String mockResult, Integer changedHashcode, OverwritePolicy policy)
         {
@@ -267,8 +264,10 @@ public class AsynchronousExtractorTest extends BaseSpringTest
         /**
          * Wait for a few milliseconds or until the finished flag is set.
          *
-         * @param from inclusive lower bound. If negative, there is only an upper bound.
-         * @param to   exclusive upper bound.
+         * @param from
+         *            inclusive lower bound. If negative, there is only an upper bound.
+         * @param to
+         *            exclusive upper bound.
          * @return the wait.
          */
         public synchronized void wait(int from, int to)
@@ -287,15 +286,13 @@ public class AsynchronousExtractorTest extends BaseSpringTest
                     }
                 }
                 catch (InterruptedException ignore)
-                {
-                }
+                {}
             }
         }
     }
 
     /**
-     * Mock CategoryService that only knows about taggable. Unlike the real implementation it does not call Solr to
-     * find tag nodes.
+     * Mock CategoryService that only knows about taggable. Unlike the real implementation it does not call Solr to find tag nodes.
      */
     private class MockCategoryService extends NoIndexCategoryServiceImpl
     {
@@ -309,7 +306,8 @@ public class AsynchronousExtractorTest extends BaseSpringTest
             // Create the required tagging category
             NodeRef catContainer = nodeService.createNode(rootNodeRef,
                     ContentModel.ASSOC_CHILDREN, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                            "categoryContainer"), ContentModel.TYPE_CONTAINER).getChildRef();
+                            "categoryContainer"),
+                    ContentModel.TYPE_CONTAINER).getChildRef();
             NodeRef catRoot = nodeService.createNode(
                     catContainer,
                     ContentModel.ASSOC_CHILDREN,
@@ -372,8 +370,7 @@ public class AsynchronousExtractorTest extends BaseSpringTest
         contentMetadataEmbedder.setMetadataExtracterRegistry(metadataExtracterRegistry);
         contentMetadataEmbedder.setApplicableTypes(new String[]{ContentModel.TYPE_CONTENT.toString()});
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -423,10 +420,10 @@ public class AsynchronousExtractorTest extends BaseSpringTest
     }
 
     private void assertAsyncMetadataExecute(ActionExecuterAbstractBase executor, String mockResult,
-                                            Integer changedHashcode, long expectedSize,
-                                            Map<QName, Serializable> expectedProperties,
-                                            OverwritePolicy policy,
-                                            QName... ignoreProperties) throws Exception
+            Integer changedHashcode, long expectedSize,
+            Map<QName, Serializable> expectedProperties,
+            OverwritePolicy policy,
+            QName... ignoreProperties) throws Exception
     {
         TestAsynchronousExtractor extractor = new TestAsynchronousExtractor(mockResult, changedHashcode, policy);
         extractor.setEnableStringTagging(true);
@@ -469,7 +466,7 @@ public class AsynchronousExtractorTest extends BaseSpringTest
     }
 
     private void assertProperties(NodeRef nodeRef, Map<QName, Serializable> expectProperties, String state,
-                                  QName[] ignoreProperties)
+            QName[] ignoreProperties)
     {
         properties = nodeService.getProperties(nodeRef);
 
@@ -623,17 +620,17 @@ public class AsynchronousExtractorTest extends BaseSpringTest
 
         // Check the metadata sent to the T-Engine contains one of the fixed property values.
         String metadata = transformOptionsPassedToTEngine.get("metadata");
-        System.err.println("METADATA="+metadata);
+        System.err.println("METADATA=" + metadata);
         assertTrue("System properties were not set: simple value", metadata.contains("\"{http://www.alfresco.org/model/content/1.0}creator\":\"System\""));
 
         // Check the metadata sent to the T-Engine contains the collection value added by the mockTransform.
         // The order of elements in the collection may change, so we cannot use a simple string compare.
         int i = metadata.indexOf("\"{http://www.alfresco.org/model/content/1.0}title\":[");
-        assertTrue("The title is missing: "+metadata, i > 0);
+        assertTrue("The title is missing: " + metadata, i > 0);
         int j = metadata.indexOf(']', i);
-        assertTrue("No closing ] : "+metadata.substring(i), j > 0);
+        assertTrue("No closing ] : " + metadata.substring(i), j > 0);
         String collection = metadata.substring(i, j);
-        assertTrue("There should have 3 elements: "+collection, collection.split(",").length == 3);
+        assertTrue("There should have 3 elements: " + collection, collection.split(",").length == 3);
         assertTrue("\"one\" is missing", collection.contains("\"one\""));
         assertTrue("\"two\" is missing", collection.contains("\"two\""));
         assertTrue("\"three\" is missing", collection.contains("\"three\""));
@@ -774,11 +771,11 @@ public class AsynchronousExtractorTest extends BaseSpringTest
         QName description = QName.createQName("cm:description", namespacePrefixResolver);
 
         transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
-                    Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-                    properties.put(title, "Default title");
-                    nodeService.addProperties(nodeRef, properties);
-                    return null;
-                });
+            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+            properties.put(title, "Default title");
+            nodeService.addProperties(nodeRef, properties);
+            return null;
+        });
 
         origProperties.put(title, "Default title");
 
@@ -836,17 +833,18 @@ public class AsynchronousExtractorTest extends BaseSpringTest
         transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
             Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
             assertFalse(properties.containsKey(ContentModel.PROP_TAGS));
-            return null;});
+            return null;
+        });
 
         List<String> expectedTags = Arrays.asList("tag1", "tag2", "tag3");
         assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.tagging_metadata.json",
                 UNCHANGED_HASHCODE, origSize, expectedProperties, OverwritePolicy.PRAGMATIC, taggable);
 
         List<String> actualTags = transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
-                Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-                assertTrue(properties.containsKey(ContentModel.PROP_TAGS));
-                return taggingService.getTags(nodeRef);
-            });
+            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+            assertTrue(properties.containsKey(ContentModel.PROP_TAGS));
+            return taggingService.getTags(nodeRef);
+        });
 
         for (String expectedTag : expectedTags)
         {
@@ -859,19 +857,19 @@ public class AsynchronousExtractorTest extends BaseSpringTest
     {
         contentMetadataExtracter.setEnableStringTagging(false);
         transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
-                Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-                assertFalse(properties.containsKey(ContentModel.PROP_TAGS));
-                return null;
-            });
+            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+            assertFalse(properties.containsKey(ContentModel.PROP_TAGS));
+            return null;
+        });
 
         assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.tagging_metadata_enable_false.json",
                 UNCHANGED_HASHCODE, origSize, expectedProperties, OverwritePolicy.PRAGMATIC);
 
         List<String> tags = transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
-                Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-                assertFalse(properties.containsKey(ContentModel.PROP_TAGS));
-                return taggingService.getTags(nodeRef);
-            });
+            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+            assertFalse(properties.containsKey(ContentModel.PROP_TAGS));
+            return taggingService.getTags(nodeRef);
+        });
 
         assertEquals("Unexpected tags", 0, tags.size());
     }

@@ -26,18 +26,18 @@
 
 package org.alfresco.repo.security.authentication.subsystems;
 
+import java.util.List;
+
+import org.junit.Test;
+import org.mockito.Mock;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.filesys.auth.ftp.FTPAuthenticatorBase;
 import org.alfresco.jlan.ftp.FTPSrvSession;
 import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
-import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseSpringTest;
-import org.junit.Test;
-import org.mockito.Mock;
-
-import java.util.List;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Test class with test spring contexts for auth subsystems.
@@ -65,16 +65,16 @@ public class SubsystemChainingFtpAuthenticatorTest extends BaseSpringTest
         // 3) authType3 - ftp auth enabled, the user is always authenticated
 
         setContextForSubsystem("testFtpAuthentication");
-        
+
         List<FTPAuthenticatorBase> authenticators = chainingAuthenticator.getUsableFtpAuthenticators();
         assertTrue("The context configuration was created for 3 test FTP authenticators with 1 disabled.", authenticators.size() == 2);
-        
+
         // The contexts are configured for 2 subsystems:
         // 1) authType1 - ftp auth disabled, the user is always NOT authenticated as that bean is switched off
         // 2) authType2 - ftp auth disabled, the user is always NOT authenticated as that bean is switched off
 
-        setContextForSubsystem("testFtpAuthenticationAllDisabled"); 
-        
+        setContextForSubsystem("testFtpAuthenticationAllDisabled");
+
         authenticators = chainingAuthenticator.getUsableFtpAuthenticators();
         assertTrue("The context configuration was created for 2 test FTP authenticators - all disabled.", authenticators.isEmpty());
     }
@@ -93,17 +93,17 @@ public class SubsystemChainingFtpAuthenticatorTest extends BaseSpringTest
 
         // The last in the chain should work
         assertTrue("The user should be authenticated", chainingAuthenticator.authenticateUser(info, session));
-        
+
         // The contexts are configured for 2 subsystems:
         // 1) authType1 - ftp auth enabled, the user is always NOT authenticated
         // 2) authType2 - ftp auth enabled, the user is always NOT authenticated
 
-        setContextForSubsystem("testFtpAuthenticationAllFailing"); 
-        
+        setContextForSubsystem("testFtpAuthenticationAllFailing");
+
         // All of them should fail
         assertFalse("The user should be authenticated", chainingAuthenticator.authenticateUser(info, session));
     }
-    
+
     @SuppressWarnings("deprecation")
     private void setContextForSubsystem(String beanName)
     {

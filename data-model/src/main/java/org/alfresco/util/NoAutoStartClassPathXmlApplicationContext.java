@@ -35,67 +35,69 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.w3c.dom.Element;
 
 /**
- * A wrapper around {@link ClassPathXmlApplicationContext} which 
- *  stops Alfresco Subsystem (abstractPropertyBackedBean based)
- *  beans from being AutoStarted by tweaking their property definitions.
- * You shouldn't do this in production, but it can be handy with
- *  unit tests, as it allows a quicker startup by preventing
- *  subsystems from starting up
- *  
+ * A wrapper around {@link ClassPathXmlApplicationContext} which stops Alfresco Subsystem (abstractPropertyBackedBean based) beans from being AutoStarted by tweaking their property definitions. You shouldn't do this in production, but it can be handy with unit tests, as it allows a quicker startup by preventing subsystems from starting up
+ * 
  * @author Nick Burch
  */
 public class NoAutoStartClassPathXmlApplicationContext extends
-      ClassPathXmlApplicationContext {
-   
-   public NoAutoStartClassPathXmlApplicationContext(String[] configLocations)
-         throws BeansException {
-      super(configLocations);
-   }
+        ClassPathXmlApplicationContext
+{
 
-   protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
-      super.initBeanDefinitionReader(reader);
-      
-      postInitBeanDefinitionReader(reader);
-   }
-   
-   /**
-    * Does the work of disabling the autostart of the
-    *  Subsystem (abstractPropertyBackedBean) beans
-    *  on the xml bean reader
-    */
-   protected static void postInitBeanDefinitionReader(XmlBeanDefinitionReader reader) {
-      reader.setDocumentReaderClass(NoAutoStartBeanDefinitionDocumentReader.class);
-   }
+    public NoAutoStartClassPathXmlApplicationContext(String[] configLocations)
+            throws BeansException
+    {
+        super(configLocations);
+    }
 
-   protected static class NoAutoStartBeanDefinitionDocumentReader extends DefaultBeanDefinitionDocumentReader
-   {
-       @Override
-       protected BeanDefinitionParserDelegate createDelegate(
-               XmlReaderContext readerContext, Element root, BeanDefinitionParserDelegate parentDelegate)
-       {
-           BeanDefinitionParserDelegate delegate = new NoAutoStartBeanDefinitionParserDelegate(readerContext);
-           delegate.initDefaults(root);
-           return delegate;
-       }
-   }
-   
-   protected static class NoAutoStartBeanDefinitionParserDelegate extends BeanDefinitionParserDelegate {
-      protected NoAutoStartBeanDefinitionParserDelegate(XmlReaderContext readerContext) {
-         super(readerContext);
-      }
-      
-      @Override  
-      public void parsePropertyElement(Element ele, BeanDefinition bd) {
-         String propertyName = ele.getAttribute("name");
-         if("autoStart".equals(propertyName)) {
-            if("abstractPropertyBackedBean".equals(bd.getParentName())) {
-               String id = ele.getParentNode().getAttributes().getNamedItem("id").getTextContent();
-               System.out.println("Preventing the autostart of Subsystem " + id);
-               return;
+    protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader)
+    {
+        super.initBeanDefinitionReader(reader);
+
+        postInitBeanDefinitionReader(reader);
+    }
+
+    /**
+     * Does the work of disabling the autostart of the Subsystem (abstractPropertyBackedBean) beans on the xml bean reader
+     */
+    protected static void postInitBeanDefinitionReader(XmlBeanDefinitionReader reader)
+    {
+        reader.setDocumentReaderClass(NoAutoStartBeanDefinitionDocumentReader.class);
+    }
+
+    protected static class NoAutoStartBeanDefinitionDocumentReader extends DefaultBeanDefinitionDocumentReader
+    {
+        @Override
+        protected BeanDefinitionParserDelegate createDelegate(
+                XmlReaderContext readerContext, Element root, BeanDefinitionParserDelegate parentDelegate)
+        {
+            BeanDefinitionParserDelegate delegate = new NoAutoStartBeanDefinitionParserDelegate(readerContext);
+            delegate.initDefaults(root);
+            return delegate;
+        }
+    }
+
+    protected static class NoAutoStartBeanDefinitionParserDelegate extends BeanDefinitionParserDelegate
+    {
+        protected NoAutoStartBeanDefinitionParserDelegate(XmlReaderContext readerContext)
+        {
+            super(readerContext);
+        }
+
+        @Override
+        public void parsePropertyElement(Element ele, BeanDefinition bd)
+        {
+            String propertyName = ele.getAttribute("name");
+            if ("autoStart".equals(propertyName))
+            {
+                if ("abstractPropertyBackedBean".equals(bd.getParentName()))
+                {
+                    String id = ele.getParentNode().getAttributes().getNamedItem("id").getTextContent();
+                    System.out.println("Preventing the autostart of Subsystem " + id);
+                    return;
+                }
             }
-         }
-         
-         super.parsePropertyElement(ele, bd);
-      }
-   }
+
+            super.parsePropertyElement(ele, bd);
+        }
+    }
 }

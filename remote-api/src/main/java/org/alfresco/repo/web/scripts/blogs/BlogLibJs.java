@@ -29,9 +29,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.simple.JSONObject;
+
 import org.alfresco.model.BlogIntegrationModel;
 import org.alfresco.service.namespace.QName;
-import org.json.simple.JSONObject;
 
 /**
  * This class is a port of a previous JavaScript library.
@@ -43,29 +44,28 @@ import org.json.simple.JSONObject;
 public class BlogLibJs
 {
     /**
-     * Fetches the blog properties from the json object and adds them to an array
-     * using the correct property names as indexes.
+     * Fetches the blog properties from the json object and adds them to an array using the correct property names as indexes.
      */
     public static Map<QName, Serializable> getBlogPropertiesArray(JSONObject json)
     {
         Map<QName, Serializable> arr = new HashMap<QName, Serializable>();
-        
-        putJSONEntryInMap(json, arr, "blogType",        BlogIntegrationModel.PROP_BLOG_IMPLEMENTATION);
-        putJSONEntryInMap(json, arr, "blogId",          BlogIntegrationModel.PROP_ID);
-        putJSONEntryInMap(json, arr, "blogName",        BlogIntegrationModel.PROP_NAME);
+
+        putJSONEntryInMap(json, arr, "blogType", BlogIntegrationModel.PROP_BLOG_IMPLEMENTATION);
+        putJSONEntryInMap(json, arr, "blogId", BlogIntegrationModel.PROP_ID);
+        putJSONEntryInMap(json, arr, "blogName", BlogIntegrationModel.PROP_NAME);
         putJSONEntryInMap(json, arr, "blogDescription", BlogIntegrationModel.PROP_DESCRIPTION);
-        putJSONEntryInMap(json, arr, "blogUrl",         BlogIntegrationModel.PROP_URL);
-        putJSONEntryInMap(json, arr, "username",        BlogIntegrationModel.PROP_USER_NAME);
-        putJSONEntryInMap(json, arr, "password",        BlogIntegrationModel.PROP_PASSWORD);
+        putJSONEntryInMap(json, arr, "blogUrl", BlogIntegrationModel.PROP_URL);
+        putJSONEntryInMap(json, arr, "username", BlogIntegrationModel.PROP_USER_NAME);
+        putJSONEntryInMap(json, arr, "password", BlogIntegrationModel.PROP_PASSWORD);
         return arr;
     }
 
     private static void putJSONEntryInMap(JSONObject json,
             Map<QName, Serializable> arr, String jsonKey, QName mapKey)
     {
-         if (json.containsKey(jsonKey))
-         {
-             arr.put(mapKey, (Serializable)json.get(jsonKey));
-         }
+        if (json.containsKey(jsonKey))
+        {
+            arr.put(mapKey, (Serializable) json.get(jsonKey));
+        }
     }
 }

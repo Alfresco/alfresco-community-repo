@@ -32,6 +32,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import org.alfresco.util.schemacomp.Difference.Where;
 import org.alfresco.util.schemacomp.model.Column;
 import org.alfresco.util.schemacomp.model.ForeignKey;
@@ -39,8 +41,6 @@ import org.alfresco.util.schemacomp.model.Index;
 import org.alfresco.util.schemacomp.model.PrimaryKey;
 import org.alfresco.util.schemacomp.model.Sequence;
 import org.alfresco.util.schemacomp.model.Table;
-import org.apache.commons.lang3.ArrayUtils;
-
 
 public class SchemaCompTestingUtils
 {
@@ -55,7 +55,7 @@ public class SchemaCompTestingUtils
             }
         }
     }
-        
+
     public static void dumpDiffs(Results differences, boolean showNonDifferences)
     {
         System.out.println("Differences (" + differences.size() + ")");
@@ -76,13 +76,13 @@ public class SchemaCompTestingUtils
     {
         return new Table(null, name, columns("id NUMBER(10)"), pk("pk_" + name, "id"), fkeys(), indexes());
     }
-    
-    public static Table table(String name, Collection<Column> columns, PrimaryKey primaryKey, 
-                Collection<ForeignKey> foreignKeys, Collection<Index> indexes)
+
+    public static Table table(String name, Collection<Column> columns, PrimaryKey primaryKey,
+            Collection<ForeignKey> foreignKeys, Collection<Index> indexes)
     {
         return new Table(null, name, columns, primaryKey, foreignKeys, indexes);
     }
-    
+
     public static Collection<Column> columns(boolean compareColOrder, String... colDefs)
     {
         assertTrue("Tables must have columns", colDefs.length > 0);
@@ -92,17 +92,17 @@ public class SchemaCompTestingUtils
         {
             String[] parts = colDefs[i].split(" ");
             columns[i] = new Column(null, parts[0], parts[1], false);
-            columns[i].setOrder(i+1);
+            columns[i].setOrder(i + 1);
             columns[i].setCompareOrder(compareColOrder);
         }
         return Arrays.asList(columns);
     }
-    
+
     public static Collection<Column> columns(String... colDefs)
     {
         return columns(true, colDefs);
     }
-    
+
     public static PrimaryKey pk(String name, String... columnNames)
     {
         assertTrue("No columns specified", columnNames.length > 0);
@@ -116,17 +116,17 @@ public class SchemaCompTestingUtils
         PrimaryKey pk = new PrimaryKey(null, name, Arrays.asList(columnNames), columnOrders);
         return pk;
     }
-    
+
     public static List<ForeignKey> fkeys(ForeignKey... fkeys)
     {
         return Arrays.asList(fkeys);
     }
-    
+
     public static ForeignKey fk(String fkName, String localColumn, String targetTable, String targetColumn)
     {
         return new ForeignKey(null, fkName, localColumn, targetTable, targetColumn);
     }
-    
+
     /**
      * Create collection of indexes using strings of format "name column1 [column2 ... columnN]"
      */
@@ -137,24 +137,23 @@ public class SchemaCompTestingUtils
         {
             String[] parts = indexDefs[i].split(" ");
             String name = parts[0];
-            
+
             boolean unique = false;
             int columnsStart = 1;
-            
+
             if (parts[1].equals("[unique]"))
             {
                 unique = true;
                 columnsStart++;
             }
-            
+
             String[] columns = (String[]) ArrayUtils.subarray(parts, columnsStart, parts.length);
             indexes[i] = new Index(null, name, Arrays.asList(columns));
             indexes[i].setUnique(unique);
         }
         return Arrays.asList(indexes);
     }
-    
-    
+
     public static Sequence sequence(String name)
     {
         return new Sequence(name);

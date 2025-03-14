@@ -67,7 +67,7 @@ public class UnsafeMethodsTest extends TestCase
         assertEquals(EXPECTED_RESULT, result);
     }
 
-    private String applyTemplate(Template template, Map<String, Object> inputModel ) throws TemplateException, IOException
+    private String applyTemplate(Template template, Map<String, Object> inputModel) throws TemplateException, IOException
     {
         try (StringWriter stringWriter = new StringWriter())
         {

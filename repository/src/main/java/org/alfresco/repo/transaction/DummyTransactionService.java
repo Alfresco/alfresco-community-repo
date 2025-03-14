@@ -31,22 +31,32 @@ import jakarta.transaction.UserTransaction;
 import org.alfresco.service.transaction.TransactionService;
 
 /**
- * Simple implementation of the transaction service that serve up
- * entirely useless user transactions.  It is useful within the context
- * of some tests.
+ * Simple implementation of the transaction service that serve up entirely useless user transactions. It is useful within the context of some tests.
  * 
  * @author Derek Hulley
  */
 public class DummyTransactionService implements TransactionService
 {
-    private UserTransaction txn = new UserTransaction()
-    {
-        public void begin() {};
-        public void commit() {};
-        public int getStatus() {return Status.STATUS_NO_TRANSACTION;};
-        public void rollback() {};
-        public void setRollbackOnly() {};
-        public void setTransactionTimeout(int arg0) {};
+    private UserTransaction txn = new UserTransaction() {
+        public void begin()
+        {};
+
+        public void commit()
+        {};
+
+        public int getStatus()
+        {
+            return Status.STATUS_NO_TRANSACTION;
+        };
+
+        public void rollback()
+        {};
+
+        public void setRollbackOnly()
+        {};
+
+        public void setTransactionTimeout(int arg0)
+        {};
     };
 
     @Override
@@ -66,7 +76,7 @@ public class DummyTransactionService implements TransactionService
     {
         return txn;
     }
-    
+
     @Override
     public UserTransaction getUserTransaction(boolean readOnly)
     {

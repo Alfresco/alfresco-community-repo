@@ -28,12 +28,6 @@ package org.alfresco.traitextender;
 
 import java.util.List;
 
-import org.alfresco.traitextender.AJExtender;
-import org.alfresco.traitextender.Extend;
-import org.alfresco.traitextender.ExtendedTrait;
-import org.alfresco.traitextender.Extensible;
-import org.alfresco.traitextender.Trait;
-
 public class TestService implements Extensible
 {
 
@@ -45,7 +39,7 @@ public class TestService implements Extensible
     {
         super();
         this.testTrait = new ExtendedTrait<TestTrait>(AJProxyTrait.create(createTestTrait(),
-                                                                          TestTrait.class));
+                TestTrait.class));
         this.psmv2 = psmv2;
     }
 
@@ -86,14 +80,12 @@ public class TestService implements Extensible
 
     private TestTrait createTestTrait()
     {
-        return new TestTrait()
-        {
+        return new TestTrait() {
 
             @Override
             public String traitImplOf_privateServiceMethod1(final String s)
             {
-                return AJExtender.run(new AJExtender.ExtensionBypass<String>()
-                {
+                return AJExtender.run(new AJExtender.ExtensionBypass<String>() {
 
                     @Override
                     public String run()
@@ -106,8 +98,7 @@ public class TestService implements Extensible
             @Override
             public String traitImplOf_publicServiceMethod2(final String s)
             {
-                return AJExtender.run(new AJExtender.ExtensionBypass<String>()
-                {
+                return AJExtender.run(new AJExtender.ExtensionBypass<String>() {
 
                     @Override
                     public String run()
@@ -126,14 +117,13 @@ public class TestService implements Extensible
             @Override
             public void traitImplOf_publicServiceMethod3(final TestService s, final List<Integer> traitIdentities)
             {
-                AJExtender.run(new AJExtender.ExtensionBypass<Void>()
-                {
+                AJExtender.run(new AJExtender.ExtensionBypass<Void>() {
 
                     @Override
                     public Void run()
                     {
                         TestService.this.publicServiceMethod3(s,
-                                                              traitIdentities);
+                                traitIdentities);
                         return null;
                     };
                 });

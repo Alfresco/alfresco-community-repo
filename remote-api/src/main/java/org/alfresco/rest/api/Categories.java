@@ -60,10 +60,14 @@ public interface Categories
     /**
      * Update category by ID. Currently, it's possible only to update the name of category.
      *
-     * @param storeRef Reference to node store.
-     * @param id Category ID.
-     * @param fixedCategoryModel Fixed category model.
-     * @param parameters Additional parameters.
+     * @param storeRef
+     *            Reference to node store.
+     * @param id
+     *            Category ID.
+     * @param fixedCategoryModel
+     *            Fixed category model.
+     * @param parameters
+     *            Additional parameters.
      * @return Updated category.
      */
     Category updateCategoryById(StoreRef storeRef, String id, Category fixedCategoryModel, Parameters parameters);
@@ -81,23 +85,27 @@ public interface Categories
     }
 
     /**
-     * Get categories linked from node. Read permission on node is required.
-     * Node type is restricted to specified vales from: {@link org.alfresco.util.TypeConstraint}.
+     * Get categories linked from node. Read permission on node is required. Node type is restricted to specified vales from: {@link org.alfresco.util.TypeConstraint}.
      *
-     * @param nodeId Node ID.
-     * @param parameters Additional parameters.
+     * @param nodeId
+     *            Node ID.
+     * @param parameters
+     *            Additional parameters.
      * @return Categories linked from node.
      */
     List<Category> listCategoriesForNode(String nodeId, Parameters parameters);
 
     /**
-     * Link node to categories. Change permission on node is required.
-     * Node types allowed for categorization are specified within {@link org.alfresco.util.TypeConstraint}.
+     * Link node to categories. Change permission on node is required. Node types allowed for categorization are specified within {@link org.alfresco.util.TypeConstraint}.
      *
-     * @param storeRef Reference to node store.
-     * @param nodeId Node ID.
-     * @param categoryLinks Category IDs to which content should be linked to.
-     * @param parameters Additional parameters.
+     * @param storeRef
+     *            Reference to node store.
+     * @param nodeId
+     *            Node ID.
+     * @param categoryLinks
+     *            Category IDs to which content should be linked to.
+     * @param parameters
+     *            Additional parameters.
      * @return Linked to categories.
      */
     List<Category> linkNodeToCategories(StoreRef storeRef, String nodeId, List<Category> categoryLinks, Parameters parameters);
@@ -110,10 +118,14 @@ public interface Categories
     /**
      * Unlink node from a category.
      *
-     * @param storeRef Reference to node store.
-     * @param nodeId Node ID.
-     * @param categoryId Category ID from which content node should be unlinked from.
-     * @param parameters Additional parameters.
+     * @param storeRef
+     *            Reference to node store.
+     * @param nodeId
+     *            Node ID.
+     * @param categoryId
+     *            Category ID from which content node should be unlinked from.
+     * @param parameters
+     *            Additional parameters.
      */
     void unlinkNodeFromCategory(StoreRef storeRef, String nodeId, String categoryId, Parameters parameters);
 

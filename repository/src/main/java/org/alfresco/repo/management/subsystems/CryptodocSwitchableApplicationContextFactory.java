@@ -25,20 +25,19 @@
  */
 package org.alfresco.repo.management.subsystems;
 
-import org.alfresco.repo.descriptor.DescriptorServiceAvailableEvent;
-import org.alfresco.service.descriptor.DescriptorService;
-import org.alfresco.service.license.LicenseDescriptor;
+import java.io.IOException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationEvent;
 
-import java.io.IOException;
+import org.alfresco.repo.descriptor.DescriptorServiceAvailableEvent;
+import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.service.license.LicenseDescriptor;
 
 /**
- * {@link SwitchableApplicationContextFactory} that only allows the subsystem to be switched from unencrypted to encrypted, 
- * or if the two subsystems have the same ecrypted state.
- * Switching back to unencrypted from encrypted content store is not allowed. 
+ * {@link SwitchableApplicationContextFactory} that only allows the subsystem to be switched from unencrypted to encrypted, or if the two subsystems have the same ecrypted state. Switching back to unencrypted from encrypted content store is not allowed.
  * 
  * @author Matt Ward
  */
@@ -46,14 +45,14 @@ public class CryptodocSwitchableApplicationContextFactory extends SwitchableAppl
 {
     private DescriptorService descriptorService;
     private static final Log logger = LogFactory.getLog(CryptodocSwitchableApplicationContextFactory.class);
-    
+
     @Override
     protected PropertyBackedBeanState createInitialState() throws IOException
     {
         return new CryptoSwitchableState(sourceBeanName);
     }
-    
-	protected class CryptoSwitchableState extends SwitchableState
+
+    protected class CryptoSwitchableState extends SwitchableState
     {
         protected CryptoSwitchableState(String sourceBeanName)
         {
@@ -82,7 +81,7 @@ public class CryptodocSwitchableApplicationContextFactory extends SwitchableAppl
                     {
                         throw new IllegalStateException("Switching to the encrypted content store \"" + value + "\" is not licensed.");
                     }
-                } 
+                }
                 else
                 {
                     throw new IllegalStateException("Switching to the unencrypted content store \"" + value + "\" is not possible.");
@@ -113,7 +112,7 @@ public class CryptodocSwitchableApplicationContextFactory extends SwitchableAppl
         {
             isEncrypted = ((EncryptedContentStoreChildApplicationContextFactory) sourceBean).isEncryptedContent();
         }
-        //If not explicitly set as encrypted, check if the source bean is the cryptodoc subsystem bean
+        // If not explicitly set as encrypted, check if the source bean is the cryptodoc subsystem bean
         if (!isEncrypted)
         {
             isEncrypted = beanName.equals("encryptedContentStore");
@@ -131,19 +130,19 @@ public class CryptodocSwitchableApplicationContextFactory extends SwitchableAppl
         }
         return isSupported;
     }
-    
-	public void onApplicationEvent(ApplicationEvent event)
-	{
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("event : " + event);
-		}
-		
-		if (event instanceof DescriptorServiceAvailableEvent)
-		{
-			descriptorService = ((DescriptorServiceAvailableEvent)event).getDescriptorService();
-		}
-	    super.onApplicationEvent(event);
-	}
+
+    public void onApplicationEvent(ApplicationEvent event)
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("event : " + event);
+        }
+
+        if (event instanceof DescriptorServiceAvailableEvent)
+        {
+            descriptorService = ((DescriptorServiceAvailableEvent) event).getDescriptorService();
+        }
+        super.onApplicationEvent(event);
+    }
 
 }

@@ -25,16 +25,16 @@
  */
 package org.alfresco.rest.api;
 
-import org.alfresco.rest.api.impl.TagsImplTest;
-import org.alfresco.rest.api.tags.TagsEntityResourceTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
+import org.alfresco.rest.api.impl.TagsImplTest;
+import org.alfresco.rest.api.tags.TagsEntityResourceTest;
+
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    TagsImplTest.class,
-    TagsEntityResourceTest.class
+        TagsImplTest.class,
+        TagsEntityResourceTest.class
 })
 public class TagsUnitTests
-{
-}
+{}

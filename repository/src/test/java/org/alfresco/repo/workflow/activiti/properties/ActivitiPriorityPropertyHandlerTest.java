@@ -29,22 +29,22 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import org.activiti.engine.task.Task;
-import org.alfresco.repo.i18n.MessageService;
-import org.alfresco.repo.workflow.WorkflowPropertyHandler;
-import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.alfresco.service.namespace.QName;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.alfresco.repo.i18n.MessageService;
+import org.alfresco.repo.workflow.WorkflowPropertyHandler;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.namespace.QName;
+
 @RunWith(MockitoJUnitRunner.class)
 public class ActivitiPriorityPropertyHandlerTest
 {
     private static ActivitiPriorityPropertyHandler handler;
-    private @Mock
-    Task task;
+    private @Mock Task task;
     private TypeDefinition type = null;
     private QName key = null;
 

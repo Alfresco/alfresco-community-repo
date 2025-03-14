@@ -90,8 +90,7 @@ public class CreateTransferFolderAsNonAdminUserTest extends BaseRMTestCase
 
     public void testCreateTransferFolderAsNonAdminUser()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(testUser)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(testUser) {
             // Records folder
             private NodeRef recordsFolder = null;
 
@@ -104,8 +103,7 @@ public class CreateTransferFolderAsNonAdminUserTest extends BaseRMTestCase
             @Override
             public void given()
             {
-                runAs(new RunAsWork<Void>()
-                {
+                runAs(new RunAsWork<Void>() {
                     public Void doWork()
                     {
                         // Create category
@@ -144,7 +142,7 @@ public class CreateTransferFolderAsNonAdminUserTest extends BaseRMTestCase
             public void when()
             {
                 // FIXME: If the transfer step is executed here the test fails?!? See RM-3931
-                //transferFolder = (NodeRef) rmActionService.executeRecordsManagementAction(recordsFolder, TransferAction.NAME).getValue();
+                // transferFolder = (NodeRef) rmActionService.executeRecordsManagementAction(recordsFolder, TransferAction.NAME).getValue();
             }
 
             /**

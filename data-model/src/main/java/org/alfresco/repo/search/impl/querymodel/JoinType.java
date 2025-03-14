@@ -34,11 +34,11 @@ public enum JoinType
     /**
      * Inner join
      */
-    INNER, 
+    INNER,
     /**
      * Left (outer) join
      */
-    LEFT, 
+    LEFT,
     /**
      * Right (outer) join
      */

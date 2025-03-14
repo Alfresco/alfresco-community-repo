@@ -34,22 +34,20 @@ import org.junit.runners.Suite;
  * @author Matt Ward
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses(
-{
-            DbObjectXMLTransformerTest.class,
-            DbPropertyTest.class,
-            DbToXMLTest.class,
-            DefaultComparisonUtilsTest.class,
-            DifferenceTest.class,
-            ExportDbTest.class,
-            MultiFileDumperTest.class,
-            RedundantDbObjectTest.class,
-            SchemaComparatorTest.class,
-            SchemaToXMLTest.class,
-            ValidationResultTest.class,
-            ValidatingVisitorTest.class,
-            XMLToSchemaTest.class
+@Suite.SuiteClasses({
+        DbObjectXMLTransformerTest.class,
+        DbPropertyTest.class,
+        DbToXMLTest.class,
+        DefaultComparisonUtilsTest.class,
+        DifferenceTest.class,
+        ExportDbTest.class,
+        MultiFileDumperTest.class,
+        RedundantDbObjectTest.class,
+        SchemaComparatorTest.class,
+        SchemaToXMLTest.class,
+        ValidationResultTest.class,
+        ValidatingVisitorTest.class,
+        XMLToSchemaTest.class
 })
 public class SchemaCompTestSuite
-{
-}
+{}

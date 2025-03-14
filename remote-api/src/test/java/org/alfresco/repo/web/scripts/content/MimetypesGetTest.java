@@ -25,10 +25,11 @@
  */
 package org.alfresco.repo.web.scripts.content;
 
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Tests the {@link MimetypesGet} endpoint
@@ -45,10 +46,9 @@ public class MimetypesGetTest extends BaseWebScriptTest
         ctx = getServer().getApplicationContext();
         localTransformServiceRegistry = (LocalTransformServiceRegistry) ctx.getBean("localTransformServiceRegistry");
     }
-    
+
     /**
-     * Tests the <code>mimetypesGet.getTransformer</code> method directly for
-     * varefication of label text
+     * Tests the <code>mimetypesGet.getTransformer</code> method directly for varefication of label text
      * 
      * @throws Exception
      */

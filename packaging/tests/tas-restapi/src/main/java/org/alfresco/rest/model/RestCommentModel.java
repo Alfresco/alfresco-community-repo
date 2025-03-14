@@ -37,7 +37,7 @@ public class RestCommentModel extends TestModel implements IRestModel<RestCommen
 
     @Override
     public RestCommentModel onModel()
-    {         
+    {
         return model;
     }
 

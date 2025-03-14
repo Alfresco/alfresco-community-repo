@@ -30,7 +30,6 @@ import static org.alfresco.model.ContentModel.ASSOC_CHILDREN;
 import static org.alfresco.model.ContentModel.TYPE_CONTAINER;
 import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 
-
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -57,7 +56,8 @@ public class SearchUtil
     /**
      * Setter for node service
      *
-     * @param nodeService Node service
+     * @param nodeService
+     *            Node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -67,7 +67,8 @@ public class SearchUtil
     /**
      * Use a container node ref and return the nodeIds of the contents
      *
-     * @param nodeRef container
+     * @param nodeRef
+     *            container
      * @return list of nodeIds
      */
     protected Set<String> retrieveAllNodeIds(NodeRef nodeRef)
@@ -77,8 +78,7 @@ public class SearchUtil
     }
 
     /**
-     * Helper method to get the classification reason root container.
-     * The method creates the container if it doesn't already exist.
+     * Helper method to get the classification reason root container. The method creates the container if it doesn't already exist.
      *
      * @return reference to the classification reason root container
      */

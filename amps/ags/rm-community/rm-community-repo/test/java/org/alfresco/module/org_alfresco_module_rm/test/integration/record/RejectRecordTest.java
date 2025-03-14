@@ -27,16 +27,20 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.integration.record;
 
+import static org.springframework.extensions.webscripts.GUID.generate;
+
 import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.PROP_FILE_PLAN;
 import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.PROP_RECORDABLE_VERSION_POLICY;
 import static org.alfresco.service.cmr.version.VersionType.MINOR;
-import static org.springframework.extensions.webscripts.GUID.generate;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.webscripts.GUID;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.relationship.Relationship;
@@ -54,8 +58,6 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.util.PropertyMap;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.extensions.webscripts.GUID;
 
 /**
  * reject record tests.
@@ -97,23 +99,21 @@ public class RejectRecordTest extends BaseRMTestCase
      */
     public void testRejectedRecordInCorrectState() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             public void given()
             {
                 assertFalse(recordService.isRecord(dmDocument));
                 ownableService.setOwner(dmDocument, userName);
 
                 // document is declared as a record by user
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         // declare record
                         recordService.createRecord(filePlan, dmDocument);
                         return null;
                     }
-                 }, userName);
+                }, userName);
             }
 
             public void when()
@@ -144,8 +144,7 @@ public class RejectRecordTest extends BaseRMTestCase
      */
     public void testRevertAfterReject() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef document;
 
             public void given()
@@ -158,15 +157,14 @@ public class RejectRecordTest extends BaseRMTestCase
                 versionService.ensureVersioningEnabled(document, null);
 
                 // document is declared as a record by user
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         // declare record
                         recordService.createRecord(filePlan, document);
                         return null;
                     }
-                 }, userName);
+                }, userName);
 
                 assertTrue(nodeService.hasAspect(document, ASPECT_FILE_PLAN_COMPONENT));
             }
@@ -178,8 +176,7 @@ public class RejectRecordTest extends BaseRMTestCase
                 assertFalse(nodeService.hasAspect(document, ASPECT_FILE_PLAN_COMPONENT));
 
                 // upload a new version of the document
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         ContentWriter writer = contentService.getWriter(document, ContentModel.PROP_CONTENT, true);
@@ -198,8 +195,7 @@ public class RejectRecordTest extends BaseRMTestCase
 
                 assertFalse(nodeService.hasAspect(initial.getFrozenStateNodeRef(), ASPECT_FILE_PLAN_COMPONENT));
 
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         // revert the document to a previous version
@@ -207,7 +203,7 @@ public class RejectRecordTest extends BaseRMTestCase
 
                         return null;
                     }
-                 }, userName);
+                }, userName);
             }
 
             public void then()
@@ -223,8 +219,7 @@ public class RejectRecordTest extends BaseRMTestCase
 
     public void testRelationshipAfterRevertingRecord()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             // Test document
             private NodeRef document;
 

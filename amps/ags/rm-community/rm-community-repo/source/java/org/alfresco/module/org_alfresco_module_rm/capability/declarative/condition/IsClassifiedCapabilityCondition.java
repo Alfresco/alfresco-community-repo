@@ -45,11 +45,11 @@ public class IsClassifiedCapabilityCondition extends AbstractCapabilityCondition
     @Override
     public boolean evaluateImpl(NodeRef nodeRef)
     {
-        boolean result = false;        
-        
+        boolean result = false;
+
         DispositionSchedule dispositionSchedule = dispositionService.getDispositionSchedule(nodeRef);
         if (dispositionSchedule != null)
-        {        
+        {
             result = true;
         }
         return result;

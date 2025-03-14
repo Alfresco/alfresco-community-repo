@@ -25,11 +25,12 @@
  */
 package org.alfresco.rest.core;
 
-import static org.alfresco.rest.core.RestRequest.requestWithBody;
-import static org.alfresco.rest.core.RestRequest.simpleRequest;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.testng.Assert.assertEquals;
+
+import static org.alfresco.rest.core.RestRequest.requestWithBody;
+import static org.alfresco.rest.core.RestRequest.simpleRequest;
 
 import java.util.MissingFormatArgumentException;
 
@@ -106,7 +107,7 @@ public class RestRequestUnitTest
         assertEquals(restRequest.getPath(), "nodes/{nodeId}?{parameter0}&{parameter1}", "Unexpected path");
     }
 
-    @Test (expectedExceptions = MissingFormatArgumentException.class)
+    @Test(expectedExceptions = MissingFormatArgumentException.class)
     public void testRequestWithBody_pathWithFewerParamsThanGroups()
     {
         requestWithBody(POST, "BODY", "nodes/{nodeId}");

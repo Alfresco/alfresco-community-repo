@@ -47,7 +47,7 @@ public interface EntityResourceAction
      */
     public static interface Create<E> extends ResourceAction
     {
-        public List<E> create (List<E> entity,  Parameters parameters);
+        public List<E> create(List<E> entity, Parameters parameters);
     }
 
     /**
@@ -55,7 +55,7 @@ public interface EntityResourceAction
      */
     public static interface CreateWithResponse<E> extends ResourceAction
     {
-        public List<E> create (List<E> entity,  Parameters parameters, WithResponse withResponse);
+        public List<E> create(List<E> entity, Parameters parameters, WithResponse withResponse);
     }
 
     /**
@@ -63,14 +63,16 @@ public interface EntityResourceAction
      */
     public static interface Read<E> extends ResourceAction
     {
-        
+
         /**
          * Reads all the entries from the collection.
          * 
          * Paging information is provided.
-         * @param params - will never be null and will have the PAGING default values
+         * 
+         * @param params
+         *            - will never be null and will have the PAGING default values
          */
-        public CollectionWithPagingInfo<E> readAll (Parameters params);
+        public CollectionWithPagingInfo<E> readAll(Parameters params);
     }
 
     /**
@@ -83,9 +85,11 @@ public interface EntityResourceAction
          * Reads all the entries from the collection.
          *
          * Paging information is provided.
-         * @param params - will never be null and will have the PAGING default values
+         * 
+         * @param params
+         *            - will never be null and will have the PAGING default values
          */
-        public CollectionWithPagingInfo<E> readAll (Parameters params, WithResponse withResponse);
+        public CollectionWithPagingInfo<E> readAll(Parameters params, WithResponse withResponse);
     }
 
     /**
@@ -93,7 +97,7 @@ public interface EntityResourceAction
      */
     public static interface ReadById<E> extends ResourceAction
     {
-        public E readById (String id, Parameters parameters) throws EntityNotFoundException;
+        public E readById(String id, Parameters parameters) throws EntityNotFoundException;
     }
 
     /**
@@ -101,7 +105,7 @@ public interface EntityResourceAction
      */
     public static interface ReadByIdWithResponse<E> extends ResourceAction
     {
-        public E readById (String id, Parameters parameters, WithResponse withResponse) throws EntityNotFoundException;
+        public E readById(String id, Parameters parameters, WithResponse withResponse) throws EntityNotFoundException;
     }
 
     /**
@@ -109,7 +113,7 @@ public interface EntityResourceAction
      */
     public static interface Update<E> extends ResourceAction
     {
-        public E update (String id, E entity,  Parameters parameters);
+        public E update(String id, E entity, Parameters parameters);
     }
 
     /**
@@ -117,7 +121,7 @@ public interface EntityResourceAction
      */
     public static interface UpdateWithResponse<E> extends ResourceAction
     {
-        public E update (String id, E entity,  Parameters parameters, WithResponse withResponse);
+        public E update(String id, E entity, Parameters parameters, WithResponse withResponse);
     }
 
     /**
@@ -125,7 +129,7 @@ public interface EntityResourceAction
      */
     public static interface Delete extends ResourceAction
     {
-        public void delete (String id,  Parameters parameters);
+        public void delete(String id, Parameters parameters);
     }
 
     /**
@@ -133,7 +137,7 @@ public interface EntityResourceAction
      */
     public static interface DeleteWithResponse extends ResourceAction
     {
-        public void delete (String id,  Parameters parameters, WithResponse withResponse);
+        public void delete(String id, Parameters parameters, WithResponse withResponse);
     }
 
     /**
@@ -144,7 +148,8 @@ public interface EntityResourceAction
         /**
          * Deletes entities from the collection
          *
-         * @param params implementation may choose to restrict the set to be be deleted based on params (ie. not necessarily "all")
+         * @param params
+         *            implementation may choose to restrict the set to be be deleted based on params (ie. not necessarily "all")
          */
         public void deleteSet(Parameters params);
     }
@@ -157,7 +162,8 @@ public interface EntityResourceAction
         /**
          * Deletes entities from the collection
          *
-         * @param params implementation may choose to restrict the set to be be deleted based on params (ie. not necessarily "all")
+         * @param params
+         *            implementation may choose to restrict the set to be be deleted based on params (ie. not necessarily "all")
          */
         public void deleteSet(Parameters params, WithResponse withResponse);
     }

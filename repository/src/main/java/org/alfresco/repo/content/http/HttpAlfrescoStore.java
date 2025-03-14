@@ -30,6 +30,10 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -37,15 +41,11 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationContext;
 
 /**
  * A read-only store using HTTP to access content from a remote Alfresco application.
  * <p>
- * The primary purpose of this component is to allow clustered content sharing without
- * having to have shared access to the binary data on the various machines.
+ * The primary purpose of this component is to allow clustered content sharing without having to have shared access to the binary data on the various machines.
  * 
  * @since 2.1
  * @author Derek Hulley
@@ -56,7 +56,7 @@ import org.springframework.context.ApplicationContext;
 public class HttpAlfrescoStore extends AbstractContentStore
 {
     private static final Log logger = LogFactory.getLog(HttpAlfrescoStore.class);
-    
+
     private TransactionService transactionService;
     private AuthenticationService authenticationService;
     private String baseHttpUrl;
@@ -71,7 +71,8 @@ public class HttpAlfrescoStore extends AbstractContentStore
 
     /**
      * 
-     * @param transactionService            used to ensure proper ticket propagation in a cluster
+     * @param transactionService
+     *            used to ensure proper ticket propagation in a cluster
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -79,7 +80,8 @@ public class HttpAlfrescoStore extends AbstractContentStore
     }
 
     /**
-     * @param authenticationService         used to retrieve authentication ticket
+     * @param authenticationService
+     *            used to retrieve authentication ticket
      */
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
@@ -88,9 +90,16 @@ public class HttpAlfrescoStore extends AbstractContentStore
 
     /**
      * Set the base HTTP URL of the remote Alfresco application.<br/>
-     * For example: <pre>http://192.168.1.66:8080/alfresco</pre>.
+     * For example:
      * 
-     * @param baseHttpUrl       the remote HTTP address including the <b>.../alfresco</b>
+     * <pre>
+     * http://192.168.1.66:8080/alfresco
+     * </pre>
+     * 
+     * .
+     * 
+     * @param baseHttpUrl
+     *            the remote HTTP address including the <b>.../alfresco</b>
      */
     public void setBaseHttpUrl(String baseHttpUrl)
     {
@@ -100,11 +109,11 @@ public class HttpAlfrescoStore extends AbstractContentStore
         }
         this.baseHttpUrl = baseHttpUrl;
     }
-    
+
     /**
      * This <b>is</b> a read only store.
      * 
-     * @return                  <tt>false</tt> always
+     * @return <tt>false</tt> always
      */
     public boolean isWriteSupported()
     {
@@ -123,16 +132,18 @@ public class HttpAlfrescoStore extends AbstractContentStore
                 contentUrl);
         return reader;
     }
-    
+
     /**
      * Tests the HTTP store against a given server.<br>
      * Usage:
+     * 
      * <pre>
      *    HttpAlfrescoStore help
      *       Print the usage message
      * </pre>
      * 
-     * @param args  the program arguments
+     * @param args
+     *            the program arguments
      */
     public static void main(String[] args)
     {
@@ -152,16 +163,16 @@ public class HttpAlfrescoStore extends AbstractContentStore
             }
             baseUrl = args[0];
             contentUrl = args[1];
-            
+
             // Start the application to get hold of all the beans
             ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-            
+
             System.out.println(
                     "Starting test of " + HttpAlfrescoStore.class.getName() + " using server " + baseUrl + ".");
 
             // Do the test
             doTest(ctx, baseUrl, contentUrl);
-            
+
             System.out.println(
                     "Completed test of " + HttpAlfrescoStore.class.getName() + " using server " + baseUrl + ".");
 
@@ -187,7 +198,7 @@ public class HttpAlfrescoStore extends AbstractContentStore
             }
         }
     }
-    
+
     private static void doTest(ApplicationContext ctx, String baseUrl, String contentUrl) throws Exception
     {
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
@@ -198,7 +209,7 @@ public class HttpAlfrescoStore extends AbstractContentStore
         store.setTransactionService(transactionService);
         store.setAuthenticationService(authenticationService);
         store.setBaseHttpUrl(baseUrl);
-        
+
         // Now test
         System.out.println(
                 "   Retrieving reader for URL " + contentUrl);
@@ -222,9 +233,9 @@ public class HttpAlfrescoStore extends AbstractContentStore
         ContentData contentData = reader.getContentData();
         System.out.println(
                 "   Retrieved content data: " + contentData);
-        
+
         // Now get the content
-        ByteBuffer buffer = ByteBuffer.allocate((int)reader.getSize());
+        ByteBuffer buffer = ByteBuffer.allocate((int) reader.getSize());
         FileChannel channel = reader.getFileChannel();
         try
         {
@@ -240,7 +251,7 @@ public class HttpAlfrescoStore extends AbstractContentStore
             channel.close();
         }
     }
-    
+
     private static void printUsage(OutputStream os) throws IOException
     {
         String msg = "Usage: \n" +

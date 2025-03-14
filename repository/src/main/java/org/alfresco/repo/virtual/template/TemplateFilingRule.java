@@ -33,6 +33,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.virtual.ActualEnvironment;
 import org.alfresco.repo.virtual.VirtualizationException;
@@ -44,12 +47,9 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * A {@link FilingRule} created with the criteria given in the applied virtual
- * folder template.
+ * A {@link FilingRule} created with the criteria given in the applied virtual folder template.
  *
  * @author Bogdan Horje
  */
@@ -68,7 +68,7 @@ public class TemplateFilingRule implements FilingRule
     private Map<String, String> stringProperties;
 
     public TemplateFilingRule(ActualEnvironment environment, String path, String type, Set<String> aspects,
-                Map<String, String> properties)
+            Map<String, String> properties)
     {
         this.env = environment;
         this.path = path;
@@ -81,14 +81,14 @@ public class TemplateFilingRule implements FilingRule
     public FilingData createFilingData(FilingParameters parameters) throws VirtualizationException
     {
         return createFilingData(parameters.getParentRef(),
-                                parameters.getAssocTypeQName(),
-                                parameters.getAssocQName(),
-                                parameters.getNodeTypeQName(),
-                                parameters.getProperties());
+                parameters.getAssocTypeQName(),
+                parameters.getAssocQName(),
+                parameters.getNodeTypeQName(),
+                parameters.getProperties());
     }
 
     private FilingData createFilingData(Reference parentRef, QName assocTypeQName, QName assocQName,
-                QName nodeTypeQName, Map<QName, Serializable> properties) throws VirtualizationException
+            QName nodeTypeQName, Map<QName, Serializable> properties) throws VirtualizationException
     {
 
         NodeRef fParentRef = null;
@@ -105,7 +105,7 @@ public class TemplateFilingRule implements FilingRule
         else
         {
             fType = QName.createQName(type,
-                                      nsPrefixResolver);
+                    nsPrefixResolver);
 
             // CM-528 acceptance criteria 3 :
             // Given that the current user can upload new content into a
@@ -115,12 +115,12 @@ public class TemplateFilingRule implements FilingRule
             // uploading content will create a document, not a folder
 
             if (env.isSubClass(fType,
-                               ContentModel.TYPE_FOLDER))
+                    ContentModel.TYPE_FOLDER))
             {
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("CM-528 acceptance criteria 3 : we deny the creation of folders subtype " + fType
-                                + " and force cm:content instead.");
+                            + " and force cm:content instead.");
                 }
                 fType = ContentModel.TYPE_CONTENT;
             }
@@ -132,14 +132,14 @@ public class TemplateFilingRule implements FilingRule
             // See CM-533 Suppress options to create folders in a virtual folder
 
             if (env.isSubClass(nodeTypeQName,
-                               fType))
+                    fType))
             {
                 fType = nodeTypeQName;
             }
         }
 
         fParentRef = parentNodeRefFor(parentRef,
-                                      true);
+                true);
 
         fProperties = new HashMap<QName, Serializable>(properties);
 
@@ -149,11 +149,11 @@ public class TemplateFilingRule implements FilingRule
         {
             String name = propertyEntry.getKey();
             QName qName = QName.createQName(name,
-                                            nsPrefixResolver);
+                    nsPrefixResolver);
             if (!fProperties.containsKey(qName))
             {
                 fProperties.put(qName,
-                                stringProperties.get(name));
+                        stringProperties.get(name));
             }
         }
 
@@ -162,15 +162,15 @@ public class TemplateFilingRule implements FilingRule
         for (String aspect : aspects)
         {
             fAspects.add(QName.createQName(aspect,
-                                           env.getNamespacePrefixResolver()));
+                    env.getNamespacePrefixResolver()));
         }
 
         return new FilingData(fParentRef,
-                              assocTypeQName,
-                              assocQName,
-                              fType,
-                              fAspects,
-                              fProperties);
+                assocTypeQName,
+                assocQName,
+                fType,
+                fAspects,
+                fProperties);
 
     }
 
@@ -193,7 +193,7 @@ public class TemplateFilingRule implements FilingRule
 
         boolean noReadPermissions = false;
         if (fParentRef != null && !env.hasPermission(fParentRef,
-                                                     PermissionService.READ_PERMISSIONS))
+                PermissionService.READ_PERMISSIONS))
         {
             fParentRef = null;
             noReadPermissions = true;
@@ -230,7 +230,7 @@ public class TemplateFilingRule implements FilingRule
     public NodeRef filingNodeRefFor(FilingParameters parameters) throws VirtualizationException
     {
         return parentNodeRefFor(parameters.getParentRef(),
-                                false);
+                false);
     }
 
 }

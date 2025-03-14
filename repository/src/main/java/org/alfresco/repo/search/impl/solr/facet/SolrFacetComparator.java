@@ -36,14 +36,18 @@ public class SolrFacetComparator implements Comparator<SolrFacetProperties>
 {
     /** A sequence of facet IDs which defines their order, as used in REST API &amp; UI. */
     private final List<String> sortedIDs;
-    
+
     public SolrFacetComparator(List<String> sortedIDs)
     {
         this.sortedIDs = new ArrayList<>();
-        if (sortedIDs != null) { this.sortedIDs.addAll(sortedIDs); }
+        if (sortedIDs != null)
+        {
+            this.sortedIDs.addAll(sortedIDs);
+        }
     }
-    
-    @Override public int compare(SolrFacetProperties facet1, SolrFacetProperties facet2)
+
+    @Override
+    public int compare(SolrFacetProperties facet1, SolrFacetProperties facet2)
     {
         if (sortedIDs.isEmpty())
         {
@@ -51,7 +55,7 @@ public class SolrFacetComparator implements Comparator<SolrFacetProperties>
         }
 
         Pair<Integer, Integer> facetIndicesInSortedList = find(facet1, facet2);
-        
+
         if (bothSorted(facetIndicesInSortedList))
         {
             // Sorting is by position in the sortedIDs list.
@@ -69,19 +73,23 @@ public class SolrFacetComparator implements Comparator<SolrFacetProperties>
             return facetIndicesInSortedList.getSecond() == -1 ? -1 : 1;
         }
     }
-    
+
     /** Get the positional indices of the provided {@link SolrFacetProperties} in the {@link #sortedIDs}. */
     private Pair<Integer, Integer> find(SolrFacetProperties facet1, SolrFacetProperties facet2)
     {
         return new Pair<>(sortedIDs.indexOf(facet1.getFilterID()),
-                          sortedIDs.indexOf(facet2.getFilterID()));
+                sortedIDs.indexOf(facet2.getFilterID()));
     }
-    
+
     /** Are both of the provided positional indexes in the {@link #sortedIDs}? */
     private boolean bothSorted(Pair<Integer, Integer> indices)
-        { return indices.getFirst() != -1 && indices.getSecond() != -1; }
-    
+    {
+        return indices.getFirst() != -1 && indices.getSecond() != -1;
+    }
+
     /** Are neither of the provided positional indexes in the {@link #sortedIDs}? */
     private boolean neitherSorted(Pair<Integer, Integer> indices)
-        { return indices.getFirst() == -1 && indices.getSecond() == -1; }
+    {
+        return indices.getFirst() == -1 && indices.getSecond() == -1;
+    }
 }

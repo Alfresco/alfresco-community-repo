@@ -25,13 +25,14 @@
  */
 package org.alfresco.repo.web.scripts;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.springframework.extensions.webscripts.servlet.WebScriptServlet;
-
+import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
+
+import org.springframework.extensions.webscripts.servlet.WebScriptServlet;
+
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 
 public class AlfrescoWebScriptServlet extends WebScriptServlet
 {

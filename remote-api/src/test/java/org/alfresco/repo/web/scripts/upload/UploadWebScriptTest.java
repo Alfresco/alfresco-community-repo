@@ -35,6 +35,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.httpclient.methods.multipart.FilePart;
+import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
+import org.apache.commons.httpclient.methods.multipart.Part;
+import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+import org.springframework.util.ResourceUtils;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionModel;
@@ -53,16 +64,6 @@ import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
-import org.apache.commons.httpclient.params.HttpMethodParams;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
-import org.springframework.util.ResourceUtils;
 
 public class UploadWebScriptTest extends BaseWebScriptTest
 {
@@ -104,8 +105,7 @@ public class UploadWebScriptTest extends BaseWebScriptTest
 
         globalProperties.setProperty(AUTO_VERSION_PROPS_KEY, "true");
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -115,8 +115,8 @@ public class UploadWebScriptTest extends BaseWebScriptTest
 
                 // Create a Public site
                 SiteInfo siteInfo = createSite("site" + GUID.generate(), "doclib", SiteVisibility.PUBLIC);
-                
-                //Upload file in a site using webScript
+
+                // Upload file in a site using webScript
                 Response response = uploadFileWs(file, fileName, siteInfo.getShortName(), "doclib");
                 assertNotNull("content of file", response.getContentAsString());
                 JSONObject jsonRsp = (JSONObject) JSONValue.parse(response.getContentAsString());
@@ -135,8 +135,7 @@ public class UploadWebScriptTest extends BaseWebScriptTest
         final String name11 = GUID.generate() + "02";
         final String name21 = GUID.generate() + "2.1";
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -146,17 +145,16 @@ public class UploadWebScriptTest extends BaseWebScriptTest
                 assertNotNull(("Autoversion property is NULL! NodeRef = '" + documentSite.toString() + "'"), autoVersionProps);
                 assertTrue(("Autoversion must be TRUE! NodeRef = '" + documentSite.toString() + "'"), (Boolean) autoVersionProps);
 
-                //change name minor version increment
+                // change name minor version increment
                 nodeService.setProperty(documentSite, ContentModel.PROP_NAME, name11);
                 return null;
             }
         });
-        
+
         Map<QName, Serializable> properties = getAndAssertProperties(documentSite, "1.1");
         assertEquals(name11, properties.get(ContentModel.PROP_NAME));
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -164,7 +162,7 @@ public class UploadWebScriptTest extends BaseWebScriptTest
                 contentService.getWriter(workingCopyDocSite, ContentModel.PROP_CONTENT, true).putContent("content new");
                 Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
                 versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
-                //checkIn major version increment
+                // checkIn major version increment
                 documentSite = checkOutCheckInService.checkin(workingCopyDocSite, versionProperties);
                 return null;
             }
@@ -172,12 +170,11 @@ public class UploadWebScriptTest extends BaseWebScriptTest
 
         getAndAssertProperties(documentSite, "2.0");
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
-                //change name minor version increment
+                // change name minor version increment
                 nodeService.setProperty(documentSite, ContentModel.PROP_NAME, name21);
                 return null;
             }
@@ -195,14 +192,13 @@ public class UploadWebScriptTest extends BaseWebScriptTest
 
     public PostRequest buildMultipartPostRequest(File file, String filename, String siteId, String containerId) throws IOException
     {
-        Part[] parts = 
-            { 
-                new FilePart("filedata", file.getName(), file, "text/plain", null), 
+        Part[] parts = {
+                new FilePart("filedata", file.getName(), file, "text/plain", null),
                 new StringPart("filename", filename),
-                new StringPart("description", "description"), 
-                new StringPart("siteid", siteId), 
-                new StringPart("containerid", containerId) 
-            };
+                new StringPart("description", "description"),
+                new StringPart("siteid", siteId),
+                new StringPart("containerid", containerId)
+        };
 
         MultipartRequestEntity multipartRequestEntity = new MultipartRequestEntity(parts, new HttpMethodParams());
 

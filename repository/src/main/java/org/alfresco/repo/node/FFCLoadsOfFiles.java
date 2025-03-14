@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -48,7 +50,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Perform document loads and fetches of child associations in increasing numbers.
@@ -59,16 +60,16 @@ import org.springframework.context.ApplicationContext;
  * @author CACEIS
  * @since 2.2SP2
  */
-public class FFCLoadsOfFiles 
+public class FFCLoadsOfFiles
 {
-	private static int totalNumDocs = 6000;
-	private static int docsPerTx = 2000;
-	private static int currentDoc = 0;
+    private static int totalNumDocs = 6000;
+    private static int docsPerTx = 2000;
+    private static int currentDoc = 0;
 
     public static void main(String[] args)
     {
-    	
-        // initialise app content 
+
+        // initialise app content
         ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
         // get registry of services
         final ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
@@ -77,11 +78,9 @@ public class FFCLoadsOfFiles
         AuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
         authenticationService.authenticate(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
 
-        
         // use TransactionWork to wrap service calls in a user transaction
         TransactionService transactionService = serviceRegistry.getTransactionService();
-        RetryingTransactionCallback<Object> exampleWork = new RetryingTransactionCallback<Object>()
-        {
+        RetryingTransactionCallback<Object> exampleWork = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Exception
             {
                 doExample(serviceRegistry);
@@ -96,10 +95,7 @@ public class FFCLoadsOfFiles
         System.exit(0);
     }
 
-    
-
-
-	public static void doExample(ServiceRegistry serviceRegistry) throws Exception
+    public static void doExample(ServiceRegistry serviceRegistry) throws Exception
     {
         //
         // locate the company home node
@@ -132,61 +128,60 @@ public class FFCLoadsOfFiles
 
         if ((currentDoc + docsPerTx) > totalNumDocs)
         {
-        	docsPerTx = totalNumDocs - currentDoc;
+            docsPerTx = totalNumDocs - currentDoc;
         }
         // Create new Space
         String spaceName = "Bulk Load Space (" + System.currentTimeMillis() + ") from " + currentDoc + " to " + (currentDoc + docsPerTx - 1) + " of " + totalNumDocs;
         Map<QName, Serializable> spaceProps = new HashMap<QName, Serializable>();
-    	spaceProps.put(ContentModel.PROP_NAME, spaceName);
-        NodeRef  newSpace = nodeService.createNode(loadTestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, spaceName),ContentModel.TYPE_FOLDER,spaceProps).getChildRef();
-        
+        spaceProps.put(ContentModel.PROP_NAME, spaceName);
+        NodeRef newSpace = nodeService.createNode(loadTestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, spaceName), ContentModel.TYPE_FOLDER, spaceProps).getChildRef();
 
         // create new content node within new Space home
-        for (int k = 1;k<=docsPerTx;k++)
+        for (int k = 1; k <= docsPerTx; k++)
         {
-    		currentDoc++;
-    		System.out.println("About to start document " + currentDoc);
-        	// assign name
-        	String name = "BulkLoad (" + System.currentTimeMillis() + ") " + currentDoc ;
-        	Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
-        	contentProps.put(ContentModel.PROP_NAME, name);
-        	
-        	// create content node
-        	// NodeService nodeService = serviceRegistry.getNodeService();
-        	ChildAssociationRef association = nodeService.createNode(newSpace, 
-        			ContentModel.ASSOC_CONTAINS, 
-        			QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, name),
-        			ContentModel.TYPE_CONTENT,
-        			contentProps);
-        	NodeRef content = association.getChildRef();
-        
-        	// add titled aspect (for Web Client display)
-        	Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>();
-        	titledProps.put(ContentModel.PROP_TITLE, name);
-        	titledProps.put(ContentModel.PROP_DESCRIPTION, name);
-        	nodeService.addAspect(content, ContentModel.ASPECT_TITLED, titledProps);
-        	
-        	//
-        	// write some content to new node
-        	//
+            currentDoc++;
+            System.out.println("About to start document " + currentDoc);
+            // assign name
+            String name = "BulkLoad (" + System.currentTimeMillis() + ") " + currentDoc;
+            Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
+            contentProps.put(ContentModel.PROP_NAME, name);
 
-        	ContentService contentService = serviceRegistry.getContentService();
-        	ContentWriter writer = contentService.getWriter(content, ContentModel.PROP_CONTENT, true);
-        	writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        	writer.setEncoding("UTF-8");
-        	String text = "This is some text in a doc";
-        	writer.putContent(text);
-    		System.out.println("About to get child assocs ");        	
-        	//Circa
-//        	nodeService.getChildAssocs(newSpace);
-    	       for (int count=0;count<=10000;count++)
-    	        {
-    	        	nodeService.getChildAssocs(newSpace);
-    	        }
-       	
+            // create content node
+            // NodeService nodeService = serviceRegistry.getNodeService();
+            ChildAssociationRef association = nodeService.createNode(newSpace,
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, name),
+                    ContentModel.TYPE_CONTENT,
+                    contentProps);
+            NodeRef content = association.getChildRef();
+
+            // add titled aspect (for Web Client display)
+            Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>();
+            titledProps.put(ContentModel.PROP_TITLE, name);
+            titledProps.put(ContentModel.PROP_DESCRIPTION, name);
+            nodeService.addAspect(content, ContentModel.ASPECT_TITLED, titledProps);
+
+            //
+            // write some content to new node
+            //
+
+            ContentService contentService = serviceRegistry.getContentService();
+            ContentWriter writer = contentService.getWriter(content, ContentModel.PROP_CONTENT, true);
+            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            writer.setEncoding("UTF-8");
+            String text = "This is some text in a doc";
+            writer.putContent(text);
+            System.out.println("About to get child assocs ");
+            // Circa
+            // nodeService.getChildAssocs(newSpace);
+            for (int count = 0; count <= 10000; count++)
+            {
+                nodeService.getChildAssocs(newSpace);
+            }
+
         }
-    	//doSearch(searchService);
- 		System.out.println("About to end transaction " );
+        // doSearch(searchService);
+        System.out.println("About to end transaction ");
 
     }
 }

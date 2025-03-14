@@ -27,8 +27,9 @@ package org.alfresco.opencmis;
 
 import jakarta.servlet.http.HttpServlet;
 
-import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.apache.chemistry.opencmis.server.impl.browser.CmisBrowserBindingServlet;
+
+import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 
 /**
  * Dispatches OpenCMIS requests to the OpenCMIS Browser Binding servlet.
@@ -41,12 +42,12 @@ public class BrowserCMISDispatcher extends CMISServletDispatcher
     @Override
     protected Binding getBinding()
     {
-    	return Binding.browser;
+        return Binding.browser;
     }
 
-	protected HttpServlet getServlet()
-	{
-		HttpServlet servlet = new CmisBrowserBindingServlet();
-		return servlet;
-	}
+    protected HttpServlet getServlet()
+    {
+        HttpServlet servlet = new CmisBrowserBindingServlet();
+        return servlet;
+    }
 }

@@ -30,7 +30,6 @@ import junit.framework.TestSuite;
 
 import org.alfresco.repo.rule.ruletrigger.RuleTriggerTest;
 
-
 /**
  * Version test suite
  * 
@@ -41,9 +40,9 @@ public class RuleTestSuite extends TestSuite
     /**
      * Creates the test suite
      * 
-     * @return  the test suite
+     * @return the test suite
      */
-    public static Test suite() 
+    public static Test suite()
     {
         TestSuite suite = new TestSuite();
         suite.addTestSuite(RuleTypeImplTest.class);

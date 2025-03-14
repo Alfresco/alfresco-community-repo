@@ -30,11 +30,15 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
 import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.nodelocator.CompanyHomeNodeLocator;
@@ -56,11 +60,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Test for {@link UpdateTagScopesActionExecuter}
@@ -76,7 +75,6 @@ public class UpdateTagScopesActionExecuterTest extends TestCase
 
     private static final int TEST_DOCUMENTS_AMOUNT = 3;
 
-
     private static final String ACTION_TRACKING_SERVICE_BEAN_NAME = "actionTrackingService";
 
     private static final String UPDATE_TAGSCOPE_ACTION_EXECUTER_BEAN_NAME = "update-tagscope";
@@ -86,7 +84,6 @@ public class UpdateTagScopesActionExecuterTest extends TestCase
     private static final String TEST_FOLDER_NAME_PATTERN = "TestFolder-%d";
 
     private static final String TEST_DOCUMENT_NAME_PATTERN = "InFolder-%d-TestDocument-%d.txt";
-
 
     private ApplicationContext applicationContext;
 
@@ -130,8 +127,7 @@ public class UpdateTagScopesActionExecuterTest extends TestCase
         expectedTagScopes = new LinkedList<NodeRef>();
         testTags = new LinkedList<String>();
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -149,8 +145,10 @@ public class UpdateTagScopesActionExecuterTest extends TestCase
     /**
      * Creates simple hierarchy with documents tagged on the first layer only
      * 
-     * @param registry - {@link ServiceRegistry} instance
-     * @param createdTagScopes - {@link List}&lt;{@link NodeRef}&gt; instance which contains all tag scope folders
+     * @param registry
+     *            - {@link ServiceRegistry} instance
+     * @param createdTagScopes
+     *            - {@link List}&lt;{@link NodeRef}&gt; instance which contains all tag scope folders
      */
     private void createTestContent(ServiceRegistry registry, List<NodeRef> createdTagScopes)
     {
@@ -221,8 +219,7 @@ public class UpdateTagScopesActionExecuterTest extends TestCase
             transaction.rollback();
         }
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -270,8 +267,7 @@ public class UpdateTagScopesActionExecuterTest extends TestCase
     }
 
     /**
-     * <a href="https://issues.alfresco.com/jira/browse/ACE-1979">ACE-1979</a>: tag scope cache must be emptied when tag scope doesn't contain tags anymore. The fix nullifies
-     * content data property for the tag scope cache. This approach allows avoiding immediate update in content store and postponing it untill content store cleaner job is executed
+     * <a href="https://issues.alfresco.com/jira/browse/ACE-1979">ACE-1979</a>: tag scope cache must be emptied when tag scope doesn't contain tags anymore. The fix nullifies content data property for the tag scope cache. This approach allows avoiding immediate update in content store and postponing it untill content store cleaner job is executed
      * 
      * @throws Exception
      */
@@ -292,8 +288,7 @@ public class UpdateTagScopesActionExecuterTest extends TestCase
         actionTrackingService.getExecutingActions(UpdateTagScopesActionExecuter.NAME);
         assertTrue(contentData.getSize() > 0L);
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -319,15 +314,15 @@ public class UpdateTagScopesActionExecuterTest extends TestCase
     }
 
     /**
-     * @param nodeRef - {@link NodeRef} instance which represents tag scope folder
+     * @param nodeRef
+     *            - {@link NodeRef} instance which represents tag scope folder
      * @return {@link ContentModel#PROP_TAGSCOPE_CACHE} {@link ContentData} property instance for the given <code>nodeRef</code> or
      */
     private ContentData getTagScopeCacheContentDataProperty(final NodeRef nodeRef)
     {
         ContentData result = null;
 
-        Serializable contentProperty = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Serializable>()
-        {
+        Serializable contentProperty = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Serializable>() {
             @Override
             public Serializable execute() throws Throwable
             {

@@ -41,7 +41,10 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.Map;
 
-import org.alfresco.api.AlfrescoPublicApi;   
+import org.springframework.extensions.surf.exception.PlatformRuntimeException;
+import org.springframework.extensions.surf.util.I18NUtil;
+
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.opencmis.search.CMISQueryOptions;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -59,18 +62,15 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.VersionNumber;
-import org.springframework.extensions.surf.exception.PlatformRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Support for generic conversion between types.
  * 
  * Additional conversions may be added. Basic inter-operability supported.
  * 
- * Direct conversion and two stage conversions via Number are supported. We do
- * not support conversion by any route at the moment
+ * Direct conversion and two stage conversions via Number are supported. We do not support conversion by any route at the moment
  * 
- * TODO: Add support for Path 
+ * TODO: Add support for Path
  * 
  * TODO: Add support for lucene
  * 
@@ -95,29 +95,26 @@ public class DefaultTypeConverter extends TypeConverter
         //
         // From string
         //
-        addConverter(String.class, Class.class, new TypeConverter.Converter<String, Class>()
+        addConverter(String.class, Class.class, new TypeConverter.Converter<String, Class>() {
+            public Class convert(String source)
+            {
+                try
                 {
-                    public Class convert(String source)
-                    {
-                        try
-                        {
-                            return Class.forName(source);
-                        }
-                        catch (ClassNotFoundException e)
-                        {
-                            throw new TypeConversionException("Failed to convert string to class: " + source, e);
-                        }
-                    }
-                });
-        addConverter(String.class, Boolean.class, new TypeConverter.Converter<String, Boolean>()
-        {
+                    return Class.forName(source);
+                }
+                catch (ClassNotFoundException e)
+                {
+                    throw new TypeConversionException("Failed to convert string to class: " + source, e);
+                }
+            }
+        });
+        addConverter(String.class, Boolean.class, new TypeConverter.Converter<String, Boolean>() {
             public Boolean convert(String source)
             {
                 return Boolean.valueOf(source);
             }
         });
-        addConverter(String.class, Character.class, new TypeConverter.Converter<String, Character>()
-        {
+        addConverter(String.class, Character.class, new TypeConverter.Converter<String, Character>() {
             public Character convert(String source)
             {
                 if ((source == null) || (source.length() == 0))
@@ -127,8 +124,7 @@ public class DefaultTypeConverter extends TypeConverter
                 return Character.valueOf(source.charAt(0));
             }
         });
-        addConverter(String.class, Number.class, new TypeConverter.Converter<String, Number>()
-        {
+        addConverter(String.class, Number.class, new TypeConverter.Converter<String, Number>() {
             public Number convert(String source)
             {
                 try
@@ -141,64 +137,55 @@ public class DefaultTypeConverter extends TypeConverter
                 }
             }
         });
-        addConverter(String.class, Byte.class, new TypeConverter.Converter<String, Byte>()
-        {
+        addConverter(String.class, Byte.class, new TypeConverter.Converter<String, Byte>() {
             public Byte convert(String source)
             {
                 return Byte.valueOf(source);
             }
         });
-        addConverter(String.class, Short.class, new TypeConverter.Converter<String, Short>()
-        {
+        addConverter(String.class, Short.class, new TypeConverter.Converter<String, Short>() {
             public Short convert(String source)
             {
                 return Short.valueOf(source);
             }
         });
-        addConverter(String.class, Integer.class, new TypeConverter.Converter<String, Integer>()
-        {
+        addConverter(String.class, Integer.class, new TypeConverter.Converter<String, Integer>() {
             public Integer convert(String source)
             {
                 return Integer.valueOf(source);
             }
         });
-        addConverter(String.class, Long.class, new TypeConverter.Converter<String, Long>()
-        {
+        addConverter(String.class, Long.class, new TypeConverter.Converter<String, Long>() {
             public Long convert(String source)
             {
                 return Long.valueOf(source);
             }
         });
-        addConverter(String.class, Float.class, new TypeConverter.Converter<String, Float>()
-        {
+        addConverter(String.class, Float.class, new TypeConverter.Converter<String, Float>() {
             public Float convert(String source)
             {
                 return Float.valueOf(source);
             }
         });
-        addConverter(String.class, Double.class, new TypeConverter.Converter<String, Double>()
-        {
+        addConverter(String.class, Double.class, new TypeConverter.Converter<String, Double>() {
             public Double convert(String source)
             {
                 return Double.valueOf(source);
             }
         });
-        addConverter(String.class, BigInteger.class, new TypeConverter.Converter<String, BigInteger>()
-        {
+        addConverter(String.class, BigInteger.class, new TypeConverter.Converter<String, BigInteger>() {
             public BigInteger convert(String source)
             {
                 return new BigInteger(source);
             }
         });
-        addConverter(String.class, BigDecimal.class, new TypeConverter.Converter<String, BigDecimal>()
-        {
+        addConverter(String.class, BigDecimal.class, new TypeConverter.Converter<String, BigDecimal>() {
             public BigDecimal convert(String source)
             {
                 return new BigDecimal(source);
             }
         });
-        addConverter(String.class, Date.class, new TypeConverter.Converter<String, Date>()
-        {
+        addConverter(String.class, Date.class, new TypeConverter.Converter<String, Date>() {
             public Date convert(String source)
             {
                 try
@@ -216,57 +203,49 @@ public class DefaultTypeConverter extends TypeConverter
                 }
             }
         });
-        addConverter(String.class, Duration.class, new TypeConverter.Converter<String, Duration>()
-        {
+        addConverter(String.class, Duration.class, new TypeConverter.Converter<String, Duration>() {
             public Duration convert(String source)
             {
                 return new Duration(source);
             }
         });
-        addConverter(String.class, QName.class, new TypeConverter.Converter<String, QName>()
-        {
+        addConverter(String.class, QName.class, new TypeConverter.Converter<String, QName>() {
             public QName convert(String source)
             {
                 return QName.createQName(source);
             }
         });
-        addConverter(String.class, ContentData.class, new TypeConverter.Converter<String, ContentData>()
-        {
+        addConverter(String.class, ContentData.class, new TypeConverter.Converter<String, ContentData>() {
             public ContentData convert(String source)
             {
                 return ContentData.createContentProperty(source);
             }
         });
-        addConverter(String.class, NodeRef.class, new TypeConverter.Converter<String, NodeRef>()
-        {
+        addConverter(String.class, NodeRef.class, new TypeConverter.Converter<String, NodeRef>() {
             public NodeRef convert(String source)
             {
                 return new NodeRef(source);
             }
         });
-        addConverter(String.class, StoreRef.class, new TypeConverter.Converter<String, StoreRef>()
-        {
+        addConverter(String.class, StoreRef.class, new TypeConverter.Converter<String, StoreRef>() {
             public StoreRef convert(String source)
             {
                 return new StoreRef(source);
             }
         });
-        addConverter(String.class, ChildAssociationRef.class, new TypeConverter.Converter<String, ChildAssociationRef>()
-        {
+        addConverter(String.class, ChildAssociationRef.class, new TypeConverter.Converter<String, ChildAssociationRef>() {
             public ChildAssociationRef convert(String source)
             {
                 return new ChildAssociationRef(source);
             }
         });
-        addConverter(String.class, AssociationRef.class, new TypeConverter.Converter<String, AssociationRef>()
-        {
+        addConverter(String.class, AssociationRef.class, new TypeConverter.Converter<String, AssociationRef>() {
             public AssociationRef convert(String source)
             {
                 return new AssociationRef(source);
             }
         });
-        addConverter(String.class, InputStream.class, new TypeConverter.Converter<String, InputStream>()
-        {
+        addConverter(String.class, InputStream.class, new TypeConverter.Converter<String, InputStream>() {
             public InputStream convert(String source)
             {
                 try
@@ -279,36 +258,31 @@ public class DefaultTypeConverter extends TypeConverter
                 }
             }
         });
-        addConverter(String.class, MLText.class, new TypeConverter.Converter<String, MLText>()
-        {
+        addConverter(String.class, MLText.class, new TypeConverter.Converter<String, MLText>() {
             public MLText convert(String source)
             {
                 return new MLText(source);
             }
         });
-        addConverter(String.class, Locale.class, new TypeConverter.Converter<String, Locale>()
-        {
+        addConverter(String.class, Locale.class, new TypeConverter.Converter<String, Locale>() {
             public Locale convert(String source)
             {
                 return I18NUtil.parseLocale(source);
             }
         });
-        addConverter(String.class, Period.class, new TypeConverter.Converter<String, Period>()
-        {
+        addConverter(String.class, Period.class, new TypeConverter.Converter<String, Period>() {
             public Period convert(String source)
             {
                 return new Period(source);
             }
         });
-        addConverter(Map.class, Period.class, new TypeConverter.Converter<Map, Period>()
-        {
+        addConverter(Map.class, Period.class, new TypeConverter.Converter<Map, Period>() {
             public Period convert(Map source)
             {
                 return new Period(source);
             }
         });
-        addConverter(String.class, VersionNumber.class, new TypeConverter.Converter<String, VersionNumber>()
-        {
+        addConverter(String.class, VersionNumber.class, new TypeConverter.Converter<String, VersionNumber>() {
             public VersionNumber convert(String source)
             {
                 return new VersionNumber(source);
@@ -318,8 +292,7 @@ public class DefaultTypeConverter extends TypeConverter
         //
         // From Locale
         //
-        addConverter(Locale.class, String.class, new TypeConverter.Converter<Locale, String>()
-        {
+        addConverter(Locale.class, String.class, new TypeConverter.Converter<Locale, String>() {
             public String convert(Locale source)
             {
                 String localeStr = source.toString();
@@ -331,24 +304,20 @@ public class DefaultTypeConverter extends TypeConverter
             }
         });
 
-        
         //
         // From VersionNumber
         //
-        addConverter(VersionNumber.class, String.class, new TypeConverter.Converter<VersionNumber, String>()
-        {
+        addConverter(VersionNumber.class, String.class, new TypeConverter.Converter<VersionNumber, String>() {
             public String convert(VersionNumber source)
             {
                 return source.toString();
             }
         });
 
-        
         //
         // From MLText
         //
-        addConverter(MLText.class, String.class, new TypeConverter.Converter<MLText, String>()
-        {
+        addConverter(MLText.class, String.class, new TypeConverter.Converter<MLText, String>() {
             public String convert(MLText source)
             {
                 return source.getDefaultValue();
@@ -358,8 +327,7 @@ public class DefaultTypeConverter extends TypeConverter
         //
         // From enum
         //
-        addConverter(Enum.class, String.class, new TypeConverter.Converter<Enum, String>()
-        {
+        addConverter(Enum.class, String.class, new TypeConverter.Converter<Enum, String>() {
             public String convert(Enum source)
             {
                 return source.toString();
@@ -367,17 +335,15 @@ public class DefaultTypeConverter extends TypeConverter
         });
 
         // From Period
-        addConverter(Period.class, String.class, new TypeConverter.Converter<Period, String>()
-        {
+        addConverter(Period.class, String.class, new TypeConverter.Converter<Period, String>() {
             public String convert(Period source)
             {
                 return source.toString();
             }
         });
-        
+
         // From Class
-        addConverter(Class.class, String.class, new TypeConverter.Converter<Class, String>()
-        {
+        addConverter(Class.class, String.class, new TypeConverter.Converter<Class, String>() {
             public String convert(Class source)
             {
                 return source.getName();
@@ -387,71 +353,61 @@ public class DefaultTypeConverter extends TypeConverter
         //
         // Number to Subtypes and Date
         //
-        addConverter(Number.class, Boolean.class, new TypeConverter.Converter<Number, Boolean>()
-        {
+        addConverter(Number.class, Boolean.class, new TypeConverter.Converter<Number, Boolean>() {
             public Boolean convert(Number source)
             {
                 return Boolean.valueOf(source.longValue() > 0);
             }
         });
-        addConverter(Number.class, Byte.class, new TypeConverter.Converter<Number, Byte>()
-        {
+        addConverter(Number.class, Byte.class, new TypeConverter.Converter<Number, Byte>() {
             public Byte convert(Number source)
             {
                 return Byte.valueOf(source.byteValue());
             }
         });
-        addConverter(Number.class, Short.class, new TypeConverter.Converter<Number, Short>()
-        {
+        addConverter(Number.class, Short.class, new TypeConverter.Converter<Number, Short>() {
             public Short convert(Number source)
             {
                 return Short.valueOf(source.shortValue());
             }
         });
-        addConverter(Number.class, Integer.class, new TypeConverter.Converter<Number, Integer>()
-        {
+        addConverter(Number.class, Integer.class, new TypeConverter.Converter<Number, Integer>() {
             public Integer convert(Number source)
             {
                 return Integer.valueOf(source.intValue());
             }
         });
-        addConverter(Number.class, Long.class, new TypeConverter.Converter<Number, Long>()
-        {
+        addConverter(Number.class, Long.class, new TypeConverter.Converter<Number, Long>() {
             public Long convert(Number source)
             {
                 return Long.valueOf(source.longValue());
             }
         });
-        addConverter(Number.class, Float.class, new TypeConverter.Converter<Number, Float>()
-        {
+        addConverter(Number.class, Float.class, new TypeConverter.Converter<Number, Float>() {
             public Float convert(Number source)
             {
                 return Float.valueOf(source.floatValue());
             }
         });
-        addConverter(Number.class, Double.class, new TypeConverter.Converter<Number, Double>()
-        {
+        addConverter(Number.class, Double.class, new TypeConverter.Converter<Number, Double>() {
             public Double convert(Number source)
             {
                 return Double.valueOf(source.doubleValue());
             }
         });
-        addConverter(Number.class, Date.class, new TypeConverter.Converter<Number, Date>()
-        {
+        addConverter(Number.class, Date.class, new TypeConverter.Converter<Number, Date>() {
             public Date convert(Number source)
             {
                 return new Date(source.longValue());
             }
         });
-        addConverter(Number.class, String.class, new TypeConverter.Converter<Number, String>()
-        {
+        addConverter(Number.class, String.class, new TypeConverter.Converter<Number, String>() {
             public String convert(Number source)
             {
                 return source.toString();
             }
         });
-        addConverter(Number.class, BigInteger.class, new TypeConverter.Converter<Number, BigInteger>()
-        {
+        addConverter(Number.class, BigInteger.class, new TypeConverter.Converter<Number, BigInteger>() {
             public BigInteger convert(Number source)
             {
                 if (source instanceof BigDecimal)
@@ -464,55 +420,51 @@ public class DefaultTypeConverter extends TypeConverter
                 }
             }
         });
-        addConverter(Number.class, BigDecimal.class, new TypeConverter.Converter<Number, BigDecimal>()
-        {
+        addConverter(Number.class, BigDecimal.class, new TypeConverter.Converter<Number, BigDecimal>() {
             public BigDecimal convert(Number source)
             {
                 if (source instanceof BigInteger)
                 {
                     return new BigDecimal((BigInteger) source);
                 }
-                else if(source instanceof Double) 
+                else if (source instanceof Double)
                 {
                     return BigDecimal.valueOf((Double) source);
                 }
-                else if(source instanceof Float) 
+                else if (source instanceof Float)
                 {
-                	Float val = (Float)source;
-                	if(val.isInfinite())
-            		{
-                		// What else can we do here?  this is 3.4 E 38 so is fairly big
-            			return new BigDecimal(Float.MAX_VALUE);   			
-            		}
+                    Float val = (Float) source;
+                    if (val.isInfinite())
+                    {
+                        // What else can we do here? this is 3.4 E 38 so is fairly big
+                        return new BigDecimal(Float.MAX_VALUE);
+                    }
                     return BigDecimal.valueOf((Float) source);
                 }
-                else 
+                else
                 {
                     return BigDecimal.valueOf(source.longValue());
                 }
             }
         });
         addDynamicTwoStageConverter(Number.class, String.class, InputStream.class);
-        
+
         //
         // Date, Timestamp ->
         //
-        addConverter(Timestamp.class, Date.class, new TypeConverter.Converter<Timestamp, Date>()
-        {
+        addConverter(Timestamp.class, Date.class, new TypeConverter.Converter<Timestamp, Date>() {
             public Date convert(Timestamp source)
             {
                 return new Date(source.getTime());
             }
         });
-        addConverter(Date.class, Number.class, new TypeConverter.Converter<Date, Number>()
-        {
+        addConverter(Date.class, Number.class, new TypeConverter.Converter<Date, Number>() {
             public Number convert(Date source)
             {
                 return Long.valueOf(source.getTime());
             }
         });
-        addConverter(Date.class, String.class, new TypeConverter.Converter<Date, String>()
-        {
+        addConverter(Date.class, String.class, new TypeConverter.Converter<Date, String>() {
             public String convert(Date source)
             {
                 try
@@ -525,8 +477,7 @@ public class DefaultTypeConverter extends TypeConverter
                 }
             }
         });
-        addConverter(Date.class, Calendar.class, new TypeConverter.Converter<Date, Calendar>()
-        {
+        addConverter(Date.class, Calendar.class, new TypeConverter.Converter<Date, Calendar>() {
             public Calendar convert(Date source)
             {
                 Calendar calendar = Calendar.getInstance();
@@ -534,9 +485,8 @@ public class DefaultTypeConverter extends TypeConverter
                 return calendar;
             }
         });
-        
-        addConverter(Date.class, GregorianCalendar.class, new TypeConverter.Converter<Date, GregorianCalendar>()
-        {
+
+        addConverter(Date.class, GregorianCalendar.class, new TypeConverter.Converter<Date, GregorianCalendar>() {
             public GregorianCalendar convert(Date source)
             {
                 GregorianCalendar calendar = new GregorianCalendar();
@@ -551,15 +501,13 @@ public class DefaultTypeConverter extends TypeConverter
         //
         final Long LONG_FALSE = Long.valueOf(0L);
         final Long LONG_TRUE = Long.valueOf(1L);
-        addConverter(Boolean.class, Long.class, new TypeConverter.Converter<Boolean, Long>()
-                {
-                    public Long convert(Boolean source)
-                    {
-                        return source.booleanValue() ? LONG_TRUE : LONG_FALSE;
-                    }
-                });
-        addConverter(Boolean.class, String.class, new TypeConverter.Converter<Boolean, String>()
-        {
+        addConverter(Boolean.class, Long.class, new TypeConverter.Converter<Boolean, Long>() {
+            public Long convert(Boolean source)
+            {
+                return source.booleanValue() ? LONG_TRUE : LONG_FALSE;
+            }
+        });
+        addConverter(Boolean.class, String.class, new TypeConverter.Converter<Boolean, String>() {
             public String convert(Boolean source)
             {
                 return source.toString();
@@ -570,8 +518,7 @@ public class DefaultTypeConverter extends TypeConverter
         //
         // Character ->
         //
-        addConverter(Character.class, String.class, new TypeConverter.Converter<Character, String>()
-        {
+        addConverter(Character.class, String.class, new TypeConverter.Converter<Character, String>() {
             public String convert(Character source)
             {
                 return source.toString();
@@ -582,8 +529,7 @@ public class DefaultTypeConverter extends TypeConverter
         //
         // Duration ->
         //
-        addConverter(Duration.class, String.class, new TypeConverter.Converter<Duration, String>()
-        {
+        addConverter(Duration.class, String.class, new TypeConverter.Converter<Duration, String>() {
             public String convert(Duration source)
             {
                 return source.toString();
@@ -595,20 +541,18 @@ public class DefaultTypeConverter extends TypeConverter
         //
         // Byte
         //
-        addConverter(Byte.class, String.class, new TypeConverter.Converter<Byte, String>()
-        {
+        addConverter(Byte.class, String.class, new TypeConverter.Converter<Byte, String>() {
             public String convert(Byte source)
             {
                 return source.toString();
             }
         });
         addDynamicTwoStageConverter(Byte.class, String.class, InputStream.class);
-        
+
         //
         // Short
         //
-        addConverter(Short.class, String.class, new TypeConverter.Converter<Short, String>()
-        {
+        addConverter(Short.class, String.class, new TypeConverter.Converter<Short, String>() {
             public String convert(Short source)
             {
                 return source.toString();
@@ -619,20 +563,18 @@ public class DefaultTypeConverter extends TypeConverter
         //
         // Integer
         //
-        addConverter(Integer.class, String.class, new TypeConverter.Converter<Integer, String>()
-        {
+        addConverter(Integer.class, String.class, new TypeConverter.Converter<Integer, String>() {
             public String convert(Integer source)
             {
                 return source.toString();
             }
         });
         addDynamicTwoStageConverter(Integer.class, String.class, InputStream.class);
-        
+
         //
         // Long
         //
-        addConverter(Long.class, String.class, new TypeConverter.Converter<Long, String>()
-        {
+        addConverter(Long.class, String.class, new TypeConverter.Converter<Long, String>() {
             public String convert(Long source)
             {
                 return source.toString();
@@ -643,8 +585,7 @@ public class DefaultTypeConverter extends TypeConverter
         //
         // Float
         //
-        addConverter(Float.class, String.class, new TypeConverter.Converter<Float, String>()
-        {
+        addConverter(Float.class, String.class, new TypeConverter.Converter<Float, String>() {
             public String convert(Float source)
             {
                 return source.toString();
@@ -655,8 +596,7 @@ public class DefaultTypeConverter extends TypeConverter
         //
         // Double
         //
-        addConverter(Double.class, String.class, new TypeConverter.Converter<Double, String>()
-        {
+        addConverter(Double.class, String.class, new TypeConverter.Converter<Double, String>() {
             public String convert(Double source)
             {
                 return source.toString();
@@ -667,8 +607,7 @@ public class DefaultTypeConverter extends TypeConverter
         //
         // BigInteger
         //
-        addConverter(BigInteger.class, String.class, new TypeConverter.Converter<BigInteger, String>()
-        {
+        addConverter(BigInteger.class, String.class, new TypeConverter.Converter<BigInteger, String>() {
             public String convert(BigInteger source)
             {
                 return source.toString();
@@ -679,15 +618,13 @@ public class DefaultTypeConverter extends TypeConverter
         //
         // Calendar
         //
-        addConverter(Calendar.class, Date.class, new TypeConverter.Converter<Calendar, Date>()
-        {
+        addConverter(Calendar.class, Date.class, new TypeConverter.Converter<Calendar, Date>() {
             public Date convert(Calendar source)
             {
                 return source.getTime();
             }
         });
-        addConverter(Calendar.class, String.class, new TypeConverter.Converter<Calendar, String>()
-        {
+        addConverter(Calendar.class, String.class, new TypeConverter.Converter<Calendar, String>() {
             public String convert(Calendar source)
             {
                 try
@@ -700,12 +637,11 @@ public class DefaultTypeConverter extends TypeConverter
                 }
             }
         });
-        
+
         //
         // BigDecimal
         //
-        addConverter(BigDecimal.class, String.class, new TypeConverter.Converter<BigDecimal, String>()
-        {
+        addConverter(BigDecimal.class, String.class, new TypeConverter.Converter<BigDecimal, String>() {
             public String convert(BigDecimal source)
             {
                 return source.toString();
@@ -716,8 +652,7 @@ public class DefaultTypeConverter extends TypeConverter
         //
         // QName
         //
-        addConverter(QName.class, String.class, new TypeConverter.Converter<QName, String>()
-        {
+        addConverter(QName.class, String.class, new TypeConverter.Converter<QName, String>() {
             public String convert(QName source)
             {
                 return source.toString();
@@ -728,8 +663,7 @@ public class DefaultTypeConverter extends TypeConverter
         //
         // EntityRef (NodeRef, ChildAssociationRef, NodeAssociationRef)
         //
-        addConverter(EntityRef.class, String.class, new TypeConverter.Converter<EntityRef, String>()
-        {
+        addConverter(EntityRef.class, String.class, new TypeConverter.Converter<EntityRef, String>() {
             public String convert(EntityRef source)
             {
                 return source.toString();
@@ -740,39 +674,35 @@ public class DefaultTypeConverter extends TypeConverter
         //
         // ContentData
         //
-        addConverter(ContentData.class, String.class, new TypeConverter.Converter<ContentData, String>()
-        {
+        addConverter(ContentData.class, String.class, new TypeConverter.Converter<ContentData, String>() {
             public String convert(ContentData source)
             {
                 return source.getInfoUrl();
             }
         });
         addDynamicTwoStageConverter(ContentData.class, String.class, InputStream.class);
-        
+
         //
         // Path
         //
-        addConverter(Path.class, String.class, new TypeConverter.Converter<Path, String>()
-        {
+        addConverter(Path.class, String.class, new TypeConverter.Converter<Path, String>() {
             public String convert(Path source)
             {
                 return source.toString();
             }
         });
         addDynamicTwoStageConverter(Path.class, String.class, InputStream.class);
-        
+
         //
         // ContentReader
         //
-        addConverter(ContentReader.class, InputStream.class, new TypeConverter.Converter<ContentReader, InputStream>()
-        {
+        addConverter(ContentReader.class, InputStream.class, new TypeConverter.Converter<ContentReader, InputStream>() {
             public InputStream convert(ContentReader source)
             {
                 return source.getContentInputStream();
             }
         });
-        addConverter(ContentReader.class, String.class, new TypeConverter.Converter<ContentReader, String>()
-        {
+        addConverter(ContentReader.class, String.class, new TypeConverter.Converter<ContentReader, String>() {
             public String convert(ContentReader source)
             {
                 // Getting the string from the ContentReader binary is meaningless
@@ -783,8 +713,7 @@ public class DefaultTypeConverter extends TypeConverter
         //
         // ContentWriter
         //
-        addConverter(ContentWriter.class, String.class, new TypeConverter.Converter<ContentWriter, String>()
-        {
+        addConverter(ContentWriter.class, String.class, new TypeConverter.Converter<ContentWriter, String>() {
             public String convert(ContentWriter source)
             {
                 return source.toString();
@@ -794,8 +723,7 @@ public class DefaultTypeConverter extends TypeConverter
         //
         // InputStream
         //
-        addConverter(InputStream.class, String.class, new TypeConverter.Converter<InputStream, String>()
-        {
+        addConverter(InputStream.class, String.class, new TypeConverter.Converter<InputStream, String>() {
             public String convert(InputStream source)
             {
                 try
@@ -809,7 +737,7 @@ public class DefaultTypeConverter extends TypeConverter
                     }
                     byte[] data = out.toByteArray();
                     return new String(data, "UTF-8");
-                } 
+                }
                 catch (UnsupportedEncodingException e)
                 {
                     throw new TypeConversionException("Cannot convert input stream to String.", e);
@@ -825,10 +753,10 @@ public class DefaultTypeConverter extends TypeConverter
                         try
                         {
                             source.close();
-                            }
-                        catch(IOException e)
+                        }
+                        catch (IOException e)
                         {
-                            //NOOP
+                            // NOOP
                         }
                     }
                 }
@@ -836,9 +764,9 @@ public class DefaultTypeConverter extends TypeConverter
         });
 
         addDynamicTwoStageConverter(InputStream.class, String.class, Date.class);
-        
+
         addDynamicTwoStageConverter(InputStream.class, String.class, Double.class);
-        
+
         addDynamicTwoStageConverter(InputStream.class, String.class, Long.class);
 
         addDynamicTwoStageConverter(InputStream.class, String.class, Boolean.class);
@@ -849,20 +777,17 @@ public class DefaultTypeConverter extends TypeConverter
 
         addDynamicTwoStageConverter(InputStream.class, String.class, NodeRef.class);
 
-        
         //
         // SearchParameters & CMISQuery (for audit)
         //
 
-        addConverter(SearchParameters.class, String.class, new TypeConverter.Converter<SearchParameters, String>()
-        {
+        addConverter(SearchParameters.class, String.class, new TypeConverter.Converter<SearchParameters, String>() {
             public String convert(SearchParameters source)
             {
                 return source.toAuditString();
             }
         });
-        addConverter(CMISQueryOptions.class, String.class, new TypeConverter.Converter<CMISQueryOptions, String>()
-        {
+        addConverter(CMISQueryOptions.class, String.class, new TypeConverter.Converter<CMISQueryOptions, String>() {
             public String convert(CMISQueryOptions source)
             {
                 return source.getAsSearchParmeters().toAuditString();

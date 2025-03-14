@@ -32,35 +32,26 @@ import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+
 /**
- * Factory for {@link java.util.concurrent.ThreadPoolExecutor} instances,
- * which cannot easily be constructed using constructor injection.  This instance
- * also allows the setting of the thread-specific properties that would otherwise
- * require setting a <code>ThreadFactory</code>.
+ * Factory for {@link java.util.concurrent.ThreadPoolExecutor} instances, which cannot easily be constructed using constructor injection. This instance also allows the setting of the thread-specific properties that would otherwise require setting a <code>ThreadFactory</code>.
  * <p>
  * This factory provides the a singleton instance of the pool.
  * <p>
  * Defaults are:
  * <ul>
- *   <li><b>{@link #setCorePoolSize(int) corePoolSize}: </b>
- *          20</li>
- *   <li><b>{@link #setMaximumPoolSize(int) maximumPoolSize}: </b>
- *          Equal to the {@link #setCorePoolSize(int)} at the time of instance creation</li>
- *   <li><b>{@link #setKeepAliveTime(int) keepAliveTime}: </b>
- *          90 seconds</li>
- *   <li><b>{@link #setThreadPriority(int) threadPriority}: </b>
- *          5 (NORM)</li>
- *   <li><b>{@link #setThreadDaemon(boolean) threadDaemon}: </b>
- *          true</li>
- *   <li><b>{@link #setWorkQueueSize(int) workQueueSize}: </b>
- *          -1 or less (No upper bound)</li>
- *   <li><b>{@link #setRejectedExecutionHandler(RejectedExecutionHandler) rejectedExecutionHandler}: </b>
- *          <code>ThreadPoolExecutor.CallerRunsPolicy</code></li>
+ * <li><b>{@link #setCorePoolSize(int) corePoolSize}: </b> 20</li>
+ * <li><b>{@link #setMaximumPoolSize(int) maximumPoolSize}: </b> Equal to the {@link #setCorePoolSize(int)} at the time of instance creation</li>
+ * <li><b>{@link #setKeepAliveTime(int) keepAliveTime}: </b> 90 seconds</li>
+ * <li><b>{@link #setThreadPriority(int) threadPriority}: </b> 5 (NORM)</li>
+ * <li><b>{@link #setThreadDaemon(boolean) threadDaemon}: </b> true</li>
+ * <li><b>{@link #setWorkQueueSize(int) workQueueSize}: </b> -1 or less (No upper bound)</li>
+ * <li><b>{@link #setRejectedExecutionHandler(RejectedExecutionHandler) rejectedExecutionHandler}: </b> <code>ThreadPoolExecutor.CallerRunsPolicy</code></li>
  * </ul>
  * 
  * @author Derek Hulley
@@ -68,14 +59,14 @@ import org.springframework.beans.factory.InitializingBean;
 public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingBean, DisposableBean
 {
     private static final int DEFAULT_CORE_POOL_SIZE = 20;
-    private static final int DEFAULT_MAXIMUM_POOL_SIZE = -1;        // -1 is a sign that it must match the core pool size
-    private static final int DEFAULT_KEEP_ALIVE_TIME = 90;          // seconds
+    private static final int DEFAULT_MAXIMUM_POOL_SIZE = -1; // -1 is a sign that it must match the core pool size
+    private static final int DEFAULT_KEEP_ALIVE_TIME = 90; // seconds
     private static final int DEFAULT_THREAD_PRIORITY = Thread.NORM_PRIORITY;
     private static final boolean DEFAULT_THREAD_DAEMON = Boolean.TRUE;
     private static final int DEFAULT_WORK_QUEUE_SIZE = -1;
     private static final RejectedExecutionHandler DEFAULT_REJECTED_EXECUTION_HANDLER = new ThreadPoolExecutor.CallerRunsPolicy();
     private String poolName = "";
-    
+
     private int corePoolSize;
     private int maximumPoolSize;
     private int keepAliveTime;
@@ -85,7 +76,7 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
     private RejectedExecutionHandler rejectedExecutionHandler;
     /** the instance that will be given out by the factory */
     private DynamicallySizedThreadPoolExecutor instance;
-    
+
     /**
      * Constructor setting default properties:
      */
@@ -99,11 +90,12 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
         workQueueSize = DEFAULT_WORK_QUEUE_SIZE;
         rejectedExecutionHandler = DEFAULT_REJECTED_EXECUTION_HANDLER;
     }
-    
+
     /**
      * The number of threads to keep in the pool, even if idle.
      * 
-     * @param corePoolSize core thread count
+     * @param corePoolSize
+     *            core thread count
      */
     public void setCorePoolSize(int corePoolSize)
     {
@@ -113,7 +105,8 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
     /**
      * The maximum number of threads to keep in the pool
      * 
-     * @param maximumPoolSize the maximum number of threads in the pool
+     * @param maximumPoolSize
+     *            the maximum number of threads in the pool
      */
     public void setMaximumPoolSize(int maximumPoolSize)
     {
@@ -123,7 +116,8 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
     /**
      * The time (in seconds) to keep non-core idle threads in the pool
      * 
-     * @param keepAliveTime time to stay idle in seconds
+     * @param keepAliveTime
+     *            time to stay idle in seconds
      */
     public void setKeepAliveTime(int keepAliveTime)
     {
@@ -131,10 +125,10 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
     }
 
     /**
-     * The priority that all threads must have on the scale of 1 to 10,
-     * where 1 has the lowest priority and 10 has the highest priority.
+     * The priority that all threads must have on the scale of 1 to 10, where 1 has the lowest priority and 10 has the highest priority.
      * 
-     * @param threadPriority    the thread priority
+     * @param threadPriority
+     *            the thread priority
      */
     public void setThreadPriority(int threadPriority)
     {
@@ -144,7 +138,8 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
     /**
      * Set whether the threads run as daemon threads or not.
      * 
-     * @param threadDaemon      <tt>true</tt> to run as daemon
+     * @param threadDaemon
+     *            <tt>true</tt> to run as daemon
      */
     public void setThreadDaemon(boolean threadDaemon)
     {
@@ -152,22 +147,21 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
     }
 
     /**
-     * The maximum number of queued work instances to keep before blocking
-     * against further adds.
+     * The maximum number of queued work instances to keep before blocking against further adds.
      * 
-     * @param workQueueSize      the queue size before blocks, or <b>-1</b> default
-     *                  to indicate no upper bound
+     * @param workQueueSize
+     *            the queue size before blocks, or <b>-1</b> default to indicate no upper bound
      */
     public void setWorkQueueSize(int workQueueSize)
     {
         this.workQueueSize = workQueueSize;
     }
-    
+
     /**
-     * The optional handler for when tasks cannot be submitted to the queue.
-     * The default is the <code>CallerRunsPolicy</code>.
+     * The optional handler for when tasks cannot be submitted to the queue. The default is the <code>CallerRunsPolicy</code>.
      * 
-     * @param rejectedExecutionHandler      the handler to use
+     * @param rejectedExecutionHandler
+     *            the handler to use
      */
     public void setRejectedExecutionHandler(RejectedExecutionHandler rejectedExecutionHandler)
     {
@@ -181,17 +175,17 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
         {
             maximumPoolSize = corePoolSize;
         }
-        
+
         // We need a thread factory
         TraceableThreadFactory threadFactory = new TraceableThreadFactory();
         threadFactory.setThreadDaemon(threadDaemon);
         threadFactory.setThreadPriority(threadPriority);
-        
-        if(poolName.length() > 0) 
+
+        if (poolName.length() > 0)
         {
-        	threadFactory.setNamePrefix(poolName);
+            threadFactory.setNamePrefix(poolName);
         }
-        
+
         BlockingQueue<Runnable> workQueue;
         if (workQueueSize < 0)
         {
@@ -203,7 +197,7 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
             // Use an array one for consistent performance on a small queue size
             workQueue = new ArrayBlockingQueue<Runnable>(workQueueSize);
         }
-        
+
         // construct the instance
         instance = new DynamicallySizedThreadPoolExecutor(
                 corePoolSize,
@@ -242,15 +236,15 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
     {
         return DynamicallySizedThreadPoolExecutor.class;
     }
-    
-    public String getPoolName() 
+
+    public String getPoolName()
     {
-    	return this.poolName;
+        return this.poolName;
     }
-    
+
     public void setPoolName(String poolName)
     {
-    	this.poolName = poolName;
+        this.poolName = poolName;
     }
 
     public void destroy()

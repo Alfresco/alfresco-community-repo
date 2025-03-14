@@ -33,6 +33,11 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.node.archive.NodeArchiveService;
@@ -57,10 +62,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.context.ApplicationContext;
 
 /**
  * 
@@ -102,17 +103,17 @@ public class ModelValidatorTest
     public void setUp() throws Exception
     {
         ctx = ApplicationContextHelper.getApplicationContext();
-        this.modelValidator = (ModelValidator)ctx.getBean("modelValidator");
-        this.dictionaryDAO = (DictionaryDAO)ctx.getBean("dictionaryDAO");
-        this.qnameDAO = (QNameDAO)ctx.getBean("qnameDAO");
-        this.namespaceDAO = (NamespaceDAO)ctx.getBean("namespaceDAO");
-        this.nodeService = (NodeService)ctx.getBean("NodeService");
-        this.fileFolderService = (FileFolderService)ctx.getBean("FileFolderService");
-        this.contentService = (ContentService)ctx.getBean("contentService");
-        this.versionService = (VersionService)ctx.getBean("VersionService");
-        this.transactionService = (TransactionService)ctx.getBean("TransactionService");
-        this.nodeArchiveService = (NodeArchiveService)ctx.getBean("nodeArchiveService");
-        this.customModelService = (CustomModelService)ctx.getBean("customModelService");
+        this.modelValidator = (ModelValidator) ctx.getBean("modelValidator");
+        this.dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
+        this.qnameDAO = (QNameDAO) ctx.getBean("qnameDAO");
+        this.namespaceDAO = (NamespaceDAO) ctx.getBean("namespaceDAO");
+        this.nodeService = (NodeService) ctx.getBean("NodeService");
+        this.fileFolderService = (FileFolderService) ctx.getBean("FileFolderService");
+        this.contentService = (ContentService) ctx.getBean("contentService");
+        this.versionService = (VersionService) ctx.getBean("VersionService");
+        this.transactionService = (TransactionService) ctx.getBean("TransactionService");
+        this.nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
+        this.customModelService = (CustomModelService) ctx.getBean("customModelService");
 
         this.modelName = "modelvalidatortest" + System.currentTimeMillis();
         addModel();
@@ -173,8 +174,7 @@ public class ModelValidatorTest
         final QName modelQName = QName.createQName(testNamespace, modelName);
 
         // Create a node that uses the new type (type is created in setUp)
-        RetryingTransactionCallback<NodeRef> createNodeCallback = new RetryingTransactionCallback<NodeRef>()
-        {
+        RetryingTransactionCallback<NodeRef> createNodeCallback = new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
                 // Create a node that uses it
@@ -201,11 +201,10 @@ public class ModelValidatorTest
         transactionService.getRetryingTransactionHelper().doInTransaction(createNodeCallback, false, true);
 
         // try to delete the model
-        RetryingTransactionCallback<Void> deleteModelCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> deleteModelCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
-                if(modelValidator.canDeleteModel(modelQName))
+                if (modelValidator.canDeleteModel(modelQName))
                 {
                     fail("Model delete should have failed");
                 }
@@ -217,8 +216,7 @@ public class ModelValidatorTest
     }
 
     /**
-     * Tests that a model cannot be deleted/made inactive when there are any archived nodes
-     * still in the repository that use it.
+     * Tests that a model cannot be deleted/made inactive when there are any archived nodes still in the repository that use it.
      * 
      * Test case for MNT-13820
      * 
@@ -234,8 +232,7 @@ public class ModelValidatorTest
         final QName modelQName = QName.createQName(testNamespace, modelName);
 
         // Create a node that uses the new type (type is created in setUp)
-        RetryingTransactionCallback<NodeRef> createNodeCallback = new RetryingTransactionCallback<NodeRef>()
-        {
+        RetryingTransactionCallback<NodeRef> createNodeCallback = new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
                 // Create a node that uses it
@@ -261,8 +258,7 @@ public class ModelValidatorTest
         };
         final NodeRef nodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(createNodeCallback, false, true);
 
-        RetryingTransactionCallback<Void> deleteNodeCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> deleteNodeCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 nodeService.deleteNode(nodeRef);
@@ -273,11 +269,10 @@ public class ModelValidatorTest
         transactionService.getRetryingTransactionHelper().doInTransaction(deleteNodeCallback, false, true);
 
         // try to delete the model
-        RetryingTransactionCallback<Void> deleteModelCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> deleteModelCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
-                if(modelValidator.canDeleteModel(modelQName))
+                if (modelValidator.canDeleteModel(modelQName))
                 {
                     fail("Model delete should have failed");
                 }
@@ -304,8 +299,7 @@ public class ModelValidatorTest
         final QName modelQName = QName.createQName(testNamespace, modelName);
 
         // Create a node that uses the new type (type is created in setUp)
-        RetryingTransactionCallback<NodeRef> createNodeCallback = new RetryingTransactionCallback<NodeRef>()
-        {
+        RetryingTransactionCallback<NodeRef> createNodeCallback = new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
                 // Create a node that uses it
@@ -331,8 +325,7 @@ public class ModelValidatorTest
         };
         final NodeRef nodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(createNodeCallback, false, true);
 
-        RetryingTransactionCallback<Void> deleteNodeCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> deleteNodeCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 nodeService.addAspect(nodeRef, ContentModel.ASPECT_TEMPORARY, null);
@@ -344,11 +337,10 @@ public class ModelValidatorTest
         transactionService.getRetryingTransactionHelper().doInTransaction(deleteNodeCallback, false, true);
 
         // try to delete the model
-        RetryingTransactionCallback<Void> deleteModelCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> deleteModelCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
-                if(!modelValidator.canDeleteModel(modelQName))
+                if (!modelValidator.canDeleteModel(modelQName))
                 {
                     fail("Model delete should have succeeded");
                 }
@@ -360,8 +352,7 @@ public class ModelValidatorTest
 
         // Check that the qnames are still there
         // try to delete the model
-        RetryingTransactionCallback<Void> checkQNamesCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> checkQNamesCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 assertNotNull(qnameDAO.getQName(propertyQName));
@@ -385,8 +376,7 @@ public class ModelValidatorTest
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
         // Create a node that uses the new type
-        RetryingTransactionCallback<NodeRef> createNodeCallback = new RetryingTransactionCallback<NodeRef>()
-        {
+        RetryingTransactionCallback<NodeRef> createNodeCallback = new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
                 // Create a node that uses it
@@ -412,8 +402,7 @@ public class ModelValidatorTest
         };
         final NodeRef nodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(createNodeCallback, false, true);
 
-        RetryingTransactionCallback<Void> deleteModelCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> deleteModelCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 type.removeProperty(modelName + ":" + propertyQName.getLocalName());
@@ -423,7 +412,7 @@ public class ModelValidatorTest
                     modelValidator.validateModel(compiledModel);
                     fail("Property delete should have failed");
                 }
-                catch(ModelInUseException e)
+                catch (ModelInUseException e)
                 {
                     System.out.println("help");
                     // ok
@@ -434,8 +423,7 @@ public class ModelValidatorTest
         transactionService.getRetryingTransactionHelper().doInTransaction(deleteModelCallback, false, true);
 
         // delete the node that is using properties in the model
-        RetryingTransactionCallback<Void> deleteNodeCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> deleteNodeCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 nodeService.deleteNode(nodeRef);
@@ -446,8 +434,7 @@ public class ModelValidatorTest
         transactionService.getRetryingTransactionHelper().doInTransaction(deleteNodeCallback, false, true);
 
         // make sure that the archive store is purged
-        RetryingTransactionCallback<Void> purgeArchiveCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> purgeArchiveCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 nodeArchiveService.purgeAllArchivedNodes(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
@@ -458,8 +445,7 @@ public class ModelValidatorTest
         transactionService.getRetryingTransactionHelper().doInTransaction(purgeArchiveCallback, false, true);
 
         // try to delete model again - should work now
-        RetryingTransactionCallback<Void> deleteModelAgainCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> deleteModelAgainCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 type.removeProperty(modelName + ":" + propertyQName.getLocalName());
@@ -502,7 +488,7 @@ public class ModelValidatorTest
         }
         catch (DictionaryException dx)
         {
-            //expected
+            // expected
         }
 
         // Add the content model namespace back
@@ -518,14 +504,12 @@ public class ModelValidatorTest
         }
         catch (DictionaryException dx)
         {
-            //expected
+            // expected
         }
     }
 
     /**
-     * For ACS-701
-     * Tests that validating the model namespace prefix succeeds for both inactive and active models with a
-     * unique namespace prefix.
+     * For ACS-701 Tests that validating the model namespace prefix succeeds for both inactive and active models with a unique namespace prefix.
      */
     @Test
     public void testValidatePrefixForModelWithValidPrefix() throws Exception
@@ -552,9 +536,7 @@ public class ModelValidatorTest
     }
 
     /**
-     * For ACS-701
-     * Tests that validating the model namespace prefix throws an error for a model with
-     *  a prefix in use by another model.
+     * For ACS-701 Tests that validating the model namespace prefix throws an error for a model with a prefix in use by another model.
      */
     @Test
     public void testValidatePrefixForModelWithDuplicatePrefix() throws Exception
@@ -614,8 +596,7 @@ public class ModelValidatorTest
 
     private CustomModelDefinition createModel(final M2Model m2Model, final boolean activate)
     {
-        RetryingTransactionCallback<CustomModelDefinition> createModelCallback = new RetryingTransactionCallback<CustomModelDefinition>()
-        {
+        RetryingTransactionCallback<CustomModelDefinition> createModelCallback = new RetryingTransactionCallback<CustomModelDefinition>() {
             public CustomModelDefinition execute() throws Throwable
             {
                 CustomModelDefinition cmd;
@@ -629,8 +610,7 @@ public class ModelValidatorTest
     private void validatePrefix(String modelName)
     {
         // validate the model namespace prefix
-        RetryingTransactionCallback<Void> validateInactiveModelPrefixCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> validateInactiveModelPrefixCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 NodeRef modelNodeRef = customModelService.getModelNodeRef(modelName);

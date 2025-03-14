@@ -31,45 +31,45 @@ import org.json.simple.JSONObject;
 
 public class FolderFavouriteTarget implements FavouritesTarget
 {
-	private FavouriteFolder folder;
+    private FavouriteFolder folder;
 
-	public FolderFavouriteTarget(FavouriteFolder folder)
-	{
-		super();
-		this.folder = folder;
-	}
+    public FolderFavouriteTarget(FavouriteFolder folder)
+    {
+        super();
+        this.folder = folder;
+    }
 
-	public FavouriteFolder getFolder()
-	{
-		return folder;
-	}
+    public FavouriteFolder getFolder()
+    {
+        return folder;
+    }
 
-	@Override
-	public String toString()
-	{
-		return "FolderFavouriteTarget [folder=" + folder + "]";
-	}
+    @Override
+    public String toString()
+    {
+        return "FolderFavouriteTarget [folder=" + folder + "]";
+    }
 
-	@SuppressWarnings("unchecked")
-	public JSONObject toJSON()
-	{
-		JSONObject json = new JSONObject();
-		json.put("folder", getFolder().toJSON());
-		return json;
-	}
-	
-	@Override
-	public void expected(Object o)
-	{
-		assertTrue(o instanceof FolderFavouriteTarget);
-		
-		FolderFavouriteTarget other = (FolderFavouriteTarget)o;
-		
-		folder.expected(other.getFolder());
-	}
+    @SuppressWarnings("unchecked")
+    public JSONObject toJSON()
+    {
+        JSONObject json = new JSONObject();
+        json.put("folder", getFolder().toJSON());
+        return json;
+    }
 
-	public String getTargetGuid()
-	{
-		return folder.getGuid();
-	}
+    @Override
+    public void expected(Object o)
+    {
+        assertTrue(o instanceof FolderFavouriteTarget);
+
+        FolderFavouriteTarget other = (FolderFavouriteTarget) o;
+
+        folder.expected(other.getFolder());
+    }
+
+    public String getTargetGuid()
+    {
+        return folder.getGuid();
+    }
 }

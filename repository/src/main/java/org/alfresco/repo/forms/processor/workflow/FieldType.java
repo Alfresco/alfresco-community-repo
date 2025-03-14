@@ -34,8 +34,5 @@ package org.alfresco.repo.forms.processor.workflow;
  */
 public enum FieldType
 {
-    ASSOCIATION,
-    PROPERTY,
-    TRANSIENT_ASSOCIATION,
-    TRANSIENT_PROPERTY;
+    ASSOCIATION, PROPERTY, TRANSIENT_ASSOCIATION, TRANSIENT_PROPERTY;
 }

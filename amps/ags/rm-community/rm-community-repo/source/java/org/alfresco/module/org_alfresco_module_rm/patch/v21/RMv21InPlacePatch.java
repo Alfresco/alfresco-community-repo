@@ -31,6 +31,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.beans.factory.BeanNameAware;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
@@ -45,7 +47,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * RM v2.1 patch to support InPlace functional updates
@@ -55,19 +56,17 @@ import org.springframework.beans.factory.BeanNameAware;
  */
 @SuppressWarnings("deprecation")
 public class RMv21InPlacePatch extends RMv21PatchComponent
-                               implements BeanNameAware, RecordsManagementModel, DOD5015Model
+        implements BeanNameAware, RecordsManagementModel, DOD5015Model
 {
     /** Extended reader and writer role details */
     private static final String ROLE_READERS_LABEL = "In-Place Readers";
-    private static final String[] ROLE_READERS_CAPABILITIES = new String[]
-    {
-       "ViewRecords"
+    private static final String[] ROLE_READERS_CAPABILITIES = new String[]{
+            "ViewRecords"
     };
     private static final String ROLE_WRITERS_LABEL = "In-Place Writers";
-    private static final String[] ROLE_WRITERS_CAPABILITIES = new String[]
-    {
-       "ViewRecords",
-       "EditNonRecordMetadata"
+    private static final String[] ROLE_WRITERS_CAPABILITIES = new String[]{
+            "ViewRecords",
+            "EditNonRecordMetadata"
     };
 
     /** file plan role service */
@@ -89,7 +88,8 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
     private NodeService nodeService;
 
     /**
-     * @param filePlanRoleService   file plan role service
+     * @param filePlanRoleService
+     *            file plan role service
      */
     public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
@@ -97,7 +97,8 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
     }
 
     /**
-     * @param filePlanPermissionService file plan permission service
+     * @param filePlanPermissionService
+     *            file plan permission service
      */
     public void setFilePlanPermissionService(FilePlanPermissionService filePlanPermissionService)
     {
@@ -105,7 +106,8 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -113,7 +115,8 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
     }
 
     /**
-     * @param capabilityService capability service
+     * @param capabilityService
+     *            capability service
      */
     public void setCapabilityService(CapabilityService capabilityService)
     {
@@ -121,7 +124,8 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
     }
 
     /**
-     * @param ruleService   rule service
+     * @param ruleService
+     *            rule service
      */
     public void setRuleService(RuleService ruleService)
     {
@@ -129,7 +133,8 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
     }
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -207,7 +212,7 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
         for (ChildAssociationRef assoc : assocs)
         {
             NodeRef hold = assoc.getChildRef();
-            String name = (String)nodeService.getProperty(hold, ContentModel.PROP_NAME);
+            String name = (String) nodeService.getProperty(hold, ContentModel.PROP_NAME);
             nodeService.moveNode(hold, container, ContentModel.ASSOC_CONTAINS, QName.createQName(RM_URI, name));
         }
     }
@@ -225,7 +230,7 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
         for (ChildAssociationRef assoc : assocs)
         {
             NodeRef transfer = assoc.getChildRef();
-            String name = (String)nodeService.getProperty(transfer, ContentModel.PROP_NAME);
+            String name = (String) nodeService.getProperty(transfer, ContentModel.PROP_NAME);
             nodeService.moveNode(transfer, container, ContentModel.ASSOC_CONTAINS, QName.createQName(RM_URI, name));
         }
 

@@ -24,12 +24,12 @@
  */
 package org.alfresco.util.log.log4j;
 
-import org.alfresco.util.log.NDCDelegate;
 import org.apache.logging.log4j.ThreadContext;
 
+import org.alfresco.util.log.NDCDelegate;
+
 /**
- * A stand in for the org.apache.logging.log4j.ThreadContext class that avoids introducing runtime dependencies against the otherwise
- * optional log4j.
+ * A stand in for the org.apache.logging.log4j.ThreadContext class that avoids introducing runtime dependencies against the otherwise optional log4j.
  * 
  * @author dward
  */

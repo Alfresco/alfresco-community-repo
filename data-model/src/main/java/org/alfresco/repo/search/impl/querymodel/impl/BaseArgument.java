@@ -34,22 +34,21 @@ import org.alfresco.repo.search.impl.querymodel.Argument;
 public abstract class BaseArgument implements Argument
 {
     private String name;
-    
+
     private boolean queryable;
-    
+
     private boolean orderable;
-    
-    
+
     public BaseArgument(String name, boolean queryable, boolean orderable)
     {
         this.name = name;
         this.queryable = queryable;
         this.orderable = orderable;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.Argument#getName()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.Argument#getName() */
     public String getName()
     {
         return name;
@@ -62,6 +61,6 @@ public abstract class BaseArgument implements Argument
 
     public boolean isQueryable()
     {
-       return queryable;
+        return queryable;
     }
 }

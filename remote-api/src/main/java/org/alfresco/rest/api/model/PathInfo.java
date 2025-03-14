@@ -27,7 +27,6 @@ package org.alfresco.rest.api.model;
 
 import java.util.List;
 
-
 /**
  * Representation of a path info
  *
@@ -41,8 +40,7 @@ public class PathInfo
     private List<ElementInfo> elements;
 
     public PathInfo()
-    {
-    }
+    {}
 
     public PathInfo(String name, Boolean isComplete, List<ElementInfo> elements)
     {
@@ -65,7 +63,7 @@ public class PathInfo
     {
         return elements;
     }
-    
+
     public String getRelativePath()
     {
         return relativePath;
@@ -81,9 +79,9 @@ public class PathInfo
     {
         final StringBuilder sb = new StringBuilder(120);
         sb.append("PathInfo [name=").append(name)
-                    .append(", isComplete=").append(isComplete)
-                    .append(", elements=").append(elements)
-                    .append(']');
+                .append(", isComplete=").append(isComplete)
+                .append(", elements=").append(elements)
+                .append(']');
         return sb.toString();
     }
 
@@ -96,9 +94,8 @@ public class PathInfo
         private List<String> aspectNames;
 
         public ElementInfo()
-        {
-        }
-        
+        {}
+
         public ElementInfo(String id, String name, String nodeType, List<String> aspectNames)
         {
             this.id = id;
@@ -132,10 +129,10 @@ public class PathInfo
         {
             final StringBuilder sb = new StringBuilder(250);
             sb.append("PathElement [id=").append(id)
-                        .append(", name=").append(name)
-                        .append(", nodeType=").append(nodeType)
-                        .append(", aspectNames=").append(aspectNames)
-                        .append(']');
+                    .append(", name=").append(name)
+                    .append(", nodeType=").append(nodeType)
+                    .append(", aspectNames=").append(aspectNames)
+                    .append(']');
             return sb.toString();
         }
     }

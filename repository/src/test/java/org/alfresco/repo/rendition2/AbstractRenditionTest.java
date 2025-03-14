@@ -25,21 +25,11 @@
  */
 package org.alfresco.repo.rendition2;
 
-import junit.framework.AssertionFailedError;
-import org.alfresco.repo.content.transform.TransformerDebug;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.thumbnail.ThumbnailDefinition;
-import org.alfresco.transform.registry.AbstractTransformRegistry;
-import org.alfresco.transform.registry.SupportedTransform;
-import org.alfresco.util.testing.category.DebugTests;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.alfresco.repo.content.MimetypeMap.MIMETYPE_TEXT_PLAIN;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -47,11 +37,19 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.alfresco.repo.content.MimetypeMap.MIMETYPE_TEXT_PLAIN;
+import junit.framework.AssertionFailedError;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.thumbnail.ThumbnailDefinition;
+import org.alfresco.transform.registry.AbstractTransformRegistry;
+import org.alfresco.transform.registry.SupportedTransform;
+import org.alfresco.util.testing.category.DebugTests;
 
 /**
- * Abstract test class to check it is possible to create renditions from the quick files using combinations of
- * local transforms, legacy transforms and the Transform Service.
+ * Abstract test class to check it is possible to create renditions from the quick files using combinations of local transforms, legacy transforms and the Transform Service.
  *
  * @author adavis
  */
@@ -59,7 +57,7 @@ public abstract class AbstractRenditionTest extends AbstractRenditionIntegration
 {
     // This is the same order as produced by MimetypeMap
     public static final List<String> TAS_REST_API_SOURCE_EXTENSIONS = Arrays.asList(
-            "gif", "jpg", "png", "msg", "doc","ppt", "xls", "docx", "pptx", "xlsx");
+            "gif", "jpg", "png", "msg", "doc", "ppt", "xls", "docx", "pptx", "xlsx");
 
     public static final List<String> TAS_REST_API_EXCLUDE_LIST = Collections.EMPTY_LIST;
 
@@ -116,7 +114,7 @@ public abstract class AbstractRenditionTest extends AbstractRenditionIntegration
     }
 
     private void assertRenditionsOkayFromSourceExtension(List<String> sourceExtensions, List<String> excludeList, List<String> expectedToFail,
-                                                         int expectedRenditionCount, int expectedFailedCount) throws Exception
+            int expectedRenditionCount, int expectedFailedCount) throws Exception
     {
         int renditionCount = 0;
         int failedCount = 0;
@@ -135,7 +133,7 @@ public abstract class AbstractRenditionTest extends AbstractRenditionIntegration
                 Set<String> renditionNames = renditionDefinitionRegistry2.getRenditionNamesFrom(sourceMimetype, -1);
                 List<ThumbnailDefinition> thumbnailDefinitions = thumbnailRegistry.getThumbnailDefinitions(sourceMimetype, -1);
                 Set<String> thumbnailNames = getThumbnailNames(thumbnailDefinitions);
-                assertEquals("There should be the same renditions ("+renditionNames+") as deprecated thumbnails ("+thumbnailNames+")",
+                assertEquals("There should be the same renditions (" + renditionNames + ") as deprecated thumbnails (" + thumbnailNames + ")",
                         thumbnailNames, renditionNames);
 
                 renditionCount += renditionNames.size();
@@ -169,11 +167,11 @@ public abstract class AbstractRenditionTest extends AbstractRenditionIntegration
         }
 
         int expectedSuccessCount = expectedRenditionCount - excludedCount - expectedFailedCount;
-        System.out.println("FAILURES:\n"+failures+"\n");
-        System.out.println("SUCCESSES:\n"+successes+"\n");
-        System.out.println("renditionCount: "+renditionCount+" expected "+expectedRenditionCount);
-        System.out.println("   failedCount: "+failedCount+" expected "+expectedFailedCount);
-        System.out.println("  successCount: "+successCount+" expected "+expectedSuccessCount);
+        System.out.println("FAILURES:\n" + failures + "\n");
+        System.out.println("SUCCESSES:\n" + successes + "\n");
+        System.out.println("renditionCount: " + renditionCount + " expected " + expectedRenditionCount);
+        System.out.println("   failedCount: " + failedCount + " expected " + expectedFailedCount);
+        System.out.println("  successCount: " + successCount + " expected " + expectedSuccessCount);
 
         assertEquals("Rendition count has changed", expectedRenditionCount, renditionCount);
         assertEquals("Failed rendition count has changed", expectedFailedCount, failedCount);
@@ -185,7 +183,7 @@ public abstract class AbstractRenditionTest extends AbstractRenditionIntegration
     }
 
     private void assertMetadataExtractsOkayFromSourceExtension(List<String> sourceExtensions, List<String> excludeList, List<String> expectedToFail,
-                                                               int expectedExtractCount, int expectedFailedCount) throws Exception
+            int expectedExtractCount, int expectedFailedCount) throws Exception
     {
         int extractCount = 0;
         int failedCount = 0;
@@ -224,11 +222,11 @@ public abstract class AbstractRenditionTest extends AbstractRenditionIntegration
         }
 
         int expectedSuccessCount = expectedExtractCount - excludedCount - expectedFailedCount;
-        System.out.println("FAILURES:\n"+failures+"\n");
-        System.out.println("SUCCESSES:\n"+successes+"\n");
-        System.out.println("extractCount: "+extractCount+" expected "+expectedExtractCount);
-        System.out.println(" failedCount: "+failedCount+" expected "+expectedFailedCount);
-        System.out.println("successCount: "+successCount+" expected "+expectedSuccessCount);
+        System.out.println("FAILURES:\n" + failures + "\n");
+        System.out.println("SUCCESSES:\n" + successes + "\n");
+        System.out.println("extractCount: " + extractCount + " expected " + expectedExtractCount);
+        System.out.println(" failedCount: " + failedCount + " expected " + expectedFailedCount);
+        System.out.println("successCount: " + successCount + " expected " + expectedSuccessCount);
 
         assertEquals("Extract count has changed", expectedExtractCount, extractCount);
         assertEquals("Failed extract count has changed", expectedFailedCount, failedCount);
@@ -263,7 +261,7 @@ public abstract class AbstractRenditionTest extends AbstractRenditionIntegration
     }
 
     protected void internalTestAllSourceExtensions(int expectedRenditionCount, int expectedFailedCount,
-                                                   List<String> excludeList) throws Exception
+            List<String> excludeList) throws Exception
     {
         List<String> sourceExtensions = getAllSourceMimetypes();
         assertRenditionsOkayFromSourceExtension(sourceExtensions,
@@ -334,8 +332,8 @@ public abstract class AbstractRenditionTest extends AbstractRenditionIntegration
             }
         }
 
-        System.out.println("Number of source to target mimetype transforms: "+count);
-        System.out.println("Number of source to plain text transforms: "+textTargetCount);
+        System.out.println("Number of source to target mimetype transforms: " + count);
+        System.out.println("Number of source to plain text transforms: " + textTargetCount);
         System.out.println(sourceTargetList);
         if (sourceTargetPriorityList.length() > 0)
         {
@@ -357,7 +355,7 @@ public abstract class AbstractRenditionTest extends AbstractRenditionIntegration
         RenditionDefinitionRegistry2 renditionDefinitionRegistry = renditionService2.getRenditionDefinitionRegistry2();
         List<String> sourceMimetypes = new ArrayList(mimetypeMap.getMimetypes());
         sortMimetypesByExtension(sourceMimetypes);
-        for (String sourceMimetype: sourceMimetypes)
+        for (String sourceMimetype : sourceMimetypes)
         {
             Set<String> targetMimetypes = new HashSet<>();
             for (String renditionName : renditionDefinitionRegistry.getRenditionNamesFrom(sourceMimetype, 1))
@@ -375,7 +373,7 @@ public abstract class AbstractRenditionTest extends AbstractRenditionIntegration
             }
         }
 
-        System.out.println("Number of source to target mimetype transforms via renditions: "+count.get());
+        System.out.println("Number of source to target mimetype transforms via renditions: " + count.get());
         System.out.println(sourceTargetList);
     }
 
@@ -394,7 +392,7 @@ public abstract class AbstractRenditionTest extends AbstractRenditionIntegration
             {
                 Map<String, List<SupportedTransform>> supportedTransformsByTargetMimetype = registry.getData().retrieveTransforms(sourceMimetype);
                 List<SupportedTransform> supportedTransforms = new ArrayList<>(supportedTransformsByTargetMimetype.get(targetMimetype));
-                supportedTransforms.sort((t1, t2) -> t1.getPriority()-t2.getPriority());
+                supportedTransforms.sort((t1, t2) -> t1.getPriority() - t2.getPriority());
                 char a = 'a';
                 int prevPriority = Integer.MAX_VALUE;
                 for (SupportedTransform supportedTransform : supportedTransforms)

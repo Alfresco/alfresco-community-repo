@@ -31,10 +31,7 @@ import java.util.List;
 import org.alfresco.service.Experimental;
 
 /**
- * Representation of action parameter constraint.
- * Helps to constraint the list of allowable values for an action parameter.
- * When action parameter has constraints defined (@see ActionDefinition.ParameterDefinition#getParameterConstraintName())
- * they will be listed here.
+ * Representation of action parameter constraint. Helps to constraint the list of allowable values for an action parameter. When action parameter has constraints defined (@see ActionDefinition.ParameterDefinition#getParameterConstraintName()) they will be listed here.
  *
  * @author mpichura
  */
@@ -77,6 +74,7 @@ public class ActionParameterConstraint
             this.value = value;
             this.label = label;
         }
+
         /**
          * Actual constraint value
          */

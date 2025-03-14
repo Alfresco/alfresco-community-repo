@@ -30,14 +30,13 @@ import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 
 /**
- * Since Apache HttpClient 3.1 doesn't support including custom headers by default,
- * this class is adding that custom headers every time a method is invoked.
+ * Since Apache HttpClient 3.1 doesn't support including custom headers by default, this class is adding that custom headers every time a method is invoked.
  */
 public class RequestHeadersHttpClient extends HttpClient
 {
-    
+
     private Map<String, String> defaultHeaders;
-    
+
     public RequestHeadersHttpClient(MultiThreadedHttpConnectionManager connectionManager)
     {
         super(connectionManager);
@@ -52,12 +51,12 @@ public class RequestHeadersHttpClient extends HttpClient
     {
         this.defaultHeaders = defaultHeaders;
     }
-    
+
     private void addDefaultHeaders(HttpMethod method)
     {
         if (defaultHeaders != null)
         {
-            defaultHeaders.forEach((k,v) -> {
+            defaultHeaders.forEach((k, v) -> {
                 Header h = method.getRequestHeader(k);
                 boolean add = h == null || h.getValue() == null || !h.getValue().equals(v);
                 if (add)
@@ -65,9 +64,9 @@ public class RequestHeadersHttpClient extends HttpClient
                     method.addRequestHeader(k, v);
                 }
             });
-        }        
+        }
     }
-    
+
     @Override
     public int executeMethod(HttpMethod method) throws IOException, HttpException
     {
@@ -84,7 +83,7 @@ public class RequestHeadersHttpClient extends HttpClient
 
     @Override
     public int executeMethod(HostConfiguration hostconfig, HttpMethod method, HttpState state)
-                throws IOException, HttpException
+            throws IOException, HttpException
     {
         addDefaultHeaders(method);
         return super.executeMethod(hostconfig, method, state);

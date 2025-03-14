@@ -30,8 +30,7 @@ import org.alfresco.util.EqualsHelper;
 /**
  * Entity bean for <b>alf_content_data</b> table.
  * <p>
- * These are unique (see {@link #equals(Object) equals} and {@link #hashCode() hashCode}) based
- * on the {@link #getContentUrlId() content URL} value.
+ * These are unique (see {@link #equals(Object) equals} and {@link #hashCode() hashCode}) based on the {@link #getContentUrlId() content URL} value.
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -39,7 +38,7 @@ import org.alfresco.util.EqualsHelper;
 public class ContentDataEntity
 {
     public static final Long CONST_LONG_ZERO = Long.valueOf(0L);
-    
+
     private Long id;
     private Long version;
     private Long contentUrlId;
@@ -47,17 +46,16 @@ public class ContentDataEntity
     private Long mimetypeId;
     private Long encodingId;
     private Long localeId;
-    
+
     public ContentDataEntity()
-    {
-    }
+    {}
 
     @Override
     public int hashCode()
     {
         return (id == null ? 0 : id.hashCode());
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -81,16 +79,16 @@ public class ContentDataEntity
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("ContentDataEntity")
-          .append("[ ID=").append(id)
-          .append(", contentUrlId=").append(contentUrlId)
-          .append(", size=").append(size)
-          .append(", mimetype=").append(mimetypeId)
-          .append(", encoding=").append(encodingId)
-          .append(", locale=").append(localeId)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", contentUrlId=").append(contentUrlId)
+                .append(", size=").append(size)
+                .append(", mimetype=").append(mimetypeId)
+                .append(", encoding=").append(encodingId)
+                .append(", locale=").append(localeId)
+                .append("]");
         return sb.toString();
     }
-    
+
     public void incrementVersion()
     {
         if (version >= Short.MAX_VALUE)
@@ -102,7 +100,7 @@ public class ContentDataEntity
             this.version++;
         }
     }
-    
+
     public Long getId()
     {
         return id;

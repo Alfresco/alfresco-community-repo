@@ -28,7 +28,7 @@ package org.alfresco.service.cmr.model;
 import org.alfresco.api.AlfrescoPublicApi;
 
 /**
- * The type for a file folder 
+ * The type for a file folder
  * 
  * @author andyh
  *

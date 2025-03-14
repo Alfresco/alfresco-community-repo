@@ -42,8 +42,10 @@ public class LuceneSelector<Q, S, E extends Throwable> extends BaseSelector impl
 {
 
     /**
-     * @param type QName
-     * @param alias String
+     * @param type
+     *            QName
+     * @param alias
+     *            String
      */
     public LuceneSelector(QName type, String alias)
     {
@@ -51,24 +53,23 @@ public class LuceneSelector<Q, S, E extends Throwable> extends BaseSelector impl
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery, org.apache.lucene.search.BooleanQuery)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery, org.apache.lucene.search.BooleanQuery) */
     public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext) throws E
     {
-    	QueryParserAdaptor<Q, S, E> lqpa = luceneContext.getLuceneQueryParserAdaptor();
-    	switch(getJoinType())
-    	{
-    	case INNER:
-    	case NONE:      
-           return lqpa.getFieldQuery("CLASS", getType().toString());
-    	case LEFT:
-    		return lqpa.getMatchAllNodesQuery();
-    	case  RIGHT:
+        QueryParserAdaptor<Q, S, E> lqpa = luceneContext.getLuceneQueryParserAdaptor();
+        switch (getJoinType())
+        {
+        case INNER:
+        case NONE:
+            return lqpa.getFieldQuery("CLASS", getType().toString());
+        case LEFT:
+            return lqpa.getMatchAllNodesQuery();
+        case RIGHT:
         default:
-        	throw new IllegalArgumentException();
-    	}
-        
+            throw new IllegalArgumentException();
+        }
+
     }
 
-    
 }

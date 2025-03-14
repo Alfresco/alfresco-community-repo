@@ -504,9 +504,15 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
         private Set<String> getSupportedScopes(Scope scopes)
         {
-            return scopes.stream().filter(scope -> config.getPasswordGrantScopes().contains(scope.getValue()))
+            return scopes.stream()
+                    .filter(this::hasPasswordGrantScope)
                     .map(Identifier::getValue)
                     .collect(Collectors.toSet());
+        }
+
+        private boolean hasPasswordGrantScope(Scope.Value scope)
+        {
+            return config.getPasswordGrantScopes().contains(scope.getValue());
         }
 
         private Optional<OIDCProviderMetadata> extractMetadata(RestOperations rest, URI metadataUri)
@@ -558,8 +564,8 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
     private static Optional<String> getMetadataIssuer(OIDCProviderMetadata metadata, IdentityServiceConfig config)
     {
         return DEFAULT_ISSUER_ATTR.equals(config.getIssuerAttribute()) ? Optional.of(metadata)
-                        .map(OIDCProviderMetadata::getIssuer)
-                        .map(Issuer::getValue)
+                .map(OIDCProviderMetadata::getIssuer)
+                .map(Issuer::getValue)
                 : Optional.of(metadata)
                         .map(OIDCProviderMetadata::getCustomParameters)
                         .map(map -> map.get(config.getIssuerAttribute()))

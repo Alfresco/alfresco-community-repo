@@ -179,7 +179,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         assertEquals(EMAIL, result.get().email());
         assertTrue(result.get().allFieldsNotEmpty());
         verify(personService).createPerson(any());
-        verify(identityServiceFacade).getUserInfo(JWT_TOKEN, expectedMapping);;
+        verify(identityServiceFacade).getUserInfo(JWT_TOKEN, expectedMapping);
     }
 
     @Test
@@ -193,7 +193,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
 
         assertFalse(result.isPresent());
         verify(personService, never()).createPerson(any());
-        verify(identityServiceFacade).getUserInfo(JWT_TOKEN, expectedMapping);;
+        verify(identityServiceFacade).getUserInfo(JWT_TOKEN, expectedMapping);
     }
 
     @Test
@@ -216,7 +216,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         assertEquals("", result.get().email());
         assertFalse(result.get().allFieldsNotEmpty());
         verify(personService, never()).createPerson(any());
-        verify(identityServiceFacade).getUserInfo(JWT_TOKEN, expectedMapping);;
+        verify(identityServiceFacade).getUserInfo(JWT_TOKEN, expectedMapping);
     }
 
     @Test
@@ -240,7 +240,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         assertEquals("", result.get().email());
         assertFalse(result.get().allFieldsNotEmpty());
         verify(personService, never()).createPerson(any());
-        verify(identityServiceFacade).getUserInfo(JWT_TOKEN, expectedMapping);;
+        verify(identityServiceFacade).getUserInfo(JWT_TOKEN, expectedMapping);
     }
 
     @Test

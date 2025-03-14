@@ -78,6 +78,12 @@
       <property name="transactionService" ref="transactionService" />
    </bean>
 
+    <bean class="org.alfresco.rm.rest.api.fileplans.FilePlanRolesRelation">
+        <property name="apiUtils" ref="apiUtils" />
+        <property name="nodesModelFactory" ref="nodesModelFactory" />
+        <property name="filePlanRoleService" ref="FilePlanRoleService" />
+    </bean>
+
    <bean class="org.alfresco.rm.rest.api.holds.HoldsEntityResource" >
       <property name="holdService" ref="HoldService" />
       <property name="apiUtils" ref="apiUtils" />

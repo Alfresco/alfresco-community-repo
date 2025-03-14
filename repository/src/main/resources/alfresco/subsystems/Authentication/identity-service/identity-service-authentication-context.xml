@@ -149,6 +149,15 @@
       <property name="principalAttribute">
          <value>${identity-service.principal-attribute:preferred_username}</value>
       </property>
+      <property name="firstNameAttribute">
+          <value>${identity-service.first-name-attribute:given_name}</value>
+      </property>
+       <property name="lastNameAttribute">
+           <value>${identity-service.last-name-attribute:family_name}</value>
+       </property>
+       <property name="emailAttribute">
+           <value>${identity-service.email-attribute:email}</value>
+       </property>
       <property name="clientIdValidationDisabled">
          <value>${identity-service.client-id.validation.disabled:true}</value>
       </property>
@@ -158,6 +167,18 @@
       <property name="signatureAlgorithms">
          <value>${identity-service.signature-algorithms:RS256,PS256}</value>
       </property>
+       <property name="adminConsoleScopes">
+           <value>${identity-service.admin-console.scopes:openid,profile,email,offline_access}</value>
+       </property>
+       <property name="passwordGrantScopes">
+           <value>${identity-service.password-grant.scopes:openid,profile,email}</value>
+       </property>
+       <property name="issuerAttribute">
+           <value>${identity-service.issuer-attribute:issuer}</value>
+       </property>
+       <property name="jwtClockSkewMs">
+           <value>${identity-service.jwt-clock-skew-ms:0}</value>
+       </property>
    </bean>
 
    <!-- Enable control over mapping between request and user ID -->

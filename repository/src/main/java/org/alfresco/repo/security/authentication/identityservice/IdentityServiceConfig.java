@@ -75,6 +75,7 @@ public class IdentityServiceConfig
     private String firstNameAttribute;
     private String lastNameAttribute;
     private String emailAttribute;
+    private long jwtClockSkewMs;
 
     /**
      *
@@ -383,6 +384,11 @@ public class IdentityServiceConfig
         this.emailAttribute = emailAttribute;
     }
 
+    public void setJwtClockSkewMs(long jwtClockSkewMs)
+    {
+        this.jwtClockSkewMs = jwtClockSkewMs;
+    }
+
     public String getFirstNameAttribute()
     {
         return firstNameAttribute;
@@ -396,5 +402,10 @@ public class IdentityServiceConfig
     public String getEmailAttribute()
     {
         return emailAttribute;
+    }
+
+    public long getJwtClockSkewMs()
+    {
+        return jwtClockSkewMs;
     }
 }

@@ -666,7 +666,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         private OAuth2TokenValidator<Jwt> createJwtTokenValidator(ProviderDetails providerDetails)
         {
             List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
-            validators.add(new JwtTimestampValidator(Duration.of(0, ChronoUnit.MILLIS)));
+            validators.add(new JwtTimestampValidator(Duration.of(config.getJwtClockSkewMs(), ChronoUnit.MILLIS)));
             validators.add(new JwtIssuerValidator(providerDetails.getIssuerUri()));
             if (!config.isClientIdValidationDisabled())
             {

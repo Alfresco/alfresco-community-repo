@@ -176,6 +176,9 @@
        <property name="issuerAttribute">
            <value>${identity-service.issuer-attribute:issuer}</value>
        </property>
+       <property name="jwtClockSkewMs">
+           <value>${identity-service.jwt-clock-skew-ms:0}</value>
+       </property>
    </bean>
 
    <!-- Enable control over mapping between request and user ID -->

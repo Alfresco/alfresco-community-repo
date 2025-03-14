@@ -1,0 +1,32 @@
+name: Pre-Commit formatter
+
+on:
+  push:
+    branches:
+      - precommit/**
+
+jobs:
+  format-code:
+    name: "Reformat code"
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, '[reformat code]')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ inputs.python-version }}
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
+        with:
+          python-version: "3.9"
+      - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
+        continue-on-error: true
+        with:
+          extra_args: --all-files
+      - name: Update secrets baseline
+        run: pip install detect-secrets && detect-secrets scan --baseline .secrets.baseline
+      - uses: Alfresco/alfresco-build-tools/.github/actions/git-commit-changes@v8.16.0
+        with:
+          username: ${{ secrets.BOT_GITHUB_USERNAME }}
+          add-options: -u
+          commit-message: "Apply Pre-Commit code formatting"
+          skip-if-no-changes: true
+      - name: Push changes
+        run: git push

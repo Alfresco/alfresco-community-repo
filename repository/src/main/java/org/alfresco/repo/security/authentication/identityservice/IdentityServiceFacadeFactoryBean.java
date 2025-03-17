@@ -71,10 +71,7 @@ import com.nimbusds.jose.util.ResourceRetriever;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.id.Identifier;
-import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
-
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -125,6 +122,8 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
+
 /**
  * Creates an instance of {@link IdentityServiceFacade}. <br>
  * This factory can return a null if it is disabled.
@@ -146,10 +145,9 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
     public void setIdentityServiceConfig(IdentityServiceConfig identityServiceConfig)
     {
         factory = new SpringBasedIdentityServiceFacadeFactory(
-            new HttpClientProvider(identityServiceConfig)::createHttpClient,
-            new ClientRegistrationProvider(identityServiceConfig)::createClientRegistration,
-            new JwtDecoderProvider(identityServiceConfig)::createJwtDecoder
-        );
+                new HttpClientProvider(identityServiceConfig)::createHttpClient,
+                new ClientRegistrationProvider(identityServiceConfig)::createClientRegistration,
+                new JwtDecoderProvider(identityServiceConfig)::createJwtDecoder);
     }
 
     @Override
@@ -221,8 +219,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         private IdentityServiceFacade getTargetFacade()
         {
             return ofNullable(targetFacade.get())
-                .orElseGet(() -> targetFacade.updateAndGet(prev ->
-                    ofNullable(prev).orElseGet(this::createTargetFacade)));
+                    .orElseGet(() -> targetFacade.updateAndGet(prev -> ofNullable(prev).orElseGet(this::createTargetFacade)));
         }
 
         private IdentityServiceFacade createTargetFacade()
@@ -250,9 +247,9 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         private final BiFunction<RestOperations, ProviderDetails, JwtDecoder> jwtDecoderProvider;
 
         SpringBasedIdentityServiceFacadeFactory(
-            Supplier<HttpClient> httpClientProvider,
-            Function<RestOperations, ClientRegistration> clientRegistrationProvider,
-            BiFunction<RestOperations, ProviderDetails, JwtDecoder> jwtDecoderProvider)
+                Supplier<HttpClient> httpClientProvider,
+                Function<RestOperations, ClientRegistration> clientRegistrationProvider,
+                BiFunction<RestOperations, ProviderDetails, JwtDecoder> jwtDecoderProvider)
         {
             this.httpClientProvider = requireNonNull(httpClientProvider);
             this.clientRegistrationProvider = requireNonNull(clientRegistrationProvider);
@@ -261,25 +258,25 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
         private IdentityServiceFacade createIdentityServiceFacade()
         {
-            //Here we preserve the behaviour of previously used Keycloak Adapter
+            // Here we preserve the behaviour of previously used Keycloak Adapter
             // * Client is authenticating itself using basic auth
             // * Resource Owner Password Credentials Flow is used to authenticate Resource Owner
 
             final ClientHttpRequestFactory httpRequestFactory = new CustomClientHttpRequestFactory(
-                httpClientProvider.get());
+                    httpClientProvider.get());
             final RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
             final ClientRegistration clientRegistration = clientRegistrationProvider.apply(restTemplate);
             final JwtDecoder jwtDecoder = jwtDecoderProvider.apply(restTemplate,
-                clientRegistration.getProviderDetails());
+                    clientRegistration.getProviderDetails());
 
             return new SpringBasedIdentityServiceFacade(createOAuth2RestTemplate(httpRequestFactory),
-                clientRegistration, jwtDecoder);
+                    clientRegistration, jwtDecoder);
         }
 
         private RestTemplate createOAuth2RestTemplate(ClientHttpRequestFactory requestFactory)
         {
             final RestTemplate restTemplate = new RestTemplate(
-                Arrays.asList(new FormHttpMessageConverter(), new OAuth2AccessTokenResponseHttpMessageConverter()));
+                    Arrays.asList(new FormHttpMessageConverter(), new OAuth2AccessTokenResponseHttpMessageConverter()));
             restTemplate.setRequestFactory(requestFactory);
             restTemplate.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
 
@@ -323,29 +320,29 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         private void applyConnectionConfiguration(PoolingHttpClientConnectionManagerBuilder connectionManagerBuilder)
         {
             final ConnectionConfig connectionConfig = ConnectionConfig.custom()
-                .setConnectTimeout(config.getClientConnectionTimeout(), TimeUnit.MILLISECONDS)
-                .setSocketTimeout(config.getClientSocketTimeout(), TimeUnit.MILLISECONDS)
-                .build();
+                    .setConnectTimeout(config.getClientConnectionTimeout(), TimeUnit.MILLISECONDS)
+                    .setSocketTimeout(config.getClientSocketTimeout(), TimeUnit.MILLISECONDS)
+                    .build();
 
             connectionManagerBuilder.setMaxConnTotal(config.getConnectionPoolSize());
             connectionManagerBuilder.setDefaultConnectionConfig(connectionConfig);
         }
 
         private void applySSLConfiguration(PoolingHttpClientConnectionManagerBuilder connectionManagerBuilder)
-            throws Exception
+                throws Exception
         {
             SSLContextBuilder sslContextBuilder = null;
             if (config.isDisableTrustManager())
             {
                 sslContextBuilder = SSLContexts.custom()
-                    .loadTrustMaterial(TrustAllStrategy.INSTANCE);
+                        .loadTrustMaterial(TrustAllStrategy.INSTANCE);
 
             }
             else if (isDefined(config.getTruststore()))
             {
                 final char[] truststorePassword = asCharArray(config.getTruststorePassword(), null);
                 sslContextBuilder = SSLContexts.custom()
-                    .loadTrustMaterial(new File(config.getTruststore()), truststorePassword);
+                        .loadTrustMaterial(new File(config.getTruststore()), truststorePassword);
             }
 
             if (isDefined(config.getClientKeystore()))
@@ -377,9 +374,9 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         private char[] asCharArray(String value, char... nullValue)
         {
             return ofNullable(value)
-                .filter(not(String::isBlank))
-                .map(String::toCharArray)
-                .orElse(nullValue);
+                    .filter(not(String::isBlank))
+                    .map(String::toCharArray)
+                    .orElse(nullValue);
         }
     }
 
@@ -389,6 +386,8 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
         private static final Set<String> SCOPES = Set.of("openid", "profile", "email");
 
+        private static final String ACCESS_TOKEN_ISSUER = "access_token_issuer";
+
         ClientRegistrationProvider(IdentityServiceConfig config)
         {
             this.config = requireNonNull(config);
@@ -397,16 +396,16 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         public ClientRegistration createClientRegistration(final RestOperations rest)
         {
             return possibleMetadataURIs()
-                .stream()
-                .map(u -> extractMetadata(rest, u))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .findFirst()
-                .map(this::validateDiscoveryDocument)
-                .map(this::createBuilder)
-                .map(this::configureClientAuthentication)
-                .map(Builder::build)
-                .orElseThrow(() -> new IllegalStateException("Failed to create ClientRegistration."));
+                    .stream()
+                    .map(u -> extractMetadata(rest, u))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .findFirst()
+                    .map(this::validateDiscoveryDocument)
+                    .map(this::createBuilder)
+                    .map(this::configureClientAuthentication)
+                    .map(Builder::build)
+                    .orElseThrow(() -> new IllegalStateException("Failed to create ClientRegistration."));
         }
 
         private OIDCProviderMetadata validateDiscoveryDocument(OIDCProviderMetadata metadata)
@@ -423,11 +422,11 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                     URI metadataIssuerURI = new URI(metadata.getIssuer().getValue());
                     validateOIDCEndpoint(metadataIssuerURI, "Issuer");
                     if (StringUtils.isNotBlank(config.getIssuerUrl()) &&
-                        !metadataIssuerURI.equals(URI.create(config.getIssuerUrl())))
+                            !metadataIssuerURI.equals(URI.create(config.getIssuerUrl())))
                     {
                         throw new IdentityServiceException("Failed to create ClientRegistration. "
-                            + "The Issuer value from the OIDC Discovery Endpoint does not align with the provided Issuer. Expected `%s` but found `%s`"
-                            .formatted(config.getIssuerUrl(), metadata.getIssuer().getValue()));
+                                + "The Issuer value from the OIDC Discovery Endpoint does not align with the provided Issuer. Expected `%s` but found `%s`"
+                                        .formatted(config.getIssuerUrl(), metadata.getIssuer().getValue()));
                     }
                 }
                 catch (URISyntaxException e)
@@ -454,37 +453,41 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         private ClientRegistration.Builder createBuilder(OIDCProviderMetadata metadata)
         {
             final String authUri = Optional.of(metadata)
-                .map(OIDCProviderMetadata::getAuthorizationEndpointURI)
-                .map(URI::toASCIIString)
-                .orElse(null);
+                    .map(OIDCProviderMetadata::getAuthorizationEndpointURI)
+                    .map(URI::toASCIIString)
+                    .orElse(null);
 
             final String issuerUri = Optional.of(metadata)
-                .map(OIDCProviderMetadata::getIssuer)
-                .map(Issuer::getValue)
-                .orElseGet(() -> (StringUtils.isNotBlank(config.getRealm()) && StringUtils.isBlank(config.getIssuerUrl())) ?
-                    config.getAuthServerUrl() :
-                    config.getIssuerUrl());
+                    .map(m -> {
+                        Object accessTokenIssuer = m.getCustomParameter(ACCESS_TOKEN_ISSUER);
+                        if (accessTokenIssuer != null)
+                        {
+                            return accessTokenIssuer.toString();
+                        }
+                        return m.getIssuer() != null ? m.getIssuer().getValue() : null;
+                    })
+                    .orElseGet(() -> (StringUtils.isNotBlank(config.getRealm()) && StringUtils.isBlank(config.getIssuerUrl())) ? config.getAuthServerUrl() : config.getIssuerUrl());
 
             return ClientRegistration
-                .withRegistrationId("ids")
-                .authorizationUri(authUri)
-                .tokenUri(metadata.getTokenEndpointURI().toASCIIString())
-                .jwkSetUri(metadata.getJWKSetURI().toASCIIString())
-                .issuerUri(issuerUri)
-                .userInfoUri(metadata.getUserInfoEndpointURI().toASCIIString())
-                .scope(getSupportedScopes(metadata.getScopes()))
-                .providerConfigurationMetadata(createMetadata(metadata))
-                .authorizationGrantType(AuthorizationGrantType.PASSWORD);
+                    .withRegistrationId("ids")
+                    .authorizationUri(authUri)
+                    .tokenUri(metadata.getTokenEndpointURI().toASCIIString())
+                    .jwkSetUri(metadata.getJWKSetURI().toASCIIString())
+                    .issuerUri(issuerUri)
+                    .userInfoUri(metadata.getUserInfoEndpointURI().toASCIIString())
+                    .scope(getSupportedScopes(metadata.getScopes()))
+                    .providerConfigurationMetadata(createMetadata(metadata))
+                    .authorizationGrantType(AuthorizationGrantType.PASSWORD);
         }
 
         private Map<String, Object> createMetadata(OIDCProviderMetadata metadata)
         {
             Map<String, Object> configurationMetadata = new LinkedHashMap<>();
-            if(metadata.getScopes() != null)
+            if (metadata.getScopes() != null)
             {
                 configurationMetadata.put(SCOPES_SUPPORTED.getValue(), metadata.getScopes());
             }
-            if(StringUtils.isNotBlank(config.getAudience()))
+            if (StringUtils.isNotBlank(config.getAudience()))
             {
                 configurationMetadata.put(AUDIENCE.getValue(), config.getAudience());
             }
@@ -497,17 +500,17 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             if (config.isPublicClient())
             {
                 return builder.clientSecret(null)
-                    .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST);
+                        .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST);
             }
             return builder.clientSecret(config.getClientSecret())
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
+                    .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
         }
 
         private Set<String> getSupportedScopes(Scope scopes)
         {
             return scopes.stream().filter(scope -> SCOPES.contains(scope.getValue()))
-                .map(Identifier::getValue)
-                .collect(Collectors.toSet());
+                    .map(Identifier::getValue)
+                    .collect(Collectors.toSet());
         }
 
         private Optional<OIDCProviderMetadata> extractMetadata(RestOperations rest, URI metadataUri)
@@ -519,7 +522,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                 if (r.getStatusCode() != HttpStatus.OK || !r.hasBody())
                 {
                     LOGGER.warn("Unexpected response from " + metadataUri + ". Status code: " + r.getStatusCode()
-                        + ", has body: " + r.hasBody() + ".");
+                            + ", has body: " + r.hasBody() + ".");
                     return Optional.empty();
                 }
                 response = r.getBody();
@@ -545,16 +548,14 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             if (StringUtils.isBlank(config.getAuthServerUrl()) && StringUtils.isBlank(config.getIssuerUrl()))
             {
                 throw new IdentityServiceException(
-                    "Failed to create ClientRegistration. The values of issuer url and auth server url cannot both be empty.");
+                        "Failed to create ClientRegistration. The values of issuer url and auth server url cannot both be empty.");
             }
 
-            String baseUrl = StringUtils.isNotBlank(config.getAuthServerUrl()) ?
-                config.getAuthServerUrl() :
-                config.getIssuerUrl();
+            String baseUrl = StringUtils.isNotBlank(config.getAuthServerUrl()) ? config.getAuthServerUrl() : config.getIssuerUrl();
 
             return List.of(UriComponentsBuilder.fromUriString(baseUrl)
-                .pathSegment(".well-known", "openid-configuration")
-                .build().toUri());
+                    .pathSegment(".well-known", "openid-configuration")
+                    .build().toUri());
         }
     }
 
@@ -568,12 +569,12 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         {
             this.config = requireNonNull(config);
             this.signatureAlgorithms = ofNullable(config.getSignatureAlgorithms())
-                .filter(not(Set::isEmpty))
-                .orElseGet(() -> {
-                    LOGGER.warn("Unable to find any valid signature algorithms in the configuration. "
-                        + "Using the default signature algorithm: " + DEFAULT_SIGNATURE_ALGORITHM.getName() + ".");
-                    return Set.of(DEFAULT_SIGNATURE_ALGORITHM);
-                });
+                    .filter(not(Set::isEmpty))
+                    .orElseGet(() -> {
+                        LOGGER.warn("Unable to find any valid signature algorithms in the configuration. "
+                                + "Using the default signature algorithm: " + DEFAULT_SIGNATURE_ALGORITHM.getName() + ".");
+                        return Set.of(DEFAULT_SIGNATURE_ALGORITHM);
+                    });
         }
 
         public JwtDecoder createJwtDecoder(RestOperations rest, ProviderDetails providerDetails)
@@ -584,7 +585,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
                 decoder.setJwtValidator(createJwtTokenValidator(providerDetails));
                 decoder.setClaimSetConverter(
-                    new ClaimTypeConverter(OidcIdTokenDecoderFactory.createDefaultClaimTypeConverters()));
+                        new ClaimTypeConverter(OidcIdTokenDecoderFactory.createDefaultClaimTypeConverters()));
 
                 return decoder;
             }
@@ -601,26 +602,26 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             {
                 final RSAPublicKey publicKey = parsePublicKey(config.getRealmKey());
                 return NimbusJwtDecoder.withPublicKey(publicKey)
-                    .signatureAlgorithm(DEFAULT_SIGNATURE_ALGORITHM)
-                    .build();
+                        .signatureAlgorithm(DEFAULT_SIGNATURE_ALGORITHM)
+                        .build();
             }
             final String jwkSetUri = requireValidJwkSetUri(providerDetails);
             final NimbusJwtDecoder.JwkSetUriJwtDecoderBuilder decoderBuilder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri);
             signatureAlgorithms.forEach(decoderBuilder::jwsAlgorithm);
             return decoderBuilder
-                .restOperations(rest)
-                .jwtProcessorCustomizer(this::reconfigureJWKSCache)
-                .build();
+                    .restOperations(rest)
+                    .jwtProcessorCustomizer(this::reconfigureJWKSCache)
+                    .build();
         }
 
         private void reconfigureJWKSCache(ConfigurableJWTProcessor<SecurityContext> jwtProcessor)
         {
             final Optional<RemoteJWKSet<SecurityContext>> jwkSource = ofNullable(jwtProcessor)
-                .map(ConfigurableJWTProcessor::getJWSKeySelector)
-                .filter(JWSVerificationKeySelector.class::isInstance)
-                .map(o -> (JWSVerificationKeySelector<SecurityContext>) o)
-                .map(JWSVerificationKeySelector::getJWKSource)
-                .filter(RemoteJWKSet.class::isInstance).map(o -> (RemoteJWKSet<SecurityContext>) o);
+                    .map(ConfigurableJWTProcessor::getJWSKeySelector)
+                    .filter(JWSVerificationKeySelector.class::isInstance)
+                    .map(o -> (JWSVerificationKeySelector<SecurityContext>) o)
+                    .map(JWSVerificationKeySelector::getJWKSource)
+                    .filter(RemoteJWKSet.class::isInstance).map(o -> (RemoteJWKSet<SecurityContext>) o);
             if (jwkSource.isEmpty())
             {
                 LOGGER.warn("Not able to reconfigure the JWK Cache. Unexpected JWKSource.");
@@ -642,15 +643,15 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             }
 
             final DefaultJWKSetCache cache = new DefaultJWKSetCache(config.getPublicKeyCacheTtl(), -1,
-                TimeUnit.SECONDS);
+                    TimeUnit.SECONDS);
             final JWKSource<SecurityContext> cachingJWKSource = new RemoteJWKSet<>(jwkSetUrl.get(),
-                resourceRetriever.get(), cache);
+                    resourceRetriever.get(), cache);
 
             jwtProcessor.setJWSKeySelector(new JWSVerificationKeySelector<>(
-                signatureAlgorithms.stream()
-                    .map(signatureAlgorithm -> JWSAlgorithm.parse(signatureAlgorithm.getName()))
-                    .collect(Collectors.toSet()),
-                cachingJWKSource));
+                    signatureAlgorithms.stream()
+                            .map(signatureAlgorithm -> JWSAlgorithm.parse(signatureAlgorithm.getName()))
+                            .collect(Collectors.toSet()),
+                    cachingJWKSource));
             jwtProcessor.setJWSTypeVerifier(new CustomJOSEObjectTypeVerifier(JOSEObjectType.JWT, AT_JWT));
         }
 
@@ -680,7 +681,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             {
                 if (isPemFormatException(e))
                 {
-                    //For backward compatibility with Keycloak adapter
+                    // For backward compatibility with Keycloak adapter
                     return tryToParsePublicKey("-----BEGIN PUBLIC KEY-----\n" + pem + "\n-----END PUBLIC KEY-----");
                 }
                 throw e;
@@ -704,10 +705,10 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             if (!isDefined(uri))
             {
                 OAuth2Error oauth2Error = new OAuth2Error("missing_signature_verifier",
-                    "Failed to find a Signature Verifier for: '"
-                        + providerDetails.getIssuerUri()
-                        + "'. Check to ensure you have configured the JwkSet URI.",
-                    null);
+                        "Failed to find a Signature Verifier for: '"
+                                + providerDetails.getIssuerUri()
+                                + "'. Check to ensure you have configured the JwkSet URI.",
+                        null);
                 throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
             }
             return uri;
@@ -734,9 +735,9 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             }
 
             final OAuth2Error error = new OAuth2Error(
-                OAuth2ErrorCodes.INVALID_TOKEN,
-                "The iss claim is not valid. Expected `%s` but got `%s`.".formatted(requiredIssuer, issuer),
-                "https://tools.ietf.org/html/rfc6750#section-3.1");
+                    OAuth2ErrorCodes.INVALID_TOKEN,
+                    "The iss claim is not valid. Expected `%s` but got `%s`.".formatted(requiredIssuer, issuer),
+                    "https://tools.ietf.org/html/rfc6750#section-3.1");
             return OAuth2TokenValidatorResult.failure(error);
         }
 
@@ -758,20 +759,20 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             final Object audience = token.getClaim(JwtClaimNames.AUD);
             if (audience != null)
             {
-                if(audience instanceof List && ((List<String>) audience).contains(configuredAudience))
+                if (audience instanceof List && ((List<String>) audience).contains(configuredAudience))
                 {
                     return OAuth2TokenValidatorResult.success();
                 }
-                if(audience instanceof String && audience.equals(configuredAudience))
+                if (audience instanceof String && audience.equals(configuredAudience))
                 {
                     return OAuth2TokenValidatorResult.success();
                 }
             }
 
             final OAuth2Error error = new OAuth2Error(
-                OAuth2ErrorCodes.INVALID_TOKEN,
-                "The aud claim is not valid. Expected configured audience `%s` not found.".formatted(configuredAudience),
-                "https://tools.ietf.org/html/rfc6750#section-3.1");
+                    OAuth2ErrorCodes.INVALID_TOKEN,
+                    "The aud claim is not valid. Expected configured audience `%s` not found.".formatted(configuredAudience),
+                    "https://tools.ietf.org/html/rfc6750#section-3.1");
             return OAuth2TokenValidatorResult.failure(error);
         }
     }
@@ -786,13 +787,10 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         @Override
         public ClientHttpRequest createRequest(URI uri, HttpMethod httpMethod) throws IOException
         {
-            /*
-             * This is to avoid the Brotli content encoding that is not well-supported by the combination of
-             * the Apache Http Client and the Spring RestTemplate
-             */
+            /* This is to avoid the Brotli content encoding that is not well-supported by the combination of the Apache Http Client and the Spring RestTemplate */
             ClientHttpRequest request = super.createRequest(uri, httpMethod);
             request.getHeaders()
-                .add("Accept-Encoding", "gzip, deflate");
+                    .add("Accept-Encoding", "gzip, deflate");
             return request;
         }
     }

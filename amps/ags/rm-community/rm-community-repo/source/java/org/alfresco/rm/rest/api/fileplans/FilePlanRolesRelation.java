@@ -27,58 +27,43 @@
 package org.alfresco.rm.rest.api.fileplans;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
-import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
+import org.alfresco.rm.rest.api.RMRoles;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
 import org.alfresco.rm.rest.api.model.RoleModel;
-import org.alfresco.rm.rest.api.model.RoleModelList;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.beans.factory.InitializingBean;
 
-import java.util.List;
 
 import static org.alfresco.util.ParameterCheck.mandatory;
 
 @RelationshipResource(name = "roles", entityResource = FilePlanEntityResource.class, title = "Roles in a file plan")
-public class FilePlanRolesRelation implements RelationshipResourceAction.ReadById<RoleModelList>, InitializingBean
+public class FilePlanRolesRelation implements RelationshipResourceAction.Read<RoleModel>, InitializingBean
 {
-    private ApiNodesModelFactory nodesModelFactory;
-    private FilePlanRoleService filePlanRoleService;
+    private RMRoles rmRoles;
     private FilePlanComponentsApiUtils apiUtils;
 
 
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        mandatory("nodesModelFactory", this.nodesModelFactory);
-        mandatory("filePlanRoleService", this.filePlanRoleService);
+        mandatory("rmRoles", this.rmRoles);
         mandatory("apiUtils", this.apiUtils);
     }
 
     @Override
-    public RoleModelList readById(String filePlanId, String userId, Parameters parameters) throws RelationshipResourceNotFoundException
+    public CollectionWithPagingInfo<RoleModel> readAll(String filePlanId, Parameters params)
     {
         NodeRef filePlanNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, RecordsManagementModel.TYPE_FILE_PLAN);
-
-        List<RoleModel> roles = filePlanRoleService.getRolesByUser(filePlanNodeRef, userId).stream()
-                .map(nodesModelFactory::createRoleModel)
-                .toList();
-
-        return new RoleModelList(roles);
+        return rmRoles.getRoles(filePlanNodeRef, params);
     }
 
-    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
+    public void setRmRoles(RMRoles rmRoles)
     {
-        this.nodesModelFactory = nodesModelFactory;
-    }
-
-    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
-    {
-        this.filePlanRoleService = filePlanRoleService;
+        this.rmRoles = rmRoles;
     }
 
     public void setApiUtils(FilePlanComponentsApiUtils apiUtils)

@@ -27,7 +27,7 @@ Back to [TAS Master Documentation](https://git.alfresco.com/tas/alfresco-tas-uti
 
 ## Synopsis
 
-**TAS**( **T**est **A**utomation **S**ystem)- **RESTAPI** is the project that handles the automated tests related only to [Alfresco REST API](http://docs.alfresco.com/5.1/pra/1/topics/pra-welcome.html).
+**TAS**( **T**est **A**utomation **S**ystem)- **RESTAPI** is the project that handles the automated tests related only to [Alfresco REST API](https://support.hyland.com/r/Alfresco/Alfresco-Content-Services/23.4/Alfresco-Content-Services/Develop/REST-API-Guide).
 
 It is based on Apache Maven, compatible with major IDEs and is using also Spring capabilities for dependency injection.
 
@@ -271,7 +271,7 @@ restClient.onResponse().assertThat().body("entry.modifiedBy.firstName", org.hamc
 
 ### How to generate models or check coverage
 
-There are some simple generators that could parse [Swagger YAML](http://docs.alfresco.com/community/concepts/alfresco-sdk-tutorials-using-rest-api-explorer.html) files and provide some usefull information to you like:
+There are some simple generators that could parse [Swagger YAML](https://support.hyland.com/r/Alfresco/Alfresco-Content-Services/23.4/Alfresco-Content-Services/Develop/REST-API-Guide/Things-to-Know-Before-You-Start/The-API-Explorer-is-Your-Source-of-Truth) files and provide some usefull information to you like:
  
 a) Show on screen the actual coverage of TAS vs requests that exists in each YAML file - defined in pom.xml) 
 
